@@ -38,12 +38,30 @@ class KernelJsonSchemaBuilder:
     @classmethod
     def build(
         cls, parameter_type: type | str, description: str | None = None
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        cls, parameter_type: type | str | Any, description: str | None = None, structured_output: bool = False
+>>>>>>> main
+>>>>>>> Stashed changes
     ) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type and description.
 
         Args:
+<<<<<<< Updated upstream
             parameter_type (type | str): The parameter type.
             description (str, optional): The description of the parameter. Defaults to None.
+=======
+<<<<<<< HEAD
+            parameter_type (type | str): The parameter type.
+            description (str, optional): The description of the parameter. Defaults to None.
+=======
+            parameter_type: The parameter type.
+            description: The description of the parameter. Defaults to None.
+            structured_output: Whether the outputs are structured. Defaults to False.
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
@@ -51,6 +69,10 @@ class KernelJsonSchemaBuilder:
         if isinstance(parameter_type, str):
             return cls.build_from_type_name(parameter_type, description)
         if isinstance(parameter_type, KernelBaseModel):
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
             return cls.build_model_schema(parameter_type, description)
         if isinstance(parameter_type, type) and issubclass(parameter_type, Enum):
             return cls.build_enum_schema(parameter_type, description)
@@ -58,6 +80,18 @@ class KernelJsonSchemaBuilder:
             return cls.build_model_schema(parameter_type, description)
         if hasattr(parameter_type, "__args__"):
             return cls.handle_complex_type(parameter_type, description)
+<<<<<<< Updated upstream
+=======
+=======
+            return cls.build_model_schema(parameter_type, description, structured_output)
+        if isinstance(parameter_type, type) and issubclass(parameter_type, Enum):
+            return cls.build_enum_schema(parameter_type, description)
+        if hasattr(parameter_type, "__annotations__"):
+            return cls.build_model_schema(parameter_type, description, structured_output)
+        if hasattr(parameter_type, "__args__"):
+            return cls.handle_complex_type(parameter_type, description, structured_output)
+>>>>>>> main
+>>>>>>> Stashed changes
         schema = cls.get_json_schema(parameter_type)
         if description:
             schema["description"] = description
@@ -66,12 +100,30 @@ class KernelJsonSchemaBuilder:
     @classmethod
     def build_model_schema(
         cls, model: type, description: str | None = None
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        cls, model: type | KernelBaseModel, description: str | None = None, structured_output: bool = False
+>>>>>>> main
+>>>>>>> Stashed changes
     ) -> dict[str, Any]:
         """Builds the JSON schema for a given model and description.
 
         Args:
+<<<<<<< Updated upstream
             model (type): The model type.
             description (str, optional): The description of the model. Defaults to None.
+=======
+<<<<<<< HEAD
+            model (type): The model type.
+            description (str, optional): The description of the model. Defaults to None.
+=======
+            model: The model type.
+            description: The description of the model. Defaults to None.
+            structured_output: Whether the outputs are structured. Defaults to False.
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Returns:
             dict[str, Any]: The JSON schema for the model.
@@ -94,11 +146,27 @@ class KernelJsonSchemaBuilder:
                     field_description = field_info.description
             if not cls._is_optional(field_type):
                 required.append(field_name)
+<<<<<<< Updated upstream
             properties[field_name] = cls.build(field_type, field_description)
+=======
+<<<<<<< HEAD
+            properties[field_name] = cls.build(field_type, field_description)
+=======
+            properties[field_name] = cls.build(field_type, field_description, structured_output)
+>>>>>>> main
+>>>>>>> Stashed changes
 
         schema = {"type": "object", "properties": properties}
         if required:
             schema["required"] = required
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        if structured_output:
+            schema["additionalProperties"] = False  # type: ignore
+>>>>>>> main
+>>>>>>> Stashed changes
         if description:
             schema["description"] = description
 
@@ -152,12 +220,30 @@ class KernelJsonSchemaBuilder:
     @classmethod
     def handle_complex_type(
         cls, parameter_type: type, description: str | None = None
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        cls, parameter_type: type, description: str | None = None, structured_output: bool = False
+>>>>>>> main
+>>>>>>> Stashed changes
     ) -> dict[str, Any]:
         """Handles building the JSON schema for complex types.
 
         Args:
+<<<<<<< Updated upstream
             parameter_type (type): The parameter type.
             description (str, optional): The description of the parameter. Defaults to None.
+=======
+<<<<<<< HEAD
+            parameter_type (type): The parameter type.
+            description (str, optional): The description of the parameter. Defaults to None.
+=======
+            parameter_type: The parameter type.
+            description: The description of the parameter. Defaults to None.
+            structured_output: Whether the outputs are structured. Defaults to False.
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
@@ -168,13 +254,32 @@ class KernelJsonSchemaBuilder:
         schema: dict[str, Any] = {}
         if origin is list or origin is set:
             item_type = args[0]
+<<<<<<< Updated upstream
             schema = {"type": "array", "items": cls.build(item_type)}
+=======
+<<<<<<< HEAD
+            schema = {"type": "array", "items": cls.build(item_type)}
+=======
+            schema = {
+                "type": "array",
+                "items": cls.build(item_type, structured_output=structured_output),
+            }
+>>>>>>> main
+>>>>>>> Stashed changes
             if description:
                 schema["description"] = description
             return schema
         if origin is dict:
             _, value_type = args
+<<<<<<< Updated upstream
             additional_properties = cls.build(value_type)
+=======
+<<<<<<< HEAD
+            additional_properties = cls.build(value_type)
+=======
+            additional_properties = cls.build(value_type, structured_output=structured_output)
+>>>>>>> main
+>>>>>>> Stashed changes
             if additional_properties == {"type": "object"}:
                 additional_properties["properties"] = (
                     {}
@@ -182,27 +287,71 @@ class KernelJsonSchemaBuilder:
             schema = {"type": "object", "additionalProperties": additional_properties}
             if description:
                 schema["description"] = description
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
             return schema
         if origin is tuple:
             items = [cls.build(arg) for arg in args]
             schema = {"type": "array", "items": items}
             if description:
                 schema["description"] = description
+<<<<<<< Updated upstream
+=======
+=======
+            if structured_output:
+                schema["additionalProperties"] = False
+            return schema
+        if origin is tuple:
+            items = [cls.build(arg, structured_output=structured_output) for arg in args]
+            schema = {"type": "array", "items": items}
+            if description:
+                schema["description"] = description
+            if structured_output:
+                schema["additionalProperties"] = False
+>>>>>>> main
+>>>>>>> Stashed changes
             return schema
         if origin in {Union, types.UnionType}:
             # Handle Optional[T] (Union[T, None]) by making schema nullable
             if len(args) == 2 and type(None) in args:
                 non_none_type = args[0] if args[1] is type(None) else args[1]
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
                 schema = cls.build(non_none_type)
                 schema["type"] = [schema["type"], "null"]
                 if description:
                     schema["description"] = description
                 return schema
             schemas = [cls.build(arg, description) for arg in args]
+<<<<<<< Updated upstream
+=======
+=======
+                schema = cls.build(non_none_type, structured_output=structured_output)
+                schema["type"] = [schema["type"], "null"]
+                if description:
+                    schema["description"] = description
+                if structured_output:
+                    schema["additionalProperties"] = False
+                return schema
+            schemas = [cls.build(arg, description, structured_output=structured_output) for arg in args]
+>>>>>>> main
+>>>>>>> Stashed changes
             return {"anyOf": schemas}
         schema = cls.get_json_schema(parameter_type)
         if description:
             schema["description"] = description
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        if structured_output:
+            schema["additionalProperties"] = False
+>>>>>>> main
+>>>>>>> Stashed changes
         return schema
 
     @classmethod

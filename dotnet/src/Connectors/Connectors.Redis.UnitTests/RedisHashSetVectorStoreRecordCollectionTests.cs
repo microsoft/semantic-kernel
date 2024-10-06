@@ -82,6 +82,14 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             1,
             "testcollection:",
             "SCHEMA",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
             "OriginalNameData",
             "AS",
             "OriginalNameData",
@@ -91,6 +99,30 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             "data_storage_name",
             "TAG",
             "vector_storage_name",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+            "$.OriginalNameData",
+=======
+            "OriginalNameData",
+>>>>>>> ms/features/bugbash-prep
+            "AS",
+            "OriginalNameData",
+            "TAG",
+            "data_storage_name",
+            "AS",
+            "data_storage_name",
+            "TAG",
+<<<<<<< main
+            "$.vector_storage_name",
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+=======
+            "vector_storage_name",
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
             "AS",
             "vector_storage_name",
             "VECTOR",
@@ -415,6 +447,105 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task CanSearchWithVectorAndFilterAsync(bool useDefinition, bool includeVectors)
+    {
+        // Arrange
+        SetupExecuteMock(this._redisDatabaseMock, new RedisResult[]
+        {
+            RedisResult.Create(new RedisValue("1")),
+            RedisResult.Create(new RedisValue(TestRecordKey1)),
+            RedisResult.Create(new RedisValue("0.5")),
+            RedisResult.Create(
+            [
+                new RedisValue("OriginalNameData"),
+                new RedisValue("original data 1"),
+                new RedisValue("data_storage_name"),
+                new RedisValue("data 1"),
+                new RedisValue("vector_storage_name"),
+                RedisValue.Unbox(MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray()),
+            ]),
+        });
+        var sut = this.CreateRecordCollection(useDefinition);
+
+        var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel.Data), "data 1");
+
+        // Act.
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            new()
+            {
+                IncludeVectors = includeVectors,
+                Filter = filter,
+                Top = 5,
+                Skip = 2
+            }).ToListAsync();
+
+        // Assert.
+        var expectedArgsPart1 = new object[]
+        {
+            "testcollection",
+            "(@data_storage_name:{data 1})=>[KNN 7 @vector_storage_name $embedding AS vector_score]",
+            "WITHSCORES",
+            "SORTBY",
+            "vector_score",
+            "LIMIT",
+            2,
+            7
+        };
+        var returnArgs = includeVectors ? Array.Empty<object>() : new object[]
+        {
+            "RETURN",
+            2,
+            "OriginalNameData",
+            "data_storage_name"
+        };
+        var expectedArgsPart2 = new object[]
+        {
+            "PARAMS",
+            2,
+            "embedding",
+            MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray(),
+            "DIALECT",
+            2
+        };
+        var expectedArgs = expectedArgsPart1.Concat(returnArgs).Concat(expectedArgsPart2).ToArray();
+
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "FT.SEARCH",
+                    It.Is<object[]>(x => x.Where(y => !(y is byte[])).SequenceEqual(expectedArgs.Where(y => !(y is byte[]))))),
+                Times.Once);
+
+        Assert.Single(actual);
+        Assert.Equal(TestRecordKey1, actual.First().Record.Key);
+        Assert.Equal(0.5d, actual.First().Score);
+        Assert.Equal("original data 1", actual.First().Record.OriginalNameData);
+        Assert.Equal("data 1", actual.First().Record.Data);
+        if (includeVectors)
+        {
+            Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.First().Record.Vector!.Value.ToArray());
+        }
+        else
+        {
+            Assert.False(actual.First().Record.Vector.HasValue);
+        }
+    }
+
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -476,6 +607,28 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             .ReturnsAsync(RedisResult.Create(results));
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<RedisResult> redisResultStrings)
+    {
+        var results = redisResultStrings
+            .Select(x => x)
+            .ToArray();
+        redisDatabaseMock
+            .Setup(
+                x => x.ExecuteAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<object[]>()))
+            .ReturnsAsync(RedisResult.Create(results));
+    }
+
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string redisResultString)
     {
         redisDatabaseMock

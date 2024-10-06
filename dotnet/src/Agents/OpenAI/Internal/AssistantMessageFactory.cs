@@ -48,11 +48,25 @@ internal static class AssistantMessageFactory
             {
                 if (imageContent.Uri != null)
                 {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
                     yield return MessageContent.FromImageUrl(imageContent.Uri);
                 }
                 else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
                 {
                     yield return MessageContent.FromImageUrl(new(imageContent.DataUri!));
+<<<<<<< Updated upstream
+=======
+=======
+                    yield return MessageContent.FromImageUri(imageContent.Uri);
+                }
+                else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
+                {
+                    yield return MessageContent.FromImageUri(new(imageContent.DataUri!));
+>>>>>>> main
+>>>>>>> Stashed changes
                 }
             }
             else if (content is FileReferenceContent fileContent)

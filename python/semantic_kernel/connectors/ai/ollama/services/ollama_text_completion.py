@@ -24,6 +24,13 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 <<<<<<< main
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidResponseError,
@@ -31,24 +38,66 @@ from semantic_kernel.exceptions.service_exceptions import (
 =======
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+>>>>>>> upstream/main
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
         PromptExecutionSettings,
     )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+<<<<<<< Updated upstream
 class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     """Initializes a new instance of the OllamaTextCompletion class.
+=======
+<<<<<<< HEAD
+class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
+    """Initializes a new instance of the OllamaTextCompletion class.
+=======
+<<<<<<< main
+class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
+    """Initializes a new instance of the OllamaTextCompletion class.
+=======
+class OllamaTextCompletion(TextCompletionClientBase):
+    """
+    Initializes a new instance of the OllamaTextCompletion class.
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
     Make sure to have the ollama service running either locally or remotely.
     """
 
     def __init__(
         self,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         service_id: str | None = None,
         ai_model_id: str | None = None,
         host: str | None = None,
@@ -66,6 +115,17 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             client (Optional[AsyncClient]): A custom Ollama client to use for the service. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
             env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        prompt: str,
+        settings: OllamaTextPromptExecutionSettings,
+    ) -> List[TextContent]:
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
         """
         try:
             ollama_settings = OllamaSettings.create(
@@ -85,6 +145,13 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             client=client or AsyncClient(host=ollama_settings.host),
         )
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     # region Overriding base class methods
 
     # Override from AIServiceClientBase
@@ -95,8 +162,24 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     @override
     @trace_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
     async def _inner_get_text_contents(
+<<<<<<< Updated upstream
         self,
         prompt: str,
+=======
+<<<<<<< HEAD
+        self,
+        prompt: str,
+=======
+=======
+    @override
+    @trace_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
+    async def get_text_contents(
+>>>>>>> ms/features/bugbash-prep
+        self,
+        prompt: str,
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         settings: "PromptExecutionSettings",
     ) -> list[TextContent]:
         if not isinstance(settings, OllamaTextPromptExecutionSettings):
@@ -158,3 +241,45 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             ]
 
     # endregion
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        settings: OllamaTextPromptExecutionSettings,
+    ) -> AsyncIterable[List[StreamingTextContent]]:
+        """
+        Streams a text completion using a Ollama model.
+        Note that this method does not support multiple responses,
+        but the result will be a list anyway.
+
+        Arguments:
+            prompt {str} -- Prompt to complete.
+            settings {OllamaTextPromptExecutionSettings} -- Request settings.
+
+        Yields:
+            List[StreamingTextContent] -- Completion result.
+        """
+        settings.prompt = prompt
+        settings.stream = True
+        async with AsyncSession(self.session) as session:
+            async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
+                response.raise_for_status()
+                async for line in response.content:
+                    body = json.loads(line)
+                    if body.get("done") and body.get("response") is None:
+                        break
+                    yield [
+                        StreamingTextContent(
+                            choice_index=0, inner_content=body, ai_model_id=self.ai_model_id, text=body.get("response")
+                        )
+                    ]
+                    if body.get("done"):
+                        break
+
+    def get_prompt_execution_settings_class(self) -> "OllamaTextPromptExecutionSettings":
+        """Get the request settings class."""
+        return OllamaTextPromptExecutionSettings
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes

@@ -1,7 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
 using System.Collections.Generic;
 using System.Text;
+=======
+<<<<<<< HEAD
+using System.Collections.Generic;
+using System.Text;
+=======
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.Json;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 using Xunit;
@@ -19,7 +31,16 @@ public sealed class OpenAIFunctionToolCallTests
     public void FullyQualifiedNameReturnsValidName(string toolCallName, string expectedName)
     {
         // Arrange
+<<<<<<< Updated upstream
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, string.Empty);
+=======
+<<<<<<< HEAD
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, string.Empty);
+=======
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, BinaryData.FromString(args));
+>>>>>>> main
+>>>>>>> Stashed changes
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -31,7 +52,15 @@ public sealed class OpenAIFunctionToolCallTests
     public void ToStringReturnsCorrectValue()
     {
         // Arrange
+<<<<<<< Updated upstream
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}");
+=======
+<<<<<<< HEAD
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}");
+=======
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", BinaryData.FromString("{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}"));
+>>>>>>> main
+>>>>>>> Stashed changes
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -77,6 +106,14 @@ public sealed class OpenAIFunctionToolCallTests
 
         Assert.Equal("test-id", toolCall.Id);
         Assert.Equal("test-function", toolCall.FunctionName);
+<<<<<<< Updated upstream
         Assert.Equal("test-argument", toolCall.FunctionArguments);
+=======
+<<<<<<< HEAD
+        Assert.Equal("test-argument", toolCall.FunctionArguments);
+=======
+        Assert.Equal("test-argument", toolCall.FunctionArguments.ToString());
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 }

@@ -22,11 +22,34 @@ async def test_oai_embedding_service(kernel: Kernel):
 
     kernel.add_service(embedding_gen)
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
     memory = SemanticTextMemory(
         storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
     )
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
+<<<<<<< Updated upstream
+=======
+=======
+<<<<<<< main
+    memory = SemanticTextMemory(
+        storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
+    )
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
+=======
+    embedding_gen = sk_oai.OpenAITextEmbedding(
+        service_id="oai-ada", ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id
+    )
+
+    kernel.add_service(embedding_gen)
+    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+>>>>>>> ms/small_fixes
+
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     await memory.save_reference(
         "test",
         external_id="info1",
@@ -48,6 +71,13 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
 
     embedding_gen = sk_oai.OpenAITextEmbedding(
         service_id="oai-ada", ai_model_id="text-embedding-ada-002", async_client=client
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     )
 
     kernel.add_service(embedding_gen)
@@ -55,6 +85,18 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
         storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
     )
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+    )
+
+    kernel.add_service(embedding_gen)
+    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     await memory.save_reference(
         "test",

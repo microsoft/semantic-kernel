@@ -1,8 +1,13 @@
 {
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Turns your intent into a SAFE DOS batch script",
   "type": "completion",
   "completion": {
+=======
+  "description": "Turns your intent into a SAFE DOS batch script",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 1000,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -17,4 +22,12 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    "stop_sequences": ["exit /b %ERRORLEVEL%", "exit /b 1", "exit /b 0"]
+  }
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 }

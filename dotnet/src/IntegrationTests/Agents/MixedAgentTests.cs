@@ -1,5 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,7 +49,15 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
+<<<<<<< Updated upstream
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+=======
+<<<<<<< HEAD
+            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+=======
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
+>>>>>>> main
+>>>>>>> Stashed changes
             openAISettings.ChatModelId!,
             useNewFunctionCallingModel);
     }
@@ -95,12 +110,28 @@ public sealed class MixedAgentTests
         // Assistant doesn't need plug-in since it has access to the shared function result.
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel: new(),
+=======
+<<<<<<< HEAD
+                kernel: new(),
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu."
+<<<<<<< Updated upstream
                 });
+=======
+<<<<<<< HEAD
+                });
+=======
+                },
+                new Kernel());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act & Assert
         try

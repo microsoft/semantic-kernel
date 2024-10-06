@@ -1,8 +1,19 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;

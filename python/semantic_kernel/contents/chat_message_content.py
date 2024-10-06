@@ -1,4 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 
 import logging
 from enum import Enum
@@ -18,6 +25,14 @@ from semantic_kernel.contents.const import (
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
     IMAGE_CONTENT_TAG,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    STREAMING_ANNOTATION_CONTENT_TAG,
+    STREAMING_FILE_REFERENCE_CONTENT_TAG,
+>>>>>>> main
+>>>>>>> Stashed changes
     TEXT_CONTENT_TAG,
     ContentTypes,
 )
@@ -26,6 +41,14 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -38,10 +61,32 @@ TAG_CONTENT_MAP = {
     FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
     IMAGE_CONTENT_TAG: ImageContent,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 }
 
 ITEM_TYPES = (
     AnnotationContent | ImageContent | TextContent | FunctionResultContent | FunctionCallContent | FileReferenceContent
+<<<<<<< Updated upstream
+=======
+=======
+    STREAMING_FILE_REFERENCE_CONTENT_TAG: StreamingFileReferenceContent,
+    STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
+}
+
+ITEM_TYPES = (
+    AnnotationContent
+    | ImageContent
+    | TextContent
+    | FunctionResultContent
+    | FunctionCallContent
+    | FileReferenceContent
+    | StreamingAnnotationContent
+    | StreamingFileReferenceContent
+>>>>>>> main
+>>>>>>> Stashed changes
 )
 
 logger = logging.getLogger(__name__)
@@ -51,6 +96,26 @@ class ChatMessageContent(KernelContent):
     """This is the class for chat message response content.
 
     All Chat Completion Services should return an instance of this class as response.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+from typing import Optional
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
+
+from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.kernel_content import KernelContent
+
+
+class ChatMessageContent(KernelContent):
+    """This is the base class for chat message response content.
+
+    All Chat Completion Services should return a instance of this class as response.
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
@@ -67,6 +132,13 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = CHAT_MESSAGE_CONTENT_TAG
     role: AuthorRole
@@ -281,11 +353,34 @@ class ChatMessageContent(KernelContent):
         return cls(**kwargs)
 
     def to_prompt(self) -> str:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    role: ChatRole
+    content: Optional[str] = None
+    encoding: Optional[str] = None
+
+    def __str__(self) -> str:
+        return self.content or ""
+
+    def to_prompt(self, root_key: str) -> str:
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
         """Convert the ChatMessageContent to a prompt.
 
         Returns:
             str - The prompt from the ChatMessageContent.
         """
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
         root = self.to_element()
         return ElementTree.tostring(
             root, encoding=self.encoding or "unicode", short_empty_elements=False
@@ -343,3 +438,29 @@ class ChatMessageContent(KernelContent):
                 *self.items,
             )
         )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+
+        root = Element(root_key)
+        root.set("role", self.role.value)
+        root.text = self.content or ""
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode")
+
+    @classmethod
+    def from_element(cls, element: Element) -> "ChatMessageContent":
+        """Create a new instance of ChatMessageContent from a prompt.
+
+        Args:
+            prompt: str - The prompt to create the ChatMessageContent from.
+
+        Returns:
+            ChatMessageContent - The new instance of ChatMessageContent.
+        """
+        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        return cls(**args)
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes

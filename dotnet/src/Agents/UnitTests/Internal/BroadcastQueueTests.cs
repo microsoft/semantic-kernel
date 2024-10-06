@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -130,4 +138,55 @@ public class BroadcastQueueTests
         await queue.EnsureSynchronizedAsync(new ChannelReference(channel, hash));
         Assert.Equal(receiveCount, channel.ReceiveCount);
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    private sealed class TestChannel : MockChannel
+    {
+        public int ReceiveCount { get; private set; }
+
+        public List<ChatMessageContent> ReceivedMessages { get; } = [];
+
+        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        {
+            this.ReceivedMessages.AddRange(history);
+            this.ReceiveCount++;
+
+            await Task.Delay(this.ReceiveDuration, cancellationToken);
+        }
+    }
+
+    private sealed class BadChannel : MockChannel
+    {
+        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(this.ReceiveDuration, cancellationToken);
+
+            throw new InvalidOperationException("Test");
+        }
+    }
+
+    private abstract class MockChannel : AgentChannel
+    {
+        public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.1);
+
+        protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal override string Serialize()
+        {
+            throw new NotImplementedException();
+        }
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System.Collections.Generic;
 using System.Text;
@@ -72,7 +80,15 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         Assert.Contains("I don't know", stringBuilder.ToString());
         Assert.NotNull(metadata);
 
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
+=======
+<<<<<<< HEAD
+        Assert.True(metadata.TryGetValue("Id", out object? id));
+=======
+        Assert.True(metadata.TryGetValue("CompletionId", out object? id));
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
@@ -120,6 +136,13 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 
         // Act
         await foreach (var update in textGeneration.GetStreamingTextContentsAsync("What is the capital of France?", null, kernel))
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        await foreach (var update in textGeneration.GetStreamingTextContentsAsync("Reply \"I don't know\" to every question. What is the capital of France?", null, kernel))
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             stringBuilder.Append(update);
 
@@ -135,7 +158,15 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         // Assert
         Assert.NotNull(metadata);
 
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
+=======
+<<<<<<< HEAD
+        Assert.True(metadata.TryGetValue("Id", out object? id));
+=======
+        Assert.True(metadata.TryGetValue("CompletionId", out object? id));
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));

@@ -1,10 +1,19 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
+<<<<<<< Updated upstream
+=======
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -18,7 +27,10 @@ public class MemoryRecord : DataEntryBase
     /// Source content embeddings.
     /// </summary>
     [JsonPropertyName("embedding")]
+<<<<<<< Updated upstream
     [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+=======
+>>>>>>> Stashed changes
     public ReadOnlyMemory<float> Embedding { get; }
 
     /// <summary>
@@ -124,6 +136,11 @@ public class MemoryRecord : DataEntryBase
     /// <param name="timestamp">optional timestamp.</param>
     /// <returns>Memory record</returns>
     /// <exception cref="KernelException"></exception>
+<<<<<<< Updated upstream
+=======
+    /// <exception cref="SKException"></exception>
+    /// <exception cref="SKException"></exception>
+>>>>>>> Stashed changes
     public static MemoryRecord FromJsonMetadata(
         string json,
         ReadOnlyMemory<float> embedding,
@@ -131,9 +148,22 @@ public class MemoryRecord : DataEntryBase
         DateTimeOffset? timestamp = null)
     {
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
+<<<<<<< Updated upstream
         return metadata is not null
             ? new MemoryRecord(metadata, embedding, key, timestamp)
             : throw new KernelException("Unable to create memory record from serialized metadata");
+=======
+<<<<<<< main
+=======
+        var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json, MemoryRecordMetadataJsonSerializerContext.Default.MemoryRecordMetadata);
+>>>>>>> origin/main
+        return metadata is not null
+            ? new MemoryRecord(metadata, embedding, key, timestamp)
+            : throw new KernelException("Unable to create memory record from serialized metadata");
+        return metadata != null
+            ? new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp)
+            : throw new SKException("Unable to create memory record from serialized metadata");
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -159,6 +189,10 @@ public class MemoryRecord : DataEntryBase
     /// <returns>The memory record's metadata serialized to a json string.</returns>
     public string GetSerializedMetadata()
     {
+<<<<<<< Updated upstream
         return JsonSerializer.Serialize(this.Metadata);
+=======
+        return JsonSerializer.Serialize(this.Metadata, MemoryRecordMetadataJsonSerializerContext.Default.MemoryRecordMetadata);
+>>>>>>> Stashed changes
     }
 }

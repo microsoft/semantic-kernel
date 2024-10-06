@@ -38,5 +38,23 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
     /// maximum value is 1000). Higher ef_construction will result in better index quality and higher accuracy, but it will
     /// also increase the time required to build the index. EfConstruction has to be at least 2 * m
     /// </summary>
+<<<<<<< Updated upstream
     public int? EfConstruction { get; set; } = null;
+=======
+<<<<<<< HEAD
+    public int? EfConstruction { get; set; } = null;
+=======
+<<<<<<< HEAD
+    public int EfConstruction { get; set; } = 64;
+
+    /// <summary>
+    /// The size of the dynamic candidate list for search (40 by default). A higher value provides better recall at
+    /// the cost of speed.
+    /// </summary>
+    public int EfSearch { get; set; } = 40;
+=======
+    public int? EfConstruction { get; set; } = null;
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 }

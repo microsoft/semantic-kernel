@@ -34,6 +34,15 @@ def selection_strategy():
     return AsyncMock(spec=SelectionStrategy)
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+# region Non-Streaming
+
+
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_agent_group_chat_initialization(agents, termination_strategy, selection_strategy):
     group_chat = AgentGroupChat(
         agents=agents, termination_strategy=termination_strategy, selection_strategy=selection_strategy
@@ -132,7 +141,15 @@ async def test_invoke_with_agent_joining(agents, termination_strategy):
 @pytest.mark.asyncio
 async def test_invoke_with_complete_chat(agents, termination_strategy):
     termination_strategy.automatic_reset = False
+<<<<<<< Updated upstream
     group_chat = AgentGroupChat(termination_strategy=termination_strategy)
+=======
+<<<<<<< HEAD
+    group_chat = AgentGroupChat(termination_strategy=termination_strategy)
+=======
+    group_chat = AgentGroupChat(agents=agents, termination_strategy=termination_strategy)
+>>>>>>> main
+>>>>>>> Stashed changes
     group_chat.is_complete = True
 
     with pytest.raises(AgentChatException, match="Chat is already complete"):
@@ -141,6 +158,21 @@ async def test_invoke_with_complete_chat(agents, termination_strategy):
 
 
 @pytest.mark.asyncio
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+async def test_invoke_agent_with_none_defined_errors(agents):
+    group_chat = AgentGroupChat()
+
+    with pytest.raises(AgentChatException, match="No agents are available"):
+        async for _ in group_chat.invoke():
+            pass
+
+
+@pytest.mark.asyncio
+>>>>>>> main
+>>>>>>> Stashed changes
 async def test_invoke_selection_strategy_error(agents, selection_strategy):
     group_chat = AgentGroupChat(agents=agents, selection_strategy=selection_strategy)
 
@@ -206,3 +238,145 @@ async def test_invoke_is_complete_then_reset(agents, termination_strategy, selec
             iteration_count += 1
 
         assert iteration_count == 2
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+
+# endregion
+
+# region Streaming
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_single_turn(agents, termination_strategy):
+    group_chat = AgentGroupChat(termination_strategy=termination_strategy)
+
+    async def mock_invoke(agent, is_joining=True):
+        yield MagicMock(role=AuthorRole.ASSISTANT)
+
+    with mock.patch.object(AgentGroupChat, "invoke_stream", side_effect=mock_invoke):
+        termination_strategy.should_terminate.return_value = False
+
+        async for message in group_chat.invoke_stream_single_turn(agents[0]):
+            assert message.role == AuthorRole.ASSISTANT
+
+        termination_strategy.should_terminate.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_with_agent_joining(agents, termination_strategy):
+    for agent in agents:
+        agent.name = f"Agent {agent.id}"
+        agent.id = f"agent-{agent.id}"
+
+    group_chat = AgentGroupChat(termination_strategy=termination_strategy)
+
+    with (
+        mock.patch.object(AgentGroupChat, "add_agent", autospec=True) as mock_add_agent,
+        mock.patch.object(AgentChat, "invoke_agent_stream", autospec=True) as mock_invoke_agent,
+    ):
+
+        async def mock_invoke_gen(*args, **kwargs):
+            yield MagicMock(role=AuthorRole.ASSISTANT)
+
+        mock_invoke_agent.side_effect = mock_invoke_gen
+
+        async for _ in group_chat.invoke_stream(agents[0], is_joining=True):
+            pass
+
+        mock_add_agent.assert_called_once_with(group_chat, agents[0])
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_with_complete_chat(agents, termination_strategy):
+    termination_strategy.automatic_reset = False
+    group_chat = AgentGroupChat(agents=agents, termination_strategy=termination_strategy)
+    group_chat.is_complete = True
+
+    with pytest.raises(AgentChatException, match="Chat is already complete"):
+        async for _ in group_chat.invoke_stream():
+            pass
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_selection_strategy_error(agents, selection_strategy):
+    group_chat = AgentGroupChat(agents=agents, selection_strategy=selection_strategy)
+
+    selection_strategy.next.side_effect = Exception("Selection failed")
+
+    with pytest.raises(AgentChatException, match="Failed to select agent"):
+        async for _ in group_chat.invoke_stream():
+            pass
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_iterations(agents, termination_strategy, selection_strategy):
+    for agent in agents:
+        agent.name = f"Agent {agent.id}"
+        agent.id = f"agent-{agent.id}"
+
+    termination_strategy.maximum_iterations = 2
+
+    group_chat = AgentGroupChat(
+        agents=agents, termination_strategy=termination_strategy, selection_strategy=selection_strategy
+    )
+
+    selection_strategy.next.side_effect = lambda agents, history: agents[0]
+
+    async def mock_invoke_agent(*args, **kwargs):
+        yield MagicMock(role=AuthorRole.ASSISTANT)
+
+    with mock.patch.object(AgentChat, "invoke_agent_stream", side_effect=mock_invoke_agent):
+        termination_strategy.should_terminate.return_value = False
+
+        iteration_count = 0
+        async for _ in group_chat.invoke_stream():
+            iteration_count += 1
+
+        assert iteration_count == 2
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_is_complete_then_reset(agents, termination_strategy, selection_strategy):
+    for agent in agents:
+        agent.name = f"Agent {agent.id}"
+        agent.id = f"agent-{agent.id}"
+
+    termination_strategy.maximum_iterations = 2
+    termination_strategy.automatic_reset = True
+
+    group_chat = AgentGroupChat(
+        agents=agents, termination_strategy=termination_strategy, selection_strategy=selection_strategy
+    )
+
+    group_chat.is_complete = True
+
+    selection_strategy.next.side_effect = lambda agents, history: agents[0]
+
+    async def mock_invoke_agent(*args, **kwargs):
+        yield MagicMock(role=AuthorRole.ASSISTANT)
+
+    with mock.patch.object(AgentChat, "invoke_agent_stream", side_effect=mock_invoke_agent):
+        termination_strategy.should_terminate.return_value = False
+
+        iteration_count = 0
+        async for _ in group_chat.invoke_stream():
+            iteration_count += 1
+
+        assert iteration_count == 2
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_agent_with_none_defined_errors(agents):
+    group_chat = AgentGroupChat()
+
+    with pytest.raises(AgentChatException, match="No agents are available"):
+        async for _ in group_chat.invoke_stream():
+            pass
+
+
+# endregion
+>>>>>>> main
+>>>>>>> Stashed changes

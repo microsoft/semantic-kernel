@@ -17,12 +17,36 @@ public sealed class ExecutionState
     /// <summary>
     /// Execution state described by variables.
     /// </summary>
+<<<<<<< Updated upstream
     public Dictionary<string, string> Variables { get; set; } = [];
+=======
+<<<<<<< main
+    public Dictionary<string, string> Variables { get; set; } = [];
+=======
+<<<<<<< HEAD
+    public Dictionary<string, string> Variables { get; set; } = [];
+=======
+    public Dictionary<string, string> Variables { get; set; } = new Dictionary<string, string>();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Execution state of each step
     /// </summary>
+<<<<<<< Updated upstream
     public Dictionary<string, StepExecutionState> StepStates { get; set; } = [];
+=======
+<<<<<<< main
+    public Dictionary<string, StepExecutionState> StepStates { get; set; } = [];
+=======
+<<<<<<< HEAD
+    public Dictionary<string, StepExecutionState> StepStates { get; set; } = [];
+=======
+    public Dictionary<string, StepExecutionState> StepStates { get; set; } = new Dictionary<string, StepExecutionState>();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Step execution state
@@ -42,7 +66,19 @@ public sealed class ExecutionState
         /// <summary>
         /// The output variables provided by the step
         /// </summary>
+<<<<<<< Updated upstream
         public Dictionary<string, List<string>> Output { get; set; } = [];
+=======
+<<<<<<< main
+        public Dictionary<string, List<string>> Output { get; set; } = [];
+=======
+<<<<<<< HEAD
+        public Dictionary<string, List<string>> Output { get; set; } = [];
+=======
+        public Dictionary<string, List<string>> Output { get; set; } = new Dictionary<string, List<string>>();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         /// <summary>
         /// Add or update variable for the step
@@ -52,11 +88,21 @@ public sealed class ExecutionState
         /// <param name="value">The value of variable.</param>
         public void AddOrUpdateVariable(int executionIndex, string key, string value)
         {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
             if (!this.Output.TryGetValue(key, out List<string>? output))
             {
                 this.Output[key] = output = [];
             }
 
+<<<<<<< Updated upstream
+=======
+=======
+            var output = this.Output.GetOrAdd(key, new List<string>());
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> Stashed changes
             if (output!.Count <= executionIndex)
             {
                 output.Add(value);

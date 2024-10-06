@@ -6,8 +6,23 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 from pydantic import model_validator
 
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import NamedArgBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
+=======
+<<<<<<< HEAD
+from semantic_kernel.exceptions import NamedArgBlockSyntaxError
+from semantic_kernel.template_engine.blocks.block import Block
+=======
+<<<<<<< HEAD
+from semantic_kernel.exceptions import NamedArgBlockSyntaxError
+from semantic_kernel.template_engine.blocks.block import Block
+=======
+from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import NamedArgBlockSyntaxError
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
@@ -55,9 +70,27 @@ class NamedArgBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.NAMED_ARG
+<<<<<<< Updated upstream
     name: str | None = None
     value: ValBlock | None = None
     variable: VarBlock | None = None
+=======
+<<<<<<< HEAD
+    name: str | None = None
+    value: ValBlock | None = None
+    variable: VarBlock | None = None
+=======
+<<<<<<< HEAD
+    name: str | None = None
+    value: ValBlock | None = None
+    variable: VarBlock | None = None
+=======
+    name: Optional[str] = None
+    value: Optional[ValBlock] = None
+    variable: Optional[VarBlock] = None
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
     @model_validator(mode="before")
     @classmethod
@@ -65,15 +98,43 @@ class NamedArgBlock(Block):
         """Parse the content of the named argument block and extract the name and value.
 
         If the name and either value or variable is present the parsing is skipped.
+<<<<<<< Updated upstream
         Otherwise, the content is parsed using a regex to extract the name and value.
+=======
+<<<<<<< HEAD
+        Otherwise, the content is parsed using a regex to extract the name and value.
+=======
+<<<<<<< HEAD
+        Otherwise, the content is parsed using a regex to extract the name and value.
+=======
+        Otherwise the content is parsed using a regex to extract the name and value.
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
         Those are then turned into Blocks.
 
         Raises:
             NamedArgBlockSyntaxError: If the content does not match the named argument syntax.
         """
+<<<<<<< Updated upstream
         if isinstance(fields, Block) or (
             "name" in fields and ("value" in fields or "variable" in fields)
         ):
+=======
+<<<<<<< HEAD
+        if isinstance(fields, Block) or (
+            "name" in fields and ("value" in fields or "variable" in fields)
+        ):
+=======
+<<<<<<< HEAD
+        if isinstance(fields, Block) or (
+            "name" in fields and ("value" in fields or "variable" in fields)
+        ):
+=======
+        if isinstance(fields, Block) or ("name" in fields and ("value" in fields or "variable" in fields)):
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
             return fields
         content = fields.get("content", "").strip()
         matches = NAMED_ARG_MATCHER.match(content)
@@ -84,6 +145,13 @@ class NamedArgBlock(Block):
             fields["name"] = name
         if value := matches_dict.get("value"):
             if matches_dict.get("var_name"):
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
                 fields["variable"] = VarBlock(
                     content=value, name=matches_dict["var_name"]
                 )
@@ -101,8 +169,35 @@ class NamedArgBlock(Block):
         """Render the named argument block."""
         if self.value:
             return self.value.render()
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+                fields["variable"] = VarBlock(content=value, name=matches_dict["var_name"])
+            elif matches_dict.get("val"):
+                fields["value"] = ValBlock(content=value, value=matches_dict["val"], quote=matches_dict["quote"])
+        return fields
+
+    def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
+        if self.value:
+            return self.value.render(kernel, arguments)
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
         if arguments is None:
             return ""
         if self.variable:
             return self.variable.render(kernel, arguments)
+<<<<<<< Updated upstream
         return None
+=======
+<<<<<<< HEAD
+        return None
+=======
+<<<<<<< HEAD
+        return None
+=======
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes

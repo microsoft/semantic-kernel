@@ -55,12 +55,28 @@ def test_embedding_with_model(mistralai_unit_test_env):
 
 
 <<<<<<< main
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 @pytest.mark.parametrize(
     "exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True
 )
 =======
 @pytest.mark.parametrize("exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True)
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+@pytest.mark.parametrize("exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True)
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_embedding_with_model_without_env(mistralai_unit_test_env):
     text_embedding = MistralAITextEmbedding(ai_model_id="overwrite-model")
     assert text_embedding.ai_model_id == "overwrite-model"

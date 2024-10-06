@@ -3,9 +3,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+<<<<<<< Updated upstream
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+=======
+<<<<<<< HEAD
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 using Pinecone;
 
@@ -52,6 +61,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         typeof(ReadOnlyMemory<float>?),
     ];
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     private readonly PropertyInfo _keyPropertyInfo;
 
     private readonly List<PropertyInfo> _dataPropertiesInfo;
@@ -61,10 +74,20 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     private readonly Dictionary<string, string> _storagePropertyNames = [];
 
     private readonly Dictionary<string, string> _jsonPropertyNames = [];
+<<<<<<< Updated upstream
+=======
+=======
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStoreRecordMapper{TDataModel}"/> class.
     /// </summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     public PineconeVectorStoreRecordMapper(
         VectorStoreRecordDefinition vectorStoreRecordDefinition)
@@ -84,11 +107,32 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: false, requiresAtLeastOneVector: true);
         this._jsonPropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), JsonSerializerOptions.Default);
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+<<<<<<< Updated upstream
+=======
+=======
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
+    public PineconeVectorStoreRecordMapper(
+        VectorStoreRecordPropertyReader propertyReader)
+    {
+        // Validate property types.
+        propertyReader.VerifyHasParameterlessConstructor();
+        propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
+        propertyReader.VerifyDataProperties(s_supportedDataTypes, s_supportedEnumerableDataElementTypes);
+        propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
+
+        // Assign.
+        this._propertyReader = propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <inheritdoc />
     public Vector MapFromDataToStorageModel(TRecord dataModel)
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         var keyObject = this._keyPropertyInfo.GetValue(dataModel);
         if (keyObject is null)
         {
@@ -99,6 +143,21 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         foreach (var dataPropertyInfo in this._dataPropertiesInfo)
         {
             var propertyName = this._storagePropertyNames[dataPropertyInfo.Name];
+<<<<<<< Updated upstream
+=======
+=======
+        var keyObject = this._propertyReader.KeyPropertyInfo.GetValue(dataModel);
+        if (keyObject is null)
+        {
+            throw new VectorStoreRecordMappingException($"Key property {this._propertyReader.KeyPropertyName} on provided record of type {typeof(TRecord).FullName} may not be null.");
+        }
+
+        var metadata = new MetadataMap();
+        foreach (var dataPropertyInfo in this._propertyReader.DataPropertiesInfo)
+        {
+            var propertyName = this._propertyReader.GetStoragePropertyName(dataPropertyInfo.Name);
+>>>>>>> main
+>>>>>>> Stashed changes
             var propertyValue = dataPropertyInfo.GetValue(dataModel);
             if (propertyValue != null)
             {
@@ -106,10 +165,23 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
             }
         }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         var valuesObject = this._vectorPropertyInfo.GetValue(dataModel);
         if (valuesObject is not ReadOnlyMemory<float> values)
         {
             throw new VectorStoreRecordMappingException($"Vector property {this._vectorPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName} may not be null.");
+<<<<<<< Updated upstream
+=======
+=======
+        var valuesObject = this._propertyReader.FirstVectorPropertyInfo!.GetValue(dataModel);
+        if (valuesObject is not ReadOnlyMemory<float> values)
+        {
+            throw new VectorStoreRecordMappingException($"Vector property {this._propertyReader.FirstVectorPropertyName} on provided record of type {typeof(TRecord).FullName} may not be null.");
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         // TODO: what about sparse values?
@@ -127,6 +199,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     /// <inheritdoc />
     public TRecord MapFromStorageToDataModel(Vector storageModel, StorageToDataModelMapperOptions options)
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         var keyJsonName = this._jsonPropertyNames[this._keyPropertyInfo.Name];
         var outputJsonObject = new JsonObject
         {
@@ -173,6 +249,75 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
             _ => throw new VectorStoreRecordMappingException($"Unsupported metadata type: '{metadataValue.Inner?.GetType().FullName}'."),
         };
 
+<<<<<<< Updated upstream
+=======
+=======
+        // Construct the output record.
+        var outputRecord = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
+
+        // Set Key.
+        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, storageModel.Id);
+
+        // Set Vector.
+        if (options?.IncludeVectors is true)
+        {
+            this._propertyReader.FirstVectorPropertyInfo!.SetValue(
+                outputRecord,
+                new ReadOnlyMemory<float>(storageModel.Values));
+        }
+
+        // Set Data.
+        if (storageModel.Metadata != null)
+        {
+            VectorStoreRecordMapping.SetValuesOnProperties(
+                outputRecord,
+                this._propertyReader.DataPropertiesInfo,
+                this._propertyReader.StoragePropertyNamesMap,
+                storageModel.Metadata,
+                ConvertFromMetadataValueToNativeType);
+        }
+
+        return outputRecord;
+    }
+
+    private static object? ConvertFromMetadataValueToNativeType(MetadataValue metadataValue, Type targetType)
+        => metadataValue.Inner switch
+        {
+            null => null,
+            bool boolValue => boolValue,
+            string stringValue => stringValue,
+            // Numeric values are not always coming from the SDK in the desired type
+            // that the data model requires, so we need to convert them.
+            int intValue => ConvertToNumericValue(intValue, targetType),
+            long longValue => ConvertToNumericValue(longValue, targetType),
+            float floatValue => ConvertToNumericValue(floatValue, targetType),
+            double doubleValue => ConvertToNumericValue(doubleValue, targetType),
+            decimal decimalValue => ConvertToNumericValue(decimalValue, targetType),
+            MetadataValue[] array => VectorStoreRecordMapping.CreateEnumerable(array.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
+            List<MetadataValue> list => VectorStoreRecordMapping.CreateEnumerable(list.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
+            _ => throw new VectorStoreRecordMappingException($"Unsupported metadata type: '{metadataValue.Inner?.GetType().FullName}'."),
+        };
+
+    private static object? ConvertToNumericValue(object? number, Type targetType)
+    {
+        if (number is null)
+        {
+            return null;
+        }
+
+        return targetType switch
+        {
+            Type intType when intType == typeof(int) || intType == typeof(int?) => Convert.ToInt32(number),
+            Type longType when longType == typeof(long) || longType == typeof(long?) => Convert.ToInt64(number),
+            Type floatType when floatType == typeof(float) || floatType == typeof(float?) => Convert.ToSingle(number),
+            Type doubleType when doubleType == typeof(double) || doubleType == typeof(double?) => Convert.ToDouble(number),
+            Type decimalType when decimalType == typeof(decimal) || decimalType == typeof(decimal?) => Convert.ToDecimal(number),
+            _ => throw new VectorStoreRecordMappingException($"Unsupported target numeric type '{targetType.FullName}'."),
+        };
+    }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     // TODO: take advantage of MetadataValue.TryCreate once we upgrade the version of Pinecone.NET
     private static MetadataValue ConvertToMetadataValue(object? sourceValue)
         => sourceValue switch

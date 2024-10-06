@@ -30,6 +30,16 @@ class MockChatHistoryHandler:
                 role=AuthorRole.SYSTEM, content=f"Processed: {message.content}"
             )
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    async def invoke_stream(self, history: list[ChatMessageContent]) -> AsyncIterable[ChatMessageContent]:
+        for message in history:
+            yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+
+>>>>>>> main
+>>>>>>> Stashed changes
 
 class MockNonChatHistoryHandler:
     """Mock agent to test incorrect instance handling."""
@@ -80,6 +90,38 @@ async def test_invoke():
 
 
 @pytest.mark.asyncio
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+async def test_invoke_stream():
+    channel = ChatHistoryChannel()
+    agent = AsyncMock(spec=MockChatHistoryHandler)
+
+    async def mock_invoke(history: list[ChatMessageContent]):
+        for message in history:
+            msg = ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+            yield msg
+            channel.add_message(msg)
+
+    agent.invoke_stream.return_value = AsyncIterableMock(
+        lambda: mock_invoke([ChatMessageContent(role=AuthorRole.USER, content="Initial message")])
+    )
+
+    initial_message = ChatMessageContent(role=AuthorRole.USER, content="Initial message")
+    channel.messages.append(initial_message)
+
+    received_messages = []
+    async for message in channel.invoke_stream(agent, received_messages):
+        assert message is not None
+
+    assert len(received_messages) == 1
+    assert "Processed: Initial message" in received_messages[0].content
+
+
+@pytest.mark.asyncio
+>>>>>>> main
+>>>>>>> Stashed changes
 async def test_invoke_leftover_in_queue():
     channel = ChatHistoryChannel()
     agent = AsyncMock(spec=MockChatHistoryHandler)
@@ -134,6 +176,22 @@ async def test_invoke_incorrect_instance_throws():
 
 
 @pytest.mark.asyncio
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+async def test_invoke_stream_incorrect_instance_throws():
+    channel = ChatHistoryChannel()
+    agent = MockNonChatHistoryHandler()
+
+    with pytest.raises(ServiceInvalidTypeError):
+        async for _ in channel.invoke_stream(agent, []):
+            pass
+
+
+@pytest.mark.asyncio
+>>>>>>> main
+>>>>>>> Stashed changes
 async def test_receive():
     channel = ChatHistoryChannel()
     history = [

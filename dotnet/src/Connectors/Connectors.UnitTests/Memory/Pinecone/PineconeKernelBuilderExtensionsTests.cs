@@ -1,5 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -45,6 +52,36 @@ public class PineconeKernelBuilderExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    [Fact]
+    public void AddVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange.
+        using var client = new Sdk.PineconeClient("fake api key");
+        this._kernelBuilder.Services.AddSingleton<Sdk.PineconeClient>(client);
+
+        // Act.
+        this._kernelBuilder.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection");
+
+        // Assert.
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    [Fact]
+    public void AddVectorStoreRecordCollectionWithApiKeyRegistersClass()
+    {
+        // Act.
+        this._kernelBuilder.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection", "fake api key");
+
+        // Assert.
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     private void AssertVectorStoreCreated()
     {
         var kernel = this._kernelBuilder.Build();
@@ -52,4 +89,34 @@ public class PineconeKernelBuilderExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<PineconeVectorStore>(vectorStore);
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    private void AssertVectorStoreRecordCollectionCreated()
+    {
+        var kernel = this._kernelBuilder.Build();
+
+        var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<PineconeVectorStoreRecordCollection<TestRecord>>(collection);
+
+        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        Assert.NotNull(vectorizedSearch);
+        Assert.IsType<PineconeVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestRecord
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = string.Empty;
+
+        [VectorStoreRecordVector(4)]
+        public ReadOnlyMemory<float> Vector { get; set; }
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

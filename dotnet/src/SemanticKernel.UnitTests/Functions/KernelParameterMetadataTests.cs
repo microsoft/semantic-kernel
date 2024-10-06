@@ -1,8 +1,23 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.ComponentModel;
 using System.Text.Json;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using Json.Schema.Generation;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -53,6 +68,13 @@ public class KernelParameterMetadataTests
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ }")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(object) }.Schema));
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"array\",\"items\":{\"type\":\"boolean\"}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(bool[]) }.Schema));
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\":\"object\",\"properties\":{\"Value1\":{\"type\":[\"string\",\"null\"]},\"Value2\":{\"description\":\"Some property that does something.\",\"type\":\"integer\"},\"Value3\":{\"description\":\"This one also does something.\",\"type\":\"number\"}}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\":\"object\",\"properties\":{\"Value1\":{\"type\":\"string\"},\"Value2\":{\"type\":\"integer\"},\"Value3\":{\"type\":\"number\", \"description\":\"This is the Value3 field.\"},\"Value4\":{\"type\":\"number\", \"description\":\"This is the Value4 property.\"}}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -145,6 +167,18 @@ public class KernelParameterMetadataTests
         public int Value2 { get; set; }
         [Description("This one also does something.")]
         public double Value3 { get; set; }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        public string? Value1;
+        public int Value2;
+        [System.ComponentModel.Description("This is the Value3 field.")]
+        public double Value3;
+        [System.ComponentModel.Description("This is the Value4 property.")]
+        public double Value4 { get; set; }
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 #pragma warning restore CA1812
 }

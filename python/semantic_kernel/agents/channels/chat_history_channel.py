@@ -23,8 +23,16 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
     from semantic_kernel.contents.chat_history import ChatHistory
+<<<<<<< Updated upstream
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+=======
+<<<<<<< HEAD
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @experimental_class
@@ -38,7 +46,15 @@ class ChatHistoryAgentProtocol(Protocol):
         ...
 
     @abstractmethod
+<<<<<<< Updated upstream
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["StreamingChatMessageContent"]:
+=======
+<<<<<<< HEAD
+    def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["StreamingChatMessageContent"]:
+=======
+    def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
+>>>>>>> main
+>>>>>>> Stashed changes
         """Invoke the chat history agent protocol in streaming mode."""
         ...
 
@@ -100,6 +116,42 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
                 yield_message,
             )
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    @override
+    async def invoke_stream(
+        self,
+        agent: "Agent",
+        messages: list[ChatMessageContent],
+    ) -> AsyncIterable[ChatMessageContent]:
+        """Perform a discrete incremental stream interaction between a single Agent and AgentChat.
+
+        Args:
+            agent: The agent to interact with.
+            messages: The history of messages in the conversation.
+
+        Returns:
+            An async iterable of bool, StreamingChatMessageContent.
+        """
+        if not isinstance(agent, ChatHistoryAgentProtocol):
+            id = getattr(agent, "id", "")
+            raise ServiceInvalidTypeError(
+                f"Invalid channel binding for agent with id: `{id}` with name: ({type(agent).__name__})"
+            )
+
+        message_count = len(self.messages)
+
+        async for response_message in agent.invoke_stream(self):
+            if response_message.content:
+                yield response_message
+
+        for message_index in range(message_count, len(self.messages)):
+            messages.append(self.messages[message_index])
+
+>>>>>>> main
+>>>>>>> Stashed changes
     def _is_message_visible(self, message: ChatMessageContent, message_queue_count: int) -> bool:
         """Determine if a message is visible to the user."""
         return (

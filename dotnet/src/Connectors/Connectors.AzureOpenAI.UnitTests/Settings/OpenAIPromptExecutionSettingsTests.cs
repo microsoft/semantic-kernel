@@ -3,7 +3,18 @@
 using System;
 using System.Collections.Generic;
 using Azure.AI.OpenAI.Chat;
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel;
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -31,12 +42,26 @@ public class OpenAIPromptExecutionSettingsTests
             Logprobs = true,
             Seed = 123456,
             TopLogprobs = 5,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> main
+>>>>>>> Stashed changes
             AzureChatDataSource = new AzureSearchChatDataSource
             {
                 Endpoint = new Uri("https://test-host"),
                 Authentication = DataSourceAuthentication.FromApiKey("api-key"),
                 IndexName = "index-name"
             }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> main
+>>>>>>> Stashed changes
         };
 
         // Act
@@ -46,6 +71,13 @@ public class OpenAIPromptExecutionSettingsTests
         AssertExecutionSettings(executionSettings);
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     [Fact]
     public void ItRestoresOriginalFunctionChoiceBehavior()
     {
@@ -62,6 +94,14 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);

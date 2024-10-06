@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -16,13 +24,41 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 new(this.Model)
+=======
+<<<<<<< HEAD
+                kernel: new(),
+                clientProvider: this.GetClientProvider(),
+                new(this.Model)
+=======
+                clientProvider: this.GetClientProvider(),
+                definition: new(this.Model)
+                {
+                    EnableCodeInterpreter = true,
+                    Metadata = AssistantSampleMetadata,
+                },
+                kernel: new Kernel());
+                kernel: new(),
+                clientProvider: this.GetClientProvider(),
+                definition: new(this.Model)
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
                 });
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+                },
+                kernel: new Kernel());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });

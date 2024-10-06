@@ -1,5 +1,39 @@
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 ---
+=======
+<<<<<<< main
+<<<<<<< HEAD
+---
+=======
+---
+title: SK Api
+emoji: 🚀
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+pinned: false
+app_port: 3000
+suggested_hardware: a10g-small
+license: other
+---
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+license: apache-2.0
+datasets:
+- Bryan-Roe/Dataset
+language:
+- en
+metrics:
+- accuracy
+- code_eval
+base_model:
+- Bryan-Roe/SK-api
+new_version: Bryan-Roe/SK-api
+---
+# Model Card for Model ID
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 runme:
   id: 01J0BYQX0015D3BH4FX0NPA9QQ
   version: v3
@@ -35,7 +69,14 @@ plugins with AI. With Semantic Kernel
 can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards,
 Semantic Kernel will execute the plan for the user.
 
+<<<<<<< Updated upstream
 It provides:
+=======
+<<<<<<< main
+It provides:
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 #### Please star the repo to show your support for this project
 
 - abstractions for AI services (such as chat, text to images, audio to text, etc.) and memory stores
@@ -45,6 +86,10 @@ It provides:
 - extensible support for prompt management and rendering, including built-in handling of common formats like Handlebars and Liquid
 - and a wealth of functionality layered on top of these abstractions, such as filters for responsible AI, dependency injection integration, and more.
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 Semantic Kernel is utilized by enterprises due to its flexibility, modularity and observability. Backed with security enhancing capabilities like telemetry support, and hooks and filters so you’ll feel confident you’re delivering responsible AI solutions at scale.
 Semantic Kernel was designed to be future proof, easily connecting your code to the latest AI models evolving with the technology as it advances. When new models are released, you’ll simply swap them out without needing to rewrite your entire codebase.
 
@@ -52,6 +97,11 @@ Semantic Kernel was designed to be future proof, easily connecting your code to 
 
 ![Enterprise-ready](https://learn.microsoft.com/en-us/semantic-kernel/media/enterprise-ready.png)
 
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 ## Getting started with Semantic Kernel
 
 The Semantic Kernel SDK is available in C#, Python, and Java. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) for a breakdown of
@@ -91,6 +141,10 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 2. After Installing the SDK, we advise you follow the steps and code detailed to write your first console app.
    ![dotnetmap](https://learn.microsoft.com/en-us/semantic-kernel/media/dotnetmap.png)
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 ### For Python
 
 1. Go to the Quick start page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-python) and follow the steps to dive in.
@@ -105,11 +159,24 @@ how to build and run the Java code.
 
 Please file Java Semantic Kernel specific issues in
 the [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java) repository.
+<<<<<<< Updated upstream
+=======
+=======
+<!-- Provide a quick summary of what the model is/does. -->
+
+This modelcard aims to be a base template for new models. It has been generated using [this raw template](https://github.com/huggingface/huggingface_hub/blob/main/src/huggingface_hub/templates/modelcard_template.md?plain=1).
+
+## Model Details
+
+### Model Description
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
    1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
 
 2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/main/java/samples/sample-code/README.md)
 
+<<<<<<< Updated upstream
 ## Learning how to use Semantic Kernel
 
 The fastest way to learn how to use Semantic Kernel is with our C# and Python Jupyter notebooks. These notebooks
@@ -124,6 +191,32 @@ on our Learn site. Each sample comes with a completed C# and Python project that
 1. 📖 [Getting Started](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)
 1. 🔌 [Detailed Samples](https://learn.microsoft.com/en-us/semantic-kernel/get-started/detailed-samples)
 1. 💡 [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/agents)
+=======
+<!-- Provide a longer summary of what this model is. -->
+
+
+<<<<<<< main
+- [Getting Started with C# notebook](dotnet/notebooks/00-getting-started.ipynb)
+- [Getting Started with Python notebook](python/samples/getting_started/00-getting-started.ipynb)
+=======
+>>>>>>> origin/main
+
+- **Developed by:** [More Information Needed]
+- **Funded by [optional]:** [More Information Needed]
+- **Shared by [optional]:** [More Information Needed]
+- **Model type:** [More Information Needed]
+- **Language(s) (NLP):** [More Information Needed]
+- **License:** [More Information Needed]
+- **Finetuned from model [optional]:** [More Information Needed]
+
+<<<<<<< main
+1. 📖 [Getting Started](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)
+1. 🔌 [Detailed Samples](https://learn.microsoft.com/en-us/semantic-kernel/get-started/detailed-samples)
+1. 💡 [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/agents)
+=======
+### Model Sources [optional]
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 1. 📖 [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
 2. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
 3. 👄 [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions)
@@ -131,9 +224,134 @@ on our Learn site. Each sample comes with a completed C# and Python project that
 5. ⛓️ [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
 6. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
 7. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
+<<<<<<< Updated upstream
 
 Finally, refer to our API references for more details on the C# and Python APIs:
 
+=======
+<<<<<<< main
+=======
+
+<!-- Provide the basic links for the model. -->
+
+- **Repository:** [More Information Needed]
+- **Paper [optional]:** [More Information Needed]
+- **Demo [optional]:** [More Information Needed]
+
+## Uses
+
+<!-- Address questions around how the model is intended to be used, including the foreseeable users of the model and those affected by the model. -->
+
+### Direct Use
+
+<!-- This section is for the model use without fine-tuning or plugging into a larger ecosystem/app. -->
+
+[More Information Needed]
+
+### Downstream Use [optional]
+
+<!-- This section is for the model use when fine-tuned for a task, or when plugged into a larger ecosystem/app -->
+
+[More Information Needed]
+
+### Out-of-Scope Use
+
+<!-- This section addresses misuse, malicious use, and uses that the model will not work well for. -->
+
+[More Information Needed]
+
+## Bias, Risks, and Limitations
+
+<!-- This section is meant to convey both technical and sociotechnical limitations. -->
+
+[More Information Needed]
+
+### Recommendations
+
+<!-- This section is meant to convey recommendations with respect to the bias, risk, and technical limitations. -->
+
+Users (both direct and downstream) should be made aware of the risks, biases and limitations of the model. More information needed for further recommendations.
+
+## How to Get Started with the Model
+
+Use the code below to get started with the model.
+
+[More Information Needed]
+
+## Training Details
+
+### Training Data
+
+<!-- This should link to a Dataset Card, perhaps with a short stub of information on what the training data is all about as well as documentation related to data pre-processing or additional filtering. -->
+
+[More Information Needed]
+
+### Training Procedure
+
+<!-- This relates heavily to the Technical Specifications. Content here should link to that section when it is relevant to the training procedure. -->
+
+#### Preprocessing [optional]
+
+[More Information Needed]
+
+
+#### Training Hyperparameters
+
+- **Training regime:** [More Information Needed] <!--fp32, fp16 mixed precision, bf16 mixed precision, bf16 non-mixed precision, fp16 non-mixed precision, fp8 mixed precision -->
+
+#### Speeds, Sizes, Times [optional]
+
+<!-- This section provides information about throughput, start/end time, checkpoint size if relevant, etc. -->
+
+[More Information Needed]
+
+## Evaluation
+
+<!-- This section describes the evaluation protocols and provides the results. -->
+
+### Testing Data, Factors & Metrics
+
+#### Testing Data
+
+<!-- This should link to a Dataset Card if possible. -->
+
+[More Information Needed]
+
+#### Factors
+
+<!-- These are the things the evaluation is disaggregating by, e.g., subpopulations or domains. -->
+
+[More Information Needed]
+
+#### Metrics
+
+<!-- These are the evaluation metrics being used, ideally with a description of why. -->
+
+[More Information Needed]
+
+### Results
+
+[More Information Needed]
+
+#### Summary
+
+
+
+## Model Examination [optional]
+
+<!-- Relevant interpretability work for the model goes here -->
+
+[More Information Needed]
+
+## Environmental Impact
+
+<!-- Total emissions (in grams of CO2eq) and additional considerations, such as electricity usage, go here. Edit the suggested text below accordingly -->
+>>>>>>> origin/main
+
+Carbon emissions can be estimated using the [Machine Learning Impact calculator](https://mlco2.github.io/impact#compute) presented in [Lacoste et al. (2019)](https://arxiv.org/abs/1910.09700).
+
+<<<<<<< main
+>>>>>>> Stashed changes
 - [C# API reference](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet)
 - [Python API reference](https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python)
 - Java API reference (coming soon)
@@ -310,6 +528,7 @@ The [Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.c
 makes it easy to design and test semantic functions. The extension provides an interface for
 designing semantic functions and allows you to test them with a push of a button with your
 existing models and data.
+<<<<<<< Updated upstream
 
 ![Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.com/en-us/semantic-kernel/media/vs-code-extension.png)
 
@@ -324,6 +543,43 @@ In the above screenshot, you can see the extension in action:
 
 If you like Semantic Kernel, you may also be interested in other repos the Semantic Kernel team supports:
 
+=======
+=======
+- **Hardware Type:** [More Information Needed]
+- **Hours used:** [More Information Needed]
+- **Cloud Provider:** [More Information Needed]
+- **Compute Region:** [More Information Needed]
+- **Carbon Emitted:** [More Information Needed]
+
+## Technical Specifications [optional]
+
+### Model Architecture and Objective
+
+[More Information Needed]
+
+### Compute Infrastructure
+
+[More Information Needed]
+
+#### Hardware
+>>>>>>> origin/main
+
+[More Information Needed]
+
+#### Software
+
+[More Information Needed]
+
+<<<<<<< main
+## Check out our other repos
+=======
+## Citation [optional]
+>>>>>>> origin/main
+
+<!-- If there is a paper or blog post introducing the model, the APA and Bibtex information for that should go in this section. -->
+
+<<<<<<< main
+>>>>>>> Stashed changes
 | Repo                                                                              | Description                                                                                   |
 | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | [Chat Copilot](https://github.com/microsoft/chat-copilot)                         | A reference application that demonstrates how to build a chatbot with Semantic Kernel.        |
@@ -439,6 +695,7 @@ Refer to the [FEATURE_PARITY.md](python/FEATURE_PARITY.md) doc to see where
 things stand in matching the features and functionality of the main SK branch.
 
 ## Contributing and Community
+<<<<<<< Updated upstream
 
 We welcome your contributions and suggestions to SK community! One of the easiest
 ways to participate is to engage in discussions in the GitHub repository.
@@ -450,6 +707,21 @@ in a different direction, but also to consider the impact on the larger ecosyste
 
 To learn more and get started:
 
+=======
+=======
+**BibTeX:**
+
+[More Information Needed]
+>>>>>>> origin/main
+
+**APA:**
+
+[More Information Needed]
+
+## Glossary [optional]
+
+<<<<<<< main
+>>>>>>> Stashed changes
 - Read the [documentation](https://aka.ms/sk/learn)
 - Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/get-started/contributing) to the project
 - Ask questions in the [GitHub discussions](https://github.com/microsoft/semantic-kernel/discussions)
@@ -457,14 +729,25 @@ To learn more and get started:
 
 - Attend [regular office hours and SK community events](COMMUNITY.md)
 - Follow the team on our [blog](https://aka.ms/sk/blog)
+<<<<<<< Updated upstream
 
 ## Contributor Wall of Fame
 
+=======
+=======
+<!-- If relevant, include terms and calculations in this section that can help readers understand the model or model card. -->
+>>>>>>> origin/main
+
+[More Information Needed]
+
+<<<<<<< main
+>>>>>>> Stashed changes
 [![semantic-kernel contributors](https://contrib.rocks/image?repo=microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/graphs/contributors)
 -   Read the [documentation](https://aka.ms/sk/learn)
 -   Learn how to [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) to the project
 -   Join the [Discord community](https://aka.ms/SKDiscord)
 -   Hear from the team on our [blog](https://aka.ms/sk/blog)
+<<<<<<< Updated upstream
 
 ## Code of Conduct
 
@@ -479,6 +762,21 @@ with any additional questions or comments.
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
+=======
+=======
+## More Information [optional]
+>>>>>>> origin/main
+
+[More Information Needed]
+
+## Model Card Authors [optional]
+
+[More Information Needed]
+
+## Model Card Contact
+
+<<<<<<< main
+>>>>>>> Stashed changes
 Licensed under the [MIT](LICENSE) license.
 =======
 title: SK Api
@@ -499,3 +797,9 @@ Check out the configuration reference at https://huggingface.co/docs/hub/spaces-
 license: mit
 ---
 >>>>>>> main
+<<<<<<< Updated upstream
+=======
+=======
+[More Information Needed]
+>>>>>>> origin/main
+>>>>>>> Stashed changes

@@ -8,7 +8,17 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
+<<<<<<< Updated upstream
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+=======
+<<<<<<< HEAD
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+=======
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -19,6 +29,14 @@ ITEM_TYPES = Union[
     StreamingTextContent,
     FunctionCallContent,
     FunctionResultContent,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    StreamingFileReferenceContent,
+    StreamingAnnotationContent,
+>>>>>>> main
+>>>>>>> Stashed changes
 ]
 
 
@@ -27,6 +45,24 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
 
     All Chat Completion Services should return an instance of this class as streaming response,
     where each part of the response as it is streamed is converted to an instance of this class,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+from typing import Optional
+
+from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.finish_reason import FinishReason
+from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+
+
+class StreamingChatMessageContent(StreamingKernelContent):
+    """This is the base class for streaming chat message response content.
+
+    All Chat Completion Services should return a instance of this class as streaming response,
+    where each part of the response as it is streamed is converted to a instance of this class,
+>>>>>>> main
+>>>>>>> Stashed changes
     the end-user will have to either do something directly or gather them and combine them into a
     new instance. A service can implement their own subclass of this class and return instances of that.
 
@@ -150,10 +186,40 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
     def __add__(
         self, other: "StreamingChatMessageContent"
     ) -> "StreamingChatMessageContent":
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         """When combining two StreamingChatMessageContent instances, the content fields are combined.
 
         The inner_content of the first one is used, ai_model_id and encoding should be the same,
         if role is set, they should be the same.
+<<<<<<< Updated upstream
+=======
+=======
+    role: Optional[ChatRole] = ChatRole.ASSISTANT
+    content: Optional[str] = None
+    encoding: Optional[str] = None
+    finish_reason: Optional[FinishReason] = None
+
+    def __str__(self) -> str:
+        return self.content or ""
+
+    def __bytes__(self) -> bytes:
+        return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
+
+    def __add__(self, other: "StreamingChatMessageContent") -> "StreamingChatMessageContent":
+        """When combining two StreamingChatMessageContent instances, the content fields are combined.
+
+        The addition should follow these rules:
+            1. The inner_content of the two will be combined. If they are not lists, they will be converted to lists.
+            2. ai_model_id should be the same.
+            3. encoding should be the same.
+            4. role should be the same.
+            5. choice_index should be the same.
+            6. Metadata will be combined
+>>>>>>> main
+>>>>>>> Stashed changes
         """
         if not isinstance(other, StreamingChatMessageContent):
             raise ContentAdditionException(
@@ -199,10 +265,38 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         return StreamingChatMessageContent(
             role=self.role,
             items=self.items,  # type: ignore
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
             choice_index=self.choice_index,
             inner_content=self.inner_content,
             ai_model_id=self.ai_model_id,
             metadata=self.metadata,
+<<<<<<< Updated upstream
+=======
+=======
+        if self.choice_index != other.choice_index:
+            raise ValueError("Cannot add StreamingChatMessageContent with different choice_index")
+        if self.ai_model_id != other.ai_model_id:
+            raise ValueError("Cannot add StreamingChatMessageContent from different ai_model_id")
+        if self.encoding != other.encoding:
+            raise ValueError("Cannot add StreamingChatMessageContent with different encoding")
+        if self.role and other.role and self.role != other.role:
+            raise ValueError("Cannot add StreamingChatMessageContent with different role")
+        return StreamingChatMessageContent(
+            raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
+
+        return StreamingChatMessageContent(
+            role=self.role,
+            items=self._merge_items_lists(other.items),
+            choice_index=self.choice_index,
+            inner_content=self._merge_inner_contents(other.inner_content),
+            ai_model_id=self.ai_model_id,
+            metadata=self.metadata,
+            metadata=self.metadata | other.metadata,
+>>>>>>> main
+>>>>>>> Stashed changes
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
         )
@@ -236,3 +330,27 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         for index, item in enumerate(self.items):
             root.insert(index, item.to_element())
         return root
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            role=self.role,
+            content=(self.content or "") + (other.content or ""),
+            encoding=self.encoding,
+            finish_reason=self.finish_reason or other.finish_reason,
+        )
+        
+
+    def __hash__(self) -> int:
+        """Return the hash of the streaming chat message content."""
+        return hash((
+            self.tag,
+            self.role,
+            self.content,
+            self.encoding,
+            self.finish_reason,
+            self.choice_index,
+            *self.items,
+        ))
+>>>>>>> main
+>>>>>>> Stashed changes

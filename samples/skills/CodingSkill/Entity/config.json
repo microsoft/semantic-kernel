@@ -1,8 +1,13 @@
 {
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Given text, annotate all recognized entities. You specify the tags to use.",
   "type": "completion",
   "completion": {
+=======
+  "description": "Given text, annotate all recognized entities. You specify the tags to use.",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 256,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -15,4 +20,12 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    "stop_sequences": ["[done]"]
+  }
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 }

@@ -1,7 +1,23 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+<<<<<<< Updated upstream
+=======
+=======
+// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Resources;
+6d73513a859ab2d05e01db3bc1d405827799e34b
+using Resources;
+>>>>>>> main
+>>>>>>> Stashed changes
 
 namespace GettingStarted;
 
@@ -17,6 +33,17 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     [Fact]
     public async Task UseSingleChatCompletionAgentAsync()
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        Kernel kernel = this.CreateKernelWithChatCompletion();
+
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+        Kernel kernel = this.CreateKernelWithChatCompletion();
+
+>>>>>>> main
+>>>>>>> Stashed changes
         // Define the agent
         ChatCompletionAgent agent =
             new()
@@ -49,4 +76,56 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             }
         }
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    [Fact]
+    public async Task UseTemplateForChatCompletionAgentAsync()
+    {
+        // Define the agent
+        string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
+        PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
+
+        // Instructions, Name and Description properties defined via the config.
+        ChatCompletionAgent agent =
+            new(templateConfig, new KernelPromptTemplateFactory())
+            {
+                Kernel = this.CreateKernelWithChatCompletion(),
+                Arguments = new KernelArguments()
+                {
+                    { "topic", "Dog" },
+                    { "length", "3" },
+                }
+            };
+
+        /// Create the chat history to capture the agent interaction.
+        ChatHistory chat = [];
+
+        // Invoke the agent with the default arguments.
+        await InvokeAgentAsync();
+
+        // Invoke the agent with the override arguments.
+        await InvokeAgentAsync(
+            new()
+            {
+                { "topic", "Cat" },
+                { "length", "3" },
+            });
+
+        // Local function to invoke agent and display the conversation messages.
+        async Task InvokeAgentAsync(KernelArguments? arguments = null)
+        {
+            await foreach (ChatMessageContent content in agent.InvokeAsync(chat, arguments))
+            {
+                chat.Add(content);
+
+                WriteAgentChatMessage(content);
+            }
+        }
+    }
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 }

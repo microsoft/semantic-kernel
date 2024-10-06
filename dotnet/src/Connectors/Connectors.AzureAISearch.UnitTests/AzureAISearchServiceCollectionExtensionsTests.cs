@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using Azure;
@@ -58,6 +66,45 @@ public class AzureAISearchServiceCollectionExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    [Fact]
+    public void AddVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange.
+        this._serviceCollection.AddSingleton<SearchIndexClient>(Mock.Of<SearchIndexClient>());
+
+        // Act.
+        this._serviceCollection.AddAzureAISearchVectorStoreRecordCollection<TestRecord>("testcollection");
+
+        // Assert.
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    [Fact]
+    public void AddVectorStoreRecordCollectionWithUriAndCredsRegistersClass()
+    {
+        // Act.
+        this._serviceCollection.AddAzureAISearchVectorStoreRecordCollection<TestRecord>("testcollection", new Uri("https://localhost"), new AzureKeyCredential("fakeKey"));
+
+        // Assert.
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    [Fact]
+    public void AddVectorStoreRecordCollectionWithUriAndTokenCredsRegistersClass()
+    {
+        // Act.
+        this._serviceCollection.AddAzureAISearchVectorStoreRecordCollection<TestRecord>("testcollection", new Uri("https://localhost"), Mock.Of<TokenCredential>());
+
+        // Assert.
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
@@ -65,4 +112,35 @@ public class AzureAISearchServiceCollectionExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<AzureAISearchVectorStore>(vectorStore);
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    private void AssertVectorStoreRecordCollectionCreated()
+    {
+        var serviceProvider = this._serviceCollection.BuildServiceProvider();
+
+        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<AzureAISearchVectorStoreRecordCollection<TestRecord>>(collection);
+
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        Assert.NotNull(vectorizedSearch);
+        Assert.IsType<AzureAISearchVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+
+        var vectorizableSearch = serviceProvider.GetRequiredService<IVectorizableTextSearch<TestRecord>>();
+        Assert.NotNull(vectorizableSearch);
+        Assert.IsType<AzureAISearchVectorStoreRecordCollection<TestRecord>>(vectorizableSearch);
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestRecord
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = string.Empty;
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

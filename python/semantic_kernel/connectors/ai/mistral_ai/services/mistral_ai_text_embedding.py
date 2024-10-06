@@ -61,9 +61,24 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
             ai_model_id: (str | None): A string that is used to identify the model such as the model name.
             api_key (str | None): The API key for the Mistral AI service deployment.
             service_id (str | None): Service ID for the embedding completion service.
+<<<<<<< Updated upstream
             env_file_path (str | None): The path to the environment file.
             env_file_encoding (str | None): The encoding of the environment file.
             client (MistralAsyncClient | None): The Mistral AI client to use.
+=======
+<<<<<<< HEAD
+            env_file_path (str | None): The path to the environment file.
+            env_file_encoding (str | None): The encoding of the environment file.
+            client (MistralAsyncClient | None): The Mistral AI client to use.
+=======
+<<<<<<< main
+            env_file_path (str | None): The path to the environment file.
+            env_file_encoding (str | None): The encoding of the environment file.
+            client (MistralAsyncClient | None): The Mistral AI client to use.
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
             async_client (MistralAsyncClient | None): The Mistral AI client to use.
             env_file_path (str | None): The path to the environment file.
             env_file_encoding (str | None): The encoding of the environment file.
@@ -84,9 +99,28 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
             ) from e
 
         if not mistralai_settings.embedding_model_id:
+<<<<<<< Updated upstream
             raise ServiceInitializationError(
                 "The MistralAI embedding model ID is required."
             )
+=======
+<<<<<<< HEAD
+            raise ServiceInitializationError(
+                "The MistralAI embedding model ID is required."
+            )
+=======
+<<<<<<< main
+            raise ServiceInitializationError(
+                "The MistralAI embedding model ID is required."
+            )
+=======
+            raise ServiceInitializationError("The MistralAI embedding model ID is required.")
+
+        if not async_client:
+            async_client = MistralAsyncClient(api_key=mistralai_settings.api_key.get_secret_value())
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
 
         if not async_client:
             async_client = MistralAsyncClient(api_key=mistralai_settings.api_key.get_secret_value())
@@ -118,8 +152,21 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
     ) -> Any:
         """Generate embeddings from the Mistral AI service."""
         try:
+<<<<<<< Updated upstream
 
             embedding_response: EmbeddingResponse = await self.client.embeddings(
+=======
+<<<<<<< HEAD
+
+            embedding_response: EmbeddingResponse = await self.client.embeddings(
+=======
+<<<<<<< main
+
+            embedding_response: EmbeddingResponse = await self.client.embeddings(
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
             embedding_response: EmbeddingResponse = await self.async_client.embeddings(
                 model=self.ai_model_id, input=texts
             )

@@ -2,12 +2,33 @@
 
 import logging
 from re import S, compile
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
 from semantic_kernel.exceptions import ValBlockSyntaxError
+<<<<<<< Updated upstream
 from semantic_kernel.template_engine.blocks.block import Block
+=======
+<<<<<<< main
+=======
+=======
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Tuple
+
+from pydantic import model_validator
+
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import ValBlockSyntaxError
+>>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
 if TYPE_CHECKING:
@@ -46,8 +67,23 @@ class ValBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.VALUE
+<<<<<<< Updated upstream
     value: str | None = ""
     quote: str | None = "'"
+=======
+<<<<<<< main
+    value: str | None = ""
+    quote: str | None = "'"
+=======
+<<<<<<< main
+    value: str | None = ""
+    quote: str | None = "'"
+=======
+    value: Optional[str] = ""
+    quote: Optional[str] = "'"
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     @model_validator(mode="before")
     @classmethod
@@ -69,6 +105,23 @@ class ValBlock(Block):
             fields["quote"] = quote
         return fields
 
+<<<<<<< Updated upstream
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the value block."""
         return self.value or ""
+=======
+<<<<<<< main
+    def render(self, *_: "Kernel | KernelArguments | None") -> str:
+        """Render the value block."""
+        return self.value or ""
+=======
+<<<<<<< main
+    def render(self, *_: "Kernel | KernelArguments | None") -> str:
+        """Render the value block."""
+        return self.value or ""
+=======
+    def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
+        return self.value
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes

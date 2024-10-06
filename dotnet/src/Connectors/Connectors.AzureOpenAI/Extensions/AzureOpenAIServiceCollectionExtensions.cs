@@ -1,9 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< Updated upstream
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure;
+=======
+<<<<<<< HEAD
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
+using Azure;
+=======
+using System.ClientModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,7 +66,15 @@ public static class AzureOpenAIServiceCollectionExtensions
         {
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
+<<<<<<< Updated upstream
                 new AzureKeyCredential(apiKey),
+=======
+<<<<<<< HEAD
+                new AzureKeyCredential(apiKey),
+=======
+                new ApiKeyCredential(apiKey),
+>>>>>>> main
+>>>>>>> Stashed changes
                 HttpClientProvider.GetHttpClient(serviceProvider));
 
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
@@ -410,7 +430,15 @@ public static class AzureOpenAIServiceCollectionExtensions
         {
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
+<<<<<<< Updated upstream
                 new AzureKeyCredential(apiKey),
+=======
+<<<<<<< HEAD
+                new AzureKeyCredential(apiKey),
+=======
+                new ApiKeyCredential(apiKey),
+>>>>>>> main
+>>>>>>> Stashed changes
                 HttpClientProvider.GetHttpClient(serviceProvider));
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
@@ -488,7 +516,15 @@ public static class AzureOpenAIServiceCollectionExtensions
 
     #endregion
 
+<<<<<<< Updated upstream
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
+=======
+<<<<<<< HEAD
+    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
+=======
+    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient) =>
+>>>>>>> main
+>>>>>>> Stashed changes
         new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient));
 
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient) =>

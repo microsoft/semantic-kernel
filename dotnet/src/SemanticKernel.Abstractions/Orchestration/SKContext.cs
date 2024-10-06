@@ -1,6 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+=======
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.Threading;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.SkillDefinition;
+>>>>>>> ms/feature-error-handling
+>>>>>>> main
+>>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -120,11 +139,29 @@ public sealed class SKContext
         // CancellationToken cancellationToken = default
     )
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         this.Variables = variables;
         // this.Memory = memory;
         // this.Skills = skills;
         // this.Log = logger;
         // this.CancellationToken = cancellationToken;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        // Temporary workaround: if no exception is provided, create a new one.
+        this.LastException = exception ?? new SKException(errorDescription);
+        return this;
+>>>>>>> ms/feature-error-handling
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <summary>

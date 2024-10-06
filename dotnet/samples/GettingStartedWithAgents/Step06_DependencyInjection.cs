@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -58,7 +66,17 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                 {
                     Instructions = TutorInstructions,
                     Name = TutorName,
+<<<<<<< Updated upstream
                     Kernel = sp.GetRequiredService<Kernel>(),
+=======
+<<<<<<< HEAD
+                    Kernel = sp.GetRequiredService<Kernel>(),
+=======
+                    Kernel = sp.GetRequiredService<Kernel>().Clone(),
+                    Kernel = sp.GetRequiredService<Kernel>(),
+                    Kernel = sp.GetRequiredService<Kernel>().Clone(),
+>>>>>>> main
+>>>>>>> Stashed changes
                 });
 
         // Create a service provider for resolving registered services
@@ -70,10 +88,23 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 
         // Execute the agent-client
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         await WriteAgentResponse("The sunset is very colorful.");
 =======
         await WriteAgentResponse("The sunset is nice.");
 >>>>>>> main
+<<<<<<< Updated upstream
+=======
+=======
+        await WriteAgentResponse("The sunset is very colorful.");
+        await WriteAgentResponse("The sunset is nice.");
+        await WriteAgentResponse("The sunset is very colorful.");
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
         await WriteAgentResponse("The sunset is setting over the mountains.");
         await WriteAgentResponse("The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.");
 

@@ -4,7 +4,14 @@ using System;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Text;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.Text;
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -60,7 +67,14 @@ internal sealed class AzureAISearchMemoryRecord
     /// Content embedding
     /// </summary>
     [JsonPropertyName(EmbeddingField)]
+<<<<<<< Updated upstream
     [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+=======
+<<<<<<< HEAD
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     public ReadOnlyMemory<float> Embedding { get; set; }
 
     /// <summary>

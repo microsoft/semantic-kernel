@@ -55,6 +55,13 @@ public static class DistanceFunction
     public const string EuclideanDistance = nameof(EuclideanDistance);
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Measures the Euclidean squared distance between two vectors.
     /// </summary>
     /// <remarks>
@@ -68,6 +75,14 @@ public static class DistanceFunction
     public const string Hamming = nameof(Hamming);
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Measures the Manhattan distance between two vectors.
     /// </summary>
     public const string ManhattanDistance = nameof(ManhattanDistance);

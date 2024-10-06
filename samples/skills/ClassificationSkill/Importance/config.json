@@ -1,8 +1,13 @@
 {
+<<<<<<< Updated upstream
   "schema": 1,
   "type": "completion",
   "description": "Tell you the urgency level of the given text",
   "completion": {
+=======
+  "description": "Tell you the urgency level of the given text",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 64,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -12,4 +17,11 @@
   "default_backends": [
     "text-davinci-002"
   ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+  }
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 }

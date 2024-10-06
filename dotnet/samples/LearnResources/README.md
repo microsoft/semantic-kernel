@@ -2,6 +2,10 @@
 
 This folder contains a project with code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others.
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 | Subfolders        | Description                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------- |
 | `MicrosoftLearn`  | Code snippets that are related to [Microsoft Learn Docs](https://learn.microsoft.com/en-us/semantic-kernel/). |
@@ -10,6 +14,33 @@ This folder contains a project with code snippets that are related to online doc
 
 You can run specific examples by using test filters (dotnet test --filter).
 Type "dotnet test --help" at the command line for more details.
+<<<<<<< Updated upstream
+=======
+=======
+| Subfolders             | Descriptio
+| ---------------------- | -----------------------------------------------------------------------------------------------------
+| `MicrosoftLearn`|de snippets that are related to[irsft Learn Docs](https://learn.microsoft.com/en-us/semantic-kernel/). |
+
+## Running Examples with Filters
+
+* [ ] * [ ] * [ ] * [ ] You can run specific examples by using test filters (dotnet test --filter).
+        Type "dotnet test --help" at th
+
+* col1col2col3
+
+e | col1 | col2 | col3 |
+  | ---- | ---- | ---- |
+  |      |      |      |
+  |      |      |      |
+
+  co| col1 | col2 | col3 |
+  | ---- | ---- | ---- |
+  |      |      |      |
+  |      |      |      |
+
+  mmand line for more details.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 ## Configuring Secrets
 
@@ -19,7 +50,15 @@ and other resources. We suggest using .NET
 to avoid the risk of leaking secrets into the repository, branches and pull requests.
 You can also use environment variables if you prefer.
 
+<<<<<<< Updated upstream
 This project and KernelSyntaxExamples use the same pool of secrets. 
+=======
+<<<<<<< HEAD
+This project and KernelSyntaxExamples use the same pool of secrets. 
+=======
+This project and KernelSyntaxExamples use the same pool of secrets.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 To set your secrets with Secret Manager:
 

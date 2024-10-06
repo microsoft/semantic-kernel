@@ -1,3 +1,7 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
@@ -6,6 +10,17 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+<<<<<<< Updated upstream
+=======
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
 
@@ -18,6 +33,41 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, PointStruct>
     where TRecord : class
 {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// <summary>A set of types that data properties on the provided model may have.</summary>
+    private static readonly HashSet<Type> s_supportedDataTypes =
+    [
+        typeof(string),
+        typeof(int),
+        typeof(long),
+        typeof(double),
+        typeof(float),
+        typeof(bool),
+        typeof(int?),
+        typeof(long?),
+        typeof(double?),
+        typeof(float?),
+        typeof(bool?)
+    ];
+
+    /// <summary>A set of types that vectors on the provided model may have.</summary>
+    /// <remarks>
+    /// While qdrant supports float32 and uint64, the api only supports float64, therefore
+    /// any float32 vectors will be converted to float64 before being sent to qdrant.
+    /// </remarks>
+    private static readonly HashSet<Type> s_supportedVectorTypes =
+    [
+        typeof(ReadOnlyMemory<float>),
+        typeof(ReadOnlyMemory<float>?),
+        typeof(ReadOnlyMemory<double>),
+        typeof(ReadOnlyMemory<double>?)
+    ];
+
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
@@ -32,6 +82,14 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
 
     /// <summary>A dictionary that maps from a property name to the configured name that should be used when serializing it to json.</summary>
     private readonly Dictionary<string, string> _jsonPropertyNames = new();
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// <summary>A helper to access property information for the current data model and record definition.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</summary>
     private readonly bool _hasNamedVectors;
@@ -39,6 +97,10 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordMapper{TDataModel}"/> class.
     /// </summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     /// <param name="hasNamedVectors">A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</param>
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
@@ -49,11 +111,27 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     {
         Verify.NotNull(vectorStoreRecordDefinition);
         Verify.NotNull(storagePropertyNames);
+<<<<<<< Updated upstream
+=======
+=======
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
+    /// <param name="hasNamedVectors">A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</param>
+    public QdrantVectorStoreRecordMapper(
+        VectorStoreRecordPropertyReader propertyReader,
+        bool hasNamedVectors)
+    {
+        Verify.NotNull(propertyReader);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Validate property types.
         var propertiesInfo = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: hasNamedVectors);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.DataProperties, QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, "Data", supportEnumerable: true);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.VectorProperties, QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes, "Vector");
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 
         // Assign.
         this._hasNamedVectors = hasNamedVectors;
@@ -64,12 +142,30 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
 
         // Get json storage names and store for later use.
         this._jsonPropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(propertiesInfo, typeof(TRecord), JsonSerializerOptions.Default);
+<<<<<<< Updated upstream
+=======
+=======
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.VectorProperties, s_supportedVectorTypes, "Vector");
+        propertyReader.VerifyHasParameterlessConstructor();
+        propertyReader.VerifyDataProperties(QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, supportEnumerable: true);
+        propertyReader.VerifyVectorProperties(QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes);
+
+        // Assign.
+        this._propertyReader = propertyReader;
+        this._hasNamedVectors = hasNamedVectors;
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <inheritdoc />
     public PointStruct MapFromDataToStorageModel(TRecord dataModel)
     {
         PointId pointId;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         if (this._keyPropertyInfo.PropertyType == typeof(ulong))
         {
             var key = this._keyPropertyInfo.GetValue(dataModel) as ulong? ?? throw new VectorStoreRecordMappingException($"Missing key property {this._keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
@@ -78,11 +174,33 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         else if (this._keyPropertyInfo.PropertyType == typeof(Guid))
         {
             var key = this._keyPropertyInfo.GetValue(dataModel) as Guid? ?? throw new VectorStoreRecordMappingException($"Missing key property {this._keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
+<<<<<<< Updated upstream
+=======
+=======
+        var keyPropertyInfo = this._propertyReader.KeyPropertyInfo;
+        if (keyPropertyInfo.PropertyType == typeof(ulong))
+        {
+            var key = keyPropertyInfo.GetValue(dataModel) as ulong? ?? throw new VectorStoreRecordMappingException($"Missing key property {keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
+            pointId = new PointId { Num = key };
+        }
+        else if (keyPropertyInfo.PropertyType == typeof(Guid))
+        {
+            var key = keyPropertyInfo.GetValue(dataModel) as Guid? ?? throw new VectorStoreRecordMappingException($"Missing key property {keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
+>>>>>>> main
+>>>>>>> Stashed changes
             pointId = new PointId { Uuid = key.ToString("D") };
         }
         else
         {
+<<<<<<< Updated upstream
             throw new VectorStoreRecordMappingException($"Unsupported key type {this._keyPropertyInfo.PropertyType.FullName} for key property {this._keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
+=======
+<<<<<<< HEAD
+            throw new VectorStoreRecordMappingException($"Unsupported key type {this._keyPropertyInfo.PropertyType.FullName} for key property {this._keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
+=======
+            throw new VectorStoreRecordMappingException($"Unsupported key type {keyPropertyInfo.PropertyType.FullName} for key property {keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         // Create point.
@@ -94,20 +212,47 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         };
 
         // Add point payload.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         foreach (var dataPropertyInfo in this._dataPropertiesInfo)
         {
             var propertyName = this._storagePropertyNames[dataPropertyInfo.Name];
             var propertyValue = dataPropertyInfo.GetValue(dataModel);
             pointStruct.Payload.Add(propertyName, QdrantVectorStoreRecordFieldMapping.ConvertToGrpcFieldValue(propertyValue));
+<<<<<<< Updated upstream
+=======
+=======
+        foreach (var dataPropertyInfo in this._propertyReader.DataPropertiesInfo)
+        {
+            var propertyName = this._propertyReader.GetStoragePropertyName(dataPropertyInfo.Name);
+            var propertyValue = dataPropertyInfo.GetValue(dataModel);
+            pointStruct.Payload.Add(propertyName, QdrantVectorStoreRecordFieldMapping.ConvertToGrpcFieldValue(propertyValue));
+            pointStruct.Payload.Add(propertyName, ConvertToGrpcFieldValue(propertyValue));
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         // Add vectors.
         if (this._hasNamedVectors)
         {
             var namedVectors = new NamedVectors();
+<<<<<<< Updated upstream
             foreach (var vectorPropertyInfo in this._vectorPropertiesInfo)
             {
                 var propertyName = this._storagePropertyNames[vectorPropertyInfo.Name];
+=======
+<<<<<<< HEAD
+            foreach (var vectorPropertyInfo in this._vectorPropertiesInfo)
+            {
+                var propertyName = this._storagePropertyNames[vectorPropertyInfo.Name];
+=======
+            foreach (var vectorPropertyInfo in this._propertyReader.VectorPropertiesInfo)
+            {
+                var propertyName = this._propertyReader.GetStoragePropertyName(vectorPropertyInfo.Name);
+>>>>>>> main
+>>>>>>> Stashed changes
                 var propertyValue = vectorPropertyInfo.GetValue(dataModel);
                 if (propertyValue is not null)
                 {
@@ -121,7 +266,15 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         else
         {
             // We already verified in the constructor via FindProperties that there is exactly one vector property when not using named vectors.
+<<<<<<< Updated upstream
             var vectorPropertyInfo = this._vectorPropertiesInfo.First();
+=======
+<<<<<<< HEAD
+            var vectorPropertyInfo = this._vectorPropertiesInfo.First();
+=======
+            var vectorPropertyInfo = this._propertyReader.FirstVectorPropertyInfo!;
+>>>>>>> main
+>>>>>>> Stashed changes
             if (vectorPropertyInfo.GetValue(dataModel) is ReadOnlyMemory<float> floatROM)
             {
                 pointStruct.Vectors.Vector = floatROM.ToArray();
@@ -139,6 +292,10 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     public TRecord MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         // Get the key property name and value.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         var keyJsonName = this._jsonPropertyNames[this._keyPropertyInfo.Name];
         var keyPropertyValue = storageModel.Id.HasNum ? storageModel.Id.Num as object : storageModel.Id.Uuid as object;
 
@@ -184,5 +341,133 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
 
         // Convert from json object to the target data model.
         return JsonSerializer.Deserialize<TRecord>(outputJsonObject)!;
+<<<<<<< Updated upstream
+=======
+=======
+        var keyPropertyValue = storageModel.Id.HasNum ? storageModel.Id.Num as object : new Guid(storageModel.Id.Uuid) as object;
+
+        // Construct the output record.
+        var outputRecord = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
+
+        // Set Key.
+        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, keyPropertyValue);
+
+        // Set each vector property if embeddings are included in the point.
+        if (options?.IncludeVectors is true)
+        {
+            if (this._hasNamedVectors)
+            {
+                VectorStoreRecordMapping.SetValuesOnProperties(
+                    outputRecord,
+                    this._propertyReader.VectorPropertiesInfo,
+                    this._propertyReader.StoragePropertyNamesMap,
+                    storageModel.Vectors.Vectors_.Vectors,
+                    (Vector vector, Type targetType) => new ReadOnlyMemory<float>(vector.Data.ToArray()));
+            }
+            else
+            {
+                outputJsonObject.Add(jsonName, QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToJsonNode(value));
+                outputJsonObject.Add(jsonName, ConvertFromGrpcFieldValueToJsonNode(value));
+                var propertyInfoWithValue = new KeyValuePair<PropertyInfo, object?>(
+                        this._propertyReader.FirstVectorPropertyInfo!,
+                        new ReadOnlyMemory<float>(storageModel.Vectors.Vector.Data.ToArray()));
+                VectorStoreRecordMapping.SetPropertiesOnRecord(
+                this._propertyReader.FirstVectorPropertyInfo!.SetValue(
+                    outputRecord,
+                    new ReadOnlyMemory<float>(storageModel.Vectors.Vector.Data.ToArray()));
+            }
+        }
+
+        // Set each data property.
+        VectorStoreRecordMapping.SetValuesOnProperties(
+            outputRecord,
+            this._propertyReader.DataPropertiesInfo,
+            this._propertyReader.StoragePropertyNamesMap,
+            storageModel.Payload,
+            QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType);
+
+        return outputRecord;
+    }
+
+    /// <summary>
+    /// Convert the given <paramref name="payloadValue"/> to the correct native type based on its properties.
+    /// </summary>
+    /// <param name="payloadValue">The value to convert to a native type.</param>
+    /// <returns>The converted native value.</returns>
+    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
+    private static JsonNode? ConvertFromGrpcFieldValueToJsonNode(Value payloadValue)
+    {
+        return payloadValue.KindCase switch
+        {
+            Value.KindOneofCase.NullValue => null,
+            Value.KindOneofCase.IntegerValue => JsonValue.Create(payloadValue.IntegerValue),
+            Value.KindOneofCase.StringValue => JsonValue.Create(payloadValue.StringValue),
+            Value.KindOneofCase.DoubleValue => JsonValue.Create(payloadValue.DoubleValue),
+            Value.KindOneofCase.BoolValue => JsonValue.Create(payloadValue.BoolValue),
+            Value.KindOneofCase.ListValue => new JsonArray(payloadValue.ListValue.Values.Select(x => ConvertFromGrpcFieldValueToJsonNode(x)).ToArray()),
+            Value.KindOneofCase.StructValue => new JsonObject(payloadValue.StructValue.Fields.ToDictionary(x => x.Key, x => ConvertFromGrpcFieldValueToJsonNode(x.Value))),
+            _ => throw new VectorStoreRecordMappingException($"Unsupported grpc value kind {payloadValue.KindCase}."),
+        };
+    }
+
+    /// <summary>
+    /// Convert the given <paramref name="sourceValue"/> to a <see cref="Value"/> object that can be stored in Qdrant.
+    /// </summary>
+    /// <param name="sourceValue">The object to convert.</param>
+    /// <returns>The converted Qdrant value.</returns>
+    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
+    private static Value ConvertToGrpcFieldValue(object? sourceValue)
+    {
+        var value = new Value();
+        if (sourceValue is null)
+        {
+            value.NullValue = NullValue.NullValue;
+        }
+        else if (sourceValue is int intValue)
+        {
+            value.IntegerValue = intValue;
+        }
+        else if (sourceValue is long longValue)
+        {
+            value.IntegerValue = longValue;
+        }
+        else if (sourceValue is string stringValue)
+        {
+            value.StringValue = stringValue;
+        }
+        else if (sourceValue is float floatValue)
+        {
+            value.DoubleValue = floatValue;
+        }
+        else if (sourceValue is double doubleValue)
+        {
+            value.DoubleValue = doubleValue;
+        }
+        else if (sourceValue is bool boolValue)
+        {
+            value.BoolValue = boolValue;
+        }
+        else if (sourceValue is IEnumerable<int> ||
+            sourceValue is IEnumerable<long> ||
+            sourceValue is IEnumerable<string> ||
+            sourceValue is IEnumerable<float> ||
+            sourceValue is IEnumerable<double> ||
+            sourceValue is IEnumerable<bool>)
+        {
+            var listValue = sourceValue as IEnumerable;
+            value.ListValue = new ListValue();
+            foreach (var item in listValue!)
+            {
+                value.ListValue.Values.Add(ConvertToGrpcFieldValue(item));
+            }
+        }
+        else
+        {
+            throw new VectorStoreRecordMappingException($"Unsupported source value type {sourceValue?.GetType().FullName}.");
+        }
+
+        return value;
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 }

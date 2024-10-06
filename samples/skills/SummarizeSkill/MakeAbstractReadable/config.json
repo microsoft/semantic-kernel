@@ -1,8 +1,13 @@
 {
+<<<<<<< Updated upstream
   "schema": 1,
   "type": "completion",
   "description": "Given a scientific white paper abstract, rewrite it to make it more readable",
   "completion": {
+=======
+  "description": "Given a scientific white paper abstract, rewrite it to make it more readable",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 4000,
     "temperature": 0.0,
     "top_p": 1.0,
@@ -12,4 +17,11 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+  }
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 }

@@ -6,13 +6,30 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
+<<<<<<< Updated upstream
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+<<<<<<< HEAD
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+#pragma warning restore IDE0130
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> Stashed changes
 
 /// <summary>
 /// Step within a <see cref="Flow"/> which defines the step goal, available plugins, required and provided variables.
 /// </summary>
 public class FlowStep
 {
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+    private readonly List<string> _requires = [];
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     private readonly List<string> _requires = [];
 
     private readonly List<string> _provides = [];
@@ -22,13 +39,36 @@ public class FlowStep
     private Dictionary<string, Type?> _pluginTypes = [];
 
     private Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
+<<<<<<< Updated upstream
+=======
+=======
+    private readonly List<string> _requires = new();
+>>>>>>> origin/main
+
+    private readonly List<string> _provides = [];
+
+    private readonly List<string> _passthrough = [];
+
+    private Dictionary<string, Type?> _pluginTypes = [];
+
+    private Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FlowStep"/> class.
     /// </summary>
     /// <param name="goal">The goal of step</param>
     /// <param name="pluginsFactory">The factory to get plugins</param>
+<<<<<<< Updated upstream
     public FlowStep(string goal, Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
+=======
+<<<<<<< HEAD
+    public FlowStep(string goal, Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
+=======
+    public FlowStep(string goal, Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> Stashed changes
     {
         this.Goal = goal;
         this._pluginsFactory = pluginsFactory;
@@ -84,23 +124,65 @@ public class FlowStep
         }
     }
 
+<<<<<<< Updated upstream
     private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, Kernel kernel)
+=======
+<<<<<<< HEAD
+    private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, Kernel kernel)
+=======
+    private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, IKernel kernel)
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> Stashed changes
     {
         return this._pluginTypes.Select(kvp =>
         {
             var pluginName = kvp.Key;
             var globalPlugin = globalPlugins.FirstOrDefault(_ => _.Key.GetType().Name.Contains(pluginName)).Key;
+<<<<<<< Updated upstream
             if (globalPlugin is not null)
+=======
+<<<<<<< main
+            if (globalPlugin is not null)
+=======
+<<<<<<< HEAD
+            if (globalPlugin is not null)
+=======
+            if (globalPlugin != null)
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             {
                 return globalPlugin;
             }
 
             var type = kvp.Value;
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
             if (type is not null)
             {
                 try
                 {
                     return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, [kernel], null);
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+            if (type is not null)
+            {
+                try
+                {
+                    return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, [kernel], null);
+<<<<<<< Updated upstream
+=======
+=======
+            if (type != null)
+            {
+                try
+                {
+                    return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { kernel }, null);
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
                 }
                 catch (MissingMethodException)
                 {
@@ -115,12 +197,36 @@ public class FlowStep
             }
 
             return null;
+<<<<<<< Updated upstream
         }).Where(plugin => plugin is not null).ToList()!;
+=======
+<<<<<<< main
+        }).Where(plugin => plugin is not null).ToList()!;
+=======
+<<<<<<< HEAD
+        }).Where(plugin => plugin is not null).ToList()!;
+=======
+        }).Where(plugin => plugin != null).ToList()!;
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     }
 
     private static Dictionary<string, Type?> GetPluginTypes(List<string>? value)
     {
+<<<<<<< Updated upstream
         Dictionary<string, Type?> plugins = [];
+=======
+<<<<<<< main
+        Dictionary<string, Type?> plugins = [];
+=======
+<<<<<<< HEAD
+        Dictionary<string, Type?> plugins = [];
+=======
+        Dictionary<string, Type?> plugins = new();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         if (value is not null)
         {
@@ -202,14 +308,41 @@ public class FlowStep
     /// <param name="kernel">The semantic kernel</param>
     /// <param name="globalPlugins">The global plugins available</param>
     /// <returns></returns>
+<<<<<<< Updated upstream
     public IEnumerable<object> LoadPlugins(Kernel kernel, Dictionary<object, string?> globalPlugins)
     {
         if (this._pluginsFactory is not null)
+=======
+<<<<<<< HEAD
+    public IEnumerable<object> LoadPlugins(Kernel kernel, Dictionary<object, string?> globalPlugins)
+    {
+        if (this._pluginsFactory is not null)
+<<<<<<< main
+=======
+=======
+    public IEnumerable<object> LoadPlugins(IKernel kernel, Dictionary<object, string?> globalPlugins)
+    {
+        if (this._pluginsFactory != null)
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         {
             return this._pluginsFactory(kernel, globalPlugins);
         }
 
+<<<<<<< Updated upstream
         return [];
+=======
+<<<<<<< main
+        return [];
+=======
+<<<<<<< HEAD
+        return [];
+=======
+        return Enumerable.Empty<object>();
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     }
 
     /// <summary>

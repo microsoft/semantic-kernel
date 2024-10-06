@@ -3,6 +3,13 @@
 
 import pytest
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -14,6 +21,21 @@ from semantic_kernel.exceptions import ContentInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.input_variable import InputVariable
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
+from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -26,6 +48,13 @@ def test_init_with_system_message_only():
 
 
 def test_init_with_messages_only():
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     msgs = [
         ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}")
         for i in range(3)
@@ -34,10 +63,28 @@ def test_init_with_messages_only():
     assert (
         chat_history.messages == msgs
     ), "Chat history should contain exactly the provided messages"
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    msgs = [ChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)]
+    chat_history = ChatHistory(messages=msgs)
+    assert chat_history.messages == msgs, "Chat history should contain exactly the provided messages"
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_init_with_messages_and_system_message():
     system_msg = "a test system prompt"
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     msgs = [
         ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}")
         for i in range(3)
@@ -173,6 +220,95 @@ def test_add_message_invalid_type(chat_history: ChatHistory):
 def test_remove_message(chat_history: ChatHistory):
     content = "Message to remove"
     role = AuthorRole.USER
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    msgs = [ChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)]
+    chat_history = ChatHistory(messages=msgs, system_message=system_msg)
+    assert chat_history.messages[0].role == ChatRole.SYSTEM, "System message should be the first in history"
+    assert chat_history.messages[0].content == system_msg, "System message should be the first in history"
+    assert chat_history.messages[1:] == msgs, "Remaining messages should follow the system message"
+
+
+def test_init_without_messages_and_system_message():
+    chat_history = ChatHistory()
+    assert chat_history.messages == [], "Chat history should be empty if no messages and system_message are provided"
+
+
+def test_add_system_message():
+    chat_history = ChatHistory()
+    content = "System message"
+    chat_history.add_system_message(content)
+    assert chat_history.messages[-1].content == content
+    assert chat_history.messages[-1].role == ChatRole.SYSTEM
+
+
+def test_add_system_message_at_init():
+    chat_history = ChatHistory()
+    content = "System message"
+    chat_history = ChatHistory(system_message=content)
+    assert chat_history.messages[-1].content == content
+    assert chat_history.messages[-1].role == ChatRole.SYSTEM
+
+
+def test_add_user_message():
+    chat_history = ChatHistory()
+    content = "User message"
+    chat_history.add_user_message(content)
+    assert chat_history.messages[-1].content == content
+    assert chat_history.messages[-1].role == ChatRole.USER
+
+
+def test_add_assistant_message():
+    chat_history = ChatHistory()
+    content = "Assistant message"
+    chat_history.add_assistant_message(content)
+    assert chat_history.messages[-1].content == content
+    assert chat_history.messages[-1].role == ChatRole.ASSISTANT
+
+
+def test_add_tool_message():
+    chat_history = ChatHistory()
+    content = "Tool message"
+    chat_history.add_tool_message(content)
+    assert chat_history.messages[-1].content == content
+    assert chat_history.messages[-1].role == ChatRole.TOOL
+
+
+def test_add_message():
+    chat_history = ChatHistory()
+    content = "Test message"
+    role = ChatRole.USER
+    encoding = "utf-8"
+    chat_history.add_message(message={"role": role, "content": content}, encoding=encoding)
+    assert chat_history.messages[-1].content == content
+    assert chat_history.messages[-1].role == role
+    assert chat_history.messages[-1].encoding == encoding
+
+
+def test_add_message_invalid_message():
+    chat_history = ChatHistory()
+    content = "Test message"
+    with pytest.raises(ValueError):
+        chat_history.add_message(message={"content": content})
+
+
+def test_add_message_invalid_type():
+    chat_history = ChatHistory()
+    content = "Test message"
+    with pytest.raises(ValueError):
+        chat_history.add_message(message=content)
+
+
+def test_remove_message():
+    chat_history = ChatHistory()
+    content = "Message to remove"
+    role = ChatRole.USER
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     encoding = "utf-8"
     message = ChatMessageContent(role=role, content=content, encoding=encoding)
     chat_history.messages.append(message)
@@ -180,38 +316,115 @@ def test_remove_message(chat_history: ChatHistory):
     assert message not in chat_history.messages
 
 
+<<<<<<< Updated upstream
 def test_remove_message_invalid(chat_history: ChatHistory):
     content = "Message to remove"
     role = AuthorRole.USER
+=======
+<<<<<<< HEAD
+def test_remove_message_invalid(chat_history: ChatHistory):
+    content = "Message to remove"
+    role = AuthorRole.USER
+=======
+<<<<<<< HEAD
+def test_remove_message_invalid(chat_history: ChatHistory):
+    content = "Message to remove"
+    role = AuthorRole.USER
+=======
+def test_remove_message_invalid():
+    chat_history = ChatHistory()
+    content = "Message to remove"
+    role = ChatRole.USER
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     encoding = "utf-8"
     message = ChatMessageContent(role=role, content=content, encoding=encoding)
     chat_history.messages.append(message)
     assert chat_history.remove_message("random") is False
 
 
+<<<<<<< Updated upstream
 def test_len(chat_history: ChatHistory):
+=======
+<<<<<<< HEAD
+def test_len(chat_history: ChatHistory):
+=======
+<<<<<<< HEAD
+def test_len(chat_history: ChatHistory):
+=======
+def test_len():
+    chat_history = ChatHistory()
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     content = "Message"
     chat_history.add_user_message(content)
     chat_history.add_system_message(content)
     assert len(chat_history) == 2
 
 
+<<<<<<< Updated upstream
 def test_getitem(chat_history: ChatHistory):
+=======
+<<<<<<< HEAD
+def test_getitem(chat_history: ChatHistory):
+=======
+<<<<<<< HEAD
+def test_getitem(chat_history: ChatHistory):
+=======
+def test_getitem():
+    chat_history = ChatHistory()
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     content = "Message for index"
     chat_history.add_user_message(content)
     assert chat_history[0].content == content
 
 
+<<<<<<< Updated upstream
 def test_contains(chat_history: ChatHistory):
     content = "Message to check"
     role = AuthorRole.USER
+=======
+<<<<<<< HEAD
+def test_contains(chat_history: ChatHistory):
+    content = "Message to check"
+    role = AuthorRole.USER
+=======
+<<<<<<< HEAD
+def test_contains(chat_history: ChatHistory):
+    content = "Message to check"
+    role = AuthorRole.USER
+=======
+def test_contains():
+    chat_history = ChatHistory()
+    content = "Message to check"
+    role = ChatRole.USER
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     encoding = "utf-8"
     message = ChatMessageContent(role=role, content=content, encoding=encoding)
     chat_history.messages.append(message)
     assert message in chat_history
 
 
+<<<<<<< Updated upstream
 def test_iter(chat_history: ChatHistory):
+=======
+<<<<<<< HEAD
+def test_iter(chat_history: ChatHistory):
+=======
+<<<<<<< HEAD
+def test_iter(chat_history: ChatHistory):
+=======
+def test_iter():
+    chat_history = ChatHistory()
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     messages = ["Message 1", "Message 2"]
     for msg in messages:
         chat_history.add_user_message(msg)
@@ -225,7 +438,19 @@ def test_eq():
     chat_history2 = ChatHistory()
 
     # Populate both instances with the same set of messages
+<<<<<<< Updated upstream
     messages = [("Message 1", AuthorRole.USER), ("Message 2", AuthorRole.ASSISTANT)]
+=======
+<<<<<<< HEAD
+    messages = [("Message 1", AuthorRole.USER), ("Message 2", AuthorRole.ASSISTANT)]
+=======
+<<<<<<< HEAD
+    messages = [("Message 1", AuthorRole.USER), ("Message 2", AuthorRole.ASSISTANT)]
+=======
+    messages = [("Message 1", ChatRole.USER), ("Message 2", ChatRole.ASSISTANT)]
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     for content, role in messages:
         chat_history1.add_message({"role": role, "content": content})
         chat_history2.add_message({"role": role, "content": content})
@@ -238,6 +463,13 @@ def test_eq():
     assert chat_history1 != chat_history2
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_eq_invalid(chat_history: ChatHistory):
     # Populate both instances with the same set of messages
     messages = [("Message 1", AuthorRole.USER), ("Message 2", AuthorRole.ASSISTANT)]
@@ -277,20 +509,80 @@ def test_serialize():
         system_message=system_msg,
     )
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+def test_eq_invalid():
+    # Create two instances of ChatHistory
+    chat_history1 = ChatHistory()
+
+    # Populate both instances with the same set of messages
+    messages = [("Message 1", ChatRole.USER), ("Message 2", ChatRole.ASSISTANT)]
+    for content, role in messages:
+        chat_history1.add_message({"role": role, "content": content})
+
+    assert chat_history1 != "other"
+
+
+def test_serialize():  # ignore: E501
+    system_msg = "a test system prompt"
+    chat_history = ChatHistory(
+        messages=[ChatMessageContent(role=ChatRole.USER, content="Message")], system_message=system_msg
+    )
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     json_str = chat_history.serialize()
     assert json_str is not None
     assert (
         json_str
+<<<<<<< Updated upstream
         == '{\n  "messages": [\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "Message"\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "uri": "http://test.com/image.jpg",\n          "data_uri": ""\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "data_uri": "data:image/jpeg;base64,dGVzdF9kYXRh"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
+=======
+<<<<<<< HEAD
+        == '{\n  "messages": [\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "Message"\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "uri": "http://test.com/image.jpg",\n          "data_uri": ""\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "data_uri": "data:image/jpeg;base64,dGVzdF9kYXRh"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
+=======
+<<<<<<< HEAD
+        == '{\n  "messages": [\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "Message"\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "uri": "http://test.com/image.jpg",\n          "data_uri": ""\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "data_uri": "data:image/jpeg;base64,dGVzdF9kYXRh"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
+=======
+        == '{\n    "messages": [\n        {\n            \
+"inner_content": null,\n            "ai_model_id": null,\n            \
+"metadata": {},\n            "role": "system",\n            \
+"content": "a test system prompt",\n            "encoding": null\n        },\
+\n        {\n            "inner_content": null,\n            \
+"ai_model_id": null,\n            "metadata": {},\n            \
+"role": "user",\n            "content": "Message",\n            \
+"encoding": null\n        }\n    ]\n}'
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     )
 
 
 def test_serialize_and_deserialize_to_chat_history():
     system_msg = "a test system prompt"
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     msgs = [
         ChatMessageContent(role=AuthorRole.USER, content=f"Message {i}")
         for i in range(3)
     ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    msgs = [ChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)]
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     chat_history = ChatHistory(messages=msgs, system_message=system_msg)
     json_str = chat_history.serialize()
     new_chat_history = ChatHistory.restore_chat_history(json_str)
@@ -300,6 +592,13 @@ def test_serialize_and_deserialize_to_chat_history():
 def test_deserialize_invalid_json_raises_exception():
     invalid_json = "invalid json"
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     with pytest.raises(ContentInitializationError):
         ChatHistory.restore_chat_history(invalid_json)
 
@@ -316,6 +615,32 @@ def test_chat_history_to_prompt(chat_history: ChatHistory):
     assert (
         prompt
         == '<chat_history><message role="system"><text>I am an AI assistant</text></message><message role="user"><text>What can you do?</text></message></chat_history>'  # noqa: E501
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    with pytest.raises(ValueError):
+        ChatHistory.restore_chat_history(invalid_json)
+
+
+def test_chat_history_to_prompt_empty():
+    chat_history = ChatHistory()
+    prompt = str(chat_history)
+    assert prompt == ""
+
+
+def test_chat_history_to_prompt():
+    chat_history = ChatHistory()
+    chat_history.add_system_message("I am an AI assistant")
+    chat_history.add_user_message("What can you do?")
+    prompt = str(chat_history)
+    assert (
+        prompt
+        == '<message role="system">I am an AI assistant</message>\n<message role="user">What can you do?</message>'
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     )
 
 
@@ -326,6 +651,13 @@ def test_chat_history_from_rendered_prompt_empty():
 
 
 def test_chat_history_from_rendered_prompt():
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     rendered = '<message role="system"><text>I am an AI assistant</text></message><message role="user"><text>What can you do?</text></message>'  # noqa: E501
 
     chat_history = ChatHistory.from_rendered_prompt(rendered)
@@ -333,6 +665,21 @@ def test_chat_history_from_rendered_prompt():
     assert chat_history.messages[0].role == AuthorRole.SYSTEM
     assert chat_history.messages[1].content == "What can you do?"
     assert chat_history.messages[1].role == AuthorRole.USER
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    rendered = '<message role="system">I am an AI assistant</message>\n<message role="user">What can you do?</message>'
+
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == "I am an AI assistant"
+    assert chat_history.messages[0].role == ChatRole.SYSTEM
+    assert chat_history.messages[1].content == "What can you do?"
+    assert chat_history.messages[1].role == ChatRole.USER
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_chat_history_from_rendered_prompt_multi_line():
@@ -342,6 +689,13 @@ stuff</message>
 <message role="user">What can you do?</message>"""
 
     chat_history = ChatHistory.from_rendered_prompt(rendered)
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     assert (
         chat_history.messages[0].content == "I am an AI assistant\nand I can do \nstuff"
     )
@@ -379,17 +733,57 @@ async def test_template_unsafe(chat_history: ChatHistory):
 
 @pytest.mark.asyncio
 async def test_template_safe(chat_history: ChatHistory):
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    assert chat_history.messages[0].content == "I am an AI assistant\nand I can do \nstuff"
+    assert chat_history.messages[0].role == ChatRole.SYSTEM
+    assert chat_history.messages[1].content == "What can you do?"
+    assert chat_history.messages[1].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_template():
+    chat_history = ChatHistory()
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     chat_history.add_assistant_message("I am an AI assistant")
 
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
+<<<<<<< Updated upstream
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
         )
+=======
+<<<<<<< HEAD
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
+=======
+<<<<<<< HEAD
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
+=======
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
     )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     assert "system stuff" in rendered
     assert "I am an AI assistant" in rendered
     assert "What can you do?" in rendered
@@ -401,6 +795,23 @@ async def test_template_safe(chat_history: ChatHistory):
     assert chat_history_2.messages[1].role == AuthorRole.ASSISTANT
     assert chat_history_2.messages[2].content == "What can you do?"
     assert chat_history_2.messages[2].role == AuthorRole.USER
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    assert rendered == 'system stuff<message role="assistant">I am an AI assistant</message>What can you do?'
+
+    chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history_2.messages[0].content == "system stuff"
+    assert chat_history_2.messages[0].role == ChatRole.SYSTEM
+    assert chat_history_2.messages[1].content == "I am an AI assistant"
+    assert chat_history_2.messages[1].role == ChatRole.ASSISTANT
+    assert chat_history_2.messages[2].content == "What can you do?"
+    assert chat_history_2.messages[2].role == ChatRole.USER
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
@@ -412,6 +823,13 @@ async def test_template_two_histories():  # ignore: E501
 
     template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
     rendered = await KernelPromptTemplate(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
         )
@@ -436,11 +854,46 @@ async def test_template_two_histories():  # ignore: E501
     assert chat_history_out.messages[2].role == AuthorRole.USER
     assert chat_history_out.messages[3].content == "I like to be added later on"
     assert chat_history_out.messages[3].role == AuthorRole.ASSISTANT
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
+    )
+    assert (
+        rendered
+        == 'system prompt<message role="assistant">I am an AI assistant</message>\
+What can you do?<message role="assistant">I like to be added later on</message>'
+    )
+
+    chat_history_out = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history_out.messages[0].content == "system prompt"
+    assert chat_history_out.messages[0].role == ChatRole.SYSTEM
+    assert chat_history_out.messages[1].content == "I am an AI assistant"
+    assert chat_history_out.messages[1].role == ChatRole.ASSISTANT
+    assert chat_history_out.messages[2].content == "What can you do?"
+    assert chat_history_out.messages[2].role == ChatRole.USER
+    assert chat_history_out.messages[3].content == "I like to be added later on"
+    assert chat_history_out.messages[3].role == ChatRole.ASSISTANT
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
 async def test_template_two_histories_one_empty():
     chat_history1 = ChatHistory()
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     chat_history2 = ChatHistory()
     chat_history2.add_assistant_message("I am an AI assistant")
 
@@ -456,10 +909,34 @@ async def test_template_two_histories_one_empty():
             chat_history2=chat_history2,
             input="What can you do?",
         ),
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    chat_history1.add_assistant_message("I am an AI assistant")
+    chat_history2 = ChatHistory()
+
+    template = "system prompt{{$chat_history1}}{{$input}}{{$chat_history2}}"
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     )
 
     chat_history_out = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history_out.messages[0].content == "system prompt"
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     assert chat_history_out.messages[0].role == AuthorRole.SYSTEM
     assert chat_history_out.messages[1].content == "What can you do?"
     assert chat_history_out.messages[1].role == AuthorRole.USER
@@ -469,38 +946,119 @@ async def test_template_two_histories_one_empty():
 
 @pytest.mark.asyncio
 async def test_template_history_only(chat_history: ChatHistory):
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    assert chat_history_out.messages[0].role == ChatRole.SYSTEM
+    assert chat_history_out.messages[1].content == "I am an AI assistant"
+    assert chat_history_out.messages[1].role == ChatRole.ASSISTANT
+    assert chat_history_out.messages[2].content == "What can you do?"
+    assert chat_history_out.messages[2].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_template_history_only():
+    chat_history = ChatHistory()
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     chat_history.add_assistant_message("I am an AI assistant")
 
     template = "{{$chat_history}}"
     rendered = await KernelPromptTemplate(
+<<<<<<< Updated upstream
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
         )
+=======
+<<<<<<< HEAD
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
+=======
+<<<<<<< HEAD
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
+=======
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     ).render(kernel=Kernel(), arguments=KernelArguments(chat_history=chat_history))
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history_2.messages[0].content == "I am an AI assistant"
+<<<<<<< Updated upstream
     assert chat_history_2.messages[0].role == AuthorRole.ASSISTANT
+=======
+<<<<<<< HEAD
+    assert chat_history_2.messages[0].role == AuthorRole.ASSISTANT
+=======
+<<<<<<< HEAD
+    assert chat_history_2.messages[0].role == AuthorRole.ASSISTANT
+=======
+    assert chat_history_2.messages[0].role == ChatRole.ASSISTANT
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
 async def test_template_without_chat_history():
     template = "{{$input}}"
     rendered = await KernelPromptTemplate(
+<<<<<<< Updated upstream
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
         )
+=======
+<<<<<<< HEAD
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
+=======
+<<<<<<< HEAD
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template
+        )
+=======
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     ).render(kernel=Kernel(), arguments=KernelArguments(input="What can you do?"))
     assert rendered == "What can you do?"
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "What can you do?"
+<<<<<<< Updated upstream
     assert chat_history.messages[0].role == AuthorRole.USER
+=======
+<<<<<<< HEAD
+    assert chat_history.messages[0].role == AuthorRole.USER
+=======
+<<<<<<< HEAD
+    assert chat_history.messages[0].role == AuthorRole.USER
+=======
+    assert chat_history.messages[0].role == ChatRole.SYSTEM
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
 async def test_handwritten_xml():
     template = '<message role="user">test content</message>'
     rendered = await KernelPromptTemplate(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
         )
@@ -522,12 +1080,32 @@ async def test_empty_text_content_message():
     assert chat_history.messages[0].role == AuthorRole.ASSISTANT
     assert chat_history.messages[1].content == "test content"
     assert chat_history.messages[1].role == AuthorRole.USER
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments())
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == "test content"
+    assert chat_history.messages[0].role == ChatRole.USER
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
 async def test_handwritten_xml_invalid():
     template = '<message role="user"test content</message>'
     rendered = await KernelPromptTemplate(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template
         )
@@ -568,12 +1146,39 @@ async def test_handwritten_xml_as_arg_unsafe_template():
             name="test", description="test", template=template
         ),
         allow_dangerously_set_content=True,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(kernel=Kernel(), arguments=KernelArguments())
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == '<message role="user"test content</message>'
+    assert chat_history.messages[0].role == ChatRole.SYSTEM
+
+
+@pytest.mark.asyncio
+async def test_handwritten_xml_as_arg():
+    template = "{{$input}}"
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(input='<message role="user">test content</message>'),
     )
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "test content"
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     assert chat_history.messages[0].role == AuthorRole.USER
 
 
@@ -671,3 +1276,35 @@ def test_chat_history_serialize(chat_history: ChatHistory):
         [FunctionResultContent(id="test1", result=custom_result)]
     )
     assert "CustomResultTestValue" in chat_history.serialize()
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    assert chat_history.messages[0].role == ChatRole.USER
+
+
+@pytest.mark.asyncio
+async def test_history_openai_cmc():
+    chat_history1 = ChatHistory()
+    chat_history1.add_message(
+        message=OpenAIChatMessageContent(
+            inner_content=None,
+            role=ChatRole.ASSISTANT,
+            function_call=FunctionCall(name="test-test", arguments='{"input": "test"}'),
+        )
+    )
+    template = "{{$chat_history}}"
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history=chat_history1),
+    )
+    chat_history = ChatHistory.from_rendered_prompt(rendered, chat_message_content_type=OpenAIChatMessageContent)
+
+    assert chat_history.messages[0].role == ChatRole.ASSISTANT
+    assert chat_history.messages[0].function_call.name == "test-test"
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes

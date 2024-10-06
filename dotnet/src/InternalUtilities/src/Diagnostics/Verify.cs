@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -174,6 +178,14 @@ internal static partial class Verify
                 if (!seen.Add(p.Name))
                 {
                     throw new ArgumentException($"The function has two or more parameters with the same name '{p.Name}'");
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+                    throw new SKException($"The function has two or more parameters with the same name '{p.Name}'");
+                    throw new SKException($"The function has two or more parameters with the same name '{p.Name}'");
+>>>>>>> origin/main
+>>>>>>> Stashed changes
                 }
             }
         }
@@ -182,6 +194,11 @@ internal static partial class Verify
     [DoesNotReturn]
     private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
         throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
+<<<<<<< Updated upstream
+=======
+    private static void ThrowInvalidName(string kind, string name) =>
+        throw new SKException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
+>>>>>>> Stashed changes
 
     [DoesNotReturn]
     internal static void ThrowArgumentNullException(string? paramName) =>

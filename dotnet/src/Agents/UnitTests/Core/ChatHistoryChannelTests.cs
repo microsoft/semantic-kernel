@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -25,6 +33,14 @@ public class ChatHistoryChannelTests
         ChatHistoryChannel channel = new(); // Requires IChatHistoryHandler
 
         // Act & Assert
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        Mock<Agent> agent = new(); // Not a IChatHistoryHandler
+        ChatHistoryChannel channel = new(); // Requires IChatHistoryHandler
+>>>>>>> main
+>>>>>>> Stashed changes
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAsync(agent.Object).ToArrayAsync().AsTask());
     }
 }

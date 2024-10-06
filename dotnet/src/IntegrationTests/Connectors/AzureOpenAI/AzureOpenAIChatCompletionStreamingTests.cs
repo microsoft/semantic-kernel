@@ -70,7 +70,15 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
         Assert.Contains("I don't know", stringBuilder.ToString());
         Assert.NotNull(metadata);
 
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
+=======
+<<<<<<< HEAD
+        Assert.True(metadata.TryGetValue("Id", out object? id));
+=======
+        Assert.True(metadata.TryGetValue("CompletionId", out object? id));
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
@@ -130,7 +138,15 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
         // Assert
         Assert.NotNull(metadata);
 
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
+=======
+<<<<<<< HEAD
+        Assert.True(metadata.TryGetValue("Id", out object? id));
+=======
+        Assert.True(metadata.TryGetValue("CompletionId", out object? id));
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));

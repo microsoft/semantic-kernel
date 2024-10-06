@@ -1,8 +1,21 @@
 repos:
+<<<<<<< Updated upstream
+=======
+  - repo: https://github.com/floatingpurr/sync_with_poetry
+    rev: 1.1.0
+    hooks:
+      - id: sync_with_poetry
+        args: [--config=python/.conf/.pre-commit-config.yaml, --db=python/.conf/packages_list.json, python/poetry.lock]
+>>>>>>> Stashed changes
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
       - id: check-toml
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
       - id: check-yaml
       - id: end-of-file-fixer
       - id: mixed-line-ending
@@ -20,3 +33,37 @@ repos:
     hooks:
     - id: flake8
       args: ["--config=python/.conf/flake8.cfg"]
+<<<<<<< Updated upstream
+=======
+        files: \.toml$
+>>>>>>> origin/main
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+  - repo: https://github.com/psf/black
+<<<<<<< main
+    rev: 22.3.0
+    hooks:
+      - id: black
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+    - id: flake8
+      args: ["--config=python/.conf/flake8.cfg"]
+=======
+    rev: 23.12.0
+    hooks:
+      - id: black
+        files: \.py$
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.2
+    hooks:
+      - id: ruff
+        args: [ --fix, --exit-non-zero-on-fix ]
+>>>>>>> origin/main
+>>>>>>> Stashed changes

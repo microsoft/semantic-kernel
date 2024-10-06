@@ -2,6 +2,16 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.Agents.History;
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted;
@@ -27,6 +37,16 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
         You are a copywriter with ten years of experience and are known for brevity and a dry humor.
         The goal is to refine and decide on the single best copy as an expert in the field.
         Only provide a single proposal per response.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        Never delimit the response with quotation marks.
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
         You're laser focused on the goal at hand.
         Don't waste time with chit chat.
         Consider suggestions when refining an idea.
@@ -53,16 +73,48 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
             };
 
         KernelFunction terminationFunction =
+<<<<<<< Updated upstream
             KernelFunctionFactory.CreateFromPrompt(
+=======
+<<<<<<< HEAD
+            KernelFunctionFactory.CreateFromPrompt(
+=======
+<<<<<<< HEAD
+            AgentGroupChat.CreatePromptFunctionForStrategy(
+=======
+            KernelFunctionFactory.CreateFromPrompt(
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                 """
                 Determine if the copy has been approved.  If so, respond with a single word: yes
 
                 History:
                 {{$history}}
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+                """,
+                safeParameterNames: "history");
+
+        KernelFunction selectionFunction =
+            AgentGroupChat.CreatePromptFunctionForStrategy(
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 """);
 
         KernelFunction selectionFunction =
             KernelFunctionFactory.CreateFromPrompt(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                 $$$"""
                 Determine which participant takes the next turn in a conversation based on the the most recent participant.
                 State only the name of the participant to take the next turn.
@@ -78,7 +130,23 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 
                 History:
                 {{$history}}
+<<<<<<< Updated upstream
                 """);
+=======
+<<<<<<< HEAD
+                """);
+=======
+<<<<<<< HEAD
+                """,
+                safeParameterNames: "history");
+
+        // Limit history used for selection and termination to the most recent message.
+        ChatHistoryTruncationReducer strategyReducer = new(1);
+=======
+                """);
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -100,6 +168,17 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                                 HistoryVariableName = "history",
                                 // Limit total number of turns
                                 MaximumIterations = 10,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+                                // Save tokens by not including the entire history in the prompt
+                                HistoryReducer = strategyReducer,
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                             },
                         // Here a KernelFunctionSelectionStrategy selects agents based on a prompt function.
                         SelectionStrategy =
@@ -109,10 +188,29 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                                 InitialAgent = agentWriter,
                                 // Returns the entire result value as a string.
                                 ResultParser = (result) => result.GetValue<string>() ?? CopyWriterName,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+                                // The prompt variable name for the history argument.
+                                HistoryVariableName = "history",
+                                // Save tokens by not including the entire history in the prompt
+                                HistoryReducer = strategyReducer,
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                                 // The prompt variable name for the agents argument.
                                 AgentsVariableName = "agents",
                                 // The prompt variable name for the history argument.
                                 HistoryVariableName = "history",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                             },
                     }
             };

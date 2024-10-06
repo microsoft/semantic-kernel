@@ -146,7 +146,15 @@ public abstract class ToolCallBehavior
                 IList<KernelFunctionMetadata> functions = kernel.Plugins.GetFunctionsMetadata();
                 if (functions.Count > 0)
                 {
+<<<<<<< Updated upstream
                     choice = ChatToolChoice.Auto;
+=======
+<<<<<<< HEAD
+                    choice = ChatToolChoice.Auto;
+=======
+                    choice = ChatToolChoice.CreateAutoChoice();
+>>>>>>> main
+>>>>>>> Stashed changes
                     tools = [];
                     for (int i = 0; i < functions.Count; i++)
                     {
@@ -206,7 +214,15 @@ public abstract class ToolCallBehavior
                     throw new KernelException($"Auto-invocation with {nameof(EnabledFunctions)} is not supported when no kernel is provided.");
                 }
 
+<<<<<<< Updated upstream
                 choice = ChatToolChoice.Auto;
+=======
+<<<<<<< HEAD
+                choice = ChatToolChoice.Auto;
+=======
+                choice = ChatToolChoice.CreateAutoChoice();
+>>>>>>> main
+>>>>>>> Stashed changes
                 tools = [];
                 for (int i = 0; i < openAIFunctions.Length; i++)
                 {
@@ -241,7 +257,15 @@ public abstract class ToolCallBehavior
         {
             this._function = function;
             this._tool = function.ToFunctionDefinition();
+<<<<<<< Updated upstream
             this._choice = new ChatToolChoice(this._tool);
+=======
+<<<<<<< HEAD
+            this._choice = new ChatToolChoice(this._tool);
+=======
+            this._choice = ChatToolChoice.CreateFunctionChoice(this._tool.FunctionName);
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.FunctionName}";

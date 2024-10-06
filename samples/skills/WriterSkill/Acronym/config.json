@@ -1,8 +1,13 @@
 {
+<<<<<<< Updated upstream
   "schema": 1,
   "type": "completion",
   "description": "Generate an acronym for the given concept or phrase",
   "completion": {
+=======
+  "description": "Generate an acronym for the given concept or phrase",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 100,
     "temperature": 0.5,
     "top_p": 0.0,
@@ -12,4 +17,11 @@
   "default_backends": [
     "text-davinci-002"
   ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+  }
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 }

@@ -14,6 +14,16 @@ else:
 import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+=======
+from semantic_kernel.connectors.ai.ai_exception import AIException
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
     HuggingFacePromptExecutionSettings,
 )
@@ -26,6 +36,13 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 <<<<<<< main
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 from semantic_kernel.exceptions import (
     ServiceInvalidExecutionSettingsError,
     ServiceResponseException,
@@ -34,15 +51,46 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceResponseException
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase):
+=======
+<<<<<<< main
+
+logger: logging.Logger = logging.getLogger(__name__)
+=======
+=======
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+<<<<<<< main
+class HuggingFaceTextCompletion(TextCompletionClientBase):
+=======
+
+class HuggingFaceTextCompletion(TextCompletionClientBase):
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     """Hugging Face text completion service."""
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "huggingface"
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     task: Literal["summarization", "text-generation", "text2text-generation"]
     device: str
     generator: Any
@@ -50,23 +98,64 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     def __init__(
         self,
         ai_model_id: str,
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         task: str | None = "text2text-generation",
         device: int = -1,
         service_id: str | None = None,
         model_kwargs: dict[str, Any] | None = None,
         pipeline_kwargs: dict[str, Any] | None = None,
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+        task: Optional[str] = "text2text-generation",
+        device: Optional[int] = -1,
+        service_id: Optional[str] = None,
+        model_kwargs: Optional[Dict[str, Any]] = None,
+        pipeline_kwargs: Optional[Dict[str, Any]] = None,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     ) -> None:
         """Initializes a new instance of the HuggingFaceTextCompletion class.
 
         Args:
             ai_model_id (str): Hugging Face model card string, see
                 https://huggingface.co/models
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             device (int): Device to run the model on, defaults to CPU, 0+ for GPU,
                 -- None if using device_map instead. (If both device and device_map
                 are specified, device overrides device_map. If unintended,
                 it can lead to unexpected behavior.) (optional)
             service_id (str): Service ID for the AI service. (optional)
             task (str): Model completion task type, options are:
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+            device {Optional[int]} -- Device to run the model on, defaults to CPU, 0+ for GPU,
+                                   -- None if using device_map instead. (If both device and device_map
+                                      are specified, device overrides device_map. If unintended,
+                                      it can lead to unexpected behavior.)
+            service_id {Optional[str]} -- Service ID for the AI service.
+            task {Optional[str]} -- Model completion task type, options are:
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
                 - summarization: takes a long text and returns a shorter summary.
                 - text-generation: takes incomplete text and returns a set of completion candidates.
                 - text2text-generation (default): takes an input prompt and returns a completion.
@@ -98,6 +187,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         )
 
     # region Overriding base class methods
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
     # Override from AIServiceClientBase
     @override
@@ -115,6 +208,43 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
 
+<<<<<<< Updated upstream
+=======
+=======
+
+    # Override from AIServiceClientBase
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return HuggingFacePromptExecutionSettings
+
+    @override
+    @trace_text_completion(MODEL_PROVIDER_NAME)
+    async def _inner_get_text_contents(
+        self,
+        prompt: str,
+<<<<<<< main
+        settings: "PromptExecutionSettings",
+    ) -> list[TextContent]:
+        if not isinstance(settings, HuggingFacePromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
+
+=======
+        settings: HuggingFacePromptExecutionSettings,
+    ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {HuggingFacePromptExecutionSettings} -- Settings for the request.
+
+        Returns:
+            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+        """
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         try:
             results = self.generator(prompt, **settings.prepare_settings_dict())
         except Exception as e:
@@ -143,12 +273,40 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 >>>>>>> upstream/main
         self,
         prompt: str,
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         if not isinstance(settings, HuggingFacePromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+        settings: HuggingFacePromptExecutionSettings,
+    ) -> AsyncIterable[List[StreamingTextContent]]:
+        """
+        Streams a text completion using a Hugging Face model.
+        Note that this method does not support multiple responses.
+
+        Arguments:
+            prompt {str} -- Prompt to complete.
+            settings {HuggingFacePromptExecutionSettings} -- Request settings.
+
+        Yields:
+            List[StreamingTextContent] -- List of StreamingTextContent objects.
+        """
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         if settings.num_return_sequences > 1:
             raise ServiceInvalidExecutionSettingsError(
                 "HuggingFace TextIteratorStreamer does not stream multiple responses in a parsable format."

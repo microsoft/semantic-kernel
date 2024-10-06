@@ -18,7 +18,18 @@
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/openai/OpenAIUtilities.props" />
+<<<<<<< Updated upstream
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
+=======
+<<<<<<< HEAD
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
+=======
+<<<<<<< main
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -37,6 +48,13 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
+<<<<<<< Updated upstream
     <PackageReference Include="System.ClientModel" />
+=======
+<<<<<<< HEAD
+    <PackageReference Include="System.ClientModel" />
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
   </ItemGroup>
 </Project>

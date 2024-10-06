@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -206,7 +214,15 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Arrange.
         var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, false))!.AsObject();
 
+<<<<<<< Updated upstream
         var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "storage_data1", "data2", "key" } : new[] { "storage_data1", "Data2", "Key" };
+=======
+<<<<<<< HEAD
+        var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "storage_data1", "data2", "key" } : new[] { "storage_data1", "Data2", "Key" };
+=======
+        var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "key", "storage_data1", "data2" } : new[] { "Key", "storage_data1", "Data2" };
+>>>>>>> main
+>>>>>>> Stashed changes
         this._searchClientMock.Setup(
             x => x.GetDocumentAsync<MultiPropsModel>(
                 TestRecordKey1,
@@ -552,6 +568,97 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             new() { VectorStoreRecordDefinition = definition, JsonObjectCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>() });
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    [Fact]
+    public async Task CanSearchWithVectorAndFilterAsync()
+    {
+        // Arrange.
+#pragma warning disable Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
+        var searchResultsMock = Mock.Of<SearchResults<MultiPropsModel>>();
+#pragma warning restore Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
+        this._searchClientMock
+            .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
+
+        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+            this._searchIndexClientMock.Object,
+            TestCollectionName);
+        var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
+
+        // Act.
+        var searchResults = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[4]),
+            new()
+            {
+                Top = 5,
+                Skip = 3,
+                Filter = filter,
+                VectorPropertyName = nameof(MultiPropsModel.Vector1)
+            },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert.
+        this._searchClientMock.Verify(
+            x => x.SearchAsync<MultiPropsModel>(
+                null,
+                It.Is<SearchOptions>(x =>
+                    x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
+                    x.Size == 5 &&
+                    x.Skip == 3 &&
+                    x.VectorSearch.Queries.First().GetType() == typeof(VectorizedQuery) &&
+                    x.VectorSearch.Queries.First().Fields.First() == "storage_vector1"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task CanSearchWithTextAndFilterAsync()
+    {
+        // Arrange.
+#pragma warning disable Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
+        var searchResultsMock = Mock.Of<SearchResults<MultiPropsModel>>();
+#pragma warning restore Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
+        this._searchClientMock
+            .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
+
+        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+            this._searchIndexClientMock.Object,
+            TestCollectionName);
+        var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
+
+        // Act.
+        var searchResults = await sut.VectorizableTextSearchAsync(
+            "search string",
+            new()
+            {
+                Top = 5,
+                Skip = 3,
+                Filter = filter,
+                VectorPropertyName = nameof(MultiPropsModel.Vector1)
+            },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert.
+        this._searchClientMock.Verify(
+            x => x.SearchAsync<MultiPropsModel>(
+                null,
+                It.Is<SearchOptions>(x =>
+                    x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
+                    x.Size == 5 &&
+                    x.Skip == 3 &&
+                    x.VectorSearch.Queries.First().GetType() == typeof(VectorizableTextQuery) &&
+                    x.VectorSearch.Queries.First().Fields.First() == "storage_vector1" &&
+                    ((VectorizableTextQuery)x.VectorSearch.Queries.First()).Text == "search string"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     private AzureAISearchVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
         return new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
@@ -600,6 +707,13 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("storage_data1")]
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        [VectorStoreRecordData(IsFilterable = true)]
+>>>>>>> main
+>>>>>>> Stashed changes
         [VectorStoreRecordData]
         public string Data1 { get; set; } = string.Empty;
 

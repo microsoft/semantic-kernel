@@ -1,10 +1,27 @@
 # Copyright (c) Microsoft. All rights reserved.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
+>>>>>>> Stashed changes
 import pytest
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
 )
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+=======
+<<<<<<< HEAD
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+=======
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_default_anthropic_chat_prompt_execution_settings():
@@ -111,16 +128,42 @@ def test_create_options():
     assert options["max_tokens"] == 128
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 def test_create_options_with_function_choice_behavior():
     with pytest.raises(NotImplementedError):
         AnthropicChatPromptExecutionSettings(
             service_id="test_service",
             function_choice_behavior="auto",
+<<<<<<< Updated upstream
+=======
+=======
+def test_tool_choice_none():
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="Tool choice 'none' is not supported by Anthropic."):
+        AnthropicChatPromptExecutionSettings(
+            service_id="test_service",
+>>>>>>> main
+>>>>>>> Stashed changes
             extension_data={
                 "temperature": 0.5,
                 "top_p": 0.5,
                 "max_tokens": 128,
+<<<<<<< Updated upstream
                 "tools": [{}],
                 "messages": [{"role": "system", "content": "Hello"}],
             },
+=======
+<<<<<<< HEAD
+                "tools": [{}],
+                "messages": [{"role": "system", "content": "Hello"}],
+            },
+=======
+                "tool_choice": {"type": "none"},
+                "messages": [{"role": "system", "content": "Hello"}],
+            },
+            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
+>>>>>>> main
+>>>>>>> Stashed changes
         )

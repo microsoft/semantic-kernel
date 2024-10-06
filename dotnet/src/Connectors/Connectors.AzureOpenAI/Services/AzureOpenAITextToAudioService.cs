@@ -1,13 +1,41 @@
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+=======
+<<<<<<< HEAD
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+=======
+<<<<<<< HEAD
+// Copyright (c) Microsoft. All rights reserved.
+=======
+﻿// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+
+using System;
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
+<<<<<<< Updated upstream
 using Azure.Core;
+=======
+<<<<<<< HEAD
+using Azure.Core;
+=======
+<<<<<<< HEAD
+using Azure.Core;
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -57,11 +85,23 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         var options = AzureClientCore.GetAzureOpenAIClientOptions(
             httpClient,
             AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), apiKey, options);
+<<<<<<< Updated upstream
+=======
+=======
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+
+        var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), new ApiKeyCredential(apiKey), options);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToAudioService)));
 
@@ -70,6 +110,13 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         this._modelId = modelId;
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAITextToAudioService"/> class.
     /// </summary>
@@ -89,9 +136,19 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
+<<<<<<< Updated upstream
         var options = AzureClientCore.GetAzureOpenAIClientOptions(
             httpClient,
             AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+=======
+<<<<<<< HEAD
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(
+            httpClient,
+            AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+=======
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), credential, options);
 
@@ -102,6 +159,14 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         this._modelId = modelId;
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <inheritdoc/>
     public Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
         string text,

@@ -32,6 +32,18 @@ class VectorStoreModelValidationError(VectorStoreModelException):
     """An error occurred while validating the vector store model."""
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+class VectorStoreSearchError(MemoryConnectorException):
+    """An error occurred while searching the vector store model."""
+
+    pass
+
+
+>>>>>>> main
+>>>>>>> Stashed changes
 __all__ = [
     "MemoryConnectorException",
     "MemoryConnectorInitializationError",
@@ -40,4 +52,11 @@ __all__ = [
     "VectorStoreModelException",
     "VectorStoreModelSerializationException",
     "VectorStoreModelValidationError",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    "VectorStoreSearchError",
+>>>>>>> main
+>>>>>>> Stashed changes
 ]

@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -47,6 +55,13 @@ public abstract class BaseTest
     /// <param name="target">Target object to write</param>
     protected void Write(object? target = null)
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this.Output.Write(target ?? string.Empty);
+>>>>>>> main
+>>>>>>> Stashed changes
         this.Output.WriteLine(target ?? string.Empty);
     }
 }

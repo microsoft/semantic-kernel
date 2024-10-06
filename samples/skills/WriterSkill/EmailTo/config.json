@@ -1,8 +1,13 @@
 {
+<<<<<<< Updated upstream
   "schema": 1,
   "type": "completion",
   "description": "Turn bullet points into an email to someone, using a polite tone",
   "completion": {
+=======
+  "description": "Turn bullet points into an email to someone, using a polite tone",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 256,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -12,4 +17,11 @@
   "default_backends": [
     "text-davinci-002"
   ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+  }
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 }

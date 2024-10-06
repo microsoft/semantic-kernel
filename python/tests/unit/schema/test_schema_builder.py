@@ -7,6 +7,13 @@ from unittest.mock import Mock
 
 import pytest
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 
@@ -67,6 +74,32 @@ class MockModel:
     }
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+class PydanticStep(KernelBaseModel):
+    explanation: str
+    output: str
+
+
+class PydanticReasoning(KernelBaseModel):
+    steps: list[PydanticStep]
+    final_answer: str
+
+
+class NonPydanticStep:
+    explanation: str
+    output: str
+
+
+class NonPydanticReasoning:
+    steps: list[NonPydanticStep]
+    final_answer: str
+
+
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_build_with_kernel_base_model():
     expected_schema = {
         "type": "object",
@@ -376,3 +409,75 @@ def test_handle_complex_type():
     schema = KernelJsonSchemaBuilder.handle_complex_type(str, "Description")
     expected_schema = {"type": "string", "description": "Description"}
     assert schema == expected_schema
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+
+def test_build_schema_with_pydantic_structured_output():
+    schema = KernelJsonSchemaBuilder.build(parameter_type=PydanticReasoning, structured_output=True)
+    structured_output_schema = generate_structured_output_response_format_schema(name="Reasoning", schema=schema)
+
+    expected_schema = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "Reasoning",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {"explanation": {"type": "string"}, "output": {"type": "string"}},
+                            "required": ["explanation", "output"],
+                            "additionalProperties": False,
+                        },
+                    },
+                    "final_answer": {"type": "string"},
+                },
+                "required": ["steps", "final_answer"],
+                "additionalProperties": False,
+            },
+            "strict": True,
+        },
+    }
+
+    assert structured_output_schema == expected_schema
+
+
+def test_build_schema_with_nonpydantic_structured_output():
+    schema = KernelJsonSchemaBuilder.build(parameter_type=NonPydanticReasoning, structured_output=True)
+    structured_output_schema = generate_structured_output_response_format_schema(
+        name="NonPydanticReasoning", schema=schema
+    )
+
+    expected_schema = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "NonPydanticReasoning",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {"explanation": {"type": "string"}, "output": {"type": "string"}},
+                            "required": ["explanation", "output"],
+                            "additionalProperties": False,
+                        },
+                    },
+                    "final_answer": {"type": "string"},
+                },
+                "required": ["steps", "final_answer"],
+                "additionalProperties": False,
+            },
+            "strict": True,
+        },
+    }
+
+    assert structured_output_schema == expected_schema
+>>>>>>> main
+>>>>>>> Stashed changes

@@ -4,6 +4,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -72,7 +79,15 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         if (!this._validated && !this.IsValid(out var error))
         {
+<<<<<<< Updated upstream
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
+=======
+<<<<<<< HEAD
+            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
+=======
+            throw new SKException(error);
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         this.Log.LogTrace("Rendering code: `{0}`", this.Content);
@@ -87,8 +102,17 @@ internal sealed class CodeBlock : Block, ICodeRendering
                 return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], context).ConfigureAwait(false);
         }
 
+<<<<<<< Updated upstream
         throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
             $"Unexpected first token type: {this._tokens[0].Type:G}");
+=======
+<<<<<<< HEAD
+        throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
+            $"Unexpected first token type: {this._tokens[0].Type:G}");
+=======
+        throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     #region private ================================================================================
@@ -100,9 +124,19 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         if (context.Skills == null)
         {
+<<<<<<< Updated upstream
             throw new KernelException(
                 KernelException.ErrorCodes.SkillCollectionNotSet,
                 "Skill collection not found in the context");
+=======
+<<<<<<< HEAD
+            throw new KernelException(
+                KernelException.ErrorCodes.SkillCollectionNotSet,
+                "Skill collection not found in the context");
+=======
+            throw new SKException("Skill collection not found in the context");
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
@@ -110,6 +144,16 @@ internal sealed class CodeBlock : Block, ICodeRendering
             var errorMsg = $"Function `{fBlock.Content}` not found";
             this.Log.LogError(errorMsg);
             throw new TemplateException(TemplateException.ErrorCodes.FunctionNotFound, errorMsg);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            this.Logger.LogError(errorMsg);
+            throw new SKException(errorMsg);
+            this.Logger.LogError(errorMsg);
+            throw new SKException(errorMsg);
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         ContextVariables variablesClone = context.Variables.Clone();
@@ -137,6 +181,15 @@ internal sealed class CodeBlock : Block, ICodeRendering
             var errorMsg = $"Function `{fBlock.Content}` execution failed. {result.LastException?.GetType().FullName}: {result.LastErrorDescription}";
             this.Log.LogError(errorMsg);
             throw new TemplateException(TemplateException.ErrorCodes.RuntimeError, errorMsg, result.LastException);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
+            this.Logger.LogError(errorMsg);
+            throw new SKException(errorMsg, contextClone.LastException);
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         return result.Result;

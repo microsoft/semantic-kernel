@@ -1,12 +1,31 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Reflection;
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Reflection;
+=======
+// Copyright (c) Microsoft. All rights reserved.
+using System.Reflection;
+using System.Text;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
+<<<<<<< Updated upstream
 public abstract class BaseTest
+=======
+<<<<<<< HEAD
+public abstract class BaseTest
+=======
+public abstract class BaseTest : TextWriter
+>>>>>>> main
+>>>>>>> Stashed changes
 {
     /// <summary>
     /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
@@ -59,7 +78,15 @@ public abstract class BaseTest
         return builder.Build();
     }
 
+<<<<<<< Updated upstream
     protected BaseTest(ITestOutputHelper output)
+=======
+<<<<<<< HEAD
+    protected BaseTest(ITestOutputHelper output)
+=======
+    protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         this.Output = output;
         this.LoggerFactory = new XunitLogger(output);
@@ -71,6 +98,10 @@ public abstract class BaseTest
             .Build();
 
         TestConfiguration.Initialize(configRoot);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -79,6 +110,22 @@ public abstract class BaseTest
     /// <param name="target">Target object to write</param>
     public void WriteLine(object? target = null)
         => this.Output.WriteLine(target ?? string.Empty);
+<<<<<<< Updated upstream
+=======
+=======
+
+        // Redirect System.Console output to the test output if requested
+        if (redirectSystemConsoleOutput)
+        {
+            System.Console.SetOut(this);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override void WriteLine(object? value = null)
+        => this.Output.WriteLine(value ?? string.Empty);
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
@@ -86,7 +133,24 @@ public abstract class BaseTest
     /// <param name="format">Format string</param>
     /// <param name="args">Arguments</param>
     public void WriteLine(string? format, params object?[] args)
+<<<<<<< Updated upstream
         => this.Output.WriteLine(format ?? string.Empty, args);
+=======
+<<<<<<< HEAD
+        => this.Output.WriteLine(format ?? string.Empty, args);
+=======
+    {
+        if (args is null || args.Length == 0)
+        {
+            this.Output.WriteLine(format ?? string.Empty);
+        }
+        else
+        {
+            this.Output.WriteLine(format ?? string.Empty, args);
+        }
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
@@ -95,6 +159,10 @@ public abstract class BaseTest
 public void WriteLine(string? message = null)
     => this.Output.WriteLine(message ?? string.Empty);
         => this.Output.WriteLine(message ?? string.Empty);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
@@ -102,6 +170,25 @@ public void WriteLine(string? message = null)
     /// <param name="target">Target object to write</param>
     public void Write(object? target = null)
         => this.Output.WriteLine(target ?? string.Empty);
+<<<<<<< Updated upstream
+=======
+=======
+    /// <inheritdoc/>
+    public override void WriteLine(string? format, params object?[] arg)
+        => this.Output.WriteLine(format ?? string.Empty, arg);
+
+    /// <inheritdoc/>
+    public override void WriteLine(string? value)
+        => this.Output.WriteLine(value ?? string.Empty);
+
+    /// <inheritdoc/>
+    public override void Write(object? value = null)
+        => this.Output.WriteLine(value ?? string.Empty);
+
+    /// <inheritdoc/>
+    public override Encoding Encoding => Encoding.UTF8;
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Outputs the last message in the chat history.
@@ -114,6 +201,19 @@ public void WriteLine(string? message = null)
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    /// <summary>
+    /// Utility method to write a horizontal rule to the console.
+    /// </summary>
+    protected void WriteHorizontalRule()
+        => Console.WriteLine(new string('-', HorizontalRuleLength));
+
+>>>>>>> main
+>>>>>>> Stashed changes
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
@@ -154,4 +254,14 @@ public void WriteLine(string? message = null)
             return response;
         }
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    #region private
+    private const int HorizontalRuleLength = 80;
+    #endregion
+>>>>>>> main
+>>>>>>> Stashed changes
 }

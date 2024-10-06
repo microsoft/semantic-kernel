@@ -1,5 +1,17 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+<<<<<<< main
+=======
+using System.Linq;
+using System.Text.Json;
+using Microsoft.SemanticKernel.ChatCompletion;
+using System;
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -17,6 +29,14 @@ internal static class ChatHistorySerializer
 
         var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? [];
         ChatHistory history = [];
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+        var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? Array.Empty<SerializableChatMessage>();
+        ChatHistory history = new();
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         foreach (var message in messages)
         {
             history.AddMessage(new AuthorRole(message.Role!), message.Content!);
@@ -33,6 +53,10 @@ internal static class ChatHistorySerializer
         }
 
         var messages = history.Select(m => new SerializableChatMessage()
+<<<<<<< Updated upstream
+=======
+        var messages = history.Messages.Select(m => new SerializableChatMessage()
+>>>>>>> Stashed changes
         {
             Role = m.Role.Label,
             Content = m.Content,
@@ -42,6 +66,13 @@ internal static class ChatHistorySerializer
     }
 
     private sealed class SerializableChatMessage
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    private class SerializableChatMessage
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     {
         public string? Role { get; set; }
 

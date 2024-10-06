@@ -106,8 +106,17 @@ public sealed class ToolCallBehaviorTests
         var options = kernelFunctions.ConfigureOptions(kernel);
 
         // Assert
+<<<<<<< Updated upstream
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
+=======
+<<<<<<< HEAD
+        Assert.Equal(ChatToolChoice.Auto, options.Choice);
+
+=======
+        Assert.NotNull(options.Choice);
+>>>>>>> main
+>>>>>>> Stashed changes
         this.AssertTools(options.Tools);
     }
 
@@ -167,8 +176,17 @@ public sealed class ToolCallBehaviorTests
         var options = enabledFunctions.ConfigureOptions(kernel);
 
         // Assert
+<<<<<<< Updated upstream
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
+=======
+<<<<<<< HEAD
+        Assert.Equal(ChatToolChoice.Auto, options.Choice);
+
+=======
+        Assert.NotNull(options.Choice);
+>>>>>>> main
+>>>>>>> Stashed changes
         this.AssertTools(options.Tools);
     }
 

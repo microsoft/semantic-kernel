@@ -8,6 +8,16 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.exceptions import PlannerException
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import SequentialPlanner
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+=======
+from semantic_kernel.planners.planning_exception import PlanningException
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
@@ -36,12 +46,36 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
         kernel.add_service(
             sk_oai.AzureChatCompletion(
                 service_id="chat_completion",
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+=======
+                deployment_name="gpt-35-turbo-0613",
+                endpoint=endpoint,
+                api_key=api_key,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             ),
         )
     else:
         kernel.add_service(
             sk_oai.AzureTextCompletion(
                 service_id="text_completion",
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+=======
+                deployment_name="gpt-35-turbo-instruct",
+                endpoint=endpoint,
+                api_key=api_key,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             ),
         )
 
@@ -49,6 +83,18 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
         kernel.add_service(
             sk_oai.AzureTextEmbedding(
                 service_id="text_embedding",
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+=======
+                deployment_name="text-embedding-ada-002",
+                endpoint=endpoint,
+                api_key=api_key,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             ),
         )
     return kernel
@@ -81,11 +127,31 @@ async def test_create_plan_function_flow(
 ):
     # Arrange
     service_id = "chat_completion" if use_chat_model else "text_completion"
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
     kernel = initialize_kernel(False, use_chat_model)
     kernel.add_plugin(EmailPluginFake(), "email_plugin_fake")
     kernel.add_plugin(FunPluginFake(), "fun_plugin_fake")
 
+<<<<<<< Updated upstream
+=======
+=======
+
+<<<<<<< main
+    kernel = initialize_kernel(False, use_chat_model)
+    kernel.add_plugin(EmailPluginFake(), "email_plugin_fake")
+    kernel.add_plugin(FunPluginFake(), "fun_plugin_fake")
+=======
+    kernel = initialize_kernel(get_aoai_config, False, use_chat_model)
+    kernel.import_plugin(EmailPluginFake(), "email_plugin_fake")
+    kernel.import_plugin(FunPluginFake(), "fun_plugin_fake")
+>>>>>>> ms/small_fixes
+
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     planner = SequentialPlanner(kernel, service_id=service_id)
 
     # Act
@@ -111,7 +177,19 @@ async def test_create_plan_function_flow(
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
+<<<<<<< Updated upstream
     raises=PlannerException,
+=======
+<<<<<<< main
+    raises=PlannerException,
+=======
+<<<<<<< main
+    raises=PlannerException,
+=======
+    raises=PlanningException,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     reason="Test is known to occasionally produce unexpected results.",
 )
 async def test_create_plan_with_defaults(
@@ -148,7 +226,19 @@ async def test_create_plan_with_defaults(
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
+<<<<<<< Updated upstream
     raises=PlannerException,
+=======
+<<<<<<< main
+    raises=PlannerException,
+=======
+<<<<<<< main
+    raises=PlannerException,
+=======
+    raises=PlanningException,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     reason="Test is known to occasionally produce unexpected results.",
 )
 async def test_create_plan_goal_relevant(prompt, expected_function, expected_plugin):
@@ -161,9 +251,25 @@ async def test_create_plan_goal_relevant(prompt, expected_function, expected_plu
     planner = SequentialPlanner(
         kernel,
         service_id="text_completion",
+<<<<<<< Updated upstream
         config=SequentialPlannerConfig(
             relevancy_threshold=0.65, max_relevant_functions=30
         ),
+=======
+<<<<<<< main
+        config=SequentialPlannerConfig(
+            relevancy_threshold=0.65, max_relevant_functions=30
+        ),
+=======
+<<<<<<< main
+        config=SequentialPlannerConfig(
+            relevancy_threshold=0.65, max_relevant_functions=30
+        ),
+=======
+        config=SequentialPlannerConfig(relevancy_threshold=0.65, max_relevant_functions=30),
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     )
 
     # Act

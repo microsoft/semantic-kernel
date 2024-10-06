@@ -3,10 +3,25 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.TextToImage;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+#pragma warning disable CS0618 // Type or member is obsolete
+
+>>>>>>> main
+>>>>>>> Stashed changes
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 public sealed class OpenAITextToImageTests
 {
@@ -48,7 +63,15 @@ public sealed class OpenAITextToImageTests
         Assert.NotNull(openAIConfiguration);
 
         var kernel = Kernel.CreateBuilder()
+<<<<<<< Updated upstream
             .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
+=======
+<<<<<<< HEAD
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
+=======
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey)
+>>>>>>> main
+>>>>>>> Stashed changes
             .Build();
 
         var service = kernel.GetRequiredService<ITextToImageService>();
@@ -60,4 +83,32 @@ public sealed class OpenAITextToImageTests
         Assert.NotNull(result);
         Assert.NotEmpty(result);
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    [Fact]
+    public async Task OpenAITextToImageDalle3GetImagesTestAsync()
+    {
+        // Arrange
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: "dall-e-3")
+            .Build();
+
+        var service = kernel.GetRequiredService<ITextToImageService>();
+
+        // Act
+        var result = await service.GetImageContentsAsync("The sun rises in the east and sets in the west.", new OpenAITextToImageExecutionSettings { Size = (1024, 1024) });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEmpty(result);
+        Assert.NotEmpty(result[0].Uri!.ToString());
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

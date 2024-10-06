@@ -53,7 +53,15 @@ internal partial class ClientCore
     private static AudioTranscriptionOptions AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
         => new()
         {
+<<<<<<< Updated upstream
             Granularities = AudioTimestampGranularities.Default,
+=======
+<<<<<<< HEAD
+            Granularities = AudioTimestampGranularities.Default,
+=======
+            TimestampGranularities = AudioTimestampGranularities.Default,
+>>>>>>> main
+>>>>>>> Stashed changes
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
             Temperature = executionSettings.Temperature,
@@ -62,14 +70,34 @@ internal partial class ClientCore
 
     private static AudioTranscriptionFormat? ConvertResponseFormat(string? responseFormat)
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        if (responseFormat is null)
+        {
+            return null;
+        }
+
+>>>>>>> main
+>>>>>>> Stashed changes
         return responseFormat switch
         {
             "json" => AudioTranscriptionFormat.Simple,
             "verbose_json" => AudioTranscriptionFormat.Verbose,
             "vtt" => AudioTranscriptionFormat.Vtt,
             "srt" => AudioTranscriptionFormat.Srt,
+<<<<<<< Updated upstream
             null => null,
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
+=======
+<<<<<<< HEAD
+            null => null,
+            _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
+=======
+            _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported.")
+>>>>>>> main
+>>>>>>> Stashed changes
         };
     }
 

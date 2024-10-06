@@ -21,7 +21,15 @@ namespace Microsoft.SemanticKernel;
 [ExcludeFromCodeCoverage]
 internal static class KernelJsonSchemaBuilder
 {
+<<<<<<< Updated upstream
     private static readonly JsonSerializerOptions s_options = CreateDefaultOptions();
+=======
+<<<<<<< HEAD
+    private static readonly JsonSerializerOptions s_options = CreateDefaultOptions();
+=======
+    private static JsonSerializerOptions? s_options;
+>>>>>>> main
+>>>>>>> Stashed changes
     private static readonly JsonSchemaMapperConfiguration s_config = new()
     {
         IncludeSchemaVersion = false,
@@ -29,6 +37,10 @@ internal static class KernelJsonSchemaBuilder
         TreatNullObliviousAsNonNullable = true,
     };
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     public static KernelJsonSchema Build(
         JsonSerializerOptions? options,
         Type type,
@@ -39,6 +51,27 @@ internal static class KernelJsonSchemaBuilder
         var mapperConfiguration = configuration ?? s_config;
 
         JsonNode jsonSchema = serializerOptions.GetJsonSchema(type, mapperConfiguration);
+<<<<<<< Updated upstream
+=======
+=======
+    [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
+    public static KernelJsonSchema Build(Type type, string? description = null, JsonSchemaMapperConfiguration? configuration = null)
+    {
+        return Build(type, GetDefaultOptions(), description, configuration);
+    }
+
+    public static KernelJsonSchema Build(
+        Type type,
+        JsonSerializerOptions options,
+        string? description = null,
+        JsonSchemaMapperConfiguration? configuration = null)
+    {
+        var mapperConfiguration = configuration ?? s_config;
+
+        JsonNode jsonSchema = options.GetJsonSchema(type, mapperConfiguration);
+>>>>>>> main
+>>>>>>> Stashed changes
         Debug.Assert(jsonSchema.GetValueKind() is JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True);
 
         if (jsonSchema is not JsonObject jsonObj)
@@ -54,6 +87,10 @@ internal static class KernelJsonSchemaBuilder
             jsonObj["description"] = description;
         }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         return KernelJsonSchema.Parse(jsonObj.ToJsonString(serializerOptions));
     }
 
@@ -66,5 +103,29 @@ internal static class KernelJsonSchemaBuilder
         };
         options.MakeReadOnly();
         return options;
+<<<<<<< Updated upstream
+=======
+=======
+        return KernelJsonSchema.Parse(jsonObj.ToJsonString(options));
+    }
+
+    [RequiresUnreferencedCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
+    private static JsonSerializerOptions GetDefaultOptions()
+    {
+        if (s_options is null)
+        {
+            JsonSerializerOptions options = new()
+            {
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                Converters = { new JsonStringEnumConverter() },
+            };
+            options.MakeReadOnly();
+            s_options = options;
+        }
+
+        return s_options;
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 }

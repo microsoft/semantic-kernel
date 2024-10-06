@@ -1,11 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
 from typing import Any
+=======
+<<<<<<< HEAD
+from typing import Any
+=======
+<<<<<<< HEAD
+from typing import Any
+=======
+from typing import Any, Optional
+
+from pydantic import Field
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class InputVariable(KernelBaseModel):
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     """Input variable for a prompt template.
 
     Args:
@@ -24,3 +45,16 @@ class InputVariable(KernelBaseModel):
     is_required: bool | None = True
     json_schema: str | None = ""
     allow_dangerously_set_content: bool = False
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    name: str = Field(..., alias="name")
+    description: Optional[str] = Field("", alias="description")
+    default: Optional[Any] = Field("", alias="default")
+    is_required: Optional[bool] = Field(True, alias="is_required")
+    json_schema: Optional[str] = Field("", alias="json_schema")
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes

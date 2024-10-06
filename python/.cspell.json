@@ -57,7 +57,22 @@
         "contoso",
         "opentelemetry",
         "SEMANTICKERNEL",
+<<<<<<< Updated upstream
         "OTEL",
         "mistralai"
+=======
+<<<<<<< HEAD
+        "OTEL",
+        "mistralai"
+=======
+<<<<<<< main
+        "OTEL",
+        "mistralai"
+        "vectorizable"
+=======
+        "OTEL"
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
     ]
 }

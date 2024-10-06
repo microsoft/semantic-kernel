@@ -1,5 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.IO;
@@ -34,7 +41,15 @@ public sealed class OpenAIStreamingChatMessageContentTests
         };
 
         using var httpClient = new HttpClient(messageHandlerStub);
+<<<<<<< Updated upstream
         var openAIClient = new OpenAIClient("key", new() { Transport = new HttpClientPipelineTransport(httpClient) });
+=======
+<<<<<<< HEAD
+        var openAIClient = new OpenAIClient("key", new() { Transport = new HttpClientPipelineTransport(httpClient) });
+=======
+        var openAIClient = new OpenAIClient(new ApiKeyCredential("key"), new() { Transport = new HttpClientPipelineTransport(httpClient) });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act & Assert
         var enumerator = openAIClient.GetChatClient("modelId").CompleteChatStreamingAsync("Test message").GetAsyncEnumerator();

@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
+=======
+using System.Collections.Generic;
+>>>>>>> Stashed changes
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,8 +18,14 @@ namespace Microsoft.SemanticKernel.TextToImage;
 public interface ITextToImageService : IAIService
 {
     /// <summary>
+<<<<<<< Updated upstream
     /// Generate an image matching the given description
     /// </summary>
+=======
+    /// Given a prompt and/or an input text, the model will generate a new image.
+    /// </summary>
+<<<<<<< main
+>>>>>>> Stashed changes
     /// <param name="description">Image generation prompt</param>
     /// <param name="width">Image width in pixels</param>
     /// <param name="height">Image height in pixels</param>
@@ -27,6 +37,20 @@ public interface ITextToImageService : IAIService
         string description,
         int width,
         int height,
+<<<<<<< Updated upstream
+=======
+=======
+    /// <param name="input">Input text for image generation</param>
+    /// <param name="executionSettings">Text to image execution settings</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Generated image contents</returns>
+    [Experimental("SKEXP0001")]
+    public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
+        TextContent input,
+        PromptExecutionSettings? executionSettings = null,
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 }

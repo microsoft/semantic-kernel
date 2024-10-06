@@ -1,6 +1,19 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.ClientModel.Primitives;
 using System.Net.Http;
 using System.Threading;
@@ -58,6 +71,13 @@ internal partial class AzureClientCore : ClientCore
         this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, apiKey, options);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
+>>>>>>> main
+>>>>>>> Stashed changes
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
@@ -124,8 +144,18 @@ internal partial class AzureClientCore : ClientCore
     internal static AzureOpenAIClientOptions GetAzureOpenAIClientOptions(HttpClient? httpClient, AzureOpenAIClientOptions.ServiceVersion? serviceVersion = null)
     {
         AzureOpenAIClientOptions options = serviceVersion is not null
+<<<<<<< Updated upstream
             ? new(serviceVersion.Value) { ApplicationId = HttpHeaderConstant.Values.UserAgent }
             : new() { ApplicationId = HttpHeaderConstant.Values.UserAgent };
+=======
+<<<<<<< HEAD
+            ? new(serviceVersion.Value) { ApplicationId = HttpHeaderConstant.Values.UserAgent }
+            : new() { ApplicationId = HttpHeaderConstant.Values.UserAgent };
+=======
+            ? new(serviceVersion.Value) { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent }
+            : new() { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent };
+>>>>>>> main
+>>>>>>> Stashed changes
 
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
 
@@ -138,4 +168,14 @@ internal partial class AzureClientCore : ClientCore
 
         return options;
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    /// <inheritdoc/>
+    protected override string GetClientModelId()
+        => this.DeploymentName;
+>>>>>>> main
+>>>>>>> Stashed changes
 }

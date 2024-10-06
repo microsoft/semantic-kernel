@@ -67,6 +67,20 @@ public class AgentChannelTests
             throw new NotImplementedException();
         }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        protected internal override string Serialize()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private sealed class NextAgent : TestAgent;
+
+>>>>>>> main
+>>>>>>> Stashed changes
         protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
@@ -74,9 +88,35 @@ public class AgentChannelTests
     }
 
     private sealed class NextAgent : MockAgent;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         Mock<Agent> mockAgent = new();
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(mockAgent.Object).ToArrayAsync().AsTask());
         // Assert
         Assert.Equal(1, channel.InvokeCount);
+<<<<<<< Updated upstream
     }
+=======
+<<<<<<< HEAD
+    }
+=======
+        protected internal override IEnumerable<string> GetChannelKeys()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+    }
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
 }

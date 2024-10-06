@@ -1,8 +1,21 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 using Xunit;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
@@ -115,6 +128,11 @@ public class VarBlockTests
 
         // Act + Assert
         Assert.Throws<KernelException>(() => target.Render(arguments));
+<<<<<<< Updated upstream
+=======
+        Assert.Throws<SKException>(() => target.Render(variables));
+        Assert.Throws<SKException>(() => target.Render(variables));
+>>>>>>> Stashed changes
     }
 
     [Theory]

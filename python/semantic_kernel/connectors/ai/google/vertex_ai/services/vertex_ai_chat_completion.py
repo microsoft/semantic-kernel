@@ -9,9 +9,25 @@ from google.cloud.aiplatform_v1beta1.types.content import Content
 from pydantic import ValidationError
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+=======
+<<<<<<< HEAD
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+=======
+<<<<<<< main
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
+=======
+from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.google.shared_utils import (
     filter_system_message,
     format_gemini_function_name_to_kernel_function_fully_qualified_name,
@@ -52,6 +68,17 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
 )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+=======
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
 if sys.version_info >= (3, 12):
@@ -129,7 +156,19 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
 
     @override
     @trace_chat_completion(VertexAIBase.MODEL_PROVIDER_NAME)
+<<<<<<< Updated upstream
     async def _inner_get_chat_message_contents(
+=======
+<<<<<<< HEAD
+    async def _inner_get_chat_message_contents(
+=======
+<<<<<<< main
+    async def _inner_get_chat_message_contents(
+=======
+    async def get_chat_message_contents(
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -166,6 +205,13 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             settings.function_choice_behavior.maximum_auto_invoke_attempts
         ):
             completions = await self._send_chat_request(chat_history, settings)
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
             chat_history.add_message(message=completions[0])
             function_calls = [
                 item
@@ -180,6 +226,15 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+            function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
 >>>>>>> Stashed changes
             if (fc_count := len(function_calls)) == 0:
                 return completions

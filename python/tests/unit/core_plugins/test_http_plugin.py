@@ -6,7 +6,18 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import FunctionExecutionException
+=======
+<<<<<<< HEAD
+from semantic_kernel.exceptions import FunctionExecutionException
+=======
+<<<<<<< main
+from semantic_kernel.exceptions import FunctionExecutionException
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
@@ -62,9 +73,25 @@ async def test_post(mock_post):
     mock_post.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
+<<<<<<< Updated upstream
     arguments = KernelArguments(
         url="https://example.org/post", body="{message: 'Hello, world!'}"
     )
+=======
+<<<<<<< HEAD
+    arguments = KernelArguments(
+        url="https://example.org/post", body="{message: 'Hello, world!'}"
+    )
+=======
+<<<<<<< main
+    arguments = KernelArguments(
+        url="https://example.org/post", body="{message: 'Hello, world!'}"
+    )
+=======
+    arguments = KernelArguments(url="https://example.org/post", body="{message: 'Hello, world!'}")
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
     response = await plugin.post(**arguments)
     assert response == "Hello World !"
 
@@ -88,9 +115,25 @@ async def test_put(mock_put):
     mock_put.return_value.__aenter__.return_value.status = 200
 
     plugin = HttpPlugin()
+<<<<<<< Updated upstream
     arguments = KernelArguments(
         url="https://example.org/put", body="{message: 'Hello, world!'}"
     )
+=======
+<<<<<<< HEAD
+    arguments = KernelArguments(
+        url="https://example.org/put", body="{message: 'Hello, world!'}"
+    )
+=======
+<<<<<<< main
+    arguments = KernelArguments(
+        url="https://example.org/put", body="{message: 'Hello, world!'}"
+    )
+=======
+    arguments = KernelArguments(url="https://example.org/put", body="{message: 'Hello, world!'}")
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
     response = await plugin.put(**arguments)
     assert response == "Hello World !"
 

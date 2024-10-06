@@ -1,4 +1,16 @@
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+// Copyright (c) Microsoft. All rights reserved.
+=======
+﻿// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.ClientModel;
@@ -24,7 +36,15 @@ public partial class ClientCoreTests
     {
         // Act
         var logger = new Mock<ILogger<ClientCoreTests>>().Object;
+<<<<<<< Updated upstream
         var openAIClient = new OpenAIClient("key");
+=======
+<<<<<<< HEAD
+        var openAIClient = new OpenAIClient("key");
+=======
+        var openAIClient = new OpenAIClient(new ApiKeyCredential("key"));
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var clientCoreModelConstructor = new ClientCore("model1", "apiKey");
         var clientCoreOpenAIClientConstructor = new ClientCore("model1", openAIClient, logger: logger);
@@ -135,11 +155,27 @@ public partial class ClientCoreTests
     }
 
     [Fact]
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 <<<    public async Task ItDoNotAddSemanticKernelHeadersWhenOpenAIClientIsProvidedAsync()
 >>>>>>>+HEAD
 ====
     public async Task ItDoesNotAddSemanticKernelHeadersWhenOpenAIClientIsProvidedAsync()
 >>>>>>> main
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    public async Task ItDoNotAddSemanticKernelHeadersWhenOpenAIClientIsProvidedAsync()
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         using HttpMessageHandlerStub handler = new();
         using HttpClient client = new(handler);
@@ -149,7 +185,15 @@ public partial class ClientCoreTests
         var clientCore = new ClientCore(
             modelId: "model",
             openAIClient: new OpenAIClient(
+<<<<<<< Updated upstream
                 "test",
+=======
+<<<<<<< HEAD
+                "test",
+=======
+                new ApiKeyCredential("test"),
+>>>>>>> main
+>>>>>>> Stashed changes
                 new OpenAIClientOptions()
                 {
                     Transport = new HttpClientPipelineTransport(client),
@@ -174,7 +218,18 @@ public partial class ClientCoreTests
     [InlineData("")]
     [InlineData("value")]
     public void ItAddAttributesButDoesNothingIfNullOrEmpty(string? value)
+<<<<<<< Updated upstream
     public void ItAddsAttributesButDoesNothingIfNullOrEmpty(string? value)
+=======
+<<<<<<< HEAD
+    public void ItAddsAttributesButDoesNothingIfNullOrEmpty(string? value)
+=======
+<<<<<<< HEAD
+    public void ItAddsAttributesButDoesNothingIfNullOrEmpty(string? value)
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         // Arrange
         var clientCore = new ClientCore("model", "apikey");
@@ -196,14 +251,33 @@ public partial class ClientCoreTests
 
     [Fact]
     public void ItAddModelIdAttributeAsExpected()
+<<<<<<< Updated upstream
     public void ItAddsModelIdAttributeAsExpected()
+=======
+<<<<<<< HEAD
+    public void ItAddsModelIdAttributeAsExpected()
+=======
+<<<<<<< HEAD
+    public void ItAddsModelIdAttributeAsExpected()
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         // Arrange
         var expectedModelId = "modelId";
 
         // Act
         var clientCore = new ClientCore(expectedModelId, "apikey");
+<<<<<<< Updated upstream
         var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(" "));
+=======
+<<<<<<< HEAD
+        var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(" "));
+=======
+        var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(new ApiKeyCredential(" ")));
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert
         Assert.True(clientCore.Attributes.ContainsKey(AIServiceExtensions.ModelIdKey));

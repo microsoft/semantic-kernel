@@ -16,6 +16,13 @@ jobs:
 
     steps:
       - uses: actions/github-script@v7
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+      - uses: actions/github-script@v6
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         name: "Issue/PR: update title"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

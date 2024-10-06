@@ -1,5 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
@@ -25,10 +32,75 @@ def kernel() -> "Kernel":
 @fixture(scope="session")
 def service() -> "AIServiceClientBase":
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+from __future__ import annotations
+
+import os
+import warnings
+from typing import Optional
+
+import pytest
+
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.settings import (
+    azure_openai_settings_from_dot_env,
+    google_palm_settings_from_dot_env,
+    openai_settings_from_dot_env,
+)
+
+
+@pytest.fixture(autouse=True)
+def enable_debug_mode():
+    """Set `autouse=True` to enable easy debugging for tests.
+
+    How to debug:
+    1. Ensure [snoop](https://github.com/alexmojaki/snoop) is installed
+        (`pip install snoop`).
+    2. If you're doing print based debugging, use `pr` instead of `print`.
+        That is, convert `print(some_var)` to `pr(some_var)`.
+    3. If you want a trace of a particular functions calls, just add `ss()` as the first
+        line of the function.
+
+    NOTE:
+    ----
+        It's completely fine to leave `autouse=True` in the fixture. It doesn't affect
+        the tests unless you use `pr` or `ss` in any test.
+
+    NOTE:
+    ----
+        When you use `ss` or `pr` in a test, pylance or mypy will complain. This is
+        because they don't know that we're adding these functions to the builtins. The
+        tests will run fine though.
+    """
+    import builtins
+
+    try:
+        import snoop
+    except ImportError:
+        warnings.warn(
+            "Install snoop to enable trace debugging. `pip install snoop`",
+            ImportWarning,
+        )
+        return
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     return AIServiceClientBase(service_id="service", ai_model_id="ai_model_id")
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 @fixture(scope="session")
 def default_service() -> "AIServiceClientBase":
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
@@ -47,6 +119,10 @@ def kernel_with_default_service(
     kernel: "Kernel", default_service: "AIServiceClientBase"
 ) -> "Kernel":
     kernel.add_service(default_service)
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
     return kernel
 
 
@@ -56,19 +132,83 @@ def not_decorated_native_function() -> Callable:
         return "test"
 
     return not_decorated_native_function
+<<<<<<< Updated upstream
+=======
+=======
+    return kernel
+
+
+@fixture(scope="session")
+def not_decorated_native_function() -> Callable:
+    def not_decorated_native_function(arg1: str) -> str:
+        return "test"
+
+    return not_decorated_native_function
+=======
+@pytest.fixture(scope="function")
+def create_kernel(plugin: Optional[KernelPlugin] = None):
+    kernel = Kernel()
+    if plugin:
+        kernel.add_plugin(plugin)
+    return kernel
+
+
+@pytest.fixture(scope="session")
+def get_aoai_config():
+    if "Python_Integration_Tests" in os.environ:
+        deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
+        api_key = os.environ["AzureOpenAI__ApiKey"]
+        endpoint = os.environ["AzureOpenAI__Endpoint"]
+    else:
+        # Load credentials from .env file
+        deployment_name, api_key, endpoint = azure_openai_settings_from_dot_env()
+        deployment_name = "text-embedding-ada-002"
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 
 @fixture(scope="session")
 def decorated_native_function() -> Callable:
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
+<<<<<<< Updated upstream
     @kernel_function(name="getLightStatus")
     def decorated_native_function(arg1: str) -> str:
         return "test"
+=======
+<<<<<<< main
+    @kernel_function(name="getLightStatus")
+    def decorated_native_function(arg1: str) -> str:
+        return "test"
+=======
+<<<<<<< main
+    @kernel_function(name="getLightStatus")
+    def decorated_native_function(arg1: str) -> str:
+        return "test"
+=======
+@pytest.fixture(scope="session")
+def get_oai_config():
+    if "Python_Integration_Tests" in os.environ:
+        api_key = os.environ["OpenAI__ApiKey"]
+        org_id = None
+    else:
+        # Load credentials from .env file
+        api_key, org_id = openai_settings_from_dot_env()
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     return decorated_native_function
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 @fixture(scope="session")
 def custom_plugin_class():
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -323,12 +463,28 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         override_env_param_dict = {}
 
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
     env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
 =======
     env_vars = {
         "ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id",
         "ANTHROPIC_API_KEY": "test_api_key"
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+    env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     env_vars.update(override_env_param_dict)
 
@@ -482,5 +638,20 @@ def redis_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
             monkeypatch.setenv(key, value)
         else:
             monkeypatch.delenv(key, raising=False)
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+@pytest.fixture(scope="session")
+def get_gp_config():
+    if "Python_Integration_Tests" in os.environ:
+        api_key = os.environ["GOOGLE_PALM_API_KEY"]
+    else:
+        # Load credentials from .env file
+        api_key = google_palm_settings_from_dot_env()
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     return env_vars

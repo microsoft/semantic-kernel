@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -33,6 +41,29 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         };
 
         this._sut = new(definition, keyProperty.DataModelPropertyName);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
+                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { StoragePropertyName = "description_embedding " }
+            ]
+        };
+
+        var storagePropertyNames = new Dictionary<string, string>
+        {
+            ["HotelId"] = "HotelId",
+            ["HotelName"] = "HotelName",
+            ["Tags"] = "Tags",
+            ["DescriptionEmbedding"] = "description_embedding",
+        };
+
+        this._sut = new(definition, storagePropertyNames);
+        this._sut = new(new VectorStoreRecordPropertyReader(typeof(AzureCosmosDBMongoDBHotelModel), definition, null));
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -58,6 +89,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         Assert.Equal(["tag1", "tag2"], document["Tags"].AsBsonArray);
         Assert.True(document["parking_is_included"].AsBoolean);
         Assert.Equal([1f, 2f, 3f], document["DescriptionEmbedding"].AsBsonArray);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -71,6 +109,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
             ["Tags"] = BsonArray.Create(new List<string> { "tag1", "tag2" }),
             ["parking_is_included"] = BsonValue.Create(true),
             ["DescriptionEmbedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
+>>>>>>> main
+>>>>>>> Stashed changes
         };
 
         // Act

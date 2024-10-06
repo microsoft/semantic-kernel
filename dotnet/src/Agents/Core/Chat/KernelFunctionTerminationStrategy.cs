@@ -2,9 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+<<<<<<< Updated upstream
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+=======
+<<<<<<< HEAD
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+=======
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.History;
+using Microsoft.SemanticKernel.Agents.Internal;
+>>>>>>> main
+>>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -43,6 +56,10 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     public KernelArguments? Arguments { get; init; }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// The <see cref="KernelFunction"/> invoked as termination criteria.
     /// </summary>
     public KernelFunction Function { get; } = function;
@@ -51,6 +68,19 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
     public Kernel Kernel => kernel;
+<<<<<<< Updated upstream
+=======
+=======
+    /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
+    /// </summary>
+    public Kernel Kernel => kernel;
+
+    /// <summary>
+    /// The <see cref="KernelFunction"/> invoked as termination criteria.
+    /// </summary>
+    public KernelFunction Function { get; } = function;
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// A callback responsible for translating the <see cref="FunctionResult"/>
@@ -58,15 +88,42 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// </summary>
     public Func<FunctionResult, bool> ResultParser { get; init; } = (_) => true;
 
+<<<<<<< Updated upstream
     /// <inheritdoc/>
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+=======
+<<<<<<< HEAD
+    /// <inheritdoc/>
+    protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    {
+=======
+    /// <summary>
+    /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
+    /// </summary>
+    public IChatHistoryReducer? HistoryReducer { get; init; }
+
+    /// <inheritdoc/>
+    protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    {
+        history = await history.ReduceAsync(this.HistoryReducer, cancellationToken).ConfigureAwait(false);
+
+>>>>>>> main
+>>>>>>> Stashed changes
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
                 { this.AgentVariableName, agent.Name ?? agent.Id },
+<<<<<<< Updated upstream
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
+=======
+<<<<<<< HEAD
+                { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
+=======
+                { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
+>>>>>>> main
+>>>>>>> Stashed changes
             };
 
         this.Logger.LogKernelFunctionTerminationStrategyInvokingFunction(nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name);

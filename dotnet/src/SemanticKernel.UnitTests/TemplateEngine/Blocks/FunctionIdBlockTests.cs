@@ -1,7 +1,20 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.TemplateEngine;
+<<<<<<< main
+=======
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 using Xunit;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
@@ -86,6 +99,11 @@ public class FunctionIdBlockTests
         var target1 = new FunctionIdBlock("functionName");
         var target2 = new FunctionIdBlock("pluginName.functionName");
         Assert.Throws<KernelException>(() => new FunctionIdBlock("foo.pluginName.functionName"));
+<<<<<<< Updated upstream
+=======
+        var target2 = new FunctionIdBlock("skillName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+>>>>>>> Stashed changes
 
         // Act + Assert
         Assert.True(target1.IsValid(out _));

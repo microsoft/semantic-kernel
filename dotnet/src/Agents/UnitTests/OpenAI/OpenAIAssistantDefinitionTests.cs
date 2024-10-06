@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -98,6 +106,37 @@ public class OpenAIAssistantDefinitionTests
         ValidateSerialization(definition);
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+    /// <summary>
+    /// Verify TemplateFactoryFormat.
+    /// </summary>
+    [Fact]
+    public void VerifyOpenAIAssistantDefinitionTemplateFactoryFormat()
+    {
+        // Arrange
+        OpenAIAssistantDefinition definition = new("testmodel");
+
+        // Assert
+        Assert.Null(definition.TemplateFactoryFormat);
+
+        // Act
+        definition = new("testmodel")
+        {
+            Metadata = new Dictionary<string, string>() { { OpenAIAssistantAgent.TemplateMetadataKey, "testformat" } }
+        };
+
+        // Assert
+        Assert.Equal("testformat", definition.TemplateFactoryFormat);
+    }
+
+=======
+>>>>>>> ms/main
+>>>>>>> main
+>>>>>>> Stashed changes
     private static void ValidateSerialization(OpenAIAssistantDefinition source)
     {
         string json = JsonSerializer.Serialize(source);

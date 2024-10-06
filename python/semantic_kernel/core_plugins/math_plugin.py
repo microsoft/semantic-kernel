@@ -1,12 +1,44 @@
 # Copyright (c) Microsoft. All rights reserved.
+<<<<<<< Updated upstream
 
 from typing import Annotated
+=======
+<<<<<<< HEAD
+
+from typing import Annotated
+=======
+<<<<<<< main
+
+from typing import Annotated
+=======
+import sys
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class MathPlugin:
+<<<<<<< Updated upstream
     """Description: MathPlugin provides a set of functions to make Math calculations.
+=======
+<<<<<<< HEAD
+    """Description: MathPlugin provides a set of functions to make Math calculations.
+=======
+<<<<<<< main
+    """Description: MathPlugin provides a set of functions to make Math calculations.
+=======
+    """
+    Description: MathPlugin provides a set of functions to make Math calculations.
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
     Usage:
         kernel.add_plugin(MathPlugin(), plugin_name="math")
@@ -29,13 +61,46 @@ class MathPlugin:
             amount = int(amount)
         return MathPlugin.add_or_subtract(input, amount, add=True)
 
+<<<<<<< Updated upstream
     @kernel_function(name="Subtract")
+=======
+<<<<<<< HEAD
+    @kernel_function(name="Subtract")
+=======
+<<<<<<< main
+    @kernel_function(name="Subtract")
+=======
+    @kernel_function(
+        description="Subtracts value to a value",
+        name="Subtract",
+    )
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
     def subtract(
         self,
         input: Annotated[int, "the first number"],
         amount: Annotated[int, "the number to subtract"],
     ) -> int:
+<<<<<<< Updated upstream
         """Returns the difference of numbers provided."""
+=======
+<<<<<<< HEAD
+        """Returns the difference of numbers provided."""
+=======
+<<<<<<< main
+        """Returns the difference of numbers provided."""
+=======
+        """
+        Returns the difference of numbers provided.
+
+        :param initial_value_text: Initial value as string to subtract the specified amount
+        :param context: Contains the context to get the numbers from
+        :return: The resulting subtraction as a string
+        """
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
         if isinstance(input, str):
             input = int(input)
         if isinstance(amount, str):
@@ -44,5 +109,24 @@ class MathPlugin:
 
     @staticmethod
     def add_or_subtract(input: int, amount: int, add: bool) -> int:
+<<<<<<< Updated upstream
         """Helper function to perform addition or subtraction based on the add flag."""
+=======
+<<<<<<< HEAD
+        """Helper function to perform addition or subtraction based on the add flag."""
+=======
+<<<<<<< main
+        """Helper function to perform addition or subtraction based on the add flag."""
+=======
+        """
+        Helper function to perform addition or subtraction based on the add flag.
+
+        :param initial_value_text: Initial value as string to add or subtract the specified amount
+        :param context: Contains the context to get the numbers from
+        :param add: If True, performs addition, otherwise performs subtraction
+        :return: The resulting sum or subtraction as a string
+        """
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
         return input + amount if add else input - amount

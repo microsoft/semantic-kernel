@@ -36,10 +36,29 @@ public class OpenAITextToImageService : ITextToImageService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         this._client = new(modelId, apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
     }
 
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._client.GenerateImageAsync(this._client.ModelId, description, width, height, cancellationToken);
+<<<<<<< Updated upstream
+=======
+=======
+        this._client = new(modelId ?? "dall-e-2", apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
+    }
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
+        TextContent input,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+        => this._client.GetImageContentsAsync(this._client.ModelId, input, executionSettings, kernel, cancellationToken);
+>>>>>>> main
+>>>>>>> Stashed changes
 }

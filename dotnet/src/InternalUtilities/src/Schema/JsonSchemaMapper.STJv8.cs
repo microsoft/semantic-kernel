@@ -1,5 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+// Source copied from https://github.com/eiriktsarpalis/stj-schema-mapper
+// It should be kept in sync with any changes made in that repo,
+// and should be removed once the relevant replacements are available in STJv9.
+
+>>>>>>> main
+>>>>>>> Stashed changes
 #if !NET9_0_OR_GREATER && !SYSTEM_TEXT_JSON_V9
 using System;
 using System.Collections.Generic;
@@ -74,6 +84,13 @@ internal
 
         if (hasDefaultValue)
         {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            JsonSchema.EnsureMutable(ref paramSchema);
+>>>>>>> main
+>>>>>>> Stashed changes
             paramSchema.DefaultValue = defaultValue;
             paramSchema.HasDefaultValue = true;
         }
@@ -243,7 +260,16 @@ internal
                 List<string>? required = null;
                 JsonSchema? additionalProperties = null;
 
+<<<<<<< Updated upstream
                 if (typeInfo.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
+=======
+<<<<<<< HEAD
+                if (typeInfo.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
+=======
+                JsonUnmappedMemberHandling effectiveUnmappedMemberHandling = typeInfo.UnmappedMemberHandling ?? typeInfo.Options.UnmappedMemberHandling;
+                if (effectiveUnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     // Disallow unspecified properties.
                     additionalProperties = JsonSchema.False;
@@ -328,6 +354,13 @@ internal
 
                     if (hasDefaultValue)
                     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                        JsonSchema.EnsureMutable(ref propertySchema);
+>>>>>>> main
+>>>>>>> Stashed changes
                         propertySchema.DefaultValue = defaultValue;
                         propertySchema.HasDefaultValue = true;
                     }

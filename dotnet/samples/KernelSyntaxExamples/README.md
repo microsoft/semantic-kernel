@@ -19,7 +19,19 @@ You can also use environment variables if you prefer.
 
 To set your secrets with Secret Manager:
 
+<<<<<<< Updated upstream
 ```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+<<<<<<< main
+```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+<<<<<<< HEAD
+```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+```
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 cd dotnet/samples/KernelSyntaxExamples
 
 dotnet user-secrets init
@@ -87,7 +99,19 @@ dotnet user-secrets set "Kusto:ConnectionString" "..."
 
 To set your secrets with environment variables, use these names:
 
+<<<<<<< Updated upstream
 ```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+<<<<<<< main
+```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+<<<<<<< HEAD
+```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+```
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 # OpenAI
 OpenAI__ModelId
 OpenAI__ChatModelId
@@ -161,7 +185,19 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 
 `AuthenticateRequestAsyncCallback` is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenAPI plugin.
 
+<<<<<<< Updated upstream
 ```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+<<<<<<< HEAD
+```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);
 ```
 
@@ -180,7 +216,19 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the credentia
 
 The following code demonstrates how to use this provider:
 
+<<<<<<< Updated upstream
 ```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+<<<<<<< HEAD
+```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 var basicAuthProvider = new BasicAuthenticationProvider(() =>
 {
     // JIRA API expects credentials in the format "email:apikey"
@@ -198,7 +246,19 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the token and
 
 The following code demonstrates how to use this provider:
 
+<<<<<<< Updated upstream
 ```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+<<<<<<< HEAD
+```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 var bearerAuthProvider = new BearerAuthenticationProvider(() =>
 {
     return Task.FromResult(Env.Var("AZURE_KEYVAULT_TOKEN"));
@@ -221,7 +281,19 @@ To construct this provider, the caller must specify:
 - _Scopes_ - permissions being requested
 - _Redirect URI_ - for redirecting the user back to the application. (When running locally, this is typically http://localhost.)
 
+<<<<<<< Updated upstream
 ```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+<<<<<<< HEAD
+```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 var msalAuthProvider = new InteractiveMsalAuthenticationProvider(
     Env.Var("AZURE_KEYVAULT_CLIENTID"), // clientId
     Env.Var("AZURE_KEYVAULT_TENANTID"), // tenantId

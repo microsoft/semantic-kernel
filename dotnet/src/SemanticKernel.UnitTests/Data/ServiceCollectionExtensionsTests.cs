@@ -1,7 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel;
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 using Xunit;
 

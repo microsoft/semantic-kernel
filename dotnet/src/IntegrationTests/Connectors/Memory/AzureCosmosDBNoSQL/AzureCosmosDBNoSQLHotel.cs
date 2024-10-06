@@ -40,6 +40,16 @@ public record AzureCosmosDBNoSQLHotel()
     [VectorStoreRecordData]
     public string Description { get; set; }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// <summary>A datetime field.</summary>
+    [VectorStoreRecordData]
+    public DateTimeOffset Timestamp { get; set; }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>A vector field.</summary>
     [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }

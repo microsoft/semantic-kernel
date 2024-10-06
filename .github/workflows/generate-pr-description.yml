@@ -14,6 +14,14 @@ jobs:
     steps:
       - name: Get PR branch
         uses: xt0rted/pull-request-comment-branch@v2
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+        uses: xt0rted/pull-request-comment-branch@v1
+
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         id: comment-branch
 
       - name: Set latest commit status as pending
@@ -45,6 +53,13 @@ jobs:
 
       - name: Add comment to PR
         uses: actions/github-script@v7
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+        uses: actions/github-script@v6
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         if: always()
         with:
           script: |

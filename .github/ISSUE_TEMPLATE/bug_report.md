@@ -5,6 +5,17 @@ title: ''
 labels: ''
 assignees: ''
 
+<<<<<<< Updated upstream
+=======
+about: Create a report to help us improve
+assignees: ""
+labels: ""
+name: Bug report
+runme:
+  id: 01J0BTG8CANBSFT2PB9SAS2DFC
+  version: v3
+title: ""
+>>>>>>> Stashed changes
 ---
 
 **Describe the bug**
@@ -34,6 +45,19 @@ If applicable, add screenshots to help explain your problem.
  - OS: [e.g. iOS8.1]
  - Browser [e.g. stock browser, safari]
  - Version [e.g. 22]
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+
+**Additional context**
+Add any other context about the problem here.
+
+- OS: [e.g. iOS]
+- Browser [e.g. chrome, safari]
+- Version [e.g. 22]
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 **Additional context**
 Add any other context about the problem here.

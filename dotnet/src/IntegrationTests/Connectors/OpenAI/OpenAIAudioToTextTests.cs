@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.IO;
@@ -45,6 +53,13 @@ public sealed class OpenAIAudioToTextTests()
             new AudioContent(audioData, mimeType: "audio/wav"), 
             new OpenAIAudioToTextExecutionSettings(Filename)
         );
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        var result = await service.GetTextContentAsync(new AudioContent(audioData, mimeType: "audio/wav"), new OpenAIAudioToTextExecutionSettings(Filename));
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);

@@ -1,6 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
 from typing import Any
+=======
+<<<<<<< HEAD
+from typing import Any
+=======
+<<<<<<< HEAD
+from typing import Any
+=======
+from typing import List, Optional
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 from pydantic import Field
 
@@ -10,6 +22,13 @@ from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX, PLUGIN_NAME_RE
 
 
 class KernelFunctionMetadata(KernelBaseModel):
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     """The kernel function metadata."""
 
     name: str = Field(..., pattern=FUNCTION_NAME_REGEX)
@@ -32,6 +51,25 @@ class KernelFunctionMetadata(KernelBaseModel):
 
     def __eq__(self, other: object) -> bool:
         """Compare to another KernelFunctionMetadata instance.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    name: str = Field(pattern=FUNCTION_NAME_REGEX)
+    plugin_name: str = Field(pattern=PLUGIN_NAME_REGEX)
+    description: Optional[str] = Field(default=None)
+    parameters: List[KernelParameterMetadata] = Field(default_factory=list)
+    is_prompt: bool
+    is_asynchronous: Optional[bool] = Field(default=True)
+    return_parameter: Optional[KernelParameterMetadata] = None
+
+    def __eq__(self, other: "KernelFunctionMetadata") -> bool:
+        """
+        Compare to another KernelFunctionMetadata instance.
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Args:
             other (KernelFunctionMetadata): The other KernelFunctionMetadata instance.

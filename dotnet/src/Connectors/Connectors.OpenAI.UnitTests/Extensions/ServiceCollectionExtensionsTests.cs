@@ -1,6 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -27,7 +34,15 @@ public class ServiceCollectionExtensionsTests
     public void ItCanAddChatCompletionService(InitializationType type)
     {
         // Arrange
+<<<<<<< Updated upstream
         var client = new OpenAIClient("key");
+=======
+<<<<<<< HEAD
+        var client = new OpenAIClient("key");
+=======
+        var client = new OpenAIClient(new ApiKeyCredential("key"));
+>>>>>>> main
+>>>>>>> Stashed changes
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);
@@ -73,7 +88,15 @@ public class ServiceCollectionExtensionsTests
         var sut = new ServiceCollection();
 
         // Act
+<<<<<<< Updated upstream
         var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient("key"))
+=======
+<<<<<<< HEAD
+        var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient("key"))
+=======
+        var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient(new ApiKeyCredential("key")))
+>>>>>>> main
+>>>>>>> Stashed changes
             .BuildServiceProvider()
             .GetRequiredService<ITextEmbeddingGenerationService>();
 
@@ -133,7 +156,15 @@ public class ServiceCollectionExtensionsTests
         var sut = new ServiceCollection();
 
         // Act
+<<<<<<< Updated upstream
         var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
+=======
+<<<<<<< HEAD
+        var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
+=======
+        var service = sut.AddOpenAIAudioToText("model", new OpenAIClient(new ApiKeyCredential("key")))
+>>>>>>> main
+>>>>>>> Stashed changes
             .BuildServiceProvider()
             .GetRequiredService<IAudioToTextService>();
 

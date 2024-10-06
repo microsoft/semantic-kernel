@@ -4,6 +4,13 @@ import asyncio
 import json
 import logging
 from collections.abc import AsyncIterable, Iterable
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+from dataclasses import dataclass
+>>>>>>> main
+>>>>>>> Stashed changes
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from openai import AsyncOpenAI
@@ -23,6 +30,14 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_function_call_content,
     generate_function_result_content,
     generate_message_content,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    generate_streaming_message_content,
+    generate_streaming_tools_content,
+>>>>>>> main
+>>>>>>> Stashed changes
     get_function_call_contents,
     get_message_contents,
 )
@@ -32,9 +47,22 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
 )
 from semantic_kernel.contents.annotation_content import AnnotationContent
 <<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 =======
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+=======
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+    merge_function_results,
+)
+>>>>>>> main
 >>>>>>> Stashed changes
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -56,6 +84,22 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+@dataclass
+class FunctionActionResult:
+    """Function Action Result."""
+
+    function_call_content: ChatMessageContent | None
+    function_result_content: ChatMessageContent | None
+    tool_outputs: list[dict[str, str]] | None
+
+
+@experimental_class
+>>>>>>> main
+>>>>>>> Stashed changes
 class OpenAIAssistantBase(Agent):
     """OpenAI Assistant Base class.
 
@@ -356,11 +400,24 @@ class OpenAIAssistantBase(Agent):
             ):
                 file_ids = getattr(tool_resources.code_interpreter, "file_ids", [])
 <<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
             if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
                 file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
 =======
             if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
                 file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+=======
+            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+                file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
+            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+                file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
+>>>>>>> main
 >>>>>>> Stashed changes
 
             if hasattr(tool_resources, "file_search") and tool_resources.file_search:
@@ -544,9 +601,20 @@ class OpenAIAssistantBase(Agent):
         self, thread_id: str, message: ChatMessageContent
     ) -> "Message":
 <<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
 =======
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+=======
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+>>>>>>> main
 >>>>>>> Stashed changes
         """Add a chat message.
 
@@ -577,9 +645,20 @@ class OpenAIAssistantBase(Agent):
             metadata=metadata,
         )
 <<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
         return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
 =======
         return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+=======
+        return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
+        return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
+>>>>>>> main
 >>>>>>> Stashed changes
 
     async def get_thread_messages(
@@ -615,9 +694,20 @@ class OpenAIAssistantBase(Agent):
                 str(assistant_name), message
             )
 <<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
             content: ChatMessageContent = generate_message_content(str(assistant_name), message)
 =======
             content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+=======
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+>>>>>>> main
 >>>>>>> Stashed changes
 
             if len(content.items) > 0:
@@ -706,7 +796,15 @@ class OpenAIAssistantBase(Agent):
         truncation_message_count: int | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
+<<<<<<< Updated upstream
         metadata: dict[str, str] | None = {},
+=======
+<<<<<<< HEAD
+        metadata: dict[str, str] | None = {},
+=======
+        metadata: dict[str, str] | None = None,
+>>>>>>> main
+>>>>>>> Stashed changes
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat assistant.
@@ -763,7 +861,15 @@ class OpenAIAssistantBase(Agent):
         truncation_message_count: int | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
+<<<<<<< Updated upstream
         metadata: dict[str, str] | None = {},
+=======
+<<<<<<< HEAD
+        metadata: dict[str, str] | None = {},
+=======
+        metadata: dict[str, str] | None = None,
+>>>>>>> main
+>>>>>>> Stashed changes
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Internal invoke method.
@@ -794,6 +900,15 @@ class OpenAIAssistantBase(Agent):
         if self._is_deleted:
             raise AgentInitializationException("The assistant has been deleted.")
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        if metadata is None:
+            metadata = {}
+
+>>>>>>> main
+>>>>>>> Stashed changes
         self._check_if_deleted()
         tools = self._get_tools()
 
@@ -830,8 +945,22 @@ class OpenAIAssistantBase(Agent):
             run = await self._poll_run_status(run=run, thread_id=thread_id)
 
             if run.status in self.error_message_states:
+<<<<<<< Updated upstream
                 raise AgentInvokeException(
                     f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
+=======
+<<<<<<< HEAD
+                raise AgentInvokeException(
+                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
+=======
+                error_message = ""
+                if run.last_error and run.last_error.message:
+                    error_message = run.last_error.message
+                raise AgentInvokeException(
+                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}` "
+                    f"with error: {error_message}"
+>>>>>>> main
+>>>>>>> Stashed changes
                 )
 
             # Check if function calling required
@@ -842,9 +971,20 @@ class OpenAIAssistantBase(Agent):
                         agent_name=self.name, fccs=fccs
                     )
 <<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
 =======
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+=======
+                    yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+                    yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+>>>>>>> main
 >>>>>>> Stashed changes
 
                     chat_history = ChatHistory()
@@ -893,11 +1033,24 @@ class OpenAIAssistantBase(Agent):
                                 function_step=function_step,
                                 tool_call=tool_call,
 <<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
                             content = generate_function_result_content(
                                 agent_name=self.name, function_step=function_step, tool_call=tool_call
 =======
                             content = generate_function_result_content(
                                 agent_name=self.name, function_step=function_step, tool_call=tool_call
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+=======
+                            content = generate_function_result_content(
+                                agent_name=self.name, function_step=function_step, tool_call=tool_call
+                            content = generate_function_result_content(
+                                agent_name=self.name, function_step=function_step, tool_call=tool_call
+>>>>>>> main
 >>>>>>> Stashed changes
                             )
 
@@ -911,11 +1064,207 @@ class OpenAIAssistantBase(Agent):
                     )
                     if message:
                         content = generate_message_content(self.name, message)
+<<<<<<< Updated upstream
                         if len(content.items) > 0:
+=======
+<<<<<<< HEAD
+                        if len(content.items) > 0:
+=======
+                        if content and len(content.items) > 0:
+>>>>>>> main
+>>>>>>> Stashed changes
                             message_count += 1
                             yield True, content
                 processed_step_ids.add(completed_step.id)
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    async def invoke_stream(
+        self,
+        thread_id: str,
+        *,
+        messages: list[ChatMessageContent] | None = None,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatMessageContent]:
+        """Invoke the chat assistant with streaming."""
+        async for content in self._invoke_internal_stream(
+            thread_id=thread_id,
+            messages=messages,
+            ai_model_id=ai_model_id,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            **kwargs,
+        ):
+            yield content
+
+    async def _invoke_internal_stream(
+        self,
+        thread_id: str,
+        *,
+        messages: list[ChatMessageContent] | None = None,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatMessageContent]:
+        """Internal invoke method with streaming."""
+        if not self.assistant:
+            raise AgentInitializationException("The assistant has not been created.")
+
+        if self._is_deleted:
+            raise AgentInitializationException("The assistant has been deleted.")
+
+        if metadata is None:
+            metadata = {}
+
+        tools = self._get_tools()
+
+        run_options = self._generate_options(
+            ai_model_id=ai_model_id,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            **kwargs,
+        )
+
+        # Filter out None values to avoid passing them as kwargs
+        run_options = {k: v for k, v in run_options.items() if v is not None}
+
+        stream = self.client.beta.threads.runs.stream(
+            assistant_id=self.assistant.id,
+            thread_id=thread_id,
+            instructions=self.assistant.instructions,
+            tools=tools,  # type: ignore
+            **run_options,
+        )
+
+        function_steps: dict[str, FunctionCallContent] = {}
+        active_messages: dict[str, RunStep] = {}
+
+        while True:
+            async with stream as response_stream:
+                async for event in response_stream:
+                    if event.event == "thread.run.created":
+                        run = event.data
+                        logger.info(f"Assistant run created with ID: {run.id}")
+                    elif event.event == "thread.run.in_progress":
+                        run = event.data
+                        logger.info(f"Assistant run in progress with ID: {run.id}")
+                    elif event.event == "thread.message.delta":
+                        content = generate_streaming_message_content(self.name, event.data)
+                        yield content
+                    elif event.event == "thread.run.step.completed":
+                        logger.info(f"Run step completed with ID: {event.data.id}")
+                        if hasattr(event.data.step_details, "message_creation"):
+                            message_id = event.data.step_details.message_creation.message_id
+                            if message_id not in active_messages:
+                                active_messages[message_id] = event.data
+                        elif hasattr(event.data.step_details, "tool_calls"):
+                            tool_content = generate_streaming_tools_content(self.name, event.data.step_details)
+                            if tool_content:
+                                yield tool_content
+                    elif event.event == "thread.run.requires_action":
+                        run = event.data
+                        function_action_result = await self._handle_streaming_requires_action(run, function_steps)
+                        if function_action_result is None:
+                            raise AgentInvokeException(
+                                f"Function call required but no function steps found for agent `{self.name}` "
+                                f"thread: {thread_id}."
+                            )
+                        if function_action_result.function_result_content and messages is not None:
+                            messages.append(function_action_result.function_result_content)
+                        if function_action_result.function_call_content:
+                            if messages is not None:
+                                messages.append(function_action_result.function_call_content)
+                            stream = self.client.beta.threads.runs.submit_tool_outputs_stream(
+                                run_id=run.id,
+                                thread_id=thread_id,
+                                tool_outputs=function_action_result.tool_outputs,  # type: ignore
+                            )
+                            break
+                    elif event.event == "thread.run.completed":
+                        run = event.data
+                        logger.info(f"Run completed with ID: {run.id}")
+                        if len(active_messages) > 0:
+                            for id in active_messages:
+                                step: RunStep = active_messages[id]
+                                message = await self._retrieve_message(
+                                    thread_id=thread_id,
+                                    message_id=id,  # type: ignore
+                                )
+
+                                if message and message.content:
+                                    content = generate_message_content(self.name, message, step)
+                                    if messages is not None:
+                                        messages.append(content)
+                        return
+                    elif event.event == "thread.run.failed":
+                        run = event.data  # type: ignore
+                        error_message = ""
+                        if run.last_error and run.last_error.message:
+                            error_message = run.last_error.message
+                        raise AgentInvokeException(
+                            f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}` "
+                            f"with error: {error_message}"
+                        )
+                else:
+                    # If the inner loop completes without encountering a 'break', exit the outer loop
+                    break
+
+    async def _handle_streaming_requires_action(
+        self, run: Run, function_steps: dict[str, FunctionCallContent]
+    ) -> FunctionActionResult | None:
+        fccs = get_function_call_contents(run, function_steps)
+        if fccs:
+            function_call_content = generate_function_call_content(agent_name=self.name, fccs=fccs)
+
+            chat_history = ChatHistory()
+            _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
+
+            function_result_content = merge_function_results(chat_history.messages)[0]
+
+            tool_outputs = self._format_tool_outputs(fccs, chat_history)
+            return FunctionActionResult(function_call_content, function_result_content, tool_outputs)
+        return None
+
+>>>>>>> main
+>>>>>>> Stashed changes
     # endregion
 
     # region Content Generation Methods
@@ -1131,7 +1480,15 @@ class OpenAIAssistantBase(Agent):
     ) -> Message | None:
         """Retrieve a message from a thread."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     async def _retrieve_message(self, thread_id: str, message_id: str) -> Message | None:
         """Retrieve a message from a thread.
 
@@ -1142,6 +1499,13 @@ class OpenAIAssistantBase(Agent):
         Returns:
             The message or None.
         """
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
 >>>>>>> Stashed changes
         message: Message | None = None
         count = 0
@@ -1272,9 +1636,20 @@ class OpenAIAssistantBase(Agent):
         self, fccs: list[FunctionCallContent], chat_history: ChatHistory
     ) -> list[Any]:
 <<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
 =======
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+=======
+    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+>>>>>>> main
 >>>>>>> Stashed changes
         """Invoke function calls and store results in chat history.
 

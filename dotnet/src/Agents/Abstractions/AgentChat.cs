@@ -2,12 +2,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System.Text.Json;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Agents.Internal;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.Agents.Internal;
+=======
+using Microsoft.SemanticKernel.Agents.Filters;
+using Microsoft.SemanticKernel.Agents.Internal;
+using Microsoft.SemanticKernel.Agents.Serialization;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -26,9 +43,27 @@ public abstract class AgentChat
     private readonly Dictionary<Agent, string> _channelMap; // Map agent to its channel-hash: one entry per agent.
 
     private int _isActive;
+<<<<<<< Updated upstream
     private ILogger? _logger;
 
     /// <summary>
+=======
+<<<<<<< HEAD
+    private ILogger? _logger;
+
+    /// <summary>
+=======
+    private List<IAgentChatFilter>? _filters;
+    private ILogger? _logger;
+
+    /// <summary>
+    /// The agents participating in the chat.
+    /// </summary>
+    public abstract IReadOnlyList<Agent> Agents { get; }
+
+    /// <summary>
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Indicates if a chat operation is active.  Activity is defined as
     /// any the execution of any public method.
     /// </summary>
@@ -45,6 +80,17 @@ public abstract class AgentChat
     protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// %%%
+    /// </summary>
+    public IList<IAgentChatFilter> Filters => this._filters ??= [];
+
+    /// <summary>
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Exposes the internal history to subclasses.
     /// </summary>
     protected ChatHistory History { get; }
@@ -218,6 +264,15 @@ public abstract class AgentChat
 
         try
         {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            // %%%
+            this.OnAgentInvokingFilter(agent, this.History);
+
+>>>>>>> main
+>>>>>>> Stashed changes
             // Get or create the required channel and block until channel is synchronized.
             // Will throw exception when propagating a processing failure.
             AgentChannel channel = await this.GetOrCreateChannelAsync(agent, cancellationToken).ConfigureAwait(false);
@@ -233,6 +288,23 @@ public abstract class AgentChat
 
                 // Add to primary history
                 this.History.Add(message);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                // Invoke filter
+                AgentChatFilterInvokedContext? context = this.OnAgentInvokedFilter(agent, this.History, message);
+
+                // Capture potential message replacement
+                ChatMessageContent effectiveMessage = context?.Message ?? message;
+
+                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType(), message);
+
+                // Add to primary history
+                this.History.Add(effectiveMessage);
+                messages.Add(effectiveMessage);
+>>>>>>> main
+>>>>>>> Stashed changes
 
                 if (isVisible)
                 // Don't expose internal messages to caller.
@@ -242,6 +314,15 @@ public abstract class AgentChat
                     // Yield message to caller
                     yield return message;
                 }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+                // Yield message to caller
+                yield return effectiveMessage;
+>>>>>>> main
+>>>>>>> Stashed changes
             }
 
             // Broadcast message to other channels (in parallel)
@@ -335,6 +416,66 @@ public abstract class AgentChat
         }
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    internal async Task DeserializeAsync(AgentChatState state)
+    {
+        if (this._agentChannels.Count > 0 || this.History.Count > 0)
+        {
+            throw new KernelException($"Unable to restore chat to instance of {this.GetType().Name}: Already in use.");
+        }
+
+        try
+        {
+            Dictionary<string, AgentChannelState> channelStateMap = state.Channels.ToDictionary(c => c.ChannelKey);
+            foreach (Agent agent in this.Agents)
+            {
+                string channelKey = this.GetAgentHash(agent);
+
+                if (this._agentChannels.ContainsKey(channelKey))
+                {
+                    continue;
+                }
+
+                AgentChannel channel = await agent.RestoreChannelAsync(channelStateMap[channelKey].ChannelState, CancellationToken.None).ConfigureAwait(false);
+                this._agentChannels.Add(channelKey, channel);
+                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
+            }
+
+            IEnumerable<ChatMessageContent>? history = JsonSerializer.Deserialize<IEnumerable<ChatMessageContent>>(state.History);
+            if (history != null)
+            {
+                this.History.AddRange(history);
+            }
+        }
+        catch
+        {
+            this._agentChannels.Clear();
+            this.History.Clear();
+            throw;
+        }
+    }
+
+    internal AgentChatState Serialize() =>
+        new()
+        {
+            Participants = this.Agents.Select(a => new AgentParticipant(a)),
+            History = JsonSerializer.Serialize(ChatMessageReference.Prepare(this.History)),
+            Channels =
+                this._agentChannels.Select(
+                    kvp =>
+                        new AgentChannelState
+                        {
+                            ChannelKey = kvp.Key,
+                            ChannelType = kvp.Value.GetType().FullName!,
+                            ChannelState = kvp.Value.Serialize()
+                        })
+        };
+
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>
     /// Clear activity signal to indicate that activity has ceased.
     /// </summary>
@@ -412,6 +553,46 @@ public abstract class AgentChat
         return channel;
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    private AgentChatFilterInvokingContext? OnAgentInvokingFilter(Agent agent, IReadOnlyList<ChatMessageContent> history)
+    {
+        AgentChatFilterInvokingContext? context = null;
+
+        if (this._filters is { Count: > 0 })
+        {
+            context = new(agent, history);
+
+            for (int i = 0; i < this._filters.Count; i++)
+            {
+                this._filters[i].OnAgentInvoking(context);
+            }
+        }
+
+        return context;
+    }
+
+    private AgentChatFilterInvokedContext? OnAgentInvokedFilter(Agent agent, IReadOnlyList<ChatMessageContent> history, ChatMessageContent message)
+    {
+        AgentChatFilterInvokedContext? context = null;
+
+        if (this._filters is { Count: > 0 })
+        {
+            context = new(agent, history, message);
+
+            for (int i = 0; i < this._filters.Count; i++)
+            {
+                this._filters[i].OnAgentInvoked(context);
+            }
+        }
+
+        return context;
+    }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentChat"/> class.
     /// </summary>

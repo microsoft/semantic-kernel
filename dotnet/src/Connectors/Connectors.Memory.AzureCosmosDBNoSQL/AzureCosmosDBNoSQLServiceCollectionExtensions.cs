@@ -5,7 +5,18 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Http;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.Http;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.Http;
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel;
 
@@ -35,7 +46,18 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
             {
                 var database = sp.GetRequiredService<Database>();
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>();
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                 return new AzureCosmosDBNoSQLVectorStore(database, options);
             });
 
@@ -66,16 +88,135 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
             {
                 var cosmosClient = new CosmosClient(connectionString, new()
                 {
+<<<<<<< Updated upstream
                     ApplicationName = HttpHeaderConstant.Values.UserAgent,
+=======
+<<<<<<< HEAD
+                    ApplicationName = HttpHeaderConstant.Values.UserAgent,
+=======
+<<<<<<< HEAD
+                    ApplicationName = HttpHeaderConstant.Values.UserAgent,
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                     Serializer = new CosmosSystemTextJsonSerializer(options?.JsonSerializerOptions ?? JsonSerializerOptions.Default)
                 });
 
                 var database = cosmosClient.GetDatabase(databaseName);
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>();
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                 return new AzureCosmosDBNoSQLVectorStore(database, options);
             });
 
         return services;
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    /// <summary>
+    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// and where the Azure CosmosDB NoSQL <see cref="Database"/> is retrieved from the dependency injection container.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection services,
+        string collectionName,
+        AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        string? serviceId = default)
+        where TRecord : class
+    {
+        services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
+            serviceId,
+            (sp, obj) =>
+            {
+                var database = sp.GetRequiredService<Database>();
+                var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>>();
+
+                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+            });
+
+        AddVectorizedSearch<TRecord>(services, serviceId);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// and where the Azure CosmosDB NoSQL <see cref="Database"/> is constructed using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="connectionString">Connection string required to connect to Azure CosmosDB NoSQL.</param>
+    /// <param name="databaseName">Database name for Azure CosmosDB NoSQL.</param>
+    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection services,
+        string collectionName,
+        string connectionString,
+        string databaseName,
+        AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        string? serviceId = default)
+        where TRecord : class
+    {
+        services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
+            serviceId,
+            (sp, obj) =>
+            {
+                var cosmosClient = new CosmosClient(connectionString, new()
+                {
+                    ApplicationName = HttpHeaderConstant.Values.UserAgent,
+                    UseSystemTextJsonSerializerWithOptions = options?.JsonSerializerOptions ?? JsonSerializerOptions.Default,
+                });
+
+                var database = cosmosClient.GetDatabase(databaseName);
+                var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>>();
+
+                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+            });
+
+        AddVectorizedSearch<TRecord>(services, serviceId);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
+    /// <param name="services">The service collection to register on.</param>
+    /// <param name="serviceId">The service id that the registrations should use.</param>
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+        where TRecord : class
+    {
+        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
+            serviceId,
+            (sp, obj) =>
+            {
+                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId);
+            });
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

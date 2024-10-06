@@ -2,12 +2,34 @@
 
 using System.Threading.Tasks;
 using Azure.Identity;
+<<<<<<< Updated upstream
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+=======
+<<<<<<< HEAD
+using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel;
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.TextToImage;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+#pragma warning disable CS0618 // Type or member is obsolete
+
+>>>>>>> main
+>>>>>>> Stashed changes
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
 public sealed class AzureOpenAITextToImageTests
@@ -43,4 +65,36 @@ public sealed class AzureOpenAITextToImageTests
         Assert.NotNull(result);
         Assert.StartsWith("https://", result);
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    [Fact]
+    public async Task GetImageContentsCanReturnImageUrlAsync()
+    {
+        // Arrange
+        AzureOpenAIConfiguration? configuration = this._configuration.GetSection("AzureOpenAITextToImage").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(configuration);
+
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAITextToImage(
+                deploymentName: configuration.DeploymentName,
+                endpoint: configuration.Endpoint,
+                credentials: new AzureCliCredential())
+            .Build();
+
+        var service = kernel.GetRequiredService<ITextToImageService>();
+
+        // Act
+        var result = await service.GetImageContentsAsync("The sun rises in the east and sets in the west.", new OpenAITextToImageExecutionSettings { Size = (1024, 1024) });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEmpty(result);
+        Assert.NotEmpty(result[0].Uri!.ToString());
+        Assert.StartsWith("https://", result[0].Uri!.ToString());
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

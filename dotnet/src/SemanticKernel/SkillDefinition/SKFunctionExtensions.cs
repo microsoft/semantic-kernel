@@ -1,6 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System.Text.Json.Nodes;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,6 +22,10 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 public static class SKFunctionExtensions
 {
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// Configure the LLM settings used by semantic function.
     /// </summary>
     /// <param name="skFunction">Semantic function</param>
@@ -86,6 +97,11 @@ public static class SKFunctionExtensions
     }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Execute a function with a custom set of context variables.
     /// Use case: template engine: semantic function with custom input variable.
     /// </summary>
@@ -107,6 +123,36 @@ public static class SKFunctionExtensions
         // var tmpContext = new SKContext(input, memory, skills, log, cancellationToken);
         var tmpContext = new SKContext(input);
         try
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        return function.InvokeAsync(input, settings: null, memory: null, logger: null, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Execute a function allowing to pass the main input separately from the rest of the context.
+    /// Note: if the context contains an INPUT key/value, that value is ignored, logging a warning.
+    /// </summary>
+    /// <param name="function">Function to execute</param>
+    /// <param name="input">Main input string</param>
+    /// <param name="context">Execution context, including variables other than input</param>
+    /// <param name="mutableContext">Whether the function can modify the context variables, True by default</param>
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <returns>The result of the function execution</returns>
+    public static Task<SKContext> InvokeAsync(this ISKFunction function,
+        string input,
+        SKContext context,
+        bool mutableContext = true,
+        ITextCompletion? textCompletionService = null,
+        CompleteRequestSettings? settings = null)
+    {
+        // Log a warning if the given input is overriding a different input in the context
+        var inputInContext = context.Variables.Input;
+        if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
+>>>>>>> main
+>>>>>>> Stashed changes
         {
 #pragma warning disable CA2016 // the token is passed in via the context
             await function.InvokeAsync(tmpContext).ConfigureAwait(false);
@@ -120,5 +166,21 @@ public static class SKFunctionExtensions
         }
 
         return tmpContext;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            return function.InvokeAsync(context, textCompletionService, settings);
+        }
+
+        // Create a copy of the context, to avoid editing the original set of variables
+        SKContext contextClone = context.Clone();
+
+        // Store the input in the context clone
+        contextClone.Variables.Update(input);
+
+        return function.InvokeAsync(contextClone, textCompletionService, settings);
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 }

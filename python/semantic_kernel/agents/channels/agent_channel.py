@@ -61,7 +61,32 @@ class AgentChannel(ABC):
             agent: The agent to interact with.
 
         Returns:
+<<<<<<< Updated upstream
             A async iterable of a bool, ChatMessageContent.
+=======
+<<<<<<< HEAD
+            A async iterable of a bool, ChatMessageContent.
+=======
+            An async iterable of a bool, ChatMessageContent.
+        """
+        ...
+
+    @abstractmethod
+    def invoke_stream(
+        self,
+        agent: "Agent",
+        history: "list[ChatMessageContent]",
+    ) -> AsyncIterable["ChatMessageContent"]:
+        """Perform a discrete incremental stream interaction between a single Agent and AgentChat.
+
+        Args:
+            agent: The agent to interact with.
+            history: The history of messages in the conversation.
+
+        Returns:
+            An async iterable ChatMessageContent.
+>>>>>>> main
+>>>>>>> Stashed changes
         """
         ...
 

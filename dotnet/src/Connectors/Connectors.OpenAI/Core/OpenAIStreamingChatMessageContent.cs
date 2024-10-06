@@ -1,6 +1,22 @@
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+=======
+<<<<<<< HEAD
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+=======
+
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -35,6 +51,14 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
             null,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
+            null,
+>>>>>>> main
+>>>>>>> Stashed changes
             null,
             chatUpdate,
             choiceIndex,
@@ -67,6 +91,17 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
             // TODO: Remove this try-catch block once the bug is fixed.
         }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
+        this.FinishReason = chatUpdate.FinishReason;
+        this.Items = CreateContentItems(chatUpdate.ContentUpdate);
+            // TODO: Remove this try-catch block once the bug is fixed.
+        }
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <summary>

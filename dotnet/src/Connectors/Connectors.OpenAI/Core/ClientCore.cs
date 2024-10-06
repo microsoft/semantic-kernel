@@ -10,9 +10,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+<<<<<<< Updated upstream
 #pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 #pragma warning restore IDE0005 // Using directive is unnecessary
+=======
+<<<<<<< HEAD
+#pragma warning disable IDE0005 // Using directive is unnecessary
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
+#pragma warning restore IDE0005 // Using directive is unnecessary
+=======
+<<<<<<< HEAD
+#pragma warning disable IDE0005 // Using directive is unnecessary
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
+#pragma warning restore IDE0005 // Using directive is unnecessary
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using OpenAI;
@@ -67,11 +82,26 @@ internal partial class ClientCore
     internal Dictionary<string, object?> Attributes { get; } = [];
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     /// The function calls processor.
     /// </summary>
     protected FunctionCallsProcessor FunctionCallsProcessor { get; set; }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="ClientCore"/> class.
     /// </summary>
     /// <param name="modelId">Model name.</param>
@@ -88,8 +118,21 @@ internal partial class ClientCore
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
+<<<<<<< Updated upstream
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
+=======
+<<<<<<< HEAD
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+
+=======
+<<<<<<< HEAD
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
         // Empty constructor will be used when inherited by a specialized Client.
         if (modelId is null
             && apiKey is null
@@ -132,7 +175,15 @@ internal partial class ClientCore
             this.AddAttribute(ClientCore.OrganizationKey, organizationId);
         }
 
+<<<<<<< Updated upstream
         this.Client = new OpenAIClient(apiKey!, options);
+=======
+<<<<<<< HEAD
+        this.Client = new OpenAIClient(apiKey!, options);
+=======
+        this.Client = new OpenAIClient(new ApiKeyCredential(apiKey!), options);
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -159,7 +210,18 @@ internal partial class ClientCore
 
         this.Logger = logger ?? NullLogger.Instance;
         this.Client = openAIClient;
+<<<<<<< Updated upstream
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+=======
+<<<<<<< HEAD
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+=======
+<<<<<<< HEAD
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -195,7 +257,15 @@ internal partial class ClientCore
     {
         OpenAIClientOptions options = new()
         {
+<<<<<<< Updated upstream
             ApplicationId = HttpHeaderConstant.Values.UserAgent,
+=======
+<<<<<<< HEAD
+            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+=======
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
+>>>>>>> main
+>>>>>>> Stashed changes
             Endpoint = endpoint
         };
 
@@ -212,6 +282,18 @@ internal partial class ClientCore
     }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// Gets the model identifier to use for the client.
+    /// </summary>
+    protected virtual string GetClientModelId()
+        => this.ModelId;
+
+    /// <summary>
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Invokes the specified request and handles exceptions.
     /// </summary>
     /// <typeparam name="T">Type of the response.</typeparam>

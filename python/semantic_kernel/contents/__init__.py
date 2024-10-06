@@ -6,9 +6,25 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
+<<<<<<< Updated upstream
 from semantic_kernel.contents.streaming_chat_message_content import (
     StreamingChatMessageContent,
 )
+=======
+<<<<<<< HEAD
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
+=======
+<<<<<<< main
+from semantic_kernel.contents.streaming_chat_message_content import (
+    StreamingChatMessageContent,
+)
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -23,7 +39,37 @@ __all__ = [
     "FunctionCallContent",
     "FunctionResultContent",
     "ImageContent",
+<<<<<<< Updated upstream
     "StreamingChatMessageContent",
     "StreamingTextContent",
     "TextContent",
+=======
+<<<<<<< HEAD
+    "StreamingChatMessageContent",
+    "StreamingTextContent",
+    "TextContent",
+=======
+    "StreamingAnnotationContent",
+    "StreamingChatMessageContent",
+    "StreamingFileReferenceContent",
+    "StreamingTextContent",
+    "TextContent",
+=======
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
+
+__all__ = [
+    "ChatMessageContent",
+    "KernelContent",
+    "TextContent",
+    "StreamingKernelContent",
+    "StreamingChatMessageContent",
+    "StreamingTextContent",
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 ]

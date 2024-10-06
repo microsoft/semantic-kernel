@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -25,13 +33,40 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAgentsTest(output)
         // Define the agents
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel: new(),
                 provider,
                 new(this.Model)
+=======
+<<<<<<< HEAD
+                kernel: new(),
+                provider,
+                new(this.Model)
+=======
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                {
+                    Name = nameof(OpenAIAssistantAgent),
+                    Instructions = AgentInstructions,
+                },
+                kernel: new Kernel());
+                kernel: new(),
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     Name = nameof(OpenAIAssistantAgent),
                     Instructions = AgentInstructions,
                 });
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                },
+                kernel: new Kernel());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         ChatCompletionAgent chatAgent =
             new()

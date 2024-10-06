@@ -1,12 +1,37 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< Updated upstream
 from typing import Annotated, Any
+=======
+<<<<<<< main
+from typing import Annotated, Any
+=======
+<<<<<<< main
+from typing import Annotated, Any
+=======
+import sys
+from typing import Dict, List, Optional, Tuple
+
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, MessageDict
 from pydantic import PrivateAttr, StringConstraints, ValidationError
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
     GooglePalmChatPromptExecutionSettings,
@@ -24,26 +49,105 @@ from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvali
 logger: logging.Logger = logging.getLogger(__name__)
 
 int_to_role = {1: AuthorRole.USER, 2: AuthorRole.SYSTEM, 3: AuthorRole.ASSISTANT, 4: AuthorRole.TOOL}
+<<<<<<< Updated upstream
+=======
+=======
+<<<<<<< main
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+=======
+from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+>>>>>>> ms/small_fixes
+from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
+    GooglePalmChatPromptExecutionSettings,
+    GooglePalmPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+<<<<<<< main
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError, ServiceResponseException
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+int_to_role = {1: AuthorRole.USER, 2: AuthorRole.SYSTEM, 3: AuthorRole.ASSISTANT, 4: AuthorRole.TOOL}
+>>>>>>> Stashed changes
 
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
     _message_history: ChatHistory | None = PrivateAttr()
     service_id: str | None = None
+<<<<<<< Updated upstream
+=======
+=======
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_role import ChatRole
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+int_to_role = {1: ChatRole.USER, 2: ChatRole.SYSTEM, 3: ChatRole.ASSISTANT, 4: ChatRole.TOOL}
+>>>>>>> origin/main
+
+
+class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
+    api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+<<<<<<< main
+    _message_history: ChatHistory | None = PrivateAttr()
+    service_id: str | None = None
+=======
+    _message_history: Optional[ChatHistory] = PrivateAttr()
+    service_id: Optional[str] = None
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     def __init__(
         self,
         ai_model_id: str,
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         api_key: str | None = None,
         message_history: ChatHistory | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+        api_key: str,
+        message_history: Optional[ChatHistory] = None,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     ):
         """Initializes a new instance of the GooglePalmChatCompletion class.
 
         Args:
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             api_key (str | None): The optional API key to use. If not provided, will be read from either
                 the env vars or the .env settings file
             message_history (ChatHistory | None): The message history to use for context. (Optional)
@@ -53,6 +157,17 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
         Raises:
             ServiceInitializationError: When any of the required settings are missing.
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+            api_key {str} -- GooglePalm API key, see
+                https://developers.generativeai.google/products/palm
+            message_history {Optional[ChatHistory]} -- The message history to use for context. (Optional)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         """
         try:
             google_palm_settings = GooglePalmSettings.create(
@@ -75,7 +190,19 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def get_chat_message_contents(
         self,
+<<<<<<< Updated upstream
         chat_history: ChatHistory,
+=======
+<<<<<<< main
+        chat_history: ChatHistory,
+=======
+<<<<<<< main
+        chat_history: ChatHistory,
+=======
+        messages: ChatHistory,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         settings: GooglePalmPromptExecutionSettings,
         **kwargs: Any,
     ) -> list[ChatMessageContent]:
@@ -90,7 +217,19 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Returns:
             List[ChatMessageContent]: A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
+<<<<<<< Updated upstream
         settings.messages = self._prepare_chat_history_for_request(chat_history, role_key="author")
+=======
+<<<<<<< main
+        settings.messages = self._prepare_chat_history_for_request(chat_history, role_key="author")
+=======
+<<<<<<< main
+        settings.messages = self._prepare_chat_history_for_request(chat_history, role_key="author")
+=======
+        settings.messages = self._prepare_chat_history_for_request(messages)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
@@ -121,7 +260,19 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
+<<<<<<< Updated upstream
             role=int_to_role[int(candidate.get("author"))],  # TODO (moonbox3): why is author coming back as '1'?
+=======
+<<<<<<< main
+            role=int_to_role[int(candidate.get("author"))],  # TODO (moonbox3): why is author coming back as '1'?
+=======
+<<<<<<< main
+            role=int_to_role[int(candidate.get("author"))],  # TODO (moonbox3): why is author coming back as '1'?
+=======
+            role=int_to_role[int(candidate.get("author"))],  # TODO: why is author coming back as '1'?
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             content=candidate.get("content"),
         )
 
@@ -142,8 +293,24 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
+<<<<<<< Updated upstream
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
+=======
+<<<<<<< main
+    ) -> list[TextContent]:
+        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
+=======
+<<<<<<< main
+    ) -> list[TextContent]:
+        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
+=======
+    ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         Args:
             prompt (str): The prompt to send to the LLM.
@@ -182,11 +349,26 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
     ):
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         """Return a streaming text content.
 
         Raises:
             NotImplementedError: Google Palm API does not currently support streaming
         """
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def _send_chat_request(
@@ -238,3 +420,22 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return GooglePalmChatPromptExecutionSettings
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+
+    def _prepare_chat_history_for_request(
+        self,
+        chat_history: ChatHistory,
+    ) -> List[Dict[str, Optional[str]]]:
+        """
+        Prepare the chat history for a request, allowing customization of the key names for role/author,
+        and optionally overriding the role.
+        """
+        standard_out = super()._prepare_chat_history_for_request(chat_history)
+        for message in standard_out:
+            message["author"] = message.pop("role")
+        return standard_out
+>>>>>>> origin/main
+>>>>>>> Stashed changes

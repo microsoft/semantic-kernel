@@ -1,4 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.IO;

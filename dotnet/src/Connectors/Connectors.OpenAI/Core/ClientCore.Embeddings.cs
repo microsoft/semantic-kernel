@@ -39,7 +39,15 @@ internal partial class ClientCore
                 Dimensions = dimensions
             };
 
+<<<<<<< Updated upstream
             ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
+=======
+<<<<<<< HEAD
+            ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
+=======
+            ClientResult<OpenAIEmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
+>>>>>>> main
+>>>>>>> Stashed changes
             var embeddings = response.Value;
 
             if (embeddings.Count != data.Count)
@@ -49,7 +57,15 @@ internal partial class ClientCore
 
             for (var i = 0; i < embeddings.Count; i++)
             {
+<<<<<<< Updated upstream
                 result.Add(embeddings[i].Vector);
+=======
+<<<<<<< HEAD
+                result.Add(embeddings[i].Vector);
+=======
+                result.Add(embeddings[i].ToFloats());
+>>>>>>> main
+>>>>>>> Stashed changes
             }
         }
 

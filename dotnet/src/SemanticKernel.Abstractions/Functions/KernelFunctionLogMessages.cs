@@ -3,7 +3,17 @@
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
 using System;
+<<<<<<< Updated upstream
 using System.Text.Json;
+=======
+<<<<<<< HEAD
+using System.Text.Json;
+=======
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
@@ -27,7 +37,15 @@ internal static partial class KernelFunctionLogMessages
         string functionName);
 
     /// <summary>
+<<<<<<< Updated upstream
     /// Logs arguments to a <see cref="KernelFunction"/>.
+=======
+<<<<<<< HEAD
+    /// Logs arguments to a <see cref="KernelFunction"/>.
+=======
+    /// Logs arguments of a <see cref="KernelFunction"/>.
+>>>>>>> main
+>>>>>>> Stashed changes
     /// The action provides the benefit of caching the template parsing result for better performance.
     /// And the public method is a helper to serialize the arguments.
     /// </summary>
@@ -36,13 +54,65 @@ internal static partial class KernelFunctionLogMessages
             logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
             eventId: 0,
             "Function arguments: {Arguments}");
+<<<<<<< Updated upstream
     public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments)
     {
+=======
+<<<<<<< HEAD
+    public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments)
+    {
+=======
+
+    [RequiresUnreferencedCode("Uses reflection to serialize function arguments, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to serialize the function arguments, making it incompatible with AOT scenarios.")]
+    public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments)
+    {
+        LogFunctionArgumentsInternal(logger, arguments);
+    }
+
+    /// <summary>
+    /// Logs arguments of a <see cref="KernelFunction"/>.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments, JsonSerializerOptions jsonSerializerOptions)
+    {
+        LogFunctionArgumentsInternal(logger, arguments, jsonSerializerOptions);
+    }
+
+    /// <summary>
+    /// Logs arguments of a <see cref="KernelFunction"/>.
+    /// </summary>
+    [RequiresUnreferencedCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
+    private static void LogFunctionArgumentsInternal(this ILogger logger, KernelArguments arguments, JsonSerializerOptions? jsonSerializerOptions = null)
+    {
+>>>>>>> main
+>>>>>>> Stashed changes
         if (logger.IsEnabled(LogLevel.Trace))
         {
             try
             {
+<<<<<<< Updated upstream
                 var jsonString = JsonSerializer.Serialize(arguments);
+=======
+<<<<<<< HEAD
+                var jsonString = JsonSerializer.Serialize(arguments);
+=======
+                string jsonString;
+
+                if (jsonSerializerOptions is not null)
+                {
+                    JsonTypeInfo<KernelArguments> typeInfo = (JsonTypeInfo<KernelArguments>)jsonSerializerOptions.GetTypeInfo(typeof(KernelArguments));
+                    jsonString = JsonSerializer.Serialize(arguments, typeInfo);
+                }
+                else
+                {
+                    jsonString = JsonSerializer.Serialize(arguments);
+                }
+
+>>>>>>> main
+>>>>>>> Stashed changes
                 s_logFunctionArguments(logger, jsonString, null);
             }
             catch (NotSupportedException ex)
@@ -71,9 +141,42 @@ internal static partial class KernelFunctionLogMessages
             logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
             eventId: 0,
             "Function result: {ResultValue}");
+<<<<<<< Updated upstream
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
     public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
     {
+=======
+<<<<<<< HEAD
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
+    public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
+    {
+=======
+    [RequiresUnreferencedCode("Uses reflection to serialize function result, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to serialize the function result, making it incompatible with AOT scenarios.")]
+    public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
+    {
+        LogFunctionResultValueInternal(logger, resultValue);
+    }
+
+    /// <summary>
+    /// Logs result of a <see cref="KernelFunction"/>.
+    /// The action provides the benefit of caching the template parsing result for better performance.
+    /// And the public method is a helper to serialize the result.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue, JsonSerializerOptions jsonSerializerOptions)
+    {
+        LogFunctionResultValueInternal(logger, resultValue, jsonSerializerOptions);
+    }
+
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
+    [RequiresUnreferencedCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
+    private static void LogFunctionResultValueInternal(this ILogger logger, FunctionResult? resultValue, JsonSerializerOptions? jsonSerializerOptions = null)
+    {
+>>>>>>> main
+>>>>>>> Stashed changes
         if (logger.IsEnabled(LogLevel.Trace))
         {
             // Attempt to convert the result value to string using the GetValue heuristic
@@ -87,7 +190,27 @@ internal static partial class KernelFunctionLogMessages
             // Falling back to Json serialization
             try
             {
+<<<<<<< Updated upstream
                 s_logFunctionResultValue(logger, JsonSerializer.Serialize(resultValue?.Value), null);
+=======
+<<<<<<< HEAD
+                s_logFunctionResultValue(logger, JsonSerializer.Serialize(resultValue?.Value), null);
+=======
+                string jsonString;
+
+                if (jsonSerializerOptions is not null)
+                {
+                    JsonTypeInfo<object?> typeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+                    jsonString = JsonSerializer.Serialize(resultValue?.Value, typeInfo);
+                }
+                else
+                {
+                    jsonString = JsonSerializer.Serialize(resultValue?.Value);
+                }
+
+                s_logFunctionResultValue(logger, jsonString, null);
+>>>>>>> main
+>>>>>>> Stashed changes
             }
             catch (NotSupportedException ex)
             {

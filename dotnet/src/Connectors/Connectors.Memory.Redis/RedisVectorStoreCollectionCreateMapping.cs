@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections;
@@ -51,6 +59,19 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, IReadOnlyDictionary<string, string> storagePropertyNames, bool useDollarPrefix)
+    {
+        var schema = new Schema();
+        var fieldNamePrefix = useDollarPrefix ? "$." : string.Empty;
+    /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
+    /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
+>>>>>>> main
+>>>>>>> Stashed changes
     public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, Dictionary<string, string> storagePropertyNames, bool useDollarPrefix)
     {
         var schema = new Schema();
@@ -82,6 +103,14 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     if (dataProperty.PropertyType == typeof(string) || (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType) && GetEnumerableType(dataProperty.PropertyType) == typeof(string)))
                     {
                         schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                        schema.AddTextField(new FieldName($"$.{storageName}", storageName));
+                        schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+>>>>>>> main
+>>>>>>> Stashed changes
                     }
                     else
                     {
@@ -103,6 +132,23 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     else if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
                     {
                         schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                        schema.AddTagField(new FieldName($"$.{storageName}", storageName));
+                        schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+                    }
+                    else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType) && GetEnumerableType(dataProperty.PropertyType) == typeof(string))
+                    {
+                        schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}.*", storageName));
+                    }
+                    else if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
+                    {
+                        schema.AddNumericField(new FieldName($"$.{storageName}", storageName));
+                        schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+>>>>>>> main
+>>>>>>> Stashed changes
                     }
                     else
                     {
@@ -123,6 +169,18 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
                 var storageName = storagePropertyNames[vectorProperty.DataModelPropertyName];
                 var indexKind = GetSDKIndexKind(vectorProperty);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                var vectorType = GetSDKVectorType(vectorProperty);
+                var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
+                var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
+                schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
+                {
+                    ["TYPE"] = vectorType,
+>>>>>>> main
+>>>>>>> Stashed changes
                 var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
                 schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
@@ -183,6 +241,30 @@ internal static class RedisVectorStoreCollectionCreateMapping
     }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// Get the vector type to pass to the SDK based on the data type of the vector property.
+    /// </summary>
+    /// <param name="vectorProperty">The vector property definition.</param>
+    /// <returns>The SDK required vector type.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the property data type is not supported by the connector.</exception>
+    public static string GetSDKVectorType(VectorStoreRecordVectorProperty vectorProperty)
+    {
+        return vectorProperty.PropertyType switch
+        {
+            Type t when t == typeof(ReadOnlyMemory<float>) => "FLOAT32",
+            Type t when t == typeof(ReadOnlyMemory<float>?) => "FLOAT32",
+            Type t when t == typeof(ReadOnlyMemory<double>) => "FLOAT64",
+            Type t when t == typeof(ReadOnlyMemory<double>?) => "FLOAT64",
+            _ => throw new InvalidOperationException($"Vector data type '{vectorProperty.PropertyType.FullName}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
+        };
+    }
+
+    /// <summary>
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Gets the type of object stored in the given enumerable type.
     /// </summary>
     /// <param name="type">The enumerable to get the stored type for.</param>

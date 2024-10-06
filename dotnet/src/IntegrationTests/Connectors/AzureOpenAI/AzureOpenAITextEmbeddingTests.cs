@@ -2,6 +2,15 @@
 
 using System.Threading.Tasks;
 using Azure.Identity;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using System.Threading.Tasks;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;

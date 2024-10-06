@@ -1,15 +1,43 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 def test_kernel_arguments():
     kargs = KernelArguments()
     assert kargs is not None
+<<<<<<< Updated upstream
     assert kargs.execution_settings is None
+=======
+<<<<<<< HEAD
+    assert kargs.execution_settings is None
+=======
+<<<<<<< HEAD
+    assert kargs.execution_settings is None
+=======
+    assert kargs.execution_settings == {}
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     assert not kargs.keys()
 
 
@@ -37,6 +65,13 @@ def test_kernel_arguments_with_execution_settings():
     kargs = KernelArguments(settings=[test_pes])
     assert kargs is not None
     assert kargs.execution_settings == {"test": test_pes}
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_kernel_arguments_bool():
@@ -48,3 +83,11 @@ def test_kernel_arguments_bool():
     assert KernelArguments(settings=PromptExecutionSettings(service_id="test"))
     # An KernelArguments object with both keyword arguments and execution_settings should return True
     assert KernelArguments(input=10, settings=PromptExecutionSettings(service_id="test"))
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes

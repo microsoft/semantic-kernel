@@ -3,8 +3,21 @@ from enum import Enum
 
 
 class Symbols(str, Enum):
+<<<<<<< Updated upstream
     """Symbols used in the template engine."""
 
+=======
+<<<<<<< main
+    """Symbols used in the template engine."""
+
+=======
+<<<<<<< main
+    """Symbols used in the template engine."""
+
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     BLOCK_STARTER = "{"
     BLOCK_ENDER = "}"
 

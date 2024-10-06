@@ -26,6 +26,10 @@ internal static class AssistantToolResourcesFactory
 
         if (hasVectorStore || hasCodeInterpreterFiles)
         {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
             toolResources =
                 new ToolResources()
                 {
@@ -44,6 +48,30 @@ internal static class AssistantToolResourcesFactory
                             } :
                             null,
                 };
+<<<<<<< Updated upstream
+=======
+=======
+            FileSearchToolResources? fileSearch =
+                hasVectorStore ?
+                    new()
+                    {
+                        VectorStoreIds = { vectorStoreId! }
+                    } :
+                    null;
+
+            CodeInterpreterToolResources? codeInterpreter =
+                hasCodeInterpreterFiles ?
+                    new() :
+                    null;
+            codeInterpreter?.FileIds.AddRange(codeInterpreterFileIds!);
+
+            toolResources = new ToolResources
+            {
+                FileSearch = fileSearch,
+                CodeInterpreter = codeInterpreter
+            };
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         return toolResources;

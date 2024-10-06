@@ -7,9 +7,23 @@ CHAT_HISTORY_TAG: Final[str] = "chat_history"
 TEXT_CONTENT_TAG: Final[str] = "text"
 IMAGE_CONTENT_TAG: Final[str] = "image"
 ANNOTATION_CONTENT_TAG: Final[str] = "annotation"
+<<<<<<< Updated upstream
 BINARY_CONTENT_TAG: Final[str] = "binary"
 FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
 BINARY_CONTENT_TAG: Final[str] = "binary"
+=======
+<<<<<<< HEAD
+BINARY_CONTENT_TAG: Final[str] = "binary"
+FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
+BINARY_CONTENT_TAG: Final[str] = "binary"
+=======
+STREAMING_ANNOTATION_CONTENT_TAG: Final[str] = "streaming_annotation"
+BINARY_CONTENT_TAG: Final[str] = "binary"
+FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
+BINARY_CONTENT_TAG: Final[str] = "binary"
+STREAMING_FILE_REFERENCE_CONTENT_TAG: Final[str] = "streaming_file_reference"
+>>>>>>> main
+>>>>>>> Stashed changes
 FUNCTION_CALL_CONTENT_TAG: Final[str] = "function_call"
 FUNCTION_RESULT_CONTENT_TAG: Final[str] = "function_result"
 DISCRIMINATOR_FIELD: Final[str] = "content_type"
@@ -28,4 +42,12 @@ class ContentTypes(str, Enum):
     IMAGE_CONTENT = IMAGE_CONTENT_TAG
     FUNCTION_CALL_CONTENT = FUNCTION_CALL_CONTENT_TAG
     FUNCTION_RESULT_CONTENT = FUNCTION_RESULT_CONTENT_TAG
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    STREAMING_ANNOTATION_CONTENT = STREAMING_ANNOTATION_CONTENT_TAG
+    STREAMING_FILE_REFERENCE_CONTENT = STREAMING_FILE_REFERENCE_CONTENT_TAG
+>>>>>>> main
+>>>>>>> Stashed changes
     TEXT_CONTENT = TEXT_CONTENT_TAG

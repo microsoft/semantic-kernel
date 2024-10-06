@@ -155,6 +155,13 @@ public sealed class TestConfiguration
 
     public class BingConfig
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        public string Endpoint { get; set; } = "https://api.bing.microsoft.com/v7.0/search";
+>>>>>>> main
+>>>>>>> Stashed changes
         public string ApiKey { get; set; }
     }
 

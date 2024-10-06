@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+=======
+<<<<<<< HEAD
+﻿<Project Sdk="Microsoft.NET.Sdk">
+=======
+<Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> main
+>>>>>>> Stashed changes
 
   <PropertyGroup>
     <AssemblyName>GettingStartedWithAgents</AssemblyName>
@@ -44,6 +52,13 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+>>>>>>> main
+>>>>>>> Stashed changes
   </ItemGroup>
 
   <ItemGroup>
@@ -58,7 +73,20 @@
   </ItemGroup>
 
   <ItemGroup>
+<<<<<<< Updated upstream
     <None Remove="Resources\travelinfo.txt" />
+=======
+<<<<<<< HEAD
+    <None Remove="Resources\travelinfo.txt" />
+=======
+<<<<<<< main
+    <None Remove="Resources\*" />
+    <None Remove="Resources\travelinfo.txt" />
+=======
+    <None Remove="Resources\*" />
+>>>>>>> ms/main
+>>>>>>> main
+>>>>>>> Stashed changes
   </ItemGroup>
 
 </Project>

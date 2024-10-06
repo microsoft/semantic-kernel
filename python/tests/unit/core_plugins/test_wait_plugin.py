@@ -1,5 +1,18 @@
+<<<<<<< Updated upstream
 # Copyright (c) Microsoft. All rights reserved.
 
+=======
+<<<<<<< HEAD
+# Copyright (c) Microsoft. All rights reserved.
+
+=======
+<<<<<<< main
+# Copyright (c) Microsoft. All rights reserved.
+
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 from unittest.mock import patch
 
 import pytest
@@ -48,7 +61,19 @@ async def test_wait_valid_params(wait_time):
     with patch("asyncio.sleep") as patched_sleep:
         await plugin.wait(wait_time)
 
+<<<<<<< Updated upstream
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
+=======
+<<<<<<< HEAD
+        patched_sleep.assert_called_once_with(abs(float(wait_time)))
+=======
+<<<<<<< main
+        patched_sleep.assert_called_once_with(abs(float(wait_time)))
+=======
+        assert patched_sleep.called_once_with(abs(float(wait_time)))
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio

@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -6,6 +14,16 @@ using Microsoft.SemanticKernel.Data;
 using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using Microsoft.SemanticKernel.Data;
+using Sdk = Pinecone;
+
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+>>>>>>> main
+>>>>>>> Stashed changes
 
 /// <summary>
 /// Extension methods to register Pinecone <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.
@@ -62,4 +80,101 @@ public static class PineconeServiceCollectionExtensions
 
         return services;
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    /// <summary>
+    /// Register a Pinecone <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the
+    /// specified service ID and where <see cref="Sdk.PineconeClient"/> is retrieved from the dependency injection container.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection services,
+        string collectionName,
+        PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        string? serviceId = default)
+            where TRecord : class
+    {
+        // If we are not constructing the PineconeClient, add the IVectorStore as transient, since we
+        // cannot make assumptions about how PineconeClient is being managed.
+        services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
+            serviceId,
+            (sp, obj) =>
+            {
+                var pineconeClient = sp.GetRequiredService<Sdk.PineconeClient>();
+                var selectedOptions = options ?? sp.GetService<PineconeVectorStoreRecordCollectionOptions<TRecord>>();
+
+                return new PineconeVectorStoreRecordCollection<TRecord>(
+                    pineconeClient,
+                    collectionName,
+                    selectedOptions);
+            });
+
+        AddVectorizedSearch<TRecord>(services, serviceId);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Register a Pinecone <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the
+    /// provided <see cref="Sdk.PineconeClient"/> and the specified service ID.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="apiKey">The api key for Pinecone.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection services,
+        string collectionName,
+        string apiKey,
+        PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        string? serviceId = default)
+            where TRecord : class
+    {
+        services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
+            serviceId,
+            (sp, obj) =>
+            {
+                var pineconeClient = new Sdk.PineconeClient(apiKey);
+                var selectedOptions = options ?? sp.GetService<PineconeVectorStoreRecordCollectionOptions<TRecord>>();
+
+                return new PineconeVectorStoreRecordCollection<TRecord>(
+                    pineconeClient,
+                    collectionName,
+                    selectedOptions);
+            });
+
+        AddVectorizedSearch<TRecord>(services, serviceId);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
+    /// <param name="services">The service collection to register on.</param>
+    /// <param name="serviceId">The service id that the registrations should use.</param>
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+        where TRecord : class
+    {
+        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
+            serviceId,
+            (sp, obj) =>
+            {
+                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId);
+            });
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

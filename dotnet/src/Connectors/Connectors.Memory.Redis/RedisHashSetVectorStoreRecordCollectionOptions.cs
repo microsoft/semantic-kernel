@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using Microsoft.SemanticKernel.Data;
 using StackExchange.Redis;
@@ -13,12 +21,26 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// key names before reading or writing to the Redis store. Default is true.
+>>>>>>> main
+>>>>>>> Stashed changes
     /// key names before reading or writing to the Redis store. Default is false.
     /// </summary>
     /// <remarks>
     /// For a record to be indexed by a specific Redis index, the key name must be prefixed with the matching prefix configured on the Redis index.
     /// You can either pass in keys that are already prefixed, or set this option to true to have the collection name prefixed to the key names automatically.
     /// </remarks>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    public bool PrefixCollectionNameToKeyNames { get; init; } = true;
+>>>>>>> main
+>>>>>>> Stashed changes
     public bool PrefixCollectionNameToKeyNames { get; init; } = false;
 
     /// <summary>

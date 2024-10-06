@@ -1,22 +1,48 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+<<<<<<< Updated upstream
+=======
+=======
+using System.Collections.Generic;
+using System.Linq;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 /// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Qdrant.
 /// </summary>
 internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, PointStruct>, IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>
 {
     /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+<<<<<<< Updated upstream
+=======
+=======
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Qdrant.
+/// </summary>
+internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, PointStruct>, IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>
+{
+    /// <summary>A helper to access property information for the current data model and record definition.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</summary>
     private readonly bool _hasNamedVectors;
@@ -24,6 +50,10 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantGenericDataModelMapper"/> class.
     /// </summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     /// <param name="hasNamedVectors">A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</param>
     public QdrantGenericDataModelMapper(
@@ -39,6 +69,25 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 
         // Assign.
         this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
+<<<<<<< Updated upstream
+=======
+=======
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
+    /// <param name="hasNamedVectors">A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</param>
+    public QdrantGenericDataModelMapper(
+        VectorStoreRecordPropertyReader propertyReader,
+        bool hasNamedVectors)
+    {
+        Verify.NotNull(propertyReader);
+
+        // Validate property types.
+        propertyReader.VerifyDataProperties(QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, supportEnumerable: true);
+        propertyReader.VerifyVectorProperties(QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes);
+
+        // Assign.
+        this._propertyReader = propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
         this._hasNamedVectors = hasNamedVectors;
     }
 
@@ -55,7 +104,15 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 
         // Loop through all properties and map each from the data model to the storage model.
         MapProperties(
+<<<<<<< Updated upstream
             this._vectorStoreRecordDefinition.Properties,
+=======
+<<<<<<< HEAD
+            this._vectorStoreRecordDefinition.Properties,
+=======
+            this._propertyReader.Properties,
+>>>>>>> main
+>>>>>>> Stashed changes
             dataModel.Data,
             dataModel.Vectors,
             pointStruct,
@@ -68,7 +125,15 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
     public VectorStoreGenericDataModel<ulong> MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         var dataModel = new VectorStoreGenericDataModel<ulong>(storageModel.Id.Num);
+<<<<<<< Updated upstream
         MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+=======
+<<<<<<< HEAD
+        MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+=======
+        MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+>>>>>>> main
+>>>>>>> Stashed changes
         return dataModel;
     }
 
@@ -85,7 +150,15 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 
         // Loop through all properties and map each from the data model to the storage model.
         MapProperties(
+<<<<<<< Updated upstream
             this._vectorStoreRecordDefinition.Properties,
+=======
+<<<<<<< HEAD
+            this._vectorStoreRecordDefinition.Properties,
+=======
+            this._propertyReader.Properties,
+>>>>>>> main
+>>>>>>> Stashed changes
             dataModel.Data,
             dataModel.Vectors,
             pointStruct,
@@ -98,7 +171,15 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
     VectorStoreGenericDataModel<Guid> IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>.MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         var dataModel = new VectorStoreGenericDataModel<Guid>(new Guid(storageModel.Id.Uuid));
+<<<<<<< Updated upstream
         MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+=======
+<<<<<<< HEAD
+        MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+=======
+        MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+>>>>>>> main
+>>>>>>> Stashed changes
         return dataModel;
     }
 
@@ -189,6 +270,10 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
                     // Shortcut any null handling here so we don't have to check for it for each case.
                     dataProperties[dataProperty.DataModelPropertyName] = null;
                 }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
                 else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType))
                 {
                     // Using json deserialization to convert lists back into the correct enumerable type.
@@ -217,6 +302,14 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
                 else
                 {
                     var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValue(propertyValue);
+<<<<<<< Updated upstream
+=======
+=======
+                else
+                {
+                    var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType(propertyValue, dataProperty.PropertyType);
+>>>>>>> main
+>>>>>>> Stashed changes
                     dataProperties[dataProperty.DataModelPropertyName] = convertedValue;
                 }
             }

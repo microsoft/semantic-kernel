@@ -121,14 +121,30 @@ public sealed class SequentialPlannerTests : IDisposable
             builder.Services.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
+<<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
+=======
+<<<<<<< main
+                apiKey: azureOpenAIConfiguration.ApiKey);
+=======
+                credentials: new AzureCliCredential());
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         }
         else
         {
             builder.Services.AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
+<<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
+=======
+<<<<<<< main
+                apiKey: azureOpenAIConfiguration.ApiKey);
+=======
+                credentials: new AzureCliCredential());
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         }
 
         if (useEmbeddings)

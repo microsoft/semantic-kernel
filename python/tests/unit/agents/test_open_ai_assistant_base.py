@@ -6,8 +6,18 @@ from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
 from openai import AsyncAzureOpenAI, AsyncOpenAI
+<<<<<<< Updated upstream
 from openai.resources.beta.threads.runs.runs import Run
 <<<<<<< main
+=======
+<<<<<<< HEAD
+from openai.resources.beta.threads.runs.runs import Run
+<<<<<<< main
+=======
+from openai.lib.streaming._assistants import AsyncAssistantEventHandler, AsyncAssistantStreamManager
+from openai.resources.beta.threads.runs.runs import Run
+>>>>>>> main
+>>>>>>> Stashed changes
 from openai.types.beta.assistant import (
     Assistant,
     ToolResources,
@@ -15,15 +25,45 @@ from openai.types.beta.assistant import (
     ToolResourcesFileSearch,
 )
 from openai.types.beta.assistant_response_format import AssistantResponseFormat
+<<<<<<< Updated upstream
 =======
 from openai.types.beta.assistant import Assistant, ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+=======
+from openai.types.beta.assistant import Assistant, ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
+>>>>>>> upstream/main
+=======
+from openai.types.beta.assistant import Assistant, ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
+>>>>>>> main
+>>>>>>> Stashed changes
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.threads.annotation import (
     FileCitationAnnotation,
     FilePathAnnotation,
 )
+<<<<<<< Updated upstream
 from openai.types.beta.threads.file_citation_annotation import FileCitation
+=======
+<<<<<<< HEAD
+from openai.types.beta.threads.file_citation_annotation import FileCitation
+=======
+from openai.types.beta.assistant_stream_event import (
+    MessageDeltaEvent,
+    ThreadMessageDelta,
+    ThreadRunFailed,
+    ThreadRunRequiresAction,
+    ThreadRunStepCompleted,
+)
+from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
+from openai.types.beta.function_tool import FunctionDefinition, FunctionTool
+from openai.types.beta.threads import ImageFileDelta, ImageFileDeltaBlock, MessageDelta, TextDelta, TextDeltaBlock
+from openai.types.beta.threads.annotation import FileCitationAnnotation, FilePathAnnotation
+from openai.types.beta.threads.file_citation_annotation import FileCitation
+from openai.types.beta.threads.file_citation_delta_annotation import FileCitationDeltaAnnotation
+>>>>>>> main
+>>>>>>> Stashed changes
 from openai.types.beta.threads.file_path_annotation import FilePath
 from openai.types.beta.threads.image_file import ImageFile
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
@@ -32,9 +72,23 @@ from openai.types.beta.threads.required_action_function_tool_call import (
     Function as RequiredActionFunction,
 )
 from openai.types.beta.threads.run import (
+<<<<<<< Updated upstream
     RequiredAction,
     RequiredActionFunctionToolCall,
     RequiredActionSubmitToolOutputs,
+=======
+<<<<<<< HEAD
+    RequiredAction,
+    RequiredActionFunctionToolCall,
+    RequiredActionSubmitToolOutputs,
+=======
+    LastError,
+    RequiredAction,
+    RequiredActionFunctionToolCall,
+    RequiredActionSubmitToolOutputs,
+    TruncationStrategy,
+>>>>>>> main
+>>>>>>> Stashed changes
 )
 from openai.types.beta.threads.runs import RunStep
 from openai.types.beta.threads.runs.code_interpreter_tool_call import (
@@ -47,6 +101,14 @@ from openai.types.beta.threads.runs.message_creation_step_details import (
     MessageCreation,
     MessageCreationStepDetails,
 )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+from openai.types.beta.threads.runs.message_creation_step_details import MessageCreation, MessageCreationStepDetails
+from openai.types.beta.threads.runs.run_step import Usage
+>>>>>>> main
+>>>>>>> Stashed changes
 from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
@@ -162,13 +224,29 @@ def mock_message():
 @pytest.fixture
 def mock_thread_messages():
     class MockMessage:
+<<<<<<< Updated upstream
         def __init__(self, role, content, assistant_id=None):
+=======
+<<<<<<< HEAD
+        def __init__(self, role, content, assistant_id=None):
+=======
+        def __init__(self, id, role, content, assistant_id=None):
+            self.id = id
+>>>>>>> main
+>>>>>>> Stashed changes
             self.role = role
             self.content = content
             self.assistant_id = assistant_id
 
     return [
         MockMessage(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            id="test_message_id_1",
+>>>>>>> main
+>>>>>>> Stashed changes
             role="user",
             content=[
                 TextContentBlock(
@@ -198,6 +276,13 @@ def mock_thread_messages():
             ],
         ),
         MockMessage(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            id="test_message_id_2",
+>>>>>>> main
+>>>>>>> Stashed changes
             role="assistant",
             content=[
                 ImageFileContentBlock(
@@ -317,6 +402,13 @@ def mock_run_in_progress():
                     ]
                 ),
             )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            self.last_error = None
+>>>>>>> main
+>>>>>>> Stashed changes
 
         def update_status(self):
             self.poll_count += 1
@@ -342,24 +434,53 @@ def mock_run_step_tool_call():
             tool_calls=[
                 CodeInterpreterToolCall(
                     type="code_interpreter",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
                     id="test",
 =======
                     id="tool_call_id",
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+                    id="test",
+                    id="tool_call_id",
+>>>>>>> main
+>>>>>>> Stashed changes
                     code_interpreter=CodeInterpreter(input="test code", outputs=[]),
                 ),
                 FunctionToolCall(
                     type="function",
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                     id="test",
                     function=RunsFunction(
                         arguments="{}", name="function_name", outpt="test output"
                     ),
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
                     id="tool_call_id",
                     function=RunsFunction(arguments="{}", name="function_name", outpt="test output"),
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+                    id="tool_call_id",
+                    function=RunsFunction(arguments="{}", name="function_name", outpt="test output"),
+>>>>>>> main
+>>>>>>> Stashed changes
                 ),
             ],
             type="tool_calls",
@@ -398,6 +519,247 @@ def mock_run_step_message_creation():
     )
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+class MockEvent:
+    def __init__(self, event, data):
+        self.event = event
+        self.data = data
+
+
+class MockRunData:
+    def __init__(self, id, status):
+        self.id = id
+        self.status = status
+        # Add other attributes as needed
+
+
+def create_thread_message_delta_mock():
+    return ThreadMessageDelta(
+        data=MessageDeltaEvent(
+            id="mock_msg_id",
+            delta=MessageDelta(
+                content=[
+                    TextDeltaBlock(
+                        index=0,
+                        type="text",
+                        text=TextDelta(
+                            annotations=[
+                                FileCitationDeltaAnnotation(
+                                    index=0,
+                                    type="file_citation",
+                                    start_index=1,
+                                    end_index=3,
+                                    text="annotation",
+                                )
+                            ],
+                            value="Hello",
+                        ),
+                    ),
+                    ImageFileDeltaBlock(
+                        index=0,
+                        type="image_file",
+                        image_file=ImageFileDelta(
+                            file_id="test_file_id",
+                            detail="auto",
+                        ),
+                    ),
+                ],
+                role=None,
+            ),
+            object="thread.message.delta",
+        ),
+        event="thread.message.delta",
+    )
+
+
+def mock_thread_requires_action_run():
+    return ThreadRunRequiresAction(
+        data=Run(
+            id="run_00OwjJnEg2SGJy8sky7ip35P",
+            assistant_id="asst_wMMAX5F59szE7YHrCKSSgJlE",
+            cancelled_at=None,
+            completed_at=None,
+            created_at=1727798684,
+            expires_at=1727799284,
+            failed_at=None,
+            incomplete_details=None,
+            instructions="Answer questions about the menu.",
+            last_error=None,
+            max_completion_tokens=None,
+            max_prompt_tokens=None,
+            metadata={},
+            model="gpt-4o-2024-08-06",
+            object="thread.run",
+            parallel_tool_calls=True,
+            required_action=RequiredAction(
+                submit_tool_outputs=RequiredActionSubmitToolOutputs(
+                    tool_calls=[
+                        RequiredActionFunctionToolCall(
+                            id="call_OTcZMjhm7WbhFnGkrmUjs68T",
+                            function=Function(arguments="{}", name="menu-get_specials"),
+                            type="function",
+                        )
+                    ]
+                ),
+                type="submit_tool_outputs",
+            ),
+            response_format="auto",
+            started_at=1727798685,
+            status="requires_action",
+            thread_id="thread_jR4ZLlUwSrPcsLfdnGyFxi4Z",
+            tool_choice="auto",
+            tools=[
+                FunctionTool(
+                    function=FunctionDefinition(
+                        name="menu-get_item_price",
+                        description="Provides the price of the requested menu item.",
+                        parameters={
+                            "type": "object",
+                            "properties": {
+                                "menu_item": {"type": "string", "description": "The name of the menu item."}
+                            },
+                            "required": ["menu_item"],
+                        },
+                        strict=False,
+                    ),
+                    type="function",
+                ),
+                FunctionTool(
+                    function=FunctionDefinition(
+                        name="menu-get_specials",
+                        description="Provides a list of specials from the menu.",
+                        parameters={"type": "object", "properties": {}, "required": []},
+                        strict=False,
+                    ),
+                    type="function",
+                ),
+            ],
+            truncation_strategy=TruncationStrategy(type="auto", last_messages=None),
+            usage=None,
+            temperature=1.0,
+            top_p=1.0,
+            tool_resources={"code_interpreter": {"file_ids": []}},
+        ),
+        event="thread.run.requires_action",
+    )
+
+
+def mock_thread_run_step_completed():
+    return ThreadRunStepCompleted(
+        data=RunStep(
+            id="step_id_2",
+            type="message_creation",
+            completed_at=int(datetime.now(timezone.utc).timestamp()),
+            created_at=int((datetime.now(timezone.utc) - timedelta(minutes=2)).timestamp()),
+            step_details=MessageCreationStepDetails(
+                type="message_creation", message_creation=MessageCreation(message_id="test")
+            ),
+            assistant_id="assistant_id",
+            object="thread.run.step",
+            run_id="run_id",
+            status="completed",
+            thread_id="thread_id",
+            usage=Usage(completion_tokens=10, prompt_tokens=5, total_tokens=15),
+        ),
+        event="thread.run.step.completed",
+    )
+
+
+def mock_thread_run_step_completed_with_code():
+    return ThreadRunStepCompleted(
+        data=RunStep(
+            id="step_id_2",
+            type="message_creation",
+            completed_at=int(datetime.now(timezone.utc).timestamp()),
+            created_at=int((datetime.now(timezone.utc) - timedelta(minutes=2)).timestamp()),
+            step_details=ToolCallsStepDetails(
+                type="tool_calls",
+                tool_calls=[
+                    CodeInterpreterToolCall(
+                        id="tool_call_id",
+                        code_interpreter=CodeInterpreter(input="test code", outputs=[]),
+                        type="code_interpreter",
+                    )
+                ],
+            ),
+            assistant_id="assistant_id",
+            object="thread.run.step",
+            run_id="run_id",
+            status="completed",
+            thread_id="thread_id",
+            usage=Usage(completion_tokens=10, prompt_tokens=5, total_tokens=15),
+        ),
+        event="thread.run.step.completed",
+    )
+
+
+def mock_run_with_last_error():
+    return ThreadRunFailed(
+        data=Run(
+            id="run_00OwjJnEg2SGJy8sky7ip35P",
+            assistant_id="asst_wMMAX5F59szE7YHrCKSSgJlE",
+            cancelled_at=None,
+            completed_at=None,
+            created_at=1727798684,
+            expires_at=1727799284,
+            failed_at=None,
+            incomplete_details=None,
+            instructions="Answer questions about the menu.",
+            last_error=LastError(code="server_error", message="Server error"),
+            max_completion_tokens=None,
+            max_prompt_tokens=None,
+            metadata={},
+            model="gpt-4o-2024-08-06",
+            object="thread.run",
+            parallel_tool_calls=True,
+            required_action=None,
+            response_format="auto",
+            started_at=1727798685,
+            status="failed",
+            thread_id="thread_jR4ZLlUwSrPcsLfdnGyFxi4Z",
+            tool_choice="auto",
+            tools=[],
+            truncation_strategy=TruncationStrategy(type="auto", last_messages=None),
+            usage=None,
+            temperature=1.0,
+            top_p=1.0,
+            tool_resources={"code_interpreter": {"file_ids": []}},
+        ),
+        event="thread.run.failed",
+    )
+
+
+class MockAsyncIterable:
+    def __init__(self, items):
+        self.items = items.copy()
+
+    def __aiter__(self):
+        self._iter = iter(self.items)
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self._iter)
+        except StopIteration:
+            raise StopAsyncIteration
+
+
+class MockStream:
+    def __init__(self, events):
+        self.events = events
+
+    async def __aenter__(self):
+        return MockAsyncIterable(self.events)
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+
+>>>>>>> main
+>>>>>>> Stashed changes
 # endregion
 
 # region Tests
@@ -662,6 +1024,10 @@ async def test_get_agent_tools(
 async def test_get_assistant_tools_throws_when_no_assistant(
     azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
 ):
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
     with pytest.raises(
         AgentInitializationError, match="The assistant has not been created."
@@ -669,6 +1035,15 @@ async def test_get_assistant_tools_throws_when_no_assistant(
 =======
     with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+    with pytest.raises(
+        AgentInitializationError, match="The assistant has not been created."
+    ):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
+>>>>>>> main
+>>>>>>> Stashed changes
         _ = azure_openai_assistant_agent.tools
 
 
@@ -935,15 +1310,33 @@ async def test_add_chat_message_invalid_role(
 ):
     mock_chat_message_content.role = AuthorRole.SYSTEM
 
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     with pytest.raises(AgentExecutionError, match="Invalid message role `tool`"):
         await azure_openai_assistant_agent.add_chat_message(
             "test_thread_id", mock_chat_message_content
         )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
     with pytest.raises(AgentExecutionException, match="Invalid message role `system`"):
         await azure_openai_assistant_agent.add_chat_message("test_thread_id", mock_chat_message_content)
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+    with pytest.raises(AgentExecutionException, match="Invalid message role `system`"):
+        await azure_openai_assistant_agent.add_chat_message("test_thread_id", mock_chat_message_content)
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
@@ -1029,6 +1422,10 @@ async def test_invoke(
         mock_client.beta.threads.runs.submit_tool_outputs = AsyncMock()
         mock_client.beta.threads.runs.steps = MagicMock()
         mock_client.beta.threads.runs.steps.list = AsyncMock(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
             return_value=MagicMock(
                 data=[mock_run_step_tool_call, mock_run_step_message_creation]
@@ -1036,6 +1433,15 @@ async def test_invoke(
 =======
             return_value=MagicMock(data=[mock_run_step_message_creation, mock_run_step_tool_call])
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            return_value=MagicMock(
+                data=[mock_run_step_tool_call, mock_run_step_message_creation]
+            )
+            return_value=MagicMock(data=[mock_run_step_message_creation, mock_run_step_tool_call])
+>>>>>>> main
+>>>>>>> Stashed changes
         )
 
         azure_openai_assistant_agent.assistant = (
@@ -1049,7 +1455,14 @@ async def test_invoke(
         azure_openai_assistant_agent._format_tool_outputs = MagicMock(
             return_value=[{"tool_call_id": "id", "output": "output"}]
         )
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         azure_openai_assistant_agent._generate_function_call_content = MagicMock(
             return_value=mock_chat_message_content
         )
@@ -1067,9 +1480,19 @@ async def test_invoke(
             message
             async for message in azure_openai_assistant_agent.invoke("thread_id")
         ]
+<<<<<<< Updated upstream
 =======
         azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+=======
+        azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
+>>>>>>> upstream/main
+=======
+        azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
+>>>>>>> main
+>>>>>>> Stashed changes
 
         with patch(
             "semantic_kernel.agents.open_ai.assistant_content_generation.get_function_call_contents",
@@ -1079,7 +1502,14 @@ async def test_invoke(
 
 
 @pytest.mark.asyncio
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 async def test_invoke_assistant_not_initialized_throws(
     azure_openai_assistant_agent, openai_unit_test_env
 ):
@@ -1090,11 +1520,138 @@ async def test_invoke_assistant_not_initialized_throws(
             message
             async for message in azure_openai_assistant_agent.invoke("thread_id")
         ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 async def test_invoke_assistant_not_initialized_throws(azure_openai_assistant_agent, openai_unit_test_env):
     with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
         _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+async def test_invoke_stream(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    mock_thread_messages,
+    azure_openai_unit_test_env,
+):
+    events = [
+        MockEvent("thread.run.created", MockRunData(id="run_1", status="queued")),
+        MockEvent("thread.run.in_progress", MockRunData(id="run_1", status="in_progress")),
+        create_thread_message_delta_mock(),
+        mock_thread_run_step_completed(),
+        MockEvent("thread.run.completed", MockRunData(id="run_1", status="completed")),
+        mock_thread_requires_action_run(),
+    ]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+
+        mock_client.beta.threads.messages.retrieve = AsyncMock(side_effect=mock_thread_messages)
+
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+
+        messages = []
+        async for content in azure_openai_assistant_agent.invoke_stream("thread_id", messages=messages):
+            assert content is not None
+
+        assert len(messages) > 0
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_code_output(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    azure_openai_unit_test_env,
+):
+    events = [mock_thread_run_step_completed_with_code()]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+
+        messages = []
+        async for content in azure_openai_assistant_agent.invoke_stream("thread_id", messages=messages):
+            assert content is not None
+            assert content.metadata.get("code") is True
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_requires_action(
+    azure_openai_assistant_agent, mock_assistant, mock_thread_messages, azure_openai_unit_test_env
+):
+    events = [
+        mock_thread_requires_action_run(),
+    ]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+
+        mock_client.beta.threads.messages.retrieve = AsyncMock(side_effect=mock_thread_messages)
+
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+
+        messages = []
+        async for content in azure_openai_assistant_agent.invoke_stream("thread_id", messages=messages):
+            assert content is not None
+
+        assert len(messages) > 0
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_throws_exception(
+    azure_openai_assistant_agent, mock_assistant, mock_thread_messages, azure_openai_unit_test_env
+):
+    events = [
+        mock_run_with_last_error(),
+    ]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+
+        mock_client.beta.threads.messages.retrieve = AsyncMock(side_effect=mock_thread_messages)
+
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+
+        with pytest.raises(AgentInvokeException):
+            async for _ in azure_openai_assistant_agent.invoke_stream("thread_id"):
+                pass
+
+
+@pytest.mark.asyncio
+async def test_invoke_assistant_not_initialized_throws(azure_openai_assistant_agent, openai_unit_test_env):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
+        _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
@@ -1114,7 +1671,14 @@ async def test_invoke_agent_deleted_throws(
         )
         azure_openai_assistant_agent._is_deleted = True
 
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         with pytest.raises(
             AgentInitializationError, match="The assistant has been deleted."
         ):
@@ -1122,10 +1686,21 @@ async def test_invoke_agent_deleted_throws(
                 message
                 async for message in azure_openai_assistant_agent.invoke("thread_id")
             ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
         with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
             _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+        with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
+            _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
@@ -1169,12 +1744,24 @@ async def test_invoke_raises_error(
         )
 
         with pytest.raises(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
             AgentInvokeError,
             match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`",
 =======
             AgentInvokeException, match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`"
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            AgentInvokeError,
+            match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`",
+            AgentInvokeException, match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`"
+>>>>>>> main
+>>>>>>> Stashed changes
         ):
             _ = [
                 message
@@ -1182,6 +1769,26 @@ async def test_invoke_raises_error(
             ]
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+@pytest.fixture
+def mock_streaming_assistant_stream_manager() -> AsyncAssistantStreamManager[AsyncAssistantEventHandler]:
+    assistant_event_handler = AsyncAssistantEventHandler()
+
+    mock_stream = AsyncMock()
+    mock_stream.__aiter__.return_value = [assistant_event_handler]
+
+    mock_manager = AsyncMock(spec=AsyncAssistantStreamManager)
+    mock_manager.__aenter__.return_value = mock_stream
+    mock_manager.__aexit__.return_value = None
+
+    return mock_manager
+
+
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_format_tool_outputs(azure_openai_assistant_agent, openai_unit_test_env):
     chat_history = ChatHistory()
     fcc = FunctionCallContent(
@@ -1224,17 +1831,35 @@ async def test_invoke_function_calls(
         )
 
 
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_get_function_call_contents(
     azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env
 ):
     result = azure_openai_assistant_agent._get_function_call_contents(
         run=mock_run_required_action, function_steps={}
     )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 def test_get_function_call_contents(azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env):
     result = get_function_call_contents(run=mock_run_required_action, function_steps={})
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+def test_get_function_call_contents(azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env):
+    result = get_function_call_contents(run=mock_run_required_action, function_steps={})
+>>>>>>> main
+>>>>>>> Stashed changes
     assert result is not None
 
 
@@ -1242,6 +1867,10 @@ def test_get_function_call_contents_no_action_required(
     azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env
 ):
     mock_run_required_action.required_action = None
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
     result = azure_openai_assistant_agent._get_function_call_contents(
         run=mock_run_required_action, function_steps={}
@@ -1249,6 +1878,15 @@ def test_get_function_call_contents_no_action_required(
 =======
     result = get_function_call_contents(run=mock_run_required_action, function_steps={})
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+    result = azure_openai_assistant_agent._get_function_call_contents(
+        run=mock_run_required_action, function_steps={}
+    )
+    result = get_function_call_contents(run=mock_run_required_action, function_steps={})
+>>>>>>> main
+>>>>>>> Stashed changes
     assert result == []
 
 
@@ -1277,6 +1915,10 @@ async def test_get_tools(
 async def test_get_tools_no_assistant_returns_empty_list(
     azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
 ):
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
     with pytest.raises(
         AgentInitializationError, match="The assistant has not been created."
@@ -1284,6 +1926,15 @@ async def test_get_tools_no_assistant_returns_empty_list(
 =======
     with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+    with pytest.raises(
+        AgentInitializationError, match="The assistant has not been created."
+    ):
+    with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
+>>>>>>> main
+>>>>>>> Stashed changes
         _ = azure_openai_assistant_agent._get_tools()
 
 
@@ -1291,6 +1942,10 @@ def test_generate_message_content(
     azure_openai_assistant_agent, mock_thread_messages, openai_unit_test_env
 ):
     for message in mock_thread_messages:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
         result = azure_openai_assistant_agent._generate_message_content(
             assistant_name="test", message=message
@@ -1298,6 +1953,15 @@ def test_generate_message_content(
 =======
         result = generate_message_content(assistant_name="test", message=message)
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+        result = azure_openai_assistant_agent._generate_message_content(
+            assistant_name="test", message=message
+        )
+        result = generate_message_content(assistant_name="test", message=message)
+>>>>>>> main
+>>>>>>> Stashed changes
         assert result is not None
 
 
@@ -1305,6 +1969,10 @@ def test_check_if_deleted_throws(
     azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
 ):
     azure_openai_assistant_agent._is_deleted = True
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
     with pytest.raises(
         AgentInitializationError, match="The assistant has been deleted."
@@ -1312,6 +1980,15 @@ def test_check_if_deleted_throws(
 =======
     with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+    with pytest.raises(
+        AgentInitializationError, match="The assistant has been deleted."
+    ):
+    with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
+>>>>>>> main
+>>>>>>> Stashed changes
         azure_openai_assistant_agent._check_if_deleted()
 
 
@@ -1432,31 +2109,67 @@ def test_generate_function_result_content(
         function=Function(arguments="{}", name="function_name", output="result"),
     )
 
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     message = azure_openai_assistant_agent._generate_function_result_content(
         agent_name="test",
         function_step=mock_function_call_content,
         tool_call=mock_tool_call,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
     message = generate_function_result_content(
         agent_name="test", function_step=mock_function_call_content, tool_call=mock_tool_call
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+    message = generate_function_result_content(
+        agent_name="test", function_step=mock_function_call_content, tool_call=mock_tool_call
+>>>>>>> main
+>>>>>>> Stashed changes
     )
     assert message is not None
     assert isinstance(message.items[0], FunctionResultContent)
 
 
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_generate_function_call_content(
     azure_openai_assistant_agent, mock_function_call_content, openai_unit_test_env
 ):
     message = azure_openai_assistant_agent._generate_function_call_content(
         agent_name="test", fccs=[mock_function_call_content]
     )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 def test_generate_function_call_content(azure_openai_assistant_agent, mock_function_call_content, openai_unit_test_env):
     message = generate_function_call_content(agent_name="test", fccs=[mock_function_call_content])
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+def test_generate_function_call_content(azure_openai_assistant_agent, mock_function_call_content, openai_unit_test_env):
+    message = generate_function_call_content(agent_name="test", fccs=[mock_function_call_content])
+>>>>>>> main
+>>>>>>> Stashed changes
     assert message is not None
     assert isinstance(message, ChatMessageContent)
     assert isinstance(message.items[0], FunctionCallContent)

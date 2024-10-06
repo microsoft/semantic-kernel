@@ -5,6 +5,15 @@ import java.util.logging.Logger;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 public class Main {
 
     private static final int PORT = 50051;
@@ -19,6 +28,13 @@ public class Main {
                 // allows the server to handle requests related to the functionality provided by the
                 // `RandomActivitySkill` class.
                 addService(new RandomActivitySkill()).build();
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+                .addService(new RandomActivitySkill()).build();
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         System.out.println("Starting server...");
         try {

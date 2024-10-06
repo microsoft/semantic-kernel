@@ -1,3 +1,23 @@
+<<<<<<< Updated upstream
+=======
+output/
+venv/
+temp/
+.rpa/
+.idea/
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+.virtual_documents/
+*/.virtual_documents/*
+.vscode
+.DS_Store
+*.pyc
+*.zip
+*/work-items-out/*
+testrun/*
+.~lock*
+*.pkl
+>>>>>>> Stashed changes
 dotnet/.config
 
 ## Ignore Visual Studio temporary files, build results, and
@@ -660,11 +680,21 @@ swa-cli.config.json
 # python devcontainer
 /python/.devcontainer/*
 <<<<<<< main
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 .env*
 .flaskenv*
 !.env.project
 !.env.vault
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 .jython_cache/
 =======
 /SK.AI/**
@@ -675,4 +705,9 @@ swa-cli.config.json
 
 !/dotnet/.SK-dotnet.sln.icloud
 
+<<<<<<< Updated upstream
 /java/PACKAGES.md
+=======
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes

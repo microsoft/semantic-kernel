@@ -108,6 +108,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         )
 
         if not client and not openai_settings.api_key:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
             raise AgentInitializationError(
                 "The OpenAI API key is required, if a client is not provided."
@@ -115,6 +119,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
             raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> main
+>>>>>>> Stashed changes
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
 
@@ -351,6 +364,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
             raise AgentInitializationError(
                 "Failed to create OpenAI settings.", ex
@@ -358,6 +375,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
             raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            raise AgentInitializationError(
+                "Failed to create OpenAI settings.", ex
+            ) from ex
+            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+>>>>>>> main
+>>>>>>> Stashed changes
 
         return openai_settings
 
@@ -369,7 +395,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         """
         assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
+<<<<<<< Updated upstream
             yield self._create_open_ai_assistant_definition(assistant)
+=======
+<<<<<<< HEAD
+            yield self._create_open_ai_assistant_definition(assistant)
+=======
+            yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+>>>>>>> main
+>>>>>>> Stashed changes
 
     @classmethod
     async def retrieve(
@@ -409,6 +443,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             env_file_encoding=env_file_encoding,
         )
         if not client and not openai_settings.api_key:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
             raise AgentInitializationError(
                 "The OpenAI API key is required, if a client is not provided."
@@ -416,6 +454,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
             raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> main
+>>>>>>> Stashed changes
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
         if not client:
@@ -433,5 +480,13 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             assistant
         )
         return OpenAIAssistantAgent(kernel=kernel, **assistant_definition)
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+        return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
+>>>>>>> main
+>>>>>>> Stashed changes
 
     # endregion

@@ -34,9 +34,25 @@ def test_can_be_imported():
         (-192, -13, -205),
     ],
 )
+<<<<<<< Updated upstream
 def test_add_when_valid_parameters_should_succeed(
     initial_value, amount, expected_result
 ):
+=======
+<<<<<<< HEAD
+def test_add_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
+<<<<<<< main
+def test_add_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
+def test_add_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
     # Arrange
     plugin = MathPlugin()
     arguments = KernelArguments(input=initial_value, amount=amount)
@@ -61,9 +77,25 @@ def test_add_when_valid_parameters_should_succeed(
         (-192, -13, -179),
     ],
 )
+<<<<<<< Updated upstream
 def test_subtract_when_valid_parameters_should_succeed(
     initial_value, amount, expected_result
 ):
+=======
+<<<<<<< HEAD
+def test_subtract_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
+<<<<<<< main
+def test_subtract_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
+def test_subtract_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
     # Arrange
     plugin = MathPlugin()
     arguments = KernelArguments(input=initial_value, amount=amount)
@@ -97,8 +129,26 @@ def test_add_when_invalid_initial_value_should_throw(initial_value):
     arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act
+<<<<<<< Updated upstream
     with pytest.raises(ValueError):
         plugin.add(**arguments)
+=======
+<<<<<<< HEAD
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+<<<<<<< main
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+    with pytest.raises(ValueError) as exception:
+        plugin.add(**arguments)
+
+    # Assert
+    assert exception.type == ValueError
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.parametrize(
@@ -123,8 +173,25 @@ def test_add_when_invalid_amount_should_throw(amount):
     arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
+<<<<<<< Updated upstream
     with pytest.raises(ValueError):
         plugin.add(**arguments)
+=======
+<<<<<<< HEAD
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+<<<<<<< main
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+    with pytest.raises(ValueError) as exception:
+        plugin.add(**arguments)
+
+    assert exception.type == ValueError
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.parametrize(
@@ -149,8 +216,26 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
     arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act / Assert
+<<<<<<< Updated upstream
     with pytest.raises(ValueError):
         plugin.subtract(**arguments)
+=======
+<<<<<<< HEAD
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+<<<<<<< main
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+    with pytest.raises(ValueError) as exception:
+        plugin.subtract(**arguments)
+
+    # Assert
+    assert exception.type == ValueError
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.parametrize(
@@ -175,5 +260,23 @@ def test_subtract_when_invalid_amount_should_throw(amount):
     arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
+<<<<<<< Updated upstream
     with pytest.raises(ValueError):
         plugin.subtract(**arguments)
+=======
+<<<<<<< HEAD
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+<<<<<<< main
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+    with pytest.raises(ValueError) as exception:
+        plugin.subtract(**arguments)
+
+    # Assert
+    assert exception.type == ValueError
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes

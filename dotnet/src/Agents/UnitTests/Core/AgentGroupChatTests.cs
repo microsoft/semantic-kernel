@@ -55,7 +55,18 @@ public class AgentGroupChatTests
         // Assert
         Assert.Equal(2, chat.Agents.Count);
 
+<<<<<<< Updated upstream
         chat.Add(agent3);
+=======
+<<<<<<< HEAD
+        chat.Add(agent3);
+=======
+<<<<<<< main
+        chat.Add(agent3);
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
         // Act
         chat.AddAgent(agent3);
         // Assert

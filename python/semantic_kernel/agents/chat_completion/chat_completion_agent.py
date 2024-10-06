@@ -174,9 +174,25 @@ class ChatCompletionAgent(Agent):
             f"with message count: {message_count}."
         )
 
+<<<<<<< Updated upstream
         async for message_list in messages:
             for message in message_list:
                 message.name = self.name
+=======
+<<<<<<< HEAD
+        async for message_list in messages:
+            for message in message_list:
+                message.name = self.name
+=======
+        role = None
+        message_builder: list[str] = []
+        async for message_list in messages:
+            for message in message_list:
+                role = message.role
+                message.name = self.name
+                message_builder.append(message.content)
+>>>>>>> main
+>>>>>>> Stashed changes
                 yield message
 
         # Capture mutated messages related function calling / tools
@@ -185,6 +201,19 @@ class ChatCompletionAgent(Agent):
             message.name = self.name
             history.add_message(message)
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        if role != AuthorRole.TOOL:
+            history.add_message(
+                ChatMessageContent(
+                    role=role if role else AuthorRole.ASSISTANT, content="".join(message_builder), name=self.name
+                )
+            )
+
+>>>>>>> main
+>>>>>>> Stashed changes
     def _setup_agent_chat_history(self, history: ChatHistory) -> ChatHistory:
         """Setup the agent chat history."""
         chat = []

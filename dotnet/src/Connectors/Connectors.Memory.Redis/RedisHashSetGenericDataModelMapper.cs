@@ -10,22 +10,51 @@ using StackExchange.Redis;
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 /// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Redis when using hash sets.
 /// </summary>
 internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, HashEntry[] HashEntries)>
 {
     /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+<<<<<<< Updated upstream
+=======
+=======
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using hash sets.
+/// </summary>
+internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, HashEntry[] HashEntries)>
+{
+    /// <summary>All the properties from the record definition.</summary>
+    private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetGenericDataModelMapper"/> class.
     /// </summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// <param name="vectorStoreRecordDefinition">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
     public RedisHashSetGenericDataModelMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition)
     {
         Verify.NotNull(vectorStoreRecordDefinition);
 
         this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
+<<<<<<< Updated upstream
+=======
+=======
+    /// <param name="properties">All the properties from the record definition.</param>
+    public RedisHashSetGenericDataModelMapper(IReadOnlyList<VectorStoreRecordProperty> properties)
+    {
+        Verify.NotNull(properties);
+        this._properties = properties;
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <inheritdoc />
@@ -33,7 +62,15 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
     {
         var hashEntries = new List<HashEntry>();
 
+<<<<<<< Updated upstream
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
+=======
+<<<<<<< HEAD
+        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+=======
+        foreach (var property in this._properties)
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
             var sourceDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;
@@ -82,7 +119,15 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
     {
         var dataModel = new VectorStoreGenericDataModel<string>(storageModel.Key);
 
+<<<<<<< Updated upstream
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
+=======
+<<<<<<< HEAD
+        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+=======
+        foreach (var property in this._properties)
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
             var targetDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;
@@ -108,6 +153,13 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
                 var convertedValue = Convert.ChangeType(hashEntry.Value, typeOrNullableType);
                 dataModel.Data.Add(dataProperty.DataModelPropertyName, convertedValue);
             }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
+>>>>>>> Stashed changes
             // Map vector properties
             else if (property is VectorStoreRecordVectorProperty vectorProperty)
             {

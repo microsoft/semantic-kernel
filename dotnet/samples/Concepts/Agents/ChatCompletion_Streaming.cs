@@ -74,6 +74,13 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         chat.Add(message);
         this.WriteAgentChatMessage(message);
 <<<<<<< main
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 
         StringBuilder builder = new();
 =======
@@ -82,6 +89,16 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 
         bool isFirst = false;
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+
+        StringBuilder builder = new();
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
         await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
         {
             if (string.IsNullOrEmpty(response.Content))
@@ -92,6 +109,13 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             if (!isFirst)
             {
 <<<<<<< main
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
                 Console.WriteLine($"# {response.Role} - {response.AuthorName ?? "*"}:");
             }
 
@@ -103,6 +127,19 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             }
 
             Console.WriteLine($"\t > streamed: '{response.Content}'");
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+                Console.WriteLine($"# {response.Role} - {response.AuthorName ?? "*"}:");
+            }
+
+            Console.WriteLine($"\t > streamed: '{response.Content}'");
+            builder.Append(response.Content);
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         if (historyCount <= chat.Count)
@@ -129,9 +166,24 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             ChatMessageContent response = new(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name };
             chat.Add(response);
             this.WriteAgentChatMessage(response);
+<<<<<<< Updated upstream
 =======
             this.WriteAgentChatMessage(message);
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+=======
+            this.WriteAgentChatMessage(message);
+>>>>>>> upstream/main
+=======
+<<<<<<< main
+=======
+            this.WriteAgentChatMessage(message);
+>>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
         }
     }
 

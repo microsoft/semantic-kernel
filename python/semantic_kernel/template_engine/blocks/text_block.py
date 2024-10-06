@@ -1,7 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< Updated upstream
 from typing import TYPE_CHECKING, ClassVar, Optional
+=======
+<<<<<<< main
+from typing import TYPE_CHECKING, ClassVar, Optional
+=======
+<<<<<<< main
+from typing import TYPE_CHECKING, ClassVar, Optional
+=======
+from typing import TYPE_CHECKING, ClassVar, Optional, Tuple
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 from pydantic import field_validator
 
@@ -16,27 +28,77 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TextBlock(Block):
+<<<<<<< Updated upstream
     """A block with text content."""
 
+=======
+<<<<<<< main
+    """A block with text content."""
+
+=======
+<<<<<<< main
+    """A block with text content."""
+
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     type: ClassVar[BlockTypes] = BlockTypes.TEXT
 
     @field_validator("content", mode="before")
     @classmethod
     def content_strip(cls, content: str):
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         """Strip the content of the text block.
 
         Overload strip method, text blocks are not stripped.
         """
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+        # overload strip method text blocks are not stripped.
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         return content
 
     @classmethod
     def from_text(
         cls,
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
         text: str | None = None,
         start_index: int | None = None,
         stop_index: int | None = None,
     ):
         """Create a text block from a string."""
+<<<<<<< Updated upstream
+=======
+=======
+<<<<<<< main
+        text: str | None = None,
+        start_index: int | None = None,
+        stop_index: int | None = None,
+    ):
+        """Create a text block from a string."""
+=======
+        text: Optional[str] = None,
+        start_index: Optional[int] = None,
+        stop_index: Optional[int] = None,
+    ):
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         if text is None:
             return cls(content="")
         if start_index is not None and stop_index is not None:
@@ -55,6 +117,10 @@ class TextBlock(Block):
             text = text[:stop_index]
 
         return cls(content=text)
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
     def render(self, *_: tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
         """Render the text block."""
@@ -62,6 +128,19 @@ class TextBlock(Block):
 from logging import Logger
 from typing import Optional, Tuple
 
+<<<<<<< Updated upstream
+=======
+=======
+
+<<<<<<< main
+    def render(self, *_: tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
+        """Render the text block."""
+        return self.content
+from logging import Logger
+from typing import Optional, Tuple
+
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -76,3 +155,13 @@ class TextBlock(Block):
 
     def render(self, _: Optional[ContextVariables]) -> str:
         return self._content
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+    def render(self, *_: Tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
+        return self.content
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes

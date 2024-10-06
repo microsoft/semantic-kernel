@@ -33,7 +33,15 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// The agents participating in the chat.
     /// </summary>
+<<<<<<< Updated upstream
     public IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
+=======
+<<<<<<< HEAD
+    public IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
+=======
+    public override IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Add a <see cref="Agent"/> to the chat.
@@ -63,6 +71,14 @@ public sealed class AgentGroupChat : AgentChat
 
         this.Logger.LogAgentGroupChatInvokingAgents(nameof(InvokeAsync), this.Agents);
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        bool isComplete = false;
+
+>>>>>>> main
+>>>>>>> Stashed changes
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
@@ -107,15 +123,42 @@ public sealed class AgentGroupChat : AgentChat
             // Invoke agent and process messages along with termination
             await foreach (var message in this.InvokeStreamingAsync(agent, cancellationToken).ConfigureAwait(false))
             {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
                 yield return message;
             }
 
             if (this.IsComplete)
+<<<<<<< Updated upstream
+=======
+=======
+                if (message.Role == AuthorRole.Assistant)
+                {
+                    var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
+                    isComplete = await task.ConfigureAwait(false);
+                }
+
+                yield return message;
+            }
+
+            if (isComplete)
+>>>>>>> main
+>>>>>>> Stashed changes
             {
                 break;
             }
         }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this.IsComplete = isComplete;
+
+>>>>>>> main
+>>>>>>> Stashed changes
         this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
     }
 
@@ -137,19 +180,40 @@ public sealed class AgentGroupChat : AgentChat
         this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
 
 <<<<<<< main
+<<<<<<< Updated upstream
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> origin/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         if (isJoining)
         {
             this.Add(agent);
         }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
         this.AddAgent(agent);
 =======
 =======
         this.AddAgent(agent);
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+        this.AddAgent(agent);
+=======
+        this.AddAgent(agent);
+>>>>>>> main
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         await foreach (ChatMessageContent message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
@@ -192,6 +256,37 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// Convenience method to create a <see cref="KernelFunction"/> for a given strategy without HTML encoding the specified parameters.
+    /// </summary>
+    /// <param name="template">The prompt template string that defines the prompt.</param>
+    /// <param name="templateFactory">
+    /// On optional <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="template"/>.
+    /// The default factory will be used when none is provided.
+    /// </param>
+    /// <param name="safeParameterNames">The parameter names to exclude from being HTML encoded.</param>
+    /// <returns>A <see cref="KernelFunction"/> created via <see cref="KernelFunctionFactory"/> using the specified template.</returns>
+    /// <remarks>
+    /// This is particularly targeted to easily avoid encoding the history used by <see cref="KernelFunctionSelectionStrategy"/>
+    /// or <see cref="KernelFunctionTerminationStrategy"/>.
+    /// </remarks>
+    public static KernelFunction CreatePromptFunctionForStrategy(string template, IPromptTemplateFactory? templateFactory = null, params string[] safeParameterNames)
+    {
+        PromptTemplateConfig config =
+            new(template)
+            {
+                InputVariables = safeParameterNames.Select(parameterName => new InputVariable { Name = parameterName, AllowDangerouslySetContent = true }).ToList()
+            };
+
+        return KernelFunctionFactory.CreateFromPrompt(config, promptTemplateFactory: templateFactory);
+    }
+
+    /// <summary>
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="AgentGroupChat"/> class.
     /// </summary>
     /// <param name="agents">The agents initially participating in the chat.</param>

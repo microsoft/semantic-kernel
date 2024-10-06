@@ -12,7 +12,20 @@ class CodeRenderer(Protocol):
     """Protocol for dynamic code blocks that need async IO to be rendered."""
 
     async def render_code(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
+<<<<<<< Updated upstream
         """Render the block using the given context.
+=======
+<<<<<<< main
+        """Render the block using the given context.
+=======
+<<<<<<< main
+        """Render the block using the given context.
+=======
+        """
+        Render the block using the given context.
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         :param context: kernel execution context
         :return: Rendered content

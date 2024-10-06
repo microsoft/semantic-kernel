@@ -1,8 +1,13 @@
 {
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Given a query and a list of possible intents, detect which intent the input matches",
   "type": "completion",
   "completion": {
+=======
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 100,
     "temperature": 0.1,
     "top_p": 1.0,
@@ -12,4 +17,11 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+  }
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 }

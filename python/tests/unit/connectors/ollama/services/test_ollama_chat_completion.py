@@ -1,16 +1,47 @@
+<<<<<<< Updated upstream
 # Copyright (c) Microsoft. All rights reserved.
 
+=======
+<<<<<<< HEAD
+# Copyright (c) Microsoft. All rights reserved.
+
+=======
+<<<<<<< HEAD
+# Copyright (c) Microsoft. All rights reserved.
+
+=======
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 from unittest.mock import patch
 
 import pytest
 
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
     OllamaChatPromptExecutionSettings,
+<<<<<<< Updated upstream
     OllamaTextPromptExecutionSettings,
+=======
+<<<<<<< HEAD
+    OllamaTextPromptExecutionSettings,
+=======
+<<<<<<< HEAD
+    OllamaTextPromptExecutionSettings,
+=======
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 )
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import (
     OllamaChatCompletion,
 )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidResponseError,
@@ -24,22 +55,52 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 def test_settings(model_id):
     """Test that the settings class is correct."""
     ollama = OllamaChatCompletion(ai_model_id=model_id)
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+from semantic_kernel.contents.chat_history import ChatHistory
+from tests.unit.connectors.ollama.utils import MockResponse
+
+
+def test_settings():
+    ollama = OllamaChatCompletion(ai_model_id="test_model")
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     settings = ollama.get_prompt_execution_settings_class()
     assert settings == OllamaChatPromptExecutionSettings
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_init_empty_service_id(model_id):
     """Test that the service initializes correctly with an empty service id."""
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     assert ollama.service_id == model_id
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 def test_init_empty_ai_model_id():
     """Test that the service initializes with a error if there is no ai_model_id."""
     with pytest.raises(ServiceInitializationError):
         _ = OllamaChatCompletion()
 
 
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_init_empty_string_ai_model_id():
     """Test that the service initializes with a error if there is no ai_model_id."""
     with pytest.raises(ServiceInitializationError):
@@ -53,7 +114,15 @@ def test_custom_client(model_id, custom_client):
 
 
 @pytest.mark.parametrize("exclude_list", [["OLLAMA_MODEL"]], indirect=True)
+<<<<<<< Updated upstream
 def test_init_empty_model_id(ollama_unit_test_env):
+=======
+<<<<<<< HEAD
+def test_init_empty_model_id(ollama_unit_test_env):
+=======
+def test_init_empty_model_id_in_env(ollama_unit_test_env):
+>>>>>>> main
+>>>>>>> Stashed changes
     """Test that the service initializes incorrectly with an empty model id."""
     with pytest.raises(ServiceInitializationError):
         _ = OllamaChatCompletion(env_file_path="fake_env_file_path.env")
@@ -168,10 +237,45 @@ async def test_chat_completion(
         messages=ollama._prepare_chat_history_for_request(chat_history),
         options=default_options,
         stream=False,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+@pytest.mark.asyncio
+@patch("aiohttp.ClientSession.post")
+async def test_complete_chat(mock_post):
+    mock_post.return_value = MockResponse(response={"message": {"content": "test_response"}})
+    ollama = OllamaChatCompletion(ai_model_id="test_model")
+    chat_history = ChatHistory()
+    chat_history.add_user_message("test_prompt")
+    response = await ollama.complete_chat(
+        chat_history,
+        OllamaChatPromptExecutionSettings(service_id="test_model", ai_model_id="test_model", options={"test": "test"}),
+    )
+    assert response[0].content == "test_response"
+    mock_post.assert_called_once_with(
+        "http://localhost:11434/api/chat",
+        json={
+            "model": "test_model",
+            "messages": [{"role": "user", "content": "test_prompt"}],
+            "options": {"test": "test"},
+            "stream": False,
+        },
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
     )
 
 
 @pytest.mark.asyncio
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 @patch("ollama.AsyncClient.chat")
 async def test_chat_completion_wrong_return_type(
     mock_chat_client,
@@ -279,10 +383,59 @@ async def test_streaming_chat_completion(
         messages=ollama._prepare_chat_history_for_request(chat_history),
         options=default_options,
         stream=True,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
     )
 
 
 @pytest.mark.asyncio
+=======
+=======
+@patch("aiohttp.ClientSession.post")
+async def test_complete(mock_post):
+    mock_post.return_value = MockResponse(response={"message": {"content": "test_response"}})
+    ollama = OllamaChatCompletion(ai_model_id="test_model")
+    response = await ollama.complete(
+        "test_prompt",
+        OllamaChatPromptExecutionSettings(service_id="test_model", ai_model_id="test_model", options={"test": "test"}),
+    )
+    assert response[0].text == "test_response"
+
+
+@pytest.mark.asyncio
+@patch("aiohttp.ClientSession.post")
+async def test_complete_chat_stream(mock_post):
+    mock_post.return_value = MockResponse(response={"message": {"content": "test_response"}})
+    ollama = OllamaChatCompletion(ai_model_id="test_model")
+    chat_history = ChatHistory()
+    chat_history.add_user_message("test_prompt")
+    response = ollama.complete_chat_stream(
+        chat_history,
+        OllamaChatPromptExecutionSettings(ai_model_id="test_model", options={"test": "test"}),
+    )
+    async for line in response:
+        if line:
+            assert line[0].content == "test_response"
+    mock_post.assert_called_once_with(
+        "http://localhost:11434/api/chat",
+        json={
+            "model": "test_model",
+            "messages": [{"role": "user", "content": "test_prompt"}],
+            "options": {"test": "test"},
+            "stream": True,
+        },
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> Stashed changes
+    )
+
+
+@pytest.mark.asyncio
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 @patch("ollama.AsyncClient.chat")
 async def test_streaming_chat_completion_wrong_return_type(
     mock_chat_client,
@@ -366,3 +519,31 @@ async def test_streaming_text_completion_wrong_return_type(
             ),
         ):
             pass
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+@patch("aiohttp.ClientSession.post")
+async def test_complete_stream(mock_post):
+    mock_post.return_value = MockResponse(response={"message": {"content": "test_response"}})
+    ollama = OllamaChatCompletion(ai_model_id="test_model")
+    response = ollama.complete_stream(
+        "test_prompt",
+        OllamaChatPromptExecutionSettings(ai_model_id="test_model", options={"test": "test"}),
+    )
+    async for line in response:
+        if line:
+            assert line[0].text == "test_response"
+    mock_post.assert_called_once_with(
+        "http://localhost:11434/api/chat",
+        json={
+            "model": "test_model",
+            "options": {"test": "test"},
+            "stream": True,
+            "messages": [{"role": "user", "content": "test_prompt"}],
+        },
+    )
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes

@@ -410,7 +410,15 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
             "Whatever"));
 
         Assert.Equal(
+<<<<<<< Updated upstream
             $"No vector property found on type {typeof(PineconeRecordNoEmbedding).FullName}.",
+=======
+<<<<<<< HEAD
+            $"No vector property found on type {typeof(PineconeRecordNoEmbedding).FullName}.",
+=======
+            $"No vector property found on type {nameof(PineconeRecordNoEmbedding)} or the provided VectorStoreRecordDefinition while at least one is required.",
+>>>>>>> main
+>>>>>>> Stashed changes
             exception.Message);
     }
 
@@ -434,7 +442,15 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
             "Whatever"));
 
         Assert.Equal(
+<<<<<<< Updated upstream
             $"Multiple vector properties found on type {typeof(PineconeRecordMultipleEmbeddings).FullName} while only one is supported.",
+=======
+<<<<<<< HEAD
+            $"Multiple vector properties found on type {typeof(PineconeRecordMultipleEmbeddings).FullName} while only one is supported.",
+=======
+            $"Multiple vector properties found on type {nameof(PineconeRecordMultipleEmbeddings)} or the provided VectorStoreRecordDefinition while only one is supported.",
+>>>>>>> main
+>>>>>>> Stashed changes
             exception.Message);
     }
 

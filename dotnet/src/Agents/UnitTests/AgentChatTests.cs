@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using Microsoft.SemanticKernel.Agents.Filters;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
@@ -149,6 +156,52 @@ public class AgentChatTests
         }
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// <summary>
+    /// Verify behavior of <see cref="AgentChat"/> over the course of agent interactions.
+    /// </summary>
+    [Fact]
+    public void VerifyAgentChatRejectsSystemMessage()
+    {
+        // Create chat
+        TestChat chat = new();
+
+        // Add a system message
+        Assert.Throws<KernelException>(() => chat.AddChatMessage(new ChatMessageContent(AuthorRole.System, "hi")));
+    /// Verify behavior of <see cref="AgentChat"/> usage of <see cref="IAgentChatFilter"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyAgentChatFiltersAsync()
+    {
+        // Create a filter
+        Mock<IAgentChatFilter> mockFilter = new();
+
+        // Create chat
+        TestChat chat = new()
+        {
+            Filters =
+            {
+                mockFilter.Object
+            }
+        };
+
+        // Verify initial state
+        mockFilter.Verify(f => f.OnAgentInvoking(It.IsAny<AgentChatFilterInvokingContext>()), Times.Never);
+        mockFilter.Verify(f => f.OnAgentInvoked(It.IsAny<AgentChatFilterInvokedContext>()), Times.Never);
+
+        // Invoke with input & verify (agent joins chat)
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
+        await chat.InvokeAsync().ToArrayAsync();
+        Assert.Equal(1, chat.Agent.InvokeCount);
+        mockFilter.Verify(f => f.OnAgentInvoking(It.IsAny<AgentChatFilterInvokingContext>()), Times.Once);
+        mockFilter.Verify(f => f.OnAgentInvoked(It.IsAny<AgentChatFilterInvokedContext>()), Times.Once);
+    }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
     {
         Assert.Equal(expectedCount, await history.CountAsync());
@@ -158,19 +211,47 @@ public class AgentChatTests
     {
         public MockAgent Agent { get; } = new() { Response = [new(AuthorRole.Assistant, "sup")] };
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        public override IReadOnlyList<Agent> Agents => [this.Agent];
+
+>>>>>>> main
+>>>>>>> Stashed changes
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 =======
+<<<<<<< Updated upstream
+=======
+=======
+        public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
+            CancellationToken cancellationToken = default)
+>>>>>>> main
+>>>>>>> Stashed changes
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             ChatHistory history,
             IReadOnlyList<ChatMessageContent> history,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
+=======
+<<<<<<< HEAD
+>>>>>>> origin/PR
+=======
+        public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
+            CancellationToken cancellationToken = default)
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             this.SetActivityOrThrow();
             return this.InvokeAgentAsync(this.Agent, cancellationToken);

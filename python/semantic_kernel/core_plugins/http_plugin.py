@@ -1,11 +1,36 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 from typing import Annotated, Any
 
 import aiohttp
 
 from semantic_kernel.exceptions import FunctionExecutionException
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+import sys
+from typing import Any, Dict, Optional
+
+import aiohttp
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -23,6 +48,13 @@ class HttpPlugin(KernelBaseModel):
         {{http.deleteAsync $url}}
     """
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     @kernel_function(description="Makes a GET request to a url", name="getAsync")
     async def get(self, url: Annotated[str, "The URL to send the request to."]) -> str:
         """Sends an HTTP GET request to the specified URI and returns the response body as a string.
@@ -31,6 +63,22 @@ class HttpPlugin(KernelBaseModel):
             url: The URL to send the request to.
 
         Returns:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    @kernel_function(description="Makes a GET request to a uri", name="getAsync")
+    async def get(self, url: Annotated[str, "The URI to send the request to."]) -> str:
+        """
+        Sends an HTTP GET request to the specified URI and returns
+        the response body as a string.
+        params:
+            uri: The URI to send the request to.
+        returns:
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
             The response body as a string.
         """
         if not url:
@@ -46,18 +94,51 @@ class HttpPlugin(KernelBaseModel):
     async def post(
         self,
         url: Annotated[str, "The URI to send the request to."],
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         body: Annotated[dict[str, Any] | None, "The body of the request"] = {},
     ) -> str:
         """Sends an HTTP POST request to the specified URI and returns the response body as a string.
 
         Args:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        body: Annotated[Optional[Dict[str, Any]], "The body of the request"] = {},
+    ) -> str:
+        """
+        Sends an HTTP POST request to the specified URI and returns
+        the response body as a string.
+        params:
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
             url: The URI to send the request to.
             body: Contains the body of the request
         returns:
             The response body as a string.
         """
         if not url:
+<<<<<<< Updated upstream
             raise FunctionExecutionException("url cannot be `None` or empty")
+=======
+<<<<<<< HEAD
+            raise FunctionExecutionException("url cannot be `None` or empty")
+=======
+<<<<<<< main
+            raise FunctionExecutionException("url cannot be `None` or empty")
+=======
+            raise ValueError("url cannot be `None` or empty")
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
@@ -73,11 +154,32 @@ class HttpPlugin(KernelBaseModel):
     async def put(
         self,
         url: Annotated[str, "The URI to send the request to."],
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         body: Annotated[dict[str, Any] | None, "The body of the request"] = {},
     ) -> str:
         """Sends an HTTP PUT request to the specified URI and returns the response body as a string.
 
         Args:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        body: Annotated[Optional[Dict[str, Any]], "The body of the request"] = {},
+    ) -> str:
+        """
+        Sends an HTTP PUT request to the specified URI and returns
+        the response body as a string.
+        params:
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
             url: The URI to send the request to.
             body: Contains the body of the request
 
@@ -85,7 +187,19 @@ class HttpPlugin(KernelBaseModel):
             The response body as a string.
         """
         if not url:
+<<<<<<< Updated upstream
             raise FunctionExecutionException("url cannot be `None` or empty")
+=======
+<<<<<<< HEAD
+            raise FunctionExecutionException("url cannot be `None` or empty")
+=======
+<<<<<<< main
+            raise FunctionExecutionException("url cannot be `None` or empty")
+=======
+            raise ValueError("url cannot be `None` or empty")
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
@@ -98,6 +212,13 @@ class HttpPlugin(KernelBaseModel):
             return await response.text()
 
     @kernel_function(description="Makes a DELETE request to a uri", name="deleteAsync")
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     async def delete(
         self, url: Annotated[str, "The URI to send the request to."]
     ) -> str:
@@ -107,6 +228,21 @@ class HttpPlugin(KernelBaseModel):
             url: The URI to send the request to.
 
         Returns:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    async def delete(self, url: Annotated[str, "The URI to send the request to."]) -> str:
+        """
+        Sends an HTTP DELETE request to the specified URI and returns
+        the response body as a string.
+        params:
+            uri: The URI to send the request to.
+        returns:
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
             The response body as a string.
         """
         if not url:

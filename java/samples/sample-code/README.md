@@ -34,6 +34,13 @@ They can then be run by:
 
 # Configuration
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 You can define the provider of Open AI by setting the `OPENAI_CLIENT_TYPE`
 property or environment variable to either [`OPENAI`](https://platform.openai.com)
 or [`AZURE_OPEN_AI`](https://learn.microsoft.com/azure/cognitive-services/openai/).
@@ -196,11 +203,25 @@ OR
 
 ## Client Settings
 <<<<<<< AI
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
 The samples search for the client settings in the following order:
 The tests search for the client settings in the following order:
 =======
 <<<<<<< HEAD
 The samples search for the client settings in the following order:
+=======
+>>>>>>> Stashed changes
+The samples search for the client settings in the following order:
+The tests search for the client settings in the following order:
+=======
+<<<<<<< HEAD
+The samples search for the client settings in the following order:
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 The tests search for the client settings in the following order:
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
@@ -219,11 +240,25 @@ You can set the location of a properties file, by setting the `CONF_PROPERTIES` 
 ```shell
 CONF_PROPERTIES=my.properties \
 <<<<<<< AI
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
 OPENAI_CLIENT_TYPE=OPEN_AI \
 OPENAI_CLIENT_TYPE=OPENAI \
 =======
 <<<<<<< HEAD
 OPENAI_CLIENT_TYPE=OPEN_AI \
+=======
+>>>>>>> Stashed changes
+OPENAI_CLIENT_TYPE=OPEN_AI \
+OPENAI_CLIENT_TYPE=OPENAI \
+=======
+<<<<<<< HEAD
+OPENAI_CLIENT_TYPE=OPEN_AI \
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 OPENAI_CLIENT_TYPE=OPENAI \
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f

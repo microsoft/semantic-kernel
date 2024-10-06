@@ -8,6 +8,13 @@ def test_can_be_instantiated():
     assert TextPlugin()
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_can_be_imported(kernel: Kernel):
     kernel.add_plugin(TextPlugin(), "text_plugin")
     assert not kernel.get_function(
@@ -18,6 +25,24 @@ def test_can_be_imported(kernel: Kernel):
 def test_can_be_imported_with_name(kernel: Kernel):
     kernel.add_plugin(TextPlugin(), "text")
     assert not kernel.get_function(plugin_name="text", function_name="trim").is_prompt
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+def test_can_be_imported():
+    kernel = sk.Kernel()
+    assert kernel.import_plugin(TextPlugin(), "text_plugin")
+    assert not kernel.plugins["text_plugin"]["trim"].is_prompt
+
+
+def test_can_be_imported_with_name():
+    kernel = sk.Kernel()
+    assert kernel.import_plugin(TextPlugin(), "text")
+    assert not kernel.plugins["text"]["trim"].is_prompt
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_can_trim():

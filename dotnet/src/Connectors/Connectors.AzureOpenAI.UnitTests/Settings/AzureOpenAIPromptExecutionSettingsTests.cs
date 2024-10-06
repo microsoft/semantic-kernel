@@ -7,6 +7,14 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+#pragma warning disable CS0618 // Type or member is obsolete
+
+>>>>>>> main
+>>>>>>> Stashed changes
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Settings;
 
 /// <summary>
@@ -242,9 +250,20 @@ public class AzureOpenAIPromptExecutionSettingsTests
         var executionSettings = new AzureOpenAIPromptExecutionSettings { StopSequences = [] };
 
         // Act
+<<<<<<< Updated upstream
 #pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
         var executionSettingsWithData = AzureOpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 #pragma warning restore CS0618
+=======
+<<<<<<< HEAD
+#pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
+        var executionSettingsWithData = AzureOpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
+#pragma warning restore CS0618
+=======
+        var executionSettingsWithData = AzureOpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
+
+>>>>>>> main
+>>>>>>> Stashed changes
         // Assert
         Assert.Null(executionSettingsWithData.StopSequences);
     }
@@ -276,6 +295,13 @@ public class AzureOpenAIPromptExecutionSettingsTests
         AssertExecutionSettings(executionSettings);
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     [Fact]
     public void ItRestoresOriginalFunctionChoiceBehavior()
     {
@@ -292,6 +318,14 @@ public class AzureOpenAIPromptExecutionSettingsTests
         Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     private static void AssertExecutionSettings(AzureOpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);

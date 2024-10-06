@@ -53,18 +53,58 @@ class MockChatCompletion(ChatCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
 
     @override
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     async def _inner_get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    async def get_chat_message_contents(
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+        **kwargs: Any,
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     ) -> list["ChatMessageContent"]:
         return []
 
     @override
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    async def get_streaming_chat_message_contents(
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+        **kwargs: Any,
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         yield []
 
@@ -73,7 +113,19 @@ class MockTextCompletion(TextCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
 
     @override
+<<<<<<< Updated upstream
     async def _inner_get_text_contents(
+=======
+<<<<<<< HEAD
+    async def _inner_get_text_contents(
+=======
+<<<<<<< HEAD
+    async def _inner_get_text_contents(
+=======
+    async def get_text_contents(
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -81,7 +133,19 @@ class MockTextCompletion(TextCompletionClientBase):
         return []
 
     @override
+<<<<<<< Updated upstream
     async def _inner_get_streaming_text_contents(
+=======
+<<<<<<< HEAD
+    async def _inner_get_streaming_text_contents(
+=======
+<<<<<<< HEAD
+    async def _inner_get_streaming_text_contents(
+=======
+    async def get_streaming_text_contents(
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
         self,
         prompt: str,
         settings: "PromptExecutionSettings",

@@ -47,14 +47,34 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
 
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 definition: new(this.Model)
+=======
+<<<<<<< HEAD
+                kernel: new(),
+                clientProvider: this.GetClientProvider(),
+                definition: new(this.Model)
+=======
+                clientProvider: this.GetClientProvider(),
+                definition: new OpenAIAssistantDefinition(this.Model)
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
                     Metadata = AssistantSampleMetadata,
+<<<<<<< Updated upstream
                 });
+=======
+<<<<<<< HEAD
+                });
+=======
+                },
+                kernel: new Kernel());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =

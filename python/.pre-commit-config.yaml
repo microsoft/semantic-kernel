@@ -49,7 +49,15 @@ repos:
     - id: mypy
       files: ^python/semantic_kernel/
       name: mypy
+<<<<<<< Updated upstream
       entry: uv run mypy -p semantic_kernel --config-file python/mypy.ini
+=======
+<<<<<<< HEAD
+      entry: uv run mypy -p semantic_kernel --config-file python/mypy.ini
+=======
+      entry: cd python && uv run mypy -p semantic_kernel --config-file mypy.ini
+>>>>>>> main
+>>>>>>> Stashed changes
       language: system
       types: [python]
       pass_filenames: false

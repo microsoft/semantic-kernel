@@ -2,6 +2,16 @@
 
 using System;
 using System.Collections.Concurrent;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+using System.Collections.Generic;
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,10 +34,30 @@ public class VolatileVectorStoreRecordCollectionTests
     private readonly CancellationToken _testCancellationToken = new(false);
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _collectionStore;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    private readonly ConcurrentDictionary<string, Type> _collectionStoreTypes;
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
     public VolatileVectorStoreRecordCollectionTests()
     {
         this._collectionStore = new();
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        this._collectionStoreTypes = new();
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Theory]
@@ -41,6 +71,16 @@ public class VolatileVectorStoreRecordCollectionTests
 
         var sut = new VolatileVectorStoreRecordCollection<string, SinglePropsModel<string>>(
             this._collectionStore,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+            this._collectionStoreTypes,
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
             collectionName);
 
         // Act
@@ -265,13 +305,281 @@ public class VolatileVectorStoreRecordCollectionTests
         Assert.Equal($"data {testKey1}", (collection[testKey1] as SinglePropsModel<TKey>)!.Data);
     }
 
+<<<<<<< Updated upstream
     private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors)
+=======
+<<<<<<< HEAD
+    private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors)
+=======
+<<<<<<< HEAD
+    [Theory]
+    [InlineData(true, TestRecordKey1, TestRecordKey2)]
+    [InlineData(true, TestRecordIntKey1, TestRecordIntKey2)]
+    [InlineData(false, TestRecordKey1, TestRecordKey2)]
+    [InlineData(false, TestRecordIntKey1, TestRecordIntKey2)]
+    public async Task CanSearchWithVectorAsync<TKey>(bool useDefinition, TKey testKey1, TKey testKey2)
+        where TKey : notnull
+    {
+        // Arrange
+        var record1 = CreateModel(testKey1, withVectors: true, new float[] { 1, 1, 1, 1 });
+        var record2 = CreateModel(testKey2, withVectors: true, new float[] { -1, -1, -1, -1 });
+
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(testKey1, record1);
+        collection.TryAdd(testKey2, record2);
+
+        this._collectionStore.TryAdd(TestCollectionName, collection);
+
+        var sut = this.CreateRecordCollection<TKey>(useDefinition);
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            new VectorSearchOptions { IncludeVectors = true },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal(2, actual.Count);
+        Assert.Equal(testKey1, actual[0].Record.Key);
+        Assert.Equal($"data {testKey1}", actual[0].Record.Data);
+        Assert.Equal(1, actual[0].Score);
+        Assert.Equal(testKey2, actual[1].Record.Key);
+        Assert.Equal($"data {testKey2}", actual[1].Record.Data);
+        Assert.Equal(-1, actual[1].Score);
+    }
+
+    [Theory]
+    [InlineData(true, TestRecordKey1, TestRecordKey2, "Equality")]
+    [InlineData(true, TestRecordIntKey1, TestRecordIntKey2, "Equality")]
+    [InlineData(false, TestRecordKey1, TestRecordKey2, "Equality")]
+    [InlineData(false, TestRecordIntKey1, TestRecordIntKey2, "Equality")]
+    [InlineData(true, TestRecordKey1, TestRecordKey2, "TagListContains")]
+    [InlineData(true, TestRecordIntKey1, TestRecordIntKey2, "TagListContains")]
+    [InlineData(false, TestRecordKey1, TestRecordKey2, "TagListContains")]
+    [InlineData(false, TestRecordIntKey1, TestRecordIntKey2, "TagListContains")]
+    public async Task CanSearchWithVectorAndFilterAsync<TKey>(bool useDefinition, TKey testKey1, TKey testKey2, string filterType)
+        where TKey : notnull
+    {
+        // Arrange
+        var record1 = CreateModel(testKey1, withVectors: true, new float[] { 1, 1, 1, 1 });
+        var record2 = CreateModel(testKey2, withVectors: true, new float[] { -1, -1, -1, -1 });
+
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(testKey1, record1);
+        collection.TryAdd(testKey2, record2);
+
+        this._collectionStore.TryAdd(TestCollectionName, collection);
+
+        var sut = this.CreateRecordCollection<TKey>(useDefinition);
+
+        // Act
+        var filter = filterType == "Equality" ? new VectorSearchFilter().EqualTo("Data", $"data {testKey2}") : new VectorSearchFilter().AnyTagEqualTo("Tags", $"tag {testKey2}");
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            new VectorSearchOptions { IncludeVectors = true, Filter = filter },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Single(actual);
+        Assert.Equal(testKey2, actual[0].Record.Key);
+        Assert.Equal($"data {testKey2}", actual[0].Record.Data);
+        Assert.Equal(-1, actual[0].Score);
+    }
+
+    [Theory]
+    [InlineData(DistanceFunction.CosineSimilarity, 1, -1)]
+    [InlineData(DistanceFunction.CosineDistance, 0, 2)]
+    [InlineData(DistanceFunction.DotProductSimilarity, 4, -4)]
+    [InlineData(DistanceFunction.EuclideanDistance, 0, 4)]
+    public async Task CanSearchWithDifferentDistanceFunctionsAsync(string distanceFunction, double expectedScoreResult1, double expectedScoreResult2)
+    {
+        // Arrange
+        var record1 = CreateModel(TestRecordKey1, withVectors: true, new float[] { 1, 1, 1, 1 });
+        var record2 = CreateModel(TestRecordKey2, withVectors: true, new float[] { -1, -1, -1, -1 });
+
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(TestRecordKey1, record1);
+        collection.TryAdd(TestRecordKey2, record2);
+
+        this._collectionStore.TryAdd(TestCollectionName, collection);
+
+        VectorStoreRecordDefinition singlePropsDefinition = new()
+        {
+            Properties =
+            [
+                new VectorStoreRecordKeyProperty("Key", typeof(string)),
+                new VectorStoreRecordDataProperty("Data", typeof(string)),
+                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { DistanceFunction = distanceFunction }
+            ]
+        };
+
+        var sut = new VolatileVectorStoreRecordCollection<string, SinglePropsModel<string>>(
+            this._collectionStore,
+            this._collectionStoreTypes,
+            TestCollectionName,
+            new()
+            {
+                VectorStoreRecordDefinition = singlePropsDefinition
+            });
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            new VectorSearchOptions { IncludeVectors = true },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal(2, actual.Count);
+        Assert.Equal(TestRecordKey1, actual[0].Record.Key);
+        Assert.Equal($"data {TestRecordKey1}", actual[0].Record.Data);
+        Assert.Equal(expectedScoreResult1, actual[0].Score);
+        Assert.Equal(TestRecordKey2, actual[1].Record.Key);
+        Assert.Equal($"data {TestRecordKey2}", actual[1].Record.Data);
+        Assert.Equal(expectedScoreResult2, actual[1].Score);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanSearchManyRecordsAsync(bool useDefinition)
+    {
+        // Arrange
+        var collection = new ConcurrentDictionary<object, object>();
+        for (int i = 0; i < 1000; i++)
+        {
+            if (i <= 14)
+            {
+                collection.TryAdd(i, CreateModel(i, withVectors: true, new float[] { 1, 1, 1, 1 }));
+            }
+            else
+            {
+                collection.TryAdd(i, CreateModel(i, withVectors: true, new float[] { -1, -1, -1, -1 }));
+            }
+        }
+
+        this._collectionStore.TryAdd(TestCollectionName, collection);
+
+        var sut = this.CreateRecordCollection<int>(useDefinition);
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            new VectorSearchOptions { IncludeVectors = true, Top = 10, Skip = 10 },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert
+        Assert.NotNull(actual);
+
+        // Assert that top was respected
+        Assert.Equal(10, actual.Count);
+        var actualIds = actual.Select(r => r.Record.Key).ToList();
+        for (int i = 0; i < 10; i++)
+        {
+            // Assert that skip was respected
+            Assert.Contains(i + 10, actualIds);
+            if (i <= 4)
+            {
+                Assert.Equal(1, actual[i].Score);
+            }
+            else
+            {
+                Assert.Equal(-1, actual[i].Score);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(TestRecordKey1, TestRecordKey2)]
+    [InlineData(TestRecordIntKey1, TestRecordIntKey2)]
+    public async Task ItCanSearchUsingTheGenericDataModelAsync<TKey>(TKey testKey1, TKey testKey2)
+        where TKey : notnull
+    {
+        // Arrange
+        var record1 = new VectorStoreGenericDataModel<TKey>(testKey1)
+        {
+            Data = new Dictionary<string, object?>
+            {
+                ["Data"] = $"data {testKey1}",
+                ["Tags"] = new List<string> { "default tag", "tag " + testKey1 }
+            },
+            Vectors = new Dictionary<string, object?>
+            {
+                ["Vector"] = new ReadOnlyMemory<float>([1, 1, 1, 1])
+            }
+        };
+        var record2 = new VectorStoreGenericDataModel<TKey>(testKey2)
+        {
+            Data = new Dictionary<string, object?>
+            {
+                ["Data"] = $"data {testKey2}",
+                ["Tags"] = new List<string> { "default tag", "tag " + testKey2 }
+            },
+            Vectors = new Dictionary<string, object?>
+            {
+                ["Vector"] = new ReadOnlyMemory<float>([-1, -1, -1, -1])
+            }
+        };
+
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(testKey1, record1);
+        collection.TryAdd(testKey2, record2);
+
+        this._collectionStore.TryAdd(TestCollectionName, collection);
+
+        var sut = new VolatileVectorStoreRecordCollection<TKey, VectorStoreGenericDataModel<TKey>>(
+            this._collectionStore,
+            this._collectionStoreTypes,
+            TestCollectionName,
+            new()
+            {
+                VectorStoreRecordDefinition = this._singlePropsDefinition
+            });
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>([1, 1, 1, 1]),
+            new VectorSearchOptions { IncludeVectors = true, VectorPropertyName = "Vector" },
+            this._testCancellationToken).ToListAsync();
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal(2, actual.Count);
+        Assert.Equal(testKey1, actual[0].Record.Key);
+        Assert.Equal($"data {testKey1}", actual[0].Record.Data["Data"]);
+        Assert.Equal(1, actual[0].Score);
+        Assert.Equal(testKey2, actual[1].Record.Key);
+        Assert.Equal($"data {testKey2}", actual[1].Record.Data["Data"]);
+        Assert.Equal(-1, actual[1].Score);
+    }
+
+    private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors, float[]? vector = null)
+=======
+    private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors)
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         return new SinglePropsModel<TKey>
         {
             Key = key,
             Data = "data " + key,
+<<<<<<< Updated upstream
             Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
+=======
+<<<<<<< HEAD
+            Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
+=======
+<<<<<<< HEAD
+            Tags = new List<string> { "default tag", "tag " + key },
+            Vector = vector ?? (withVectors ? new float[] { 1, 2, 3, 4 } : null),
+=======
+            Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
             NotAnnotated = null,
         };
     }
@@ -281,6 +589,16 @@ public class VolatileVectorStoreRecordCollectionTests
     {
         return new VolatileVectorStoreRecordCollection<TKey, SinglePropsModel<TKey>>(
             this._collectionStore,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+            this._collectionStoreTypes,
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
             TestCollectionName,
             new()
             {
@@ -293,7 +611,20 @@ public class VolatileVectorStoreRecordCollectionTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
+<<<<<<< Updated upstream
             new VectorStoreRecordDataProperty("Data", typeof(string)),
+=======
+<<<<<<< HEAD
+            new VectorStoreRecordDataProperty("Data", typeof(string)),
+=======
+<<<<<<< HEAD
+            new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("Data", typeof(string)) { IsFilterable = true },
+=======
+            new VectorStoreRecordDataProperty("Data", typeof(string)),
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
             new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
         ]
     };
@@ -303,7 +634,22 @@ public class VolatileVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public TKey? Key { get; set; }
 
+<<<<<<< Updated upstream
         [VectorStoreRecordData]
+=======
+<<<<<<< HEAD
+        [VectorStoreRecordData]
+=======
+<<<<<<< HEAD
+        [VectorStoreRecordData(IsFilterable = true)]
+        public List<string> Tags { get; set; } = new List<string>();
+
+        [VectorStoreRecordData(IsFilterable = true)]
+=======
+        [VectorStoreRecordData]
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         public string Data { get; set; } = string.Empty;
 
         [VectorStoreRecordVector]

@@ -5,6 +5,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System.Text.Json.Nodes;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -94,11 +101,23 @@ public Plan(string? originalPlan)
 
     /// <inheritdoc/>
     [JsonIgnore]
+<<<<<<< Updated upstream
     public CompleteRequestSettings RequestSettings { get; private set; } = new();
+=======
+<<<<<<< HEAD
+    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+=======
+    public JsonObject ServiceSettings { get; private set; } = new();
+>>>>>>> main
+>>>>>>> Stashed changes
 
     #endregion ISKFunction implementation
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
     /// <param name="goal">The goal of the plan used as description.</param>
@@ -106,6 +125,25 @@ public Plan(string? originalPlan)
     {
         this.Description = goal;
         this.SkillName = this.GetType().FullName;
+<<<<<<< Updated upstream
+=======
+=======
+    /// Initializes a new instance of the <see cref="Plan"/> class.
+    /// </summary>
+    public Plan()
+    {
+        this.SkillName = this.GetType().FullName;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
+    /// </summary>
+    /// <param name="goal">The goal of the plan used as description.</param>
+    public Plan(string goal) : this()
+    {
+        this.Description = goal;
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -129,15 +167,52 @@ public Plan(string? originalPlan)
     }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
     /// <param name="function">The function to execute.</param>
     public Plan(ISKFunction function)
+<<<<<<< Updated upstream
+=======
+=======
+    /// Initializes a new instance of the <see cref="Plan"/> class with steps.
+    /// </summary>
+    /// <param name="steps">The steps to add.</param>
+    public Plan(params Plan[] steps)
+    {
+        this.AddSteps(steps);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Plan"/> class with a function.
+    /// </summary>
+    /// <param name="function">The function to execute.</param>
+    public Plan(ISKFunction function) : this()
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         this.SetFunction(function);
     }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// Initializes a new instance of the <see cref="Plan"/> class with steps.
+    /// </summary>
+    /// <param name="steps">The steps to execute.</param>
+    public Plan(params ISKFunction[] steps) : this()
+    {
+        this.AddSteps(steps);
+    }
+
+    /// <summary>
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="Plan"/> class with a function and steps.
     /// </summary>
     /// <param name="name">The name of the plan.</param>
@@ -231,13 +306,30 @@ public Plan(string? originalPlan)
     /// <param name="kernel">The kernel instance to use for executing the plan.</param>
     /// <param name="variables">The variables to use for the execution of the plan.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">AI service settings</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the execution of the plan.</param>
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
     /// This method executes the next step in the plan using the specified kernel instance and context variables.
     /// The context variables contain the necessary information for executing the plan, such as the skills, and logger.
     /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
+<<<<<<< Updated upstream
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+=======
+<<<<<<< HEAD
+    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+=======
+    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         var context = new SKContext(
             variables,
@@ -252,6 +344,15 @@ public Plan(string? originalPlan)
             // cancellationToken
         );
         return this.InvokeNextStepAsync(context);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            kernel.Log,
+            cancellationToken);
+        return this.InvokeNextStepAsync(context, textCompletionService, settings);
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -262,6 +363,17 @@ public Plan(string? originalPlan)
     /// <returns>The updated plan</returns>
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
     public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">AI service settings</param>
+    /// <returns>The updated plan</returns>
+    /// <exception cref="KernelException">If an error occurs while running the plan</exception>
+    public async Task<Plan> InvokeNextStepAsync(SKContext context, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null)
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         if (this.HasNextStep)
         {
@@ -334,6 +446,20 @@ public Plan(string? originalPlan)
     public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    public Task<SKContext> InvokeAsync(
+        string? input = null,
+        ITextCompletion? textCompletionService = null,
+        CompleteRequestSettings? settings = null,
+        IReadOnlySkillCollection? skills = null,
+        ISemanticTextMemory? memory = null,
+        ILogger? logger = null,
+    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, JsonObject? settings = null, ILogger? log = null,
+>>>>>>> main
+>>>>>>> Stashed changes
         CancellationToken cancellationToken = default)
     {
         // context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
@@ -345,8 +471,33 @@ public Plan(string? originalPlan)
     }
 
     /// <inheritdoc/>
+<<<<<<< Updated upstream
     public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
         CancellationToken cancellationToken = default)
+=======
+<<<<<<< HEAD
+    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+        CancellationToken cancellationToken = default)
+=======
+    public async Task<SKContext> InvokeAsync(SKContext? context = null, JsonObject? settings = null, ILogger? log = null,
+        CancellationToken cancellationToken = default)
+        SKContext context = new(
+            this.State,
+            memory: memory,
+            skills: skills,
+            logger: logger,
+            cancellationToken: cancellationToken);
+
+        return this.InvokeAsync(context, textCompletionService, settings);
+    }
+
+    /// <inheritdoc/>
+    public async Task<SKContext> InvokeAsync(
+        SKContext context,
+        ITextCompletion? textCompletionService = null,
+        CompleteRequestSettings? settings = null)
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         // context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
         context ??= new SKContext(this.State);
@@ -358,6 +509,13 @@ public Plan(string? originalPlan)
                 .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(context, settings, cancellationToken)
                 .ConfigureAwait(false);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            var result = await this.Function.InvokeAsync(context, textCompletionService, settings).ConfigureAwait(false);
+>>>>>>> main
+>>>>>>> Stashed changes
 
             if (result.ErrorOccurred)
             {
@@ -373,6 +531,31 @@ public Plan(string? originalPlan)
             {
                 AddVariablesToContext(this.State, context);
                 await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                var functionContext = context;
+                AddVariablesToContext(this.State, functionContext);
+
+                try
+                {
+                    functionContext.CancellationToken.ThrowIfCancellationRequested();
+                    await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
+                    if (functionContext.ErrorOccurred) { return functionContext; }
+                }
+                catch (Exception e) when (!e.IsCriticalException())
+                {
+                    functionContext.Log.LogError(e, "Error in plan step {0}.{1}:'{2}'. Exception: {3}",
+                        this.SkillName, this.Name, context.LastErrorDescription, e.Message);
+                        this.SkillName, this.Name, context.LastErrorDescription);
+                    functionContext.Fail(e.Message, e);
+                    return functionContext;
+                }
+                await this.InvokeNextStepAsync(functionContext, textCompletionService, settings).ConfigureAwait(false);
+
+>>>>>>> main
+>>>>>>> Stashed changes
                 this.UpdateContextWithOutputs(context);
             }
         }
@@ -381,6 +564,13 @@ public Plan(string? originalPlan)
     }
 
     /// <inheritdoc/>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+>>>>>>> main
+>>>>>>> Stashed changes
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
         return this.Function is null
@@ -397,7 +587,15 @@ public Plan(string? originalPlan)
     }
 
     /// <inheritdoc/>
+<<<<<<< Updated upstream
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+=======
+<<<<<<< HEAD
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+=======
+    public ISKFunction SetAIConfiguration(JsonObject settings)
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         return this.Function is null
             ? throw new NotImplementedException()
@@ -612,7 +810,15 @@ public Plan(string? originalPlan)
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
+<<<<<<< Updated upstream
         this.RequestSettings = function.RequestSettings;
+=======
+<<<<<<< HEAD
+        this.RequestSettings = function.RequestSettings;
+=======
+        this.ServiceSettings = function.ServiceSettings;
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     private ISKFunction? Function { get; set; } = null;

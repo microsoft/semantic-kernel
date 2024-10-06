@@ -124,7 +124,15 @@ public sealed class OpenAIJsonSchemaTransformerTests
             """;
 
         // Act
+<<<<<<< Updated upstream
         var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
+=======
+<<<<<<< HEAD
+        var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
+=======
+        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert
         Assert.Equal(NormalizeJson(expectedSchema), NormalizeJson(schema.ToString()));

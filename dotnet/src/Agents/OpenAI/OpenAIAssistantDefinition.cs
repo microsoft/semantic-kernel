@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -7,7 +15,15 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Defines an assistant.
 /// </summary>
+<<<<<<< Updated upstream
 public sealed class OpenAIAssistantDefinition
+=======
+<<<<<<< HEAD
+public sealed class OpenAIAssistantDefinition
+=======
+public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
+>>>>>>> main
+>>>>>>> Stashed changes
 {
     /// <summary>
     /// Identifies the AI model targeted by the agent.
@@ -38,6 +54,30 @@ public sealed class OpenAIAssistantDefinition
     public string? Name { get; init; }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// Provide the captured template format for the assistant if needed for agent retrieval.
+    /// (<see cref="OpenAIAssistantAgent.RetrieveAsync"/>)
+    /// </summary>
+    [JsonIgnore]
+    public string? TemplateFactoryFormat
+    {
+        get
+        {
+            if (this.Metadata == null)
+            {
+                return null;
+            }
+
+            this.Metadata.TryGetValue(OpenAIAssistantAgent.TemplateMetadataKey, out string? templateFormat);
+
+            return templateFormat;
+        }
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Optional file-ids made available to the code_interpreter tool, if enabled.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -62,10 +102,25 @@ public sealed class OpenAIAssistantDefinition
     public bool EnableJsonResponse { get; init; }
 
     /// <summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// A set of up to 16 key/value pairs that can be attached to an agent, used for
     /// storing additional information about that object in a structured format.Keys
     /// may be up to 64 characters in length and values may be up to 512 characters in length.
     /// </summary>
+<<<<<<< Updated upstream
+=======
+=======
+    /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
+    /// </summary>
+    /// <param name="modelId">The targeted model</param>
+    [JsonConstructor]
+    public OpenAIAssistantDefinition(string modelId)
+        : base(modelId) { }
+>>>>>>> main
+>>>>>>> Stashed changes
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
@@ -74,6 +129,10 @@ public sealed class OpenAIAssistantDefinition
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature { get; init; }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 
     /// <summary>
     /// An alternative to sampling with temperature, called nucleus sampling, where the model
@@ -97,6 +156,29 @@ public sealed class OpenAIAssistantDefinition
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public OpenAIAssistantExecutionOptions? ExecutionOptions { get; init; }
+<<<<<<< Updated upstream
+=======
+=======
+    /// Provide the captured template format for the assistant if needed for agent retrieval.
+    /// (<see cref="OpenAIAssistantAgent.RetrieveAsync"/>)
+    /// </summary>
+    [JsonIgnore]
+    public string? TemplateFactoryFormat
+    {
+        get
+        {
+            if (this.Metadata == null)
+            {
+                return null;
+            }
+
+            this.Metadata.TryGetValue(OpenAIAssistantAgent.TemplateMetadataKey, out string? templateFormat);
+
+            return templateFormat;
+        }
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
@@ -109,4 +191,11 @@ public sealed class OpenAIAssistantDefinition
 
         this.ModelId = modelId;
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        : base(modelId) { }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

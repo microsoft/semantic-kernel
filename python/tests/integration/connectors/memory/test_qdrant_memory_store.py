@@ -1,5 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+
+import pytest
+
+from semantic_kernel.connectors.memory.qdrant import QdrantMemoryStore
+from datetime import datetime
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 import pytest
 
@@ -18,6 +29,53 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+@pytest.fixture
+def memory_record1():
+    return MemoryRecord(
+        id="test_id1",
+        text="sample text1",
+        is_reference=False,
+        embedding=np.array([0.5, 0.5]),
+        description="description",
+        additional_metadata="additional metadata",
+        external_source_name="external source",
+        timestamp=datetime.now(),
+    )
+
+
+@pytest.fixture
+def memory_record2():
+    return MemoryRecord(
+        id="test_id2",
+        text="sample text2",
+        is_reference=False,
+        embedding=np.array([0.25, 0.75]),
+        description="description",
+        additional_metadata="additional metadata",
+        external_source_name="external source",
+        timestamp=datetime.now(),
+    )
+
+
+@pytest.fixture
+def memory_record3():
+    return MemoryRecord(
+        id="test_id3",
+        text="sample text3",
+        is_reference=False,
+        embedding=np.array([0.25, 0.80]),
+        description="description",
+        additional_metadata="additional metadata",
+        external_source_name="external source",
+        timestamp=datetime.now(),
+    )
+
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 def test_qdrant_constructor():
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
     assert qdrant_mem_store._qdrantclient is not None
@@ -25,6 +83,17 @@ def test_qdrant_constructor():
 
 @pytest.mark.asyncio
 async def test_create_and_get_collection():
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    result = await qdrant_mem_store.get_collection("test_collection")
+async def test_create_and_get_collection_async():
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
@@ -34,6 +103,19 @@ async def test_create_and_get_collection():
 
 @pytest.mark.asyncio
 async def test_get_collections():
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection1")
+    await qdrant_mem_store.create_collection("test_collection2")
+    await qdrant_mem_store.create_collection("test_collection3")
+    result = await qdrant_mem_store.get_collections()
+async def test_get_collections_async():
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection1")
@@ -45,6 +127,22 @@ async def test_get_collections():
 
 @pytest.mark.asyncio
 async def test_delete_collection():
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection(
+        "test_collection4",
+    )
+    result = await qdrant_mem_store.get_collections()
+    assert len(result) == 1
+    await qdrant_mem_store.delete_collection("test_collection4")
+    result = await qdrant_mem_store.get_collections()
+async def test_delete_collection_async():
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection(
@@ -59,6 +157,19 @@ async def test_delete_collection():
 
 @pytest.mark.asyncio
 async def test_does_collection_exist():
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    result = await qdrant_mem_store.does_collection_exist("test_collection")
+    assert result is True
+    result = await qdrant_mem_store.does_collection_exist("test_collection2")
+async def test_does_collection_exist_async():
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
@@ -70,6 +181,19 @@ async def test_does_collection_exist():
 
 @pytest.mark.asyncio
 async def test_upsert_and_get(memory_record1):
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    await qdrant_mem_store.upsert("test_collection", memory_record1)
+    result = await qdrant_mem_store.get("test_collection", memory_record1._id)
+    assert result is not None
+    assert result._id == memory_record1._id
+    assert result._text == memory_record1._text
+=======
+>>>>>>> Stashed changes
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
@@ -99,6 +223,45 @@ async def test_upsert_batch_and_get_batch(memory_record1, memory_record2):
     )
 
     results = await qdrant_mem_store.get_batch(
+<<<<<<< Updated upstream
+=======
+async def test_upsert_async_and_get_async(memory_record1):
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection_async("test_collection")
+    await qdrant_mem_store.upsert_async("test_collection", memory_record1)
+    result = await qdrant_mem_store.get_async(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
+    assert result is not None
+    assert result._id == memory_record1._id
+    assert result._text == memory_record1._text
+    assert result._timestamp == memory_record1._timestamp
+    for i in range(len(result._embedding)):
+        assert result._embedding[i] == memory_record1._embedding[i]
+>>>>>>> origin/main
+
+
+@pytest.mark.asyncio
+async def test_overwrite(memory_record1):
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    await qdrant_mem_store.upsert("test_collection", memory_record1)
+    await qdrant_mem_store.upsert("test_collection", memory_record1)
+
+
+@pytest.mark.asyncio
+async def test_upsert_batch_and_get_batch(memory_record1, memory_record2):
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    await qdrant_mem_store.upsert_batch(
+        "test_collection", [memory_record1, memory_record2]
+    )
+
+    results = await qdrant_mem_store.get_batch(
+>>>>>>> Stashed changes
         "test_collection",
         [memory_record1._id, memory_record2._id],
         with_embeddings=True,
@@ -111,6 +274,19 @@ async def test_upsert_batch_and_get_batch(memory_record1, memory_record2):
 
 @pytest.mark.asyncio
 async def test_remove(memory_record1):
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    await qdrant_mem_store.upsert("test_collection", memory_record1)
+
+    result = await qdrant_mem_store.get(
+async def test_remove_async(memory_record1):
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
@@ -122,6 +298,15 @@ async def test_remove(memory_record1):
     assert result is not None
 
     await qdrant_mem_store.remove("test_collection", memory_record1._id)
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+
+    result = await qdrant_mem_store.get(
+    await qdrant_mem_store.remove_async("test_collection", memory_record1._id)
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     result = await qdrant_mem_store.get(
         "test_collection", memory_record1._id, with_embedding=True
@@ -131,6 +316,35 @@ async def test_remove(memory_record1):
 
 @pytest.mark.asyncio
 async def test_remove_batch(memory_record1, memory_record2):
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    await qdrant_mem_store.upsert_batch(
+        "test_collection", [memory_record1, memory_record2]
+    )
+    result = await qdrant_mem_store.get(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
+    assert result is not None
+    result = await qdrant_mem_store.get(
+        "test_collection", memory_record2._id, with_embedding=True
+    )
+    assert result is not None
+    await qdrant_mem_store.remove_batch(
+        "test_collection", [memory_record1._id, memory_record2._id]
+    )
+    result = await qdrant_mem_store.get(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
+    assert result is None
+    result = await qdrant_mem_store.get(
+async def test_remove_batch_async(memory_record1, memory_record2):
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
@@ -160,6 +374,17 @@ async def test_remove_batch(memory_record1, memory_record2):
 
 @pytest.mark.asyncio
 async def test_get_nearest_match(memory_record1, memory_record2):
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    await qdrant_mem_store.upsert_batch(
+async def test_get_nearest_match_async(memory_record1, memory_record2):
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
 
     await qdrant_mem_store.create_collection("test_collection")
@@ -171,10 +396,32 @@ async def test_get_nearest_match(memory_record1, memory_record2):
 
     result = await qdrant_mem_store.get_nearest_match(
         "test_collection", test_embedding, min_relevance_score=0.0
+<<<<<<< Updated upstream
+=======
+    result = await qdrant_mem_store.get_nearest_match_async(
+        "test_collection", test_embedding, min_relevance_score=0.0, with_embedding=True
+>>>>>>> Stashed changes
     )
     assert result is not None
     assert result[0]._id == memory_record1._id
     assert result[0]._text == memory_record1._text
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+
+
+@pytest.mark.asyncio
+async def test_get_nearest_matches(memory_record1, memory_record2, memory_record3):
+    qdrant_mem_store = QdrantMemoryStore(vector_size=TEST_VECTOR_SIZE, local=True)
+
+    await qdrant_mem_store.create_collection("test_collection")
+    await qdrant_mem_store.upsert_batch(
+    assert result[0]._timestamp == memory_record1._timestamp
+    for i in range(len(result[0]._embedding)):
+        assert result[0]._embedding[i] == memory_record1._embedding[i]
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio
@@ -189,6 +436,13 @@ async def test_get_nearest_matches(memory_record1, memory_record2, memory_record
     test_embedding[0] = test_embedding[0] + 0.025
 
     result = await qdrant_mem_store.get_nearest_matches(
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+    result = await qdrant_mem_store.get_nearest_matches_async(
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         "test_collection",
         test_embedding,
         limit=2,

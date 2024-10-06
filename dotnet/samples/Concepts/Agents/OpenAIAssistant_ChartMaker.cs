@@ -21,20 +21,56 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
     {
         OpenAIClientProvider provider = this.GetClientProvider();
 
+<<<<<<< Updated upstream
         FileClient fileClient = provider.Client.GetFileClient();
+=======
+<<<<<<< HEAD
+        FileClient fileClient = provider.Client.GetFileClient();
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel: new(),
                 provider,
                 new(this.Model)
+=======
+<<<<<<< HEAD
+                kernel: new(),
+                provider,
+                new(this.Model)
+=======
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                kernel: new(),
+                provider,
+                new(this.Model)
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     Instructions = AgentInstructions,
                     Name = AgentName,
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
+<<<<<<< Updated upstream
                 });
+=======
+<<<<<<< HEAD
+                });
+=======
+                },
+                kernel: new());
+                });
+                },
+                kernel: new());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
@@ -65,12 +101,24 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            chat.Add(new ChatMessageContent(AuthorRole.User, input));
+
+            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+>>>>>>> main
+>>>>>>> Stashed changes
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(new(AuthorRole.User, input));
             this.WriteAgentChatMessage(message);

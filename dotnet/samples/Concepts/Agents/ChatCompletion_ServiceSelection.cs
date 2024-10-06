@@ -8,7 +8,15 @@ namespace Agents;
 
 /// <summary>
 /// Demonstrate service selection for <see cref="ChatCompletionAgent"/> through setting service-id
+<<<<<<< Updated upstream
 /// on <see cref="ChatHistoryKernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
+=======
+<<<<<<< HEAD
+/// on <see cref="ChatHistoryKernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
+=======
+/// on <see cref="KernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
+>>>>>>> main
+>>>>>>> Stashed changes
 /// when calling <see cref="ChatCompletionAgent.InvokeAsync"/>
 /// </summary>
 public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseTest(output)

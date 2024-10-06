@@ -12,6 +12,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Block(KernelBaseModel):
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     """A block."""
 
     type: ClassVar[BlockTypes] = BlockTypes.UNDEFINED
@@ -59,3 +66,18 @@ class Block(ABC):
     @property
     def content(self) -> str:
         return self._content
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+    type: ClassVar[BlockTypes] = BlockTypes.UNDEFINED
+    content: str
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def content_strip(cls, content: str):
+        return content.strip()
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes

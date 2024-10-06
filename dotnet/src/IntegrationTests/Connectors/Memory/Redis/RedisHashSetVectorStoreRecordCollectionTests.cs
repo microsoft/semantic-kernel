@@ -22,18 +22,48 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 [Collection("RedisVectorStoreCollection")]
 public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelper output, RedisVectorStoreFixture fixture)
 {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     // If null, all tests will be enabled
     private const string SkipReason = "Requires Redis docker container up and running";
 
     private const string TestCollectionName = "hashhotels";
 
     [Theory(Skip = SkipReason)]
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    private const string TestCollectionName = "hashhotels";
+
+    [Theory]
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     [InlineData(TestCollectionName, true)]
     [InlineData("nonexistentcollection", false)]
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange.
+<<<<<<< Updated upstream
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, collectionName);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, collectionName);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, collectionName);
+=======
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, collectionName);
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act.
         var actual = await sut.CollectionExistsAsync();
@@ -42,9 +72,34 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.Equal(expectedExists, actual);
     }
 
+<<<<<<< Updated upstream
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItCanCreateACollectionUpsertGetAndSearchAsync(bool useRecordDefinition)
+    {
+        // Arrange
+        var record = CreateTestHotel("HUpsert-1", 1);
+        var collectionNamePostfix = useRecordDefinition ? "WithDefinition" : "WithType";
+        var testCollectionName = $"hashsetcreatetest{collectionNamePostfix}";
+
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel>
+=======
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+>>>>>>> main
+>>>>>>> Stashed changes
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool useRecordDefinition)
     {
         // Arrange
@@ -53,23 +108,70 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var testCollectionName = $"hashsetcreatetest{collectionNamePostfix}";
 
         var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
+<<<<<<< Updated upstream
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, testCollectionName, options);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, testCollectionName, options);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, testCollectionName, options);
+=======
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, testCollectionName, options);
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
+<<<<<<< Updated upstream
         var getResult = await sut.GetAsync("Upsert-1", new GetRecordOptions { IncludeVectors = true });
+=======
+<<<<<<< HEAD
+        var getResult = await sut.GetAsync("Upsert-1", new GetRecordOptions { IncludeVectors = true });
+=======
+<<<<<<< HEAD
+        var getResult = await sut.GetAsync("HUpsert-1", new GetRecordOptions { IncludeVectors = true });
+        var searchResult = await sut
+            .VectorizedSearchAsync(
+                new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
+                new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true }).ToListAsync();
+=======
+        var getResult = await sut.GetAsync("Upsert-1", new GetRecordOptions { IncludeVectors = true });
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
         Assert.True(collectionExistResult);
         await sut.DeleteCollectionAsync();
 
+<<<<<<< Updated upstream
         Assert.Equal("Upsert-1", upsertResult);
+=======
+<<<<<<< HEAD
+        Assert.Equal("Upsert-1", upsertResult);
+=======
+<<<<<<< HEAD
+        Assert.Equal("HUpsert-1", upsertResult);
+=======
+        Assert.Equal("Upsert-1", upsertResult);
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -78,13 +180,44 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.Equal(record.Description, getResult?.Description);
         Assert.Equal(record.DescriptionEmbedding?.ToArray(), getResult?.DescriptionEmbedding?.ToArray());
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        Assert.Single(searchResult);
+        var searchResultRecord = searchResult.First().Record;
+        Assert.Equal(record.HotelId, searchResultRecord?.HotelId);
+        Assert.Equal(record.HotelName, searchResultRecord?.HotelName);
+        Assert.Equal(record.HotelCode, searchResultRecord?.HotelCode);
+        Assert.Equal(record.ParkingIncluded, searchResultRecord?.ParkingIncluded);
+        Assert.Equal(record.Rating, searchResultRecord?.Rating);
+        Assert.Equal(record.Description, searchResultRecord?.Description);
+        Assert.Equal(record.DescriptionEmbedding?.ToArray(), searchResultRecord?.DescriptionEmbedding?.ToArray());
+
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         // Output
         output.WriteLine(collectionExistResult.ToString());
         output.WriteLine(upsertResult);
         output.WriteLine(getResult?.ToString());
     }
 
+<<<<<<< Updated upstream
     [Fact(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Fact(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Fact(Skip = SkipReason)]
+=======
+    [Fact]
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -95,7 +228,19 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         createParams.AddPrefix(tempCollectionName);
         await fixture.Database.FT().CreateAsync(tempCollectionName, createParams, schema);
 
+<<<<<<< Updated upstream
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, tempCollectionName);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, tempCollectionName);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, tempCollectionName);
+=======
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, tempCollectionName);
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act
         await sut.DeleteCollectionAsync();
@@ -104,26 +249,80 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.False(await sut.CollectionExistsAsync());
     }
 
+<<<<<<< Updated upstream
     [Theory(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+=======
+    [Theory]
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange.
+<<<<<<< Updated upstream
         var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+=======
+<<<<<<< HEAD
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+=======
+<<<<<<< HEAD
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel>
+=======
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
+<<<<<<< Updated upstream
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
         var record = CreateTestHotel("Upsert-2", 2);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
+        var record = CreateTestHotel("Upsert-2", 2);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var record = CreateTestHotel("HUpsert-2", 2);
+=======
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
+        var record = CreateTestHotel("Upsert-2", 2);
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act.
         var upsertResult = await sut.UpsertAsync(record);
 
         // Assert.
+<<<<<<< Updated upstream
         var getResult = await sut.GetAsync("Upsert-2", new GetRecordOptions { IncludeVectors = true });
         Assert.Equal("Upsert-2", upsertResult);
+=======
+<<<<<<< HEAD
+        var getResult = await sut.GetAsync("Upsert-2", new GetRecordOptions { IncludeVectors = true });
+        Assert.Equal("Upsert-2", upsertResult);
+=======
+<<<<<<< HEAD
+        var getResult = await sut.GetAsync("HUpsert-2", new GetRecordOptions { IncludeVectors = true });
+        Assert.Equal("HUpsert-2", upsertResult);
+=======
+        var getResult = await sut.GetAsync("Upsert-2", new GetRecordOptions { IncludeVectors = true });
+        Assert.Equal("Upsert-2", upsertResult);
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -137,25 +336,79 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         output.WriteLine(getResult?.ToString());
     }
 
+<<<<<<< Updated upstream
     [Theory(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+=======
+    [Theory]
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanUpsertManyDocumentsToVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange.
+<<<<<<< Updated upstream
         var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+=======
+<<<<<<< HEAD
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+=======
+<<<<<<< HEAD
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel>
+=======
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
+<<<<<<< Updated upstream
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+=======
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act.
         var results = sut.UpsertBatchAsync(
             [
+<<<<<<< Updated upstream
                 CreateTestHotel("UpsertMany-1", 1),
                 CreateTestHotel("UpsertMany-2", 2),
                 CreateTestHotel("UpsertMany-3", 3),
+=======
+<<<<<<< HEAD
+                CreateTestHotel("UpsertMany-1", 1),
+                CreateTestHotel("UpsertMany-2", 2),
+                CreateTestHotel("UpsertMany-3", 3),
+=======
+<<<<<<< HEAD
+                CreateTestHotel("HUpsertMany-1", 1),
+                CreateTestHotel("HUpsertMany-2", 2),
+                CreateTestHotel("HUpsertMany-3", 3),
+=======
+                CreateTestHotel("UpsertMany-1", 1),
+                CreateTestHotel("UpsertMany-2", 2),
+                CreateTestHotel("UpsertMany-3", 3),
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
             ]);
 
         // Assert.
@@ -163,9 +416,27 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var resultsList = await results.ToListAsync();
 
         Assert.Equal(3, resultsList.Count);
+<<<<<<< Updated upstream
         Assert.Contains("UpsertMany-1", resultsList);
         Assert.Contains("UpsertMany-2", resultsList);
         Assert.Contains("UpsertMany-3", resultsList);
+=======
+<<<<<<< HEAD
+        Assert.Contains("UpsertMany-1", resultsList);
+        Assert.Contains("UpsertMany-2", resultsList);
+        Assert.Contains("UpsertMany-3", resultsList);
+=======
+<<<<<<< HEAD
+        Assert.Contains("HUpsertMany-1", resultsList);
+        Assert.Contains("HUpsertMany-2", resultsList);
+        Assert.Contains("HUpsertMany-3", resultsList);
+=======
+        Assert.Contains("UpsertMany-1", resultsList);
+        Assert.Contains("UpsertMany-2", resultsList);
+        Assert.Contains("UpsertMany-3", resultsList);
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Output
         foreach (var result in resultsList)
@@ -174,7 +445,19 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         }
     }
 
+<<<<<<< Updated upstream
     [Theory(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+=======
+    [Theory]
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     [InlineData(true, true)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -182,11 +465,38 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanGetDocumentFromVectorStoreAsync(bool includeVectors, bool useRecordDefinition)
     {
         // Arrange.
+<<<<<<< Updated upstream
         var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+=======
+<<<<<<< HEAD
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+=======
+<<<<<<< HEAD
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel>
+=======
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+
+        // Act.
+        var getResult = await sut.GetAsync("HBaseSet-1", new GetRecordOptions { IncludeVectors = includeVectors });
+
+        // Assert.
+        Assert.Equal("HBaseSet-1", getResult?.HotelId);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
 
         // Act.
@@ -194,6 +504,13 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Assert.
         Assert.Equal("BaseSet-1", getResult?.HotelId);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal("My Hotel 1", getResult?.HotelName);
         Assert.Equal(1, getResult?.HotelCode);
         Assert.True(getResult?.ParkingIncluded);
@@ -212,16 +529,47 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         output.WriteLine(getResult?.ToString());
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     [Fact(Skip = SkipReason)]
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+
+        // Act
+        // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
+        var hotels = sut.GetBatchAsync(["HBaseSet-1", "HBaseSet-5", "HBaseSet-2"], new GetRecordOptions { IncludeVectors = true });
+=======
+    [Fact]
+    public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
+    {
+        // Arrange
+>>>>>>> main
+>>>>>>> Stashed changes
         var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel> { PrefixCollectionNameToKeyNames = true };
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
         var hotels = sut.GetBatchAsync(["BaseSet-1", "BaseSet-5", "BaseSet-2"], new GetRecordOptions { IncludeVectors = true });
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert
         Assert.NotNull(hotels);
@@ -235,21 +583,64 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         }
     }
 
+<<<<<<< Updated upstream
     [Theory(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Theory(Skip = SkipReason)]
+=======
+    [Theory]
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange.
+<<<<<<< Updated upstream
         var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+=======
+<<<<<<< HEAD
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+=======
+<<<<<<< HEAD
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel>
+=======
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var record = new BasicFloat32Hotel
+        {
+            HotelId = "HRemove-1",
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
         var record = new BasicHotel
         {
             HotelId = "Remove-1",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
             HotelName = "Remove Test Hotel",
             HotelCode = 20,
             Description = "This is a great hotel.",
@@ -259,6 +650,165 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         await sut.UpsertAsync(record);
 
         // Act.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        await sut.DeleteAsync("HRemove-1");
+        // Also delete a non-existing key to test that the operation does not fail for these.
+        await sut.DeleteAsync("HRemove-2");
+
+        // Assert.
+        Assert.Null(await sut.GetAsync("HRemove-1"));
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync()
+    {
+        // Arrange
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        await sut.UpsertAsync(CreateTestHotel("HRemoveMany-1", 1));
+        await sut.UpsertAsync(CreateTestHotel("HRemoveMany-2", 2));
+        await sut.UpsertAsync(CreateTestHotel("HRemoveMany-3", 3));
+
+        // Act
+        // Also include a non-existing key to test that the operation does not fail for these.
+        await sut.DeleteBatchAsync(["HRemoveMany-1", "HRemoveMany-2", "HRemoveMany-3", "HRemoveMany-4"]);
+
+        // Assert
+        Assert.Null(await sut.GetAsync("HRemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("HRemoveMany-2", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("HRemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
+    }
+
+    [Theory(Skip = SkipReason)]
+    [InlineData("hotelCode", true)]
+    [InlineData("hotelName", false)]
+    public async Task ItCanSearchWithFloat32VectorAndFilterAsync(string filterType, bool includeVectors)
+    {
+        // Arrange
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var vector = new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f });
+        var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelCode", 1) : new VectorSearchFilter().EqualTo("HotelName", "My Hotel 1");
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
+            new VectorSearchOptions
+            {
+                IncludeVectors = includeVectors,
+                Filter = filter
+            }).ToListAsync();
+
+        // Assert
+        Assert.Single(actual);
+        var searchResult = actual.First().Record;
+        Assert.Equal("HBaseSet-1", searchResult?.HotelId);
+        Assert.Equal("My Hotel 1", searchResult?.HotelName);
+        Assert.Equal(1, searchResult?.HotelCode);
+        Assert.True(searchResult?.ParkingIncluded);
+        Assert.Equal(3.6, searchResult?.Rating);
+        Assert.Equal("This is a great hotel.", searchResult?.Description);
+        if (includeVectors)
+        {
+            Assert.Equal(new[] { 30f, 31f, 32f, 33f }, searchResult?.DescriptionEmbedding?.ToArray());
+        }
+        else
+        {
+            Assert.Null(searchResult?.DescriptionEmbedding);
+        }
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanSearchWithFloat32VectorAndTopSkipAsync()
+    {
+        // Arrange
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName + "TopSkip", options);
+        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 2.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_3", HotelName = "3", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 3.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_4", HotelName = "4", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 4.0f]) });
+        await sut.UpsertAsync(new BasicFloat32Hotel { HotelId = "HTopSkip_5", HotelName = "5", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 5.0f]) });
+        var vector = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]);
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
+            new VectorSearchOptions
+            {
+                Top = 3,
+                Skip = 2
+            }).ToListAsync();
+
+        // Assert
+        Assert.Equal(3, actual.Count);
+        Assert.True(actual.Select(x => x.Record.HotelId).SequenceEqual(["HTopSkip_3", "HTopSkip_4", "HTopSkip_5"]));
+    }
+
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItCanSearchWithFloat64VectorAsync(bool includeVectors)
+    {
+        // Arrange
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat64Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat64Hotel>(fixture.Database, TestCollectionName + "Float64", options);
+        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.UpsertAsync(new BasicFloat64Hotel { HotelId = "HFloat64_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([1.0d, 1.1d, 1.2d, 1.3d]) });
+        await sut.UpsertAsync(new BasicFloat64Hotel { HotelId = "HFloat64_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([2.0d, 2.1d, 2.2d, 2.3d]) });
+        await sut.UpsertAsync(new BasicFloat64Hotel { HotelId = "HFloat64_3", HotelName = "3", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([3.0d, 3.1d, 3.2d, 3.3d]) });
+
+        var vector = new ReadOnlyMemory<double>([2.0d, 2.1d, 2.2d, 2.3d]);
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
+            new VectorSearchOptions
+            {
+                IncludeVectors = includeVectors,
+                Top = 1
+            }).ToListAsync();
+
+        // Assert
+        Assert.Single(actual);
+        var searchResult = actual.First().Record;
+        Assert.Equal("HFloat64_2", searchResult?.HotelId);
+        Assert.Equal("2", searchResult?.HotelName);
+        Assert.Equal("Nice hotel", searchResult?.Description);
+        if (includeVectors)
+        {
+            Assert.Equal<double[]>([2.0d, 2.1d, 2.2d, 2.3d], searchResult?.DescriptionEmbedding?.ToArray());
+        }
+        else
+        {
+            Assert.Null(searchResult?.DescriptionEmbedding);
+        }
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
+    {
+        // Arrange
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+
+        // Act & Assert
+        Assert.Null(await sut.GetAsync("HBaseSet-5", new GetRecordOptions { IncludeVectors = true }));
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItThrowsMappingExceptionForFailedMapperAsync()
+    {
+        // Arrange
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel>
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         await sut.DeleteAsync("Remove-1");
         // Also delete a non-existing key to test that the operation does not fail for these.
         await sut.DeleteAsync("Remove-2");
@@ -267,7 +817,15 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.Null(await sut.GetAsync("Remove-1"));
     }
 
+<<<<<<< Updated upstream
     [Fact(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Fact(Skip = SkipReason)]
+=======
+    [Fact]
+>>>>>>> main
+>>>>>>> Stashed changes
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
@@ -287,7 +845,15 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.Null(await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
     }
 
+<<<<<<< Updated upstream
     [Fact(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Fact(Skip = SkipReason)]
+=======
+    [Fact]
+>>>>>>> main
+>>>>>>> Stashed changes
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
@@ -298,19 +864,48 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.Null(await sut.GetAsync("BaseSet-5", new GetRecordOptions { IncludeVectors = true }));
     }
 
+<<<<<<< Updated upstream
     [Fact(Skip = SkipReason)]
+=======
+<<<<<<< HEAD
+    [Fact(Skip = SkipReason)]
+=======
+    [Fact]
+>>>>>>> main
+>>>>>>> Stashed changes
     public async Task ItThrowsMappingExceptionForFailedMapperAsync()
     {
         // Arrange
         var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicHotel>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             PrefixCollectionNameToKeyNames = true,
             HashEntriesCustomMapper = new FailingMapper()
         };
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
 
         // Act & Assert
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
+<<<<<<< Updated upstream
+=======
+=======
+<<<<<<< HEAD
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("HBaseSet-1", new GetRecordOptions { IncludeVectors = true }));
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact(Skip = SkipReason)]
@@ -325,8 +920,18 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var sut = new RedisHashSetVectorStoreRecordCollection<VectorStoreGenericDataModel<string>>(fixture.Database, TestCollectionName, options);
 
         // Act
+<<<<<<< Updated upstream
         var baseSetGetResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true });
         var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>("GenericMapper-1")
+=======
+<<<<<<< HEAD
+        var baseSetGetResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true });
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>("GenericMapper-1")
+=======
+        var baseSetGetResult = await sut.GetAsync("HBaseSet-1", new GetRecordOptions { IncludeVectors = true });
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>("HGenericMapper-1")
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             Data =
             {
@@ -341,11 +946,25 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
                 { "DescriptionEmbedding", new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }) }
             }
         });
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         var localGetResult = await sut.GetAsync("GenericMapper-1", new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(baseSetGetResult);
         Assert.Equal("BaseSet-1", baseSetGetResult.Key);
+<<<<<<< Updated upstream
+=======
+=======
+        var localGetResult = await sut.GetAsync("HGenericMapper-1", new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.NotNull(baseSetGetResult);
+        Assert.Equal("HBaseSet-1", baseSetGetResult.Key);
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal("My Hotel 1", baseSetGetResult.Data["HotelName"]);
         Assert.Equal(1, baseSetGetResult.Data["HotelCode"]);
         Assert.True((bool)baseSetGetResult.Data["ParkingIncluded"]!);
@@ -354,10 +973,23 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.NotNull(baseSetGetResult.Vectors["DescriptionEmbedding"]);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)baseSetGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         Assert.Equal("GenericMapper-1", upsertResult);
 
         Assert.NotNull(localGetResult);
         Assert.Equal("GenericMapper-1", localGetResult.Key);
+<<<<<<< Updated upstream
+=======
+=======
+        Assert.Equal("HGenericMapper-1", upsertResult);
+
+        Assert.NotNull(localGetResult);
+        Assert.Equal("HGenericMapper-1", localGetResult.Key);
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
         Assert.Equal(40, localGetResult.Data["HotelCode"]);
         Assert.True((bool)localGetResult.Data["ParkingIncluded"]!);
@@ -366,9 +998,32 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
     }
 
+<<<<<<< Updated upstream
     private static BasicHotel CreateTestHotel(string hotelId, int hotelCode)
     {
         var record = new BasicHotel
+=======
+<<<<<<< HEAD
+    private static BasicHotel CreateTestHotel(string hotelId, int hotelCode)
+    {
+        var record = new BasicHotel
+=======
+    private static BasicFloat32Hotel CreateTestHotel(string hotelId, int hotelCode)
+    {
+        var record = new BasicFloat32Hotel
+=======
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicHotel>(fixture.Database, TestCollectionName, options);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
+    }
+
+    private static BasicHotel CreateTestHotel(string hotelId, int hotelCode)
+    {
+        var record = new BasicHotel
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             HotelId = hotelId,
             HotelName = $"My Hotel {hotelCode}",
@@ -381,14 +1036,44 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         return record;
     }
 
+<<<<<<< Updated upstream
     private sealed class FailingMapper : IVectorStoreRecordMapper<BasicHotel, (string Key, HashEntry[] HashEntries)>
     {
         public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(BasicHotel dataModel)
+=======
+<<<<<<< HEAD
+    private sealed class FailingMapper : IVectorStoreRecordMapper<BasicHotel, (string Key, HashEntry[] HashEntries)>
+    {
+        public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(BasicHotel dataModel)
+=======
+<<<<<<< HEAD
+    private sealed class FailingMapper : IVectorStoreRecordMapper<BasicFloat32Hotel, (string Key, HashEntry[] HashEntries)>
+    {
+        public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(BasicFloat32Hotel dataModel)
+=======
+    private sealed class FailingMapper : IVectorStoreRecordMapper<BasicHotel, (string Key, HashEntry[] HashEntries)>
+    {
+        public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(BasicHotel dataModel)
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             throw new NotImplementedException();
         }
 
+<<<<<<< Updated upstream
         public BasicHotel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, StorageToDataModelMapperOptions options)
+=======
+<<<<<<< HEAD
+        public BasicHotel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, StorageToDataModelMapperOptions options)
+=======
+<<<<<<< HEAD
+        public BasicFloat32Hotel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, StorageToDataModelMapperOptions options)
+=======
+        public BasicHotel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, StorageToDataModelMapperOptions options)
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             throw new NotImplementedException();
         }

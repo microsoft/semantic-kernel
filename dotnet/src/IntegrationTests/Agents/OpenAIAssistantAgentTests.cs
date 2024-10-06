@@ -1,5 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -39,8 +46,19 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(openAISettings);
 
         await this.ExecuteAgentAsync(
+<<<<<<< Updated upstream
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
             openAISettings.ChatModelId!,
+=======
+<<<<<<< HEAD
+            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+            openAISettings.ChatModelId!,
+=======
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
+            openAISettings.ChatModelId!,
+            openAISettings.ModelId,
+>>>>>>> main
+>>>>>>> Stashed changes
             input,
             expectedAnswerContains);
     }
@@ -50,6 +68,13 @@ public sealed class OpenAIAssistantAgentTests
     /// and targeting Azure OpenAI services.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    [Theory/*(Skip = "No supported endpoint configured.")*/]
+>>>>>>> main
+>>>>>>> Stashed changes
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task AzureOpenAIAssistantAgentAsync(string input, string expectedAnswerContains)
     {
@@ -57,9 +82,19 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         await this.ExecuteAgentAsync(
+<<<<<<< Updated upstream
 <<<<<<< main
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 =======
+=======
+<<<<<<< HEAD
+<<<<<<< main
+            OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
+=======
+=======
+            OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
+>>>>>>> main
+>>>>>>> Stashed changes
             OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
@@ -78,7 +113,15 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(openAISettings);
 
         await this.ExecuteStreamingAgentAsync(
+<<<<<<< Updated upstream
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+=======
+<<<<<<< HEAD
+            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+=======
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
+>>>>>>> main
+>>>>>>> Stashed changes
             openAISettings.ModelId,
             input,
             expectedAnswerContains);
@@ -97,7 +140,15 @@ public sealed class OpenAIAssistantAgentTests
 
         await this.ExecuteStreamingAgentAsync(
             OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+>>>>>>> upstream/main
+=======
+            OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
+>>>>>>> main
+>>>>>>> Stashed changes
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
@@ -111,20 +162,44 @@ public sealed class OpenAIAssistantAgentTests
     {
         // Arrange
         Kernel kernel = new();
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         kernel.Plugins.Add(plugin);
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel,
+=======
+<<<<<<< HEAD
+                kernel,
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
+<<<<<<< Updated upstream
                 });
+=======
+<<<<<<< HEAD
+                });
+=======
+                },
+                kernel);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         try
         {
@@ -155,18 +230,40 @@ public sealed class OpenAIAssistantAgentTests
     {
         // Arrange
         Kernel kernel = new();
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         kernel.Plugins.Add(plugin);
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel,
+=======
+<<<<<<< HEAD
+                kernel,
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                },
+                kernel);
+>>>>>>> main
+>>>>>>> Stashed changes
                 });
 
         AgentGroupChat chat = new();
@@ -174,12 +271,24 @@ public sealed class OpenAIAssistantAgentTests
 
         // Act
         StringBuilder builder = new();
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
         await foreach (var message in chat.InvokeAsync(agent))
         try
 =======
         await foreach (var message in chat.InvokeStreamingAsync(agent))
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+        await foreach (var message in chat.InvokeAsync(agent))
+        try
+        await foreach (var message in chat.InvokeStreamingAsync(agent))
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             AgentGroupChat chat = new();
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
@@ -198,14 +307,29 @@ public sealed class OpenAIAssistantAgentTests
         {
             await agent.DeleteAsync();
         }
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert
         ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
         Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expected, history.First().Content, StringComparison.OrdinalIgnoreCase);
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     public sealed class MenuPlugin

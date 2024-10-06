@@ -1,7 +1,20 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
 using Azure.AI.OpenAI;
+<<<<<<< Updated upstream
+=======
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using System.Diagnostics;
+using Azure.AI.OpenAI.Chat;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -38,7 +51,15 @@ internal partial class AzureClientCore
 
         var options = new ChatCompletionOptions
         {
+<<<<<<< Updated upstream
             MaxTokens = executionSettings.MaxTokens,
+=======
+<<<<<<< HEAD
+            MaxTokens = executionSettings.MaxTokens,
+=======
+            MaxOutputTokenCount = executionSettings.MaxTokens,
+>>>>>>> main
+>>>>>>> Stashed changes
             Temperature = (float?)executionSettings.Temperature,
             TopP = (float?)executionSettings.TopP,
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
@@ -47,6 +68,12 @@ internal partial class AzureClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -58,6 +85,34 @@ internal partial class AzureClientCore
         if (toolCallingConfig.Choice is not null)
         {
             options.ToolChoice = toolCallingConfig.Choice;
+<<<<<<< HEAD
+=======
+            ResponseFormat = GetResponseFormat(azureSettings) ?? ChatResponseFormat.Text,
+            ToolChoice = toolCallingConfig.Choice
+=======
+>>>>>>> Stashed changes
+        };
+
+        var responseFormat = GetResponseFormat(executionSettings);
+        if (responseFormat is not null)
+        {
+<<<<<<< Updated upstream
+=======
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            options.AddDataSource(azureSettings.AzureChatDataSource);
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> Stashed changes
+            options.ResponseFormat = responseFormat;
+        }
+
+        if (toolCallingConfig.Choice is not null)
+        {
+            options.ToolChoice = toolCallingConfig.Choice;
+<<<<<<< Updated upstream
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         if (toolCallingConfig.Tools is { Count: > 0 } tools)
@@ -65,6 +120,13 @@ internal partial class AzureClientCore
             options.Tools.AddRange(tools);
         }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
         if (azureSettings.AzureChatDataSource is not null)
         {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -72,6 +134,14 @@ internal partial class AzureClientCore
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> ms/prevent-null-assignment
+>>>>>>> main
+>>>>>>> Stashed changes
         if (executionSettings.TokenSelectionBiases is not null)
         {
             foreach (var keyValue in executionSettings.TokenSelectionBiases)

@@ -1,6 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+from pydantic import BaseModel
+>>>>>>> main
+>>>>>>> Stashed changes
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSource,
@@ -12,6 +19,10 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
     OpenAITextPromptExecutionSettings,
 )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
@@ -19,6 +30,28 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_se
     AzureAISearchSettings,
 )
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
+<<<<<<< Updated upstream
+=======
+=======
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+
+############################################
+# Test classes for structured output
+class TestClass:
+    attribute: str
+
+
+class TestClassPydantic(KernelBaseModel):
+    attribute: str
+
+
+############################################
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_default_openai_chat_prompt_execution_settings():
@@ -59,9 +92,19 @@ def test_custom_openai_chat_prompt_execution_settings():
 
 def test_openai_chat_prompt_execution_settings_from_default_completion_config():
     settings = PromptExecutionSettings(service_id="test_service")
+<<<<<<< Updated upstream
     chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
         settings
     )
+=======
+<<<<<<< HEAD
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings
+    )
+=======
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+>>>>>>> main
+>>>>>>> Stashed changes
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature is None
     assert chat_settings.top_p is None
@@ -74,31 +117,62 @@ def test_openai_chat_prompt_execution_settings_from_default_completion_config():
 
 
 def test_openai_chat_prompt_execution_settings_from_openai_prompt_execution_settings():
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     chat_settings = OpenAIChatPromptExecutionSettings(
         service_id="test_service", temperature=1.0
     )
     new_settings = OpenAIChatPromptExecutionSettings(
         service_id="test_2", temperature=0.0
     )
+<<<<<<< Updated upstream
+=======
+=======
+    chat_settings = OpenAIChatPromptExecutionSettings(service_id="test_service", temperature=1.0)
+    new_settings = OpenAIChatPromptExecutionSettings(service_id="test_2", temperature=0.0)
+>>>>>>> main
+>>>>>>> Stashed changes
     chat_settings.update_from_prompt_execution_settings(new_settings)
     assert chat_settings.service_id == "test_2"
     assert chat_settings.temperature == 0.0
 
 
 def test_openai_text_prompt_execution_settings_validation():
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     with pytest.raises(
         ServiceInvalidExecutionSettingsError,
         match="best_of must be greater than number_of_responses",
     ):
+<<<<<<< Updated upstream
+=======
+=======
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
+>>>>>>> main
+>>>>>>> Stashed changes
         OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=2)
 
 
 def test_openai_text_prompt_execution_settings_validation_manual():
     text_oai = OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=1)
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     with pytest.raises(
         ServiceInvalidExecutionSettingsError,
         match="best_of must be greater than number_of_responses",
     ):
+<<<<<<< Updated upstream
+=======
+=======
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
+>>>>>>> main
+>>>>>>> Stashed changes
         text_oai.number_of_responses = 2
 
 
@@ -118,9 +192,19 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config():
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
+<<<<<<< Updated upstream
     chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
         settings
     )
+=======
+<<<<<<< HEAD
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings
+    )
+=======
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+>>>>>>> main
+>>>>>>> Stashed changes
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -147,9 +231,19 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
+<<<<<<< Updated upstream
     chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
         settings
     )
+=======
+<<<<<<< HEAD
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings
+    )
+=======
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+>>>>>>> main
+>>>>>>> Stashed changes
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -178,9 +272,19 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
             "messages": [{"role": "system", "content": "Hello"}],
         },
     )
+<<<<<<< Updated upstream
     chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
         settings
     )
+=======
+<<<<<<< HEAD
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(
+        settings
+    )
+=======
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+>>>>>>> main
+>>>>>>> Stashed changes
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -234,12 +338,23 @@ def test_create_options_azure_data():
     assert options["extra_body"]["data_sources"][0]["type"] == "azure_search"
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 def test_create_options_azure_data_from_azure_ai_settings(
     azure_ai_search_unit_test_env,
 ):
     az_source = AzureAISearchDataSource.from_azure_ai_search_settings(
         AzureAISearchSettings.create()
     )
+<<<<<<< Updated upstream
+=======
+=======
+def test_create_options_azure_data_from_azure_ai_settings(azure_ai_search_unit_test_env):
+    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(AzureAISearchSettings.create())
+>>>>>>> main
+>>>>>>> Stashed changes
     extra = ExtraBody(data_sources=[az_source])
     assert extra["data_sources"] is not None
     settings = AzureChatPromptExecutionSettings(extra_body=extra)
@@ -273,9 +388,19 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources
             ]
         },
     }
+<<<<<<< Updated upstream
     settings = AzureChatPromptExecutionSettings.model_validate(
         input_dict, strict=True, from_attributes=True
     )
+=======
+<<<<<<< HEAD
+    settings = AzureChatPromptExecutionSettings.model_validate(
+        input_dict, strict=True, from_attributes=True
+    )
+=======
+    settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
+>>>>>>> main
+>>>>>>> Stashed changes
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"
 
 
@@ -304,9 +429,19 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
             ]
         },
     }
+<<<<<<< Updated upstream
     settings = AzureChatPromptExecutionSettings.model_validate(
         input_dict, strict=True, from_attributes=True
     )
+=======
+<<<<<<< HEAD
+    settings = AzureChatPromptExecutionSettings.model_validate(
+        input_dict, strict=True, from_attributes=True
+    )
+=======
+    settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
+>>>>>>> main
+>>>>>>> Stashed changes
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"
 
 
@@ -336,3 +471,56 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_response_format_json(
     settings = AzureChatPromptExecutionSettings(response_format=response_format)
     options = settings.prepare_settings_dict()
     assert options["response_format"] == response_format
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+
+def test_openai_chat_prompt_execution_settings_with_json_structured_output():
+    settings = OpenAIChatPromptExecutionSettings()
+    settings.response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "math_response",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {"explanation": {"type": "string"}, "output": {"type": "string"}},
+                            "required": ["explanation", "output"],
+                            "additionalProperties": False,
+                        },
+                    },
+                    "final_answer": {"type": "string"},
+                },
+                "required": ["steps", "final_answer"],
+                "additionalProperties": False,
+            },
+            "strict": True,
+        },
+    }
+    assert isinstance(settings.response_format, dict)
+
+
+def test_openai_chat_prompt_execution_settings_with_nonpydantic_type_structured_output():
+    settings = OpenAIChatPromptExecutionSettings()
+    settings.response_format = TestClass
+    assert isinstance(settings.response_format, type)
+
+
+def test_openai_chat_prompt_execution_settings_with_pydantic_type_structured_output():
+    settings = OpenAIChatPromptExecutionSettings()
+    settings.response_format = TestClassPydantic
+    assert issubclass(settings.response_format, BaseModel)
+
+
+def test_openai_chat_prompt_execution_settings_with_invalid_structured_output():
+    settings = OpenAIChatPromptExecutionSettings()
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        settings.response_format = "invalid"
+>>>>>>> main
+>>>>>>> Stashed changes

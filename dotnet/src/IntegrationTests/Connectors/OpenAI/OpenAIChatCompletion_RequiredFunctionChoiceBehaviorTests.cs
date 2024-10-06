@@ -96,7 +96,14 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         // Assert
         Assert.NotNull(result);
 
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
+=======
+<<<<<<< HEAD
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -132,7 +139,14 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         // Assert
         Assert.NotNull(result);
 
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
+=======
+<<<<<<< HEAD
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -165,7 +179,15 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
+=======
+<<<<<<< HEAD
+        Assert.Single(functionCalls);
+=======
+        Assert.NotEmpty(functionCalls);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -238,7 +260,14 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         }
 
         // Assert
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
+=======
+<<<<<<< HEAD
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -278,8 +307,16 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         // Assert
         Assert.NotNull(result);
+<<<<<<< Updated upstream
 
         Assert.Single(invokedFunctions);
+=======
+<<<<<<< HEAD
+
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -314,7 +351,14 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         }
 
         // Assert
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
+=======
+<<<<<<< HEAD
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
@@ -349,7 +393,15 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
+=======
+<<<<<<< HEAD
+        Assert.Single(functionCalls);
+=======
+        Assert.NotEmpty(functionCalls);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -387,7 +439,14 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         }
 
         // Assert
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
+=======
+<<<<<<< HEAD
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);

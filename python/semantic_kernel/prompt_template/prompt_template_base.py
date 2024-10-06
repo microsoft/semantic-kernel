@@ -1,15 +1,40 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 from html import escape
 from typing import TYPE_CHECKING
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+from typing import TYPE_CHECKING
+
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     from semantic_kernel.prompt_template.input_variable import InputVariable
 
 
@@ -81,3 +106,17 @@ class PromptTemplateBase(KernelBaseModel, ABC):
             if variable.name == name:
                 return not variable.allow_dangerously_set_content
         return True
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+
+
+class PromptTemplateBase(KernelBaseModel, ABC):
+    @abstractmethod
+    async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
+        pass
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes

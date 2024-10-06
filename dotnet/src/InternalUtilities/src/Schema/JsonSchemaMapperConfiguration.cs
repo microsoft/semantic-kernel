@@ -1,5 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+// Source copied from https://github.com/eiriktsarpalis/stj-schema-mapper
+// It should be kept in sync with any changes made in that repo,
+// and should be removed once the relevant replacements are available in STJv9.
+
+>>>>>>> main
+>>>>>>> Stashed changes
 using System;
 using System.ComponentModel;
 using System.Text.Json.Nodes;

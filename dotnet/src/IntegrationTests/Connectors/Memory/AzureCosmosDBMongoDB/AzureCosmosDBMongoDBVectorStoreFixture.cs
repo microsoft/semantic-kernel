@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -53,6 +61,13 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
+>>>>>>> main
+>>>>>>> Stashed changes
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
             ]
@@ -69,6 +84,20 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        var cursor = await this.MongoDatabase.ListCollectionNamesAsync();
+
+        while (await cursor.MoveNextAsync().ConfigureAwait(false))
+        {
+            foreach (var collection in cursor.Current)
+            {
+                await this.MongoDatabase.DropCollectionAsync(collection);
+            }
+>>>>>>> main
+>>>>>>> Stashed changes
         foreach (var collection in this._testCollections)
         {
             await this.MongoDatabase.DropCollectionAsync(collection);
@@ -83,6 +112,13 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         public string HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        [VectorStoreRecordData(IsFilterable = true)]
+>>>>>>> main
+>>>>>>> Stashed changes
         [VectorStoreRecordData]
         public string? HotelName { get; set; }
 
@@ -106,6 +142,16 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordData]
         public string Description { get; set; }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        /// <summary>A datetime metadata field.</summary>
+        [VectorStoreRecordData]
+        public DateTime Timestamp { get; set; }
+
+>>>>>>> main
+>>>>>>> Stashed changes
         /// <summary>A vector field.</summary>
         [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }

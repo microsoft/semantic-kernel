@@ -5,11 +5,25 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System.Text.Json.Nodes;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.AI;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.AI;
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -23,6 +37,14 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// with additional methods required by the kernel.
 /// </summary>
 public sealed class SKFunction : ISKFunction, IDisposable
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
+public sealed class SKFunction : ISKFunction
+>>>>>>> main
+>>>>>>> Stashed changes
 {
     /// <inheritdoc/>
     public string Name { get; }
@@ -37,9 +59,21 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public bool IsSemantic { get; }
 
     /// <inheritdoc/>
+<<<<<<< Updated upstream
     public CompleteRequestSettings RequestSettings
     {
         get { return this._aiRequestSettings; }
+=======
+<<<<<<< HEAD
+    public CompleteRequestSettings RequestSettings
+    {
+        get { return this._aiRequestSettings; }
+=======
+    public JsonObject ServiceSettings
+    {
+        get { return this._aiServiceSettings; }
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -143,6 +177,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
             string skillName,
             string functionName,
             CancellationToken cancellationToken)
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            JsonObject serviceSettings,
+            SKContext context)
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             Verify.NotNull(client);
 
@@ -151,14 +193,35 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 string prompt = await promptTemplate.RenderAsync(context).ConfigureAwait(false);
 
                 string completion = await client.CompleteAsync(prompt, requestSettings, cancellationToken).ConfigureAwait(false);
+<<<<<<< Updated upstream
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
+=======
+<<<<<<< HEAD
+                context.Variables.Update(completion);
+            }
+            catch (AIException ex)
+=======
+                string completion = await client.CompleteAsync(prompt, serviceSettings, context.CancellationToken).ConfigureAwait(false);
+                context.Variables.Update(completion);
+            }
+            catch (SKException ex)
+>>>>>>> main
+>>>>>>> Stashed changes
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
                 kernel.Log.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
                 context.Fail(ex.Message, ex);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                logger?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Message);
+                throw;
+>>>>>>> main
+>>>>>>> Stashed changes
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -201,7 +264,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public Task<SKContext> InvokeAsync(
         string input,
         SKContext? context = null,
+<<<<<<< Updated upstream
         CompleteRequestSettings? settings = null,
+=======
+<<<<<<< HEAD
+        CompleteRequestSettings? settings = null,
+=======
+        JsonObject? settings = null,
+>>>>>>> main
+>>>>>>> Stashed changes
         ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
@@ -218,6 +289,39 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
 
         context.Variables.Update(input);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    public async Task<SKContext> InvokeAsync(SKContext context, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null)
+    {
+        async Task<SKContext> InvokeSemanticAsync(SKContext contextParam, ITextCompletion? _aiService, CompleteRequestSettings? settingsParam)
+        {
+            if (_aiService == null)
+            {
+                throw new KernelException(KernelException.ErrorCodes.InvalidServiceConfiguration, "No text completion service provided for semantic function execution.");
+            }
+
+            var resultContext = await this._function(_aiService, settingsParam ?? this._aiRequestSettings, contextParam).ConfigureAwait(false);
+            contextParam.Variables.Update(resultContext.Variables);
+            return contextParam;
+        }
+
+        Task<SKContext> InvokeNativeAsync(SKContext contextParam, CompleteRequestSettings? settingsParam)
+        {
+            return this._function(null, settingsParam, contextParam);
+        }
+
+        // If the function is invoked manually, the user might have left out the skill collection
+        //context.Skills ??= this._skillCollection;
+
+        var validateContextResult = await this.TrustServiceInstance.ValidateContextAsync(this, context).ConfigureAwait(false);
+
+        var result = this.IsSemantic
+            ? await InvokeSemanticAsync(context, textCompletionService, settings).ConfigureAwait(false)
+            : await InvokeNativeAsync(context, settings).ConfigureAwait(false);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         return this.InvokeAsync(context, settings, log, cancellationToken);
     }
@@ -225,7 +329,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
         SKContext? context = null,
+<<<<<<< Updated upstream
         CompleteRequestSettings? settings = null,
+=======
+<<<<<<< HEAD
+        CompleteRequestSettings? settings = null,
+=======
+        JsonObject? settings = null,
+>>>>>>> main
+>>>>>>> Stashed changes
         ILogger? log = null,
         CancellationToken cancellationToken = default)
     {
@@ -255,6 +367,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
         this.VerifyIsSemantic();
         this._aiService = serviceFactory.Invoke();
         return this;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     }
 
     /// <inheritdoc/>
@@ -263,6 +379,35 @@ public sealed class SKFunction : ISKFunction, IDisposable
         Verify.NotNull(settings);
         this.VerifyIsSemantic();
         this._aiRequestSettings = settings;
+<<<<<<< Updated upstream
+=======
+=======
+        string? input = null,
+        ITextCompletion? textCompletionService = null,
+        CompleteRequestSettings? settings = null,
+        IReadOnlySkillCollection? skills = null,
+        ISemanticTextMemory? memory = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+        SKContext context = new(
+            new ContextVariables(input),
+            memory: memory,
+            skills: skills,
+            logger: logger,
+            cancellationToken: cancellationToken);
+
+        return this.InvokeAsync(context, textCompletionService, settings);
+    }
+
+    /// <inheritdoc/>
+    public ISKFunction SetAIConfiguration(JsonObject settings)
+    {
+        Verify.NotNull(settings);
+        this.VerifyIsSemantic();
+        this._aiServiceSettings = settings;
+>>>>>>> main
+>>>>>>> Stashed changes
         return this;
     }
 
@@ -277,6 +422,19 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     /// <summary>
     /// Finalizer.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public override string ToString()
+        => this.ToString(false);
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+>>>>>>> main
+>>>>>>> Stashed changes
     /// </summary>
     ~SKFunction()
     {
@@ -293,6 +451,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private ITextCompletion? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
     private readonly IPromptTemplate _promptTemplate;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    private JsonObject _aiServiceSettings = new();
+>>>>>>> main
+>>>>>>> Stashed changes
 
     private struct MethodDetails
     {
@@ -371,7 +536,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Throw an exception if the function is not semantic, use this method when some logic makes sense only for semantic functions.
     /// </summary>
+<<<<<<< Updated upstream
     /// <exception cref="KernelException"></exception>
+=======
+<<<<<<< HEAD
+    /// <exception cref="KernelException"></exception>
+=======
+    /// <exception cref="SKException"></exception>
+>>>>>>> main
+>>>>>>> Stashed changes
     private void VerifyIsSemantic()
     {
         if (this.IsSemantic) { return; }
@@ -380,6 +553,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
         throw new KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a semantic function");
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._logger.LogError("The function is not semantic");
+        throw new SKException("Invalid operation, the method requires a semantic function");
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     // Run the semantic function
@@ -387,12 +568,27 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext context,
         CompleteRequestSettings? settings,
         CancellationToken cancellationToken)
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    private async Task<SKContext> InvokeSemanticAsync(SKContext context, JsonObject? settings)
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         this.VerifyIsSemantic();
 
         // this.EnsureContextHasSkills(context);
 
+<<<<<<< Updated upstream
         settings ??= this._aiRequestSettings;
+=======
+<<<<<<< HEAD
+        settings ??= this._aiRequestSettings;
+=======
+        settings ??= this._aiServiceSettings;
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var callable = (Func<
             IKernel,
@@ -419,6 +615,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         context.Variables.Update(result.Variables);
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        var callable = (Func<ITextCompletion?, JsonObject?, SKContext, Task<SKContext>>)this._function;
+        context.Variables.Update((await callable(this._aiService, settings, context).ConfigureAwait(false)).Variables);
+>>>>>>> main
+>>>>>>> Stashed changes
         return context;
     }
 
@@ -656,6 +860,63 @@ public sealed class SKFunction : ISKFunction, IDisposable
         result.Description = skFunctionAttribute?.Description ?? "";
 
         log?.LogTrace("Method '{0}' found, type `{1}`", result.Name, result.Type.ToString("G"));
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+            bool fallBackToInput = !sawFirstParameter && !nameIsInput;
+            Func<SKContext, CancellationToken, object?> parameterFunc = (SKContext context, CancellationToken _) =>
+            {
+                // 1. Use the value of the variable if it exists.
+                if (context.Variables.TryGetValue(name, out string? value))
+                {
+                    return Process(value);
+                }
+
+                // 2. Otherwise, use the default value if there is one, sourced either from an attribute or the parameter's default.
+                if (hasDefaultValue)
+                {
+                    return defaultValue;
+                }
+
+                // 3. Otherwise, use "input" if this is the first (or only) parameter.
+                if (fallBackToInput)
+                {
+                    return Process(context.Variables.Input);
+                }
+
+                // 4. Otherwise, fail.
+                throw new SKException($"Missing value for parameter '{name}'");
+
+                object? Process(string value)
+                {
+                    if (type == typeof(string))
+                    {
+                        return value;
+                    }
+
+                    try
+                    {
+                        return parser(value, context.Culture);
+                    }
+                    catch (Exception e) when (!e.IsCriticalException())
+                    {
+                        throw new ArgumentOutOfRangeException(name, value, e.Message);
+                    }
+                }
+            };
+
+            sawFirstParameter = true;
+
+            var parameterView = new ParameterView(
+                name,
+                parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
+                defaultValue?.ToString() ?? string.Empty);
+
+            return (parameterFunc, parameterView);
+        }
+>>>>>>> main
+>>>>>>> Stashed changes
 
         return result;
     }
@@ -731,6 +992,30 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
 
         if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task<SKContext>>), out funcDelegate!))
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        // Unrecognized return type.
+        throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
+
+        // Throws an exception if a result is found to be null unexpectedly
+        static object ThrowIfNullResult(object? result) =>
+            result ??
+            throw new SKException("Function returned null unexpectedly.");
+    }
+
+    /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
+    [DoesNotReturn]
+    private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason) =>
+        throw new SKException($"Function '{method.Name}' is not supported by the kernel. {reason}");
+
+    /// <summary>Throws an exception indicating an invalid SKFunction signature if the specified condition is not met.</summary>
+    private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)
+    {
+        if (condition)
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             return (DelegateTypes.ContextSwitchInStringAndContextOutTaskContext, funcDelegate, true);
         }

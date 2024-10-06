@@ -69,7 +69,16 @@ public class QdrantGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes(bool hasNamedVectors)
     {
         // Arrange.
+<<<<<<< Updated upstream
         var sut = new QdrantGenericDataModelMapper(hasNamedVectors ? s_multiVectorStoreRecordDefinition : s_singleVectorStoreRecordDefinition, hasNamedVectors);
+=======
+<<<<<<< HEAD
+        var sut = new QdrantGenericDataModelMapper(hasNamedVectors ? s_multiVectorStoreRecordDefinition : s_singleVectorStoreRecordDefinition, hasNamedVectors);
+=======
+        var reader = new VectorStoreRecordPropertyReader(typeof(VectorStoreGenericDataModel<ulong>), hasNamedVectors ? s_multiVectorStoreRecordDefinition : s_singleVectorStoreRecordDefinition, null);
+        var sut = new QdrantGenericDataModelMapper(reader, hasNamedVectors);
+>>>>>>> main
+>>>>>>> Stashed changes
         var dataModel = new VectorStoreGenericDataModel<ulong>(1ul)
         {
             Data =
@@ -159,7 +168,16 @@ public class QdrantGenericDataModelMapperTests
             },
         };
 
+<<<<<<< Updated upstream
         var sut = (IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>)new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, hasNamedVectors);
+=======
+<<<<<<< HEAD
+        var sut = (IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>)new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, hasNamedVectors);
+=======
+        var reader = new VectorStoreRecordPropertyReader(typeof(VectorStoreGenericDataModel<Guid>), vectorStoreRecordDefinition, null);
+        var sut = (IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>)new QdrantGenericDataModelMapper(reader, hasNamedVectors);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -177,7 +195,16 @@ public class QdrantGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsAllSupportedTypes(bool hasNamedVectors)
     {
         // Arrange
+<<<<<<< Updated upstream
         var sut = new QdrantGenericDataModelMapper(hasNamedVectors ? s_multiVectorStoreRecordDefinition : s_singleVectorStoreRecordDefinition, hasNamedVectors);
+=======
+<<<<<<< HEAD
+        var sut = new QdrantGenericDataModelMapper(hasNamedVectors ? s_multiVectorStoreRecordDefinition : s_singleVectorStoreRecordDefinition, hasNamedVectors);
+=======
+        var reader = new VectorStoreRecordPropertyReader(typeof(VectorStoreGenericDataModel<ulong>), hasNamedVectors ? s_multiVectorStoreRecordDefinition : s_singleVectorStoreRecordDefinition, null);
+        var sut = new QdrantGenericDataModelMapper(reader, hasNamedVectors);
+>>>>>>> main
+>>>>>>> Stashed changes
         var storageModel = new PointStruct()
         {
             Id = new PointId() { Num = 1 },
@@ -289,7 +316,16 @@ public class QdrantGenericDataModelMapperTests
             storageModel.Vectors.Vector = new Vector() { Data = { 1.0f, 2.0f, 3.0f } };
         }
 
+<<<<<<< Updated upstream
         var sut = (IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>)new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, hasNamedVectors);
+=======
+<<<<<<< HEAD
+        var sut = (IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>)new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, hasNamedVectors);
+=======
+        var reader = new VectorStoreRecordPropertyReader(typeof(VectorStoreGenericDataModel<Guid>), vectorStoreRecordDefinition, null);
+        var sut = (IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>)new QdrantGenericDataModelMapper(reader, hasNamedVectors);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions());
@@ -315,7 +351,16 @@ public class QdrantGenericDataModelMapperTests
             },
         };
 
+<<<<<<< Updated upstream
         var sut = new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, false);
+=======
+<<<<<<< HEAD
+        var sut = new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, false);
+=======
+        var reader = new VectorStoreRecordPropertyReader(typeof(VectorStoreGenericDataModel<ulong>), vectorStoreRecordDefinition, null);
+        var sut = new QdrantGenericDataModelMapper(reader, false);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var dataModel = new VectorStoreGenericDataModel<ulong>(1ul)
         {
@@ -346,7 +391,16 @@ public class QdrantGenericDataModelMapperTests
             },
         };
 
+<<<<<<< Updated upstream
         var sut = new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, false);
+=======
+<<<<<<< HEAD
+        var sut = new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, false);
+=======
+        var reader = new VectorStoreRecordPropertyReader(typeof(VectorStoreGenericDataModel<ulong>), vectorStoreRecordDefinition, null);
+        var sut = new QdrantGenericDataModelMapper(reader, false);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var dataModel = new VectorStoreGenericDataModel<ulong>(1ul)
         {
@@ -376,7 +430,16 @@ public class QdrantGenericDataModelMapperTests
             },
         };
 
+<<<<<<< Updated upstream
         var sut = new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, false);
+=======
+<<<<<<< HEAD
+        var sut = new QdrantGenericDataModelMapper(vectorStoreRecordDefinition, false);
+=======
+        var reader = new VectorStoreRecordPropertyReader(typeof(VectorStoreGenericDataModel<ulong>), vectorStoreRecordDefinition, null);
+        var sut = new QdrantGenericDataModelMapper(reader, false);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var storageModel = new PointStruct()
         {

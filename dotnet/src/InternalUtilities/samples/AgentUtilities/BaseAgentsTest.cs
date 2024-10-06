@@ -1,4 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.SemanticKernel;
@@ -36,8 +44,18 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     protected OpenAIClientProvider GetClientProvider()
         =>
             this.UseOpenAIConfig ?
+<<<<<<< Updated upstream
                 OpenAIClientProvider.ForOpenAI(this.ApiKey) :
                 OpenAIClientProvider.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
+=======
+<<<<<<< HEAD
+                OpenAIClientProvider.ForOpenAI(this.ApiKey) :
+                OpenAIClientProvider.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
+=======
+                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey)) :
+                OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!));
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
@@ -78,7 +96,15 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
+<<<<<<< Updated upstream
     protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
+=======
+<<<<<<< HEAD
+    protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
+=======
+    protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         foreach (KernelContent item in message.Items)
         {
@@ -89,7 +115,15 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
+<<<<<<< Updated upstream
     protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
+=======
+<<<<<<< HEAD
+    protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
+=======
+    protected async Task DownloadResponseImageAsync(OpenAIFileClient client, ChatMessageContent message)
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         foreach (KernelContent item in message.Items)
         {
@@ -100,10 +134,23 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     private async Task DownloadFileContentAsync(FileClient client, string fileId, bool launchViewer = false)
     {
         OpenAIFileInfo fileInfo = client.GetFile(fileId);
         if (fileInfo.Purpose == OpenAIFilePurpose.AssistantsOutput)
+<<<<<<< Updated upstream
+=======
+=======
+    private async Task DownloadFileContentAsync(OpenAIFileClient client, string fileId, bool launchViewer = false)
+    {
+        OpenAIFile fileInfo = client.GetFile(fileId);
+        if (fileInfo.Purpose == FilePurpose.AssistantsOutput)
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
             if (launchViewer)
@@ -120,8 +167,18 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                 Process.Start(
                     new ProcessStartInfo
                     {
+<<<<<<< Updated upstream
                         FileName = "cmd.exe",
                         Arguments = $"/C start {filePath}"
+=======
+<<<<<<< HEAD
+                        FileName = "cmd.exe",
+                        Arguments = $"/C start {filePath}"
+=======
+                        FileName = filePath,
+                        UseShellExecute = true
+>>>>>>> main
+>>>>>>> Stashed changes
                     });
             }
         }

@@ -1,6 +1,13 @@
 [run]
 source = semantic_kernel
 omit = 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     semantic_kernel/connectors/memory/astradb/*
     semantic_kernel/connectors/memory/azure_cognitive_search/*
     semantic_kernel/connectors/memory/azure_cosmosdb/*
@@ -16,6 +23,20 @@ omit =
     semantic_kernel/connectors/memory/weaviate/*
     semantic_kernel/reliability/*
     semantic_kernel/memory/*
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    semantic_kernel/connectors/memory/*
+    semantic_kernel/utils/settings.py
+    semantic_kernel/utils/null_logger.py
+    semantic_kernel/utils/logging.py
+
+
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 [report]
 # Regexes for lines to exclude from consideration

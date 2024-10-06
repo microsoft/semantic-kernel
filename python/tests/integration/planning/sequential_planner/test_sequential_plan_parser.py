@@ -20,6 +20,18 @@ async def test_can_call_to_plan_from_xml():
     kernel.add_service(
         sk_oai.AzureChatCompletion(
             service_id="text_completion",
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+=======
+            deployment_name=deployment_name,
+            endpoint=endpoint,
+            api_key=api_key,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         ),
     )
     kernel.add_plugin(EmailPluginFake(), "email")
@@ -36,7 +48,23 @@ async def test_can_call_to_plan_from_xml():
 """
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
+<<<<<<< Updated upstream
     plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
+=======
+<<<<<<< main
+    plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
+=======
+<<<<<<< main
+    plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
+=======
+    plan = SequentialPlanParser.to_plan_from_xml(
+        plan_string,
+        goal,
+        SequentialPlanParser.get_plugin_function(kernel),
+    )
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
     assert plan is not None
     assert (

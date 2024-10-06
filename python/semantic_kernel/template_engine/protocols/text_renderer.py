@@ -11,10 +11,28 @@ if TYPE_CHECKING:
 class TextRenderer(Protocol):
     """Protocol for static (text) blocks that don't need async rendering."""
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     def render(
         self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None
     ) -> str:
         """Render the block using only the given variables.
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+    def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
+        """
+        Render the block using only the given variables.
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         :param variables: Optional variables used to render the block
         :return: Rendered content

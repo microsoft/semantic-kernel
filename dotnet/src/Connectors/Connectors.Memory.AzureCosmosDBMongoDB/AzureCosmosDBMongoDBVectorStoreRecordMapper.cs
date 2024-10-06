@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -7,6 +15,16 @@ using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using Microsoft.SemanticKernel.Data;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Conventions;
+>>>>>>> main
+>>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
@@ -51,6 +69,14 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
 
     /// <summary>A key property name of the data model.</summary>
     private readonly string _keyPropertyName;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// <summary>A dictionary that maps from a property name to the storage name.</summary>
+    private readonly Dictionary<string, string> _storagePropertyNames;
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordMapper{TRecord}"/> class.
@@ -58,6 +84,10 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     /// <param name="keyPropertyName">A key property name of the data model.</param>
     public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition, string keyPropertyName)
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     {
         var (keyProperty, dataProperties, vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: true);
 
@@ -67,6 +97,51 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
 
         this._keyPropertyName = keyPropertyName;
         this._keyProperty = keyProperty;
+<<<<<<< Updated upstream
+=======
+=======
+    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
+    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition, Dictionary<string, string> storagePropertyNames)
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
+    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordPropertyReader propertyReader)
+    {
+        propertyReader.VerifyKeyProperties(AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
+        propertyReader.VerifyDataProperties(AzureCosmosDBMongoDBConstants.SupportedDataTypes, supportEnumerable: true);
+        propertyReader.VerifyVectorProperties(AzureCosmosDBMongoDBConstants.SupportedVectorTypes);
+
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes([keyProperty], AzureCosmosDBMongoDBConstants.SupportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, AzureCosmosDBMongoDBConstants.SupportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, AzureCosmosDBMongoDBConstants.SupportedVectorTypes, "Vector");
+
+
+        this._keyPropertyName = keyPropertyName;
+        this._keyProperty = keyProperty;
+
+        this._keyPropertyName = propertyReader.KeyPropertyName;
+        this._keyProperty = propertyReader.KeyPropertyInfo;
+
+        var conventionPack = new ConventionPack
+        {
+            new IgnoreExtraElementsConvention(ignoreExtraElements: true)
+        this._storagePropertyNames = storagePropertyNames;
+
+        // Use Mongo reserved key property name as storage key property name
+        this._storagePropertyNames[keyProperty.Name] = AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName;
+
+        var conventionPack = new ConventionPack
+        {
+            new IgnoreExtraElementsConvention(ignoreExtraElements: true),
+            new AzureCosmosDBMongoDBNamingConvention(this._storagePropertyNames)
+        };
+
+        ConventionRegistry.Register(
+            nameof(AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>),
+            conventionPack,
+            type => type == typeof(TRecord));
+        this._keyPropertyName = propertyReader.KeyPropertyName;
+        this._keyProperty = propertyReader.KeyPropertyInfo;
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     public BsonDocument MapFromDataToStorageModel(TRecord dataModel)
@@ -101,4 +176,14 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
 
         return BsonSerializer.Deserialize<TRecord>(storageModel);
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        => dataModel.ToBsonDocument();
+
+    public TRecord MapFromStorageToDataModel(BsonDocument storageModel, StorageToDataModelMapperOptions options)
+        => BsonSerializer.Deserialize<TRecord>(storageModel);
+>>>>>>> main
+>>>>>>> Stashed changes
 }

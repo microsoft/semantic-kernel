@@ -47,14 +47,42 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 definition: new(this.Model)
+=======
+<<<<<<< HEAD
+                kernel: new(),
+                clientProvider: this.GetClientProvider(),
+                definition: new(this.Model)
+=======
+                clientProvider: this.GetClientProvider(),
+                definition: new OpenAIAssistantDefinition(this.Model)
+                kernel: new(),
+                clientProvider: this.GetClientProvider(),
+                definition: new(this.Model)
+                clientProvider: this.GetClientProvider(),
+                definition: new OpenAIAssistantDefinition(this.Model)
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
                     Metadata = AssistantSampleMetadata,
+<<<<<<< Updated upstream
                 });
+=======
+<<<<<<< HEAD
+                });
+=======
+                },
+                kernel: new Kernel());
+                });
+                },
+                kernel: new Kernel());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -79,12 +107,24 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
             };
 
         // Invoke chat and display messages.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
         string input = "concept: maps made out of egg cartons.";
         chat.Add(new ChatMessageContent(AuthorRole.User, input));
         Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+        string input = "concept: maps made out of egg cartons.";
+        chat.Add(new ChatMessageContent(AuthorRole.User, input));
+        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+>>>>>>> main
+>>>>>>> Stashed changes
         ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
         chat.AddChatMessage(input);
         this.WriteAgentChatMessage(input);

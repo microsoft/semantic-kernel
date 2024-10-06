@@ -1,9 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< Updated upstream
 import sys
 from collections.abc import AsyncGenerator, AsyncIterator, Mapping
 from typing import TYPE_CHECKING, Any, ClassVar
+=======
+<<<<<<< HEAD
+import sys
+from collections.abc import AsyncGenerator, AsyncIterator, Mapping
+from typing import TYPE_CHECKING, Any, ClassVar
+=======
+<<<<<<< main
+import sys
+from collections.abc import AsyncGenerator, AsyncIterator, Mapping
+from typing import TYPE_CHECKING, Any, ClassVar
+=======
+from typing import AsyncIterable, List, Optional
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -24,6 +40,13 @@ from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -41,21 +64,64 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+<<<<<<< Updated upstream
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+=======
+<<<<<<< HEAD
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+=======
+<<<<<<< main
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+=======
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion, trace_text_completion
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
         PromptExecutionSettings,
     )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 class OllamaChatCompletion(
     OllamaBase, TextCompletionClientBase, ChatCompletionClientBase
 ):
 class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
     """Initializes a new instance of the OllamaChatCompletion class.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
+    """
+    Initializes a new instance of the OllamaChatCompletion class.
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
     Make sure to have the ollama service running either locally or remotely.
     """
@@ -64,6 +130,13 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
     def __init__(
         self,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         service_id: str | None = None,
         ai_model_id: str | None = None,
         host: str | None = None,
@@ -81,6 +154,17 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             client (Optional[AsyncClient]): A custom Ollama client to use for the service. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
             env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        chat_history: ChatHistory,
+        settings: OllamaChatPromptExecutionSettings,
+    ) -> List[ChatMessageContent]:
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
         """
         try:
             ollama_settings = OllamaSettings.create(
@@ -94,6 +178,13 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
                 "Failed to create Ollama settings.", ex
             ) from ex
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         if not ollama_settings.model:
             raise ServiceInitializationError("Please provide ai_model_id or OLLAMA_MODEL env variable is required")
 
@@ -103,6 +194,13 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             client=client or AsyncClient(host=ollama_settings.host),
         )
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     # region Overriding base class methods
 
     # Override from AIServiceClientBase
@@ -114,6 +212,17 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
     @override
     @trace_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
     async def _inner_get_chat_message_contents(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    @override
+    @trace_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
+    async def get_chat_message_contents(
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -196,6 +305,86 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         Args:
             prompt (str): A prompt to complete
             settings (PromptExecutionSettings): Settings for the request.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        Arguments:
+            chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
+                that can be rendered into a set of messages, from system, user, assistant and function.
+            settings {PromptExecutionSettings} -- Settings for the request.
+            logger {Logger} -- A logger to use for logging. (Deprecated)
+
+        Returns:
+            List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
+        """
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        settings.stream = False
+        async with AsyncSession(self.session) as session:
+            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
+                response.raise_for_status()
+                response_object = await response.json()
+                return [
+                    ChatMessageContent(
+                        inner_content=response_object,
+                        ai_model_id=self.ai_model_id,
+                        role="assistant",
+                        content=response_object.get("message", {"content": None}).get("content", None),
+                    )
+                ]
+
+    async def complete_chat_stream(
+        self,
+        chat_history: ChatHistory,
+        settings: OllamaChatPromptExecutionSettings,
+    ) -> AsyncIterable[List[StreamingChatMessageContent]]:
+        """
+        Streams a text completion using a Ollama model.
+        Note that this method does not support multiple responses.
+
+        Arguments:
+            chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
+                that can be rendered into a set of messages, from system, user, assistant and function.
+            settings {OllamaChatPromptExecutionSettings} -- Request settings.
+
+        Yields:
+            List[StreamingChatMessageContent] -- Stream of StreamingChatMessageContent objects.
+        """
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        settings.stream = True
+        async with AsyncSession(self.session) as session:
+            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
+                response.raise_for_status()
+                async for line in response.content:
+                    body = json.loads(line)
+                    if body.get("done") and body.get("message", {}).get("content") is None:
+                        break
+                    yield [
+                        StreamingChatMessageContent(
+                            choice_index=0,
+                            inner_content=body,
+                            ai_model_id=self.ai_model_id,
+                            content=body.get("message", {"content": None}).get("content", None),
+                        )
+                    ]
+                    if body.get("done"):
+                        break
+
+    async def complete(
+        self,
+        prompt: str,
+        settings: OllamaChatPromptExecutionSettings,
+    ) -> List[TextContent]:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+
+        Arguments:
+            chat_history {ChatHistory} -- A chat history that contains the prompt to complete.
+            settings {OllamaChatPromptExecutionSettings} -- Settings for the request.
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Returns:
             List["TextContent"]: The completion result(s).
@@ -229,6 +418,13 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
     async def get_streaming_text_contents(
         self,
         prompt: str,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """Streams a text completion using an Ollama model.
@@ -238,6 +434,23 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         Args:
             prompt (str): A chat history that contains the prompt to complete.
             settings (PromptExecutionSettings): Request settings.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+        settings: OllamaChatPromptExecutionSettings,
+    ) -> AsyncIterable[List[StreamingTextContent]]:
+        """
+        Streams a text completion using a Ollama model.
+        Note that this method does not support multiple responses.
+
+        Arguments:
+            prompt {str} -- A chat history that contains the prompt to complete.
+            settings {OllamaChatPromptExecutionSettings} -- Request settings.
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Yields:
             List["StreamingTextContent"]: The result stream made up of StreamingTextContent objects.

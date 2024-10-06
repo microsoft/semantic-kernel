@@ -10,6 +10,10 @@ We do our best to respond to each submission.
 ## Public Community Office Hours
 
 We regularly have Community Office Hours that are open to the **public** to join.
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
 Add Semantic Kernel events to your calendar - we're running two community calls to cater different timezones:
 
@@ -21,6 +25,25 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 * Java Development Office Hours: [Java Development Office Hours](https://aka.ms/sk-java-dev-sync)
 * Python Development Office Hours: [Python Development Office Hours](https://aka.ms/sk-python-dev-sync)
 
+<<<<<<< Updated upstream
+=======
+=======
+
+Add Semantic Kernel events to your calendar - we're running two community calls to cater different timezones:
+
+Add Semantic Kernel events to your calendar - we're running two community calls to cater different timezones for Q&A Office Hours: 
+* Americas timezone: download the [calendar.ics](https://aka.ms/sk-community-calendar) file.
+* Asia Pacific timezone: download the [calendar-APAC.ics](https://aka.ms/sk-community-calendar-apac) file.
+
+Add Semantic Kernel Development Office Hours for Python and Java to your calendar to help with development:
+* Java Development Office Hours: [Java Development Office Hours](https://aka.ms/sk-java-dev-sync)
+* Python Development Office Hours: [Python Development Office Hours](https://aka.ms/sk-python-dev-sync)
+
+* Americas timezone: download the [calendar.ics](https://aka.ms/sk-community-calendar) file.
+* Asia Pacific timezone: download the [calendar-APAC.ics](https://aka.ms/sk-community-calendar-apac) file.
+
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 If you have any questions or if you would like to showcase your project(s), please email what you'd like us to cover here: skofficehours[at]microsoft.com.
 
 If you are unable to make it live, all meetings will be recorded and posted online.

@@ -1,6 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.ChatCompletion;
+=======
+<<<<<<< main
+using Microsoft.SemanticKernel.ChatCompletion;
+=======
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.ChatCompletion;
+=======
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Xunit;
 

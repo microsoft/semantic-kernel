@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -24,20 +32,56 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
     {
         OpenAIClientProvider provider = this.GetClientProvider();
 
+<<<<<<< Updated upstream
         FileClient fileClient = provider.Client.GetFileClient();
+=======
+<<<<<<< HEAD
+        FileClient fileClient = provider.Client.GetFileClient();
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel: new(),
                 provider,
                 new(this.Model)
+=======
+<<<<<<< HEAD
+                kernel: new(),
+                provider,
+                new(this.Model)
+=======
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                kernel: new(),
+                provider,
+                new(this.Model)
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     Instructions = AnalystInstructions,
                     Name = AnalystName,
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
+<<<<<<< Updated upstream
                 });
+=======
+<<<<<<< HEAD
+                });
+=======
+                },
+                kernel: new Kernel());
+                });
+                },
+                kernel: new Kernel());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         ChatCompletionAgent summaryAgent =
             new()

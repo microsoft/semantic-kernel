@@ -1,12 +1,30 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+<<<<<<< Updated upstream
+=======
+=======
+using System.Runtime.InteropServices;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 using StackExchange.Redis;
 
@@ -19,6 +37,10 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : IVectorStoreRecordMapper<TConsumerDataModel, (string Key, HashEntry[] HashEntries)>
     where TConsumerDataModel : class
 {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
@@ -36,10 +58,21 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 
     /// <summary>A dictionary that maps from a property name to the configured name that should be used when serializing it to json for data and vector properties.</summary>
     private readonly Dictionary<string, string> _jsonPropertyNames = new();
+<<<<<<< Updated upstream
+=======
+=======
+    /// <summary>A helper to access property information for the current data model and record definition.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetVectorStoreRecordMapper{TConsumerDataModel}"/> class.
     /// </summary>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
     public RedisHashSetVectorStoreRecordMapper(
@@ -61,24 +94,64 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         {
             this._jsonPropertyNames[property.Name] = VectorStoreRecordPropertyReader.GetJsonPropertyName(JsonSerializerOptions.Default, property);
         }
+<<<<<<< Updated upstream
+=======
+=======
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
+    public RedisHashSetVectorStoreRecordMapper(
+        VectorStoreRecordPropertyReader propertyReader)
+    {
+        Verify.NotNull(propertyReader);
+        propertyReader.VerifyHasParameterlessConstructor();
+        this._propertyReader = propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <inheritdoc />
     public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel)
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         var keyValue = this._keyPropertyInfo.GetValue(dataModel) as string ?? throw new VectorStoreRecordMappingException($"Missing key property {this._keyPropertyInfo.Name} on provided record of type {typeof(TConsumerDataModel).FullName}.");
 
         var hashEntries = new List<HashEntry>();
         foreach (var property in this._dataPropertiesInfo)
         {
             var storageName = this._storagePropertyNames[property.Name];
+<<<<<<< Updated upstream
+=======
+=======
+        var keyValue = this._propertyReader.KeyPropertyInfo.GetValue(dataModel) as string ??
+            throw new VectorStoreRecordMappingException($"Missing key property {this._propertyReader.KeyPropertyName} on provided record of type {typeof(TConsumerDataModel).FullName}.");
+
+        var hashEntries = new List<HashEntry>();
+        foreach (var property in this._propertyReader.DataPropertiesInfo)
+        {
+            var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
+>>>>>>> main
+>>>>>>> Stashed changes
             var value = property.GetValue(dataModel);
             hashEntries.Add(new HashEntry(storageName, RedisValue.Unbox(value)));
         }
 
+<<<<<<< Updated upstream
         foreach (var property in this._vectorPropertiesInfo)
         {
             var storageName = this._storagePropertyNames[property.Name];
+=======
+<<<<<<< HEAD
+        foreach (var property in this._vectorPropertiesInfo)
+        {
+            var storageName = this._storagePropertyNames[property.Name];
+=======
+        foreach (var property in this._propertyReader.VectorPropertiesInfo)
+        {
+            var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
+>>>>>>> main
+>>>>>>> Stashed changes
             var value = property.GetValue(dataModel);
             if (value is not null)
             {
@@ -92,6 +165,17 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
                 else if (value is ReadOnlyMemory<double> rod)
                 {
                     hashEntries.Add(new HashEntry(storageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(rod)));
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                    hashEntries.Add(new HashEntry(storageName, ConvertVectorToBytes(rom)));
+                }
+                else if (value is ReadOnlyMemory<double> rod)
+                {
+                    hashEntries.Add(new HashEntry(storageName, ConvertVectorToBytes(rod)));
+>>>>>>> main
+>>>>>>> Stashed changes
                 }
             }
         }
@@ -102,6 +186,10 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
     /// <inheritdoc />
     public TConsumerDataModel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, StorageToDataModelMapperOptions options)
     {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         var jsonObject = new JsonObject();
 
         foreach (var property in this._dataPropertiesInfo)
@@ -155,5 +243,68 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         jsonObject.Add(this._keyFieldJsonPropertyName, storageModel.Key);
 
         return JsonSerializer.Deserialize<TConsumerDataModel>(jsonObject)!;
+<<<<<<< Updated upstream
+=======
+=======
+        var hashEntriesDictionary = storageModel.HashEntries.ToDictionary(x => (string)x.Name!, x => x.Value);
+
+        // Construct the output record.
+        var outputRecord = (TConsumerDataModel)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
+
+        // Set Key.
+        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, storageModel.Key);
+
+        // Set each vector property if embeddings should be returned.
+        if (options?.IncludeVectors is true)
+        {
+            VectorStoreRecordMapping.SetValuesOnProperties(
+                outputRecord,
+                this._propertyReader.VectorPropertiesInfo,
+                this._propertyReader.StoragePropertyNamesMap,
+                hashEntriesDictionary,
+                (RedisValue vector, Type targetType) =>
+                {
+                    if (targetType == typeof(ReadOnlyMemory<float>) || targetType == typeof(ReadOnlyMemory<float>?))
+                    {
+                        var array = MemoryMarshal.Cast<byte, float>((byte[])vector!).ToArray();
+                        return new ReadOnlyMemory<float>(array);
+                    }
+                    else if (targetType == typeof(ReadOnlyMemory<double>) || targetType == typeof(ReadOnlyMemory<double>?))
+                    {
+                        var array = MemoryMarshal.Cast<byte, double>((byte[])vector!).ToArray();
+                        return new ReadOnlyMemory<double>(array);
+                    }
+                    else
+                    {
+                        throw new VectorStoreRecordMappingException($"Unsupported vector type '{targetType}'. Only float and double vectors are supported.");
+                    }
+                });
+        }
+
+        // Set each data property.
+        VectorStoreRecordMapping.SetValuesOnProperties(
+            outputRecord,
+            this._propertyReader.DataPropertiesInfo,
+            this._propertyReader.StoragePropertyNamesMap,
+            hashEntriesDictionary,
+            (RedisValue hashValue, Type targetType) =>
+            {
+                var typeOrNullableType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+                return Convert.ChangeType(hashValue, typeOrNullableType);
+            });
+
+        return outputRecord;
+    }
+
+    private static byte[] ConvertVectorToBytes(ReadOnlyMemory<float> vector)
+    {
+        return MemoryMarshal.AsBytes(vector.Span).ToArray();
+    }
+
+    private static byte[] ConvertVectorToBytes(ReadOnlyMemory<double> vector)
+    {
+        return MemoryMarshal.AsBytes(vector.Span).ToArray();
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 }

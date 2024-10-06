@@ -1,9 +1,21 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 using System.Text;
 >>>>>>> origin/PR
+<<<<<<< Updated upstream
+=======
+=======
+
+// Copyright (c) Microsoft. All rights reserved.
+using System.Text;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -24,9 +36,21 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
     {
         OpenAIClientProvider provider = this.GetClientProvider();
 
+<<<<<<< Updated upstream
         FileClient fileClient = provider.Client.GetFileClient();
 
         OpenAIFileInfo uploadFile =
+=======
+<<<<<<< HEAD
+        FileClient fileClient = provider.Client.GetFileClient();
+
+        OpenAIFileInfo uploadFile =
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+
+        OpenAIFile uploadFile =
+>>>>>>> main
+>>>>>>> Stashed changes
             await fileClient.UploadFileAsync(
                 new BinaryData(await EmbeddedResource.ReadAllAsync("sales.csv")!),
                 "sales.csv",
@@ -35,14 +59,42 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
                 kernel: new(),
                 provider,
                 new(this.Model)
+=======
+<<<<<<< HEAD
+                kernel: new(),
+                provider,
+                new(this.Model)
+=======
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                kernel: new(),
+                provider,
+                new(this.Model)
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id],
                     Metadata = AssistantSampleMetadata,
+<<<<<<< Updated upstream
                 });
+=======
+<<<<<<< HEAD
+                });
+=======
+                },
+                kernel: new Kernel());
+                });
+                },
+                kernel: new Kernel());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
@@ -70,10 +122,21 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
 
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
                 this.WriteAgentChatMessage(response);
                 await this.DownloadResponseContentAsync(fileClient, response);
 =======
+<<<<<<< Updated upstream
+=======
+=======
+                this.WriteAgentChatMessage(response);
+                await this.DownloadResponseContentAsync(fileClient, response);
+>>>>>>> main
+>>>>>>> Stashed changes
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
 
                 foreach (AnnotationContent annotation in content.Items.OfType<AnnotationContent>())
@@ -88,7 +151,16 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
                     byte[] byteContent = fileContent.Data?.ToArray() ?? [];
                     Console.WriteLine(Encoding.Default.GetString(byteContent));
                 }
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
+=======
+<<<<<<< HEAD
+>>>>>>> origin/PR
+=======
+                this.WriteAgentChatMessage(response);
+                await this.DownloadResponseContentAsync(fileClient, response);
+>>>>>>> main
+>>>>>>> Stashed changes
             }
         }
     }

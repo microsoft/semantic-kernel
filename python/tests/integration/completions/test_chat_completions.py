@@ -1,6 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 def test_empty_input():
     result = your_function("")
@@ -17,8 +24,16 @@ def test_empty_input():
 
 
 import os
+<<<<<<< Updated upstream
 =======
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 import sys
 from functools import partial
 from typing import Any
@@ -26,7 +41,14 @@ from typing import Any
 import pytest
 
 from semantic_kernel import Kernel
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -54,7 +76,14 @@ from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_s
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import (
     MistralAIChatCompletion,
 )
@@ -64,13 +93,27 @@ from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings impor
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import (
     OllamaChatCompletion,
 )
+<<<<<<< Updated upstream
 =======
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
+=======
+<<<<<<< HEAD
+>>>>>>> origin/PR
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -93,12 +136,26 @@ from semantic_kernel.contents import ChatHistory, ChatMessageContent, TextConten
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import ChatMessageContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 >>>>>>> upstream/main
 from semantic_kernel.contents.utils.author_role import AuthorRole
+<<<<<<< Updated upstream
+=======
+=======
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents import ChatMessageContent, TextContent
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+>>>>>>> main
+>>>>>>> Stashed changes
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     anthropic_setup,
@@ -114,7 +171,14 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 mistral_ai_setup: bool = False
 try:
     if os.environ["MISTRALAI_API_KEY"] and os.environ["MISTRALAI_CHAT_MODEL_ID"]:
@@ -129,7 +193,14 @@ try:
 except KeyError:
     ollama_setup = False
 
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 def setup(
     kernel: Kernel,
@@ -154,6 +225,10 @@ def history() -> ChatHistory:
 
 
 @pytest.fixture(scope="module")
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
 def services() -> (
     dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]
@@ -162,6 +237,16 @@ def services() -> (
 def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
 def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
 >>>>>>> origin/PR
+<<<<<<< Updated upstream
+=======
+=======
+def services() -> (
+    dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]
+):
+def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
+def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
+>>>>>>> main
+>>>>>>> Stashed changes
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
     deployment_name = azure_openai_settings.chat_deployment_name
@@ -204,18 +289,47 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
         "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
     }
+<<<<<<< Updated upstream
 =======
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 anthropic_setup: bool = False
 try:
     if os.environ["ANTHROPIC_API_KEY"] and os.environ["ANTHROPIC_CHAT_MODEL_ID"]:
         anthropic_setup = True
 except KeyError:
     anthropic_setup = False
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 >>>>>>> upstream/main
 
 
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+
+
+
+class Step(KernelBaseModel):
+    explanation: str
+    output: str
+
+
+class Reasoning(KernelBaseModel):
+    steps: list[Step]
+    final_answer: str
+
+
+>>>>>>> main
+>>>>>>> Stashed changes
 pytestmark = pytest.mark.parametrize(
     "service_id, execution_settings_kwargs, inputs, kwargs",
     [
@@ -230,7 +344,14 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
                 ),
             ],
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             ["Hello", "well"],
             id="openai_text_input",
         ),
@@ -341,10 +462,31 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["1.2"],
             id="openai_tool_call_flow",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
             {},
             id="openai_text_input",
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            {},
+            id="openai_text_input",
+        ),
+        pytest.param(
+            "openai",
+            {"response_format": Reasoning},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            id="openai_json_schema_response_format",
+>>>>>>> main
+>>>>>>> Stashed changes
         ),
         pytest.param(
             "azure",
@@ -357,7 +499,14 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
                 ),
             ],
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             ["Hello", "well"],
             id="azure_text_input",
         ),
@@ -408,12 +557,26 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "azure",
             {
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     filters={"excluded_plugins": ["chat"]}
                 )
             },
+<<<<<<< Updated upstream
 =======
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 "function_call_behavior": FunctionCallBehavior.EnableFunctions(
                     auto_invoke=True, filters={"excluded_plugins": ["chat"]}
                 )
@@ -440,7 +603,14 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "azure",
             {"function_choice_behavior": FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["chat"]})},
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
+=======
+<<<<<<< HEAD
+>>>>>>> origin/PR
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             [
                 ChatMessageContent(
                     role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]
@@ -509,10 +679,21 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["1.2"],
             id="azure_tool_call_flow",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
             {},
             id="azure_text_input",
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            {},
+            id="azure_text_input",
+>>>>>>> main
+>>>>>>> Stashed changes
         ),
         pytest.param(
             "azure_custom_client",
@@ -539,7 +720,14 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
                 ),
             ],
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             ["Hello", "well"],
             id="azure_ai_inference_text_input",
         ),
@@ -657,10 +845,21 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["1.2"],
             id="azure_ai_inference_tool_call_flow",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
             {},
             id="azure_ai_inference_text_input",
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            {},
+            id="azure_ai_inference_text_input",
+>>>>>>> main
+>>>>>>> Stashed changes
         ),
         pytest.param(
             "mistral_ai",
@@ -696,7 +895,15 @@ pytestmark = pytest.mark.parametrize(
             ),
             id="ollama_text_input",
         ),
+<<<<<<< Updated upstream
          pytest.param(
+=======
+<<<<<<< HEAD
+         pytest.param(
+=======
+        pytest.param(
+>>>>>>> main
+>>>>>>> Stashed changes
             "anthropic",
             {},
             [
@@ -708,7 +915,14 @@ pytestmark = pytest.mark.parametrize(
                 ),
             ],
             ["Hello", "well"],
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_input",
         ),
@@ -773,16 +987,34 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["348"],
             id="google_ai_tool_call_non_auto",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
             marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
             id="anthropic_text_input",
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
+            id="anthropic_text_input",
+>>>>>>> main
+>>>>>>> Stashed changes
         ),
         pytest.param(
             "google_ai",
             {},
             [
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 [
                     ChatMessageContent(
                         role=AuthorRole.USER,
@@ -807,10 +1039,21 @@ pytestmark = pytest.mark.parametrize(
                         ],
                     ),
                 ],
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+=======
+=======
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+>>>>>>> main
+>>>>>>> Stashed changes
             ],
             ["Hello", "well"],
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
@@ -831,7 +1074,14 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_text_input",
         ),
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         pytest.param(
             "vertex_ai",
             {
@@ -926,14 +1176,29 @@ pytestmark = pytest.mark.parametrize(
             ["1.2"],
             id="vertex_ai_tool_call_flow",
         ),
+<<<<<<< Updated upstream
 =======
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     ],
 )
 
 
 @pytest.mark.asyncio(scope="module")
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 async def test_chat_completion(
     kernel: Kernel,
     service: str,
@@ -960,7 +1225,14 @@ async def test_chat_completion(
                 stream=False,
             ),
             retries=5,
+<<<<<<< Updated upstream
 =======
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 class TestChatCompletion(ChatCompletionTestBase):
     """Test Chat Completions.
 
@@ -984,7 +1256,14 @@ class TestChatCompletion(ChatCompletionTestBase):
             execution_settings_kwargs,
             inputs,
             False,
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         )
 
     @override
@@ -1032,7 +1311,14 @@ class TestChatCompletion(ChatCompletionTestBase):
         history = ChatHistory()
         for message in inputs:
             history.add_message(message)
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         cmc = await retry(
             partial(
                 execute_invoke,
@@ -1044,8 +1330,16 @@ class TestChatCompletion(ChatCompletionTestBase):
             retries=5,
         )
         history.add_message(cmc)
+<<<<<<< Updated upstream
 =======
 >>>>>>> upstream/main
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
             cmc = await retry(
                 partial(
@@ -1060,6 +1354,10 @@ class TestChatCompletion(ChatCompletionTestBase):
             )
             history.add_message(cmc)
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
 async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stream: bool) -> "ChatMessageContent":
 =======
@@ -1068,6 +1366,15 @@ async def execute_invoke(
     kernel: Kernel, history: ChatHistory, output: str, stream: bool
 ) -> "ChatMessageContent":
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+=======
+=======
+async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stream: bool) -> "ChatMessageContent":
+async def execute_invoke(
+    kernel: Kernel, history: ChatHistory, output: str, stream: bool
+) -> "ChatMessageContent":
+>>>>>>> main
+>>>>>>> Stashed changes
     if stream:
         invocation = kernel.invoke_stream(
             function_name="chat", plugin_name="chat", chat_history=history
@@ -1094,11 +1401,23 @@ async def execute_invoke(
                 assert item.arguments
                 assert kernel.get_function_from_fully_qualified_function_name(item.name)
         return response
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 <<<<<<< main
     with pytest.raises(AssertionError, match=f"Unexpected output: response: {invocation}, type: {type(invocation)}"):
         raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")
         self.evaluate(history.messages, inputs=inputs)
 =======
+<<<<<<< Updated upstream
+=======
+=======
+    with pytest.raises(AssertionError, match=f"Unexpected output: response: {invocation}, type: {type(invocation)}"):
+        raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")
+        self.evaluate(history.messages, inputs=inputs)
+>>>>>>> main
+>>>>>>> Stashed changes
     with pytest.raises(
         AssertionError,
         match=f"Unexpected output: response: {invocation}, type: {type(invocation)}",
@@ -1106,7 +1425,17 @@ async def execute_invoke(
         raise AssertionError(
             f"Unexpected output: response: {invocation}, type: {type(invocation)}"
         )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
         self.evaluate(history.messages, inputs=inputs)
 >>>>>>> upstream/main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+=======
+=======
+        self.evaluate(history.messages, inputs=inputs)
+>>>>>>> main
+>>>>>>> Stashed changes

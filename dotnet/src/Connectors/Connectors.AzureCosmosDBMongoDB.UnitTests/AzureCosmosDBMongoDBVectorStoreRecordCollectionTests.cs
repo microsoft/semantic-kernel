@@ -107,7 +107,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Arrange
         const string CollectionName = "collection";
 
+<<<<<<< Updated upstream
         List<BsonDocument> indexes = indexExists ? [new BsonDocument { ["name"] = "DescriptionEmbedding_" }] : [];
+=======
+<<<<<<< HEAD
+        List<BsonDocument> indexes = indexExists ? [new BsonDocument { ["name"] = "DescriptionEmbedding_" }] : [];
+=======
+<<<<<<< HEAD
+        List<BsonDocument> indexes = indexExists ? [new BsonDocument { ["name"] = "DescriptionEmbedding_" }, new BsonDocument { ["name"] = "HotelName_" }] : [];
+=======
+        List<BsonDocument> indexes = indexExists ? [new BsonDocument { ["name"] = "DescriptionEmbedding_" }] : [];
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var mockIndexCursor = new Mock<IAsyncCursor<BsonDocument>>();
         mockIndexCursor
@@ -144,7 +156,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             It.Is<BsonDocumentCommand<BsonDocument>>(command =>
                 command.Document["createIndexes"] == CollectionName &&
                 command.Document["indexes"].GetType() == typeof(BsonArray) &&
+<<<<<<< Updated upstream
                 ((BsonArray)command.Document["indexes"]).Count == 1),
+=======
+<<<<<<< HEAD
+                ((BsonArray)command.Document["indexes"]).Count == 1),
+=======
+<<<<<<< HEAD
+                ((BsonArray)command.Document["indexes"]).Count == 2),
+=======
+                ((BsonArray)command.Document["indexes"]).Count == 1),
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
             It.IsAny<ReadPreference>(),
             It.IsAny<CancellationToken>()), Times.Exactly(actualIndexCreations));
     }
@@ -422,7 +446,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             }
         };
 
+<<<<<<< Updated upstream
         await this.TestUpsertWithModelAsync<TestModel>(
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<TestModel>(
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<TestModel>(
+=======
+        await this.TestUpsertWithModeAsync<TestModel>(
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
             dataModel: new TestModel { Id = "key", HotelName = "Test Name" },
             expectedPropertyName: "HotelName",
             definition: definition);
@@ -431,9 +467,27 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     [Fact]
     public async Task UpsertWithVectorStoreModelWorksCorrectlyAsync()
     {
+<<<<<<< Updated upstream
         await this.TestUpsertWithModelAsync<VectorStoreTestModel>(
             dataModel: new VectorStoreTestModel { Id = "key", HotelName = "Test Name" },
             expectedPropertyName: "HotelName");
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<VectorStoreTestModel>(
+            dataModel: new VectorStoreTestModel { Id = "key", HotelName = "Test Name" },
+            expectedPropertyName: "HotelName");
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<VectorStoreTestModel>(
+            dataModel: new VectorStoreTestModel { Id = "key", HotelName = "Test Name" },
+            expectedPropertyName: "HotelName");
+=======
+        await this.TestUpsertWithModeAsync<VectorStoreTestModel>(
+            dataModel: new VectorStoreTestModel { Id = "key", HotelName = "Test Name" },
+            expectedPropertyName: "hotel_name");
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -448,7 +502,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             }
         };
 
+<<<<<<< Updated upstream
         await this.TestUpsertWithModelAsync<BsonTestModel>(
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<BsonTestModel>(
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<BsonTestModel>(
+=======
+        await this.TestUpsertWithModeAsync<BsonTestModel>(
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
             dataModel: new BsonTestModel { Id = "key", HotelName = "Test Name" },
             expectedPropertyName: "hotel_name",
             definition: definition);
@@ -457,7 +523,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     [Fact]
     public async Task UpsertWithBsonVectorStoreModelWorksCorrectlyAsync()
     {
+<<<<<<< Updated upstream
         await this.TestUpsertWithModelAsync<BsonVectorStoreTestModel>(
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<BsonVectorStoreTestModel>(
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<BsonVectorStoreTestModel>(
+=======
+        await this.TestUpsertWithModeAsync<BsonVectorStoreTestModel>(
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
             dataModel: new BsonVectorStoreTestModel { Id = "key", HotelName = "Test Name" },
             expectedPropertyName: "hotel_name");
     }
@@ -465,7 +543,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     [Fact]
     public async Task UpsertWithBsonVectorStoreWithNameModelWorksCorrectlyAsync()
     {
+<<<<<<< Updated upstream
         await this.TestUpsertWithModelAsync<BsonVectorStoreWithNameTestModel>(
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<BsonVectorStoreWithNameTestModel>(
+=======
+<<<<<<< HEAD
+        await this.TestUpsertWithModelAsync<BsonVectorStoreWithNameTestModel>(
+=======
+        await this.TestUpsertWithModeAsync<BsonVectorStoreWithNameTestModel>(
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
             dataModel: new BsonVectorStoreWithNameTestModel { Id = "key", HotelName = "Test Name" },
             expectedPropertyName: "bson_hotel_name");
     }
@@ -546,6 +636,141 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         Assert.Equal("Name from mapper", result.HotelName);
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    [Theory]
+    [MemberData(nameof(VectorizedSearchVectorTypeData))]
+    public async Task VectorizedSearchThrowsExceptionWithInvalidVectorTypeAsync(object vector, bool exceptionExpected)
+    {
+        // Arrange
+        this.MockCollectionForSearch();
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+            this._mockMongoDatabase.Object,
+            "collection");
+
+        // Act & Assert
+        if (exceptionExpected)
+        {
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.VectorizedSearchAsync(vector).ToListAsync());
+        }
+        else
+        {
+            var result = await sut.VectorizedSearchAsync(vector).FirstOrDefaultAsync();
+
+            Assert.NotNull(result);
+        }
+    }
+
+    [Theory]
+    [InlineData(null, "TestEmbedding1", 1, 1)]
+    [InlineData("", "TestEmbedding1", 2, 2)]
+    [InlineData("TestEmbedding1", "TestEmbedding1", 3, 3)]
+    [InlineData("TestEmbedding2", "test_embedding_2", 4, 4)]
+    public async Task VectorizedSearchUsesValidQueryAsync(
+        string? vectorPropertyName,
+        string expectedVectorPropertyName,
+        int actualTop,
+        int expectedTop)
+    {
+        // Arrange
+        var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
+
+        var expectedSearch = new BsonDocument
+        {
+            { "$search",
+                new BsonDocument
+                {
+                    { "cosmosSearch",
+                        new BsonDocument
+                        {
+                            { "vector", BsonArray.Create(vector.ToArray()) },
+                            { "path", expectedVectorPropertyName },
+                            { "k", expectedTop },
+                        }
+                    },
+                    { "returnStoredSource", true }
+                }
+            }
+        };
+
+        var expectedProjection = new BsonDocument
+        {
+            { "$project",
+                new BsonDocument
+                {
+                    { "similarityScore", new BsonDocument { { "$meta", "searchScore" } } },
+                    { "document", "$$ROOT" }
+                }
+            }
+        };
+
+        this.MockCollectionForSearch();
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<VectorSearchModel>(
+            this._mockMongoDatabase.Object,
+            "collection");
+
+        // Act
+        var result = await sut.VectorizedSearchAsync(vector, new()
+        {
+            VectorPropertyName = vectorPropertyName,
+            Top = actualTop,
+        }).FirstOrDefaultAsync();
+
+        // Assert
+        Assert.NotNull(result);
+
+        this._mockMongoCollection.Verify(l => l.AggregateAsync(
+            It.Is<PipelineDefinition<BsonDocument, BsonDocument>>(pipeline =>
+                this.ComparePipeline(pipeline, expectedSearch, expectedProjection)),
+            It.IsAny<AggregateOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task VectorizedSearchThrowsExceptionWithNonExistentVectorPropertyNameAsync()
+    {
+        // Arrange
+        this.MockCollectionForSearch();
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+            this._mockMongoDatabase.Object,
+            "collection");
+
+        var options = new VectorSearchOptions { VectorPropertyName = "non-existent-property" };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), options).FirstOrDefaultAsync());
+    }
+
+    [Fact]
+    public async Task VectorizedSearchReturnsRecordWithScoreAsync()
+    {
+        // Arrange
+        this.MockCollectionForSearch();
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+            this._mockMongoDatabase.Object,
+            "collection");
+
+        // Act
+        var result = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f])).FirstOrDefaultAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("key", result.Record.HotelId);
+        Assert.Equal("Test Name", result.Record.HotelName);
+        Assert.Equal(0.99f, result.Score);
+    }
+
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()
     {
         { ["collection-2"], "collection-2", true },
@@ -558,9 +783,73 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         { [], 1 }
     };
 
+<<<<<<< Updated upstream
     #region private
 
     private async Task TestUpsertWithModelAsync<TDataModel>(
+=======
+<<<<<<< HEAD
+    #region private
+
+    private async Task TestUpsertWithModelAsync<TDataModel>(
+=======
+<<<<<<< HEAD
+    public static TheoryData<object, bool> VectorizedSearchVectorTypeData => new()
+    {
+        { new ReadOnlyMemory<float>([1f, 2f, 3f]), false },
+        { new ReadOnlyMemory<double>([1f, 2f, 3f]), false },
+        { new ReadOnlyMemory<float>?(new([1f, 2f, 3f])), false },
+        { new ReadOnlyMemory<double>?(new([1f, 2f, 3f])), false },
+        { new List<float>([1f, 2f, 3f]), true },
+    };
+
+    #region private
+
+    private bool ComparePipeline(
+        PipelineDefinition<BsonDocument, BsonDocument> actualPipeline,
+        BsonDocument expectedSearch,
+        BsonDocument expectedProjection)
+    {
+        var serializerRegistry = BsonSerializer.SerializerRegistry;
+        var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
+
+        var documents = actualPipeline.Render(documentSerializer, serializerRegistry).Documents;
+
+        return
+            documents[0].ToJson() == expectedSearch.ToJson() &&
+            documents[1].ToJson() == expectedProjection.ToJson();
+    }
+
+    private void MockCollectionForSearch()
+    {
+        var document = new BsonDocument { ["_id"] = "key", ["HotelName"] = "Test Name" };
+        var searchResult = new BsonDocument { ["document"] = document, ["similarityScore"] = 0.99f };
+
+        var mockCursor = new Mock<IAsyncCursor<BsonDocument>>();
+        mockCursor
+            .Setup(l => l.MoveNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        mockCursor
+            .Setup(l => l.Current)
+            .Returns([searchResult]);
+
+        this._mockMongoCollection
+            .Setup(l => l.AggregateAsync(
+                It.IsAny<PipelineDefinition<BsonDocument, BsonDocument>>(),
+                It.IsAny<AggregateOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockCursor.Object);
+    }
+
+    private async Task TestUpsertWithModelAsync<TDataModel>(
+=======
+    #region private
+
+    private async Task TestUpsertWithModeAsync<TDataModel>(
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
         TDataModel dataModel,
         string expectedPropertyName,
         VectorStoreRecordDefinition? definition = null)
@@ -645,6 +934,32 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         [VectorStoreRecordData(StoragePropertyName = "storage_hotel_name")]
         public string? HotelName { get; set; }
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+    private sealed class VectorSearchModel
+    {
+        [BsonId]
+        [VectorStoreRecordKey]
+        public string? Id { get; set; }
+
+        [VectorStoreRecordData]
+        public string? HotelName { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance, StoragePropertyName = "test_embedding_1")]
+        public ReadOnlyMemory<float> TestEmbedding1 { get; set; }
+
+        [BsonElement("test_embedding_2")]
+        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
+        public ReadOnlyMemory<float> TestEmbedding2 { get; set; }
+    }
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
 #pragma warning restore CA1812
 
     #endregion

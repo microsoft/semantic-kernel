@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -33,7 +41,15 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
+<<<<<<< Updated upstream
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+=======
+<<<<<<< HEAD
+    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+=======
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
     private readonly IVectorStoreRecordMapper<TRecord, Sdk.Vector> _mapper;
 
     private Sdk.Index<GrpcTransport>? _index;
@@ -56,11 +72,33 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this._pineconeClient = pineconeClient;
         this.CollectionName = collectionName;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 
         if (this._options.VectorCustomMapper is null)
         {
             this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition);
+<<<<<<< Updated upstream
+=======
+=======
+        this._propertyReader = new VectorStoreRecordPropertyReader(
+            typeof(TRecord),
+            this._options.VectorStoreRecordDefinition,
+            new()
+            {
+                RequiresAtLeastOneVector = true,
+                SupportsMultipleKeys = false,
+                SupportsMultipleVectors = false,
+            });
+
+        if (this._options.VectorCustomMapper is null)
+        {
+            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._propertyReader);
+>>>>>>> main
+>>>>>>> Stashed changes
         }
         else
         {
@@ -87,7 +125,15 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
+<<<<<<< Updated upstream
         var vectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
+=======
+<<<<<<< HEAD
+        var vectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
+=======
+        var vectorProperty = this._propertyReader.VectorProperty!;
+>>>>>>> main
+>>>>>>> Stashed changes
         var (dimension, metric) = PineconeVectorStoreCollectionCreateMapping.MapServerlessIndex(vectorProperty);
 
         await this.RunOperationAsync(
@@ -227,6 +273,18 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
     {
         try

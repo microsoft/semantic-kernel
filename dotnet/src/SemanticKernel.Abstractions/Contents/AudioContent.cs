@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -28,6 +36,13 @@ public class AudioContent : BinaryContent
 
     /// <summary>
     /// The audio data.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+>>>>>>> main
+>>>>>>> Stashed changes
     /// </summary>
     [JsonConstructor]
     public AudioContent()

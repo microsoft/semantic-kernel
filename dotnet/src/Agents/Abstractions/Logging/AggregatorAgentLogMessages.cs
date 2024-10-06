@@ -42,4 +42,34 @@ internal static partial class AggregatorAgentLogMessages
         string channelType,
         AggregatorMode channelMode,
         Type agentChatType);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    /// <summary>
+    /// Logs <see cref="AggregatorAgent"/> restoring serialized channel (started).
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Debug,
+        Message = "[{MethodName}] Restoring assistant channel for {ChannelType}.")]
+    public static partial void LogOpenAIAssistantAgentRestoringChannel(
+        this ILogger logger,
+        string methodName,
+        string channelType);
+
+    /// <summary>
+    /// Logs <see cref="AggregatorAgent"/> restored serialized channel (complete).
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Information,
+        Message = "[{MethodName}] Restored assistant channel for {ChannelType}.")]
+    public static partial void LogOpenAIAssistantAgentRestoredChannel(
+        this ILogger logger,
+        string methodName,
+        string channelType);
+>>>>>>> main
+>>>>>>> Stashed changes
 }

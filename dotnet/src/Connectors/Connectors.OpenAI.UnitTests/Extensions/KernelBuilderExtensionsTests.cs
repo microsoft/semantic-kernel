@@ -1,6 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -40,7 +47,15 @@ public class KernelBuilderExtensionsTests
         var sut = Kernel.CreateBuilder();
 
         // Act
+<<<<<<< Updated upstream
         var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient("key"))
+=======
+<<<<<<< HEAD
+        var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient("key"))
+=======
+        var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient(new ApiKeyCredential("key")))
+>>>>>>> main
+>>>>>>> Stashed changes
             .Build()
             .GetRequiredService<ITextEmbeddingGenerationService>();
 
@@ -100,7 +115,15 @@ public class KernelBuilderExtensionsTests
         var sut = Kernel.CreateBuilder();
 
         // Act
+<<<<<<< Updated upstream
         var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
+=======
+<<<<<<< HEAD
+        var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
+=======
+        var service = sut.AddOpenAIAudioToText("model", new OpenAIClient(new ApiKeyCredential("key")))
+>>>>>>> main
+>>>>>>> Stashed changes
             .Build()
             .GetRequiredService<IAudioToTextService>();
 
@@ -129,7 +152,15 @@ public class KernelBuilderExtensionsTests
     public void KernelBuilderAddOpenAIChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
+<<<<<<< Updated upstream
         var client = new OpenAIClient("key");
+=======
+<<<<<<< HEAD
+        var client = new OpenAIClient("key");
+=======
+        var client = new OpenAIClient(new ApiKeyCredential("key"));
+>>>>>>> main
+>>>>>>> Stashed changes
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);

@@ -1,3 +1,10 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 # Copyright (c) Microsoft. All rights reserved.
 
 from pytest import mark, raises
@@ -18,6 +25,33 @@ from semantic_kernel.functions.kernel_function_from_method import (
 )
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+from pytest import mark, raises
+
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.template_engine.blocks.block_errors import (
+    CodeBlockRenderError,
+    CodeBlockSyntaxError,
+    CodeBlockTokenError,
+    FunctionIdBlockSyntaxError,
+    NamedArgBlockSyntaxError,
+    ValBlockSyntaxError,
+    VarBlockSyntaxError,
+)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -35,19 +69,67 @@ def test_init():
     assert target.tokens[1] == ValBlock(content="'value'")
     assert target.tokens[2] == NamedArgBlock(content="arg1=$arg1")
     assert target.type == BlockTypes.CODE
+<<<<<<< Updated upstream
 
 
 class TestCodeBlockRendering:
     @mark.asyncio
     async def test_it_throws_if_a_plugins_are_empty(self, kernel: Kernel):
+=======
+<<<<<<< main
+
+=======
+<<<<<<< main
+
+
+class TestCodeBlockRendering:
+    @mark.asyncio
+    async def test_it_throws_if_a_plugins_are_empty(self, kernel: Kernel):
+=======
+
+
+class TestCodeBlockRendering:
+    def setup_method(self):
+        self.kernel = Kernel()
+
+    @mark.asyncio
+    async def test_it_throws_if_a_plugins_are_empty(self):
         target = CodeBlock(
             content="functionName",
         )
         assert target.tokens[0].type == BlockTypes.FUNCTION_ID
+        with raises(CodeBlockRenderError, match="Plugin collection not set in kernel"):
+            await target.render_code(self.kernel, KernelArguments())
+>>>>>>> origin/main
+
+class TestCodeBlockRendering:
+    @mark.asyncio
+<<<<<<< main
+    async def test_it_throws_if_a_plugins_are_empty(self, kernel: Kernel):
+=======
+    async def test_it_throws_if_a_function_doesnt_exist(self):
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+        target = CodeBlock(
+            content="functionName",
+        )
+        assert target.tokens[0].type == BlockTypes.FUNCTION_ID
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         with raises(
             CodeBlockRenderException, match="Function `functionName` not found"
         ):
             await target.render_code(kernel, KernelArguments())
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
     @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self, kernel: Kernel):
@@ -89,10 +171,104 @@ class TestCodeBlockRendering:
             content="$var",
         )
         result = await code_block.render_code(kernel, KernelArguments(var="foo"))
+<<<<<<< Updated upstream
+=======
+=======
+
+    @mark.asyncio
+    async def test_it_throws_if_a_function_doesnt_exist(self, kernel: Kernel):
+=======
+        self.kernel.plugins = KernelPluginCollection()
+        dkp = KernelPlugin(name="test", functions=[])
+        self.kernel.plugins.add(dkp)
+        with raises(CodeBlockRenderError, match="Function `functionName` not found"):
+            await target.render_code(self.kernel, KernelArguments())
+
+    @mark.asyncio
+    async def test_it_throws_if_a_function_call_throws(self):
+        def invoke():
+            raise Exception("error")
+
+        function = KernelFunction(
+            function_name="funcName",
+            plugin_name="pluginName",
+            description="",
+            function=invoke,
+            parameters=[],
+            return_parameter=None,
+            is_prompt=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        plugins = KernelPluginCollection()
+        plugins.add(dkp)
+        kernel = Kernel()
+        kernel.plugins = plugins
+
+>>>>>>> ms/small_fixes
+        target = CodeBlock(
+            content="functionName",
+        )
+        assert target.tokens[0].type == BlockTypes.FUNCTION_ID
+        kernel.add_plugin(KernelPlugin(name="test", functions=[]))
+        with raises(
+            CodeBlockRenderException, match="Function `functionName` not found"
+        ):
+            await target.render_code(kernel, KernelArguments())
+
+<<<<<<< main
+    @mark.asyncio
+    async def test_it_throws_if_a_function_call_throws(self, kernel: Kernel):
+        @kernel_function(name="funcName")
+        def invoke():
+            raise Exception("function exception")
+
+        function = KernelFunctionFromMethod(
+            method=invoke,
+            plugin_name="pluginName",
+        )
+
+        kernel.add_function(plugin_name="test", function=function)
+
+        target = CodeBlock(
+            content="test.funcName",
+        )
+
+        with raises(CodeBlockRenderException, match="test.funcName"):
+            await target.render_code(kernel, KernelArguments())
+
+    @mark.asyncio
+    async def test_it_renders_code_block_consisting_of_just_a_var_block1(
+        self, kernel: Kernel
+    ):
+        code_block = CodeBlock(
+            content="$var",
+        )
+        result = await code_block.render_code(kernel, KernelArguments(var="foo"))
+=======
+        with raises(CodeBlockRenderError):
+            await target.render_code(kernel, KernelArguments())
+
+    @mark.asyncio
+    async def test_it_renders_code_block_consisting_of_just_a_var_block1(self):
+        code_block = CodeBlock(
+            content="$var",
+        )
+        result = await code_block.render_code(self.kernel, KernelArguments(var="foo"))
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         assert result == "foo"
 
     @mark.asyncio
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     async def test_it_renders_code_block_consisting_of_just_a_val_block1(
         self, kernel: Kernel
     ):
@@ -100,11 +276,36 @@ class TestCodeBlockRendering:
             content="'ciao'",
         )
         result = await code_block.render_code(kernel, KernelArguments())
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+    async def test_it_renders_code_block_consisting_of_just_a_val_block1(self):
+        code_block = CodeBlock(
+            content="'ciao'",
+        )
+        result = await code_block.render_code(self.kernel, KernelArguments())
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         assert result == "ciao"
 
     @mark.asyncio
+<<<<<<< Updated upstream
     async def test_it_invokes_function_cloning_all_variables(self, kernel: Kernel):
+=======
+<<<<<<< main
+    async def test_it_invokes_function_cloning_all_variables(self, kernel: Kernel):
+=======
+<<<<<<< main
+    async def test_it_invokes_function_cloning_all_variables(self, kernel: Kernel):
+=======
+    async def test_it_invokes_function_cloning_all_variables(self):
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         # Set up initial context variables
         arguments = KernelArguments(input="zero", var1="uno", var2="due")
 
@@ -116,7 +317,18 @@ class TestCodeBlockRendering:
 
         # Define the function to be invoked, which modifies the canary
         # and context variables
+<<<<<<< Updated upstream
         @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         def invoke(arguments: KernelArguments):
             nonlocal canary
             canary["input"] = arguments["input"]
@@ -128,12 +340,43 @@ class TestCodeBlockRendering:
             arguments["var2"] = "overridden"
 
         # Create an KernelFunction with the invoke function as its delegate
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
         function = KernelFunctionFromMethod(
             method=invoke,
             plugin_name="pluginName",
         )
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+        function = KernelFunctionFromMethod(
+            method=invoke,
+            plugin_name="pluginName",
+        )
+
+        kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+<<<<<<< Updated upstream
+=======
+=======
+        function = KernelFunction(
+            function_name="funcName",
+            plugin_name="pluginName",
+            description="",
+            function=invoke,
+            parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
+            return_parameter=None,
+            is_prompt=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         # Create a CodeBlock with the FunctionIdBlock and render it with the context
         code_block = CodeBlock(
@@ -171,19 +414,64 @@ class TestCodeBlockRendering:
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
+<<<<<<< Updated upstream
         @kernel_function(name="funcName")
         def invoke(arguments: "KernelArguments"):
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+        def invoke(arguments: "KernelArguments"):
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+        def invoke(arguments: "KernelArguments"):
+=======
+        def invoke(arguments):
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             nonlocal canary
             canary = arguments["varName"]
             return arguments["varName"]
 
         # Create an KernelFunction with the invoke function as its delegate
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
         function = KernelFunctionFromMethod(
             method=invoke,
             plugin_name="pluginName",
         )
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+<<<<<<< Updated upstream
+=======
+=======
+<<<<<<< main
+        function = KernelFunctionFromMethod(
+            method=invoke,
+            plugin_name="pluginName",
+        )
+
+        kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+=======
+        function = KernelFunction(
+            function=invoke,
+            plugin_name="pluginName",
+            function_name="funcName",
+            description="",
+            parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
+            return_parameter=None,
+            is_prompt=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         # Create a CodeBlock with the FunctionIdBlock and VarBlock,
         # and render it with the context
@@ -211,19 +499,61 @@ class TestCodeBlockRendering:
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
+<<<<<<< Updated upstream
         @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         def invoke(arguments):
             nonlocal canary
             canary = arguments["input"]
             return arguments["input"]
 
         # Create an KernelFunction with the invoke function as its delegate
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
         function = KernelFunctionFromMethod(
             method=invoke,
             plugin_name="pluginName",
         )
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+<<<<<<< Updated upstream
+=======
+=======
+<<<<<<< main
+        function = KernelFunctionFromMethod(
+            method=invoke,
+            plugin_name="pluginName",
+        )
+
+        kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+=======
+        function = KernelFunction(
+            function=invoke,
+            plugin_name="pluginName",
+            function_name="funcName",
+            description="",
+            parameters=[KernelParameterMetadata(name="arguments", description="", default_value=None, required=True)],
+            return_parameter=None,
+            is_prompt=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
@@ -239,19 +569,47 @@ class TestCodeBlockRendering:
         assert canary == VALUE
 
     @mark.asyncio
+<<<<<<< Updated upstream
     async def test_it_invokes_function_with_multiple_arguments(self, kernel: Kernel):
+=======
+<<<<<<< main
+    async def test_it_invokes_function_with_multiple_arguments(self, kernel: Kernel):
+=======
+<<<<<<< main
+    async def test_it_invokes_function_with_multiple_arguments(self, kernel: Kernel):
+=======
+    async def test_it_invokes_function_with_multiple_arguments(self):
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         # Define a value to be used in the test
         VALUE = "value"
 
         code_block = CodeBlock(
             content=" ",
             tokens=[
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
                 FunctionIdBlock(
                     content="test.funcName",
                     plugin_name="test",
                     function_name="funcName",
                     validated=True,
                 ),
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName", validated=True),
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
                 ValBlock(content=f'"{VALUE}"'),
                 NamedArgBlock(content="arg1=$arg1"),
                 NamedArgBlock(content='arg2="arg2"'),
@@ -261,19 +619,62 @@ class TestCodeBlockRendering:
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
+<<<<<<< Updated upstream
         @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         def invoke(input, arg1, arg2):
             nonlocal canary
             canary = f"{input} {arg1} {arg2}"
             return input
 
         # Create an KernelFunction with the invoke function as its delegate
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         function = KernelFunctionFromMethod(
             method=invoke,
             plugin_name="pluginName",
         )
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+        function = KernelFunction(
+            function=invoke,
+            plugin_name="pluginName",
+            function_name="funcName",
+            description="",
+            parameters=[
+                KernelParameterMetadata(name="input", description="", default_value=None, required=True),
+                KernelParameterMetadata(name="arg1", description="", default_value=None, required=True),
+                KernelParameterMetadata(name="arg2", description="", default_value=None, required=True),
+            ],
+            return_parameter=None,
+            is_prompt=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
@@ -285,6 +686,13 @@ class TestCodeBlockRendering:
         assert canary == f"{VALUE} arg1 arg2"
 
     @mark.asyncio
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     async def test_it_invokes_function_with_only_named_arguments(self, kernel: Kernel):
         code_block = CodeBlock(
             content=" ",
@@ -294,6 +702,19 @@ class TestCodeBlockRendering:
                     plugin_name="test",
                     function_name="funcName",
                 ),
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+    async def test_it_invokes_function_with_only_named_arguments(self):
+        code_block = CodeBlock(
+            content=" ",
+            tokens=[
+                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName"),
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
                 NamedArgBlock(content="arg1=$arg1"),
                 NamedArgBlock(content='arg2="arg2"'),
             ],
@@ -302,19 +723,61 @@ class TestCodeBlockRendering:
         canary = ""
 
         # Define the function to be invoked, which modifies the canary variable
+<<<<<<< Updated upstream
         @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         def invoke(arg1, arg2):
             nonlocal canary
             canary = f"{arg1} {arg2}"
             return arg1
 
         # Create an KernelFunction with the invoke function as its delegate
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         function = KernelFunctionFromMethod(
             method=invoke,
             plugin_name="pluginName",
         )
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+        function = KernelFunction(
+            function=invoke,
+            plugin_name="pluginName",
+            function_name="funcName",
+            description="",
+            parameters=[
+                KernelParameterMetadata(name="arg1", description="", default_value=None, required=True),
+                KernelParameterMetadata(name="arg2", description="", default_value=None, required=True),
+            ],
+            return_parameter=None,
+            is_prompt=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
@@ -326,6 +789,13 @@ class TestCodeBlockRendering:
         assert canary == "arg1 arg2"
 
     @mark.asyncio
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     async def test_it_fails_on_function_without_args(self, kernel: Kernel):
         code_block = CodeBlock(
             content=" ",
@@ -335,27 +805,91 @@ class TestCodeBlockRendering:
                     plugin_name="test",
                     function_name="funcName",
                 ),
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+    async def test_it_fails_on_function_without_args(self):
+        code_block = CodeBlock(
+            content=" ",
+            tokens=[
+                FunctionIdBlock(content="test.funcName", plugin_name="test", function_name="funcName"),
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
                 NamedArgBlock(content="arg1=$arg1"),
                 NamedArgBlock(content='arg2="arg2"'),
             ],
         )
 
+<<<<<<< Updated upstream
         @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+<<<<<<< main
+        @kernel_function(name="funcName")
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         def invoke():
             return "function without args"
 
         # Create an KernelFunction with the invoke function as its delegate
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         function = KernelFunctionFromMethod(
             method=invoke,
             plugin_name="test",
         )
 
         kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+        function = KernelFunction(
+            function=invoke,
+            plugin_name="test",
+            function_name="funcName",
+            description="",
+            parameters=[],
+            return_parameter=None,
+            is_prompt=False,
+        )
+
+        dkp = KernelPlugin(name="test", functions=[function])
+        kernel = Kernel()
+        kernel.plugins.add(dkp)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
         # Create a CodeBlock with the FunctionIdBlock and ValBlock,
         # and render it with the context
         with raises(
+<<<<<<< Updated upstream
             CodeBlockRenderException,
+=======
+<<<<<<< main
+            CodeBlockRenderException,
+=======
+<<<<<<< main
+            CodeBlockRenderException,
+=======
+            CodeBlockRenderError,
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             match="Function test.funcName does not take any arguments \
 but it is being called in the template with 2 arguments.",
         ):
@@ -477,9 +1011,25 @@ def test_block_validation(token0, token1, token2):
         "invalid_named_arg_val",
     ],
 )
+<<<<<<< Updated upstream
 def test_positional_validation(
     token0, token0valid, token1, token1valid, token2, token2valid
 ):
+=======
+<<<<<<< main
+def test_positional_validation(
+    token0, token0valid, token1, token1valid, token2, token2valid
+):
+=======
+<<<<<<< main
+def test_positional_validation(
+    token0, token0valid, token1, token1valid, token2, token2valid
+):
+=======
+def test_positional_validation(token0, token0valid, token1, token1valid, token2, token2valid):
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     if not token1 and not token2valid:
         mark.skipif(f"{token0} {token1} {token2}", reason="Not applicable")
         return

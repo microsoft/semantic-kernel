@@ -4,7 +4,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+<<<<<<< Updated upstream
 using System.Text.Json.Nodes;
+=======
+<<<<<<< HEAD
+using System.Text.Json.Nodes;
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
 
@@ -46,13 +53,30 @@ internal static class QdrantVectorStoreRecordFieldMapping
     /// Convert the given <paramref name="payloadValue"/> to the correct native type based on its properties.
     /// </summary>
     /// <param name="payloadValue">The value to convert to a native type.</param>
+<<<<<<< Updated upstream
     /// <returns>The converted native value.</returns>
     /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
     public static JsonNode? ConvertFromGrpcFieldValueToJsonNode(Value payloadValue)
+=======
+<<<<<<< HEAD
+    /// <returns>The converted native value.</returns>
+    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
+    public static JsonNode? ConvertFromGrpcFieldValueToJsonNode(Value payloadValue)
+=======
+    /// <param name="targetType">The target type to convert the value to.</param>
+    /// <returns>The converted native value.</returns>
+    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
+    public static object? ConvertFromGrpcFieldValueToNativeType(Value payloadValue, Type targetType)
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         return payloadValue.KindCase switch
         {
             Value.KindOneofCase.NullValue => null,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
             Value.KindOneofCase.IntegerValue => JsonValue.Create(payloadValue.IntegerValue),
             Value.KindOneofCase.StringValue => JsonValue.Create(payloadValue.StringValue),
             Value.KindOneofCase.DoubleValue => JsonValue.Create(payloadValue.DoubleValue),
@@ -80,6 +104,25 @@ internal static class QdrantVectorStoreRecordFieldMapping
             Value.KindOneofCase.BoolValue => payloadValue.BoolValue,
             Value.KindOneofCase.ListValue => payloadValue.ListValue.Values.Select(x => ConvertFromGrpcFieldValue(x)).ToArray(),
             Value.KindOneofCase.StructValue => payloadValue.StructValue.Fields.ToDictionary(x => x.Key, x => ConvertFromGrpcFieldValue(x.Value)),
+<<<<<<< Updated upstream
+=======
+=======
+            Value.KindOneofCase.IntegerValue =>
+                targetType == typeof(int) || targetType == typeof(int?) ?
+                (object)(int)payloadValue.IntegerValue :
+                (object)payloadValue.IntegerValue,
+            Value.KindOneofCase.StringValue => payloadValue.StringValue,
+            Value.KindOneofCase.DoubleValue =>
+                targetType == typeof(float) || targetType == typeof(float?) ?
+                (object)(float)payloadValue.DoubleValue :
+                (object)payloadValue.DoubleValue,
+            Value.KindOneofCase.BoolValue => payloadValue.BoolValue,
+            Value.KindOneofCase.ListValue => VectorStoreRecordMapping.CreateEnumerable(
+                payloadValue.ListValue.Values.Select(
+                    x => ConvertFromGrpcFieldValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))),
+                targetType),
+>>>>>>> main
+>>>>>>> Stashed changes
             _ => throw new VectorStoreRecordMappingException($"Unsupported grpc value kind {payloadValue.KindCase}."),
         };
     }

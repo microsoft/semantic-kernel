@@ -2,7 +2,18 @@
 
 import datetime
 
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import FunctionExecutionException
+=======
+<<<<<<< HEAD
+from semantic_kernel.exceptions import FunctionExecutionException
+=======
+<<<<<<< main
+from semantic_kernel.exceptions import FunctionExecutionException
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 

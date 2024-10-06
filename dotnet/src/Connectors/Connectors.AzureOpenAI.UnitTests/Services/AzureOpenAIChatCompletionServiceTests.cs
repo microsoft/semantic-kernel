@@ -1,6 +1,20 @@
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+=======
+<<<<<<< HEAD
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+=======
+
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +35,14 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using OpenAI.Chat;
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
+>>>>>>> main
+>>>>>>> Stashed changes
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
 /// <summary>
@@ -82,7 +104,15 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
+<<<<<<< Updated upstream
         var client = new AzureOpenAIClient(new Uri("http://host"), "key");
+=======
+<<<<<<< HEAD
+        var client = new AzureOpenAIClient(new Uri("http://host"), "key");
+=======
+        var client = new AzureOpenAIClient(new Uri("http://host"), new ApiKeyCredential("apikey"));
+>>>>>>> main
+>>>>>>> Stashed changes
         var service = includeLoggerFactory ?
             new AzureOpenAIChatCompletionService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
             new AzureOpenAIChatCompletionService("deployment", client, "model-id");
@@ -103,6 +133,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act
         var result = await service.GetTextContentsAsync("Prompt");
@@ -114,9 +154,21 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var usage = result[0].Metadata?["Usage"] as ChatTokenUsage;
 
         Assert.NotNull(usage);
+<<<<<<< Updated upstream
         Assert.Equal(55, usage.InputTokens);
         Assert.Equal(100, usage.OutputTokens);
         Assert.Equal(155, usage.TotalTokens);
+=======
+<<<<<<< HEAD
+        Assert.Equal(55, usage.InputTokens);
+        Assert.Equal(100, usage.OutputTokens);
+        Assert.Equal(155, usage.TotalTokens);
+=======
+        Assert.Equal(55, usage.InputTokenCount);
+        Assert.Equal(100, usage.OutputTokenCount);
+        Assert.Equal(155, usage.TotalTokenCount);
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -136,12 +188,26 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             StopSequences = ["stop_sequence"],
             Logprobs = true,
             TopLogprobs = 5,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> main
+>>>>>>> Stashed changes
             AzureChatDataSource = new AzureSearchChatDataSource()
             {
                 Endpoint = new Uri("http://test-search-endpoint"),
                 IndexName = "test-index-name",
                 Authentication = DataSourceAuthentication.FromApiKey("api-key"),
             }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> main
+>>>>>>> Stashed changes
         };
 
         var chatHistory = new ChatHistory();
@@ -155,6 +221,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act
         var result = await service.GetChatMessageContentsAsync(chatHistory, settings);
@@ -226,6 +302,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act
         var result = await service.GetChatMessageContentsAsync(new ChatHistory("System message"), settings);
@@ -254,6 +340,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act
         var result = await service.GetChatMessageContentsAsync(new ChatHistory("System message"), settings, kernel);
@@ -265,9 +361,21 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var usage = result[0].Metadata?["Usage"] as ChatTokenUsage;
 
         Assert.NotNull(usage);
+<<<<<<< Updated upstream
         Assert.Equal(55, usage.InputTokens);
         Assert.Equal(100, usage.OutputTokens);
         Assert.Equal(155, usage.TotalTokens);
+=======
+<<<<<<< HEAD
+        Assert.Equal(55, usage.InputTokens);
+        Assert.Equal(100, usage.OutputTokens);
+        Assert.Equal(155, usage.TotalTokens);
+=======
+        Assert.Equal(55, usage.InputTokenCount);
+        Assert.Equal(100, usage.OutputTokenCount);
+        Assert.Equal(155, usage.TotalTokenCount);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Assert.Equal("Stop", result[0].Metadata?["FinishReason"]);
     }
@@ -353,6 +461,24 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         {
             responses.ForEach(r => r.Dispose());
         }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        for (var i = 0; i < ModelResponsesCount; i++)
+        {
+            responses.Add(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_single_function_call_test_response.json")) });
+        }
+
+        this._messageHandlerStub.ResponsesToReturn = responses;
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(new ChatHistory("System message"), settings, kernel);
+
+        // Assert
+        Assert.Equal(DefaultMaximumAutoInvokeAttempts, functionCallCount);
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -417,6 +543,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StreamContent(stream)
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act & Assert
         var enumerator = service.GetStreamingTextContentsAsync("Prompt").GetAsyncEnumerator();
@@ -449,7 +585,15 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         var update = (StreamingChatCompletionUpdate)message.InnerContent;
+<<<<<<< Updated upstream
         var promptResults = update.GetContentFilterResultForPrompt();
+=======
+<<<<<<< HEAD
+        var promptResults = update.GetContentFilterResultForPrompt();
+=======
+        var promptResults = update.GetRequestContentFilterResult();
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Hate.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Sexual.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Violence.Severity);
@@ -471,7 +615,15 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         update = (StreamingChatCompletionUpdate)message.InnerContent;
 
+<<<<<<< Updated upstream
         var filterResults = update.GetContentFilterResultForResponse();
+=======
+<<<<<<< HEAD
+        var filterResults = update.GetContentFilterResultForResponse();
+=======
+        var filterResults = update.GetResponseContentFilterResult();
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.Hate.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.Sexual.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.SelfHarm.Severity);
@@ -482,7 +634,15 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         update = (StreamingChatCompletionUpdate)message.InnerContent;
+<<<<<<< Updated upstream
         filterResults = update.GetContentFilterResultForResponse();
+=======
+<<<<<<< HEAD
+        filterResults = update.GetContentFilterResultForResponse();
+=======
+        filterResults = update.GetResponseContentFilterResult();
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.False(filterResults.ProtectedMaterialCode.Detected);
         Assert.False(filterResults.ProtectedMaterialText.Detected);
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -500,6 +660,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StreamContent(stream)
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act & Assert
         var enumerator = service.GetStreamingChatMessageContentsAsync([]).GetAsyncEnumerator();
@@ -595,7 +765,15 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         var update = (StreamingChatCompletionUpdate)message.InnerContent;
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+<<<<<<< Updated upstream
         var promptResults = update.GetContentFilterResultForPrompt();
+=======
+<<<<<<< HEAD
+        var promptResults = update.GetContentFilterResultForPrompt();
+=======
+        var promptResults = update.GetRequestContentFilterResult();
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Hate.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Sexual.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, promptResults.Violence.Severity);
@@ -626,7 +804,15 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         update = (StreamingChatCompletionUpdate)message.InnerContent;
 
+<<<<<<< Updated upstream
         var filterResults = update.GetContentFilterResultForResponse();
+=======
+<<<<<<< HEAD
+        var filterResults = update.GetContentFilterResultForResponse();
+=======
+        var filterResults = update.GetResponseContentFilterResult();
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.Hate.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.Sexual.Severity);
         Assert.Equal(ContentFilterSeverity.Safe, filterResults.SelfHarm.Severity);
@@ -637,7 +823,15 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.IsType<StreamingChatCompletionUpdate>(message.InnerContent);
         update = (StreamingChatCompletionUpdate)message.InnerContent;
+<<<<<<< Updated upstream
         filterResults = update.GetContentFilterResultForResponse();
+=======
+<<<<<<< HEAD
+        filterResults = update.GetContentFilterResultForResponse();
+=======
+        filterResults = update.GetResponseContentFilterResult();
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.False(filterResults.ProtectedMaterialCode.Detected);
         Assert.False(filterResults.ProtectedMaterialText.Detected);
 
@@ -694,6 +888,26 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         {
             responses.ForEach(r => r.Dispose());
         }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        for (var i = 0; i < ModelResponsesCount; i++)
+        {
+            responses.Add(new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_single_function_call_test_response.txt") });
+        }
+
+        this._messageHandlerStub.ResponsesToReturn = responses;
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
+        {
+            Assert.Equal("Test chat streaming response", chunk.Content);
+        }
+
+        Assert.Equal(DefaultMaximumAutoInvokeAttempts, functionCallCount);
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -773,6 +987,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddTransient<IChatCompletionService>((sp) => service);
@@ -818,6 +1042,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(Prompt);
@@ -871,6 +1105,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_multiple_function_calls_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_multiple_function_calls_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
 
@@ -934,6 +1178,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
 
@@ -993,6 +1247,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
 
@@ -1042,6 +1306,16 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
 

@@ -1,8 +1,20 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+<<<<<<< Updated upstream
 using System.Threading;
 using System.Threading.Tasks;
+=======
+<<<<<<< HEAD
+using System.Threading;
+using System.Threading.Tasks;
+=======
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Serialization;
+>>>>>>> main
+>>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -58,4 +70,28 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
 
         return Task.FromResult<AgentChannel>(channel);
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    /// <inheritdoc/>
+    protected internal async override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+    {
+        this.Logger.LogOpenAIAssistantAgentRestoringChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
+
+        AgentChat chat = chatProvider.Invoke();
+        AgentChatState agentChatState =
+            JsonSerializer.Deserialize<AgentChatState>(channelState) ??
+            throw new KernelException("Unable to restore channel: invalid state.");
+
+        await chat.DeserializeAsync(agentChatState).ConfigureAwait(false); ;
+        AggregatorChannel channel = new(chat);
+
+        this.Logger.LogOpenAIAssistantAgentRestoredChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
+
+        return channel;
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

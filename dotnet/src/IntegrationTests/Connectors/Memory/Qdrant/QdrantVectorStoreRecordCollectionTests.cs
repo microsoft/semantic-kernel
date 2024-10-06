@@ -1,7 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< Updated upstream
 using System.Collections.Generic;
+=======
+<<<<<<< HEAD
+using System.Collections.Generic;
+=======
+<<<<<<< HEAD
+using System.Collections.Generic;
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,7 +53,19 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
+<<<<<<< Updated upstream
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
+=======
+<<<<<<< HEAD
+    public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
+=======
+<<<<<<< HEAD
+    public async Task ItCanCreateACollectionUpsertGetAndSearchAsync(bool hasNamedVectors, bool useRecordDefinition)
+=======
+    public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         // Arrange
         var collectionNamePostfix1 = useRecordDefinition ? "WithDefinition" : "WithType";
@@ -62,6 +85,18 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        var searchResult = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
+            new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30) }).ToListAsync();
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -77,6 +112,25 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(record.Tags.ToArray(), getResult?.Tags.ToArray());
         Assert.Equal(record.Description, getResult?.Description);
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        Assert.Single(searchResult);
+        var searchResultRecord = searchResult.First().Record;
+        Assert.Equal(record.HotelId, searchResultRecord?.HotelId);
+        Assert.Equal(record.HotelName, searchResultRecord?.HotelName);
+        Assert.Equal(record.HotelCode, searchResultRecord?.HotelCode);
+        Assert.Equal(record.HotelRating, searchResultRecord?.HotelRating);
+        Assert.Equal(record.ParkingIncluded, searchResultRecord?.ParkingIncluded);
+        Assert.Equal(record.Tags.ToArray(), searchResultRecord?.Tags.ToArray());
+        Assert.Equal(record.Description, searchResultRecord?.Description);
+
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
         // Output
         output.WriteLine(collectionExistResult.ToString());
         output.WriteLine(upsertResult.ToString(CultureInfo.InvariantCulture));
@@ -352,6 +406,56 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = true }));
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    [Theory]
+    [InlineData(true, "singleVectorHotels", false, "equality")]
+    [InlineData(false, "singleVectorHotels", false, "equality")]
+    [InlineData(true, "namedVectorsHotels", true, "equality")]
+    [InlineData(false, "namedVectorsHotels", true, "equality")]
+    [InlineData(true, "singleVectorHotels", false, "tagContains")]
+    [InlineData(false, "singleVectorHotels", false, "tagContains")]
+    [InlineData(true, "namedVectorsHotels", true, "tagContains")]
+    [InlineData(false, "namedVectorsHotels", true, "tagContains")]
+    public async Task ItCanSearchWithFilterAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors, string filterType)
+    {
+        // Arrange.
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        {
+            HasNamedVectors = hasNamedVectors,
+            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+        };
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
+
+        // Act.
+        var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 11") : new VectorSearchFilter().AnyTagEqualTo("Tags", "t1");
+        var searchResults = sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]),
+            new()
+            {
+                Filter = filter
+            });
+
+        // Assert.
+        Assert.NotNull(searchResults);
+        var searchResultsList = await searchResults.ToListAsync();
+        Assert.Single(searchResultsList);
+
+        var searchResultRecord = searchResultsList.First().Record;
+        Assert.Equal(11ul, searchResultRecord?.HotelId);
+        Assert.Equal("My Hotel 11", searchResultRecord?.HotelName);
+        Assert.Equal(11, searchResultRecord?.HotelCode);
+        Assert.Equal(4.5f, searchResultRecord?.HotelRating);
+        Assert.Equal(true, searchResultRecord?.ParkingIncluded);
+        Assert.Equal(new string[] { "t1", "t2" }, searchResultRecord?.Tags.ToArray());
+        Assert.Equal("This is a great hotel.", searchResultRecord?.Description);
+    }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     [Fact]
     public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
     {
@@ -408,6 +512,14 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.IsType<ReadOnlyMemory<float>>(localGetResult.Vectors["DescriptionEmbedding"]);
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
     private HotelInfo CreateTestHotel(uint hotelId)
     {
         return new HotelInfo

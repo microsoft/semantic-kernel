@@ -35,6 +35,38 @@ public class RedisKernelBuilderExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    [Fact]
+    public void AddRedisHashSetVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange.
+        this._kernelBuilder.Services.AddSingleton<IDatabase>(Mock.Of<IDatabase>());
+
+        // Act.
+        this._kernelBuilder.AddRedisHashSetVectorStoreRecordCollection<TestRecord>("testCollection");
+
+        // Assert.
+        this.AssertHashSetVectorStoreRecordCollectionCreated<TestRecord>();
+    }
+
+    [Fact]
+    public void AddRedisJsonVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange.
+        this._kernelBuilder.Services.AddSingleton<IDatabase>(Mock.Of<IDatabase>());
+
+        // Act.
+        this._kernelBuilder.AddRedisJsonVectorStoreRecordCollection<TestRecord>("testCollection");
+
+        // Assert.
+        this.AssertJsonVectorStoreRecordCollectionCreated<TestRecord>();
+    }
+
+>>>>>>> main
+>>>>>>> Stashed changes
     private void AssertVectorStoreCreated()
     {
         var kernel = this._kernelBuilder.Build();
@@ -42,4 +74,34 @@ public class RedisKernelBuilderExtensionsTests
         Assert.NotNull(vectorStore);
         Assert.IsType<RedisVectorStore>(vectorStore);
     }
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+
+    private void AssertHashSetVectorStoreRecordCollectionCreated<TRecord>() where TRecord : class
+    {
+        var kernel = this._kernelBuilder.Build();
+        var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<string, TRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<RedisHashSetVectorStoreRecordCollection<TRecord>>(collection);
+    }
+
+    private void AssertJsonVectorStoreRecordCollectionCreated<TRecord>() where TRecord : class
+    {
+        var kernel = this._kernelBuilder.Build();
+        var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<string, TRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<RedisJsonVectorStoreRecordCollection<TRecord>>(collection);
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestRecord
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = string.Empty;
+    }
+>>>>>>> main
+>>>>>>> Stashed changes
 }

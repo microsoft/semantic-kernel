@@ -22,7 +22,18 @@ public class OpenAIAssistantInvocationOptionsTests
 
         // Assert
         Assert.Null(options.ModelName);
+<<<<<<< Updated upstream
         Assert.Null(options.AdditionalInstructions);
+=======
+<<<<<<< HEAD
+        Assert.Null(options.AdditionalInstructions);
+=======
+<<<<<<< HEAD
+        Assert.Null(options.AdditionalInstructions);
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Null(options.Metadata);
         Assert.Null(options.Temperature);
         Assert.Null(options.TopP);
@@ -49,7 +60,18 @@ public class OpenAIAssistantInvocationOptionsTests
             new()
             {
                 ModelName = "testmodel",
+<<<<<<< Updated upstream
                 AdditionalInstructions = "test instructions",
+=======
+<<<<<<< HEAD
+                AdditionalInstructions = "test instructions",
+=======
+<<<<<<< HEAD
+                AdditionalInstructions = "test instructions",
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 MaxCompletionTokens = 1000,
                 MaxPromptTokens = 1000,
@@ -64,7 +86,18 @@ public class OpenAIAssistantInvocationOptionsTests
 
         // Assert
         Assert.Equal("testmodel", options.ModelName);
+<<<<<<< Updated upstream
         Assert.Equal("test instructions", options.AdditionalInstructions);
+=======
+<<<<<<< HEAD
+        Assert.Equal("test instructions", options.AdditionalInstructions);
+=======
+<<<<<<< HEAD
+        Assert.Equal("test instructions", options.AdditionalInstructions);
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal(2, options.Temperature);
         Assert.Equal(0, options.TopP);
         Assert.Equal(1000, options.MaxCompletionTokens);

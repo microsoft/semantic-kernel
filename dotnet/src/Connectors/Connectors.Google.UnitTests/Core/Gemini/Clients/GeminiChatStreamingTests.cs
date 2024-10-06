@@ -34,6 +34,30 @@ public sealed class GeminiChatStreamingTests : IDisposable
     }
 
     [Fact]
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+    public async Task ShouldReturnEmptyMessageContentAndNullMetadataIfEmptyJsonInResponseAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("{}");
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var messages = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.Single(messages, item =>
+            item.Role == AuthorRole.Assistant &&
+            string.IsNullOrEmpty(item.Content) &&
+            item.Metadata == null);
+    }
+
+    [Fact]
+>>>>>>> main
+>>>>>>> Stashed changes
     public async Task ShouldReturnEmptyMessageContentIfNoContentInResponseAsync()
     {
         // Arrange

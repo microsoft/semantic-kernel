@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+<<<<<<< HEAD
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -23,12 +31,36 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         OpenAIClientProvider provider = this.GetClientProvider();
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
                 kernel: new(),
                 provider,
                 new(this.Model)
                 {
                     Metadata = AssistantSampleMetadata,
                 });
+<<<<<<< Updated upstream
+=======
+=======
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                {
+                    Metadata = AssistantSampleMetadata,
+                },
+                kernel: new Kernel());
+                kernel: new(),
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                {
+                    Metadata = AssistantSampleMetadata,
+                });
+ 6d73513a859ab2d05e01db3bc1d405827799e34b
+                },
+                kernel: new Kernel());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;
@@ -50,7 +82,15 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         {
             await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
+<<<<<<< Updated upstream
             await provider.Client.GetFileClient().DeleteFileAsync(fileId);
+=======
+<<<<<<< HEAD
+            await provider.Client.GetFileClient().DeleteFileAsync(fileId);
+=======
+            await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         // Local function to invoke agent and display the conversation messages.

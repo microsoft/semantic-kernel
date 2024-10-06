@@ -81,7 +81,20 @@ class SemanticTextMemoryBase(ABC):
         self,
         collection: str,
         key: str,
+<<<<<<< Updated upstream
     ) -> "MemoryQueryResult | None":
+=======
+<<<<<<< main
+    ) -> "MemoryQueryResult | None":
+=======
+<<<<<<< main
+    ) -> "MemoryQueryResult | None":
+=======
+        # TODO: with_embedding: bool,
+    ) -> Optional[MemoryQueryResult]:
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         """Get information from the memory (calls the memory store's get method).
 
         Args:

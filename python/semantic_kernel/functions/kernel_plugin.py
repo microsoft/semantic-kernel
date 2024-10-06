@@ -1,5 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 import importlib
 import inspect
 import json
@@ -36,6 +43,13 @@ from semantic_kernel.functions.kernel_function_from_prompt import (
 )
 from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+from semantic_kernel.kernel_types import OptionalOneOrMany
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
@@ -56,6 +70,36 @@ class KernelPlugin(KernelBaseModel):
     When you add a function, through `.set` or `__setitem__`, the function is copied, the metadata is deep-copied
     and the name of the plugin is set in the metadata and added to the dict of functions.
     This is done in the same way as a normal dict, so a existing key will be overwritten.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+import sys
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
+
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+
+from pydantic import Field, StringConstraints
+
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+if TYPE_CHECKING:
+    from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+
+
+class KernelPlugin(KernelBaseModel):
+    """
+    Represents a Kernel Plugin with functions.
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
 
     Attributes:
         name (str): The name of the plugin. The name can be upper/lower
@@ -63,6 +107,13 @@ class KernelPlugin(KernelBaseModel):
         description (str): The description of the plugin.
         functions (Dict[str, KernelFunction]): The functions in the plugin,
             indexed by their name.
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 
     Methods:
         set: Set a function in the plugin.
@@ -105,6 +156,10 @@ class KernelPlugin(KernelBaseModel):
         self,
         name: str,
         description: str | None = None,
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         functions: (
             KERNEL_FUNCTION_TYPE
             | "KernelPlugin"
@@ -112,15 +167,33 @@ class KernelPlugin(KernelBaseModel):
             | dict[str, KERNEL_FUNCTION_TYPE]
             | None
         ) = None,
+<<<<<<< Updated upstream
+=======
+=======
+        functions: (OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE]) = None,
+>>>>>>> main
+>>>>>>> Stashed changes
     ):
         """Create a KernelPlugin.
 
         Args:
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
             name: The name of the plugin. The name can be upper/lower
                 case letters and underscores.
             description: The description of the plugin.
             functions:
                 The functions in the plugin, will be rewritten to a dictionary of functions.
+<<<<<<< Updated upstream
+=======
+=======
+            name: The name of the plugin. The name can be upper/lower case letters and underscores.
+            description: The description of the plugin.
+            functions: The functions in the plugin, will be rewritten to a dictionary of functions.
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Raises:
             ValueError: If the functions are not of the correct type.
@@ -534,6 +607,10 @@ class KernelPlugin(KernelBaseModel):
 
     @staticmethod
     def _validate_functions(
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
         functions: (
             KERNEL_FUNCTION_TYPE
             | list[KERNEL_FUNCTION_TYPE | "KernelPlugin"]
@@ -541,6 +618,12 @@ class KernelPlugin(KernelBaseModel):
             | "KernelPlugin"
             | None
         ),
+<<<<<<< Updated upstream
+=======
+=======
+        functions: OptionalOneOrMany[KERNEL_FUNCTION_TYPE | "KernelPlugin"] | dict[str, KERNEL_FUNCTION_TYPE],
+>>>>>>> main
+>>>>>>> Stashed changes
         plugin_name: str,
     ) -> dict[str, "KernelFunction"]:
         """Validates the functions and returns a dictionary of functions."""
@@ -587,6 +670,16 @@ class KernelPlugin(KernelBaseModel):
                             for name, function in function.functions.items()
                         }
                     )
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+                    functions_dict.update({
+                        name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                        for name, function in function.functions.items()
+                    })
+>>>>>>> main
+>>>>>>> Stashed changes
                 else:
                     raise ValueError(
                         f"Invalid type for functions in list: {function} (type: {type(function)})"
@@ -610,3 +703,103 @@ class KernelPlugin(KernelBaseModel):
         )
 
     # endregion
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+=======
+    """
+
+    name: Annotated[str, StringConstraints(pattern=PLUGIN_NAME_REGEX, min_length=1)]
+    description: Optional[str] = Field(default=None)
+    functions: Optional[Dict[str, "KernelFunction"]] = Field(default_factory=dict)
+
+    def __init__(
+        self, name: str, description: Optional[str] = None, functions: Optional[List["KernelFunction"]] = None
+    ):
+        """
+        Initialize a new instance of the KernelPlugin class
+
+        Args:
+            name (str): The name of the plugin.
+            description (Optional[str]): The description of the plugin.
+            functions (List[KernelFunction]): The functions in the plugin.
+
+        Raises:
+            ValueError: If the functions list contains duplicate function names.
+        """
+        functions_dict = {}
+        if functions is not None:
+            for function in functions:
+                if function.name in functions_dict:
+                    raise ValueError(f"Duplicate function name detected: {function.name}")
+                functions_dict[function.name] = function
+        super().__init__(name=name, description=description, functions=functions_dict)
+
+    def __len__(self) -> int:
+        """
+        Gets the number of functions in the plugin.
+
+        Returns:
+            The number of functions in the plugin.
+
+        """
+        return len(self.functions)
+
+    def __contains__(self, function_name: str) -> bool:
+        """
+        Checks if the plugin contains a function with the specified name.
+
+        Args:
+            function_name (str): The name of the function.
+
+        Returns:
+            True if the plugin contains a function with the specified name, False otherwise.
+        """
+        return function_name in self.functions.keys()
+
+    def __getitem__(self, name: str) -> "KernelFunction":
+        """Define the [] operator for the plugin
+
+        Args:
+            name (str): The name of the function to retrieve.
+
+        Returns:
+            The function if it exists, None otherwise.
+
+        Raises:
+            KeyError: If the function does not exist.
+        """
+        if name not in self.functions:
+            raise KeyError(f"Function {name} not found.")
+        return self.functions[name]
+
+    @classmethod
+    def from_functions(
+        cls, functions: List["KernelFunction"], plugin_name: str, description: Optional[str] = None
+    ) -> "KernelPlugin":
+        """
+        Creates a KernelPlugin from a KernelFunction instance.
+
+        Args:
+            functions (List[KernelFunction]): The functions to create the plugin from.
+            plugin_name (Optional[str]): The name of the plugin. If not specified,
+                the name of the function will be used.
+            description (Optional[str]): The description of the plugin.
+
+        Returns:
+            A KernelPlugin instance.
+        """
+        return cls(name=plugin_name, description=description, functions=functions)
+
+    def get_functions_metadata(self) -> List["KernelFunctionMetadata"]:
+        """
+        Get the metadata for the functions in the plugin.
+
+        Returns:
+            A list of KernelFunctionMetadata instances.
+        """
+        return [func.metadata for func in self.functions.values()]
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes

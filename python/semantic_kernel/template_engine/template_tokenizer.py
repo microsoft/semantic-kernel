@@ -1,13 +1,39 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 from semantic_kernel.exceptions import (
     BlockSyntaxError,
     CodeBlockTokenError,
     TemplateSyntaxError,
 )
+<<<<<<< Updated upstream
 from semantic_kernel.template_engine.blocks.block import Block
+=======
+<<<<<<< main
+=======
+=======
+from typing import List
+
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_errors import (
+    CodeBlockSyntaxError,
+    CodeBlockTokenError,
+    FunctionIdBlockSyntaxError,
+    TemplateSyntaxError,
+    ValBlockSyntaxError,
+    VarBlockSyntaxError,
+)
+>>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.symbols import Symbols
@@ -26,11 +52,28 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
 class TemplateTokenizer:
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     """Tokenize the template text into blocks."""
 
     @staticmethod
     def tokenize(text: str) -> list[Block]:
         """Tokenize the template text into blocks."""
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+    @staticmethod
+    def tokenize(text: str) -> List[Block]:
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         code_tokenizer = CodeTokenizer()
         # An empty block consists of 4 chars: "{{}}"
         EMPTY_CODE_BLOCK_LENGTH = 4
@@ -48,7 +91,19 @@ class TemplateTokenizer:
         if len(text) < MIN_CODE_BLOCK_LENGTH:
             return [TextBlock.from_text(text)]
 
+<<<<<<< Updated upstream
         blocks: list[Block] = []
+=======
+<<<<<<< main
+        blocks: list[Block] = []
+=======
+<<<<<<< main
+        blocks: list[Block] = []
+=======
+        blocks: List[Block] = []
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         end_of_last_block = 0
         block_start_pos = 0
         block_start_found = False
@@ -102,11 +157,27 @@ class TemplateTokenizer:
             if current_char == Symbols.BLOCK_ENDER and next_char == Symbols.BLOCK_ENDER:
                 blocks.extend(
                     TemplateTokenizer._extract_blocks(
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
                         text,
                         code_tokenizer,
                         block_start_pos,
                         end_of_last_block,
                         next_char_pos,
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+                        text, code_tokenizer, block_start_pos, end_of_last_block, next_char_pos
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
                     )
                 )
                 end_of_last_block = next_char_pos + 1
@@ -120,12 +191,29 @@ class TemplateTokenizer:
 
     @staticmethod
     def _extract_blocks(
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         text: str,
         code_tokenizer: CodeTokenizer,
         block_start_pos: int,
         end_of_last_block: int,
         next_char_pos: int,
     ) -> list[Block]:
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+=======
+        text: str, code_tokenizer: CodeTokenizer, block_start_pos: int, end_of_last_block: int, next_char_pos: int
+    ) -> List[Block]:
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         """Extract the blocks from the found code.
 
         If there is text before the current block, create a TextBlock from that.
@@ -136,7 +224,19 @@ class TemplateTokenizer:
         If there is only a variable or value in the code block,
         return just that, instead of the CodeBlock.
         """
+<<<<<<< Updated upstream
         new_blocks: list[Block] = []
+=======
+<<<<<<< main
+        new_blocks: list[Block] = []
+=======
+<<<<<<< main
+        new_blocks: list[Block] = []
+=======
+        new_blocks: List[Block] = []
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         if block_start_pos > end_of_last_block:
             new_blocks.append(
                 TextBlock.from_text(
@@ -146,7 +246,19 @@ class TemplateTokenizer:
                 )
             )
 
+<<<<<<< Updated upstream
         content_with_delimiters = text[block_start_pos : next_char_pos + 1]
+=======
+<<<<<<< main
+        content_with_delimiters = text[block_start_pos : next_char_pos + 1]
+=======
+<<<<<<< main
+        content_with_delimiters = text[block_start_pos : next_char_pos + 1]
+=======
+        content_with_delimiters = text[block_start_pos : next_char_pos + 1]  # noqa: E203
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         content_without_delimiters = content_with_delimiters[2:-2].strip()
 
         if len(content_without_delimiters) == 0:
@@ -157,7 +269,25 @@ class TemplateTokenizer:
 
         try:
             code_blocks = code_tokenizer.tokenize(content_without_delimiters)
+<<<<<<< Updated upstream
         except BlockSyntaxError as e:
+=======
+<<<<<<< main
+        except BlockSyntaxError as e:
+=======
+<<<<<<< main
+        except BlockSyntaxError as e:
+=======
+        except (
+            CodeBlockTokenError,
+            CodeBlockSyntaxError,
+            VarBlockSyntaxError,
+            ValBlockSyntaxError,
+            FunctionIdBlockSyntaxError,
+        ) as e:
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             msg = f"Failed to tokenize code block: {content_without_delimiters}. {e}"
             logger.warning(msg)
             raise TemplateSyntaxError(msg) from e
@@ -169,9 +299,25 @@ class TemplateTokenizer:
             new_blocks.append(code_blocks[0])
             return new_blocks
         try:
+<<<<<<< Updated upstream
             new_blocks.append(
                 CodeBlock(content=content_without_delimiters, tokens=code_blocks)
             )
+=======
+<<<<<<< main
+            new_blocks.append(
+                CodeBlock(content=content_without_delimiters, tokens=code_blocks)
+            )
+=======
+<<<<<<< main
+            new_blocks.append(
+                CodeBlock(content=content_without_delimiters, tokens=code_blocks)
+            )
+=======
+            new_blocks.append(CodeBlock(content=content_without_delimiters, tokens=code_blocks))
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
             return new_blocks
         except CodeBlockTokenError as e:
             msg = f"Failed to tokenize code block: {content_without_delimiters}. {e}"
