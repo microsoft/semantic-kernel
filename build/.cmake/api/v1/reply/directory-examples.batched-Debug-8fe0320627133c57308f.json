@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/batched/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-batched"
+			],
+			"targetId" : "llama-batched::@2ede498d949faaa4ed6a",
+			"targetIndex" : 33,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/batched",
+		"source" : "examples/batched"
+	}
+}

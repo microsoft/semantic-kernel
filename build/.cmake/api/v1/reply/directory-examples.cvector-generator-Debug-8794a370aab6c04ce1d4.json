@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/cvector-generator/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-cvector-generator"
+			],
+			"targetId" : "llama-cvector-generator::@c6f40b091ff0d33ea9a3",
+			"targetIndex" : 38,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/cvector-generator",
+		"source" : "examples/cvector-generator"
+	}
+}

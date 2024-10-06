@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/infill/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-infill"
+			],
+			"targetId" : "llama-infill::@8d715609835c559aa80a",
+			"targetIndex" : 48,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/infill",
+		"source" : "examples/infill"
+	}
+}

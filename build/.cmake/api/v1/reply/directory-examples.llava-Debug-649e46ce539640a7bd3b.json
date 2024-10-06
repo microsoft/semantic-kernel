@@ -1,0 +1,81 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/llava/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 22,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 36,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 43,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib64",
+			"paths" : 
+			[
+				"examples/llava/libllava_shared.so"
+			],
+			"targetId" : "llava_shared::@f56f9b62dfee2d9c510c",
+			"targetIndex" : 70,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-llava-cli"
+			],
+			"targetId" : "llama-llava-cli::@f56f9b62dfee2d9c510c",
+			"targetIndex" : 49,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-minicpmv-cli"
+			],
+			"targetId" : "llama-minicpmv-cli::@f56f9b62dfee2d9c510c",
+			"targetIndex" : 55,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/llava",
+		"source" : "examples/llava"
+	}
+}

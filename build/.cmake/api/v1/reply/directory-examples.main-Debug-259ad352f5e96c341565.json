@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/main/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-cli"
+			],
+			"targetId" : "llama-cli::@e93c3e339b068faf4ae0",
+			"targetIndex" : 36,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/main",
+		"source" : "examples/main"
+	}
+}
