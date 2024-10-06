@@ -8,8 +8,6 @@ import io.grpc.ServerBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
-import java.util.logging.Logger;
-
 public class Main {
 
     private static final int PORT = 50051;

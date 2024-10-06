@@ -7,10 +7,10 @@
 			"name": "Launch VSC Client",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceRoot}"
+				"--extensionDevelopmentPath=${workspaceRoot}/DevSkim-VSCode-Plugin"
 			],
 			"sourceMaps": true,
-			"outFiles": ["${workspaceRoot}/client/out/**/*.js"],
+			"outFiles": ["${workspaceRoot}/DevSkim-VSCode-Plugin/client/out/**/*.js"],
 			"preLaunchTask": "npm-build"
 		},
 		{
@@ -19,10 +19,10 @@
 			"name": "Clean + Launch VSC Client",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceRoot}"
+				"--extensionDevelopmentPath=${workspaceRoot}/DevSkim-VSCode-Plugin"
 			],
 			"sourceMaps": true,
-			"outFiles": ["${workspaceRoot}/client/out/**/*.js"],
+			"outFiles": ["${workspaceRoot}/DevSkim-VSCode-Plugin/client/out/**/*.js"],
 			"preLaunchTask": "npm-clean + npm-build"
 		},
 		{
@@ -30,8 +30,6 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
-		]
-	}
         }
 	]
 }

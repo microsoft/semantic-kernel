@@ -24,6 +24,80 @@ base_model:
 new_version: Bryan-Roe/SK-api
 ---
 # Model Card for Model ID
+runme:
+  id: 01J0BYQX0015D3BH4FX0NPA9QQ
+  version: v3
+---
+
+# Semantic Kernel
+
+[![Python package](https://img.shields.io/pypi/v/semantic-kernel)](https://pypi.org/project/semantic-kernel/)
+[![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
+[![dotnet Docker](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml)
+[![dotnet Windows](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml)
+[![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
+[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
+
+[Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/overview/)
+is an SDK that integrates Large Language Models (LLMs) like
+[OpenAI](https://platform.openai.com/docs/introduction),
+[Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service),
+and [Hugging Face](https://huggingface.co/)
+with conventional programming languages like C#, Python, and Java. Semantic Kernel achieves this
+by allowing you to define [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
+that can be chained together
+in just a [few lines of code](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Csharp#using-the-runasync-method-to-simplify-your-code).
+
+What makes Semantic Kernel _special_, however, is its ability to _automatically_ orchestrate
+plugins with AI. With Semantic Kernel
+[planners](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner), you
+can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards,
+Semantic Kernel will execute the plan for the user.
+
+#### Please star the repo to show your support for this project
+
+![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
+
+## Getting started with Semantic Kernel
+
+The Semantic Kernel SDK is available in C#, Python, and Java. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of
+feature parity between our currently supported languages.
+
+<table width=100%>
+  <tbody>
+    <tr>
+      <td>
+        <img align="left" width=52px src="https://user-images.githubusercontent.com/371009/230673036-fad1e8e6-5d48-49b1-a9c1-6f9834e0d165.png">
+        <div>
+          <a href="dotnet/README.md">Using Semantic Kernel in C#</a> &nbsp<br/>
+        </div>
+      </td>
+      <td>
+        <img align="left" width=52px src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg">
+        <div>
+          <a href="python/README.md">Using Semantic Kernel in Python</a>
+        </div>
+      </td>
+      <td>
+        <img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java logo">
+        <div>
+          <a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+The quickest way to get started with the basics is to get an API key
+from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java console applications/scripts below.
+
+### For C
+
+1. Create a new console app.
+2. Add the semantic kernel nuget [Microsoft.SemanticKernel](https://www.nuget.org/packages/Microsoft.SemanticKernel/).
+3. Copy the code from [here](dotnet/README.md) into the app `Program.cs` file.
+4. Replace the configuration placeholders for API key and other params with your key and settings.
+5. Run with `F5` or `dotnet run`
 
 <!-- Provide a quick summary of what the model is/does. -->
 
@@ -32,6 +106,10 @@ This modelcard aims to be a base template for new models. It has been generated 
 ## Model Details
 
 ### Model Description
+1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
+   1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
+
+2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/main/java/samples/sample-code/README.md)
 
 <!-- Provide a longer summary of what this model is. -->
 
@@ -46,6 +124,13 @@ This modelcard aims to be a base template for new models. It has been generated 
 - **Finetuned from model [optional]:** [More Information Needed]
 
 ### Model Sources [optional]
+1. 📖 [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
+2. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
+3. 👄 [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions)
+4. 💽 [Creating native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions)
+5. ⛓️ [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
+6. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
+7. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
 
 <!-- Provide the basic links for the model. -->
 
