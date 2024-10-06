@@ -83,12 +83,18 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             "testcollection:",
             "SCHEMA",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             "OriginalNameData",
             "AS",
@@ -100,7 +106,10 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             "TAG",
             "vector_storage_name",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -122,6 +131,9 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             "vector_storage_name",
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             "AS",
             "vector_storage_name",
@@ -448,7 +460,10 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -545,6 +560,9 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
@@ -608,7 +626,10 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -628,6 +649,9 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string redisResultString)
     {

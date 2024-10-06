@@ -3,8 +3,11 @@
 from pytest import mark, raises
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import TemplateSyntaxError
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from semantic_kernel.exceptions import TemplateSyntaxError
 =======
@@ -16,6 +19,9 @@ from semantic_kernel.template_engine.blocks.block_errors import (
 )
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
@@ -117,9 +123,12 @@ def test_invalid_syntax(template, error):
     with raises(error):
         TemplateTokenizer.tokenize(template)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
 
@@ -132,6 +141,9 @@ def test_invalid_syntax(template, error):
 
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_it_tokenizes_edge_cases_correctly_1():
     blocks1 = TemplateTokenizer.tokenize("{{{{a}}")
@@ -190,8 +202,11 @@ def test_it_tokenizes_edge_cases_correctly_4(template):
 
 def test_it_tokenizes_a_typical_prompt():
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     template = "this is a {{ $prompt }} with {{$some}} variables and {{function $calls}} {{ and 'values' }}"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     template = "this is a {{ $prompt }} with {{$some}} variables and {{function $calls}} {{ and 'values' }}"
 =======
@@ -201,6 +216,9 @@ def test_it_tokenizes_a_typical_prompt():
     template = "this is a {{ $prompt }} with {{$some}} variables " "and {{function $calls}} {{ and 'values' }}"
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     blocks = TemplateTokenizer.tokenize(template)

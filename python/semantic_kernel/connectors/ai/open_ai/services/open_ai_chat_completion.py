@@ -2,9 +2,12 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from collections.abc import Mapping
 from typing import Any
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from collections.abc import Mapping
 from typing import Any
@@ -21,6 +24,9 @@ from typing import (
 )
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from openai import AsyncOpenAI
@@ -52,6 +58,10 @@ class OpenAIChatCompletion(
     """OpenAI Chat completion class."""
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -66,7 +76,10 @@ class OpenAIChatCompletion(
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     @overload
     def __init__(
@@ -116,6 +129,9 @@ class OpenAIChatCompletion(
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> None:
         """Initialize an OpenAIChatCompletion service.
@@ -131,6 +147,10 @@ class OpenAIChatCompletion(
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -139,7 +159,10 @@ class OpenAIChatCompletion(
                 to environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> ms/small_fixes
         """
@@ -218,6 +241,9 @@ class OpenAIChatCompletion(
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         try:
@@ -240,6 +266,10 @@ class OpenAIChatCompletion(
 
         super().__init__(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -251,13 +281,19 @@ class OpenAIChatCompletion(
             ),
             org_id=openai_settings.org_id,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             ai_model_id=ai_model_id,
             api_key=api_key,
             org_id=org_id,
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             service_id=service_id,
             ai_model_type=OpenAIModelTypes.CHAT,
@@ -275,7 +311,10 @@ class OpenAIChatCompletion(
         return OpenAIChatCompletion(
             ai_model_id=settings["ai_model_id"],
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -284,6 +323,9 @@ class OpenAIChatCompletion(
             org_id=settings.get("org_id"),
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers"),

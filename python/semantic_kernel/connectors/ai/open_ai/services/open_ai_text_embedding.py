@@ -4,11 +4,17 @@ import logging
 from collections.abc import Mapping
 from typing import Any, TypeVar
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 from typing import Dict, Mapping, Optional, overload
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from openai import AsyncOpenAI
@@ -49,12 +55,18 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         ai_model_id: str,
         async_client: AsyncOpenAI,
         service_id: Optional[str] = None,
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> None:
         """Initializes a new instance of the OpenAITextCompletion class.
@@ -69,7 +81,10 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 the env vars or .env file value.
             default_headers (Mapping[str,str] | None): The default headers mapping of string keys to
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
             async_client {AsyncOpenAI} -- An existing client to use.
         """
 
@@ -103,6 +118,9 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 account belongs to multiple organizations.
             default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 string values for HTTP requests. (Optional)
             async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
@@ -136,11 +154,17 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             ai_model_type=OpenAIModelTypes.EMBEDDING,
             org_id=openai_settings.org_id,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
             org_id=org_id,
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             service_id=service_id,
             default_headers=default_headers,
@@ -162,10 +186,16 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             default_headers=settings.get("default_headers", {}),
             env_file_path=settings.get("env_file_path"),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
             default_headers=settings.get("default_headers"),
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )

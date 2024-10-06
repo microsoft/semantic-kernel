@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,9 +28,12 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 /// <remarks>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /// NOTE: Enable OpenAIPromptExecutionSettings.FunctionChoiceBehavior for agent plugins.
 /// (<see cref="ChatHistoryKernelAgent.Arguments"/>)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 /// NOTE: Enable OpenAIPromptExecutionSettings.FunctionChoiceBehavior for agent plugins.
 /// (<see cref="ChatHistoryKernelAgent.Arguments"/>)
@@ -32,12 +41,19 @@ namespace Microsoft.SemanticKernel.Agents;
 /// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins.
 /// (<see cref="KernelAgent.Arguments"/>)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 /// </remarks>
 public abstract class ChatHistoryKernelAgent : KernelAgent
 {
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -50,7 +66,10 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
 
     /// <inheritdoc/>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// An optional reducer for limiting the size of the conversation history.
     /// </summary>
@@ -74,6 +93,9 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of response messages.</returns>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
@@ -82,8 +104,11 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
         CancellationToken cancellationToken = default);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <inheritdoc/>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <inheritdoc/>
 =======
@@ -96,6 +121,9 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of response messages.</returns>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
@@ -109,13 +137,19 @@ public abstract class ChatHistoryKernelAgent : KernelAgent
     /// <param name="history">The source history</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <returns></returns>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <returns></returns>
 =======
     /// <returns>True if reduction has occurred.</returns>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
         history.ReduceAsync(this.HistoryReducer, cancellationToken);

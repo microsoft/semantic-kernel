@@ -21,13 +21,19 @@ public class RedisHashSetGenericDataModelMapperTests
     {
         // Arrange.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
@@ -93,13 +99,19 @@ public class RedisHashSetGenericDataModelMapperTests
         };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act
@@ -125,13 +137,19 @@ public class RedisHashSetGenericDataModelMapperTests
         var hashSet = RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.
@@ -181,13 +199,19 @@ public class RedisHashSetGenericDataModelMapperTests
         };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act
@@ -205,13 +229,19 @@ public class RedisHashSetGenericDataModelMapperTests
     {
         // Arrange.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
@@ -234,13 +264,19 @@ public class RedisHashSetGenericDataModelMapperTests
         var hashSet = Array.Empty<HashEntry>();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 =======
         var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.

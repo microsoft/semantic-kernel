@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -20,6 +23,9 @@ from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.planners import Plan
 
@@ -77,11 +83,17 @@ def test_create_plan_with_name_and_description():
 
 def test_create_plan_with_state_and_parameters():
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     plan = Plan(
         name="test",
@@ -89,13 +101,19 @@ def test_create_plan_with_state_and_parameters():
         parameters=KernelArguments(**{"test_param": "test_param_val"}),
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
     plan = Plan(name="test", state=KernelArguments(), parameters=KernelArguments(**{"test_param": "test_param_val"}))
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert plan is not None
     assert plan.name == "test"
@@ -113,11 +131,17 @@ def test_create_plan_with_state_and_parameters():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_create_plan_with_name_and_native_function(kernel: Kernel):
     # import test (math) plugin
@@ -126,7 +150,10 @@ def test_create_plan_with_name_and_native_function(kernel: Kernel):
 
     test_function = kernel.get_function("math", "Add")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -141,6 +168,9 @@ def test_create_plan_with_name_and_function():
     test_function = plugin["Add"]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     plan = Plan(name="test", function=test_function)
@@ -154,8 +184,11 @@ def test_create_plan_with_name_and_function():
     assert plan.is_prompt is test_function.is_prompt
     assert plan.is_native is not test_function.is_prompt
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     assert plan.prompt_execution_settings is None
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     assert plan.prompt_execution_settings is None
 =======
@@ -165,6 +198,9 @@ def test_create_plan_with_name_and_function():
     assert plan.prompt_execution_settings == test_function.prompt_execution_settings
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
@@ -172,11 +208,17 @@ def test_create_plan_with_name_and_function():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_create_multistep_plan_with_functions(kernel: Kernel):
     # import test (math) plugin
@@ -185,7 +227,10 @@ def test_create_multistep_plan_with_functions(kernel: Kernel):
     test_function1 = kernel.get_function("math", "Add")
     test_function2 = kernel.get_function("math", "Subtract")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -201,6 +246,9 @@ def test_create_multistep_plan_with_functions():
     test_function2 = plugin["Subtract"]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     plan = Plan(name="multistep_test")
@@ -222,11 +270,17 @@ def test_create_multistep_plan_with_functions():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_create_multistep_plan_with_plans(kernel: Kernel):
     kernel.add_plugin(MathPlugin(), "math")
@@ -234,7 +288,10 @@ def test_create_multistep_plan_with_plans(kernel: Kernel):
     test_function1 = kernel.get_function("math", "Add")
     test_function2 = kernel.get_function("math", "Subtract")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -250,6 +307,9 @@ def test_create_multistep_plan_with_plans():
     test_function2 = plugin["Subtract"]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     plan = Plan(name="multistep_test")
@@ -273,11 +333,17 @@ def test_create_multistep_plan_with_plans():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_add_step_to_plan(kernel: Kernel):
     kernel.add_plugin(MathPlugin(), "math")
@@ -285,7 +351,10 @@ def test_add_step_to_plan(kernel: Kernel):
     test_function1 = kernel.get_function("math", "Add")
     test_function2 = kernel.get_function("math", "Subtract")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -301,6 +370,9 @@ def test_add_step_to_plan():
     test_function2 = plugin["Subtract"]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     plan = Plan(name="multistep_test", function=test_function1)
@@ -315,8 +387,11 @@ def test_add_step_to_plan():
     assert plan.is_prompt is test_function1.is_prompt
     assert plan.is_native is not test_function1.is_prompt
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     assert plan.prompt_execution_settings is None
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     assert plan.prompt_execution_settings is None
 =======
@@ -326,6 +401,9 @@ def test_add_step_to_plan():
     assert plan.prompt_execution_settings == test_function1.prompt_execution_settings
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert plan.has_next_step is True
     assert plan.next_step_index == 0

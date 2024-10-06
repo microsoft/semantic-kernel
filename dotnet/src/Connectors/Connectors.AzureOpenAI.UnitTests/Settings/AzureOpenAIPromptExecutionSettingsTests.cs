@@ -8,12 +8,18 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 #pragma warning disable CS0618 // Type or member is obsolete
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Settings;
 
@@ -251,10 +257,13 @@ public class AzureOpenAIPromptExecutionSettingsTests
 
         // Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 #pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
         var executionSettingsWithData = AzureOpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 #pragma warning restore CS0618
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 #pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
         var executionSettingsWithData = AzureOpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
@@ -263,6 +272,9 @@ public class AzureOpenAIPromptExecutionSettingsTests
         var executionSettingsWithData = AzureOpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         // Assert
         Assert.Null(executionSettingsWithData.StopSequences);
@@ -296,11 +308,17 @@ public class AzureOpenAIPromptExecutionSettingsTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     [Fact]
     public void ItRestoresOriginalFunctionChoiceBehavior()
@@ -319,12 +337,18 @@ public class AzureOpenAIPromptExecutionSettingsTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private static void AssertExecutionSettings(AzureOpenAIPromptExecutionSettings executionSettings)
     {

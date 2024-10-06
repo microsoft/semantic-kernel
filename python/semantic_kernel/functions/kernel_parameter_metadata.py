@@ -7,7 +7,10 @@ from pydantic import Field, model_validator
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -17,6 +20,9 @@ from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.utils.validation import FUNCTION_PARAM_NAME_REGEX
 
@@ -32,13 +38,19 @@ class KernelParameterMetadata(KernelBaseModel):
     type_object: Any | None = None
     schema_data: dict[str, Any] | None = None
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     function_schema_include: bool | None = True
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     function_schema_include: bool | None = True
 =======
     include_in_function_choices: bool = True
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     @model_validator(mode="before")
@@ -60,18 +72,27 @@ class KernelParameterMetadata(KernelBaseModel):
     def infer_schema(
         cls,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         type_object: type | None,
         parameter_type: str | None,
         default_value: Any,
         description: str | None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         type_object: type | None = None,
@@ -80,6 +101,9 @@ class KernelParameterMetadata(KernelBaseModel):
         description: str | None = None,
         structured_output: bool = False,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> dict[str, Any] | None:
         """Infer the schema for the parameter metadata."""
@@ -87,13 +111,19 @@ class KernelParameterMetadata(KernelBaseModel):
 
         if type_object is not None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             schema = KernelJsonSchemaBuilder.build(type_object, description)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             schema = KernelJsonSchemaBuilder.build(type_object, description)
 =======
             schema = KernelJsonSchemaBuilder.build(type_object, description, structured_output)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         elif parameter_type is not None:
             string_default = str(default_value) if default_value is not None else None
@@ -110,7 +140,10 @@ class KernelParameterMetadata(KernelBaseModel):
             )
         return schema
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -123,4 +156,7 @@ class KernelParameterMetadata(KernelBaseModel):
     expose: Optional[bool] = Field(default=False, exclude=True)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

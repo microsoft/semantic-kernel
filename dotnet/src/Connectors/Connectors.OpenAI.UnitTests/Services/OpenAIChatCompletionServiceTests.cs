@@ -1,8 +1,11 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
@@ -13,6 +16,9 @@ using System;
 using System;
 using System.ClientModel;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -37,12 +43,18 @@ using OpenAI.Chat;
 using Xunit;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
 
@@ -173,13 +185,19 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange & Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var client = new OpenAIClient("key");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var client = new OpenAIClient("key");
 =======
         var client = new OpenAIClient(new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var service = includeLoggerFactory ?
             new OpenAIChatCompletionService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) :
@@ -351,7 +369,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         await enumerator.MoveNextAsync();
         Assert.Equal("Stop", enumerator.Current.Metadata?["FinishReason"]);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -362,6 +383,9 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Contains("\"InputTokenCount\":13", serializedUsage);
         Assert.Contains("\"TotalTokenCount\":21", serializedUsage);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -596,7 +620,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) };
         this._messageHandlerStub.ResponseToReturn = response;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -604,6 +631,9 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) };
         this._messageHandlerStub.ResponseToReturn = response;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         var chatHistory = new ChatHistory();
@@ -880,13 +910,19 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
                 break;
             case "ChatResponseFormat":
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 format = formatValue == "text" ? ChatResponseFormat.Text : ChatResponseFormat.JsonObject;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 format = formatValue == "text" ? ChatResponseFormat.Text : ChatResponseFormat.JsonObject;
 =======
                 format = formatValue == "text" ? ChatResponseFormat.CreateTextFormat() : ChatResponseFormat.CreateJsonObjectFormat();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 break;
         }
@@ -1098,13 +1134,19 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         // Arrange
         object responseFormat = typedResponseFormat ? typeof(MathReasoning) : ChatResponseFormat.CreateJsonSchemaFormat(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             name: "MathReasoning",
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             name: "MathReasoning",
 =======
             jsonSchemaFormatName: "MathReasoning",
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             jsonSchema: BinaryData.FromString("""
                 {
@@ -1129,13 +1171,19 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
                 }
                 """),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             strictSchemaEnabled: true);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             strictSchemaEnabled: true);
 =======
             jsonSchemaIsStrict: true);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         var executionSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormat };

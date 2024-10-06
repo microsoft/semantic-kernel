@@ -23,11 +23,17 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | Service Selector | Shows how to create and use a custom service selector class. |
 | Setup | How to setup environment variables for Semantic Kernel |
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 | Structured Output | How to leverage OpenAI's json_schema structured output functionality. |
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 | TextGeneration | Using [`TextGeneration`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/text_completion_client_base.py) capable service with models  |
 
@@ -48,7 +54,10 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
    - As an alternative to environment variables and `.env` files, you can pass the required settings directly through the constructor of the AI Connector or Memory Connector.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ## Microsoft Entra Token Authentication
@@ -58,6 +67,9 @@ To authenticate to your Azure resources using a Microsoft Entra Authentication T
 To successfully retrieve and use the Entra Auth Token, you need the `Cognitive Services OpenAI Contributor` role assigned to your Azure OpenAI resource. By default, the `https://cognitiveservices.azure.com` token endpoint is used. You can override this endpoint by setting an environment variable `.env` variable as `AZURE_OPENAI_TOKEN_ENDPOINT` or by passing a new value to the `AzureChatCompletion` constructor as part of the `AzureOpenAISettings`.
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ## Best Practices
 

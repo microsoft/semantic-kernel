@@ -14,11 +14,17 @@ class BlockTypes(Enum):
     FUNCTION_ID = auto()
     NAMED_ARG = auto()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from enum import Enum
 
@@ -29,10 +35,16 @@ class BlockTypes(Enum):
     Code = 2
     Variable = 3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

@@ -7,6 +7,10 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -19,7 +23,10 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +37,9 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
@@ -183,12 +193,18 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
@@ -199,13 +215,19 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
             credentials: new AzureCliCredential());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         return kernelBuilder.Build();

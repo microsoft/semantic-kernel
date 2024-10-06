@@ -29,7 +29,10 @@ class PromptExecutionSettings(KernelBaseModel):
         function_choice_behavior (FunctionChoiceBehavior | None): The function choice behavior settings.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     Parameters:
@@ -38,6 +41,9 @@ class PromptExecutionSettings(KernelBaseModel):
         kwargs (Any): Additional keyword arguments,
             these are attempted to parse into the keys of the specific prompt execution settings.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     Methods:
         prepare_settings_dict: Prepares the settings as a dictionary for sending to the AI service.
@@ -112,11 +118,17 @@ class PromptExecutionSettings(KernelBaseModel):
                 "service_id",
                 "extension_data",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 "structured_json_response",
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             },
             exclude_none=True,

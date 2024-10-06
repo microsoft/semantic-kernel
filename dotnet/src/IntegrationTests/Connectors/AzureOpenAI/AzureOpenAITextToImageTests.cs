@@ -3,9 +3,12 @@
 using System.Threading.Tasks;
 using Azure.Identity;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -17,18 +20,27 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.TextToImage;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 #pragma warning disable CS0618 // Type or member is obsolete
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
@@ -66,7 +78,10 @@ public sealed class AzureOpenAITextToImageTests
         Assert.StartsWith("https://", result);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -96,5 +111,8 @@ public sealed class AzureOpenAITextToImageTests
         Assert.StartsWith("https://", result[0].Uri!.ToString());
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

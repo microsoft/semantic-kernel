@@ -2,9 +2,12 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from collections.abc import Awaitable, Callable, Mapping
 from copy import copy
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from collections.abc import Awaitable, Callable, Mapping
 from copy import copy
@@ -16,6 +19,9 @@ from copy import copy
 from typing import Awaitable, Callable, Dict, Mapping, Optional, Union
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from openai import AsyncAzureOpenAI
@@ -54,11 +60,17 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         base_url: HttpsUrl | None = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         service_id: str | None = None,
         api_key: str | None = None,
@@ -67,10 +79,13 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         default_headers: Mapping[str, str] | None = None,
         client: AsyncAzureOpenAI | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
@@ -104,6 +119,9 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         The `validate_call` decorator is used with a configuration that allows arbitrary types.
         This is necessary for types like `HttpsUrl` and `OpenAIModelTypes`.
@@ -134,6 +152,10 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 raise ServiceInitializationError(
                     "Please provide either api_key, ad_token or ad_token_provider or a client."
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -146,8 +168,11 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 base_url = HttpsUrl(
                     f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 )
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
                 )
@@ -160,6 +185,9 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                     f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}"
                 )
 <<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             client = AsyncAzureOpenAI(
                 base_url=str(base_url),
@@ -173,7 +201,10 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "ai_model_id": deployment_name,
             "client": client,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -182,6 +213,9 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "client": async_client,
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             "ai_model_type": ai_model_type,
         }
@@ -190,9 +224,12 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         super().__init__(**args)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def to_dict(self) -> dict[str, str]:
         """Convert the configuration to a dictionary."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     def to_dict(self) -> dict[str, str]:
         """Convert the configuration to a dictionary."""
@@ -204,6 +241,9 @@ class AzureOpenAIConfigBase(OpenAIHandler):
     def to_dict(self) -> Dict[str, str]:
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         client_settings = {
             "base_url": str(self.client.base_url),

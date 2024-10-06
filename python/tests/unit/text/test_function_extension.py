@@ -4,18 +4,27 @@ import pytest
 
 from semantic_kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -26,6 +35,9 @@ from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.text import aggregate_chunked_results
 
@@ -34,7 +46,10 @@ from semantic_kernel.text import aggregate_chunked_results
 async def test_aggregate_results():
     kernel = Kernel()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
     @kernel_function(name="func")
@@ -48,6 +63,9 @@ async def test_aggregate_results():
     func = KernelFunction.from_method(method=function, plugin_name="test")
 =======
 <<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     @kernel_function(name="func")
@@ -60,7 +78,10 @@ async def test_aggregate_results():
 
     func = KernelFunction.from_method(method=function, plugin_name="test")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     kernel.add_service(sk_oai.OpenAITextCompletion("text-davinci-002", "none", "none", service_id="text-davinci-002"))
     prompt = """
@@ -91,6 +112,9 @@ async def test_aggregate_results():
         function=function, value=arguments["input"], metadata={}
     )
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     chunked = [

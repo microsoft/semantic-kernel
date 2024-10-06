@@ -1,10 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import pytest
 
@@ -12,8 +18,11 @@ from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic
     AnthropicChatPromptExecutionSettings,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 =======
@@ -21,6 +30,9 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -129,6 +141,10 @@ def test_create_options():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -138,23 +154,32 @@ def test_create_options_with_function_choice_behavior():
             service_id="test_service",
             function_choice_behavior="auto",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 def test_tool_choice_none():
     with pytest.raises(ServiceInvalidExecutionSettingsError, match="Tool choice 'none' is not supported by Anthropic."):
         AnthropicChatPromptExecutionSettings(
             service_id="test_service",
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             extension_data={
                 "temperature": 0.5,
                 "top_p": 0.5,
                 "max_tokens": 128,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 "tools": [{}],
                 "messages": [{"role": "system", "content": "Hello"}],
             },
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 "tools": [{}],
                 "messages": [{"role": "system", "content": "Hello"}],
@@ -165,5 +190,8 @@ def test_tool_choice_none():
             },
             function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )

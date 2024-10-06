@@ -27,13 +27,19 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
         IEnumerable<VectorStoreRecordDataProperty> dataProperties,
         IEnumerable<VectorStoreRecordVectorProperty> vectorProperties,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Dictionary<string, string> storagePropertyNames)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Dictionary<string, string> storagePropertyNames)
 =======
         IReadOnlyDictionary<string, string> storagePropertyNames)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         var schema = new WeaviateCollectionSchema(collectionName);

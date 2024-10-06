@@ -4,10 +4,13 @@ import asyncio
 import logging
 import threading
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from abc import abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import Protocol, runtime_checkable
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from abc import abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterable
@@ -15,6 +18,9 @@ from typing import Protocol, runtime_checkable
 =======
 from collections.abc import AsyncGenerator, AsyncIterable
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from pydantic import Field, PrivateAttr
@@ -35,6 +41,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -50,6 +60,11 @@ class AgentChatProtocol(Protocol):
 
 @experimental_class
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -187,7 +202,10 @@ class AgentChat(KernelBaseModel):
             self.clear_activity_signal()
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     async def invoke_agent_stream(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
@@ -214,6 +232,9 @@ class AgentChat(KernelBaseModel):
             self.clear_activity_signal()
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     async def reset(self) -> None:
         """Reset the agent chat."""

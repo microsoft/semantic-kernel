@@ -1,12 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.ClientModel;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.ClientModel;
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +36,10 @@ internal static class AssistantThreadActions
 {
     private static readonly HashSet<RunStatus> s_pollingStatuses =
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     [
@@ -46,6 +55,9 @@ internal static class AssistantThreadActions
         RunStatus.Cancelled,
     ];
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         [
             RunStatus.Queued,
@@ -83,13 +95,19 @@ internal static class AssistantThreadActions
                     role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Assistant,
                     content: AssistantMessageFactory.GetMessageContents(message));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
 
                 ThreadInitializationMessage threadMessage = new(AssistantMessageFactory.GetMessageContents(message));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 createOptions.InitialMessages.Add(threadMessage);
             }
@@ -145,6 +163,10 @@ internal static class AssistantThreadActions
         Dictionary<string, string?> agentNames = []; // Cache agent names by their identifier
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -174,7 +196,10 @@ internal static class AssistantThreadActions
                     yield return content;
                 }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         await foreach (ThreadMessage message in client.GetMessagesAsync(threadId, new() { Order = MessageCollectionOrder.Descending }, cancellationToken).ConfigureAwait(false))
         {
@@ -204,6 +229,9 @@ internal static class AssistantThreadActions
             {
                 yield return content;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
         }
@@ -246,7 +274,10 @@ internal static class AssistantThreadActions
         ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
@@ -257,6 +288,9 @@ internal static class AssistantThreadActions
 
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, instructions, invocationOptions);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, invocationOptions);
 
@@ -269,13 +303,19 @@ internal static class AssistantThreadActions
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         Dictionary<string, FunctionResultContent> functionSteps = [];
         Dictionary<string, FunctionCallContent> functionSteps = [];
         Dictionary<string, FunctionResultContent> functionSteps = [];
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Dictionary<string, FunctionCallContent> functionSteps = [];
 
@@ -292,7 +332,10 @@ internal static class AssistantThreadActions
 
             IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             List<RunStep> steps = [];
@@ -303,6 +346,9 @@ internal static class AssistantThreadActions
             IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run, cancellationToken).ConfigureAwait(false);
             RunStep[] steps = await client.GetRunStepsAsync(run).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
             // Is tool action required?
@@ -313,6 +359,10 @@ internal static class AssistantThreadActions
                 // Execute functions in parallel and post results at once.
                 FunctionCallContent[] functionCalls = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -322,6 +372,11 @@ internal static class AssistantThreadActions
                     functionSteps.Add(functionCall.Id!, functionCall);
                 }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -334,7 +389,10 @@ internal static class AssistantThreadActions
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, functionCalls, cancellationToken);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 FunctionCallContent[] activeFunctionSteps = steps.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
@@ -346,13 +404,19 @@ internal static class AssistantThreadActions
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
                     // Block for function results
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                     // Capture function-call for message processing
@@ -364,6 +428,9 @@ internal static class AssistantThreadActions
                     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
@@ -373,11 +440,17 @@ internal static class AssistantThreadActions
 
                 logger.LogOpenAIAssistantProcessedRunSteps(nameof(InvokeAsync), functionCalls.Length, run.Id, threadId);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 logger.LogOpenAIAssistantProcessedRunSteps(nameof(InvokeAsync), activeFunctionSteps.Length, run.Id, threadId);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
 
@@ -409,7 +482,10 @@ internal static class AssistantThreadActions
                         else if (toolCall.ToolKind == RunStepToolCallKind.Function)
                         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                             FunctionResultContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
@@ -419,6 +495,9 @@ internal static class AssistantThreadActions
                             FunctionResultContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
                             content = GenerateFunctionResultContent(agent.GetName(), [functionStep]);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                             FunctionCallContent functionStep = functionSteps[toolCall.ToolCallId]; // Function step always captured on invocation
                             content = GenerateFunctionResultContent(agent.GetName(), functionStep, toolCall.FunctionOutput);
@@ -437,10 +516,13 @@ internal static class AssistantThreadActions
                     // Retrieve the message
                     ThreadMessage? message = await RetrieveMessageAsync(client, threadId, completedStep.Details.CreatedMessageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
                     if (message is not null)
                     {
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
                     if (message is not null)
@@ -452,6 +534,9 @@ internal static class AssistantThreadActions
                     {
                         ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, completedStep);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                         ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
 
@@ -524,13 +609,19 @@ internal static class AssistantThreadActions
         AssistantClient client,
         string threadId,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         IList<ChatMessageContent> messages,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         IList<ChatMessageContent> messages,
 =======
         IList<ChatMessageContent>? messages,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         OpenAIAssistantInvocationOptions? invocationOptions,
         ILogger logger,
@@ -548,8 +639,11 @@ internal static class AssistantThreadActions
         ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, invocationOptions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, invocationOptions);
 =======
@@ -557,6 +651,9 @@ internal static class AssistantThreadActions
 
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, instructions, invocationOptions);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         options.ToolsOverride.AddRange(tools);
@@ -564,6 +661,10 @@ internal static class AssistantThreadActions
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -575,7 +676,10 @@ internal static class AssistantThreadActions
         {
             messageIds.Clear();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         Dictionary<string, RunStep?> activeMessages = [];
         ThreadRun? run = null;
@@ -586,6 +690,9 @@ internal static class AssistantThreadActions
         {
             activeMessages.Clear();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
             await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
@@ -595,6 +702,10 @@ internal static class AssistantThreadActions
                     run = runUpdate.Value;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -605,7 +716,10 @@ internal static class AssistantThreadActions
                     messageIds.Add(contentUpdate.MessageId);
                     yield return GenerateStreamingMessageContent(agent.GetName(), contentUpdate);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                     switch (runUpdate.UpdateKind)
                     {
@@ -654,6 +768,9 @@ internal static class AssistantThreadActions
                             break;
                     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 }
             }
@@ -672,13 +789,19 @@ internal static class AssistantThreadActions
             if (run.Status == RunStatus.RequiresAction)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run).ConfigureAwait(false);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run).ConfigureAwait(false);
 =======
                 IReadOnlyList<RunStep> steps = await GetRunStepsAsync(client, run, cancellationToken).ConfigureAwait(false);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
                 // Execute functions in parallel and post results at once.
@@ -687,13 +810,19 @@ internal static class AssistantThreadActions
                 {
                     // Emit function-call content
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     messages.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     messages.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
 =======
                     messages?.Add(GenerateFunctionCallContent(agent.GetName(), functionCalls));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
                     // Invoke functions for each tool-step
@@ -705,6 +834,10 @@ internal static class AssistantThreadActions
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -721,7 +854,10 @@ internal static class AssistantThreadActions
                 foreach (string messageId in messageIds)
                 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                     asyncUpdates = client.SubmitToolOutputsToRunStreamingAsync(run.ThreadId, run.Id, toolOutputs, cancellationToken);
 
@@ -738,12 +874,19 @@ internal static class AssistantThreadActions
                 {
                     RunStep? step = activeMessages[messageId];
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     ThreadMessage? message = await RetrieveMessageAsync(client, threadId, messageId, agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
 
                     if (message != null)
                     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -754,7 +897,10 @@ internal static class AssistantThreadActions
 
                 logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), messageIds.Count, run!.Id, threadId);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                         ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, step);
                         messages?.Add(content);
@@ -763,6 +909,9 @@ internal static class AssistantThreadActions
 
                 logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), activeMessages.Count, run!.Id, threadId);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
         }
@@ -772,6 +921,10 @@ internal static class AssistantThreadActions
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -788,7 +941,10 @@ internal static class AssistantThreadActions
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     private static async Task<IReadOnlyList<RunStep>> GetRunStepsAsync(AssistantClient client, ThreadRun run, CancellationToken cancellationToken)
     {
@@ -881,6 +1037,9 @@ internal static class AssistantThreadActions
                 null;
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message)
     {
@@ -891,11 +1050,17 @@ internal static class AssistantThreadActions
             {
                 AuthorName = assistantName,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 Metadata = metaData,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             };
 
@@ -906,11 +1071,17 @@ internal static class AssistantThreadActions
             {
                 content.Items.Add(new TextContent(itemContent.Text));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 content.Items.Add(new TextContent(itemContent.Text.Trim()));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
                 foreach (TextAnnotation annotation in itemContent.TextAnnotations)
@@ -961,7 +1132,10 @@ internal static class AssistantThreadActions
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     private static StreamingChatMessageContent? GenerateStreamingCodeInterpreterContent(string? assistantName, RunStepDetailsUpdate update)
@@ -994,6 +1168,9 @@ internal static class AssistantThreadActions
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private static AnnotationContent GenerateAnnotationContent(TextAnnotation annotation)
     {
@@ -1011,11 +1188,17 @@ internal static class AssistantThreadActions
         return
             new(annotation.TextToReplace)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             new()
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             {
                 Quote = annotation.TextToReplace,
@@ -1055,11 +1238,17 @@ internal static class AssistantThreadActions
                 [
                     new TextContent(pythonCode)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                     new TextContent(code)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 ])
             {
@@ -1102,11 +1291,17 @@ internal static class AssistantThreadActions
 
     private static ChatMessageContent GenerateFunctionCallContent(string agentName, IList<FunctionCallContent> functionCalls)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     private static ChatMessageContent GenerateFunctionCallContent(string agentName, FunctionCallContent[] functionSteps)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
@@ -1116,17 +1311,27 @@ internal static class AssistantThreadActions
 
         functionCallContent.Items.AddRange(functionCalls);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         functionCallContent.Items.AddRange(functionSteps);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         return functionCallContent;
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1155,7 +1360,10 @@ internal static class AssistantThreadActions
         };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionResultContent[] functionResults)
     {
@@ -1167,6 +1375,9 @@ internal static class AssistantThreadActions
             AuthorName = agentName
         };
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         foreach (FunctionResultContent functionResult in functionResults)
         {
@@ -1188,8 +1399,11 @@ internal static class AssistantThreadActions
         for (int index = 0; index < functionCalls.Length; ++index)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             functionTasks[index] = functionCalls[index].InvokeAsync(agent.Kernel, cancellationToken);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             functionTasks[index] = functionCalls[index].InvokeAsync(agent.Kernel, cancellationToken);
 =======
@@ -1213,6 +1427,9 @@ internal static class AssistantThreadActions
         {
             functionTasks[index] = functionSteps[index].InvokeAsync(agent.Kernel, cancellationToken);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

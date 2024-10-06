@@ -1,5 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
@@ -10,7 +14,10 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 using System.ComponentModel;
@@ -18,6 +25,9 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /// <summary>
@@ -48,7 +58,10 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <summary>
     /// Gets the label associated with this <see cref="AuthorRole"/>.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     public static readonly AuthorRole System = new("system");
@@ -64,6 +77,9 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <summary>
     /// Gets the label associated with this AuthorRole.
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// </summary>
     /// <remarks>
@@ -74,11 +90,17 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <summary>
     /// Creates a new <see cref="AuthorRole"/> instance with the provided label.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     /// </summary>
     /// <param name="label">The label to associate with this <see cref="AuthorRole"/>.</param>
     [JsonConstructor]
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// </summary>
@@ -88,7 +110,10 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     {
         Verify.NotNullOrWhiteSpace(label, nameof(label));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     /// Creates a new AuthorRole instance with the provided label.
     /// </summary>
     /// <param name="label"></param>
@@ -96,6 +121,9 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public AuthorRole(string label)
     {
         Verify.NotNullOrWhiteSpace(label, nameof(label));
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         this.Label = label!;
     }
@@ -103,6 +131,11 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <summary>
     /// Returns a value indicating whether two <see cref="AuthorRole"/> instances are equivalent, as determined by a
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -122,7 +155,10 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <param name="left"> the first <see cref="AuthorRole"/> instance to compare </param>
     /// <param name="right"> the second <see cref="AuthorRole"/> instance to compare </param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     /// Returns a value indicating whether two AuthorRole instances are equivalent, as determined by a
 >>>>>>> origin/main
     /// case-insensitive comparison of their labels.
@@ -155,6 +191,9 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// </summary>
     /// <param name="left"> the first <see cref="AuthorRole"/> instance to compare </param>
     /// <param name="right"> the second <see cref="AuthorRole"/> instance to compare </param>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <returns> false if left and right are both null or have equivalent labels; true otherwise </returns>
     public static bool operator !=(AuthorRole left, AuthorRole right)
@@ -166,6 +205,11 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
 
     /// <inheritdoc/>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -177,7 +221,10 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public override int GetHashCode()
         => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object obj)
         => obj is AuthorRole otherRole && this == otherRole;
@@ -196,6 +243,9 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <inheritdoc/>
     public override int GetHashCode()
         => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <inheritdoc/>

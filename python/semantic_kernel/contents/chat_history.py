@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import logging
 from collections.abc import Generator
@@ -26,7 +32,10 @@ from semantic_kernel.exceptions import (
     ContentSerializationError,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -39,16 +48,22 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 class ChatHistory(KernelBaseModel):
     """This class holds the history of chat messages from a chat conversation.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 class ChatHistory(KernelBaseModel):
@@ -67,6 +82,9 @@ class ChatHistory(KernelBaseModel):
     This class holds the history of chat messages from a chat conversation.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     Note: the constructor takes a system_message parameter, which is not part
@@ -78,11 +96,17 @@ class ChatHistory(KernelBaseModel):
     """
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     messages: list[ChatMessageContent]
 
@@ -91,7 +115,10 @@ class ChatHistory(KernelBaseModel):
 
         Optionally incorporating a message and/or a system message at the beginning of the chat history.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -103,6 +130,9 @@ class ChatHistory(KernelBaseModel):
         a system message at the beginning of the chat history.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         This constructor allows for flexible initialization with chat messages and an optional messages or a
@@ -113,11 +143,17 @@ class ChatHistory(KernelBaseModel):
         'system_message', the chat history is initialized with the provided messages as is.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Note: The 'system_message' is not retained as part of the class's attributes; it's used during
         initialization and then discarded. The rest of the keyword arguments are passed to the superclass
@@ -131,7 +167,10 @@ class ChatHistory(KernelBaseModel):
                     included at the start of the chat history.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -146,16 +185,22 @@ class ChatHistory(KernelBaseModel):
         constructor and handled according to the Pydantic model's behavior.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         system_message_content = data.pop("system_message", None)
 
         if system_message_content:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             system_message = ChatMessageContent(
                 role=AuthorRole.SYSTEM, content=system_message_content
             )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             system_message = ChatMessageContent(
                 role=AuthorRole.SYSTEM, content=system_message_content
@@ -169,6 +214,9 @@ class ChatHistory(KernelBaseModel):
             system_message = ChatMessageContent(role=ChatRole.SYSTEM, content=system_message_content)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
             if "messages" in data:
@@ -180,11 +228,17 @@ class ChatHistory(KernelBaseModel):
         super().__init__(**data)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     @field_validator("messages", mode="before")
     @classmethod
@@ -309,7 +363,10 @@ class ChatHistory(KernelBaseModel):
         encoding: str | None = None,
         metadata: dict[str, Any] | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -336,6 +393,9 @@ class ChatHistory(KernelBaseModel):
         metadata: Optional[Dict[str, Any]] = None,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> None:
         """Add a message to the history.
@@ -354,10 +414,13 @@ class ChatHistory(KernelBaseModel):
             return
         if "role" not in message:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             raise ContentInitializationError(
                 f"Dictionary must contain at least the role. Got: {message}"
             )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             raise ContentInitializationError(
                 f"Dictionary must contain at least the role. Got: {message}"
@@ -371,6 +434,9 @@ class ChatHistory(KernelBaseModel):
             raise ValueError(f"Dictionary must contain at least the role. Got: {message}")
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if encoding:
             message["encoding"] = encoding
@@ -379,11 +445,17 @@ class ChatHistory(KernelBaseModel):
         self.messages.append(ChatMessageContent(**message))
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def _prepare_for_add(
         self,
@@ -400,7 +472,10 @@ class ChatHistory(KernelBaseModel):
             kwargs["items"] = items
         return kwargs
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -409,6 +484,9 @@ class ChatHistory(KernelBaseModel):
         return {"role": role, "content": content}
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     def remove_message(self, message: ChatMessageContent) -> bool:
@@ -455,11 +533,17 @@ class ChatHistory(KernelBaseModel):
     def __str__(self) -> str:
         """Return a string representation of the history."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         chat_history_xml = Element(CHAT_HISTORY_TAG)
         for message in self.messages:
@@ -479,7 +563,10 @@ class ChatHistory(KernelBaseModel):
 
     def __eq__(self, other: Any) -> bool:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -494,6 +581,9 @@ class ChatHistory(KernelBaseModel):
     def __eq__(self, other: "ChatHistory") -> bool:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Check if two ChatHistory instances are equal."""
         if not isinstance(other, ChatHistory):
@@ -503,9 +593,12 @@ class ChatHistory(KernelBaseModel):
 
     @classmethod
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def from_rendered_prompt(cls, rendered_prompt: str) -> "ChatHistory":
         """Create a ChatHistory instance from a rendered prompt.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     def from_rendered_prompt(cls, rendered_prompt: str) -> "ChatHistory":
         """Create a ChatHistory instance from a rendered prompt.
@@ -521,6 +614,9 @@ class ChatHistory(KernelBaseModel):
         Create a ChatHistory instance from a rendered prompt.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Args:
@@ -530,11 +626,17 @@ class ChatHistory(KernelBaseModel):
             ChatHistory: The ChatHistory instance created from the rendered prompt.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         prompt_tag = "root"
         messages: list["ChatMessageContent"] = []
@@ -575,7 +677,10 @@ class ChatHistory(KernelBaseModel):
     def serialize(self) -> str:
         """Serializes the ChatHistory instance to a JSON string.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -630,6 +735,9 @@ class ChatHistory(KernelBaseModel):
         Serializes the ChatHistory instance to a JSON string.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Returns:
@@ -640,11 +748,17 @@ class ChatHistory(KernelBaseModel):
         """
         try:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             return self.model_dump_json(indent=2, exclude_none=True)
         except Exception as e:  # pragma: no cover
@@ -656,7 +770,10 @@ class ChatHistory(KernelBaseModel):
     def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":
         """Restores a ChatHistory instance from a JSON string.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -670,6 +787,9 @@ class ChatHistory(KernelBaseModel):
         Restores a ChatHistory instance from a JSON string.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Args:
@@ -686,11 +806,17 @@ class ChatHistory(KernelBaseModel):
         try:
             return ChatHistory.model_validate_json(chat_history_json)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         except Exception as e:
             raise ContentInitializationError(f"Invalid JSON format: {e}")
@@ -709,7 +835,10 @@ class ChatHistory(KernelBaseModel):
     def load_chat_history_from_file(cls, file_path: str) -> "ChatHistory":
         """Loads the ChatHistory from a file.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -733,6 +862,9 @@ class ChatHistory(KernelBaseModel):
         Loads the ChatHistory from a file.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Args:
@@ -742,10 +874,13 @@ class ChatHistory(KernelBaseModel):
             ChatHistory: The deserialized ChatHistory instance.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         with open(file_path) as file:
             json_str = file.read()
         return cls.restore_chat_history(json_str)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         with open(file_path) as file:
             json_str = file.read()
@@ -761,4 +896,7 @@ class ChatHistory(KernelBaseModel):
         return ChatHistory.restore_chat_history(json_str)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

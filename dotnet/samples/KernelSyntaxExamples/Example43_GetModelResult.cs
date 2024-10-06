@@ -3,7 +3,10 @@
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< HEAD
@@ -16,6 +19,9 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using RepoUtils;
 using Xunit;
@@ -51,9 +57,12 @@ public class Example43_GetModelResult : BaseTest
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
     {
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
     {
@@ -78,6 +87,9 @@ public class Example43_GetModelResult : BaseTest
     {
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 }

@@ -23,13 +23,19 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     [Experimental("SKEXP0010")]
     [JsonIgnore]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public AzureChatDataSource? AzureChatDataSource
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public AzureChatDataSource? AzureChatDataSource
 =======
     public AzureSearchChatDataSource? AzureChatDataSource
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         get => this._azureChatDataSource;
@@ -82,10 +88,13 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
         var openAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
         openAIExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
         openAIExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
@@ -98,6 +107,9 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return openAIExecutionSettings!;
     }
@@ -125,9 +137,12 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
 
     #region private ================================================================================
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
     private AzureChatDataSource? _azureChatDataSource;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
     private AzureChatDataSource? _azureChatDataSource;
@@ -135,6 +150,9 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     [Experimental("SKEXP0010")]
     private AzureSearchChatDataSource? _azureChatDataSource;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     #endregion

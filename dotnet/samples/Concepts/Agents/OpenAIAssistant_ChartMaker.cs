@@ -22,23 +22,32 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         OpenAIClientProvider provider = this.GetClientProvider();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         FileClient fileClient = provider.Client.GetFileClient();
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         FileClient fileClient = provider.Client.GetFileClient();
 =======
         OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
                 provider,
                 new(this.Model)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 kernel: new(),
                 provider,
@@ -52,6 +61,9 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 {
                     Instructions = AgentInstructions,
@@ -59,8 +71,11 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 });
 =======
@@ -70,6 +85,9 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
                 },
                 kernel: new());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Create a chat for agent interaction.
@@ -102,6 +120,10 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         async Task InvokeAgentAsync(string input)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -112,12 +134,18 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 =======
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(new(AuthorRole.User, input));

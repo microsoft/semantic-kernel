@@ -41,7 +41,10 @@ internal static partial class OpenAIAssistantAgentLogMessages
         string channelType,
         string threadId);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -71,5 +74,8 @@ internal static partial class OpenAIAssistantAgentLogMessages
         string channelType,
         string threadId);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

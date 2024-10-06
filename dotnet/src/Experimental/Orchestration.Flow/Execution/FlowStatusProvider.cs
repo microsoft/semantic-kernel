@@ -6,8 +6,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.ChatCompletion;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 using Microsoft.SemanticKernel.ChatCompletion;
 =======
@@ -17,14 +20,20 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Microsoft.SemanticKernel.Memory;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
@@ -32,6 +41,9 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /// <summary>
@@ -148,8 +160,11 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
             try
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
 =======
@@ -159,6 +174,9 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? new List<ReActStep>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
             catch
@@ -169,8 +187,11 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return [];
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         return [];
 =======
@@ -180,6 +201,9 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         return new List<ReActStep>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 

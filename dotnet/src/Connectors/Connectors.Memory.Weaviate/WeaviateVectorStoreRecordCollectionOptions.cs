@@ -15,13 +15,19 @@ public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord> where TR
     /// Gets or sets an optional custom mapper to use when converting between the data model and Weaviate record.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public IVectorStoreRecordMapper<TRecord, JsonNode>? JsonNodeCustomMapper { get; init; } = null;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public IVectorStoreRecordMapper<TRecord, JsonNode>? JsonNodeCustomMapper { get; init; } = null;
 =======
     public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>

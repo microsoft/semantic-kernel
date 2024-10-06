@@ -3,11 +3,17 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 using System.Text.Json;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using static Microsoft.SemanticKernel.KernelParameterMetadata;
 
@@ -19,8 +25,11 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelReturnParameterMetadata
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     internal static readonly KernelReturnParameterMetadata Empty = new();
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     internal static readonly KernelReturnParameterMetadata Empty = new();
 =======
@@ -34,6 +43,9 @@ public sealed class KernelReturnParameterMetadata
         }
     }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>The description of the return parameter.</summary>
@@ -43,12 +55,15 @@ public sealed class KernelReturnParameterMetadata
     /// <summary>The schema of the return parameter, potentially lazily-initialized.</summary>
     private KernelParameterMetadata.InitializedSchema? _schema;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
     public KernelReturnParameterMetadata() { }
 
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
@@ -75,6 +90,9 @@ public sealed class KernelReturnParameterMetadata
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public KernelReturnParameterMetadata(KernelReturnParameterMetadata metadata)
     {
@@ -82,7 +100,10 @@ public sealed class KernelReturnParameterMetadata
         this._parameterType = metadata._parameterType;
         this._schema = metadata._schema;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         this._jsonSerializerOptions = metadata._jsonSerializerOptions;
@@ -98,6 +119,9 @@ public sealed class KernelReturnParameterMetadata
         this._schema = metadata._schema;
         this._jsonSerializerOptions = jsonSerializerOptions;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -135,8 +159,11 @@ public sealed class KernelReturnParameterMetadata
     public KernelJsonSchema? Schema
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         get => (this._schema ??= InferSchema(this.ParameterType, defaultValue: null, this.Description)).Schema;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         get => (this._schema ??= InferSchema(this.ParameterType, defaultValue: null, this.Description)).Schema;
 =======
@@ -144,6 +171,9 @@ public sealed class KernelReturnParameterMetadata
         [RequiresDynamicCode("Uses reflection to generate schema if no JSOs are provided at construction time, making it incompatible with AOT scenarios.")]
         get => (this._schema ??= InferSchema(this.ParameterType, defaultValue: null, this.Description, this._jsonSerializerOptions)).Schema;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
     }

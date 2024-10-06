@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Collections.Generic;
 using System.Text;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.Collections.Generic;
 using System.Text;
@@ -13,6 +16,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
@@ -32,14 +38,20 @@ public sealed class OpenAIFunctionToolCallTests
     {
         // Arrange
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, string.Empty);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, string.Empty);
 =======
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, BinaryData.FromString(args));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
@@ -53,13 +65,19 @@ public sealed class OpenAIFunctionToolCallTests
     {
         // Arrange
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}");
 =======
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", BinaryData.FromString("{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}"));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
@@ -107,13 +125,19 @@ public sealed class OpenAIFunctionToolCallTests
         Assert.Equal("test-id", toolCall.Id);
         Assert.Equal("test-function", toolCall.FunctionName);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Equal("test-argument", toolCall.FunctionArguments);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Equal("test-argument", toolCall.FunctionArguments);
 =======
         Assert.Equal("test-argument", toolCall.FunctionArguments.ToString());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 }

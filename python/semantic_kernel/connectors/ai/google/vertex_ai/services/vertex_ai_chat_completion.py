@@ -10,10 +10,13 @@ from pydantic import ValidationError
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
@@ -27,6 +30,9 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.function_calling_utils import merge_function_results
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.google.shared_utils import (
     filter_system_message,
@@ -69,7 +75,10 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInvalidExecutionSettingsError,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
@@ -78,6 +87,9 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 
@@ -157,8 +169,11 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
     @override
     @trace_chat_completion(VertexAIBase.MODEL_PROVIDER_NAME)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     async def _inner_get_chat_message_contents(
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     async def _inner_get_chat_message_contents(
 =======
@@ -168,6 +183,9 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
     async def get_chat_message_contents(
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self,
         chat_history: "ChatHistory",
@@ -206,11 +224,17 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         ):
             completions = await self._send_chat_request(chat_history, settings)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             chat_history.add_message(message=completions[0])
             function_calls = [
@@ -228,13 +252,19 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if (fc_count := len(function_calls)) == 0:
                 return completions

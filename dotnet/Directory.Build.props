@@ -1,5 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿<Project>
+=======
+<Project>
+>>>>>>> Stashed changes
 =======
 <Project>
 >>>>>>> Stashed changes
@@ -19,11 +23,17 @@
     <!-- In "main" branch this flag should be always "false". -->
     <IsReleaseCandidate>false</IsReleaseCandidate>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     <IsReleaseCandidate>true</IsReleaseCandidate>
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   </PropertyGroup>
   

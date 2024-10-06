@@ -3,13 +3,19 @@
 using System.Threading.Tasks;
 using Azure.Identity;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;

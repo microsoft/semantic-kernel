@@ -40,13 +40,19 @@ internal partial class ClientCore
             };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
 =======
             ClientResult<OpenAIEmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             var embeddings = response.Value;
 
@@ -58,13 +64,19 @@ internal partial class ClientCore
             for (var i = 0; i < embeddings.Count; i++)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 result.Add(embeddings[i].Vector);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 result.Add(embeddings[i].Vector);
 =======
                 result.Add(embeddings[i].ToFloats());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
         }

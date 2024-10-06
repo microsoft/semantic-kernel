@@ -20,8 +20,11 @@ You can also use environment variables if you prefer.
 To set your secrets with Secret Manager:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
 =======
@@ -31,6 +34,9 @@ To set your secrets with Secret Manager:
 ```
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 cd dotnet/samples/KernelSyntaxExamples
 
@@ -100,8 +106,11 @@ dotnet user-secrets set "Kusto:ConnectionString" "..."
 To set your secrets with environment variables, use these names:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
 =======
@@ -111,6 +120,9 @@ To set your secrets with environment variables, use these names:
 ```
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 # OpenAI
 OpenAI__ModelId
@@ -186,8 +198,11 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 `AuthenticateRequestAsyncCallback` is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenAPI plugin.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
 =======
@@ -197,6 +212,9 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);
 ```
@@ -217,8 +235,11 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the credentia
 The following code demonstrates how to use this provider:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
 =======
@@ -228,6 +249,9 @@ The following code demonstrates how to use this provider:
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 var basicAuthProvider = new BasicAuthenticationProvider(() =>
 {
@@ -247,8 +271,11 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the token and
 The following code demonstrates how to use this provider:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
 =======
@@ -258,6 +285,9 @@ The following code demonstrates how to use this provider:
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 var bearerAuthProvider = new BearerAuthenticationProvider(() =>
 {
@@ -282,8 +312,11 @@ To construct this provider, the caller must specify:
 - _Redirect URI_ - for redirecting the user back to the application. (When running locally, this is typically http://localhost.)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
 =======
@@ -293,6 +326,9 @@ To construct this provider, the caller must specify:
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 var msalAuthProvider = new InteractiveMsalAuthenticationProvider(
     Env.Var("AZURE_KEYVAULT_CLIENTID"), // clientId

@@ -164,7 +164,10 @@ internal static class ChatHistoryReducerExtensions
         return true;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -185,5 +188,8 @@ internal static class ChatHistoryReducerExtensions
         return history;
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

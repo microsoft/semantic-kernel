@@ -5,24 +5,36 @@ from unittest.mock import Mock
 import pytest
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
 from semantic_kernel.exceptions import PlannerInvalidPlanError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -30,7 +42,10 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -38,6 +53,9 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
@@ -45,10 +63,13 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_parser impor
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def create_mock_function(
     kernel_function_metadata: KernelFunctionMetadata,
 ) -> KernelFunction:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def create_mock_function(
     kernel_function_metadata: KernelFunctionMetadata,
@@ -62,6 +83,9 @@ def create_mock_function(
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> KernelFunction:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     mock_function = Mock(spec=KernelFunction)
     mock_function.metadata = kernel_function_metadata
@@ -71,8 +95,11 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
     mock_function.is_prompt = kernel_function_metadata.is_prompt
     mock_function.prompt_execution_settings = PromptExecutionSettings()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     mock_function.function_copy.return_value = mock_function
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     mock_function.function_copy.return_value = mock_function
 =======
@@ -81,6 +108,9 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     return mock_function
 
@@ -104,8 +134,11 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
             function=kernel_function_metadata, value=result_string, metadata={}
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         kernel.add_plugin(KernelPlugin(name=plugin_name, functions=[mock_function]))
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         kernel.add_plugin(KernelPlugin(name=plugin_name, functions=[mock_function]))
 =======
@@ -115,6 +148,9 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
         kernel.plugins.add(KernelPlugin(name=plugin_name, functions=[mock_function]))
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     return kernel
@@ -143,11 +179,17 @@ def test_can_call_to_plan_from_xml():
 
     plan_string = """<plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <function.SummarizePlugin-Summarize/>
     <function.WriterPlugin-Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
@@ -155,7 +197,10 @@ def test_can_call_to_plan_from_xml():
         appendToResult="PLAN_RESULT"/>
     <function.send_email-SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -166,17 +211,26 @@ def test_can_call_to_plan_from_xml():
     <function.send_email.SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 </plan>"""
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
     plan = SequentialPlanParser.to_plan_from_xml(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         xml_string=plan_string,
         goal=goal,
@@ -189,7 +243,10 @@ def test_can_call_to_plan_from_xml():
         == "Summarize an input, translate to french, and e-mail to John Doe"
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -202,6 +259,9 @@ def test_can_call_to_plan_from_xml():
     assert plan.description == "Summarize an input, translate to french, and e-mail to John Doe"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     assert len(plan._steps) == 4
@@ -229,10 +289,13 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
 
     # Act and Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     with pytest.raises(PlannerInvalidPlanError):
         SequentialPlanParser.to_plan_from_xml(
             "<someTag>", "Solve the equation x^2 = 2.", kernel
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     with pytest.raises(PlannerInvalidPlanError):
         SequentialPlanParser.to_plan_from_xml(
@@ -250,6 +313,9 @@ def test_invalid_plan_execute_plan_returns_invalid_result():
             SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )
 
@@ -261,8 +327,11 @@ def test_can_create_plan_with_text_nodes():
         <goal>Test the functionFlowRunner</goal>
         <plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <function.MockPlugin-Echo input="Hello World" />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
@@ -272,6 +341,9 @@ def test_can_create_plan_with_text_nodes():
         <function.MockPlugin.Echo input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         This is some text
         </plan>"""
@@ -285,8 +357,11 @@ def test_can_create_plan_with_text_nodes():
         plan_text,
         goal_text,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         kernel,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         kernel,
 =======
@@ -296,6 +371,9 @@ def test_can_create_plan_with_text_nodes():
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
 
@@ -314,9 +392,12 @@ def test_can_create_plan_with_text_nodes():
             """
         <plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <function.MockPlugin-Echo input="Hello World" />
         <function.MockPlugin-DoesNotExist input="Hello World" />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
         <function.MockPlugin-DoesNotExist input="Hello World" />
@@ -329,6 +410,9 @@ def test_can_create_plan_with_text_nodes():
         <function.MockPlugin.DoesNotExist input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         </plan>""",
             True,
@@ -337,9 +421,12 @@ def test_can_create_plan_with_text_nodes():
             """
         <plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <function.MockPlugin-Echo input="Hello World" />
         <function.MockPlugin-DoesNotExist input="Hello World" />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
         <function.MockPlugin-DoesNotExist input="Hello World" />
@@ -352,6 +439,9 @@ def test_can_create_plan_with_text_nodes():
         <function.MockPlugin.DoesNotExist input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         </plan>""",
             False,
@@ -359,10 +449,13 @@ def test_can_create_plan_with_text_nodes():
     ],
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_can_create_plan_with_invalid_function_nodes(
     plan_text, allow_missing_functions
 ):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def test_can_create_plan_with_invalid_function_nodes(
     plan_text, allow_missing_functions
@@ -376,6 +469,9 @@ def test_can_create_plan_with_invalid_function_nodes(
 def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_functions):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     # Arrange
     functions = [
@@ -386,18 +482,27 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
     if allow_missing_functions:
         plan = SequentialPlanParser.to_plan_from_xml(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             xml_string=plan_text,
             goal="",
             kernel=kernel,
             allow_missing_functions=allow_missing_functions,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -407,6 +512,9 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
             allow_missing_functions,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )
 
@@ -421,11 +529,17 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
         assert plan._steps[1].plugin_name == plan.__class__.__name__
         assert plan._steps[1].name.startswith("plan_")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         assert plan._steps[1].description == "MockPlugin-DoesNotExist"
     else:
@@ -435,7 +549,10 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
                 "",
                 kernel,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -449,6 +566,9 @@ def test_can_create_plan_with_invalid_function_nodes(plan_text, allow_missing_fu
                 allow_missing_functions,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             )
 
@@ -459,8 +579,11 @@ def test_can_create_plan_with_other_text():
     plan_text1 = """Possible result: <goal>Test the functionFlowRunner</goal>
         <plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <function.MockPlugin-Echo input="Hello World" />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
@@ -470,14 +593,20 @@ def test_can_create_plan_with_other_text():
         <function.MockPlugin.Echo input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         This is some text
         </plan>"""
     plan_text2 = """
         <plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <function.MockPlugin-Echo input="Hello World" />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
@@ -487,6 +616,9 @@ def test_can_create_plan_with_other_text():
         <function.MockPlugin.Echo input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         This is some text
         </plan>
@@ -495,8 +627,11 @@ def test_can_create_plan_with_other_text():
     plan_text3 = """
         <plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <function.MockPlugin-Echo input="Hello World" />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
 =======
@@ -506,6 +641,9 @@ def test_can_create_plan_with_other_text():
         <function.MockPlugin.Echo input="Hello World" />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         This is some text
         </plan>
@@ -521,8 +659,11 @@ def test_can_create_plan_with_other_text():
         plan_text1,
         goal_text,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         kernel,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         kernel,
 =======
@@ -532,14 +673,20 @@ def test_can_create_plan_with_other_text():
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
     plan2 = SequentialPlanParser.to_plan_from_xml(
         plan_text2,
         goal_text,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         kernel,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         kernel,
 =======
@@ -549,14 +696,20 @@ def test_can_create_plan_with_other_text():
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
     plan3 = SequentialPlanParser.to_plan_from_xml(
         plan_text3,
         goal_text,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         kernel,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         kernel,
 =======
@@ -566,6 +719,9 @@ def test_can_create_plan_with_other_text():
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
 
@@ -593,8 +749,11 @@ def test_can_create_plan_with_other_text():
     "plan_text",
     [
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """<plan> <function.CodeSearch-codesearchresults_post organization="MyOrg" project="Proj" \
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """<plan> <function.CodeSearch-codesearchresults_post organization="MyOrg" project="Proj" \
 =======
@@ -604,6 +763,9 @@ def test_can_create_plan_with_other_text():
         """<plan> <function.CodeSearch.codesearchresults_post organization="MyOrg" project="Proj" \
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" \
                 payload="{&quot;searchText&quot;:&quot;test&quot;,&quot;$top&quot;:3,&quot;filters&quot;\
@@ -612,8 +774,11 @@ def test_can_create_plan_with_other_text():
                             "RESULT__TOP_THREE_RESULTS" /> </plan>""",
         """<plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
   <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
 =======
@@ -623,6 +788,9 @@ def test_can_create_plan_with_other_text():
   <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" \
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     api_version="7.1-preview.1" payload="{&quot;searchText&quot;: &quot;MySearchText&quot;, \
         &quot;filters&quot;: {&quot;pathFilters&quot;: [&quot;MyRepo&quot;]} }" \
@@ -630,8 +798,11 @@ def test_can_create_plan_with_other_text():
 </plan><!-- END -->""",
         """<plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
   <function.CodeSearch-codesearchresults_post organization="MyOrg" project="MyProject" \
 =======
@@ -641,6 +812,9 @@ def test_can_create_plan_with_other_text():
   <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" \
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" \
         payload="{ 'searchText': 'MySearchText', 'filters': { 'Project': ['MyProject'], \
@@ -667,8 +841,11 @@ def test_can_create_plan_with_open_api_plugin(plan_text):
         plan_text,
         "",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         kernel,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         kernel,
 =======
@@ -678,6 +855,9 @@ def test_can_create_plan_with_open_api_plugin(plan_text):
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
 
@@ -693,10 +873,13 @@ def test_can_create_plan_with_ignored_nodes():
     goal_text = "Test the functionFlowRunner"
     plan_text = """<plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <function.MockPlugin-Echo input="Hello World" />
         <tag>Some other tag</tag>
         <function.MockPlugin-Echo />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         <function.MockPlugin-Echo input="Hello World" />
         <tag>Some other tag</tag>
@@ -712,6 +895,9 @@ def test_can_create_plan_with_ignored_nodes():
         <function.MockPlugin.Echo />
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         </plan>"""
     functions = [
@@ -724,8 +910,11 @@ def test_can_create_plan_with_ignored_nodes():
         plan_text,
         goal_text,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         kernel,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         kernel,
 =======
@@ -735,6 +924,9 @@ def test_can_create_plan_with_ignored_nodes():
         SequentialPlanParser.get_plugin_function(kernel),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
 

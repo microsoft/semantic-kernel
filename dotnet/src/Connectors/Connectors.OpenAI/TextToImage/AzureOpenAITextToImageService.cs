@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 using System;
@@ -132,7 +138,10 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// </summary>
     /// <param name="deploymentName">Deployment name identifier</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// <param name="endpoint">Azure OpenAI deployment URL</param>
@@ -179,6 +188,9 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// </summary>
     /// <param name="deploymentName">Deployment name identifier</param>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service.</param>
     /// <param name="modelId">Model identifier</param>

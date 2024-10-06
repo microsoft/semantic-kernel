@@ -3,10 +3,13 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Data;
 
@@ -22,6 +25,9 @@ namespace Microsoft.SemanticKernel;
 namespace Microsoft.SemanticKernel.Data;
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /// <summary>
@@ -39,8 +45,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddVolatileVectorStore(this IServiceCollection services, string? serviceId = default)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         services.AddKeyedSingleton<IVectorStore, VolatileVectorStore>(serviceId);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         services.AddKeyedSingleton<IVectorStore, VolatileVectorStore>(serviceId);
 =======
@@ -84,6 +93,9 @@ public static class ServiceCollectionExtensions
             });
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return services;
     }

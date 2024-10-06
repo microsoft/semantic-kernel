@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from typing import Any
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from typing import Any
 =======
@@ -12,6 +15,9 @@ from typing import Any
 from typing import List, Optional
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from pydantic import Field
@@ -23,11 +29,17 @@ from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX, PLUGIN_NAME_RE
 
 class KernelFunctionMetadata(KernelBaseModel):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """The kernel function metadata."""
 
@@ -52,7 +64,10 @@ class KernelFunctionMetadata(KernelBaseModel):
     def __eq__(self, other: object) -> bool:
         """Compare to another KernelFunctionMetadata instance.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -69,6 +84,9 @@ class KernelFunctionMetadata(KernelBaseModel):
         Compare to another KernelFunctionMetadata instance.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Args:

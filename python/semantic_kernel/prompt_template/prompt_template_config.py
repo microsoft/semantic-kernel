@@ -1,10 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import logging
 from typing import TypeVar
@@ -27,7 +33,10 @@ PromptExecutionSettingsT = TypeVar(
     "PromptExecutionSettingsT", bound=PromptExecutionSettings
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -46,6 +55,9 @@ from semantic_kernel.prompt_template.input_variable import InputVariable
 PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecutionSettings)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -53,11 +65,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class PromptTemplateConfig(KernelBaseModel):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """Configuration for a prompt template.
 
@@ -92,7 +110,10 @@ class PromptTemplateConfig(KernelBaseModel):
                 )
         return self
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -104,6 +125,9 @@ class PromptTemplateConfig(KernelBaseModel):
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     @field_validator("execution_settings", mode="before")
@@ -111,11 +135,17 @@ class PromptTemplateConfig(KernelBaseModel):
     def rewrite_execution_settings(
         cls,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         settings: None | (
             PromptExecutionSettings
@@ -124,7 +154,10 @@ class PromptTemplateConfig(KernelBaseModel):
         ),
     ) -> dict[str, PromptExecutionSettings]:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -134,17 +167,26 @@ class PromptTemplateConfig(KernelBaseModel):
     ) -> Dict[str, PromptExecutionSettings]:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Rewrite execution settings to a dictionary."""
         if not settings:
             return {}
         if isinstance(settings, PromptExecutionSettings):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             return {settings.service_id or DEFAULT_SERVICE_NAME: settings}
         if isinstance(settings, list):
@@ -162,7 +204,10 @@ class PromptTemplateConfig(KernelBaseModel):
 
     def get_kernel_parameter_metadata(self) -> list[KernelParameterMetadata]:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -181,6 +226,9 @@ class PromptTemplateConfig(KernelBaseModel):
     def get_kernel_parameter_metadata(self) -> List[KernelParameterMetadata]:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Get the kernel parameter metadata for the input variables."""
         return [
@@ -189,9 +237,12 @@ class PromptTemplateConfig(KernelBaseModel):
                 description=variable.description,
                 default_value=variable.default,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 type_=variable.json_schema,  # TODO (moonbox3): update to handle complex JSON schemas
                 is_required=variable.is_required,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 type_=variable.json_schema,  # TODO (moonbox3): update to handle complex JSON schemas
                 is_required=variable.is_required,
@@ -205,6 +256,9 @@ class PromptTemplateConfig(KernelBaseModel):
                 expose=True,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             )
             for variable in self.input_variables
@@ -216,11 +270,17 @@ class PromptTemplateConfig(KernelBaseModel):
         if not json_str:
             raise ValueError("json_str is empty")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         try:
             return cls.model_validate_json(json_str)
@@ -230,7 +290,10 @@ class PromptTemplateConfig(KernelBaseModel):
                 f"specified JSON string: {json_str} with exception: {exc}"
             ) from exc
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -252,6 +315,9 @@ class PromptTemplateConfig(KernelBaseModel):
         return config
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     @classmethod
@@ -261,18 +327,27 @@ class PromptTemplateConfig(KernelBaseModel):
         description: str,
         template: str,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         input_variables: list[InputVariable] = [],
         execution_settings: dict[str, PromptExecutionSettings] = {},
         allow_dangerously_set_content: bool = False,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -281,6 +356,9 @@ class PromptTemplateConfig(KernelBaseModel):
         execution_settings: Dict[str, PromptExecutionSettings] = {},
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> "PromptTemplateConfig":
         """Restore a PromptTemplateConfig instance from the specified parameters.
@@ -290,18 +368,27 @@ class PromptTemplateConfig(KernelBaseModel):
             description: The description of the prompt template.
             template: The template for the prompt.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             template_format: The format of the template, should be 'semantic-kernel', 'jinja2' or 'handlebars'.
             input_variables: The input variables for the prompt.
             execution_settings: The execution settings for the prompt.
             allow_dangerously_set_content: Allow content without encoding.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -309,6 +396,9 @@ class PromptTemplateConfig(KernelBaseModel):
             execution_settings: The execution settings for the prompt.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Returns:
@@ -322,8 +412,11 @@ class PromptTemplateConfig(KernelBaseModel):
             input_variables=input_variables,
             execution_settings=execution_settings,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             allow_dangerously_set_content=allow_dangerously_set_content,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             allow_dangerously_set_content=allow_dangerously_set_content,
 =======
@@ -332,5 +425,8 @@ class PromptTemplateConfig(KernelBaseModel):
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )

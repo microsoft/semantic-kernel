@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from typing import TYPE_CHECKING, Any
 
@@ -29,7 +35,10 @@ class KernelArguments(dict):
 
         This is a dict-like class with the additional field for the execution_settings.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -49,17 +58,26 @@ class KernelArguments(dict):
         this is a dict-like class with the additional field for the execution_settings.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         This class is derived from a dict, hence behaves the same way,
         just adds the execution_settings as a dict, with service_id and the settings.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Args:
             settings (PromptExecutionSettings | List[PromptExecutionSettings] | None):
@@ -88,7 +106,10 @@ class KernelArguments(dict):
         has_execution_settings = self.execution_settings is not None and len(self.execution_settings) > 0
         return has_arguments or has_execution_settings
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -109,4 +130,7 @@ class KernelArguments(dict):
         self.execution_settings: Optional[Dict[str, "PromptExecutionSettings"]] = settings_dict
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

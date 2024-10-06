@@ -57,24 +57,36 @@ kernel = Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 api_key, org_id = sk.openai_settings_from_dot_env()
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 service_id="chat-gpt"
 kernel.add_service(
     OpenAIChatCompletion(
         service_id=service_id,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         ai_model_id="gpt-3.5-turbo",
         api_key=api_key,
         org_id=org_id
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
 )
@@ -84,7 +96,10 @@ kernel.add_service(
 #   AzureChatCompletion(
 #       service_id=service_id,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 # deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
@@ -95,6 +110,9 @@ kernel.add_service(
 #       base_url=endpoint,
 #       api_key=api_key
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 #   )
 # )
@@ -102,11 +120,17 @@ kernel.add_service(
 # Define the request settings
 req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
@@ -126,11 +150,17 @@ Give me the TLDR in exactly 5 words."""
 
 prompt_template_config = PromptTemplateConfig(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 prompt_template_config = sk.PromptTemplateConfig(
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     template=prompt,
     name="tldr",
@@ -142,11 +172,17 @@ function = kernel.add_function(
     function_name="tldr_function",
     plugin_name="tldr_plugin",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 function = kernel.create_function_from_prompt(
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     prompt_template_config=prompt_template_config,
 )
@@ -173,13 +209,19 @@ summarize = kernel.add_function(
     prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
     prompt_template_settings=req_settings,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 summarize = kernel.create_function_from_prompt(
     template="{{$input}}\n\nOne line TLDR with the fewest words."
     execution_settings=req_settings,
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 )
 
@@ -226,7 +268,10 @@ Python notebooks:
 - [Returning multiple results per prompt](./samples/getting_started/10-multiple-results-per-prompt.ipynb)
 - [Streaming completions with Semantic Kernel](./samples/getting_started/11-streaming-completions.ipynb)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 - [Getting started with Semantic Kernel](./notebooks/00-getting-started.ipynb)
@@ -242,6 +287,9 @@ Python notebooks:
 - [Returning multiple results per prompt](./notebooks/10-multiple-results-per-prompt.ipynb)
 - [Streaming completions with Semantic Kernel](./notebooks/11-streaming-completions.ipynb)
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 # SK Frequently Asked Questions

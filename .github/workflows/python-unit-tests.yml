@@ -15,6 +15,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -44,7 +49,10 @@ jobs:
         run: irm https://astral.sh/uv/install.ps1 | iex
         shell: powershell
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
     strategy:
       fail-fast: true
@@ -79,6 +87,9 @@ jobs:
       - name: Install poetry
         run: pipx install poetry
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -134,7 +145,10 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras --dev
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
       - name: Upgrade pip
@@ -146,6 +160,9 @@ jobs:
           poetry install --without chromadb --without hugging_face --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant --without redis
           poetry install --without chromadb --without hugging_face --without azure_cognitive_search --without weaviate --without pinecone --without postgres --without qdrant
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       - name: Test with pytest
         run: uv run pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt      
@@ -168,7 +185,10 @@ jobs:
       - name: Minimize uv cache
         run: uv cache prune --ci
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
           cache: "poetry"
@@ -191,4 +211,7 @@ jobs:
           overwrite: true
           retention-days: 1
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

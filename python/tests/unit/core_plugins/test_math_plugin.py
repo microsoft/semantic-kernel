@@ -35,10 +35,13 @@ def test_can_be_imported():
     ],
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_add_when_valid_parameters_should_succeed(
     initial_value, amount, expected_result
 ):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def test_add_when_valid_parameters_should_succeed(
     initial_value, amount, expected_result
@@ -52,6 +55,9 @@ def test_add_when_valid_parameters_should_succeed(
 def test_add_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     # Arrange
     plugin = MathPlugin()
@@ -78,10 +84,13 @@ def test_add_when_valid_parameters_should_succeed(initial_value, amount, expecte
     ],
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_subtract_when_valid_parameters_should_succeed(
     initial_value, amount, expected_result
 ):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def test_subtract_when_valid_parameters_should_succeed(
     initial_value, amount, expected_result
@@ -95,6 +104,9 @@ def test_subtract_when_valid_parameters_should_succeed(
 def test_subtract_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     # Arrange
     plugin = MathPlugin()
@@ -130,9 +142,12 @@ def test_add_when_invalid_initial_value_should_throw(initial_value):
 
     # Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     with pytest.raises(ValueError):
         plugin.add(**arguments)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     with pytest.raises(ValueError):
         plugin.add(**arguments)
@@ -148,6 +163,9 @@ def test_add_when_invalid_initial_value_should_throw(initial_value):
     assert exception.type == ValueError
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -174,9 +192,12 @@ def test_add_when_invalid_amount_should_throw(amount):
 
     # Act / Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     with pytest.raises(ValueError):
         plugin.add(**arguments)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     with pytest.raises(ValueError):
         plugin.add(**arguments)
@@ -191,6 +212,9 @@ def test_add_when_invalid_amount_should_throw(amount):
     assert exception.type == ValueError
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -217,9 +241,12 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
 
     # Act / Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     with pytest.raises(ValueError):
         plugin.subtract(**arguments)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     with pytest.raises(ValueError):
         plugin.subtract(**arguments)
@@ -235,6 +262,9 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
     assert exception.type == ValueError
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -261,9 +291,12 @@ def test_subtract_when_invalid_amount_should_throw(amount):
 
     # Act / Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     with pytest.raises(ValueError):
         plugin.subtract(**arguments)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     with pytest.raises(ValueError):
         plugin.subtract(**arguments)
@@ -279,4 +312,7 @@ def test_subtract_when_invalid_amount_should_throw(amount):
     assert exception.type == ValueError
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -13,7 +17,10 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
@@ -24,6 +31,9 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /// <summary>
@@ -32,8 +42,11 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 public class FlowOrchestrator
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private readonly IKernelBuilder _kernelBuilder;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     private readonly IKernelBuilder _kernelBuilder;
 =======
@@ -43,6 +56,9 @@ public class FlowOrchestrator
     private readonly KernelBuilder _kernelBuilder;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     private readonly IFlowStatusProvider _flowStatusProvider;
@@ -63,8 +79,11 @@ public class FlowOrchestrator
     /// <param name="config">Optional configuration object</param>
     public FlowOrchestrator(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         IKernelBuilder kernelBuilder,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         IKernelBuilder kernelBuilder,
 =======
@@ -74,6 +93,9 @@ public class FlowOrchestrator
         KernelBuilder kernelBuilder,
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         IFlowStatusProvider flowStatusProvider,
         Dictionary<object, string?>? globalPluginCollection = null,
@@ -85,8 +107,11 @@ public class FlowOrchestrator
         this._kernelBuilder = kernelBuilder;
         this._flowStatusProvider = flowStatusProvider;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         this._globalPluginCollection = globalPluginCollection ?? [];
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         this._globalPluginCollection = globalPluginCollection ?? [];
 =======
@@ -96,6 +121,9 @@ public class FlowOrchestrator
         this._globalPluginCollection = globalPluginCollection ?? new Dictionary<object, string?>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         this._flowValidator = validator ?? new FlowValidator();
         this._config = config;
@@ -108,6 +136,10 @@ public class FlowOrchestrator
     /// <param name="sessionId">execution session id</param>
     /// <param name="input">current input</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -120,7 +152,10 @@ public class FlowOrchestrator
         [Description("Execution arguments")]
         KernelArguments? kernelArguments = null)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
     /// <param name="kernelArguments">execution kernel arguments</param>
@@ -142,6 +177,9 @@ public class FlowOrchestrator
         ContextVariables? contextVariables = null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         try
@@ -151,6 +189,10 @@ public class FlowOrchestrator
         catch (Exception ex)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -160,7 +202,10 @@ public class FlowOrchestrator
         var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalPluginCollection, this._config);
         return await executor.ExecuteFlowAsync(flow, sessionId, input, kernelArguments ?? new KernelArguments()).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -171,6 +216,9 @@ public class FlowOrchestrator
         return await executor.ExecuteAsync(flow, sessionId, input, contextVariables ?? new ContextVariables(null)).ConfigureAwait(false);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 }

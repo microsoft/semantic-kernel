@@ -7,6 +7,10 @@ from openai import AsyncAzureOpenAI
 from openai.resources.embeddings import AsyncEmbeddings
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -17,12 +21,18 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import 
     AzureTextEmbedding,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
@@ -34,6 +44,10 @@ def test_azure_text_embedding_init(azure_openai_unit_test_env) -> None:
     assert azure_text_embedding.client is not None
     assert isinstance(azure_text_embedding.client, AsyncAzureOpenAI)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -61,7 +75,10 @@ def test_azure_text_embedding_init_with_empty_api_key(
     azure_openai_unit_test_env,
 ) -> None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     assert azure_text_embedding.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]
     assert isinstance(azure_text_embedding, EmbeddingGeneratorBase)
@@ -70,6 +87,9 @@ def test_azure_text_embedding_init_with_empty_api_key(
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]], indirect=True)
 def test_azure_text_embedding_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     with pytest.raises(ServiceInitializationError):
         AzureTextEmbedding(
@@ -78,6 +98,10 @@ def test_azure_text_embedding_init_with_empty_deployment_name(azure_openai_unit_
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -88,6 +112,11 @@ def test_azure_text_embedding_init_with_empty_endpoint_and_base_url(
     azure_openai_unit_test_env,
 ) -> None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -101,6 +130,10 @@ def test_azure_text_embedding_init_with_empty_endpoint_and_base_url(azure_openai
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -113,11 +146,17 @@ def test_azure_text_embedding_init_with_invalid_endpoint(
     azure_openai_unit_test_env,
 ) -> None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 @pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
 def test_azure_text_embedding_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     with pytest.raises(ServiceInitializationError):
         AzureTextEmbedding()
@@ -133,10 +172,13 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
 
     settings = {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         "deployment_name": azure_openai_unit_test_env[
             "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"
         ],
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         "deployment_name": azure_openai_unit_test_env[
             "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"
@@ -144,6 +186,9 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
 =======
         "deployment_name": azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"],
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         "endpoint": azure_openai_unit_test_env["AZURE_OPENAI_ENDPOINT"],
         "api_key": azure_openai_unit_test_env["AZURE_OPENAI_API_KEY"],
@@ -156,6 +201,10 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
     assert azure_text_embedding.client is not None
     assert isinstance(azure_text_embedding.client, AsyncAzureOpenAI)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -170,13 +219,19 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
         == azure_openai_unit_test_env["AZURE_OPENAI_API_KEY"]
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     assert azure_text_embedding.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]
     assert isinstance(azure_text_embedding, EmbeddingGeneratorBase)
     assert settings["deployment_name"] in str(azure_text_embedding.client.base_url)
     assert azure_text_embedding.client.api_key == azure_openai_unit_test_env["AZURE_OPENAI_API_KEY"]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     # Assert that the default header we added is present in the client's default headers
@@ -186,6 +241,10 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -195,7 +254,10 @@ async def test_azure_text_embedding_calls_with_parameters(
     mock_create, azure_openai_unit_test_env
 ) -> None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_openai_unit_test_env) -> None:
     with (
@@ -215,6 +277,9 @@ def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_opena
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_openai_unit_test_env) -> None:
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     texts = ["hello world", "goodbye world"]
     embedding_dimensions = 1536
@@ -222,10 +287,13 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_ope
     azure_text_embedding = AzureTextEmbedding()
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     await azure_text_embedding.generate_embeddings(
         texts, dimensions=embedding_dimensions
     )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     await azure_text_embedding.generate_embeddings(
         texts, dimensions=embedding_dimensions
@@ -233,6 +301,9 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_ope
 =======
     await azure_text_embedding.generate_embeddings(texts, dimensions=embedding_dimensions)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     mock_create.assert_awaited_once_with(
@@ -245,10 +316,13 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_ope
 @pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 async def test_azure_text_embedding_calls_with_batches(
     mock_create, azure_openai_unit_test_env
 ) -> None:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 async def test_azure_text_embedding_calls_with_batches(
     mock_create, azure_openai_unit_test_env
@@ -256,6 +330,9 @@ async def test_azure_text_embedding_calls_with_batches(
 =======
 async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai_unit_test_env) -> None:
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     texts = [i for i in range(0, 5)]
 
@@ -267,6 +344,10 @@ async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai
         [
             call(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -280,7 +361,10 @@ async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai
                     "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"
                 ],
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                 model=azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"],
                 input=texts[0:3],
@@ -288,6 +372,9 @@ async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai
             call(
                 model=azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"],
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 input=texts[3:5],
             ),

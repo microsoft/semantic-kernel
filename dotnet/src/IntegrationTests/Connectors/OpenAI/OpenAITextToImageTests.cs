@@ -4,23 +4,35 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.TextToImage;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 #pragma warning disable CS0618 // Type or member is obsolete
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 public sealed class OpenAITextToImageTests
@@ -64,13 +76,19 @@ public sealed class OpenAITextToImageTests
 
         var kernel = Kernel.CreateBuilder()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
 =======
             .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             .Build();
 
@@ -84,7 +102,10 @@ public sealed class OpenAITextToImageTests
         Assert.NotEmpty(result);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -110,5 +131,8 @@ public sealed class OpenAITextToImageTests
         Assert.NotEmpty(result[0].Uri!.ToString());
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

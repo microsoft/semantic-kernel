@@ -3,8 +3,11 @@
 using System;
 using System.Collections.Generic;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Linq;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 using System.Linq;
 =======
@@ -17,20 +20,29 @@ using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Memory;
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Memory;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 using Microsoft.SemanticKernel.Memory;
 =======
 using Microsoft.SemanticKernel.Plugins.Memory;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -38,7 +50,10 @@ using SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettin
 using xRetry;
 using Xunit;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< HEAD
@@ -54,6 +69,9 @@ public sealed class FlowOrchestratorTests
 =======
 using Xunit.Abstractions;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
@@ -65,7 +83,10 @@ public sealed class FlowOrchestratorTests
     public FlowOrchestratorTests()
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         this._logger = new XunitLogger<object>(output);
@@ -73,6 +94,9 @@ public sealed class FlowOrchestratorTests
 
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -92,8 +116,11 @@ public sealed class FlowOrchestratorTests
     {
         // Arrange
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         IKernelBuilder builder = this.InitializeKernelBuilder();
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         IKernelBuilder builder = this.InitializeKernelBuilder();
 =======
@@ -103,6 +130,9 @@ public sealed class FlowOrchestratorTests
         KernelBuilder builder = this.InitializeKernelBuilder();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
@@ -118,8 +148,11 @@ public sealed class FlowOrchestratorTests
 goal: answer question and sent email
 steps:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   - goal: What is the tallest mountain in Asia? How tall is it divided by 2?
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
   - goal: What is the tallest mountain in Asia? How tall is it divided by 2?
 =======
@@ -129,6 +162,9 @@ steps:
   - goal: What is the tallest mountain on Earth? How tall is it divided by 2?
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     plugins:
       - WebSearchEnginePlugin
@@ -157,7 +193,10 @@ steps:
 
         // Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain in Asia? How tall is it divided by 2?");
 
@@ -167,6 +206,9 @@ steps:
         Assert.Contains("email", response, StringComparison.InvariantCultureIgnoreCase);
 =======
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain in Asia? How tall is it divided by 2?");
 
@@ -175,7 +217,10 @@ steps:
         var response = result.GetValue<List<string>>()!.First();
         Assert.Contains("email", response, StringComparison.InvariantCultureIgnoreCase);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain on Earth? How tall is it divided by 2?");
 
@@ -184,6 +229,9 @@ steps:
         Assert.Contains("email", result.ToString(), StringComparison.InvariantCultureIgnoreCase);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act
@@ -191,8 +239,11 @@ steps:
 
         // Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var emailPayload = result.Metadata!["email"] as string;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         var emailPayload = result.Metadata!["email"] as string;
 =======
@@ -202,14 +253,20 @@ steps:
         var emailPayload = result["email"];
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains(dummyAddress, emailPayload, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Everest", emailPayload, StringComparison.InvariantCultureIgnoreCase);
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private IKernelBuilder InitializeKernelBuilder()
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     private IKernelBuilder InitializeKernelBuilder()
 =======
@@ -219,17 +276,26 @@ steps:
     private KernelBuilder InitializeKernelBuilder()
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
@@ -239,8 +305,11 @@ steps:
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private readonly IConfigurationRoot _configuration;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     private readonly IConfigurationRoot _configuration;
 =======
@@ -287,5 +356,8 @@ steps:
     }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

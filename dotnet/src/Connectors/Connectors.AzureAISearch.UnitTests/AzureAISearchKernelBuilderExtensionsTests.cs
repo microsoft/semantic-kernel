@@ -59,7 +59,10 @@ public class AzureAISearchKernelBuilderExtensionsTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     [Fact]
@@ -96,6 +99,9 @@ public class AzureAISearchKernelBuilderExtensionsTests
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private void AssertVectorStoreCreated()
     {
@@ -105,7 +111,10 @@ public class AzureAISearchKernelBuilderExtensionsTests
         Assert.IsType<AzureAISearchVectorStore>(vectorStore);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -134,5 +143,8 @@ public class AzureAISearchKernelBuilderExtensionsTests
         public string Id { get; set; } = string.Empty;
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

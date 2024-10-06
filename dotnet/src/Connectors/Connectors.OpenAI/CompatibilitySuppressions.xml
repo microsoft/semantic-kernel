@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿<?xml version="1.0" encoding="utf-8"?>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿<?xml version="1.0" encoding="utf-8"?>
 =======
 <?xml version="1.0" encoding="utf-8"?>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -13,11 +19,17 @@
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose.Assistants</Target>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
@@ -125,11 +137,17 @@
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose</Target>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>

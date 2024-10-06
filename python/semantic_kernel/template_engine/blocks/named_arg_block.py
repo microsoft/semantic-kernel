@@ -7,9 +7,12 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 from pydantic import model_validator
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import NamedArgBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.exceptions import NamedArgBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
@@ -22,6 +25,9 @@ from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import NamedArgBlockSyntaxError
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
@@ -71,10 +77,13 @@ class NamedArgBlock(Block):
 
     type: ClassVar[BlockTypes] = BlockTypes.NAMED_ARG
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     name: str | None = None
     value: ValBlock | None = None
     variable: VarBlock | None = None
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     name: str | None = None
     value: ValBlock | None = None
@@ -90,6 +99,9 @@ class NamedArgBlock(Block):
     variable: Optional[VarBlock] = None
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     @model_validator(mode="before")
@@ -99,8 +111,11 @@ class NamedArgBlock(Block):
 
         If the name and either value or variable is present the parsing is skipped.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Otherwise, the content is parsed using a regex to extract the name and value.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Otherwise, the content is parsed using a regex to extract the name and value.
 =======
@@ -110,6 +125,9 @@ class NamedArgBlock(Block):
         Otherwise the content is parsed using a regex to extract the name and value.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Those are then turned into Blocks.
 
@@ -117,10 +135,13 @@ class NamedArgBlock(Block):
             NamedArgBlockSyntaxError: If the content does not match the named argument syntax.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if isinstance(fields, Block) or (
             "name" in fields and ("value" in fields or "variable" in fields)
         ):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         if isinstance(fields, Block) or (
             "name" in fields and ("value" in fields or "variable" in fields)
@@ -134,6 +155,9 @@ class NamedArgBlock(Block):
         if isinstance(fields, Block) or ("name" in fields and ("value" in fields or "variable" in fields)):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             return fields
         content = fields.get("content", "").strip()
@@ -146,11 +170,17 @@ class NamedArgBlock(Block):
         if value := matches_dict.get("value"):
             if matches_dict.get("var_name"):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 fields["variable"] = VarBlock(
                     content=value, name=matches_dict["var_name"]
@@ -170,7 +200,10 @@ class NamedArgBlock(Block):
         if self.value:
             return self.value.render()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -184,14 +217,20 @@ class NamedArgBlock(Block):
             return self.value.render(kernel, arguments)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if arguments is None:
             return ""
         if self.variable:
             return self.variable.render(kernel, arguments)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return None
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         return None
 =======
@@ -200,4 +239,7 @@ class NamedArgBlock(Block):
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

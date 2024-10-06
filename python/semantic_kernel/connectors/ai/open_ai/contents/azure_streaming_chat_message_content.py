@@ -39,11 +39,17 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
         self, other: "AzureStreamingChatMessageContent"
     ) -> "AzureStreamingChatMessageContent":
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     def __add__(self, other: "AzureStreamingChatMessageContent") -> "AzureStreamingChatMessageContent":
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """When combining two AzureOpenAIStreamingChatMessageContent instances,
         the content fields are combined, as well as the arguments of the function or tool calls.
@@ -73,7 +79,10 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
             else other.function_call
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different choice_index")
@@ -85,6 +94,9 @@ class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
         fc = (self.function_call + other.function_call) if self.function_call else other.function_call
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         tc = {}
         if self.tool_calls:

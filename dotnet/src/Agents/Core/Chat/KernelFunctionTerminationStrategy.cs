@@ -3,10 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.Text.Json;
 using System.Threading;
@@ -17,6 +20,9 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Internal;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
@@ -57,6 +63,10 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -69,7 +79,10 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// </summary>
     public Kernel Kernel => kernel;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
@@ -80,6 +93,9 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// </summary>
     public KernelFunction Function { get; } = function;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>
@@ -89,10 +105,13 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     public Func<FunctionResult, bool> ResultParser { get; init; } = (_) => true;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <inheritdoc/>
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <inheritdoc/>
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
@@ -109,6 +128,9 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
         history = await history.ReduceAsync(this.HistoryReducer, cancellationToken).ConfigureAwait(false);
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
@@ -116,13 +138,19 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
             {
                 { this.AgentVariableName, agent.Name ?? agent.Id },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
 =======
                 { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             };
 

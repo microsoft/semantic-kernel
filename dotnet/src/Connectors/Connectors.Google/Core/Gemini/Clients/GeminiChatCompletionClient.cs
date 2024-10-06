@@ -560,6 +560,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -573,13 +577,19 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
             throw new KernelException("Gemini API doesn't return any data.");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         if (geminiResponse.PromptFeedback?.BlockReason is not null)
         {
             // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
             throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
     }
@@ -610,8 +620,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         => geminiResponse.Candidates!.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         => geminiResponse.Candidates!.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 =======
@@ -619,6 +632,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             [new GeminiChatMessageContent(role: AuthorRole.Assistant, content: string.Empty, modelId: this._modelId)]
             : geminiResponse.Candidates.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
@@ -654,13 +670,19 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 calledToolResult: message.CalledToolResult,
                 metadata: message.Metadata,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 choiceIndex: message.Metadata!.Index);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 choiceIndex: message.Metadata!.Index);
 =======
                 choiceIndex: message.Metadata?.Index ?? 0);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -673,13 +695,19 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 toolCalls: message.ToolCalls,
                 metadata: message.Metadata,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 choiceIndex: message.Metadata!.Index);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 choiceIndex: message.Metadata!.Index);
 =======
                 choiceIndex: message.Metadata?.Index ?? 0);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -688,13 +716,19 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             content: message.Content,
             modelId: this._modelId,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             choiceIndex: message.Metadata!.Index,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             choiceIndex: message.Metadata!.Index,
 =======
             choiceIndex: message.Metadata?.Index ?? 0,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             metadata: message.Metadata);
     }

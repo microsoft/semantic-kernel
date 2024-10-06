@@ -83,10 +83,13 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
 
             return new TokenCounts(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 completionTokens: usage?.OutputTokens ?? 0,
                 promptTokens: usage?.InputTokens ?? 0,
                 totalTokens: usage?.TotalTokens ?? 0);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 completionTokens: usage?.OutputTokens ?? 0,
                 promptTokens: usage?.InputTokens ?? 0,
@@ -96,6 +99,9 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
                 promptTokens: usage?.InputTokenCount ?? 0,
                 totalTokens: usage?.TotalTokenCount ?? 0);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

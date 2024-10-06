@@ -2,8 +2,11 @@
 
 using System;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Collections.Generic;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.Collections.Generic;
 =======
@@ -12,6 +15,9 @@ using System.Collections.Generic;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Globalization;
 using System.Linq;
@@ -54,8 +60,11 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     [InlineData(false, true)]
     [InlineData(false, false)]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
 =======
@@ -65,6 +74,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         // Arrange
@@ -86,7 +98,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -96,6 +111,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Assert
@@ -113,7 +131,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(record.Description, getResult?.Description);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -130,6 +151,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         // Output
         output.WriteLine(collectionExistResult.ToString());
@@ -407,7 +431,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -455,6 +482,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     [Fact]
     public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
@@ -513,12 +543,18 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private HotelInfo CreateTestHotel(uint hotelId)
     {

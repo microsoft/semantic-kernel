@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.Collections.Generic;
@@ -9,6 +12,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -19,9 +25,12 @@ public abstract class KernelAgent : Agent
 {
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// The instructions of the agent (optional)
     /// </summary>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// The instructions of the agent (optional)
     /// </summary>
@@ -41,6 +50,9 @@ public abstract class KernelAgent : Agent
     /// (<see cref="KernelPromptTemplateFactory"/>)
     /// </remarks>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public string? Instructions { get; init; }
 
@@ -52,7 +64,10 @@ public abstract class KernelAgent : Agent
     /// </remarks>
     public Kernel Kernel { get; init; } = new();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -129,5 +144,8 @@ public abstract class KernelAgent : Agent
 
     private static readonly Dictionary<string, PromptExecutionSettings> s_emptySettings = [];
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

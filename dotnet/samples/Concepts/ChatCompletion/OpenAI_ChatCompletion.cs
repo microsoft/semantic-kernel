@@ -1,14 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Azure.Identity;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Azure.Identity;
 =======
 using System.Text;
 using Microsoft.SemanticKernel;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -17,6 +23,10 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace ChatCompletion;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -27,7 +37,10 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
     public async Task OpenAIChatSampleAsync()
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 // The following example shows how to use Semantic Kernel with OpenAI API
 public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
@@ -39,6 +52,9 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Console.WriteLine("======== Open AI - Chat Completion ========");
 
@@ -46,6 +62,10 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         await StartChatAsync(chatCompletionService);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -110,7 +130,10 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         await StartChatAsync(chatCompletionService);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     }
 
@@ -197,6 +220,9 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         OutputInnerContent(replyInnerContent!);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -226,7 +252,10 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         OutputLastMessage(chatHistory);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -293,5 +322,8 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         }
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

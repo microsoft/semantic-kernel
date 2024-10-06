@@ -21,13 +21,19 @@ jobs:
           include:
           - { os: ubuntu-latest, dotnet: '8.0', configuration: Debug }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
           - { os: ubuntu-latest, dotnet: '6.0', configuration: Debug }
           - { os: ubuntu-latest, dotnet: '6.0', configuration: Release }
           - { os: ubuntu-latest, dotnet: '7.0', configuration: Release }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
           - { os: ubuntu-latest, dotnet: '8.0', configuration: Release }
 
@@ -77,11 +83,17 @@ jobs:
           configuration: [Release, Debug]
           dotnet-version: ['8.0.x']
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
           dotnet-version: ['7.0.x']
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     runs-on: ${{ matrix.os }}
     env:

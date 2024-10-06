@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from abc import ABC
 from typing import TYPE_CHECKING, Annotated
@@ -20,7 +26,10 @@ if TYPE_CHECKING:
     )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -40,14 +49,20 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 class AIServiceClientBase(KernelBaseModel, ABC):
     """Base class for all AI Services.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Has an ai_model_id and service_id, any other fields have to be defined by the subclasses.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     Has an ai_model_id and service_id, any other fields have to be defined by the subclasses.
 =======
@@ -57,6 +72,9 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     Has a ai_model_id and service_id, any other fields have to be defined by the subclasses.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     The ai_model_id can refer to a specific model, like 'gpt-35-turbo' for OpenAI,
@@ -69,8 +87,11 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     service_id: str = Field("")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def model_post_init(self, __context: object | None = None):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     def model_post_init(self, __context: object | None = None):
 =======
@@ -80,17 +101,26 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     def model_post_init(self, __context: Optional[object] = None):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Update the service_id if it is not set."""
         if not self.service_id:
             self.service_id = self.ai_model_id
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     # Override this in subclass to return the proper prompt execution type the
     # service is expecting.
@@ -113,7 +143,10 @@ class AIServiceClientBase(KernelBaseModel, ABC):
         self, **kwargs
     ) -> "PromptExecutionSettings":
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -124,6 +157,9 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     def instantiate_prompt_execution_settings(self, **kwargs) -> "PromptExecutionSettings":
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Create a request settings object.
 
@@ -132,11 +168,17 @@ class AIServiceClientBase(KernelBaseModel, ABC):
         return self.get_prompt_execution_settings_class()(**kwargs)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def get_prompt_execution_settings_from_settings(
         self, settings: "PromptExecutionSettings"
@@ -148,7 +190,10 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 
         return prompt_execution_settings_type.from_prompt_execution_settings(settings)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -157,4 +202,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
         return self.get_prompt_execution_settings_class().from_prompt_execution_settings(settings)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

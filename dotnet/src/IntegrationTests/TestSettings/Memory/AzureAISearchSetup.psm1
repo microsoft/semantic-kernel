@@ -28,8 +28,11 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
     Get-AzResourceGroup -Name $overrideResourceGroup -ErrorVariable notPresent -ErrorAction SilentlyContinue
     if ($notPresent) {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Write-Information "Resource Group does not exist, creating '$overrideResourceGroup' ..."
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Write-Information "Resource Group does not exist, creating '$overrideResourceGroup' ..."
 =======
@@ -39,6 +42,9 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
         Write-Host "Resource Group does not exist, creating '$overrideResourceGroup' ..."
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         New-AzResourceGroup -Name $overrideResourceGroup -Location "North Europe"
     }
@@ -47,8 +53,11 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
     $service = Get-AzSearchService -ResourceGroupName $resourceGroup -Name $aiSearchResourceName
     if (-not $service) {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Write-Output "Service does not exist, creating '$overrideAISearchResourceName' ..."
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Write-Output "Service does not exist, creating '$overrideAISearchResourceName' ..."
 =======
@@ -58,6 +67,9 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
         Write-Host "Service does not exist, creating '$overrideAISearchResourceName' ..."
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         New-AzSearchService -ResourceGroupName $overrideResourceGroup -Name $overrideAISearchResourceName -Sku "Basic" -Location "North Europe" -PartitionCount 1 -ReplicaCount 1 -HostingMode Default
     }
@@ -77,8 +89,11 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
     Optional override ai search resource name if the default doesn't work.
 #>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 [CmdletBinding(SupportsShouldProcess)] function Set-AzureAISearchIntegrationInfraUserSecrets($overrideResourceGroup = $resourceGroup, $overrideAISearchResourceName = $aiSearchResourceName) {
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 [CmdletBinding(SupportsShouldProcess)] function Set-AzureAISearchIntegrationInfraUserSecrets($overrideResourceGroup = $resourceGroup, $overrideAISearchResourceName = $aiSearchResourceName) {
 =======
@@ -88,6 +103,9 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
 function Set-AzureAISearchIntegrationInfraUserSecrets($overrideResourceGroup = $resourceGroup, $overrideAISearchResourceName = $aiSearchResourceName) {
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     # Set the required local secrets.
     $keys = Get-AzSearchAdminKeyPair -ResourceGroupName $overrideResourceGroup -ServiceName $overrideAISearchResourceName
@@ -106,8 +124,11 @@ function Set-AzureAISearchIntegrationInfraUserSecrets($overrideResourceGroup = $
     Optional override ai search resource name if the default doesn't work.
 #>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 [CmdletBinding(SupportsShouldProcess)] function Remove-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGroup, $overrideAISearchResourceName = $aiSearchResourceName) {
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 [CmdletBinding(SupportsShouldProcess)] function Remove-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGroup, $overrideAISearchResourceName = $aiSearchResourceName) {
 =======
@@ -117,6 +138,9 @@ function Set-AzureAISearchIntegrationInfraUserSecrets($overrideResourceGroup = $
 function Remove-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGroup, $overrideAISearchResourceName = $aiSearchResourceName) {
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     Remove-AzSearchService -ResourceGroupName $overrideResourceGroup -Name $overrideAISearchResourceName
 }

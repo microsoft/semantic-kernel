@@ -3,11 +3,17 @@
 import logging
 from copy import copy
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -20,8 +26,11 @@ from semantic_kernel.exceptions.kernel_exceptions import (
 )
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -35,6 +44,9 @@ from semantic_kernel.functions.kernel_plugin_collection import KernelPluginColle
 >>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import CodeBlockRenderError, CodeBlockTokenError
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -44,11 +56,17 @@ from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     from semantic_kernel.kernel import Kernel
 
@@ -162,6 +180,10 @@ these will be ignored."
             logger.error(error_msg)
             raise CodeBlockRenderException(error_msg) from exc
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -219,7 +241,10 @@ class CodeBlock(Block):
     _validated: bool = False
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 
         arguments_clone = copy(arguments)
@@ -275,6 +300,9 @@ class CodeBlock(Block):
     _validated: bool = False
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def __init__(self, content: str, log: Logger) -> None:
         super().__init__(BlockTypes.Code, content, log)
@@ -294,7 +322,10 @@ class CodeBlock(Block):
             self._log.error(error)
             return False, error
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
         # split content on ' ', '\t', '\r', and '\n' and
@@ -385,6 +416,9 @@ class CodeBlock(Block):
             )
             return ""
 =======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         # split content on ' ', '\t', '\r', and '\n' and
@@ -475,10 +509,13 @@ class CodeBlock(Block):
             )
             return ""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         return result.result
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
     from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
@@ -622,6 +659,9 @@ these will be ignored."
         return arguments
 
 <<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def _get_function_from_skill_collection(
         self, skills: ReadOnlySkillCollectionBase, function_name: str
@@ -644,13 +684,19 @@ these will be ignored."
             if skills.has_native_function(skill_name, function_name):
                 return True, skills.get_native_function(skill_name, function_name)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
             if skills.has_semantic_function(skill_name, function_name):
                 return True, skills.get_semantic_function(skill_name, function_name)
 
         return False, None
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -659,7 +705,10 @@ these will be ignored."
 
         return False, None
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     def _get_function_from_plugin_collection(
         self, plugins: KernelPluginCollection, function_block: FunctionIdBlock
@@ -685,4 +734,7 @@ these will be ignored."
         return None
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

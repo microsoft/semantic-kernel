@@ -1,13 +1,19 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
 =======
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Diagnostics;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
@@ -227,7 +233,10 @@ public class CodeTokenizerTests
         var exception = Assert.Throws<KernelException>(() => this._target.Tokenize(template));
         Assert.Equal("A function named argument must contain a name and value separated by a '=' character.", exception.Message);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         Assert.Throws<SKException>(() => this._target.Tokenize(template1));
@@ -240,6 +249,9 @@ public class CodeTokenizerTests
         // Act & Assert
         Assert.Throws<SKException>(() => this._target.Tokenize(template));
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 }

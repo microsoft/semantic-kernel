@@ -246,11 +246,17 @@ async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, 
     if is_streaming:
         expected_object["stream"] = True
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         expected_object["stream_options"] = {"include_usage": True}
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     assert obtained_object == expected_object
@@ -356,11 +362,17 @@ async def test_prompt_with_complex_objects(
     if is_streaming:
         expected_object["stream"] = True
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         expected_object["stream_options"] = {"include_usage": True}
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     assert obtained_object == expected_object
@@ -437,11 +449,17 @@ async def test_prompt_with_helper_functions(
     if is_streaming:
         expected_object["stream"] = True
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         expected_object["stream_options"] = {"include_usage": True}
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     assert obtained_object == expected_object
@@ -507,11 +525,17 @@ async def test_prompt_with_simple_variable(
     if is_streaming:
         expected_object["stream"] = True
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         expected_object["stream_options"] = {"include_usage": True}
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     assert obtained_object == expected_object
@@ -574,11 +598,17 @@ async def test_simple_prompt(is_inline, is_streaming, template_format, prompt):
     if is_streaming:
         expected_object["stream"] = True
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         expected_object["stream_options"] = {"include_usage": True}
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     assert obtained_object == expected_object
@@ -666,11 +696,17 @@ async def test_yaml_prompt(
     if is_streaming:
         expected_object["stream"] = True
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         expected_object["stream_options"] = {"include_usage": True}
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     assert obtained_object == expected_object

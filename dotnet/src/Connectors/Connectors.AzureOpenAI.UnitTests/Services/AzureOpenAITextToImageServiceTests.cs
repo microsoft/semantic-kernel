@@ -2,9 +2,12 @@
 
 using System;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.IO;
 using System.Net.Http;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.IO;
 using System.Net.Http;
@@ -14,6 +17,9 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -23,9 +29,12 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Services;
 using Moq;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -38,6 +47,9 @@ using OpenAI.Images;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
@@ -58,13 +70,19 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
             ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.txt"))
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.txt"))
 =======
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
         };
@@ -87,13 +105,19 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 
         // Case #3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), "api-key"), "model", loggerFactory: this._mockLoggerFactory.Object);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), "api-key"), "model", loggerFactory: this._mockLoggerFactory.Object);
 =======
         sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), new ApiKeyCredential("api-key")), "model", loggerFactory: this._mockLoggerFactory.Object);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Equal("deployment", sut.Attributes[AzureClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
@@ -124,13 +148,19 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         Assert.Equal("description", request["prompt"]?.ToString());
         Assert.Equal("deployment", request["model"]?.ToString());
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Equal("url", request["response_format"]?.ToString());
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Equal("url", request["response_format"]?.ToString());
 =======
         Assert.Null(request["response_format"]);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Equal($"{width}x{height}", request["size"]?.ToString());
     }
@@ -195,7 +225,10 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     [Theory]
@@ -386,6 +419,9 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public void Dispose()
     {

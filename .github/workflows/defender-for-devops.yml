@@ -40,13 +40,19 @@ jobs:
           6.0.x
     - name: Run Microsoft Security DevOps
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       uses: microsoft/security-devops-action@v1.10.0
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
       uses: microsoft/security-devops-action@v1.10.0
 =======
       uses: microsoft/security-devops-action@v1.6.0
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       id: msdo
     - name: Upload results to Security tab

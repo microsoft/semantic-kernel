@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -67,8 +73,11 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                     Instructions = TutorInstructions,
                     Name = TutorName,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     Kernel = sp.GetRequiredService<Kernel>(),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     Kernel = sp.GetRequiredService<Kernel>(),
 =======
@@ -76,6 +85,9 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                     Kernel = sp.GetRequiredService<Kernel>(),
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 });
 
@@ -89,6 +101,10 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
         // Execute the agent-client
 <<<<<<< HEAD
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -97,13 +113,19 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
         await WriteAgentResponse("The sunset is nice.");
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         await WriteAgentResponse("The sunset is very colorful.");
         await WriteAgentResponse("The sunset is nice.");
         await WriteAgentResponse("The sunset is very colorful.");
  6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         await WriteAgentResponse("The sunset is setting over the mountains.");
         await WriteAgentResponse("The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.");

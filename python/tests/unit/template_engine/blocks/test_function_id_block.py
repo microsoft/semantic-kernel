@@ -4,10 +4,13 @@
 from pytest import mark, raises
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -23,6 +26,9 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockSyntaxError
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock

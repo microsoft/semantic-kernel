@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -33,23 +39,32 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
         OpenAIClientProvider provider = this.GetClientProvider();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         FileClient fileClient = provider.Client.GetFileClient();
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         FileClient fileClient = provider.Client.GetFileClient();
 =======
         OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
                 provider,
                 new(this.Model)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 kernel: new(),
                 provider,
@@ -63,6 +78,9 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 {
                     Instructions = AnalystInstructions,
@@ -70,8 +88,11 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 });
 =======
@@ -81,6 +102,9 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
                 },
                 kernel: new Kernel());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         ChatCompletionAgent summaryAgent =

@@ -1,7 +1,10 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # Copyright (c) Microsoft. All rights reserved.
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 # Copyright (c) Microsoft. All rights reserved.
 
@@ -12,6 +15,9 @@
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from unittest.mock import patch
 
@@ -20,8 +26,11 @@ import pytest
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
     OllamaChatPromptExecutionSettings,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     OllamaTextPromptExecutionSettings,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     OllamaTextPromptExecutionSettings,
 =======
@@ -30,17 +39,26 @@ from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings impor
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 )
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import (
     OllamaChatCompletion,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
@@ -56,7 +74,10 @@ def test_settings(model_id):
     """Test that the settings class is correct."""
     ollama = OllamaChatCompletion(ai_model_id=model_id)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -68,17 +89,26 @@ def test_settings():
     ollama = OllamaChatCompletion(ai_model_id="test_model")
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     settings = ollama.get_prompt_execution_settings_class()
     assert settings == OllamaChatPromptExecutionSettings
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_init_empty_service_id(model_id):
     """Test that the service initializes correctly with an empty service id."""
@@ -87,6 +117,10 @@ def test_init_empty_service_id(model_id):
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -97,6 +131,11 @@ def test_init_empty_ai_model_id():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -115,13 +154,19 @@ def test_custom_client(model_id, custom_client):
 
 @pytest.mark.parametrize("exclude_list", [["OLLAMA_MODEL"]], indirect=True)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_init_empty_model_id(ollama_unit_test_env):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def test_init_empty_model_id(ollama_unit_test_env):
 =======
 def test_init_empty_model_id_in_env(ollama_unit_test_env):
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """Test that the service initializes incorrectly with an empty model id."""
     with pytest.raises(ServiceInitializationError):
@@ -238,7 +283,10 @@ async def test_chat_completion(
         options=default_options,
         stream=False,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -264,17 +312,26 @@ async def test_complete_chat(mock_post):
         },
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
 
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 @patch("ollama.AsyncClient.chat")
 async def test_chat_completion_wrong_return_type(
@@ -384,7 +441,10 @@ async def test_streaming_chat_completion(
         options=default_options,
         stream=True,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     )
 
@@ -426,12 +486,20 @@ async def test_complete_chat_stream(mock_post):
             "stream": True,
         },
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
 
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> main
@@ -520,7 +588,10 @@ async def test_streaming_text_completion_wrong_return_type(
         ):
             pass
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -546,4 +617,7 @@ async def test_complete_stream(mock_post):
     )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

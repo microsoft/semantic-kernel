@@ -1,9 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 from abc import ABC, abstractmethod
 from typing import Any, TypeVar
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 from abc import ABC, abstractmethod
@@ -18,6 +21,9 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from pydantic import Field
@@ -25,9 +31,12 @@ from pydantic import Field
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 _T = TypeVar("_T", bound="KernelContent")
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 _T = TypeVar("_T", bound="KernelContent")
 
@@ -38,17 +47,26 @@ _T = TypeVar("_T", bound="KernelContent")
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 class KernelContent(KernelBaseModel, ABC):
     """Base class for all kernel contents."""
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     inner_content: Any | None = None
     ai_model_id: str | None = None
@@ -71,7 +89,10 @@ class KernelContent(KernelBaseModel, ABC):
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -84,4 +105,7 @@ class KernelContent(KernelBaseModel, ABC):
         pass
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

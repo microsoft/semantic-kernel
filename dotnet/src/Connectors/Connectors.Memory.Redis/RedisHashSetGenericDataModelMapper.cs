@@ -11,6 +11,10 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -21,7 +25,10 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
     /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using hash sets.
 /// </summary>
@@ -30,12 +37,19 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
     /// <summary>All the properties from the record definition.</summary>
     private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetGenericDataModelMapper"/> class.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -46,7 +60,10 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 
         this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// <param name="properties">All the properties from the record definition.</param>
     public RedisHashSetGenericDataModelMapper(IReadOnlyList<VectorStoreRecordProperty> properties)
@@ -54,6 +71,9 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
         Verify.NotNull(properties);
         this._properties = properties;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -63,13 +83,19 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
         var hashEntries = new List<HashEntry>();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
         foreach (var property in this._properties)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
@@ -120,13 +146,19 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
         var dataModel = new VectorStoreGenericDataModel<string>(storageModel.Key);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
         foreach (var property in this._properties)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
@@ -154,11 +186,17 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
                 dataModel.Data.Add(dataProperty.DataModelPropertyName, convertedValue);
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             // Map vector properties
             else if (property is VectorStoreRecordVectorProperty vectorProperty)

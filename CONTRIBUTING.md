@@ -8,11 +8,17 @@
 
 can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 filing issues for problems you encounter is a great way to contribute. Contributing
 code is greatly appreciated.
@@ -31,13 +37,19 @@ New New issues can be reported in our [list of issues](https://github.com/semant
 >>>>>>>+8590ec5
 ore filing a new issue, please search the list of issues to make sure it does
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 New issues can be reported in our [list of issues](https://github.com/microsoft/semantic-kernel/issues).
 
 Before filing a new issue, please search the list of issues to make sure it does
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 not already exist.
 
@@ -54,11 +66,17 @@ report should contain the following information:
 
 <<<<<<- A high-level description of the problem.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 - A high-level description of the problem.
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 - A _minimal reproduction_, i.e. the smallest size of code/configuration required
   to reproduce the wrong behavior.
@@ -78,12 +96,18 @@ report should contain the following information:
 >>>>>>>+8590ec5
 ntributing Changes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 
 ## Contributing Changes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 Project maintainers will merge accepted code changes from contributors.
@@ -94,11 +118,17 @@ DO's:
 
 <<<<<<- **DO** follow the standard coding conventions
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 - **DO** follow the standard coding conventions
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
   - [.NET](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
@@ -135,7 +165,10 @@ DON'Ts:
 -   **DO** clearly state on an issue that you are going to take on implementing it.
 -   **DO** blog and tweet (or whatever) about your contributions, frequently!
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 
@@ -151,6 +184,9 @@ DON'Ts:
 >>>>>>>+8590ec5
 reaking Changes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 DON'Ts:

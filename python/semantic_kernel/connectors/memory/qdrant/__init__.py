@@ -2,7 +2,10 @@
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 from semantic_kernel.connectors.memory.qdrant.qdrant_memory_store import (
@@ -13,6 +16,9 @@ from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
 
 __all__ = ["QdrantCollection", "QdrantMemoryStore", "QdrantSettings", "QdrantStore"]
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.memory.qdrant.qdrant_memory_store import (
     QdrantMemoryStore,

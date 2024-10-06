@@ -6,7 +6,10 @@ deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey-m, matthewb
 informed: null
 status: proposed
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 # These are optional elements. Feel free to remove any of them.
@@ -17,6 +20,9 @@ deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey-m, matthewb
 consulted: stephentoub, dluc, ajcvickers, roji
 informed: 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ---
 
@@ -34,11 +40,17 @@ The current abstractions are experimental and the purpose of this ADR is to prog
 2. The `IMemoryStore` interface only supports a fixed schema for data storage, retrieval and search, which limits its usability by customers with existing data sets.
 3. The `IMemoryStore` implementations are opinionated around key encoding / decoding and collection name sanitization, which limits its usability by customers with existing data sets.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 2. The `IMemoryStore` implementations are opinionated around key encoding / decoding and collection name sanitization, which limits its usability by customers with existing data sets.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 Responsibilities:
@@ -54,13 +66,19 @@ Responsibilities:
 
 ```cs {"id":"01J6KNYVCY4JYVGVXYC2NW8XGF"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
 ### Memory Store Today
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 interface IMemoryStore
 {
@@ -110,7 +128,10 @@ interface IMemoryStore
 ### Non-functional requirements for new connectors
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     1. The AzureAISearch connector encodes keys before storing and decodes them after retrieval since keys in Azure AI Search supports a limited set of characters.
@@ -119,6 +140,9 @@ interface IMemoryStore
 
 ### Non-functional requirements for new connectors
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 1. Ensure all connectors are throwing the same exceptions consistently with data about the request made provided in a consistent manner.
 2. Add consistent telemetry for all connectors.
@@ -130,11 +154,17 @@ The separation between collection/index management and record management.
 
 ```mermaid {"id":"01J6KNYVCY4JYVGVXYC5S2KSDC"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```mermaid
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ---
 title: SK Collection/Index and record management
@@ -203,11 +233,17 @@ How to use your own schema with core sk functionality.
 
 ```mermaid {"id":"01J6KNYVCY4JYVGVXYC9HJGESP"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```mermaid
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ---
 title: Chat History Break Glass
@@ -315,7 +351,10 @@ A comparison of the different ways in which stores implement storage capabilitie
 |Retrieval field selection for gets|Y||Y4|P2||N||Y|Y|Y|
 |Include/Exclude Embeddings for gets|P1|Y|Y4,1|Y||N||P1|Y|N|
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 |Keys of upserted records|Y|Y|N<sup>3</sup>|N<sup>3</sup>||N<sup>3</sup>||||Y|
@@ -323,6 +362,9 @@ A comparison of the different ways in which stores implement storage capabilitie
 |Retrieval field selection for gets|Y||Y<sup>4<sup>|P<sup>2</sup>||N||Y|Y|Y|
 |Include/Exclude Embeddings for gets|P<sup>1</sup>|Y|Y<sup>4,1<sup>|Y||N||P<sup>1</sup>|Y|N|
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 |Failure reasons when batch partially fails|Y|Y|Y|N||N|||||
 |Is Key separate from data|N|Y|Y|Y||Y||N|Y|N|
@@ -337,7 +379,10 @@ Footnotes:
 - 3 Id is required in request, so can be returned if needed.
 - 4 No strong typed support when specifying field list.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 - P = Partial Support
@@ -346,6 +391,9 @@ Footnotes:
 - <sup>3</sup> Id is required in request, so can be returned if needed.
 - <sup>4</sup> No strong typed support when specifying field list.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 ### Vector Store Cross Store support - Fields, types and indexing
@@ -363,13 +411,19 @@ Footnotes:
 Footnotes:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 |Supported index types|[Exhaustive KNN (FLAT) / HNSW](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#algorithms-used-in-vector-search)|[HNSW / Flat / Dynamic](https://weaviate.io/developers/weaviate/config-refs/schema/vector-index)|[HNSW / FLAT](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/#create-a-vector-field)|[HNSW not configurable](https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index)||[PGA](https://www.pinecone.io/blog/hnsw-not-enough/)||[HNSW / IVFFlat](https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing)|[HNSW for dense](https://qdrant.tech/documentation/concepts/indexing/#vector-index)|<p>[In Memory: FLAT / IVF_FLAT / IVF_SQ8 / IVF_PQ / HNSW / SCANN](https://milvus.io/docs/index.md)</p><p>[On Disk: DiskANN](https://milvus.io/docs/disk_index.md)</p><p>[GPU: GPU_CAGRA / GPU_IVF_FLAT / GPU_IVF_PQ / GPU_BRUTE_FORCE](https://milvus.io/docs/gpu_index.md)</p>|
 
 Footnotes:
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 - HNSW = Hierarchical Navigable Small World (HNSW performs an [approximate nearest neighbor (ANN)](https://learn.microsoft.com/en-us/azure/search/vector-search-overview#approximate-nearest-neighbors) search)
 - KNN = k-nearest neighbors (performs a brute-force search that scans the entire vector space)
@@ -422,11 +476,17 @@ Here is what the attributes would look like, plus a sample use case.
 
 ```cs {"id":"01J6KNYVCY4JYVGVXYCCRDJ3M6"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 sealed class VectorStoreRecordKeyAttribute : Attribute
 {
@@ -451,11 +511,17 @@ Here is what the configuration objects would look like.
 
 ```cs {"id":"01J6KNYVCY4JYVGVXYCFWSF191"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 abstract class VectorStoreRecordProperty(string propertyName);
 
@@ -504,13 +570,19 @@ From GitHub Issue:
 - - Design must allow Memory Plugins to be easily instantiated with any connector
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 - API surface must be easy to use and intuitive
 - Alignment with other patterns in the SK
 - - Design must allow Memory Plugins to be easily instantiated with any connector
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 - Design must support all Kernel content types
 - Design must allow for database specific configuration
@@ -536,11 +608,17 @@ From GitHub Issue:
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WFB1HC7P"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 interface IVectorRecordStore<TRecord>
 {
@@ -574,11 +652,17 @@ class RedisVectorRecordStore<TRecord>(
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WFECBYXX"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 interface IVectorCollectionStore
@@ -617,11 +701,17 @@ Vector store same as option 2 so not repeated for brevity.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WK6ZWG7V"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 interface IVectorCollectionCreate
@@ -658,13 +748,19 @@ Variation on option 3.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WN5F22RP"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 Variation on option 3. 
 
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 interface IVectorCollectionCreate
@@ -711,11 +807,17 @@ Same as option 3 / 4, plus:
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WQHYA5JH"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 interface IVectorStore : IVectorCollectionStore, IVectorRecordStore
@@ -735,12 +837,18 @@ internal class VectorStore<TRecord>(IVectorCollectionCreate create, IVectorColle
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WRTQ90MR"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public interface IVectorStore
 {
@@ -769,11 +877,17 @@ public interface IVectorStoreCollection<TKey, TRecord>
 ```
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 #### Decision Outcome
 
@@ -799,11 +913,17 @@ Chosen option: 6
 
 ### Question 2: Collection name and key value normalization in store, decorator or via injection.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ###  Question 2: Collection name and key value normalization in store, decorator or via injection.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 #### Option 1 - Normalization in main record store
@@ -813,11 +933,17 @@ Chosen option: 6
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WSTXTE8J"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public class AzureAISearchVectorStoreCollection<TRecord> : IVectorStoreCollection<TRecord>
     {
@@ -847,11 +973,17 @@ Chosen option: 6
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4WWC69E14"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     new KeyNormalizingAISearchVectorStoreCollection<MyModel>(
         "keyField",
@@ -867,11 +999,17 @@ Chosen option: 6
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X082PG2T"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public class AzureAISearchVectorStoreCollection<TRecord>(StoreOptions options);
 
@@ -906,7 +1044,10 @@ provide their own encoding / decoding behavior.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X0AS93AK"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ###  Question 3: Collection name as method param or via constructor or either
@@ -915,6 +1056,9 @@ provide their own encoding / decoding behavior.
 
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public class MyVectorStoreCollection()
 {
@@ -926,11 +1070,17 @@ public class MyVectorStoreCollection()
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X2Q35Q8T"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public class MyVectorStoreCollection(string defaultCollectionName)
 {
@@ -942,11 +1092,17 @@ public class MyVectorStoreCollection(string defaultCollectionName)
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X49J2YYF"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public class MyVectorStoreCollection(string defaultCollectionName)
 {
@@ -969,11 +1125,17 @@ Chosen option 2. None of the other options work with the decision outcome of Que
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4X7KJHDJE"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
@@ -994,11 +1156,17 @@ public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = def
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XBBSPY5G"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public async Task<TRecord?> GetAsync(object key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
@@ -1025,11 +1193,17 @@ public async Task<TRecord?> GetAsync(object key, GetRecordOptions? options = def
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XERGV650"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
@@ -1067,11 +1241,17 @@ public async Task<TRecord?> GetAsync(GUID key, GetRecordOptions? options = defau
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XG6A8C1R"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 interface IVectorRecordStore<TRecord, TKey>
 {
@@ -1103,11 +1283,17 @@ each implementation to hardcode allowed key types if the vector db only supports
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XGZN2GZ8"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 interface IVectorDBRecordService {}
 interface IVectorDBCollectionUpdateService {}
@@ -1118,11 +1304,17 @@ interface IVectorDBCollectionCreateService {}
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XJBJSY5F"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 interface IMemoryRecordService {}
 interface IMemoryCollectionUpdateService {}
@@ -1133,11 +1325,17 @@ interface IMemoryCollectionCreateService {}
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XJBRSPT9"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 interface IVectorRecordStore<TRecord> {}
 interface IVectorCollectionNonSchema {}
@@ -1150,11 +1348,17 @@ interface IVectorStore<TRecord> {}: IVectorCollectionStore, IVectorRecordStore<T
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XN3RR95N"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 interface IVectorStore
 {
@@ -1179,11 +1383,17 @@ Option 4 also matches our design as chosen in question 1.
 
 ```cs {"id":"01J6KNYVCZ0YF7F0Y4XNSHH0K0"}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 class CacheEntryModel(string prompt, string result, ReadOnlyMemory<float> promptEmbedding);
 
@@ -1251,11 +1461,17 @@ builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>
 11. Add model and mappers for popular loader systems, like Kernel Memory or LlamaIndex.
 12. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specfics TBD.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 11. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specfics TBD.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 ### Cross Cutting Requirements
@@ -1282,7 +1498,10 @@ Need the following for all features:
    - How to implement your own mapper.
    - How to upgrade from the current storage system to the new one.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
   - Usage scenario for collection and record management using custom model and configured collection creation.
@@ -1297,4 +1516,7 @@ Need the following for all features:
   - How to implement your own mapper.
   - How to upgrade from the current storage system to the new one.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

@@ -7,11 +7,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using Microsoft.SemanticKernel.Agents.Filters;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
@@ -157,7 +163,10 @@ public class AgentChatTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// <summary>
@@ -201,6 +210,9 @@ public class AgentChatTests
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
     {
@@ -212,18 +224,28 @@ public class AgentChatTests
         public MockAgent Agent { get; } = new() { Response = [new(AuthorRole.Assistant, "sup")] };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         public override IReadOnlyList<Agent> Agents => [this.Agent];
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -232,25 +254,37 @@ public class AgentChatTests
             CancellationToken cancellationToken = default)
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             ChatHistory history,
             IReadOnlyList<ChatMessageContent> history,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 >>>>>>> origin/PR
 =======
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             this.SetActivityOrThrow();

@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from collections.abc import Callable
 from typing import TYPE_CHECKING
@@ -33,7 +39,10 @@ def kernel() -> "Kernel":
 def service() -> "AIServiceClientBase":
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -89,17 +98,26 @@ def enable_debug_mode():
         return
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     return AIServiceClientBase(service_id="service", ai_model_id="ai_model_id")
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 @fixture(scope="session")
 def default_service() -> "AIServiceClientBase":
@@ -120,6 +138,10 @@ def kernel_with_default_service(
 ) -> "Kernel":
     kernel.add_service(default_service)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -133,7 +155,10 @@ def not_decorated_native_function() -> Callable:
 
     return not_decorated_native_function
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     return kernel
 
@@ -165,6 +190,9 @@ def get_aoai_config():
         deployment_name = "text-embedding-ada-002"
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -173,10 +201,13 @@ def decorated_native_function() -> Callable:
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     @kernel_function(name="getLightStatus")
     def decorated_native_function(arg1: str) -> str:
         return "test"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     @kernel_function(name="getLightStatus")
     def decorated_native_function(arg1: str) -> str:
@@ -197,17 +228,26 @@ def get_oai_config():
         api_key, org_id = openai_settings_from_dot_env()
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     return decorated_native_function
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 @fixture(scope="session")
 def custom_plugin_class():
@@ -463,11 +503,17 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         override_env_param_dict = {}
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
     env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
@@ -477,13 +523,19 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "ANTHROPIC_API_KEY": "test_api_key"
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
     env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     env_vars.update(override_env_param_dict)
@@ -639,7 +691,10 @@ def redis_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         else:
             monkeypatch.delenv(key, raising=False)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -652,6 +707,9 @@ def get_gp_config():
         api_key = google_palm_settings_from_dot_env()
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     return env_vars

@@ -1,4 +1,8 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -7,7 +11,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
@@ -15,6 +22,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,11 +117,17 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
     protected internal override Task ResetAsync(CancellationToken cancellationToken = default) =>
         this._chat.ResetAsync(cancellationToken);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     protected internal override string Serialize() =>
         JsonSerializer.Serialize(this._chat.Serialize());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

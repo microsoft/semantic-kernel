@@ -2,10 +2,13 @@
 
 import asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from typing import Annotated
 
 from semantic_kernel.exceptions import FunctionExecutionException
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from typing import Annotated
 
@@ -26,6 +29,9 @@ else:
 
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -42,11 +48,17 @@ class WaitPlugin(KernelBaseModel):
     """
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     @kernel_function
     async def wait(
@@ -57,7 +69,10 @@ class WaitPlugin(KernelBaseModel):
     ) -> None:
         """Wait for a certain number of seconds."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -67,16 +82,22 @@ class WaitPlugin(KernelBaseModel):
     ) -> None:
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if isinstance(input, str):
             try:
                 input = float(input)
             except ValueError as exc:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 raise FunctionExecutionException(
                     "seconds text must be a number"
                 ) from exc
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 raise FunctionExecutionException(
                     "seconds text must be a number"
@@ -90,5 +111,8 @@ class WaitPlugin(KernelBaseModel):
                 raise ValueError("seconds text must be a number") from exc
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         await asyncio.sleep(abs(input))

@@ -24,14 +24,20 @@ if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
     from semantic_kernel.contents.chat_history import ChatHistory
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -47,13 +53,19 @@ class ChatHistoryAgentProtocol(Protocol):
 
     @abstractmethod
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["StreamingChatMessageContent"]:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["StreamingChatMessageContent"]:
 =======
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Invoke the chat history agent protocol in streaming mode."""
         ...
@@ -117,7 +129,10 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     @override
@@ -151,6 +166,9 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             messages.append(self.messages[message_index])
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def _is_message_visible(self, message: ChatMessageContent, message_queue_count: int) -> bool:
         """Determine if a message is visible to the user."""

@@ -61,9 +61,12 @@ public class AggregatorAgentTests
         Assert.Empty(messages); // Agent hasn't joined chat, no broadcast
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Add message to inner chat (not visible to parent)
         groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         // Add message to inner chat (not visible to parent)
         groupChat.Add(new ChatMessageContent(AuthorRole.User, "test inner"));
@@ -74,6 +77,9 @@ public class AggregatorAgentTests
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         // Arrange: Add message to inner chat (not visible to parent)
         groupChat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test inner"));

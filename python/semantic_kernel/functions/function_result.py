@@ -2,8 +2,11 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from typing import Any
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from typing import Any
 =======
@@ -13,14 +16,20 @@ from typing import Any
 from typing import Any, Mapping, Optional
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from pydantic import Field
 
 from semantic_kernel.contents.kernel_content import KernelContent
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import FunctionResultError
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.exceptions import FunctionResultError
 =======
@@ -29,6 +38,9 @@ from semantic_kernel.exceptions import FunctionResultError
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -40,8 +52,11 @@ class FunctionResult(KernelBaseModel):
     """The result of a function.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Args:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     Args:
 =======
@@ -51,6 +66,9 @@ class FunctionResult(KernelBaseModel):
     Arguments:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         function (KernelFunctionMetadata): The metadata of the function that was invoked.
         value (Any): The value of the result.
@@ -67,8 +85,11 @@ class FunctionResult(KernelBaseModel):
     function: KernelFunctionMetadata
     value: Any
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     metadata: dict[str, Any] = Field(default_factory=dict)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     metadata: dict[str, Any] = Field(default_factory=dict)
 =======
@@ -78,6 +99,9 @@ class FunctionResult(KernelBaseModel):
     metadata: Mapping[str, Any] = Field(default_factory=dict)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     def __str__(self) -> str:
@@ -86,11 +110,17 @@ class FunctionResult(KernelBaseModel):
             try:
                 if isinstance(self.value, list):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     return (
                         str(self.value[0])
@@ -100,7 +130,10 @@ class FunctionResult(KernelBaseModel):
                 if isinstance(self.value, dict):
                     # TODO (eavanvalkenburg): remove this once function result doesn't include input args
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -109,17 +142,26 @@ class FunctionResult(KernelBaseModel):
                     # TODO: remove this once function result doesn't include input args
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     # This is so an integration test can pass.
                     return str(list(self.value.values())[-1])
                 return str(self.value)
             except Exception as e:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 raise FunctionResultError(
                     f"Failed to convert value to string: {e}"
@@ -138,7 +180,10 @@ class FunctionResult(KernelBaseModel):
         ):
             return self.value[index].inner_content
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -158,6 +203,9 @@ class FunctionResult(KernelBaseModel):
                 return self.value[index].inner_content
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if isinstance(self.value, KernelContent):
             return self.value.inner_content

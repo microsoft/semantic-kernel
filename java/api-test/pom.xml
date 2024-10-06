@@ -7,15 +7,21 @@
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <version>1.1.6-SNAPSHOT</version>
         <version>1.1.5-SNAPSHOT</version>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         <version>1.1.6-SNAPSHOT</version>
         <version>1.1.5-SNAPSHOT</version>
 =======
         <version>1.0.0-alpha.1-SNAPSHOT</version>
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         <relativePath>../pom.xml</relativePath>
     </parent>

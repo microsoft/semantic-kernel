@@ -2,11 +2,17 @@
 
 using System;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.Collections.Generic;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.IO;
 using System.Linq;
@@ -110,7 +116,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(message.ModelId);
         Assert.Equal("phi3", message.ModelId);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -127,6 +136,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.True(doneMessageChunk.Done);
         Assert.Equal("stop", doneMessageChunk.DoneReason);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -170,7 +182,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     public async Task GetStreamingChatMessageContentsShouldHaveDoneReasonAsync()
@@ -202,6 +217,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
     [Fact]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public async Task GetStreamingChatMessageContentsExecutionSettingsMustBeSentAsync()
     {

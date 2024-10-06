@@ -3,6 +3,10 @@
 This folder contains a project with code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -15,7 +19,10 @@ This folder contains a project with code snippets that are related to online doc
 You can run specific examples by using test filters (dotnet test --filter).
 Type "dotnet test --help" at the command line for more details.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 | Subfolders             | Descriptio
 | ---------------------- | -----------------------------------------------------------------------------------------------------
@@ -40,6 +47,9 @@ e | col1 | col2 | col3 |
 
   mmand line for more details.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 ## Configuring Secrets
@@ -51,13 +61,19 @@ to avoid the risk of leaking secrets into the repository, branches and pull requ
 You can also use environment variables if you prefer.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 This project and KernelSyntaxExamples use the same pool of secrets. 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 This project and KernelSyntaxExamples use the same pool of secrets. 
 =======
 This project and KernelSyntaxExamples use the same pool of secrets.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 To set your secrets with Secret Manager:

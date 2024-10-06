@@ -68,6 +68,10 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         var jsonObject = JsonSerializer.SerializeToElement(usageObject);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -77,7 +81,10 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         Assert.True(jsonObject.TryGetProperty("InputTokenCount", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
@@ -85,6 +92,9 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         Assert.True(jsonObject.TryGetProperty("OutputTokenCount", out JsonElement completionTokensJson));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
@@ -94,13 +104,19 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
 =======
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -149,6 +165,10 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         var jsonObject = JsonSerializer.SerializeToElement(usageObject);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -158,7 +178,10 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         Assert.True(jsonObject.TryGetProperty("InputTokenCount", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
@@ -166,6 +189,9 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         Assert.True(jsonObject.TryGetProperty("OutputTokenCount", out JsonElement completionTokensJson));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
@@ -175,13 +201,19 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
 =======
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityDetails>)!);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 

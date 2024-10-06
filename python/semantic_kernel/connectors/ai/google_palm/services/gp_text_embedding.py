@@ -7,6 +7,10 @@ import google.generativeai as palm
 from numpy import array, ndarray
 from pydantic import StringConstraints, ValidationError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -16,10 +20,13 @@ from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings imp
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidAuthError, ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
@@ -42,6 +49,9 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 <<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 @experimental_class
@@ -71,7 +81,10 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
 
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> ms/small_fixes
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
@@ -119,6 +132,9 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """Generates embeddings for the given list of texts."""
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         try:
             google_palm_settings = GooglePalmSettings.create(

@@ -6,10 +6,13 @@ from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
@@ -23,6 +26,9 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
@@ -38,11 +44,17 @@ async def test_azure_summarize_conversation_using_plugin(
     kernel, chatTranscript = setup_summarize_conversation_using_plugin
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     service_id = "text_completion"
 
@@ -70,9 +82,12 @@ async def test_azure_summarize_conversation_using_plugin(
             conversationSummaryPlugin["SummarizeConversation"], arguments
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     )
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     )
 
@@ -114,6 +129,9 @@ async def test_azure_summarize_conversation_using_plugin(
     summary = await retry(lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], arguments))
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     output = str(summary).strip().lower()
     print(output)
@@ -126,11 +144,17 @@ async def test_oai_summarize_conversation_using_plugin(
     setup_summarize_conversation_using_plugin,
 ):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     kernel, chatTranscript = setup_summarize_conversation_using_plugin
 
@@ -159,9 +183,12 @@ async def test_oai_summarize_conversation_using_plugin(
             conversationSummaryPlugin["SummarizeConversation"], arguments
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     )
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     )
 
@@ -206,6 +233,9 @@ async def test_oai_summarize_conversation_using_plugin(
     summary = await retry(lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], arguments))
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     output = str(summary).strip().lower()
     print(output)

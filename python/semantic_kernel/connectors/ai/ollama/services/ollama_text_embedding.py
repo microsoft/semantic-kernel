@@ -35,9 +35,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 @experimental_class
 class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 @experimental_class
 class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
@@ -49,6 +52,9 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 class OllamaTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """Ollama embeddings client.
 

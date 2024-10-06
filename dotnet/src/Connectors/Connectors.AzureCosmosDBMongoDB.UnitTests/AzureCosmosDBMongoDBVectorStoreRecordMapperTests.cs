@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 using System;
@@ -42,7 +48,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 
         this._sut = new(definition, keyProperty.DataModelPropertyName);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
@@ -63,6 +72,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         this._sut = new(definition, storagePropertyNames);
         this._sut = new(new VectorStoreRecordPropertyReader(typeof(AzureCosmosDBMongoDBHotelModel), definition, null));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -90,11 +102,17 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         Assert.True(document["parking_is_included"].AsBoolean);
         Assert.Equal([1f, 2f, 3f], document["DescriptionEmbedding"].AsBsonArray);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -110,11 +128,17 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
             ["parking_is_included"] = BsonValue.Create(true),
             ["DescriptionEmbedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         };
 

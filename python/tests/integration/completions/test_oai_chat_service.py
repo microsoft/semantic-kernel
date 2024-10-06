@@ -6,11 +6,17 @@ from openai import AsyncOpenAI
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import (
     OpenAISettings,
@@ -22,6 +28,10 @@ from semantic_kernel.contents.chat_history import ChatHistory
 async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -76,7 +86,10 @@ async def test_oai_chat_service_with_yaml_handlebars(
     org_id = openai_settings.org_id
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -94,6 +107,9 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     org_id = openai_settings.org_id
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     client = AsyncOpenAI(
         api_key=api_key,
@@ -102,11 +118,17 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 
     kernel.add_service(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         sk_oai.OpenAIChatCompletion(
             service_id="chat-gpt",
@@ -119,6 +141,10 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     plugins_directory = os.path.join(
         os.path.dirname(__file__), "../../assets/test_plugins"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -130,7 +156,10 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     assert plugin is not None
     assert plugin["TestFunctionHandlebars"] is not None
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     )
 
@@ -163,6 +192,9 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     assert len(output) < 100
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     chat_history = ChatHistory()
@@ -170,10 +202,13 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     chat_history.add_user_message("I love parrots.")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     result = await kernel.invoke(
         plugin["TestFunctionHandlebars"], chat_history=chat_history
     )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     result = await kernel.invoke(
         plugin["TestFunctionHandlebars"], chat_history=chat_history
@@ -299,6 +334,9 @@ async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_
         plugin["TestFunctionHandlebars"], chat_history=chat_history
     )
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert result is not None
     assert len(str(result.value)) > 0

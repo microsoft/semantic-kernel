@@ -1,5 +1,9 @@
 SHELL = /bin/bash
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -78,6 +82,7 @@ build:
 	uvx --from build pyproject-build --installer uv
 <<<<<<< main
 SHELL = bash
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 
 .PHONY: help install recreate-env pre-commit
@@ -130,6 +135,8 @@ pre-commit:
 .ONESHELL:
 =======
 =======
+>>>>>>> Stashed changes
+=======
 <<<<<<< main
 >>>>>>> origin/main
 
@@ -270,6 +277,9 @@ install-pre-commit:
 
 .ONESHELL:
 <<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 install-pre-commit:
 	poetry run pre-commit install
@@ -278,7 +288,10 @@ install-pre-commit:
 =======
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -297,4 +310,7 @@ build:
 	uvx --from build pyproject-build --installer uv
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

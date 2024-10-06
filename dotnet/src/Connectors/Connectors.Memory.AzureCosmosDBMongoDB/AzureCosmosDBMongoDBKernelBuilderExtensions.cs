@@ -49,7 +49,10 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         return builder;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -99,5 +102,8 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         return builder;
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

@@ -6,7 +6,10 @@ labels: ''
 assignees: ''
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 about: Create a report to help us improve
 assignees: ""
 labels: ""
@@ -15,6 +18,9 @@ runme:
   id: 01J0BTG8CANBSFT2PB9SAS2DFC
   version: v3
 title: ""
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ---
 
@@ -46,7 +52,10 @@ If applicable, add screenshots to help explain your problem.
  - Browser [e.g. stock browser, safari]
  - Version [e.g. 22]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 
@@ -57,6 +66,9 @@ Add any other context about the problem here.
 - Browser [e.g. chrome, safari]
 - Version [e.g. 22]
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 **Additional context**

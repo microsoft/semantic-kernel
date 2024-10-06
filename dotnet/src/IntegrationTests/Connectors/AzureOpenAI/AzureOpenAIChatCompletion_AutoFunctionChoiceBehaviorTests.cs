@@ -8,11 +8,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using Azure.Identity;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -65,12 +71,18 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.NotNull(result);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(invokedFunctions);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
@@ -108,12 +120,18 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.NotNull(result);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(invokedFunctions);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
@@ -148,13 +166,19 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         var functionCall = functionCalls.First();
@@ -193,12 +217,18 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.NotNull(result);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(invokedFunctions);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
@@ -241,6 +271,10 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.NotNull(result);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -250,13 +284,19 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 
     [Fact(Skip = "Temporarily disabled to unblock PR pipeline.")]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
     [Fact]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()
     {
@@ -289,12 +329,18 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 
         // Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(functionsForManualInvocation);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
@@ -331,13 +377,19 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         var functionCall = functionCalls.First();
@@ -377,12 +429,18 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 
         // Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(functionsForManualInvocation);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
@@ -395,12 +453,18 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
@@ -411,13 +475,19 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
             credentials: new AzureCliCredential());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         return kernelBuilder.Build();

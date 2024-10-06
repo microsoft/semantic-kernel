@@ -2,6 +2,10 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -563,7 +567,10 @@ from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_exception import KernelException
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
@@ -1556,6 +1563,9 @@ from semantic_kernel.configuration.kernel_config import KernelConfig
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_exception import KernelException
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
@@ -1792,7 +1802,10 @@ class Kernel(KernelBase):
             Verify.not_null(
                 backend.azure_open_ai, "Azure OpenAI configuration is missing"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             )
             function.set_ai_backend(
@@ -1815,6 +1828,9 @@ class Kernel(KernelBase):
                 )
             )
 =======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             )
             function.set_ai_backend(
@@ -1837,6 +1853,10 @@ class Kernel(KernelBase):
                 )
             )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
@@ -1848,9 +1868,12 @@ class Kernel(KernelBase):
                 f"{function_config.prompt_template_config.description}",
             )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         return function
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
         return function
@@ -2160,4 +2183,7 @@ class Kernel(KernelBase):
     # endregion
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

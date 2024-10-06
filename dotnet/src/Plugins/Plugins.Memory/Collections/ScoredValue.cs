@@ -3,10 +3,13 @@
 using System;
 using System.Collections.Generic;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Memory;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.Diagnostics.CodeAnalysis;
 
@@ -20,6 +23,9 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /// <summary>
@@ -27,11 +33,17 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 internal readonly struct ScoredValue<T>(T item, double score) : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
 {
@@ -50,7 +62,10 @@ internal readonly struct ScoredValue<T>(T item, double score) : IComparable<Scor
     /// <param name="other">The other instance of <see cref="ScoredValue{T}"/> to compare with.</param>
     /// <returns>A value indicating the relative order of the instances.</returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
 {
@@ -64,6 +79,9 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     public Score Score { get; }
 
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public int CompareTo(ScoredValue<T> other)
     {
@@ -71,6 +89,10 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -79,6 +101,11 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     /// </summary>
     /// <returns>A string representation of the current instance.</returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -89,6 +116,10 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -97,6 +128,11 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     /// </summary>
     /// <param name="src">The current instance of <see cref="ScoredValue{T}"/>.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -107,6 +143,10 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -115,6 +155,11 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     /// </summary>
     /// <param name="src">The current instance of <see cref="ScoredValue{T}"/>.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -125,6 +170,10 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -133,6 +182,11 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     /// </summary>
     /// <param name="src">The <see cref="KeyValuePair{TKey, TValue}"/> to convert.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
@@ -143,21 +197,31 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
 =======
     public override bool Equals(object obj)
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         return (obj is ScoredValue<T> other) && this.Equals(other);
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -174,7 +238,10 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
 
     /// <inheritdoc/>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     public bool Equals(ScoredValue<T> other)
     {
@@ -183,6 +250,9 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public override int GetHashCode()
     {
@@ -190,16 +260,22 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>
     /// Determines whether two instances of <see cref="ScoredValue{T}"/> are equal.
     /// </summary>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>
     /// Determines whether two instances of <see cref="ScoredValue{T}"/> are equal.
     /// </summary>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public static bool operator ==(ScoredValue<T> left, ScoredValue<T> right)
     {
@@ -207,16 +283,22 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>
     /// Determines whether two instances of <see cref="ScoredValue{T}"/> are not equal.
     /// </summary>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>
     /// Determines whether two instances of <see cref="ScoredValue{T}"/> are not equal.
     /// </summary>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public static bool operator !=(ScoredValue<T> left, ScoredValue<T> right)
     {
@@ -224,16 +306,22 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>
     /// Determines whether the left instance of <see cref="ScoredValue{T}"/> is less than the right instance.
     /// </summary>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>
     /// Determines whether the left instance of <see cref="ScoredValue{T}"/> is less than the right instance.
     /// </summary>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public static bool operator <(ScoredValue<T> left, ScoredValue<T> right)
     {
@@ -241,16 +329,22 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>
     /// Determines whether the left instance of <see cref="ScoredValue{T}"/> is less than or equal to the right instance.
     /// </summary>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>
     /// Determines whether the left instance of <see cref="ScoredValue{T}"/> is less than or equal to the right instance.
     /// </summary>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public static bool operator <=(ScoredValue<T> left, ScoredValue<T> right)
     {
@@ -258,16 +352,22 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>
     /// Determines whether the left instance of <see cref="ScoredValue{T}"/> is greater than the right instance.
     /// </summary>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>
     /// Determines whether the left instance of <see cref="ScoredValue{T}"/> is greater than the right instance.
     /// </summary>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public static bool operator >(ScoredValue<T> left, ScoredValue<T> right)
     {
@@ -275,16 +375,22 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>
     /// Determines whether the left instance of <see cref="ScoredValue{T}"/> is greater than or equal to the right instance.
     /// </summary>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>
     /// Determines whether the left instance of <see cref="ScoredValue{T}"/> is greater than or equal to the right instance.
     /// </summary>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public static bool operator >=(ScoredValue<T> left, ScoredValue<T> right)
     {
@@ -292,6 +398,10 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -302,12 +412,18 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     {
         return new ScoredValue<T>(default!, double.MinValue);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     internal static ScoredValue<T> Min()
     {
         return new ScoredValue<T>(default!, Score.Min);
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 }

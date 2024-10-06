@@ -1,5 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -9,11 +13,17 @@ using System.ClientModel;
 using System;
 >>>>>>> origin/PR
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 using System.ClientModel;
 using System;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.IO;
@@ -26,12 +36,18 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using OpenAI;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using OpenAI;
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using OpenAI.Assistants;
 using OpenAI.Files;
@@ -50,11 +66,17 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     internal const string OptionsMetadataKey = "__run_options";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     internal const string TemplateMetadataKey = "__template_format";
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     private readonly OpenAIClientProvider _provider;
@@ -64,6 +86,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -76,6 +102,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -97,7 +127,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Expose predefined tools for run-processing.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> main
     /// The assistant definition.
     /// </summary>
@@ -166,6 +199,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 >>>>>>> main
     /// Expose predefined tools for run-processing.
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// </summary>
     internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
@@ -174,6 +210,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -187,7 +227,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         OpenAIClientProvider clientProvider,
         OpenAIAssistantDefinition definition,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
     /// <param name="capabilities">Defines the assistant's capabilities.</param>
@@ -248,6 +291,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Kernel kernel,
         KernelArguments? defaultArguments = null,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         CancellationToken cancellationToken = default)
     {
@@ -261,8 +307,11 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Create the assistant
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
 =======
@@ -271,6 +320,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
         AssistantCreationOptions assistantCreationOptions = definition.CreateAssistantOptions();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assistant model = await client.CreateAssistantAsync(definition.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
@@ -280,11 +332,17 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             {
                 Kernel = kernel,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 Arguments = defaultArguments
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             };
     }
@@ -306,6 +364,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         await foreach (var page in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
         await foreach (PageResult<Assistant> page in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = ListOrder.NewestFirst }, cancellationToken).ConfigureAwait(false))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -315,12 +377,18 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 yield return CreateAssistantDefinition(model);
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         await foreach (Assistant model in client.GetAssistantsAsync(new AssistantCollectionOptions() { Order = AssistantCollectionOrder.Descending }, cancellationToken).ConfigureAwait(false))
         {
             yield return CreateAssistantDefinition(model);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
     }
@@ -329,6 +397,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Retrieve a <see cref="OpenAIAssistantAgent"/> by identifier.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -345,7 +417,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     {
         // Create the client
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// <param name="clientProvider">Configuration for accessing the API service.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -374,6 +449,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         // Create the client
         AssistantClient client = CreateClient(clientProvider);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         AssistantClient client = CreateClient(provider);
 
@@ -381,6 +459,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Assistant model = await client.GetAssistantAsync(id, cancellationToken).ConfigureAwait(false);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -390,7 +472,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             {
                 Kernel = kernel,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         // Ensure template is valid (avoid failure after posting assistant creation)
         IPromptTemplate? template =
@@ -407,6 +492,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 Arguments = defaultArguments,
                 Template = template,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             };
     }
@@ -442,8 +530,11 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         return await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 =======
@@ -451,6 +542,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         return result.Deleted;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -463,6 +557,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <returns>The file identifier</returns>
     /// <remarks>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -474,7 +572,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         OpenAIFileInfo fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// Use the <see cref="OpenAIFileClient"/> directly for more advanced file operations.
     /// </remarks>
@@ -484,6 +585,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         OpenAIFile fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         return fileInfo.Id;
@@ -528,14 +632,20 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         if (!this.IsDeleted)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
 =======
             AssistantDeletionResult result = await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false);
             this.IsDeleted = result.Deleted;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -550,8 +660,11 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <returns>Asynchronous enumeration of messages.</returns>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <returns>Asynchronous enumeration of messages.</returns>
 =======
@@ -576,6 +689,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of response messages.</returns>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
@@ -596,13 +712,19 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <returns>Asynchronous enumeration of messages.</returns>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <returns>Asynchronous enumeration of messages.</returns>
 =======
     /// <returns>Asynchronous enumeration of response messages.</returns>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
@@ -618,13 +740,19 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         kernel ??= this.Kernel;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         arguments ??= this.Arguments;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         arguments ??= this.Arguments;
 =======
         arguments = this.MergeArguments(arguments);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
@@ -638,6 +766,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -648,7 +780,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// Invoke the assistant on the specified thread with streaming response.
     /// </summary>
@@ -657,6 +792,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="messages">Optional receiver of the completed messages generated</param>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
@@ -666,6 +804,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -684,7 +826,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -701,6 +846,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="messages">Optional receiver of the completed messages generated</param>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
@@ -710,6 +858,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -718,13 +870,19 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         KernelArguments? arguments = null,
         Kernel? kernel = null,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         OpenAIAssistantInvocationOptions? options,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
         ChatHistory? messages = null,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         CancellationToken cancellationToken = default)
     {
@@ -732,13 +890,19 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         kernel ??= this.Kernel;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         arguments ??= this.Arguments;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         arguments ??= this.Arguments;
 =======
         arguments = this.MergeArguments(arguments);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         return AssistantThreadActions.InvokeStreamingAsync(this, this._client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
@@ -790,7 +954,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     internal Task<string?> GetInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken) =>
@@ -810,6 +977,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgent"/> class.
@@ -836,12 +1006,18 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     {
         OpenAIAssistantExecutionOptions? options = null;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     {
         OpenAIAssistantExecutionOptions? options = null;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         if (model.Metadata.TryGetValue(OptionsMetadataKey, out string? optionsJson))
@@ -903,9 +1079,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if (definition.EnableCodeInterpreter)
         {
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         if (definition.EnableCodeInterpreter)
         {
@@ -941,6 +1120,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     {
         return config.Client.GetAssistantClient();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
         }
@@ -958,6 +1140,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         return config.Client.GetAssistantClient();
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -973,6 +1159,11 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         }
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main

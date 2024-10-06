@@ -26,14 +26,20 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <PackageReference Include="System.ValueTuple" />
     <PackageReference Include="System.Threading.Tasks.Extensions" />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     <PackageReference Include="System.ValueTuple" />
     <PackageReference Include="System.Threading.Tasks.Extensions" />
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>

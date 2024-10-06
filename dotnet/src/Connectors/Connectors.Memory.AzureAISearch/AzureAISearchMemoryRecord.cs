@@ -5,12 +5,18 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Text;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Text;
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -68,12 +74,18 @@ internal sealed class AzureAISearchMemoryRecord
     /// </summary>
     [JsonPropertyName(EmbeddingField)]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     [JsonConverter(typeof(ReadOnlyMemoryConverter))]
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     [JsonConverter(typeof(ReadOnlyMemoryConverter))]
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public ReadOnlyMemory<float> Embedding { get; set; }
 

@@ -8,10 +8,13 @@ TEXT_CONTENT_TAG: Final[str] = "text"
 IMAGE_CONTENT_TAG: Final[str] = "image"
 ANNOTATION_CONTENT_TAG: Final[str] = "annotation"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 BINARY_CONTENT_TAG: Final[str] = "binary"
 FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
 BINARY_CONTENT_TAG: Final[str] = "binary"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 BINARY_CONTENT_TAG: Final[str] = "binary"
 FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
@@ -23,6 +26,9 @@ FILE_REFERENCE_CONTENT_TAG: Final[str] = "file_reference"
 BINARY_CONTENT_TAG: Final[str] = "binary"
 STREAMING_FILE_REFERENCE_CONTENT_TAG: Final[str] = "streaming_file_reference"
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 FUNCTION_CALL_CONTENT_TAG: Final[str] = "function_call"
 FUNCTION_RESULT_CONTENT_TAG: Final[str] = "function_result"
@@ -43,11 +49,17 @@ class ContentTypes(str, Enum):
     FUNCTION_CALL_CONTENT = FUNCTION_CALL_CONTENT_TAG
     FUNCTION_RESULT_CONTENT = FUNCTION_RESULT_CONTENT_TAG
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     STREAMING_ANNOTATION_CONTENT = STREAMING_ANNOTATION_CONTENT_TAG
     STREAMING_FILE_REFERENCE_CONTENT = STREAMING_FILE_REFERENCE_CONTENT_TAG
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     TEXT_CONTENT = TEXT_CONTENT_TAG

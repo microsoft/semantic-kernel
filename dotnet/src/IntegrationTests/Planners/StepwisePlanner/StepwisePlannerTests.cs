@@ -151,13 +151,19 @@ public sealed class StepwisePlannerTests : IDisposable
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
                 credentials: new AzureCliCredential());
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
         else
@@ -166,13 +172,19 @@ public sealed class StepwisePlannerTests : IDisposable
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
                 credentials: new AzureCliCredential());
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

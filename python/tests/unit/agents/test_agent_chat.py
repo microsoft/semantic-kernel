@@ -134,7 +134,10 @@ async def test_invoke_agent(agent_chat, agent, chat_message):
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 async def test_invoke_streaming_agent(agent_chat, agent, chat_message):
@@ -163,6 +166,9 @@ async def test_invoke_streaming_agent(agent_chat, agent, chat_message):
 
 @pytest.mark.asyncio
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 async def test_synchronize_channel_with_existing_channel(agent_chat):
     mock_channel = MagicMock(spec=AgentChannel)

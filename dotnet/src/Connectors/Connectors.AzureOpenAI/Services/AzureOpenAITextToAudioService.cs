@@ -1,8 +1,11 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 // Copyright (c) Microsoft. All rights reserved.
 
@@ -17,6 +20,9 @@ using System;
 using System;
 using System.ClientModel;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -25,8 +31,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Azure.Core;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Azure.Core;
 =======
@@ -35,6 +44,9 @@ using Azure.Core;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Services;
@@ -86,6 +98,10 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -95,12 +111,18 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), apiKey, options);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), new ApiKeyCredential(apiKey), options);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToAudioService)));
@@ -111,11 +133,17 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAITextToAudioService"/> class.
@@ -137,10 +165,13 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var options = AzureClientCore.GetAzureOpenAIClientOptions(
             httpClient,
             AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var options = AzureClientCore.GetAzureOpenAIClientOptions(
             httpClient,
@@ -148,6 +179,9 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 =======
         var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), credential, options);
@@ -160,12 +194,18 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <inheritdoc/>
     public Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(

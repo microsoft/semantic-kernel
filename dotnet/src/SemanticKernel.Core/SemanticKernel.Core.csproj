@@ -35,6 +35,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
 =======
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="System.Text.Json" />
@@ -48,10 +53,13 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
   </ItemGroup>
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
 =======
@@ -64,5 +72,8 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/JsonOptionsCache.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 </Project>

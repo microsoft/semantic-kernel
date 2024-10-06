@@ -342,7 +342,10 @@ def test_scmc_add():
     assert len(combined.inner_content) == 2
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     # Make sure the original inner content is preserved
@@ -350,6 +353,9 @@ def test_scmc_add():
     assert message2.inner_content == "source2"
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 def test_scmc_add_three():
@@ -464,7 +470,10 @@ def test_scmc_add_different_items_same_type(message1, message2):
     assert len(combined.items) == 2
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     # Make sure the original items are preserved
@@ -472,6 +481,9 @@ def test_scmc_add_different_items_same_type(message1, message2):
     assert len(message2.items) == 1
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 @pytest.mark.parametrize(

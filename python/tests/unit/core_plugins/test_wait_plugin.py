@@ -1,7 +1,10 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # Copyright (c) Microsoft. All rights reserved.
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 # Copyright (c) Microsoft. All rights reserved.
 
@@ -12,6 +15,9 @@
 =======
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from unittest.mock import patch
 
@@ -62,8 +68,11 @@ async def test_wait_valid_params(wait_time):
         await plugin.wait(wait_time)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
@@ -73,6 +82,9 @@ async def test_wait_valid_params(wait_time):
         assert patched_sleep.called_once_with(abs(float(wait_time)))
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 

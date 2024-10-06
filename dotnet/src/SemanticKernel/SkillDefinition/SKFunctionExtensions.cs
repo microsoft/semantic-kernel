@@ -2,11 +2,17 @@
 
 using System;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.Text.Json.Nodes;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +29,10 @@ public static class SKFunctionExtensions
 {
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -98,6 +108,11 @@ public static class SKFunctionExtensions
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -124,7 +139,10 @@ public static class SKFunctionExtensions
         var tmpContext = new SKContext(input);
         try
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         return function.InvokeAsync(input, settings: null, memory: null, logger: null, cancellationToken: cancellationToken);
@@ -152,6 +170,9 @@ public static class SKFunctionExtensions
         var inputInContext = context.Variables.Input;
         if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
 #pragma warning disable CA2016 // the token is passed in via the context
@@ -167,7 +188,10 @@ public static class SKFunctionExtensions
 
         return tmpContext;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             return function.InvokeAsync(context, textCompletionService, settings);
@@ -181,6 +205,9 @@ public static class SKFunctionExtensions
 
         return function.InvokeAsync(contextClone, textCompletionService, settings);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 }

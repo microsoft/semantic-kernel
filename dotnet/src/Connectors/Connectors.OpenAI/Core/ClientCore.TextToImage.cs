@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.ClientModel;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.ClientModel;
 =======
@@ -10,6 +13,9 @@ using System;
 using System.ClientModel;
 using System.Collections.Generic;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,7 +64,10 @@ internal partial class ClientCore
         return generatedImage.ImageUri?.ToString() ?? throw new KernelException("The generated image is not in url format");
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -169,5 +178,8 @@ internal partial class ClientCore
         throw new NotSupportedException($"The provided response format type '{responseFormat.GetType()}' is not supported.");
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

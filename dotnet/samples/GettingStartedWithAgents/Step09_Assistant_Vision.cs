@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -32,6 +38,10 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -42,7 +52,10 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
                     Metadata = AssistantSampleMetadata,
                 });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
@@ -60,6 +73,9 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
                 },
                 kernel: new Kernel());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Upload an image
@@ -83,13 +99,19 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
             await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             await provider.Client.GetFileClient().DeleteFileAsync(fileId);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             await provider.Client.GetFileClient().DeleteFileAsync(fileId);
 =======
             await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

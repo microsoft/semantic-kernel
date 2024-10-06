@@ -7,8 +7,11 @@ using System.Reflection;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
@@ -16,6 +19,9 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /// <summary>
@@ -24,11 +30,17 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 public class FlowStep
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     private readonly List<string> _requires = [];
 =======
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private readonly List<string> _requires = [];
 
@@ -40,7 +52,10 @@ public class FlowStep
 
     private Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     private readonly List<string> _requires = new();
 >>>>>>> origin/main
@@ -53,6 +68,9 @@ public class FlowStep
 
     private Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>
@@ -61,13 +79,19 @@ public class FlowStep
     /// <param name="goal">The goal of step</param>
     /// <param name="pluginsFactory">The factory to get plugins</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public FlowStep(string goal, Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public FlowStep(string goal, Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
 =======
     public FlowStep(string goal, Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         this.Goal = goal;
@@ -125,13 +149,19 @@ public class FlowStep
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, Kernel kernel)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, Kernel kernel)
 =======
     private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, IKernel kernel)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         return this._pluginTypes.Select(kvp =>
@@ -139,8 +169,11 @@ public class FlowStep
             var pluginName = kvp.Key;
             var globalPlugin = globalPlugins.FirstOrDefault(_ => _.Key.GetType().Name.Contains(pluginName)).Key;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             if (globalPlugin is not null)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             if (globalPlugin is not null)
 =======
@@ -150,6 +183,9 @@ public class FlowStep
             if (globalPlugin != null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             {
                 return globalPlugin;
@@ -157,7 +193,10 @@ public class FlowStep
 
             var type = kvp.Value;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             if (type is not null)
             {
@@ -166,6 +205,9 @@ public class FlowStep
                     return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, [kernel], null);
 =======
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if (type is not null)
             {
@@ -173,7 +215,10 @@ public class FlowStep
                 {
                     return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, [kernel], null);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             if (type != null)
             {
@@ -182,6 +227,9 @@ public class FlowStep
                     return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { kernel }, null);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 }
                 catch (MissingMethodException)
@@ -198,8 +246,11 @@ public class FlowStep
 
             return null;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         }).Where(plugin => plugin is not null).ToList()!;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         }).Where(plugin => plugin is not null).ToList()!;
 =======
@@ -209,14 +260,20 @@ public class FlowStep
         }).Where(plugin => plugin != null).ToList()!;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
     private static Dictionary<string, Type?> GetPluginTypes(List<string>? value)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Dictionary<string, Type?> plugins = [];
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         Dictionary<string, Type?> plugins = [];
 =======
@@ -226,6 +283,9 @@ public class FlowStep
         Dictionary<string, Type?> plugins = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         if (value is not null)
@@ -309,10 +369,13 @@ public class FlowStep
     /// <param name="globalPlugins">The global plugins available</param>
     /// <returns></returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public IEnumerable<object> LoadPlugins(Kernel kernel, Dictionary<object, string?> globalPlugins)
     {
         if (this._pluginsFactory is not null)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public IEnumerable<object> LoadPlugins(Kernel kernel, Dictionary<object, string?> globalPlugins)
     {
@@ -325,14 +388,20 @@ public class FlowStep
         if (this._pluginsFactory != null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             return this._pluginsFactory(kernel, globalPlugins);
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return [];
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         return [];
 =======
@@ -342,6 +411,9 @@ public class FlowStep
         return Enumerable.Empty<object>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 

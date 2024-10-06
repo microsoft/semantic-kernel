@@ -1,5 +1,8 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 output/
 venv/
 temp/
@@ -17,6 +20,9 @@ temp/
 testrun/*
 .~lock*
 *.pkl
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 dotnet/.config
 
@@ -681,6 +687,12 @@ swa-cli.config.json
 /python/.devcontainer/*
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -692,6 +704,10 @@ swa-cli.config.json
 !.env.project
 !.env.vault
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -706,7 +722,12 @@ swa-cli.config.json
 !/dotnet/.SK-dotnet.sln.icloud
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /java/PACKAGES.md
+=======
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> origin/main

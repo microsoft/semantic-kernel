@@ -1,4 +1,8 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -7,7 +11,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
@@ -17,6 +24,9 @@ using Resources;
 6d73513a859ab2d05e01db3bc1d405827799e34b
 using Resources;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace GettingStarted;
@@ -34,7 +44,10 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     public async Task UseSingleChatCompletionAgentAsync()
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         Kernel kernel = this.CreateKernelWithChatCompletion();
@@ -43,6 +56,9 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         Kernel kernel = this.CreateKernelWithChatCompletion();
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         // Define the agent
         ChatCompletionAgent agent =
@@ -77,7 +93,10 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         }
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -127,5 +146,8 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     }
  6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

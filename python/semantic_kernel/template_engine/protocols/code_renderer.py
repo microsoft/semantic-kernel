@@ -13,8 +13,11 @@ class CodeRenderer(Protocol):
 
     async def render_code(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Render the block using the given context.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         """Render the block using the given context.
 =======
@@ -25,6 +28,9 @@ class CodeRenderer(Protocol):
         Render the block using the given context.
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         :param context: kernel execution context

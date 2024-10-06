@@ -1,5 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+=======
+<Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> Stashed changes
 =======
 <Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> Stashed changes
@@ -8,10 +12,13 @@
     <RootNamespace>SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101,SKEXP0050</NoWarn>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
@@ -27,6 +34,9 @@
     <NoWarn>CA2007,VSTHRD111</NoWarn>
  9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
@@ -52,7 +62,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     <!-- Because some of the referenced projects have dependencies that themselves have System.Text.Json set with a minimum of 7.0. -->
@@ -66,6 +79,9 @@
  9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Web\Plugins.Web.csproj" />

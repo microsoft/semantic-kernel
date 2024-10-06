@@ -2,13 +2,19 @@
 
 from typing import Optional, Tuple
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 from typing import Dict, Optional, Tuple, Union
 
 from dotenv import dotenv_values
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -22,9 +28,12 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
     api_key, org_id = None, None
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     with open(".env", "r") as f:
         lines = f.readlines()
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     with open(".env", "r") as f:
         lines = f.readlines()
@@ -33,6 +42,9 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     api_key = config.get("OPENAI_API_KEY", None)
     org_id = config.get("OPENAI_ORG_ID", None)
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         for line in lines:
@@ -53,8 +65,11 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def azure_openai_settings_from_dot_env() -> Tuple[str, str]:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 def azure_openai_settings_from_dot_env() -> Tuple[str, str]:
 =======
@@ -83,6 +98,9 @@ def azure_openai_settings_from_dot_env_as_dict(
     include_deployment: bool = True, include_api_version: bool = False
 ) -> Dict[str, str]:
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.
@@ -97,8 +115,11 @@ def azure_openai_settings_from_dot_env_as_dict(
 
         for line in lines:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             if line.startswith("AZURE_OPENAI_API_KEY"):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             if line.startswith("AZURE_OPENAI_API_KEY"):
 =======
@@ -129,6 +150,9 @@ def azure_openai_settings_from_dot_env() -> Tuple[str, str]:
     api_key, endpoint = None, None
             if line.startswith("PINECONE_API_KEY"):
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 parts = line.split("=")[1:]
                 api_key = "=".join(parts).strip().strip('"')
@@ -137,9 +161,12 @@ def azure_openai_settings_from_dot_env() -> Tuple[str, str]:
             if line.startswith("AZURE_OPENAI_ENDPOINT"):
                 parts = line.split("=")[1:]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 endpoint = "=".join(parts).strip().strip('"')
                 break
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
                 endpoint = "=".join(parts).strip().strip('"')
                 break
@@ -316,6 +343,9 @@ def azure_aisearch_settings_from_dot_env(
     api_key = config.get("AZURE_AISEARCH_API_KEY", None)
     url = config.get("AZURE_AISEARCH_URL", None)
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     # Azure requires both the API key and the endpoint URL.
@@ -323,8 +353,11 @@ def azure_aisearch_settings_from_dot_env(
     assert endpoint is not None, "Azure OpenAI endpoint not found in .env file"
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     return api_key, endpoint
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     return api_key, endpoint
 =======
@@ -347,4 +380,7 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
     return {"key": api_key, "endpoint": url, "indexName": index_name}
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

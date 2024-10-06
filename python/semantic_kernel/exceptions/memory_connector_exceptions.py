@@ -33,7 +33,10 @@ class VectorStoreModelValidationError(VectorStoreModelException):
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 class VectorStoreSearchError(MemoryConnectorException):
@@ -43,6 +46,9 @@ class VectorStoreSearchError(MemoryConnectorException):
 
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 __all__ = [
     "MemoryConnectorException",
@@ -53,10 +59,16 @@ __all__ = [
     "VectorStoreModelSerializationException",
     "VectorStoreModelValidationError",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     "VectorStoreSearchError",
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ]

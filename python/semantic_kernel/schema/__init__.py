@@ -31,7 +31,10 @@ class TestCodeBlock:
 		# Assert
 		assert result == "arrivederci"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -67,4 +70,7 @@ class TestCodeBlock:
 		# Assert
 		assert result == "arrivederci"
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

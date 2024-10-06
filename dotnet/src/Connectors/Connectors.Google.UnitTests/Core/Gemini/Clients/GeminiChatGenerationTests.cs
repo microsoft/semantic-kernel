@@ -35,7 +35,10 @@ public sealed class GeminiChatGenerationTests : IDisposable
 
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     public async Task ShouldReturnEmptyMessageContentAndNullMetadataIfEmptyJsonInResponseAsync()
@@ -57,6 +60,9 @@ public sealed class GeminiChatGenerationTests : IDisposable
 
     [Fact]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public async Task ShouldReturnEmptyMessageContentIfNoContentInResponseAsync()
     {
@@ -442,6 +448,10 @@ public sealed class GeminiChatGenerationTests : IDisposable
 
         var client = new GeminiChatCompletionClient(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -452,7 +462,10 @@ public sealed class GeminiChatGenerationTests : IDisposable
                 location: "fake-location",
                 projectId: "fake-project-id");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             httpClient: httpClient,
             modelId: "fake-model",
@@ -461,6 +474,9 @@ public sealed class GeminiChatGenerationTests : IDisposable
             location: "fake-location",
             projectId: "fake-project-id");
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         var chatHistory = CreateSampleChatHistory();

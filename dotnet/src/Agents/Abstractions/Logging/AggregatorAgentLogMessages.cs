@@ -43,7 +43,10 @@ internal static partial class AggregatorAgentLogMessages
         AggregatorMode channelMode,
         Type agentChatType);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -71,5 +74,8 @@ internal static partial class AggregatorAgentLogMessages
         string methodName,
         string channelType);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

@@ -1,11 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +47,10 @@ public sealed class WeaviateKernelBuilderExtensionsTests
         Assert.IsType<WeaviateVectorStore>(vectorStore);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -75,5 +84,8 @@ public sealed class WeaviateKernelBuilderExtensionsTests
         public Guid Id { get; set; }
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

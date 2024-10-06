@@ -6,6 +6,10 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -16,13 +20,19 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 <PropertyGroup>
   <NoWarn>SKEXP0001,SKEXP0010</NoWarn>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 ```xml {"id":"01J6KNVXZHXHYS15JPS6S743K4"}
 ```xml {"id":"01J60JDT3YV637KKDXXWHNG3JR"}
 <PropertyGroup>
   <NoWarn>$(NoWarn);SKEXP0001,SKEXP0010</NoWarn>
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 </PropertyGroup>
 ```
@@ -39,8 +49,11 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0060 | Planners                          |
 | SKEXP0070 | AI connectors                     |
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 | SKEXP0100 | Advanced Semantic Kernel features |
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 | SKEXP0100 | Advanced Semantic Kernel features |
 =======
@@ -63,6 +76,9 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0100 | Advanced Semantic Kernel features |
 | SKEXP0110 | Semantic Kernel Agents |
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 ## Experimental Features Tracking
@@ -120,7 +136,10 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0101 | Experiment with Flow Orchestration  |            |              |           |          |                  |
 | SKEXP​ | Features​​ |
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -132,6 +151,9 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP | Features |
 >>>>>>> ms/feature-connectors-assemblyai
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 |-------|----------|
 | SKEXP0001 | Embedding services |
@@ -181,9 +203,12 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0070 | Mistral AI connector |
 | SKEXP0070 | ONNX AI connector |
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 | SKEXP0070 | Hugging Face AI connector |
 | | | | | | | |
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 | SKEXP0070 | Hugging Face AI connector |
 | | | | | | | |
@@ -194,6 +219,9 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0080 | Process Framework |
 | | | | | | | |
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 | SKEXP0101 | Experiment with Assistants |
 | SKEXP0101 | Experiment with Flow Orchestration |

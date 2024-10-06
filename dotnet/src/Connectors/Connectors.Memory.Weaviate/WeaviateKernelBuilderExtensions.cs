@@ -33,7 +33,10 @@ public static class WeaviateKernelBuilderExtensions
         return builder;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -63,5 +66,8 @@ public static class WeaviateKernelBuilderExtensions
         return builder;
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

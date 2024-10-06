@@ -2,11 +2,17 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from html import escape
 from typing import TYPE_CHECKING, Any
@@ -23,7 +29,10 @@ from semantic_kernel.template_engine.blocks.code_block import CodeBlock
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -40,16 +49,22 @@ from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     from semantic_kernel.prompt_template.prompt_template_config import (
         PromptTemplateConfig,
     )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     from semantic_kernel.prompt_template.prompt_template_config import (
         PromptTemplateConfig,
@@ -62,6 +77,9 @@ if TYPE_CHECKING:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -69,11 +87,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class KernelPromptTemplate(PromptTemplateBase):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """Create a Kernel prompt template."""
 
@@ -94,7 +118,10 @@ class KernelPromptTemplate(PromptTemplateBase):
     def model_post_init(self, _: Any) -> None:
         """Post init model."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -104,6 +131,9 @@ class KernelPromptTemplate(PromptTemplateBase):
     def model_post_init(self, __context: Any) -> None:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self._blocks = self.extract_blocks()
         # Add all of the existing input variables to our known set. We'll avoid adding any
@@ -113,11 +143,17 @@ class KernelPromptTemplate(PromptTemplateBase):
         # Enumerate every block in the template, adding any variables that are referenced.
         for block in self._blocks:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if isinstance(block, VarBlock):
                 # Add all variables from variable blocks, e.g. "{{$a}}".
@@ -131,7 +167,10 @@ class KernelPromptTemplate(PromptTemplateBase):
                         continue
                     if isinstance(sub_block, NamedArgBlock) and sub_block.variable:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -148,6 +187,9 @@ class KernelPromptTemplate(PromptTemplateBase):
                     if sub_block.type == BlockTypes.NAMED_ARG and sub_block.variable:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                         # Add all variables from named arguments, e.g. "{{p.bar b = $b}}".
                         # represents a named argument for a function call.
@@ -156,11 +198,17 @@ class KernelPromptTemplate(PromptTemplateBase):
                         self._add_if_missing(sub_block.variable.name, seen)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def extract_blocks(self) -> list[Block]:
         """Given the prompt template, extract all the blocks (text, variables, function calls)."""
@@ -185,7 +233,10 @@ class KernelPromptTemplate(PromptTemplateBase):
         """Render the prompt template.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -216,6 +267,9 @@ class KernelPromptTemplate(PromptTemplateBase):
         """
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Using the prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -223,11 +277,17 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         Args:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             kernel ("Kernel"): The kernel to use for functions.
             arguments ("KernelArguments | None"): The arguments to use for rendering. (Default value = None)
@@ -263,7 +323,10 @@ class KernelPromptTemplate(PromptTemplateBase):
         arguments = self._get_trusted_arguments(arguments or KernelArguments())
         allow_unsafe_function_output = self._get_allow_dangerously_set_function_output()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -291,6 +354,9 @@ class KernelPromptTemplate(PromptTemplateBase):
         rendered_blocks: List[str] = []
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         for block in blocks:
             if isinstance(block, TextRenderer):
@@ -298,11 +364,17 @@ class KernelPromptTemplate(PromptTemplateBase):
                 continue
             if isinstance(block, CodeRenderer):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 try:
                     rendered = await block.render_code(kernel, arguments)
@@ -315,10 +387,13 @@ class KernelPromptTemplate(PromptTemplateBase):
                     rendered if allow_unsafe_function_output else escape(rendered)
                 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         prompt = "".join(rendered_blocks)
         logger.debug(f"Rendered prompt: {prompt}")
         return prompt
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         prompt = "".join(rendered_blocks)
         logger.debug(f"Rendered prompt: {prompt}")
@@ -402,4 +477,7 @@ class KernelPromptTemplate(PromptTemplateBase):
         return rendered_blocks
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

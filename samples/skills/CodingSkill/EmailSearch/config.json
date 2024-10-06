@@ -1,9 +1,14 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Search the Microsoft Graph for Email",
   "type": "completion",
   "completion": {
+=======
+  "description": "Search the Microsoft Graph for Email",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Search the Microsoft Graph for Email",
   "default_settings": {
@@ -21,11 +26,17 @@
     "text-davinci-003"
   ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     "stop_sequences": ["[done]"]
   }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

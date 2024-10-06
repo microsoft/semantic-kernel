@@ -1,9 +1,14 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "type": "completion",
   "description": "Turn bullet points into an email to someone, using a polite tone",
   "completion": {
+=======
+  "description": "Turn bullet points into an email to someone, using a polite tone",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Turn bullet points into an email to someone, using a polite tone",
   "default_settings": {
@@ -18,10 +23,16 @@
     "text-davinci-002"
   ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
   }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

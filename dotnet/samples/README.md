@@ -1,6 +1,10 @@
 ## Semantic Kernel Samples
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -12,7 +16,10 @@
 | [`Demos`](./Demos/README.md)                                       | Look here to find a sample which demonstrate how to use many of Semantic Kernel features.                              |
 | [`LearnResources`](./LearnResources/README.md)                     | Code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others               |
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 | Type                                                                     | Description                                                                                                               |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
@@ -23,4 +30,7 @@
 | [`Demos`](./Demos/README.md)                                             | Look here to find a sample which demonstrate how to use many of Semantic Kernel features.                                 |
 | [`LearnResources`](./LearnResources/README.md)                           | Code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others                  |
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

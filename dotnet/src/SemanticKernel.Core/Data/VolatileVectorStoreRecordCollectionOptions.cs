@@ -8,9 +8,12 @@ namespace Microsoft.SemanticKernel.Data;
 /// Options when creating a <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/>.
 /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 [Experimental("SKEXP0001")]
 public sealed class VolatileVectorStoreRecordCollectionOptions
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 [Experimental("SKEXP0001")]
 public sealed class VolatileVectorStoreRecordCollectionOptions
@@ -22,6 +25,9 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 {
     /// <summary>
@@ -34,7 +40,10 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -58,5 +67,8 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     /// </remarks>
     public VolatileVectorStoreKeyResolver<TKey, TRecord>? KeyResolver { get; init; } = null;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

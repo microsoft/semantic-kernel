@@ -1,5 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
@@ -12,13 +16,19 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Chroma;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
@@ -131,6 +141,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         // Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var exception = await Record.ExceptionAsync(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
 
         // Assert
@@ -139,6 +150,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             $"Cannot delete non-existent collection {collectionName}",
             exception.Message,
 =======
+=======
+>>>>>>> Stashed changes
         var exception = await Assert.ThrowsAsync<HttpOperationException>(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
 
         // Assert
@@ -147,6 +160,9 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Contains(
             $"Collection {collectionName} does not exist.",
             exception.ResponseContent,
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             StringComparison.InvariantCulture);
     }

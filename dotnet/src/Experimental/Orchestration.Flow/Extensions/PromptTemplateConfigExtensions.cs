@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< HEAD
@@ -16,6 +19,9 @@ using Microsoft.SemanticKernel.TemplateEngine;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /// <summary>
@@ -31,7 +37,10 @@ internal static class PromptTemplateConfigExtensions
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         var executionSettings = config.ExecutionSettings;
         foreach (var setting in executionSettings)
@@ -43,6 +52,9 @@ internal static class PromptTemplateConfigExtensions
         }
 =======
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var executionSettings = config.ExecutionSettings;
         foreach (var setting in executionSettings)
@@ -53,7 +65,10 @@ internal static class PromptTemplateConfigExtensions
             }
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         AIRequestSettings requestSettings = config.GetDefaultRequestSettings() ?? new();
         if (config.ModelSettings.Count == 0)
@@ -63,6 +78,9 @@ internal static class PromptTemplateConfigExtensions
         requestSettings.ExtensionData["max_tokens"] = maxTokens;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 }

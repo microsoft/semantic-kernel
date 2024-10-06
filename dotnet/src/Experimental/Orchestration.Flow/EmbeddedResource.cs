@@ -3,11 +3,17 @@
 using System.IO;
 using System.Reflection;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
@@ -19,9 +25,12 @@ internal static class EmbeddedResource
     internal static string? Read(string name, bool throwIfNotFound = true)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var assembly = typeof(EmbeddedResource).GetTypeInfo().Assembly ??
             throw new KernelException($"[{s_namespace}] {name} assembly not found");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         var assembly = typeof(EmbeddedResource).GetTypeInfo().Assembly ??
             throw new KernelException($"[{s_namespace}] {name} assembly not found");
@@ -34,6 +43,9 @@ internal static class EmbeddedResource
         if (assembly is null) { throw new SKException($"[{s_namespace}] {name} assembly not found"); }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         using Stream? resource = assembly.GetManifestResourceStream($"{s_namespace}." + name);
@@ -45,13 +57,19 @@ internal static class EmbeddedResource
             }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             throw new KernelException($"[{s_namespace}] {name} resource not found");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             throw new KernelException($"[{s_namespace}] {name} resource not found");
 =======
             throw new SKException($"[{s_namespace}] {name} resource not found");
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

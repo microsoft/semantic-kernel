@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 using System;
@@ -31,11 +37,17 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IVectorizableTextSearch<TRecord>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -81,13 +93,19 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     ];
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// <summary>The default options for vector search.</summary>
     private static readonly Data.VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
@@ -114,9 +132,12 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     private readonly List<string> _nonVectorStoragePropertyNames = new();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
@@ -132,6 +153,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>
@@ -148,6 +172,10 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         Verify.NotNull(searchIndexClient);
         Verify.NotNullOrWhiteSpace(collectionName);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -161,11 +189,17 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             !(typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>) && options?.VectorStoreRecordDefinition is null),
             $"A {nameof(VectorStoreRecordDefinition)} must be provided when using {nameof(VectorStoreGenericDataModel<string>)}.");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonObjectCustomMapper is not null, s_supportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Assign.
@@ -174,6 +208,10 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         this._options = options ?? new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>();
         this._searchClient = this._searchIndexClient.GetSearchClient(collectionName);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -195,7 +233,10 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
             .ToList();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         this._propertyReader = new VectorStoreRecordPropertyReader(
             typeof(TRecord),
@@ -224,6 +265,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             this._firstStringDataPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(firstStringDataProperty, typeof(TRecord), jsonSerializerOptions);
         }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Resolve mapper.
@@ -237,13 +281,19 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this._mapper = new AzureAISearchGenericDataModelMapper(this._vectorStoreRecordDefinition) as IVectorStoreRecordMapper<TRecord, JsonObject>;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             this._mapper = new AzureAISearchGenericDataModelMapper(this._vectorStoreRecordDefinition) as IVectorStoreRecordMapper<TRecord, JsonObject>;
 =======
             this._mapper = new AzureAISearchGenericDataModelMapper(this._propertyReader.RecordDefinition) as IVectorStoreRecordMapper<TRecord, JsonObject>;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
     }
@@ -282,21 +332,30 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
         // Loop through all properties and create the search fields.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
         foreach (var property in this._propertyReader.Properties)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             // Key property.
             if (property is VectorStoreRecordKeyProperty keyProperty)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(keyProperty, this._keyStoragePropertyName));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(keyProperty, this._keyStoragePropertyName));
 =======
@@ -304,6 +363,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
                     keyProperty,
                     this._propertyReader.KeyPropertyJsonName));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
 
@@ -311,8 +373,11 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             if (property is VectorStoreRecordDataProperty dataProperty)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, this._storagePropertyNames[dataProperty.DataModelPropertyName]));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, this._storagePropertyNames[dataProperty.DataModelPropertyName]));
 =======
@@ -320,6 +385,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
                     dataProperty,
                     this._propertyReader.GetJsonPropertyName(dataProperty.DataModelPropertyName)));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
 
@@ -329,13 +397,19 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
                 (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(
                     vectorProperty,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     this._storagePropertyNames[vectorProperty.DataModelPropertyName]);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     this._storagePropertyNames[vectorProperty.DataModelPropertyName]);
 =======
                     this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
                 // Add the search field, plus its profile and algorithm configuration to the search config.
@@ -414,13 +488,19 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         return this.RunOperationAsync(
             "DeleteDocuments",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             () => this._searchClient.DeleteDocumentsAsync(this._keyStoragePropertyName, [key], new IndexDocumentsOptions(), cancellationToken));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             () => this._searchClient.DeleteDocumentsAsync(this._keyStoragePropertyName, [key], new IndexDocumentsOptions(), cancellationToken));
 =======
             () => this._searchClient.DeleteDocumentsAsync(this._propertyReader.KeyPropertyJsonName, [key], new IndexDocumentsOptions(), cancellationToken));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -433,13 +513,19 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         return this.RunOperationAsync(
             "DeleteDocuments",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             () => this._searchClient.DeleteDocumentsAsync(this._keyStoragePropertyName, keys, new IndexDocumentsOptions(), cancellationToken));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             () => this._searchClient.DeleteDocumentsAsync(this._keyStoragePropertyName, keys, new IndexDocumentsOptions(), cancellationToken));
 =======
             () => this._searchClient.DeleteDocumentsAsync(this._propertyReader.KeyPropertyJsonName, keys, new IndexDocumentsOptions(), cancellationToken));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -473,7 +559,10 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// <inheritdoc />
@@ -560,6 +649,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <summary>
     /// Get the document with the given key and map it to the data model using the configured mapper type.
@@ -580,11 +672,17 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         // Use the user provided mapper.
         if (this._mapper is not null)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         if (this._options.JsonObjectCustomMapper is not null)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             var jsonObject = await this.RunOperationAsync(
@@ -602,11 +700,17 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
                 OperationName,
                 () => this._mapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -618,7 +722,10 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// Search for the documents matching the given options and map them to the data model using the configured mapper type.
@@ -664,6 +771,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
     /// <summary>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Map the data model to the storage model and upload the document.
     /// </summary>
@@ -681,11 +791,17 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         // Use the user provided mapper.
         if (this._mapper is not null)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         if (this._options.JsonObjectCustomMapper is not null)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             var jsonObjects = VectorStoreErrorHandler.RunModelConversion(
@@ -694,11 +810,17 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
                 OperationName,
                 () => records.Select(this._mapper!.MapFromDataToStorageModel));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 () => records.Select(this._options.JsonObjectCustomMapper!.MapFromDataToStorageModel));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
             return this.RunOperationAsync(
@@ -723,14 +845,20 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         if (options?.IncludeVectors is false)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             innerOptions.SelectedFields.AddRange(this._nonVectorStoragePropertyNames);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             innerOptions.SelectedFields.AddRange(this._nonVectorStoragePropertyNames);
 =======
             innerOptions.SelectedFields.AddRange(this._propertyReader.KeyPropertyJsonNames);
             innerOptions.SelectedFields.AddRange(this._propertyReader.DataPropertyJsonNames);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -739,7 +867,10 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// Resolve the vector field name to use for a search by using the storage name for the field name from options
@@ -768,6 +899,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
     /// <summary>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Get a document with the given key, and return null if it is not found.
     /// </summary>

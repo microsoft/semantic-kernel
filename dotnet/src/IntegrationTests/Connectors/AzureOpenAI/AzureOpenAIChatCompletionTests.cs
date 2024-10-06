@@ -1,10 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 using System;
@@ -138,6 +144,10 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 
         var jsonObject = JsonSerializer.SerializeToElement(usageObject);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -147,7 +157,10 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         Assert.True(jsonObject.TryGetProperty("InputTokenCount", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
@@ -155,6 +168,9 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 
         Assert.True(jsonObject.TryGetProperty("OutputTokenCount", out JsonElement completionTokensJson));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
@@ -232,13 +248,19 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
         var result = await kernel.InvokePromptAsync("Hi, can you help me today?", new(settings));
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
 =======
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityDetails>;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Assert

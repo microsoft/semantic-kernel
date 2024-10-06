@@ -54,7 +54,10 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         return builder;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -104,5 +107,8 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         return builder;
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

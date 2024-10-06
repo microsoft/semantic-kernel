@@ -5,18 +5,27 @@ import logging
 from pytest import mark, raises
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.exceptions import VarBlockSyntaxError
 from semantic_kernel.exceptions.template_engine_exceptions import VarBlockRenderError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -25,6 +34,9 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
@@ -69,11 +81,17 @@ def test_valid_syntax(name):
     "content",
     ["$", "$test-var", "test_var", "$a>b", "$."],
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ids=[
         "prefix_only",
@@ -86,7 +104,10 @@ def test_valid_syntax(name):
 def test_syntax_errors(content):
     match = content.replace("$", "\\$") if "$" in content else content
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -99,6 +120,9 @@ def test_syntax_errors(content):
         match = content
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     with raises(VarBlockSyntaxError, match=rf".*{match}.*"):
         VarBlock(content=content)
@@ -121,6 +145,10 @@ def test_render_no_args():
     result = target.render(Kernel())
     assert result == ""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -136,10 +164,16 @@ def test_not_string():
     with raises(VarBlockRenderError):
         target.render(Kernel(), KernelArguments(var=MockNonString("1")))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

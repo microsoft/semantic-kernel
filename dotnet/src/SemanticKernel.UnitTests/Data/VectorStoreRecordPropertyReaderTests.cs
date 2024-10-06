@@ -3,14 +3,20 @@
 using System;
 using System.Collections.Generic;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Linq;
 using System.Reflection;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.Linq;
 using System.Reflection;
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,6 +28,10 @@ namespace SemanticKernel.UnitTests.Data;
 public class VectorStoreRecordPropertyReaderTests
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -346,7 +356,10 @@ public class VectorStoreRecordPropertyReaderTests
         assertJsonNameMap(jsonNameMap1);
         assertJsonNameMap(jsonNameMap2);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     [Theory]
     [MemberData(nameof(NoKeyTypeAndDefinitionCombos))]
@@ -812,6 +825,9 @@ public class VectorStoreRecordPropertyReaderTests
         yield return new object?[] { typeof(EnumerablePropsModel), s_enumerablePropsDefinition };
         yield return new object?[] { typeof(EnumerablePropsModel), null };
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -822,13 +838,19 @@ public class VectorStoreRecordPropertyReaderTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private readonly VectorStoreRecordDefinition _noKeyDefinition = new();
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private readonly VectorStoreRecordDefinition _noKeyDefinition = new();
 =======
     private static readonly VectorStoreRecordDefinition s_noKeyDefinition = new();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     private sealed class NoVectorModel
@@ -838,13 +860,19 @@ public class VectorStoreRecordPropertyReaderTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private readonly VectorStoreRecordDefinition _noVectorDefinition = new()
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private readonly VectorStoreRecordDefinition _noVectorDefinition = new()
 =======
     private static readonly VectorStoreRecordDefinition s_noVectorDefinition = new()
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         Properties =
@@ -863,13 +891,19 @@ public class VectorStoreRecordPropertyReaderTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private readonly VectorStoreRecordDefinition _multiKeysDefinition = new()
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private readonly VectorStoreRecordDefinition _multiKeysDefinition = new()
 =======
     private static readonly VectorStoreRecordDefinition s_multiKeysDefinition = new()
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         Properties =
@@ -894,13 +928,19 @@ public class VectorStoreRecordPropertyReaderTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private readonly VectorStoreRecordDefinition _singlePropsDefinition = new()
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private readonly VectorStoreRecordDefinition _singlePropsDefinition = new()
 =======
     private static readonly VectorStoreRecordDefinition s_singlePropsDefinition = new()
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         Properties =
@@ -920,14 +960,20 @@ public class VectorStoreRecordPropertyReaderTests
         public string Data1 { get; set; } = string.Empty;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         [VectorStoreRecordData]
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         [VectorStoreRecordData]
 =======
         [VectorStoreRecordData(StoragePropertyName = "storage_data2")]
         [JsonPropertyName("json_data2")]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         public string Data2 { get; set; } = string.Empty;
 
@@ -935,9 +981,12 @@ public class VectorStoreRecordPropertyReaderTests
         public ReadOnlyMemory<float> Vector1 { get; set; }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         [VectorStoreRecordVector]
         [JsonPropertyName("vector-2")]
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         [VectorStoreRecordVector]
         [JsonPropertyName("vector-2")]
@@ -945,6 +994,9 @@ public class VectorStoreRecordPropertyReaderTests
         [VectorStoreRecordVector(StoragePropertyName = "storage_vector2")]
         [JsonPropertyName("json_vector2")]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         public ReadOnlyMemory<float> Vector2 { get; set; }
 
@@ -952,13 +1004,19 @@ public class VectorStoreRecordPropertyReaderTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private readonly VectorStoreRecordDefinition _multiPropsDefinition = new()
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private readonly VectorStoreRecordDefinition _multiPropsDefinition = new()
 =======
     private static readonly VectorStoreRecordDefinition s_multiPropsDefinition = new()
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         Properties =
@@ -966,10 +1024,13 @@ public class VectorStoreRecordPropertyReaderTests
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             new VectorStoreRecordDataProperty("Data2", typeof(string)) { StoragePropertyName = "data_2" },
             new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity },
             new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>))
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             new VectorStoreRecordDataProperty("Data2", typeof(string)) { StoragePropertyName = "data_2" },
             new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity },
@@ -979,6 +1040,9 @@ public class VectorStoreRecordPropertyReaderTests
             new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity },
             new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "storage_vector2" }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         ]
     };
@@ -1004,13 +1068,19 @@ public class VectorStoreRecordPropertyReaderTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private readonly VectorStoreRecordDefinition _enumerablePropsDefinition = new()
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private readonly VectorStoreRecordDefinition _enumerablePropsDefinition = new()
 =======
     private static readonly VectorStoreRecordDefinition s_enumerablePropsDefinition = new()
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         Properties =
@@ -1024,8 +1094,11 @@ public class VectorStoreRecordPropertyReaderTests
     };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 #pragma warning restore CA1812 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 #pragma warning restore CA1812 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 =======
@@ -1061,5 +1134,8 @@ public class VectorStoreRecordPropertyReaderTests
 
 #pragma warning restore CA1812
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

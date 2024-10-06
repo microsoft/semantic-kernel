@@ -2,10 +2,13 @@
 
 from logging import Logger
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 
 class NullLogger(Logger):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 
@@ -43,6 +46,9 @@ class _NullerMeta(type):
 
 class NullLogger(Logger, metaclass=_NullerMeta):
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """
     A logger that does nothing.
@@ -57,7 +63,10 @@ class NullLogger(Logger, metaclass=_NullerMeta):
     def info(self, _: str) -> None:
         pass
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 
@@ -75,6 +84,9 @@ class NullLogger(Logger, metaclass=_NullerMeta):
             )
         )
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     def warning(self, _: str) -> None:

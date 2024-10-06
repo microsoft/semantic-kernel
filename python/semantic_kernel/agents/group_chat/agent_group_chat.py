@@ -17,22 +17,34 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from semantic_kernel.utils.experimental_decorator import experimental_class
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @experimental_class
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 class AgentGroupChat(AgentChat):
     """An agent chat that supports multi-turn interactions."""
@@ -100,7 +112,10 @@ class AgentGroupChat(AgentChat):
             yield message
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     async def invoke_stream_single_turn(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
@@ -118,6 +133,9 @@ class AgentGroupChat(AgentChat):
         self.is_complete = await self.termination_strategy.should_terminate(agent, self.history.messages)
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     async def invoke(self, agent: Agent | None = None, is_joining: bool = True) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent chat asynchronously.
@@ -144,13 +162,19 @@ class AgentGroupChat(AgentChat):
             return
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if self.agents is None:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         if self.agents is None:
 =======
         if not self.agents:
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             raise AgentChatException("No agents are available")
 
@@ -176,7 +200,10 @@ class AgentGroupChat(AgentChat):
             if self.is_complete:
                 break
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -230,4 +257,7 @@ class AgentGroupChat(AgentChat):
             if self.is_complete:
                 break
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

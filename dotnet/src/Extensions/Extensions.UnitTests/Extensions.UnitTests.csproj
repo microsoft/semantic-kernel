@@ -1,6 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <Project Sdk="Microsoft.NET.Sdk">
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 <Project Sdk="Microsoft.NET.Sdk">
 =======
@@ -10,6 +13,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> ms/feature-feature-flow-planner
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Extensions.UnitTests</AssemblyName>

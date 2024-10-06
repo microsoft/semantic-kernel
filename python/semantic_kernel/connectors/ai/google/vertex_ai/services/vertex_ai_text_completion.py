@@ -90,11 +90,17 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
     # Override from AIServiceClientBase
     @override
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return VertexAITextPromptExecutionSettings
@@ -103,7 +109,10 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
     @trace_text_completion(VertexAIBase.MODEL_PROVIDER_NAME)
     async def _inner_get_text_contents(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -111,6 +120,9 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
     async def get_text_contents(
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self,
         prompt: str,

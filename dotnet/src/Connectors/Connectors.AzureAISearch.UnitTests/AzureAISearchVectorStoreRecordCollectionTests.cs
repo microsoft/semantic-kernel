@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 using System;
@@ -215,13 +221,19 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, false))!.AsObject();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "storage_data1", "data2", "key" } : new[] { "storage_data1", "Data2", "Key" };
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "storage_data1", "data2", "key" } : new[] { "storage_data1", "Data2", "Key" };
 =======
         var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "key", "storage_data1", "data2" } : new[] { "Key", "storage_data1", "Data2" };
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         this._searchClientMock.Setup(
             x => x.GetDocumentAsync<MultiPropsModel>(
@@ -569,7 +581,10 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     [Fact]
@@ -658,6 +673,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private AzureAISearchVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
@@ -708,11 +726,17 @@ public class AzureAISearchVectorStoreRecordCollectionTests
 
         [JsonPropertyName("storage_data1")]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         [VectorStoreRecordData(IsFilterable = true)]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         [VectorStoreRecordData]
         public string Data1 { get; set; } = string.Empty;

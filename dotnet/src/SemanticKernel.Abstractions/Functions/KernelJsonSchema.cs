@@ -21,13 +21,19 @@ public sealed class KernelJsonSchema
     /// <returns>A parsed <see cref="KernelJsonSchema"/>, or null if <paramref name="jsonSchema"/> is null or empty.</returns>
     internal static KernelJsonSchema? ParseOrNull(string? jsonSchema) =>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         !string.IsNullOrEmpty(jsonSchema) ? new(JsonSerializer.Deserialize<JsonElement>(jsonSchema!, s_jsonSerializerOptions)) :
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         !string.IsNullOrEmpty(jsonSchema) ? new(JsonSerializer.Deserialize<JsonElement>(jsonSchema!, s_jsonSerializerOptions)) :
 =======
         !string.IsNullOrEmpty(jsonSchema) ? new(JsonSerializer.Deserialize<JsonElement>(jsonSchema!, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement)) :
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         null;
 
@@ -38,13 +44,19 @@ public sealed class KernelJsonSchema
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(string jsonSchema) =>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, s_jsonSerializerOptions));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, s_jsonSerializerOptions));
 =======
         new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement));
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
@@ -53,13 +65,19 @@ public sealed class KernelJsonSchema
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(ReadOnlySpan<char> jsonSchema) =>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, s_jsonSerializerOptions));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, s_jsonSerializerOptions));
 =======
         new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement));
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
@@ -68,13 +86,19 @@ public sealed class KernelJsonSchema
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(ReadOnlySpan<byte> utf8JsonSchema) =>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         new(JsonSerializer.Deserialize<JsonElement>(utf8JsonSchema, s_jsonSerializerOptions));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         new(JsonSerializer.Deserialize<JsonElement>(utf8JsonSchema, s_jsonSerializerOptions));
 =======
         new(JsonSerializer.Deserialize<JsonElement>(utf8JsonSchema, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement));
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>Initializes a new instance from the specified <see cref="JsonElement"/>.</summary>
@@ -91,7 +115,11 @@ public sealed class KernelJsonSchema
 
     /// <summary>Gets the JSON Schema as a string.</summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, JsonOptionsCache.WriteIndented);
+=======
+    public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement);
+>>>>>>> Stashed changes
 =======
     public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement);
 >>>>>>> Stashed changes

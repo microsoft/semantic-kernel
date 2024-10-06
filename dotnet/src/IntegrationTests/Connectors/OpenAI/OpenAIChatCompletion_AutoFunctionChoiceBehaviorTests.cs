@@ -56,12 +56,18 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.NotNull(result);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(invokedFunctions);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
@@ -99,12 +105,18 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.NotNull(result);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(invokedFunctions);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
@@ -139,13 +151,19 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         var functionCall = functionCalls.First();
@@ -184,12 +202,18 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.NotNull(result);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(invokedFunctions);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
@@ -232,12 +256,18 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.NotNull(result);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(invokedFunctions);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
@@ -274,12 +304,18 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 
         // Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(functionsForManualInvocation);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
@@ -316,13 +352,19 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         var functionCall = functionCalls.First();
@@ -362,12 +404,18 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 
         // Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(functionsForManualInvocation);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 

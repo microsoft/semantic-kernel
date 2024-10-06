@@ -35,13 +35,19 @@ public class RedisJsonGenericDataModelMapperTests
     {
         // Arrange.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
@@ -75,13 +81,19 @@ public class RedisJsonGenericDataModelMapperTests
     {
         // Arrange.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
@@ -115,13 +127,19 @@ public class RedisJsonGenericDataModelMapperTests
     {
         // Arrange.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var storageModel = new JsonObject();
         storageModel.Add("storage_string_data", "data 1");
@@ -147,13 +165,19 @@ public class RedisJsonGenericDataModelMapperTests
     {
         // Arrange.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var storageModel = new JsonObject();
         storageModel.Add("storage_string_data", null);
@@ -179,13 +203,19 @@ public class RedisJsonGenericDataModelMapperTests
     {
         // Arrange.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
@@ -208,13 +238,19 @@ public class RedisJsonGenericDataModelMapperTests
         var storageModel = new JsonObject();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
 =======
         var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.

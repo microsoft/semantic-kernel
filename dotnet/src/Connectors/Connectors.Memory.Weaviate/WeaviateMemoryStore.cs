@@ -1,5 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
@@ -21,9 +25,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -32,6 +39,9 @@ using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> origin/main
 using Microsoft.SemanticKernel.Memory;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -69,7 +79,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Converters = { JsonOptionsCache.ReadOnlyMemoryConverter }
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     };
@@ -123,13 +136,19 @@ public partial class WeaviateMemoryStore : IMemoryStore
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
 =======
             throw new ArgumentException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
 >>>>>>> ms/feature-error-handling
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -153,14 +172,20 @@ public partial class WeaviateMemoryStore : IMemoryStore
         using HttpRequestMessage request = CreateClassSchemaRequest.Create(className, description).Build();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         try
         {
 =======
+=======
+>>>>>>> Stashed changes
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         try
         {
 <<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -169,13 +194,19 @@ public partial class WeaviateMemoryStore : IMemoryStore
             if (result is null || result.Description != description)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 throw new KernelException($"Name conflict for collection: {collectionName} with class name: {className}");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
                 throw new KernelException($"Name conflict for collection: {collectionName} with class name: {className}");
 =======
                 throw new SKException($"Name conflict for collection: {collectionName} with class name: {className}");
 >>>>>>> ms/feature-error-handling-part3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
 
@@ -186,8 +217,11 @@ public partial class WeaviateMemoryStore : IMemoryStore
             this._logger.LogError(e, "Unable to create collection: {CollectionName}, with class name: {ClassName}", collectionName, className);
             throw;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         }
 =======
+=======
+>>>>>>> Stashed changes
 =======
             response.EnsureSuccess(responseContent, this._logger);
         }
@@ -210,6 +244,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
         }
 
         this._logger.LogDebug("Created collection: {0}, with class name: {1}", collectionName, className);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -225,6 +262,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
         using HttpRequestMessage request = GetClassRequest.Create(className).Build();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -237,6 +278,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
             if (existing is not null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -247,7 +292,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
                 // system could consider them as unique collection names.
                 throw new KernelException($"Unable to verify existing collection: {collectionName} with class name: {className}");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                 GetClassResponse? existing = JsonSerializer.Deserialize<GetClassResponse>(responseContent, s_jsonSerializerOptions);
                 if (existing != null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
@@ -260,6 +308,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
                     throw new SKException($"Unable to verify existing collection: {collectionName} with class name: {className}");
                 }
 >>>>>>> ms/feature-error-handling-part3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
 
@@ -275,8 +326,11 @@ public partial class WeaviateMemoryStore : IMemoryStore
             this._logger.LogError(e, "Request to check collection: {CollectionName}, with class name: {ClassName} existence failed.", collectionName, className);
             throw;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         }
 =======
+=======
+>>>>>>> Stashed changes
 =======
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -308,6 +362,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
         }
 
         return true;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -319,6 +376,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
         using HttpRequestMessage request = GetSchemaRequest.Create().Build();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -331,6 +392,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
         catch (HttpOperationException e)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -341,7 +406,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
         GetSchemaResponse getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonOptionsCache) ??
             throw new KernelException("Unable to deserialize list collections response");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -367,6 +435,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
         }
 >>>>>>> ms/feature-error-handling
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         foreach (GetClassResponse? @class in getSchemaResponse.Classes!)
@@ -389,6 +460,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
             using HttpRequestMessage request = DeleteSchemaRequest.Create(className).Build();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -399,9 +474,12 @@ public partial class WeaviateMemoryStore : IMemoryStore
             catch (HttpOperationException e)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 this._logger.LogError(e, "Request to delete collection: {CollectionName}, with class name: {ClassName} failed.", collectionName, className);
                 throw;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
                 this._logger.LogError(e, "Request to delete collection: {CollectionName}, with class name: {ClassName} failed.", collectionName, className);
 =======
@@ -419,6 +497,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
 =======
                 throw new SKException("Collection deletion failed", e);
 >>>>>>> ms/feature-error-handling-part3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
         }
@@ -450,6 +531,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
         using HttpRequestMessage request = requestBuilder.Build();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -462,6 +547,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
         catch (HttpOperationException e)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -472,7 +561,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
         BatchResponse[] result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonOptionsCache) ??
             throw new KernelException("Unable to deserialize batch response");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -499,6 +591,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
         }
 >>>>>>> ms/feature-error-handling
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         foreach (BatchResponse batchResponse in result)
@@ -522,6 +617,10 @@ public partial class WeaviateMemoryStore : IMemoryStore
         string responseContent;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -533,9 +632,12 @@ public partial class WeaviateMemoryStore : IMemoryStore
         {
             this._logger.LogError(e, "Request to get vector from collection: {CollectionName} failed.", collectionName);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return null;
         }
 =======
+=======
+>>>>>>> Stashed changes
 =======
         (HttpResponseMessage response, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -554,6 +656,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
             this._logger.LogError("Request for vector failed {0}", e.Message);
             throw;
         }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         WeaviateObject? weaviateObject = JsonSerializer.Deserialize<WeaviateObject>(responseContent, s_jsonOptionsCache);
@@ -617,14 +722,20 @@ public partial class WeaviateMemoryStore : IMemoryStore
         using HttpRequestMessage request = requestBuilder.Build();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         try
         {
 =======
+=======
+>>>>>>> Stashed changes
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         try
         {
 <<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -634,9 +745,12 @@ public partial class WeaviateMemoryStore : IMemoryStore
         {
             this._logger.LogError(e, "Request to delete collection: {CollectionName}, with class name: {ClassName} failed.", collectionName, className);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             throw;
         }
 =======
+=======
+>>>>>>> Stashed changes
 =======
             response.EnsureSuccess(responseContent, this._logger);
         }
@@ -652,6 +766,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
         }
 
         this._logger.LogDebug("Vector deleted");
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -686,19 +803,28 @@ public partial class WeaviateMemoryStore : IMemoryStore
         }.Build();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         List<(MemoryRecord, double)> result = [];
         try
         {
             (_, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
         List<(MemoryRecord, double)> result = new();
 
@@ -722,6 +848,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
 >>>>>>> ms/feature-error-handling
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonOptionsCache);
 
@@ -742,11 +871,14 @@ public partial class WeaviateMemoryStore : IMemoryStore
             }
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Request to find nearest vector in collection: {CollectionName}, with class name: {ClassName} failed.", collectionName, className);
             throw;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         catch (HttpOperationException e)
         {
@@ -761,6 +893,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
         {
             throw new SKException("Unable to deserialize Weaviate object", e);
 >>>>>>> ms/feature-error-handling-part3
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

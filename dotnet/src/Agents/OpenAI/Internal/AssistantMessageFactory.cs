@@ -49,6 +49,10 @@ internal static class AssistantMessageFactory
                 if (imageContent.Uri != null)
                 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -58,7 +62,10 @@ internal static class AssistantMessageFactory
                 {
                     yield return MessageContent.FromImageUrl(new(imageContent.DataUri!));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                     yield return MessageContent.FromImageUri(imageContent.Uri);
                 }
@@ -66,6 +73,9 @@ internal static class AssistantMessageFactory
                 {
                     yield return MessageContent.FromImageUri(new(imageContent.DataUri!));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 }
             }

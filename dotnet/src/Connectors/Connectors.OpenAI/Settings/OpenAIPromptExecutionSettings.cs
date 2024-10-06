@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System;
 =======
@@ -11,6 +14,9 @@ using System;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -155,24 +161,36 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <remarks>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Possible values are:
     /// <para>- <see cref="string"/> values: <c>"json_object"</c>, <c>"text"</c>;</para>
     /// <para>- <see cref="ChatResponseFormat"/> object;</para>
     /// <para>- <see cref="Type"/> object, which will be used to automatically create a JSON schema.</para>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
     /// Possible values are: "json_object", "text", <see cref="ChatResponseFormat"/> object.
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// </remarks>
     [Experimental("SKEXP0010")]
@@ -365,24 +383,36 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
         openAIExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
 
         return openAIExecutionSettings;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
         return openAIExecutionSettings!;
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -408,8 +438,11 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
             ToolCallBehavior = this.ToolCallBehavior,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             FunctionChoiceBehavior = this.FunctionChoiceBehavior,
 =======
@@ -418,6 +451,9 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt,

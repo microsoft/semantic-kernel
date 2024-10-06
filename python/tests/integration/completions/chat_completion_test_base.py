@@ -1,13 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 =======
 import logging
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import sys
 from functools import reduce
@@ -65,7 +71,10 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 logger: logging.Logger = logging.getLogger(__name__)
@@ -73,6 +82,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 mistral_ai_setup: bool = False
 try:

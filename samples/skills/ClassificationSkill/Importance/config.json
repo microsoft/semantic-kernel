@@ -1,9 +1,14 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "type": "completion",
   "description": "Tell you the urgency level of the given text",
   "completion": {
+=======
+  "description": "Tell you the urgency level of the given text",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Tell you the urgency level of the given text",
   "default_settings": {
@@ -18,10 +23,16 @@
     "text-davinci-002"
   ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
   }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

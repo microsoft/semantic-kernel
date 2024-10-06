@@ -21,8 +21,11 @@ public sealed class WeaviateVectorStoreRecordMapperTests
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 =======
@@ -33,6 +36,9 @@ public sealed class WeaviateVectorStoreRecordMapperTests
             new WeaviateNullableDateTimeOffsetConverter()
         }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     };
 

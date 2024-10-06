@@ -58,9 +58,12 @@
         "opentelemetry",
         "SEMANTICKERNEL",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         "OTEL",
         "mistralai"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         "OTEL",
         "mistralai"
@@ -73,6 +76,9 @@
         "OTEL"
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ]
 }

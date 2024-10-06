@@ -3,11 +3,17 @@
 import logging
 from re import compile
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -15,8 +21,11 @@ from pydantic import model_validator
 
 from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -28,6 +37,9 @@ from pydantic import model_validator
 >>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockSyntaxError
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
@@ -37,11 +49,14 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 FUNCTION_ID_BLOCK_REGEX = (
     r"^((?P<plugin>[0-9A-Za-z_]+)[.])?(?P<function>[0-9A-Za-z_]+)$"
 )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
 FUNCTION_ID_BLOCK_REGEX = (
@@ -60,12 +75,19 @@ FUNCTION_ID_BLOCK_REGEX = (
 =======
 FUNCTION_ID_BLOCK_REGEX = r"^((?P<plugin>[0-9A-Za-z_]+)[.])?(?P<function>[0-9A-Za-z_]+)$"
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 FUNCTION_ID_BLOCK_MATCHER = compile(FUNCTION_ID_BLOCK_REGEX)
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
@@ -76,8 +98,11 @@ class FunctionIdBlock(Block):
     function name or just a function name, depending on the content.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Anything other than that and a ValueError is raised.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     Anything other than that and a ValueError is raised.
 =======
@@ -87,6 +112,9 @@ class FunctionIdBlock(Block):
     Anything other then that and a ValueError is raised.
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     Args:
@@ -100,11 +128,17 @@ class FunctionIdBlock(Block):
 
     type: ClassVar[BlockTypes] = BlockTypes.FUNCTION_ID
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     function_name: str = ""
     plugin_name: str | None = None
@@ -117,7 +151,10 @@ class FunctionIdBlock(Block):
         If both are present in the fields, return the fields as is.
         Otherwise, use the regex to extract the plugin and function name.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -133,6 +170,9 @@ class FunctionIdBlock(Block):
         Otherwise use the regex to extract the plugin and function name.
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         if "plugin_name" in fields and "function_name" in fields:
@@ -147,9 +187,12 @@ class FunctionIdBlock(Block):
         return fields
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
@@ -161,5 +204,8 @@ class FunctionIdBlock(Block):
     def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self.content

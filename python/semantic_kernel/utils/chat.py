@@ -1,9 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from typing import TYPE_CHECKING
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from typing import TYPE_CHECKING
 
@@ -17,6 +20,9 @@ from typing import TYPE_CHECKING, List
 from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.contents.chat_history import ChatHistory
 
@@ -25,10 +31,13 @@ if TYPE_CHECKING:
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def store_results(chat_history: ChatHistory, results: list["ChatMessageContent"]):
     """Stores specific results in the context and chat prompt."""
     for message in results:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def store_results(chat_history: ChatHistory, results: list["ChatMessageContent"]):
     """Stores specific results in the context and chat prompt."""
@@ -46,6 +55,9 @@ def store_results(chat_history: ChatHistory, results: List["ChatMessageContent"]
             chat_history.add_tool_message(content=message.tool_message)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         chat_history.add_message(message=message)
     return chat_history

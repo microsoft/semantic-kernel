@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -30,10 +36,13 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
         OpenAIClientProvider provider = this.GetClientProvider();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         FileClient fileClient = provider.Client.GetFileClient();
 
         OpenAIFileInfo uploadFile =
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         FileClient fileClient = provider.Client.GetFileClient();
 
@@ -43,6 +52,9 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
 
         OpenAIFile uploadFile =
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             await fileClient.UploadFileAsync(
                 new BinaryData(await EmbeddedResource.ReadAllAsync("30-user-context.txt")),
@@ -55,10 +67,13 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
                 provider,
                 new(this.Model)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 kernel: new(),
                 provider,
@@ -72,14 +87,20 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id], // Associate uploaded file with assistant code-interpreter
                     Metadata = AssistantSampleMetadata,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 });
 =======
@@ -89,6 +110,9 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
                 },
                 kernel: new Kernel());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         ChatCompletionAgent summaryAgent =

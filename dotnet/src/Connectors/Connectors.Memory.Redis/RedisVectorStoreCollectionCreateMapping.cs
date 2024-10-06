@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 using System;
@@ -60,7 +66,10 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, IReadOnlyDictionary<string, string> storagePropertyNames, bool useDollarPrefix)
@@ -71,6 +80,9 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, Dictionary<string, string> storagePropertyNames, bool useDollarPrefix)
     {
@@ -104,12 +116,18 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     {
                         schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                         schema.AddTextField(new FieldName($"$.{storageName}", storageName));
                         schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     }
                     else
@@ -133,7 +151,10 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     {
                         schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                         schema.AddTagField(new FieldName($"$.{storageName}", storageName));
@@ -148,6 +169,9 @@ internal static class RedisVectorStoreCollectionCreateMapping
                         schema.AddNumericField(new FieldName($"$.{storageName}", storageName));
                         schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     }
                     else
@@ -170,7 +194,10 @@ internal static class RedisVectorStoreCollectionCreateMapping
                 var storageName = storagePropertyNames[vectorProperty.DataModelPropertyName];
                 var indexKind = GetSDKIndexKind(vectorProperty);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 var vectorType = GetSDKVectorType(vectorProperty);
@@ -180,6 +207,9 @@ internal static class RedisVectorStoreCollectionCreateMapping
                 {
                     ["TYPE"] = vectorType,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
@@ -242,7 +272,10 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// Get the vector type to pass to the SDK based on the data type of the vector property.
@@ -264,6 +297,9 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
     /// <summary>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Gets the type of object stored in the given enumerable type.
     /// </summary>

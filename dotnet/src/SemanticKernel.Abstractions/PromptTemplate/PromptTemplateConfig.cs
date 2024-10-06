@@ -6,13 +6,19 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Text;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 using Microsoft.SemanticKernel.Text;
 =======
 using System.Text.Json.Serialization.Metadata;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel;
@@ -43,6 +49,10 @@ public sealed class PromptTemplateConfig
     private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -290,7 +300,10 @@ public sealed class PromptTemplateConfig
 
         return result;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
@@ -633,6 +646,9 @@ public sealed class PromptTemplateConfig
             config ??
             throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 

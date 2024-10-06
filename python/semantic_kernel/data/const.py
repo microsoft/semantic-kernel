@@ -3,11 +3,17 @@
 
 from enum import Enum
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from typing import Final
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -26,7 +32,10 @@ class DistanceFunction(str, Enum):
     EUCLIDEAN = "euclidean"
     MANHATTAN = "manhattan"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -55,4 +64,7 @@ DEFAULT_DESCRIPTION: Final[str] = (
 )
 DEFAULT_COUNT: Final[int] = 5
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

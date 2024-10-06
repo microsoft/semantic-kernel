@@ -7,9 +7,12 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 from pydantic import model_validator
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import VarBlockRenderError, VarBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from semantic_kernel.exceptions import VarBlockRenderError, VarBlockSyntaxError
 =======
@@ -20,6 +23,9 @@ from semantic_kernel.exceptions import VarBlockRenderError, VarBlockSyntaxError
 >>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
@@ -28,11 +34,17 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -167,7 +179,10 @@ class VarBlock(Block):
 
         return self._content[1:]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
     @staticmethod
@@ -181,6 +196,9 @@ class VarBlock(Block):
     @static_property
     def PREFIX() -> Literal["$"]:
         return "$"
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -196,7 +214,10 @@ class VarBlock(Block):
     def PREFIX() -> Literal["$"]:
         return "$"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -261,4 +282,7 @@ class VarBlock(Block):
         return str(value) if value else ""
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

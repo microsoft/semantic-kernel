@@ -2,9 +2,12 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from typing import Annotated
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -22,6 +25,9 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import google.generativeai as palm
 from google.generativeai.types import Completion
@@ -29,9 +35,12 @@ from google.generativeai.types.text_types import TextCompletion
 from pydantic import StringConstraints, ValidationError
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import GooglePalmTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import GooglePalmTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
@@ -46,11 +55,15 @@ from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings impo
 )
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceResponseException
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -60,6 +73,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 
@@ -79,6 +94,9 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def __init__(
         self,
@@ -89,7 +107,10 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     ):
         """Initializes a new instance of the GooglePalmTextCompletion class.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
         Args:
@@ -122,12 +143,19 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Args:
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -140,7 +168,10 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         Raises:
             ServiceInitializationError: When the Google Palm settings cannot be read.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             api_key {str} -- GooglePalm API key, see
                 https://developers.generativeai.google/products/palm
@@ -149,6 +180,9 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 
     async def complete(self, prompt: str, settings: GooglePalmTextPromptExecutionSettings) -> List[TextContent]:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         try:
@@ -164,6 +198,10 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             raise ServiceInitializationError("The Google Palm text model ID is required.")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes

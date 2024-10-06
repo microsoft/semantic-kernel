@@ -10,13 +10,19 @@ namespace Microsoft.SemanticKernel;
 /// Base class for all AI non-streaming results
 /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 =======
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
 [JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]
@@ -25,11 +31,17 @@ namespace Microsoft.SemanticKernel;
 [JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 [JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 #pragma warning disable SKEXP0110
 [JsonDerivedType(typeof(AnnotationContent), typeDiscriminator: nameof(AnnotationContent))]

@@ -1,5 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+=======
+<Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> Stashed changes
 =======
 <Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> Stashed changes
@@ -29,18 +33,24 @@
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <PackageReference Include="System.ValueTuple" />
     <PackageReference Include="System.Threading.Tasks.Extensions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.ClientModel" />
 =======
+=======
+>>>>>>> Stashed changes
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Memory.Data" />
 <<<<<<< main
     <PackageReference Include="System.ClientModel" />
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   </ItemGroup>
 
@@ -55,8 +65,11 @@
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/openai/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/openai/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
 =======
@@ -84,6 +97,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   </ItemGroup>
 

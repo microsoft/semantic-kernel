@@ -24,14 +24,20 @@ public class QdrantVectorStoreRecordMapperTests
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(definition, hasNamedVectors, s_singlePropsModelStorageNamesMap);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(definition, hasNamedVectors, s_singlePropsModelStorageNamesMap);
 =======
         var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel<ulong>), definition, null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(reader, hasNamedVectors);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.
@@ -61,14 +67,20 @@ public class QdrantVectorStoreRecordMapperTests
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(definition, hasNamedVectors, s_singlePropsModelStorageNamesMap);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(definition, hasNamedVectors, s_singlePropsModelStorageNamesMap);
 =======
         var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel<Guid>), definition, null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(reader, hasNamedVectors);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.
@@ -91,14 +103,20 @@ public class QdrantVectorStoreRecordMapperTests
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(definition, hasNamedVectors, s_singlePropsModelStorageNamesMap);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(definition, hasNamedVectors, s_singlePropsModelStorageNamesMap);
 =======
         var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel<ulong>), definition, null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(reader, hasNamedVectors);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.
@@ -129,14 +147,20 @@ public class QdrantVectorStoreRecordMapperTests
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(definition, hasNamedVectors, s_singlePropsModelStorageNamesMap);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(definition, hasNamedVectors, s_singlePropsModelStorageNamesMap);
 =======
         var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel<Guid>), definition, null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(reader, hasNamedVectors);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.
@@ -163,14 +187,20 @@ public class QdrantVectorStoreRecordMapperTests
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(definition, true, s_multiPropsModelStorageNamesMap);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(definition, true, s_multiPropsModelStorageNamesMap);
 =======
         var reader = new VectorStoreRecordPropertyReader(typeof(MultiPropsModel<ulong>), definition, null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(reader, true);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.
@@ -197,14 +227,20 @@ public class QdrantVectorStoreRecordMapperTests
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(definition, true, s_multiPropsModelStorageNamesMap);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(definition, true, s_multiPropsModelStorageNamesMap);
 =======
         var reader = new VectorStoreRecordPropertyReader(typeof(MultiPropsModel<Guid>), definition, null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(reader, true);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.
@@ -233,14 +269,20 @@ public class QdrantVectorStoreRecordMapperTests
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(definition, true, s_multiPropsModelStorageNamesMap);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(definition, true, s_multiPropsModelStorageNamesMap);
 =======
         var reader = new VectorStoreRecordPropertyReader(typeof(MultiPropsModel<ulong>), definition, null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(reader, true);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.
@@ -277,14 +319,20 @@ public class QdrantVectorStoreRecordMapperTests
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(definition, true, s_multiPropsModelStorageNamesMap);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(definition, true, s_multiPropsModelStorageNamesMap);
 =======
         var reader = new VectorStoreRecordPropertyReader(typeof(MultiPropsModel<Guid>), definition, null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(reader, true);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act.
@@ -413,6 +461,10 @@ public class QdrantVectorStoreRecordMapperTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -424,6 +476,11 @@ public class QdrantVectorStoreRecordMapperTests
     };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -433,10 +490,13 @@ public class QdrantVectorStoreRecordMapperTests
         Properties = new List<VectorStoreRecordProperty>
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             new VectorStoreRecordKeyProperty("Key", keyType),
             new VectorStoreRecordDataProperty("Data", typeof(string)),
             new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             new VectorStoreRecordKeyProperty("Key", keyType),
             new VectorStoreRecordDataProperty("Data", typeof(string)),
@@ -446,6 +506,9 @@ public class QdrantVectorStoreRecordMapperTests
             new VectorStoreRecordDataProperty("Data", typeof(string)) { StoragePropertyName = "data" },
             new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector" },
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         },
     };
@@ -453,6 +516,10 @@ public class QdrantVectorStoreRecordMapperTests
     private sealed class SinglePropsModel<TKey>
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -464,7 +531,10 @@ public class QdrantVectorStoreRecordMapperTests
 
         [VectorStoreRecordVector]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         [VectorStoreRecordKey(StoragePropertyName = "key")]
         public TKey? Key { get; set; } = default;
@@ -474,6 +544,9 @@ public class QdrantVectorStoreRecordMapperTests
 
         [VectorStoreRecordVector(StoragePropertyName = "vector")]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         public ReadOnlyMemory<float>? Vector { get; set; }
 
@@ -481,6 +554,10 @@ public class QdrantVectorStoreRecordMapperTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -499,6 +576,11 @@ public class QdrantVectorStoreRecordMapperTests
     };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -508,6 +590,10 @@ public class QdrantVectorStoreRecordMapperTests
         Properties = new List<VectorStoreRecordProperty>
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -522,7 +608,10 @@ public class QdrantVectorStoreRecordMapperTests
             new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)),
             new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>)),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             new VectorStoreRecordKeyProperty("Key", keyType) { StoragePropertyName = "key" },
             new VectorStoreRecordDataProperty("DataString", typeof(string)) { StoragePropertyName = "dataString" },
@@ -535,6 +624,9 @@ public class QdrantVectorStoreRecordMapperTests
             new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector1" },
             new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector2" },
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         },
     };
@@ -542,6 +634,10 @@ public class QdrantVectorStoreRecordMapperTests
     private sealed class MultiPropsModel<TKey>
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -575,7 +671,10 @@ public class QdrantVectorStoreRecordMapperTests
 
         [VectorStoreRecordVector]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         [VectorStoreRecordKey(StoragePropertyName = "key")]
         public TKey? Key { get; set; } = default;
@@ -607,6 +706,9 @@ public class QdrantVectorStoreRecordMapperTests
 
         [VectorStoreRecordVector(StoragePropertyName = "vector2")]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 

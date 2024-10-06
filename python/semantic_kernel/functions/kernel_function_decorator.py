@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import logging
 import types
@@ -22,7 +28,10 @@ from typing import Annotated, Any, ForwardRef, Union, get_args, get_origin
 
 NoneType = type(None)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -33,17 +42,26 @@ from typing import Callable, Optional, Tuple
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 logger = logging.getLogger(__name__)
 
 
 def kernel_function(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     func: Callable[..., object] | None = None,
     name: str | None = None,
@@ -54,7 +72,10 @@ def kernel_function(
     Can be used directly as @kernel_function
     or with parameters @kernel_function(name='function', description='I am a function.').
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -66,6 +87,9 @@ def kernel_function(
     Decorator for kernel functions.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     This decorator is used to mark a function as a kernel function. It also provides metadata for the function.
@@ -73,8 +97,11 @@ def kernel_function(
 
     The parameters are parsed from the function signature, use typing.Annotated to provide a description for the
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     parameter.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     parameter.
 =======
@@ -84,14 +111,20 @@ def kernel_function(
     parameter, in python 3.8, use typing_extensions.Annotated.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     To parse the type, first it checks if the parameter is annotated, and get's the description from there.
     After that it checks recursively until it reaches the lowest level, and it combines
     the types into a single comma-separated string, a forwardRef is also supported.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     All of this is are stored in __kernel_function_parameters__.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     All of this is are stored in __kernel_function_parameters__.
 =======
@@ -101,6 +134,9 @@ def kernel_function(
     All of this is are stored in __kernel_function_context_parameters__.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     The return type and description are parsed from the function signature,
@@ -112,10 +148,13 @@ def kernel_function(
 
     Args:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         func (Callable[..., object] | None): The function to decorate, can be None (if used as @kernel_function
         name (str | None): The name of the function, if not supplied, the function name will be used.
         description (str | None): The description of the function,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         func (Callable[..., object] | None): The function to decorate, can be None (if used as @kernel_function
         name (str | None): The name of the function, if not supplied, the function name will be used.
@@ -130,17 +169,26 @@ def kernel_function(
         description (Optional[str]) -- The description of the function,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if not supplied, the function docstring will be used, can be None.
 
     """
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def decorator(func: Callable[..., object]) -> Callable[..., object]:
         """The actual decorator function."""
@@ -299,7 +347,10 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
         ret["is_required"] = True
     return ret
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -375,4 +426,7 @@ def _parse_internal_annotation(annotation: Parameter, required: bool) -> Tuple[s
     return getattr(annotation, "__name__", ""), required
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

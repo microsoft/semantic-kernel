@@ -16,18 +16,27 @@ class TextPlugin(KernelBaseModel):
 
         KernelArguments["input"] = "  hello world  "
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {{text.trimStart $input}} => "hello world  "
 
         KernelArguments["input"] = "  hello world  "
         {{text.trimEnd $input}} => "  hello world"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -37,6 +46,9 @@ class TextPlugin(KernelBaseModel):
         {{text.trimEnd $input} => "  hello world"
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         KernelArguments["input"] = "hello world"
@@ -49,8 +61,11 @@ class TextPlugin(KernelBaseModel):
     @kernel_function(description="Trim whitespace from the start and end of a string.")
     def trim(self, input: str) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Trim whitespace from the start and end of a string.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Trim whitespace from the start and end of a string.
 =======
@@ -61,6 +76,9 @@ class TextPlugin(KernelBaseModel):
         Trim whitespace from the start and end of a string.
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Example:
@@ -72,10 +90,13 @@ class TextPlugin(KernelBaseModel):
     @kernel_function(description="Trim whitespace from the start of a string.")
     def trim_start(self, input: str) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Trim whitespace from the start of a string.
 
         Example:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Trim whitespace from the start of a string.
 
@@ -92,6 +113,9 @@ class TextPlugin(KernelBaseModel):
          Example:
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
              KernelArguments["input"] = "  hello world  "
              {{input.trim $input}} => "hello world  "
@@ -101,10 +125,13 @@ class TextPlugin(KernelBaseModel):
     @kernel_function(description="Trim whitespace from the end of a string.")
     def trim_end(self, input: str) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Trim whitespace from the end of a string.
 
         Example:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Trim whitespace from the end of a string.
 
@@ -121,6 +148,9 @@ class TextPlugin(KernelBaseModel):
          Example:
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
              KernelArguments["input"] = "  hello world  "
              {{input.trim $input}} => "  hello world"
@@ -130,8 +160,11 @@ class TextPlugin(KernelBaseModel):
     @kernel_function(description="Convert a string to uppercase.")
     def uppercase(self, input: str) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Convert a string to uppercase.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Convert a string to uppercase.
 =======
@@ -142,6 +175,9 @@ class TextPlugin(KernelBaseModel):
         Convert a string to uppercase.
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Example:
@@ -153,10 +189,13 @@ class TextPlugin(KernelBaseModel):
     @kernel_function(description="Convert a string to lowercase.")
     def lowercase(self, input: str) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Convert a string to lowercase.
 
         Example:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Convert a string to lowercase.
 
@@ -173,6 +212,9 @@ class TextPlugin(KernelBaseModel):
          Example:
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
              KernelArguments["input"] = "HELLO WORLD"
              {{input.lowercase $input}} => "hello world"

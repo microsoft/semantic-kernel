@@ -3,11 +3,17 @@
 import os
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
@@ -19,13 +25,19 @@ from semantic_kernel.exceptions import (
     PlannerInvalidGoalError,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -33,7 +45,10 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -41,14 +56,20 @@ from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
 from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     SequentialPlannerKernelExtension,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     SequentialPlannerKernelExtension,
 =======
@@ -58,17 +79,26 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_extensions i
     SequentialPlannerKernelExtension as KernelContextExtension,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 )
 from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
     SequentialPlanParser,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -90,7 +120,10 @@ def read_file(file_path: str) -> str:
     """Reads the content of a file."""
     with open(file_path) as file:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -112,15 +145,21 @@ def read_file(file_path: str) -> str:
     with open(file_path, "r") as file:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return file.read()
 
 
 class SequentialPlanner:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     """Sequential planner class."""
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     """Sequential planner class."""
 
@@ -131,6 +170,9 @@ class SequentialPlanner:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     RESTRICTED_PLUGIN_NAME = "SequentialPlanner_Excluded"
 
@@ -145,10 +187,13 @@ class SequentialPlanner:
         service_id: str,
         config: SequentialPlannerConfig = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         prompt: str | None = None,
     ) -> None:
         """Initializes a new instance of the SequentialPlanner class.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         prompt: str | None = None,
     ) -> None:
@@ -165,6 +210,9 @@ class SequentialPlanner:
         Initializes a new instance of the SequentialPlanner class.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Args:
@@ -174,7 +222,10 @@ class SequentialPlanner:
             prompt (str, optional): The prompt to use for planning. Defaults to None.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -182,6 +233,9 @@ class SequentialPlanner:
         assert isinstance(kernel, Kernel)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self.config = config or SequentialPlannerConfig()
 
@@ -193,11 +247,17 @@ class SequentialPlanner:
 
     def _init_flow_function(self, prompt: str, service_id: str) -> "KernelFunction":
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         prompt_config = PromptTemplateConfig.from_json(
             read_file(PROMPT_CONFIG_FILE_PATH)
@@ -212,7 +272,10 @@ class SequentialPlanner:
                 "max_tokens"
             ] = self.config.max_tokens
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -224,6 +287,9 @@ class SequentialPlanner:
             prompt_config.execution_settings["default"].extension_data["max_tokens"] = self.config.max_tokens
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         else:
             prompt_config.execution_settings[service_id] = PromptExecutionSettings(
@@ -232,11 +298,17 @@ class SequentialPlanner:
         prompt_config.template = prompt_template
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # if a service_id is provided, use it instead of the default
         if (
@@ -249,13 +321,19 @@ class SequentialPlanner:
 
         return self._kernel.add_function(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
         return self._kernel.create_function_from_prompt(
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
             function_name=self.RESTRICTED_PLUGIN_NAME,
@@ -264,11 +342,17 @@ class SequentialPlanner:
 
     async def create_plan(self, goal: str) -> Plan:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Create a plan for the specified goal."""
         if len(goal) == 0:
@@ -279,7 +363,10 @@ class SequentialPlanner:
                 self._kernel, self._arguments, goal, self.config
             )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -290,17 +377,26 @@ class SequentialPlanner:
             self._kernel, self._arguments, goal, self.config
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )
         self._arguments["available_functions"] = relevant_function_manual
         self._arguments["input"] = goal
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         plan_result = await self._function_flow_function.invoke(
             self._kernel, self._arguments
@@ -314,7 +410,10 @@ class SequentialPlanner:
                 f"Error creating plan for goal: {plan_result.metadata['exception']}",
             ) from plan_result.metadata[METADATA_EXCEPTION_KEY]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -328,17 +427,26 @@ class SequentialPlanner:
             )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         plan_result_string = str(plan_result).strip()
 
         try:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             plan = SequentialPlanParser.to_plan_from_xml(
                 xml_string=plan_result_string,
@@ -353,7 +461,10 @@ class SequentialPlanner:
                     "Not possible to create plan for goal with available functions.\n",
                     f"Goal:{goal}\nFunctions:\n{relevant_function_manual}",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -376,17 +487,26 @@ class SequentialPlanner:
                     ),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 )
 
             return plan
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         except PlannerException as e:
             raise e
@@ -396,7 +516,10 @@ class SequentialPlanner:
                 e,
             ) from e
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -427,4 +550,7 @@ class SequentialPlanner:
             )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

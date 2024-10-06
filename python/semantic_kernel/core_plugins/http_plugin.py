@@ -2,11 +2,17 @@
 
 import json
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from typing import Annotated, Any
 
@@ -14,7 +20,10 @@ import aiohttp
 
 from semantic_kernel.exceptions import FunctionExecutionException
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -30,6 +39,9 @@ else:
 
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -49,11 +61,17 @@ class HttpPlugin(KernelBaseModel):
     """
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     @kernel_function(description="Makes a GET request to a url", name="getAsync")
     async def get(self, url: Annotated[str, "The URL to send the request to."]) -> str:
@@ -64,7 +82,10 @@ class HttpPlugin(KernelBaseModel):
 
         Returns:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -78,6 +99,9 @@ class HttpPlugin(KernelBaseModel):
         returns:
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             The response body as a string.
         """
@@ -95,11 +119,17 @@ class HttpPlugin(KernelBaseModel):
         self,
         url: Annotated[str, "The URI to send the request to."],
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         body: Annotated[dict[str, Any] | None, "The body of the request"] = {},
     ) -> str:
@@ -107,7 +137,10 @@ class HttpPlugin(KernelBaseModel):
 
         Args:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -119,6 +152,9 @@ class HttpPlugin(KernelBaseModel):
         params:
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             url: The URI to send the request to.
             body: Contains the body of the request
@@ -127,8 +163,11 @@ class HttpPlugin(KernelBaseModel):
         """
         if not url:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
@@ -138,6 +177,9 @@ class HttpPlugin(KernelBaseModel):
             raise ValueError("url cannot be `None` or empty")
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         headers = {"Content-Type": "application/json"}
@@ -155,11 +197,17 @@ class HttpPlugin(KernelBaseModel):
         self,
         url: Annotated[str, "The URI to send the request to."],
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         body: Annotated[dict[str, Any] | None, "The body of the request"] = {},
     ) -> str:
@@ -167,7 +215,10 @@ class HttpPlugin(KernelBaseModel):
 
         Args:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -179,6 +230,9 @@ class HttpPlugin(KernelBaseModel):
         params:
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             url: The URI to send the request to.
             body: Contains the body of the request
@@ -188,8 +242,11 @@ class HttpPlugin(KernelBaseModel):
         """
         if not url:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             raise FunctionExecutionException("url cannot be `None` or empty")
 =======
@@ -199,6 +256,9 @@ class HttpPlugin(KernelBaseModel):
             raise ValueError("url cannot be `None` or empty")
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         headers = {"Content-Type": "application/json"}
@@ -213,11 +273,17 @@ class HttpPlugin(KernelBaseModel):
 
     @kernel_function(description="Makes a DELETE request to a uri", name="deleteAsync")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     async def delete(
         self, url: Annotated[str, "The URI to send the request to."]
@@ -229,7 +295,10 @@ class HttpPlugin(KernelBaseModel):
 
         Returns:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -242,6 +311,9 @@ class HttpPlugin(KernelBaseModel):
         returns:
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             The response body as a string.
         """

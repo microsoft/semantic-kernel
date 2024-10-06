@@ -2,11 +2,17 @@
 
 using System;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.ClientModel;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -35,13 +41,19 @@ public class ServiceCollectionExtensionsTests
     {
         // Arrange
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var client = new OpenAIClient("key");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var client = new OpenAIClient("key");
 =======
         var client = new OpenAIClient(new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var builder = Kernel.CreateBuilder();
 
@@ -89,13 +101,19 @@ public class ServiceCollectionExtensionsTests
 
         // Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient("key"))
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient("key"))
 =======
         var service = sut.AddOpenAITextEmbeddingGeneration("model", new OpenAIClient(new ApiKeyCredential("key")))
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             .BuildServiceProvider()
             .GetRequiredService<ITextEmbeddingGenerationService>();
@@ -157,13 +175,19 @@ public class ServiceCollectionExtensionsTests
 
         // Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
 =======
         var service = sut.AddOpenAIAudioToText("model", new OpenAIClient(new ApiKeyCredential("key")))
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             .BuildServiceProvider()
             .GetRequiredService<IAudioToTextService>();

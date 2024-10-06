@@ -1,11 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
 using System.ClientModel;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -45,9 +51,12 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         =>
             this.UseOpenAIConfig ?
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 OpenAIClientProvider.ForOpenAI(this.ApiKey) :
                 OpenAIClientProvider.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 OpenAIClientProvider.ForOpenAI(this.ApiKey) :
                 OpenAIClientProvider.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
@@ -55,6 +64,9 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                 OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey)) :
                 OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>
@@ -97,13 +109,19 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
 =======
     protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         foreach (KernelContent item in message.Items)
@@ -116,13 +134,19 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
 =======
     protected async Task DownloadResponseImageAsync(OpenAIFileClient client, ChatMessageContent message)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         foreach (KernelContent item in message.Items)
@@ -135,6 +159,10 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -143,13 +171,19 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         OpenAIFileInfo fileInfo = client.GetFile(fileId);
         if (fileInfo.Purpose == OpenAIFilePurpose.AssistantsOutput)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     private async Task DownloadFileContentAsync(OpenAIFileClient client, string fileId, bool launchViewer = false)
     {
         OpenAIFile fileInfo = client.GetFile(fileId);
         if (fileInfo.Purpose == FilePurpose.AssistantsOutput)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
@@ -168,9 +202,12 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                     new ProcessStartInfo
                     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                         FileName = "cmd.exe",
                         Arguments = $"/C start {filePath}"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                         FileName = "cmd.exe",
                         Arguments = $"/C start {filePath}"
@@ -178,6 +215,9 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                         FileName = filePath,
                         UseShellExecute = true
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     });
             }

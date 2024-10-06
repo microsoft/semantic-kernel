@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 using System;
@@ -56,12 +62,18 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     [
         typeof(string),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         typeof(bool),
         typeof(bool?),
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         typeof(int),
         typeof(int?),
@@ -83,10 +95,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         typeof(DateTimeOffset?),
         typeof(Guid),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         typeof(Guid?),
         typeof(bool),
         typeof(bool?)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         typeof(Guid?),
         typeof(bool),
@@ -94,6 +109,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 =======
         typeof(Guid?)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ];
 
@@ -110,13 +128,19 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <summary><see cref="HttpClient"/> that is used to interact with Weaviate API.</summary>
     private readonly HttpClient _httpClient;
@@ -125,6 +149,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     private readonly WeaviateVectorStoreRecordCollectionOptions<TRecord> _options;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -146,7 +174,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, JsonNode> _mapper;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
@@ -163,6 +194,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>Weaviate endpoint.</summary>
@@ -201,6 +235,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this.CollectionName = collectionName;
         this._options = options ?? new();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -229,7 +267,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 this._storagePropertyNames,
                 s_jsonSerializerOptions);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         this._apiKey = this._options.ApiKey;
         this._propertyReader = new VectorStoreRecordPropertyReader(
@@ -259,6 +300,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         // Assign mapper.
         this._mapper = this.InitializeMapper();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -289,10 +333,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
                 this.CollectionName,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 this._dataProperties,
                 this._vectorProperties,
                 this._storagePropertyNames);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 this._dataProperties,
                 this._vectorProperties,
@@ -302,6 +349,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 this._propertyReader.VectorProperties,
                 this._propertyReader.JsonPropertyNamesMap);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
             var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
@@ -381,10 +431,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             var request = new WeaviateGetCollectionObjectRequest(this.CollectionName, key, includeVectors).Build();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             var jsonNode = await this.ExecuteRequestWithNotFoundHandlingAsync<JsonNode>(request, cancellationToken).ConfigureAwait(false);
 
             if (jsonNode is null)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             var jsonNode = await this.ExecuteRequestWithNotFoundHandlingAsync<JsonNode>(request, cancellationToken).ConfigureAwait(false);
 
@@ -394,6 +447,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
             if (jsonObject is null)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             {
                 return null;
@@ -404,13 +460,19 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 this.CollectionName,
                 OperationName,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 () => this._mapper.MapFromStorageToDataModel(jsonNode!, new() { IncludeVectors = includeVectors }));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 () => this._mapper.MapFromStorageToDataModel(jsonNode!, new() { IncludeVectors = includeVectors }));
 =======
                 () => this._mapper.MapFromStorageToDataModel(jsonObject!, new() { IncludeVectors = includeVectors }));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         });
     }
@@ -453,13 +515,19 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         var responses = await this.RunOperationAsync(OperationName, async () =>
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             var jsonNodes = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             var jsonNodes = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
 =======
             var jsonObjects = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 DatabaseName,
                 this.CollectionName,
@@ -467,13 +535,19 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 () => this._mapper.MapFromDataToStorageModel(record))).ToList();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonNodes).Build();
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonNodes).Build();
 =======
             var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonObjects).Build();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
             return await this.ExecuteRequestAsync<List<WeaviateUpsertCollectionObjectBatchResponse>>(request, cancellationToken).ConfigureAwait(false);
@@ -492,7 +566,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// <inheritdoc />
@@ -570,6 +647,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     #region private
 
@@ -586,13 +666,19 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private async Task<TResponse?> ExecuteRequestAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private async Task<TResponse?> ExecuteRequestAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
 =======
     private async Task<(TResponse?, string)> ExecuteRequestWithResponseContentAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -600,8 +686,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         return JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
 =======
@@ -616,6 +705,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         return model;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -649,7 +741,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// <summary>
@@ -713,6 +808,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     #endregion
 }

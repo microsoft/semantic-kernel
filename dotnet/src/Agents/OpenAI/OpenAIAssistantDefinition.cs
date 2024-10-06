@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -16,13 +22,19 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// Defines an assistant.
 /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 public sealed class OpenAIAssistantDefinition
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 public sealed class OpenAIAssistantDefinition
 =======
 public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 {
     /// <summary>
@@ -55,7 +67,10 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// Provide the captured template format for the assistant if needed for agent retrieval.
@@ -77,6 +92,9 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
         }
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Optional file-ids made available to the code_interpreter tool, if enabled.
     /// </summary>
@@ -103,6 +121,10 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -111,7 +133,10 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     /// may be up to 64 characters in length and values may be up to 512 characters in length.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
     /// </summary>
@@ -120,6 +145,9 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     public OpenAIAssistantDefinition(string modelId)
         : base(modelId) { }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
@@ -130,6 +158,10 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature { get; init; }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -157,7 +189,10 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public OpenAIAssistantExecutionOptions? ExecutionOptions { get; init; }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// Provide the captured template format for the assistant if needed for agent retrieval.
     /// (<see cref="OpenAIAssistantAgent.RetrieveAsync"/>)
@@ -178,6 +213,9 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
         }
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>
@@ -192,10 +230,16 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
         this.ModelId = modelId;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         : base(modelId) { }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

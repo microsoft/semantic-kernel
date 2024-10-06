@@ -207,10 +207,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     #region private
 
     private WeaviateHotel CreateTestHotel(Guid hotelId, string? hotelName = null)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     #region private
 
@@ -495,6 +498,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         string? hotelName = null,
         ReadOnlyMemory<float>? embedding = null)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         return new WeaviateHotel
@@ -507,13 +513,19 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             Timestamp = new DateTime(2024, 8, 28, 10, 11, 12)
         };
@@ -533,13 +545,19 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
             ]

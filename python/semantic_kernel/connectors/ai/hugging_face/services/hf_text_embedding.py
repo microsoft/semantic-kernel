@@ -14,7 +14,10 @@ import torch
 from numpy import ndarray
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -22,6 +25,9 @@ from numpy import ndarray
 from semantic_kernel.connectors.ai.ai_exception import AIException
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
@@ -40,24 +46,36 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 @experimental_class
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     """Hugging Face text embedding service."""
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     device: str
     generator: Any
@@ -66,9 +84,12 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         self,
         ai_model_id: str,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         device: int = -1,
         service_id: str | None = None,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         device: int = -1,
         service_id: str | None = None,
@@ -81,6 +102,9 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         service_id: Optional[str] = None,
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> None:
         """Initializes a new instance of the HuggingFaceTextEmbedding class.
@@ -94,10 +118,13 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         Note that this model will be downloaded from the Hugging Face model hub.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         resolved_device = (
             f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         resolved_device = (
             f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
@@ -105,6 +132,9 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 =======
         resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         super().__init__(
             ai_model_id=ai_model_id,

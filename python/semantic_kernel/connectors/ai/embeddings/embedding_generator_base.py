@@ -7,6 +7,10 @@ from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -23,7 +27,10 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
     """Base class for embedding generators."""
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
@@ -41,6 +48,9 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
 
 class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     @abstractmethod
     async def generate_embeddings(

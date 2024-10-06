@@ -3,7 +3,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -11,6 +14,9 @@ using Microsoft.SemanticKernel.Agents.History;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -38,7 +44,10 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
         The goal is to refine and decide on the single best copy as an expert in the field.
         Only provide a single proposal per response.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -46,6 +55,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         You're laser focused on the goal at hand.
         Don't waste time with chit chat.
@@ -74,8 +86,11 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 
         KernelFunction terminationFunction =
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             KernelFunctionFactory.CreateFromPrompt(
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             KernelFunctionFactory.CreateFromPrompt(
 =======
@@ -85,6 +100,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
             KernelFunctionFactory.CreateFromPrompt(
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 """
                 Determine if the copy has been approved.  If so, respond with a single word: yes
@@ -92,7 +110,10 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                 History:
                 {{$history}}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -103,17 +124,26 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
             AgentGroupChat.CreatePromptFunctionForStrategy(
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 """);
 
         KernelFunction selectionFunction =
             KernelFunctionFactory.CreateFromPrompt(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 $$$"""
                 Determine which participant takes the next turn in a conversation based on the the most recent participant.
@@ -131,8 +161,11 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                 History:
                 {{$history}}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 """);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 """);
 =======
@@ -146,6 +179,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                 """);
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Create a chat for agent interaction.
@@ -169,7 +205,10 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                                 // Limit total number of turns
                                 MaximumIterations = 10,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -178,6 +217,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                             },
                         // Here a KernelFunctionSelectionStrategy selects agents based on a prompt function.
@@ -189,7 +231,10 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                                 // Returns the entire result value as a string.
                                 ResultParser = (result) => result.GetValue<string>() ?? CopyWriterName,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -199,17 +244,26 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                                 HistoryReducer = strategyReducer,
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                                 // The prompt variable name for the agents argument.
                                 AgentsVariableName = "agents",
                                 // The prompt variable name for the history argument.
                                 HistoryVariableName = "history",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                             },
                     }

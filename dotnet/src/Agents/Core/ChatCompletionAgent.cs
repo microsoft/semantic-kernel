@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.Text.Json;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +27,10 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 /// <remarks>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -47,7 +57,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 /// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins.
 /// (<see cref="KernelAgent.Arguments"/>)
@@ -93,6 +106,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         int messageCount = chat.Count;
@@ -140,6 +156,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         kernel ??= this.Kernel;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -149,7 +169,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         arguments = this.MergeArguments(arguments);
 
@@ -157,6 +180,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         int messageCount = chat.Count;
@@ -204,7 +230,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     internal static (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// <inheritdoc/>
@@ -230,6 +259,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     private (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
@@ -244,6 +276,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -255,7 +291,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         {
             chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     private async Task<ChatHistory> SetupAgentChatHistoryAsync(
         IReadOnlyList<ChatMessageContent> history,
@@ -271,6 +310,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         {
             chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

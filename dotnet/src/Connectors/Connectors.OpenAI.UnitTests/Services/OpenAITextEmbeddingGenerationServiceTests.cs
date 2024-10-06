@@ -42,6 +42,10 @@ public class OpenAITextEmbeddingGenerationServiceTests
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService(" ", "apikey"));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -51,7 +55,10 @@ public class OpenAITextEmbeddingGenerationServiceTests
         Assert.Throws<ArgumentNullException>(() => new OpenAITextEmbeddingGenerationService(null!, "apikey"));
         Assert.Throws<ArgumentNullException>(() => new OpenAITextEmbeddingGenerationService(null!, openAIClient: new("apikey")));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService(" ", openAIClient: new(new ApiKeyCredential("apikey"))));
         Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService("", "apikey"));
@@ -59,6 +66,9 @@ public class OpenAITextEmbeddingGenerationServiceTests
         Assert.Throws<ArgumentNullException>(() => new OpenAITextEmbeddingGenerationService(null!, "apikey"));
         Assert.Throws<ArgumentNullException>(() => new OpenAITextEmbeddingGenerationService(null!, openAIClient: new(new ApiKeyCredential("apikey"))));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 

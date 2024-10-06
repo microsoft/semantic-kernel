@@ -147,13 +147,19 @@ public abstract class ToolCallBehavior
                 if (functions.Count > 0)
                 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     choice = ChatToolChoice.Auto;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     choice = ChatToolChoice.Auto;
 =======
                     choice = ChatToolChoice.CreateAutoChoice();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     tools = [];
                     for (int i = 0; i < functions.Count; i++)
@@ -215,13 +221,19 @@ public abstract class ToolCallBehavior
                 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 choice = ChatToolChoice.Auto;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 choice = ChatToolChoice.Auto;
 =======
                 choice = ChatToolChoice.CreateAutoChoice();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 tools = [];
                 for (int i = 0; i < openAIFunctions.Length; i++)
@@ -258,13 +270,19 @@ public abstract class ToolCallBehavior
             this._function = function;
             this._tool = function.ToFunctionDefinition();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this._choice = new ChatToolChoice(this._tool);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             this._choice = new ChatToolChoice(this._tool);
 =======
             this._choice = ChatToolChoice.CreateFunctionChoice(this._tool.FunctionName);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

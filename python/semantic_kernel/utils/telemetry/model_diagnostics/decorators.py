@@ -28,8 +28,11 @@ MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings.create()
 # Operation names
 CHAT_COMPLETION_OPERATION = "chat.completions"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 TEXT_COMPLETION_OPERATION = "text.completions"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 TEXT_COMPLETION_OPERATION = "text.completions"
 =======
@@ -37,6 +40,9 @@ CHAT_STREAMING_COMPLETION_OPERATION = "chat.streaming_completions"
 TEXT_COMPLETION_OPERATION = "text.completions"
 TEXT_STREAMING_COMPLETION_OPERATION = "text.streaming_completions"
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 # Creates a tracer from the global tracer provider
@@ -92,12 +98,18 @@ def trace_chat_completion(model_provider: str) -> Callable:
                 kwargs.get("settings") if kwargs.get("settings") is not None else args[2]
             )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             chat_history: ChatHistory = kwargs["chat_history"]
             settings: PromptExecutionSettings = kwargs["settings"]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
             with use_span(
@@ -125,7 +137,10 @@ def trace_chat_completion(model_provider: str) -> Callable:
 
 @experimental_function
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 def trace_streaming_chat_completion(model_provider: str) -> Callable:
@@ -198,6 +213,9 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
 
 @experimental_function
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def trace_text_completion(model_provider: str) -> Callable:
     """Decorator to trace text completion activities."""
@@ -213,12 +231,18 @@ def trace_text_completion(model_provider: str) -> Callable:
             prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]
             settings: PromptExecutionSettings = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             prompt: str = kwargs["prompt"]
             settings: PromptExecutionSettings = kwargs["settings"]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
             with use_span(
@@ -245,7 +269,10 @@ def trace_text_completion(model_provider: str) -> Callable:
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @experimental_function
@@ -312,6 +339,9 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
 
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def _start_completion_activity(
     operation_name: str,

@@ -4,10 +4,13 @@ import logging
 import re
 import threading
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from collections.abc import Callable
 from copy import copy
 from typing import Any, ClassVar, Optional
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from collections.abc import Callable
 from copy import copy
@@ -22,6 +25,9 @@ from copy import copy
 from typing import Any, Callable, ClassVar, List, Optional, Union
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from pydantic import PrivateAttr
@@ -29,18 +35,27 @@ from pydantic import PrivateAttr
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.exceptions import (
     KernelFunctionNotFoundError,
     KernelInvokeException,
     KernelPluginNotFoundError,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -48,6 +63,9 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 )
 from semantic_kernel.functions.function_result import FunctionResult
@@ -55,7 +73,10 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -63,6 +84,9 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.kernel_exception import KernelException
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.utils.naming import generate_random_ascii_name
 
@@ -71,11 +95,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class Plan:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """A plan for the kernel."""
 
@@ -85,7 +115,10 @@ class Plan:
     _parameters: KernelArguments = PrivateAttr()
     _outputs: list[str] = PrivateAttr()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -96,6 +129,9 @@ class Plan:
     _outputs: List[str] = PrivateAttr()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     _has_next_step: bool = PrivateAttr()
     _next_step_index: int = PrivateAttr()
@@ -109,8 +145,11 @@ class Plan:
     @property
     def name(self) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the name for the plan."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the name for the plan."""
 =======
@@ -119,17 +158,26 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._name
 
     @property
     def state(self) -> KernelArguments:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Get the state for the plan."""
         return self._state
@@ -138,7 +186,10 @@ class Plan:
     def steps(self) -> list["Plan"]:
         """Get the steps for the plan."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -148,14 +199,20 @@ class Plan:
     def steps(self) -> List["Plan"]:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._steps
 
     @property
     def plugin_name(self) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the plugin name for the plan."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the plugin name for the plan."""
 =======
@@ -164,14 +221,20 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._plugin_name
 
     @property
     def description(self) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the description for the plan."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the description for the plan."""
 =======
@@ -180,14 +243,20 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._description
 
     @property
     def function(self) -> Callable[..., Any]:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the function for the plan."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the function for the plan."""
 =======
@@ -196,14 +265,20 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._function
 
     @property
     def parameters(self) -> KernelArguments:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the parameters for the plan."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the parameters for the plan."""
 =======
@@ -212,14 +287,20 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._parameters
 
     @property
     def is_prompt(self) -> bool:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Check if the plan is a prompt."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Check if the plan is a prompt."""
 =======
@@ -228,17 +309,26 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._is_prompt
 
     @property
     def is_native(self) -> bool:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Check if the plan is native code."""
         if self._is_prompt is None:
@@ -249,7 +339,10 @@ class Plan:
     def prompt_execution_settings(self) -> PromptExecutionSettings:
         """Get the AI configuration for the plan."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -262,14 +355,20 @@ class Plan:
     def prompt_execution_settings(self) -> PromptExecutionSettings:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._prompt_execution_settings
 
     @property
     def has_next_step(self) -> bool:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Check if the plan has a next step."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Check if the plan has a next step."""
 =======
@@ -278,14 +377,20 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._next_step_index < len(self._steps)
 
     @property
     def next_step_index(self) -> int:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the next step index."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the next step index."""
 =======
@@ -294,17 +399,26 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self._next_step_index
 
     def __init__(
         self,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         name: str | None = None,
         plugin_name: str | None = None,
@@ -322,7 +436,10 @@ class Plan:
             f"p_{generate_random_ascii_name()}" if plugin_name is None else plugin_name
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -340,6 +457,9 @@ class Plan:
         self._plugin_name = f"p_{generate_random_ascii_name()}" if plugin_name is None else plugin_name
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self._description = "" if description is None else description
         self._next_step_index = 0 if next_step_index is None else next_step_index
@@ -358,8 +478,11 @@ class Plan:
     @classmethod
     def from_goal(cls, goal: str) -> "Plan":
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Create a plan from a goal."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Create a plan from a goal."""
 =======
@@ -368,14 +491,20 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return cls(description=goal, plugin_name=cls.__name__)
 
     @classmethod
     def from_function(cls, function: KernelFunction) -> "Plan":
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Create a plan from a function."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Create a plan from a function."""
 =======
@@ -384,6 +513,9 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         plan = cls()
         plan.set_function(function)
@@ -393,11 +525,17 @@ class Plan:
         self,
         kernel: Kernel,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         arguments: KernelArguments | None = None,
     ) -> FunctionResult:
@@ -410,7 +548,10 @@ class Plan:
         Returns:
             FunctionResult: The result of the function.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -431,6 +572,9 @@ class Plan:
             KernelContext: The updated context.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         if not arguments:
@@ -441,10 +585,13 @@ class Plan:
             except Exception as exc:
                 logger.error(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     f"Something went wrong in plan step {self._plugin_name}.{self._name}:'{exc}'"
                 )
                 raise KernelInvokeException(
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     f"Something went wrong in plan step {self._plugin_name}.{self._name}:'{exc}'"
                 )
@@ -461,17 +608,26 @@ class Plan:
                     KernelException.ErrorCodes.FunctionInvokeError,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     "Error occurred while running plan step: " + str(exc),
                     exc,
                 ) from exc
             return result
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # loop through steps until completion
         partial_results = []
@@ -499,7 +655,10 @@ class Plan:
             metadata={"results": partial_results},
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -527,6 +686,9 @@ class Plan:
             return FunctionResult(function=self.metadata, value=result_string, metadata={"results": partial_results})
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     def set_ai_configuration(
@@ -534,11 +696,17 @@ class Plan:
         settings: PromptExecutionSettings,
     ) -> None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Set the AI configuration for the plan."""
         self._prompt_execution_settings = settings
@@ -547,7 +715,10 @@ class Plan:
     def metadata(self) -> KernelFunctionMetadata:
         """Get the metadata for the plan."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -562,6 +733,9 @@ class Plan:
     def metadata(self) -> KernelFunctionMetadata:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if self._function is not None:
             return self._function.metadata
@@ -574,11 +748,17 @@ class Plan:
         )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def set_available_functions(
         self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments"
@@ -593,7 +773,10 @@ class Plan:
                     f"Something went wrong when setting available functions in {self._plugin_name}.{self._name}:'{exc}'"
                 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -611,6 +794,9 @@ class Plan:
                 pass
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         else:
             for step in plan.steps:
@@ -619,9 +805,12 @@ class Plan:
         return plan
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def add_steps(self, steps: list["Plan"] | list[KernelFunction]) -> None:
         """Add steps to the plan."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     def add_steps(self, steps: list["Plan"] | list[KernelFunction]) -> None:
         """Add steps to the plan."""
@@ -633,6 +822,9 @@ class Plan:
     def add_steps(self, steps: Union[List["Plan"], List[KernelFunction]]) -> None:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         for step in steps:
             if type(step) is Plan:
@@ -653,8 +845,11 @@ class Plan:
 
     def set_function(self, function: KernelFunction) -> None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Set the function for the plan."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Set the function for the plan."""
 =======
@@ -663,6 +858,9 @@ class Plan:
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self._function = function
         self._name = function.name
@@ -670,9 +868,12 @@ class Plan:
         self._description = function.description
         self._is_prompt = function.is_prompt
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if hasattr(function, "prompt_execution_settings"):
             self._prompt_execution_settings = function.prompt_execution_settings
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         if hasattr(function, "prompt_execution_settings"):
             self._prompt_execution_settings = function.prompt_execution_settings
@@ -684,6 +885,9 @@ class Plan:
         self._prompt_execution_settings = function.prompt_execution_settings
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     async def run_next_step(
@@ -692,11 +896,17 @@ class Plan:
         arguments: KernelArguments,
     ) -> Optional["FunctionResult"]:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Run the next step in the plan."""
         return await self.invoke_next_step(kernel, arguments)
@@ -706,7 +916,10 @@ class Plan:
     ) -> Optional["FunctionResult"]:
         """Invoke the next step in the plan."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -715,6 +928,9 @@ class Plan:
     async def invoke_next_step(self, kernel: Kernel, arguments: KernelArguments) -> Optional["FunctionResult"]:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if not self.has_next_step:
             return None
@@ -727,8 +943,11 @@ class Plan:
             result = await step.invoke(kernel, arguments)
         except Exception as exc:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             raise KernelInvokeException(
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             raise KernelInvokeException(
 =======
@@ -739,6 +958,9 @@ class Plan:
                 KernelException.ErrorCodes.FunctionInvokeError,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 "Error occurred while running plan step: " + str(exc),
                 exc,
@@ -753,10 +975,13 @@ class Plan:
             if Plan.DEFAULT_RESULT_KEY in self._state:
                 current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + str(
                 result
             )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + str(
                 result
@@ -770,6 +995,9 @@ class Plan:
             self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + str(result)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         # Increment the step
@@ -777,11 +1005,17 @@ class Plan:
         return result
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def add_variables_to_state(
         self, state: KernelArguments, variables: KernelArguments
@@ -796,7 +1030,10 @@ class Plan:
     ) -> KernelArguments:
         """Update the arguments with the outputs from the current step."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -808,6 +1045,9 @@ class Plan:
     def update_arguments_with_outputs(self, arguments: KernelArguments) -> KernelArguments:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if Plan.DEFAULT_RESULT_KEY in self._state:
             result_string = self._state[Plan.DEFAULT_RESULT_KEY]
@@ -818,11 +1058,17 @@ class Plan:
 
         for item in self._steps[self._next_step_index - 1]._outputs:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             arguments[item] = self._state.get(item, result_string)
         return arguments
@@ -832,7 +1078,10 @@ class Plan:
     ) -> KernelArguments:
         """Get the arguments for the next step."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -845,6 +1094,9 @@ class Plan:
     def get_next_step_arguments(self, arguments: KernelArguments, step: "Plan") -> KernelArguments:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # Priority for Input
         # - Parameters (expand from variables if needed)
@@ -882,9 +1134,12 @@ class Plan:
                     step_arguments[param.name] = arguments[param.name]
                 elif param.name in self._state and (
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     self._state[param.name] is not None
                     and self._state[param.name] != ""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     self._state[param.name] is not None
                     and self._state[param.name] != ""
@@ -896,6 +1151,9 @@ class Plan:
                     self._state[param.name] is not None and self._state[param.name] != ""
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 ):
                     step_arguments[param.name] = self._state[param.name]
@@ -922,11 +1180,17 @@ class Plan:
         return step_arguments
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def expand_from_arguments(
         self, arguments: KernelArguments, input_from_step: Any
@@ -939,7 +1203,10 @@ class Plan:
             matches, key=lambda m: len(m.group("var")), reverse=True
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -950,6 +1217,9 @@ class Plan:
         ordered_matches = sorted(matches, key=lambda m: len(m.group("var")), reverse=True)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         for match in ordered_matches:

@@ -1,9 +1,14 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "Given a chat message decide whether to block it",
   "type": "completion",
   "completion": {
+=======
+  "description": "Given a chat message decide whether to block it",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Given a chat message decide whether to block it",
   "default_settings": {
@@ -21,11 +26,17 @@
     "text-davinci-003"
   ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     "stop_sequences": ["</scenario>"]
   }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

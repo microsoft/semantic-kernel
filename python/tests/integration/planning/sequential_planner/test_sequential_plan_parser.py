@@ -21,7 +21,10 @@ async def test_can_call_to_plan_from_xml():
         sk_oai.AzureChatCompletion(
             service_id="text_completion",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -31,6 +34,9 @@ async def test_can_call_to_plan_from_xml():
             api_key=api_key,
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         ),
     )
@@ -49,8 +55,11 @@ async def test_can_call_to_plan_from_xml():
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
 =======
@@ -64,6 +73,9 @@ async def test_can_call_to_plan_from_xml():
     )
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     assert plan is not None

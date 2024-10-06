@@ -37,7 +37,10 @@
   "fallbackRetryDelay": "30s",
   "aliveStatusCodes": [200, 206, 429, 500, 503]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
   "aliveStatusCodes": [
@@ -48,5 +51,8 @@
     503
   ]
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

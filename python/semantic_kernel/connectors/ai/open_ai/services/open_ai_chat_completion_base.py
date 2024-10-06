@@ -27,15 +27,21 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.function_calling_utils import (
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from semantic_kernel.connectors.ai.function_calling_utils import (
 <<<<<<< main
 =======
 from semantic_kernel.connectors.ai.function_calling_utils import (
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     update_settings_from_function_call_configuration,
 )
@@ -43,13 +49,19 @@ from semantic_kernel.connectors.ai.function_choice_behavior import (
     FunctionChoiceBehavior,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 from semantic_kernel.connectors.ai.function_calling_utils import (
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     merge_function_results,
     update_settings_from_function_call_configuration,
@@ -57,6 +69,10 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -67,11 +83,17 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 >>>>>>> upstream/main
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.function_calling_utils import (
     update_settings_from_function_call_configuration,
@@ -80,8 +102,11 @@ from semantic_kernel.connectors.ai.function_choice_behavior import (
     FunctionChoiceBehavior,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> origin/PR
 =======
@@ -89,6 +114,9 @@ from semantic_kernel.connectors.ai.open_ai.contents import OpenAIChatMessageCont
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.models.chat_completion.tool_calls import ToolCall
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -114,12 +142,18 @@ from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_c
 )
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.utils.telemetry.decorators import trace_chat_completion
 from semantic_kernel.exceptions import (
@@ -130,8 +164,11 @@ from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_c
     AutoFunctionInvocationContext,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> origin/PR
 =======
@@ -139,6 +176,9 @@ from semantic_kernel.utils.telemetry.model_diagnostics import trace_chat_complet
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.finish_reason import FinishReason
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 if TYPE_CHECKING:
@@ -150,6 +190,12 @@ if TYPE_CHECKING:
 
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+logger: logging.Logger = logging.getLogger(__name__)
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 logger: logging.Logger = logging.getLogger(__name__)
@@ -161,12 +207,18 @@ logger: logging.Logger = logging.getLogger(__name__)
 class InvokeTermination(Exception):
     """Exception for termination of function invocation."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
 
 class InvokeTermination(Exception):
     """Exception for termination of function invocation."""
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 =======
@@ -181,6 +233,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     # region Overriding base class methods
     # most of the methods are overridden from the ChatCompletionClientBase class, otherwise it is mentioned
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -213,7 +269,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 )
             )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 
     # Override from AIServiceClientBase
@@ -258,6 +317,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             settings {OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings} -- The settings to use
                 for the chat completion request.
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         kernel = kwargs.get("kernel", None)
@@ -265,6 +327,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if kernel is None:
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -278,12 +346,18 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 and settings.number_of_responses > 1
             ):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
         Returns:
@@ -309,12 +383,18 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 )
             if settings.number_of_responses is not None and settings.number_of_responses > 1:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> origin/PR
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
@@ -338,6 +418,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             completions = await self._send_chat_request(settings)
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -352,6 +438,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 if isinstance(item, FunctionCallContent)
             ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -361,7 +451,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             # get the function call contents from the chat message, there is only one chat message
             # this was checked earlier
@@ -370,6 +463,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             # this was checked earlier
             function_calls = [item for item in completions[0].items if isinstance(item, FunctionCallContent)]
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if (fc_count := len(function_calls)) == 0:
                 return completions
@@ -377,6 +473,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             # Since we have a function call, add the assistant's tool call message to the history
             chat_history.add_message(message=completions[0])
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -410,7 +510,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 >>>>>>> upstream/main
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
@@ -441,6 +544,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         response = await self._send_request(request_settings=settings)
         assert isinstance(response, ChatCompletion)  # nosec
@@ -457,6 +563,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -474,7 +584,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             kwargs (Dict[str, Any]): The optional arguments.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 
     ) -> AsyncGenerator[list[StreamingChatMessageContent | None], Any]:
@@ -495,18 +608,27 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             kwargs (Dict[str, Any]): The optional arguments.
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Yields:
             List[StreamingChatMessageContent]: A stream of
                 StreamingChatMessageContent when using Azure.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> origin/PR
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
         # if this method is called with a `FunctionCallBehavior` object as part of the settings
@@ -524,6 +646,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if kernel is None:
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -537,12 +665,18 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 and settings.number_of_responses > 1
             ):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
         arguments = kwargs.get("arguments", None)
@@ -555,12 +689,18 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 )
             if settings.number_of_responses is not None and settings.number_of_responses > 1:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> origin/PR
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
@@ -571,6 +711,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self._prepare_settings(
             settings, chat_history, stream_request=True, kernel=kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -584,6 +728,11 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
             else 1
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> origin/main
@@ -655,7 +804,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 break
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         request_attempts = (
@@ -732,6 +884,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 break
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             self._update_settings(settings, chat_history, kernel=kernel)
 
@@ -750,6 +905,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             for choice in response.choices
         ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -759,7 +918,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = True
@@ -767,6 +929,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         response = await self._send_request(request_settings=settings)
@@ -776,15 +941,21 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
         async for chunk in response:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             if len(chunk.choices) == 0:
                 continue
 =======
+=======
+>>>>>>> Stashed changes
             if len(chunk.choices) == 0 and chunk.usage is None:
                 continue
 <<<<<<< main
 =======
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             assert isinstance(chunk, ChatCompletionChunk)  # nosec
             chunk_metadata = self._get_metadata_from_streaming_chat_response(chunk)
@@ -795,7 +966,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 for choice in chunk.choices
             ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
             if chunk.usage is not None:
@@ -818,6 +992,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                     for choice in chunk.choices
                 ]
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     @override
@@ -862,12 +1039,18 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         if choice.message.content:
             items.append(TextContent(text=choice.message.content))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         elif hasattr(choice.message, "refusal") and choice.message.refusal:
             items.append(TextContent(text=choice.message.refusal))
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         return ChatMessageContent(
@@ -895,6 +1078,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         items.extend(self._get_function_call_from_chat_choice(choice))
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -907,6 +1096,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 )
             )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -915,11 +1108,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             items.append(StreamingTextContent(choice_index=choice.index, text=choice.delta.content))
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         if choice.delta and choice.delta.content is not None:
             items.append(StreamingTextContent(choice_index=choice.index, text=choice.delta.content))
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return StreamingChatMessageContent(
             choice_index=choice.index,
@@ -928,6 +1127,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             metadata=metadata,
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -942,6 +1147,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 FinishReason(choice.finish_reason) if choice.finish_reason else None
             ),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -951,7 +1160,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 >>>>>>> upstream/main
             items=items,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             role=(AuthorRole(choice.delta.role) if choice.delta and choice.delta.role else AuthorRole.ASSISTANT),
             finish_reason=(FinishReason(choice.finish_reason) if choice.finish_reason else None),
@@ -962,6 +1174,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )
 
@@ -969,11 +1184,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self, response: ChatCompletion
     ) -> dict[str, Any]:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     def _get_metadata_from_chat_response(self, response: ChatCompletion) -> dict[str, Any]:
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Get metadata from a chat response."""
         return {
@@ -992,11 +1213,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
             "usage": CompletionUsage.from_openai(response.usage) if response.usage is not None else None,
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -1034,6 +1261,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         content = choice.message if isinstance(choice, Choice) else choice.delta
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1050,12 +1283,18 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
         ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if content and (function_call := getattr(content, "function_call", None)) is not None:
             function_call = cast(FunctionCall | ChoiceDeltaFunctionCall, function_call)
@@ -1067,6 +1306,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         # When you enable asynchronous content filtering in Azure OpenAI, you may receive empty deltas
         return []
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -1076,12 +1319,18 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 
     # endregion
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def _prepare_settings(
         self,
@@ -1120,6 +1369,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         "Use `invoke_function_call` from the kernel instead with `FunctionChoiceBehavior`."
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -1128,11 +1381,17 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     @deprecated("Use `invoke_function_call` from the kernel instead with `FunctionChoiceBehavior`.")
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     # region function calling
     @deprecated("Use `invoke_function_call` from the kernel instead with `FunctionChoiceBehavior`.")
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     async def _process_function_call(
         self,

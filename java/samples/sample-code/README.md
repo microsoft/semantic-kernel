@@ -35,11 +35,17 @@ They can then be run by:
 # Configuration
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< AI
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 You can define the provider of Open AI by setting the `OPENAI_CLIENT_TYPE`
 property or environment variable to either [`OPENAI`](https://platform.openai.com)
@@ -204,13 +210,19 @@ OR
 ## Client Settings
 <<<<<<< AI
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 The samples search for the client settings in the following order:
 The tests search for the client settings in the following order:
 =======
 <<<<<<< HEAD
 The samples search for the client settings in the following order:
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 The samples search for the client settings in the following order:
@@ -219,6 +231,10 @@ The tests search for the client settings in the following order:
 <<<<<<< HEAD
 The samples search for the client settings in the following order:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
@@ -241,13 +257,19 @@ You can set the location of a properties file, by setting the `CONF_PROPERTIES` 
 CONF_PROPERTIES=my.properties \
 <<<<<<< AI
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 OPENAI_CLIENT_TYPE=OPEN_AI \
 OPENAI_CLIENT_TYPE=OPENAI \
 =======
 <<<<<<< HEAD
 OPENAI_CLIENT_TYPE=OPEN_AI \
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 OPENAI_CLIENT_TYPE=OPEN_AI \
@@ -256,6 +278,10 @@ OPENAI_CLIENT_TYPE=OPENAI \
 <<<<<<< HEAD
 OPENAI_CLIENT_TYPE=OPEN_AI \
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes

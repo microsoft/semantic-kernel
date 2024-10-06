@@ -1,11 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.ClientModel;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.ComponentModel;
 using System.Text;
@@ -50,13 +56,19 @@ public sealed class MixedAgentTests
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
 =======
             OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             openAISettings.ChatModelId!,
             useNewFunctionCallingModel);
@@ -111,26 +123,38 @@ public sealed class MixedAgentTests
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 kernel: new(),
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu."
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 });
 =======
                 },
                 new Kernel());
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act & Assert

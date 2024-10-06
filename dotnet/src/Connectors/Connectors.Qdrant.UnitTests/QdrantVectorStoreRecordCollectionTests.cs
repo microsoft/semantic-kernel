@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 using System;
@@ -557,7 +563,10 @@ public class QdrantVectorStoreRecordCollectionTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     [Theory]
@@ -609,6 +618,9 @@ public class QdrantVectorStoreRecordCollectionTests
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private void SetupRetrieveMock(List<RetrievedPoint> retrievedPoints)
     {
@@ -625,7 +637,10 @@ public class QdrantVectorStoreRecordCollectionTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     private void SetupQueryMock(List<ScoredPoint> scoredPoints)
@@ -652,6 +667,9 @@ public class QdrantVectorStoreRecordCollectionTests
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private void SetupDeleteMocks()
     {
@@ -745,7 +763,10 @@ public class QdrantVectorStoreRecordCollectionTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     private static ScoredPoint CreateScoredPoint<TKey>(bool hasNamedVectors, TKey recordKey)
@@ -786,6 +807,9 @@ public class QdrantVectorStoreRecordCollectionTests
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private IVectorStoreRecordCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
         where T : notnull

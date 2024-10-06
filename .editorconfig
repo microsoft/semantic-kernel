@@ -165,7 +165,10 @@ dotnet_diagnostic.CA1510.severity = none # ArgumentNullException.Throw
 dotnet_diagnostic.CA1512.severity = none # ArgumentOutOfRangeException.Throw
 dotnet_diagnostic.CA1515.severity = none # Making public types from exes internal
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
@@ -177,6 +180,9 @@ dotnet_diagnostic.CA1867.severity = none # EndsWith(char)
 dotnet_diagnostic.CA1508.severity = none # Avoid dead conditional code. Too many false positives.
 dotnet_diagnostic.CA1510.severity = none
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
@@ -191,12 +197,18 @@ dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging mes
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
 dotnet_diagnostic.CA2263.severity = suggestion # Use generic overload
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 
 dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
@@ -437,7 +449,10 @@ charset = utf-8
 end_of_line = lf
 indent_size = 4
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 indent_style = space
@@ -445,6 +460,9 @@ insert_final_newline = false
 tab_width = 4
 indent_size = 2
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 indent_style = space
 insert_final_newline = false

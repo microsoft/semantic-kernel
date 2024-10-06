@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import os
 from collections.abc import Callable
@@ -150,7 +156,10 @@ def test_init_with_callable_functions(mock_function):
         description=expected_plugin_description,
         functions=mock_function,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -205,17 +214,26 @@ def test_default_kernel_plugin_construction_with_native_functions():
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
     assert len(plugin.functions) == 1
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert plugin["mock_function"].plugin_name == expected_plugin_name
 
@@ -278,7 +296,10 @@ def test_init_with_kernel_plugin_list(mock_function):
         description=expected_plugin_description,
         functions=[first_plugin],
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -313,17 +334,26 @@ def test_default_kernel_plugin_exposes_the_native_function_it_contains():
         name=expected_plugin_name, description=expected_plugin_description, functions=[native_function]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
     assert len(plugin.functions) == 1
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert plugin["mock_function"].plugin_name == expected_plugin_name
     assert native_function.plugin_name == function_plugin_name
@@ -353,7 +383,10 @@ def test_init_with_prompt_function():
         extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8}
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -368,6 +401,9 @@ def test_default_kernel_plugin_construction_with_prompt_function():
     req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     prompt = "Use this input: {{$request}}"
@@ -378,10 +414,13 @@ def test_default_kernel_plugin_construction_with_prompt_function():
         template_format="semantic-kernel",
         input_variables=[
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             InputVariable(
                 name="request", description="The user input", is_required=True
             ),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             InputVariable(
                 name="request", description="The user input", is_required=True
@@ -395,6 +434,9 @@ def test_default_kernel_plugin_construction_with_prompt_function():
             InputVariable(name="request", description="The user input", is_required=True),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         ],
         execution_settings={"default": req_settings},
@@ -403,8 +445,11 @@ def test_default_kernel_plugin_construction_with_prompt_function():
     expected_plugin_name = "test_plugin"
     expected_function_name = "mock_function"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     semantic_function = KernelFunctionFromPrompt(
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     semantic_function = KernelFunctionFromPrompt(
 =======
@@ -414,6 +459,9 @@ def test_default_kernel_plugin_construction_with_prompt_function():
     semantic_function = KernelFunction.from_prompt(
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         prompt=prompt,
         prompt_template_config=prompt_template_config,
@@ -425,10 +473,13 @@ def test_default_kernel_plugin_construction_with_prompt_function():
 
     plugin = KernelPlugin(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         name=expected_plugin_name,
         description=expected_plugin_description,
         functions=[semantic_function],
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         name=expected_plugin_name,
         description=expected_plugin_description,
@@ -442,6 +493,9 @@ def test_default_kernel_plugin_construction_with_prompt_function():
         name=expected_plugin_name, description=expected_plugin_description, functions=[semantic_function]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
 
@@ -452,18 +506,27 @@ def test_default_kernel_plugin_construction_with_prompt_function():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_init_with_both_function_types(mock_function):
     req_settings = PromptExecutionSettings(
         extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8}
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -471,6 +534,9 @@ def test_default_kernel_plugin_construction_with_both_function_types():
     req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     prompt = "Use this input: {{$request}}"
@@ -481,10 +547,13 @@ def test_default_kernel_plugin_construction_with_both_function_types():
         template_format="semantic-kernel",
         input_variables=[
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             InputVariable(
                 name="request", description="The user input", is_required=True
             ),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             InputVariable(
                 name="request", description="The user input", is_required=True
@@ -498,6 +567,9 @@ def test_default_kernel_plugin_construction_with_both_function_types():
             InputVariable(name="request", description="The user input", is_required=True),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         ],
         execution_settings={"default": req_settings},
@@ -505,8 +577,11 @@ def test_default_kernel_plugin_construction_with_both_function_types():
 
     expected_plugin_name = "test_plugin"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     expected_function_name = "prompt_function"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     expected_function_name = "prompt_function"
 =======
@@ -516,6 +591,9 @@ def test_default_kernel_plugin_construction_with_both_function_types():
     expected_function_name = "mock_function"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     semantic_function = KernelFunction.from_prompt(
         prompt=prompt,
@@ -525,10 +603,13 @@ def test_default_kernel_plugin_construction_with_both_function_types():
     )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     native_function = KernelFunctionFromMethod(
         method=mock_function, plugin_name="MockPlugin"
     )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     native_function = KernelFunctionFromMethod(
         method=mock_function, plugin_name="MockPlugin"
@@ -561,6 +642,9 @@ def test_default_kernel_plugin_construction_with_both_function_types():
     native_function = KernelFunction.from_native_method(mock_method, "MockPlugin")
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     # Add both types to the default kernel plugin
@@ -579,11 +663,17 @@ def test_default_kernel_plugin_construction_with_both_function_types():
     for func in [semantic_function, native_function]:
         assert func.name in plugin
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         assert plugin[func.name].name == func.name
 
@@ -593,7 +683,10 @@ def test_init_with_same_function_names(mock_function):
         extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8}
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -604,6 +697,9 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
     req_settings = PromptExecutionSettings(extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8})
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     prompt = "Use this input: {{$request}}"
@@ -614,10 +710,13 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
         template_format="semantic-kernel",
         input_variables=[
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             InputVariable(
                 name="request", description="The user input", is_required=True
             ),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             InputVariable(
                 name="request", description="The user input", is_required=True
@@ -631,6 +730,9 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
             InputVariable(name="request", description="The user input", is_required=True),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         ],
         execution_settings={"default": req_settings},
@@ -646,11 +748,17 @@ def test_default_kernel_plugin_construction_with_same_function_names_throws():
     )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     native_function = KernelFunctionFromMethod(
         method=mock_function, plugin_name="MockPlugin"
@@ -1040,7 +1148,10 @@ def test_parse_or_copy_fail():
     with raises(ValueError):
         KernelPlugin._parse_or_copy(None, "test")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -1068,4 +1179,7 @@ def test_parse_or_copy_fail():
         KernelPlugin(name=expected_plugin_name, functions=[semantic_function, native_function])
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

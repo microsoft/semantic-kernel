@@ -2,11 +2,17 @@
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from collections.abc import Callable
 
@@ -34,7 +40,10 @@ async def test_register_valid_native_function(
         == registered_func
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -66,17 +75,26 @@ async def test_register_valid_native_function():
     assert kernel.plugins["TestPlugin"]["getLightStatus"] == registered_func
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     func_result = await registered_func.invoke(kernel, KernelArguments(arg1="testtest"))
     assert str(func_result) == "test"
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_register_undecorated_native_function(
     kernel: Kernel, not_decorated_native_function: Callable
@@ -91,7 +109,10 @@ def test_register_with_none_plugin_name(
     with pytest.raises(ValidationError):
         kernel.add_function(function=decorated_native_function, plugin_name=None)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -119,4 +140,7 @@ def test_register_overloaded_native_function():
         kernel.register_native_function("TestPlugin", decorated_native_function)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

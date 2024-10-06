@@ -2,11 +2,17 @@
 source = semantic_kernel
 omit = 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     semantic_kernel/connectors/memory/astradb/*
     semantic_kernel/connectors/memory/azure_cognitive_search/*
@@ -24,7 +30,10 @@ omit =
     semantic_kernel/reliability/*
     semantic_kernel/memory/*
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -36,6 +45,9 @@ omit =
 
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 [report]

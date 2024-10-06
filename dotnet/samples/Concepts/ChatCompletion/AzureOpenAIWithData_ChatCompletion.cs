@@ -128,11 +128,17 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     /// Initializes a new instance of the <see cref="AzureSearchChatDataSource"/> class.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private static AzureSearchChatDataSource GetAzureSearchDataSource()
     {
@@ -144,10 +150,16 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         };
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

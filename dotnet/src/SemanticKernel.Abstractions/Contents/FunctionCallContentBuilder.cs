@@ -7,11 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.Text.Json.Serialization.Metadata;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel;
@@ -53,9 +59,12 @@ public void Append(StreamingChatMessageContent content)
     /// </summary>
     /// <returns>A list of <see cref="FunctionCallContent"/> objects.</returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public IReadOnlyList<FunctionCallContent> Build()
     {
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public IReadOnlyList<FunctionCallContent> Build()
     {
@@ -89,6 +98,9 @@ public void Append(StreamingChatMessageContent content)
     private FunctionCallContent[] BuildInternal(JsonSerializerOptions? jsonSerializerOptions)
     {
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         FunctionCallContent[]? functionCalls = null;
 
@@ -111,13 +123,19 @@ public void Append(StreamingChatMessageContent content)
                 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 (KernelArguments? arguments, Exception? exception) = this.GetFunctionArguments(functionCallIndexAndId.Key);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 (KernelArguments? arguments, Exception? exception) = this.GetFunctionArguments(functionCallIndexAndId.Key);
 =======
                 (KernelArguments? arguments, Exception? exception) = this.GetFunctionArguments(functionCallIndexAndId.Key, jsonSerializerOptions);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
                 functionCalls[i] = new FunctionCallContent(
@@ -139,9 +157,12 @@ public void Append(StreamingChatMessageContent content)
     /// </summary>
     /// <param name="functionCallIndex">The function call index to get the function arguments for.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <returns>A tuple containing the KernelArguments and an Exception if any.</returns>
     private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// <returns>A tuple containing the KernelArguments and an Exception if any.</returns>
     private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex)
@@ -152,6 +173,9 @@ public void Append(StreamingChatMessageContent content)
     [RequiresDynamicCode("Uses reflection to deserialize function arguments if no JSOs are provided, making it incompatible with AOT scenarios.")]
     private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex, JsonSerializerOptions? jsonSerializerOptions = null)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         if (this._functionArgumentBuildersByIndex is null ||
@@ -171,8 +195,11 @@ public void Append(StreamingChatMessageContent content)
         try
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             arguments = JsonSerializer.Deserialize<KernelArguments>(argumentsString);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             arguments = JsonSerializer.Deserialize<KernelArguments>(argumentsString);
 =======
@@ -187,6 +214,9 @@ public void Append(StreamingChatMessageContent content)
             }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if (arguments is { Count: > 0 })
             {

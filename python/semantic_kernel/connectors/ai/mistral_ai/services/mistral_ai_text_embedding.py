@@ -62,10 +62,13 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
             api_key (str | None): The API key for the Mistral AI service deployment.
             service_id (str | None): Service ID for the embedding completion service.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             env_file_path (str | None): The path to the environment file.
             env_file_encoding (str | None): The encoding of the environment file.
             client (MistralAsyncClient | None): The Mistral AI client to use.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             env_file_path (str | None): The path to the environment file.
             env_file_encoding (str | None): The encoding of the environment file.
@@ -78,6 +81,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             async_client (MistralAsyncClient | None): The Mistral AI client to use.
             env_file_path (str | None): The path to the environment file.
@@ -100,10 +106,13 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 
         if not mistralai_settings.embedding_model_id:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             raise ServiceInitializationError(
                 "The MistralAI embedding model ID is required."
             )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             raise ServiceInitializationError(
                 "The MistralAI embedding model ID is required."
@@ -120,6 +129,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
             async_client = MistralAsyncClient(api_key=mistralai_settings.api_key.get_secret_value())
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         if not async_client:
@@ -153,9 +165,12 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
         """Generate embeddings from the Mistral AI service."""
         try:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
             embedding_response: EmbeddingResponse = await self.client.embeddings(
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
             embedding_response: EmbeddingResponse = await self.client.embeddings(
@@ -166,6 +181,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             embedding_response: EmbeddingResponse = await self.async_client.embeddings(
                 model=self.ai_model_id, input=texts

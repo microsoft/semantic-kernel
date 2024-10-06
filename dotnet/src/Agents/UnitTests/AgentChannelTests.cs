@@ -68,7 +68,10 @@ public class AgentChannelTests
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         protected internal override string Serialize()
@@ -80,6 +83,9 @@ public class AgentChannelTests
     private sealed class NextAgent : TestAgent;
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
         {
@@ -89,19 +95,28 @@ public class AgentChannelTests
 
     private sealed class NextAgent : MockAgent;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Mock<Agent> mockAgent = new();
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(mockAgent.Object).ToArrayAsync().AsTask());
         // Assert
         Assert.Equal(1, channel.InvokeCount);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     }
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     }
 =======
@@ -118,5 +133,8 @@ public class AgentChannelTests
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

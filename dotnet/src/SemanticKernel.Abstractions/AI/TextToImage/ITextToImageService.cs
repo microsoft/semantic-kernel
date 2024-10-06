@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+using System.Collections.Generic;
+>>>>>>> Stashed changes
 =======
 using System.Collections.Generic;
 >>>>>>> Stashed changes
@@ -19,8 +23,14 @@ public interface ITextToImageService : IAIService
 {
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// Generate an image matching the given description
     /// </summary>
+=======
+    /// Given a prompt and/or an input text, the model will generate a new image.
+    /// </summary>
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
     /// Given a prompt and/or an input text, the model will generate a new image.
     /// </summary>
@@ -38,7 +48,10 @@ public interface ITextToImageService : IAIService
         int width,
         int height,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// <param name="input">Input text for image generation</param>
     /// <param name="executionSettings">Text to image execution settings</param>
@@ -50,6 +63,9 @@ public interface ITextToImageService : IAIService
         TextContent input,
         PromptExecutionSettings? executionSettings = null,
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);

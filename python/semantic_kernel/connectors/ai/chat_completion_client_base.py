@@ -18,6 +18,10 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -41,10 +45,13 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
     # Connectors that support function calling should set this to True
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = False
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
     # region Internal methods to be implemented by the derived classes
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
 
 if TYPE_CHECKING:
@@ -112,6 +119,9 @@ if TYPE_CHECKING:
     # region Internal methods to be implemented by the derived classes
 
 <<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     async def _inner_get_chat_message_contents(
         self,
@@ -151,7 +161,10 @@ if TYPE_CHECKING:
     # endregion
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
     def get_chat_message_content_class(self) -> type[ChatMessageContent]:
@@ -173,6 +186,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
     # endregion
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     # region Public methods
 
@@ -190,7 +206,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             settings (PromptExecutionSettings): Settings for the request.
             **kwargs (Any): The optional arguments.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         Arguments:
@@ -198,6 +217,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 rendered into messages from system, user, assistant and tools.
             settings {PromptExecutionSettings} -- Settings for the request.
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Returns:
@@ -206,6 +228,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -214,13 +240,19 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             return await self._inner_get_chat_message_contents(chat_history, settings)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 
         if not self.SUPPORTS_FUNCTION_CALLING:
             return await self._inner_get_chat_message_contents(chat_history, settings)
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
         # if this method is called with a `FunctionCallBehavior` object as part of the settings
@@ -307,11 +339,17 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             A string representing the response from the LLM.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     ) -> AsyncIterable[List["StreamingChatMessageContent"]]:
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         results = await self.get_chat_message_contents(
@@ -336,13 +374,19 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             settings (PromptExecutionSettings): Settings for the request.
             kwargs (Dict[str, Any]): The optional arguments.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         Arguments:
             chat_history {ChatHistory} -- A list of chat chat_history, that can be rendered into a
                 set of chat_history, from system, user, assistant and function.
             settings {PromptExecutionSettings} -- Settings for the request.
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Yields:
@@ -453,6 +497,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             settings (PromptExecutionSettings): Settings for the request.
             kwargs (Dict[str, Any]): The optional arguments.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
@@ -461,7 +509,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             A stream representing the response(s) from the LLM.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         # Create a copy of the settings to avoid modifying the original settings
         settings = copy.deepcopy(settings)
@@ -573,6 +624,9 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         async for (
             streaming_chat_message_contents
@@ -587,11 +641,17 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     # region internal handlers
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         pass
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     def _prepare_chat_history_for_request(
@@ -656,7 +716,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     # endregion
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     ) -> List[Dict[str, Optional[str]]]:
@@ -668,4 +731,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             message.model_dump(exclude_none=True, exclude=["metadata", "encoding"]) for message in chat_history.messages
         ]
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

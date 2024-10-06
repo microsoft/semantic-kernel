@@ -94,11 +94,17 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         using var generator = new Generator(this.GetModel(), generatorParams);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         bool removeNextTokenStartingWithSpace = true;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         while (!generator.IsDone())
         {
@@ -112,8 +118,11 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
                 var outputTokens = generator.GetSequence(0);
                 var newToken = outputTokens.Slice(outputTokens.Length - 1, 1);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 var output = this.GetTokenizer().Decode(newToken);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 var output = this.GetTokenizer().Decode(newToken);
 =======
@@ -126,6 +135,9 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
                 }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 return output;
             }, cancellationToken).ConfigureAwait(false);

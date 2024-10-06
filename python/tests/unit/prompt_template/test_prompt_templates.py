@@ -2,11 +2,17 @@
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import json
 
@@ -23,7 +29,10 @@ from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterM
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -37,6 +46,9 @@ from semantic_kernel.prompt_template.prompt_template_config import (
 )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -54,11 +66,17 @@ def test_prompt_template_config_initialization_full():
     input_variables = [
         InputVariable(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             name="var1",
             description="A variable",
@@ -66,13 +84,19 @@ def test_prompt_template_config_initialization_full():
             is_required=True,
             json_schema="string",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
             name="var1", description="A variable", default="default_val", is_required=True, json_schema="string"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )
     ]
@@ -100,11 +124,17 @@ def test_add_execution_settings():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_add_execution_settings_no_overwrite():
     config = PromptTemplateConfig(template="Example template")
@@ -136,12 +166,18 @@ def test_add_execution_settings_with_overwrite():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_get_kernel_parameter_metadata_empty():
     config = PromptTemplateConfig(template="Example template")
@@ -153,11 +189,17 @@ def test_get_kernel_parameter_metadata_with_variables():
     input_variables = [
         InputVariable(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             name="var1",
             description="A variable",
@@ -171,7 +213,10 @@ def test_get_kernel_parameter_metadata_with_variables():
     )
     metadata: list[KernelParameterMetadata] = config.get_kernel_parameter_metadata()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -182,6 +227,9 @@ def test_get_kernel_parameter_metadata_with_variables():
     metadata: List[KernelParameterMetadata] = config.get_kernel_parameter_metadata()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert len(metadata) == 1
     assert metadata[0].name == "var1"
@@ -189,11 +237,17 @@ def test_get_kernel_parameter_metadata_with_variables():
     assert metadata[0].default_value == "default_val"
     assert metadata[0].type_ == "string"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert metadata[0].is_required is True
 
@@ -213,13 +267,19 @@ def test_get_kernel_parameter_metadata_with_variables_bad_default():
             template="Example template", input_variables=input_variables
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
     assert metadata[0].required is True
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -228,11 +288,17 @@ def test_restore():
     description = "This is a test template."
     template = "Hello, {{$name}}!"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     input_variables = [
         InputVariable(
@@ -303,13 +369,19 @@ def test_restore_handlebars():
         )
     ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
     input_variables = [InputVariable(name="name", description="Name of the person to greet", type="string")]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     execution_settings = PromptExecutionSettings(timeout=30, max_tokens=100)
 
@@ -319,11 +391,17 @@ def test_restore_handlebars():
         template=template,
         input_variables=input_variables,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         template_format=template_format,
         execution_settings={"default": execution_settings},
@@ -339,7 +417,10 @@ def test_restore_handlebars():
         restored_template.template == template
     ), "The template attribute does not match the expected value."
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -351,6 +432,9 @@ def test_restore_handlebars():
     assert restored_template.template == template, "The template attribute does not match the expected value."
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert (
         restored_template.input_variables == input_variables
@@ -359,11 +443,17 @@ def test_restore_handlebars():
         restored_template.execution_settings["default"] == execution_settings
     ), "The execution_settings attribute does not match the expected value."
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert (
         restored_template.template_format == template_format
@@ -524,10 +614,16 @@ def test_multiple_param_in_prompt():
     func = KernelFunctionFromPrompt("test", prompt="{{$param}}{{$param}}")
     assert len(func.parameters) == 1
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

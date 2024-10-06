@@ -7,8 +7,11 @@ import pytest
 from semantic_kernel import Kernel
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import FunctionExecutionException
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.exceptions import FunctionExecutionException
 =======
@@ -17,6 +20,9 @@ from semantic_kernel.exceptions import FunctionExecutionException
 =======
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
@@ -74,10 +80,13 @@ async def test_post(mock_post):
 
     plugin = HttpPlugin()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     arguments = KernelArguments(
         url="https://example.org/post", body="{message: 'Hello, world!'}"
     )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     arguments = KernelArguments(
         url="https://example.org/post", body="{message: 'Hello, world!'}"
@@ -91,6 +100,9 @@ async def test_post(mock_post):
     arguments = KernelArguments(url="https://example.org/post", body="{message: 'Hello, world!'}")
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     response = await plugin.post(**arguments)
     assert response == "Hello World !"
@@ -116,10 +128,13 @@ async def test_put(mock_put):
 
     plugin = HttpPlugin()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     arguments = KernelArguments(
         url="https://example.org/put", body="{message: 'Hello, world!'}"
     )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     arguments = KernelArguments(
         url="https://example.org/put", body="{message: 'Hello, world!'}"
@@ -133,6 +148,9 @@ async def test_put(mock_put):
     arguments = KernelArguments(url="https://example.org/put", body="{message: 'Hello, world!'}")
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     response = await plugin.put(**arguments)
     assert response == "Hello World !"

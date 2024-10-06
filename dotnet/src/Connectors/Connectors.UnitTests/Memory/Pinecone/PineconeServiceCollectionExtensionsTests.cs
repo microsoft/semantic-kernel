@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -15,6 +18,9 @@ using Microsoft.SemanticKernel;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Microsoft.SemanticKernel.Data;
@@ -59,7 +65,10 @@ public class PineconeServiceCollectionExtensionsTests
         this.AssertVectorStoreCreated();
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     [Fact]
@@ -86,6 +95,9 @@ public class PineconeServiceCollectionExtensionsTests
         this.AssertVectorStoreRecordCollectionCreated();
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     private void AssertVectorStoreCreated()
@@ -96,7 +108,10 @@ public class PineconeServiceCollectionExtensionsTests
         Assert.IsType<PineconeVectorStore>(vectorStore);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -124,5 +139,8 @@ public class PineconeServiceCollectionExtensionsTests
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

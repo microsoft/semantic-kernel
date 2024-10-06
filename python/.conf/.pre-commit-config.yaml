@@ -1,17 +1,28 @@
 repos:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
   - repo: https://github.com/floatingpurr/sync_with_poetry
     rev: 1.1.0
     hooks:
       - id: sync_with_poetry
         args: [--config=python/.conf/.pre-commit-config.yaml, --db=python/.conf/packages_list.json, python/poetry.lock]
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
       - id: check-toml
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -34,7 +45,10 @@ repos:
     - id: flake8
       args: ["--config=python/.conf/flake8.cfg"]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
         files: \.toml$
 >>>>>>> origin/main
       - id: check-yaml
@@ -66,4 +80,7 @@ repos:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

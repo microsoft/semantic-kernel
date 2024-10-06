@@ -7,8 +7,11 @@ from typing import Any, TypeVar
 from uuid import uuid4
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from openai import AsyncAzureOpenAI
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from openai import AsyncAzureOpenAI
 =======
@@ -27,6 +30,9 @@ else:
 
 from openai import AsyncAzureOpenAI, AsyncStream
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from openai.lib.azure import AsyncAzureADTokenProvider
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -56,7 +62,10 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -70,6 +79,9 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -81,7 +93,10 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -91,6 +106,9 @@ from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_streaming_chat_completion
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -121,7 +139,10 @@ class AzureChatCompletion(
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     ) -> None:
         """Initialize an AzureChatCompletion service.
@@ -155,6 +176,9 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> None:
         """Initialize an AzureChatCompletion service.
@@ -200,7 +224,10 @@ class AzureChatCompletion(
             raise ServiceInitializationError("chat_deployment_name is required.")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
         # If the async_client is None, the api_key is none, the ad_token is none, and the ad_token_provider is none,
         # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
 
@@ -353,6 +380,9 @@ class AzureChatCompletion(
         if not azure_openai_settings.chat_deployment_name:
             raise ServiceInitializationError("chat_deployment_name is required.")
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
         # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
@@ -367,6 +397,10 @@ class AzureChatCompletion(
             )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -382,7 +416,10 @@ class AzureChatCompletion(
                 else None
             ),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     def __init__(
         self,
@@ -442,6 +479,9 @@ class AzureChatCompletion(
             service_id=service_id,
             api_key=api_key,
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
@@ -451,7 +491,10 @@ class AzureChatCompletion(
         )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     @classmethod
     def from_dict(cls, settings: dict[str, Any]) -> "AzureChatCompletion":
@@ -494,12 +537,19 @@ class AzureChatCompletion(
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     @classmethod
     def from_dict(cls, settings: dict[str, Any]) -> "AzureChatCompletion":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
@@ -516,13 +566,19 @@ class AzureChatCompletion(
             base_url=settings.get("base_url"),
             api_version=settings.get("api_version"),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
             api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key"),
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
@@ -544,7 +600,10 @@ class AzureChatCompletion(
         content = super()._create_chat_message_content(
             response, choice, response_metadata
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         )
         return self._add_tool_message_to_chat_message_content(content, choice)
@@ -559,6 +618,9 @@ class AzureChatCompletion(
         content = super()._create_streaming_chat_message_content(
             chunk, choice, chunk_metadata
         )
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         )
@@ -575,6 +637,10 @@ class AzureChatCompletion(
             chunk, choice, chunk_metadata
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes

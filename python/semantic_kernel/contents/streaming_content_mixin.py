@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 import logging
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import sys
 from abc import ABC, abstractmethod
@@ -17,9 +23,12 @@ else:
     from typing_extensions import Self  # pragma: no cover
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -30,6 +39,9 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 logger: logging.Logger = logging.getLogger(__name__)
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 class StreamingContentMixin(KernelBaseModel, ABC):
@@ -45,7 +57,10 @@ class StreamingContentMixin(KernelBaseModel, ABC):
     def __add__(self, other: Any) -> Self:
         """Combine two streaming contents together."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         pass
@@ -102,4 +117,7 @@ class StreamingContentMixin(KernelBaseModel, ABC):
 
         return new_inner_contents_list
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

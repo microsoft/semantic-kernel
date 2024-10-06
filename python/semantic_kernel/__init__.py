@@ -3,13 +3,19 @@
 from semantic_kernel.kernel import Kernel
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 __version__ = "1.9.0"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 __version__ = "1.9.0"
 =======
 __version__ = "1.11.0"
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 __all__ = ["Kernel", "__version__"]
 import semantic_kernel.memory as memory
@@ -29,7 +35,10 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 from semantic_kernel import core_plugins, memory
@@ -43,6 +52,9 @@ from semantic_kernel.prompt_template.prompt_template_config import (
 )
 from semantic_kernel.utils.logging import setup_logging
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import openai_settings_from_dot_env
@@ -67,12 +79,18 @@ __all__ = [
     "SKFunctionBase",
     "SKContext",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     "memory",
 ]
 =======
+=======
+>>>>>>> Stashed changes
     "KernelArguments",
     "memory",
 ]
 __version__ = "1.8.1"
 __all__ = ["Kernel", "__version__"]
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

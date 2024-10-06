@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 using System.Collections.Generic;
@@ -81,13 +87,19 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         Assert.NotNull(metadata);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.NotNull(id);
 
@@ -137,11 +149,17 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         // Act
         await foreach (var update in textGeneration.GetStreamingTextContentsAsync("What is the capital of France?", null, kernel))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         await foreach (var update in textGeneration.GetStreamingTextContentsAsync("Reply \"I don't know\" to every question. What is the capital of France?", null, kernel))
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             stringBuilder.Append(update);
@@ -159,13 +177,19 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         Assert.NotNull(metadata);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.NotNull(id);
 

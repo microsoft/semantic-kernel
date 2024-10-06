@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 // Source copied from https://github.com/eiriktsarpalis/stj-schema-mapper
@@ -9,6 +12,9 @@
 // and should be removed once the relevant replacements are available in STJv9.
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 #if NET9_0_OR_GREATER || SYSTEM_TEXT_JSON_V9
 using System;

@@ -31,11 +31,17 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
     def __init__(
         self,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         service_id: str | None = None,
         api_key: str | None = None,
@@ -49,6 +55,10 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -75,7 +85,10 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 =======
         base_url: str,
@@ -126,6 +139,9 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         log: Optional[Any] = None,
     ) -> None:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         try:
@@ -147,7 +163,10 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
         # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
         if (
             azure_openai_settings.api_key is None
             and ad_token_provider is None
@@ -216,6 +235,9 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
 <<<<<<< main
         # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
         # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if api_key is None and ad_token_provider is None and azure_openai_settings.token_endpoint and ad_token is None:
             ad_token = azure_openai_settings.get_azure_openai_auth_token(
@@ -237,7 +259,10 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 else None
             ),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     @overload
     def __init__(
@@ -303,6 +328,9 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             api_key=api_key,
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
@@ -327,8 +355,11 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             endpoint=settings.get("endpoint"),
             base_url=settings.get("base_url"),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             api_version=settings.get("api_version"),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             api_version=settings.get("api_version"),
 =======
@@ -340,6 +371,9 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             api_key=settings["api_key"],
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),

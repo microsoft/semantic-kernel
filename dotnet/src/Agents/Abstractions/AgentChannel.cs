@@ -20,7 +20,10 @@ public abstract class AgentChannel
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// Responsible for providing the serialized representation of the channel.
@@ -29,6 +32,9 @@ public abstract class AgentChannel
 
     /// <summary>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Receive the conversation messages.  Used when joining a conversation and also during each agent interaction..
     /// </summary>

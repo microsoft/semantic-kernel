@@ -77,18 +77,27 @@ async def test_trace_text_completion(
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     with patch.object(MockTextCompletion, "_inner_get_text_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
         MockTextCompletion._inner_get_text_contents = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
             text_completion._inner_get_text_contents
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -98,6 +107,9 @@ async def test_trace_text_completion(
             text_completion.get_text_contents
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )
 
@@ -154,18 +166,27 @@ async def test_trace_text_completion_exception(
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     with patch.object(MockTextCompletion, "_inner_get_text_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
         MockTextCompletion._inner_get_text_contents = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
             text_completion._inner_get_text_contents
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -175,6 +196,9 @@ async def test_trace_text_completion_exception(
             text_completion.get_text_contents
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )
 

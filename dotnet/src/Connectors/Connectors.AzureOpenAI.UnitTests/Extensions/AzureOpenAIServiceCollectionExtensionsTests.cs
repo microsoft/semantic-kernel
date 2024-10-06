@@ -2,11 +2,17 @@
 
 using System;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.ClientModel;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -39,13 +45,19 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
 =======
         var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var builder = Kernel.CreateBuilder();
 
@@ -83,13 +95,19 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
 =======
         var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var builder = Kernel.CreateBuilder();
 
@@ -145,13 +163,19 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
 =======
         var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var builder = Kernel.CreateBuilder();
 
@@ -187,13 +211,19 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var client = new AzureOpenAIClient(new Uri("https://endpoint"), "key");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var client = new AzureOpenAIClient(new Uri("https://endpoint"), "key");
 =======
         var client = new AzureOpenAIClient(new Uri("http://endpoint"), new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var builder = Kernel.CreateBuilder();
 

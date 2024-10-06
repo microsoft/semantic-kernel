@@ -54,13 +54,19 @@ internal partial class ClientCore
         => new()
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             Granularities = AudioTimestampGranularities.Default,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             Granularities = AudioTimestampGranularities.Default,
 =======
             TimestampGranularities = AudioTimestampGranularities.Default,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
@@ -71,7 +77,10 @@ internal partial class ClientCore
     private static AudioTranscriptionFormat? ConvertResponseFormat(string? responseFormat)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         if (responseFormat is null)
@@ -80,6 +89,9 @@ internal partial class ClientCore
         }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return responseFormat switch
         {
@@ -88,15 +100,21 @@ internal partial class ClientCore
             "vtt" => AudioTranscriptionFormat.Vtt,
             "srt" => AudioTranscriptionFormat.Srt,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             null => null,
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             null => null,
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
 =======
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported.")
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         };
     }

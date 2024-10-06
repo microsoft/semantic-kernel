@@ -1,5 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
@@ -28,9 +32,12 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     public ChatHistory()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     {
         this._messages = [];
 =======
+=======
+>>>>>>> Stashed changes
 #pragma warning disable CA1710
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -52,6 +59,9 @@ public class ChatHistory : List<ChatMessageBase>
         {
         }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -66,7 +76,10 @@ public class ChatHistory : List<ChatMessageBase>
         this._messages = [];
         this.AddSystemMessage(systemMessage);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     [Obsolete("This class is deprecated, using instances of this class will not be supported")]
     public class Message : ChatMessageBase
     {
@@ -84,6 +97,9 @@ public class ChatHistory : List<ChatMessageBase>
         {
             this.AuthorRole = authorRole;
         }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -172,7 +188,10 @@ public class ChatHistory : List<ChatMessageBase>
         Verify.NotNull(item);
         this._messages.Insert(index, item);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     public List<ChatMessageBase> Messages => this;
 
     /// <summary>
@@ -184,6 +203,9 @@ public class ChatHistory : List<ChatMessageBase>
     public void AddMessage(AuthorRoles authorRole, string content)
     {
         this.Add(new Message(authorRole, content));
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -224,7 +246,10 @@ public class ChatHistory : List<ChatMessageBase>
         Verify.NotNull(item);
         return this._messages.Contains(item);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
     public void AddMessage(AuthorRole authorRole, string content)
@@ -257,6 +282,9 @@ public class ChatHistory : List<ChatMessageBase>
     public void AddSystemMessage(string content)
     {
         this.AddMessage(AuthorRole.System, content);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 

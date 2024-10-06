@@ -193,11 +193,17 @@ class ChromaMemoryStore(MemoryStoreBase):
 
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     async def get(
         self, collection_name: str, key: str, with_embedding: bool
@@ -206,13 +212,19 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Gets a record.
 
@@ -235,9 +247,12 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def get_batch(
 <<<<<<< main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         self, collection_name: str, keys: list[str], with_embeddings: bool
 =======
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         self, collection_name: str, keys: list[str], with_embeddings: bool
 =======
@@ -248,14 +263,20 @@ class ChromaMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self, 
         collection_name: str, 
         keys: list[str], 
         with_embeddings: bool = False
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> upstream/main
 =======
@@ -264,6 +285,9 @@ class ChromaMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> list[MemoryRecord]:
         """Gets a batch of records.

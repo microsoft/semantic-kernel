@@ -1,4 +1,8 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -10,7 +14,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
@@ -23,6 +30,9 @@ using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Serialization;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -32,13 +42,19 @@ namespace Microsoft.SemanticKernel.Agents;
 /// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="ChatHistoryKernelAgent"/>.
 /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 public sealed class ChatHistoryChannel : AgentChannel
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 public sealed class ChatHistoryChannel : AgentChannel
 =======
 internal sealed class ChatHistoryChannel : AgentChannel
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 {
     private readonly ChatHistory _history;
@@ -149,22 +165,31 @@ internal sealed class ChatHistoryChannel : AgentChannel
         return Task.CompletedTask;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     protected override string Serialize()
         => JsonSerializer.Serialize(ChatMessageReference.Prepare(this._history));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryChannel"/> class.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public ChatHistoryChannel()
     {
         this._history = [];
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public ChatHistoryChannel()
     {
@@ -174,6 +199,9 @@ internal sealed class ChatHistoryChannel : AgentChannel
     {
         this._history = history ?? [];
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 }

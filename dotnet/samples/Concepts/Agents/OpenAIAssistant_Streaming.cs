@@ -12,6 +12,10 @@ namespace Agents;
 public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTest(output)
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -33,7 +37,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
                     Metadata = AssistantSampleMetadata,
                 });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     [Fact]
     public async Task UseStreamingAssistantAgentAsync()
@@ -54,6 +61,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
                         Metadata = AssistantSampleMetadata,
                     });
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Create a thread for the agent conversation.
@@ -70,10 +80,13 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public async Task UseStreamingChatCompletionAgentWithPluginAsync()
     {
         const string MenuInstructions = "Answer questions about the menu.";
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public async Task UseStreamingChatCompletionAgentWithPluginAsync()
     {
@@ -84,6 +97,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         const string AgentName = "Host";
         const string AgentInstructions = "Answer questions about the menu.";
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Define the agent
@@ -92,6 +108,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -100,13 +120,19 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
                     Instructions = MenuInstructions,
                     Name = "Host",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = AgentInstructions,
                     Name = AgentName,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     Metadata = AssistantSampleMetadata,
                 });
@@ -127,7 +153,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     [Fact]
@@ -161,6 +190,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     // Local function to invoke agent and display the conversation messages.
     private async Task InvokeAgentAsync(OpenAIAssistantAgent agent, string threadId, string input)
@@ -173,14 +205,20 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
 
         bool isFirst = false;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(threadId, history))
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(threadId, history))
 =======
         bool isCode = false;
         await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(threadId, messages: history))
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             if (string.IsNullOrEmpty(response.Content))
@@ -189,7 +227,10 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
             }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             // Differentiate between assistant and tool messages
@@ -200,6 +241,9 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
             }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if (!isFirst)
             {

@@ -5,11 +5,17 @@ from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantA
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
@@ -27,12 +33,18 @@ AGENT_INSTRUCTIONS = "Create charts as requested without explanation."
 use_azure_openai = True
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 streaming = True
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 # A helper method to invoke the agent with the user input
@@ -43,6 +55,10 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
     print(f"# {AuthorRole.USER}: '{input}'")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -55,7 +71,10 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
                 if isinstance(item, FileReferenceContent):
                     print(f"\n`{message.role}` => {item.file_id}")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     if streaming:
         first_chunk = True
@@ -81,6 +100,9 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
                     if isinstance(item, FileReferenceContent):
                         print(f"\n`{message.role}` => {item.file_id}")
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 

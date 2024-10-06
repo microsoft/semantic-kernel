@@ -9,11 +9,17 @@ import pytest
 import pytest_asyncio
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     ApiKeyAuthentication,
@@ -36,7 +42,10 @@ from semantic_kernel.contents.streaming_chat_message_content import (
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -50,6 +59,9 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -65,10 +77,13 @@ except ImportError:
     azure_ai_search_installed = False
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
     "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
 ):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
     "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
@@ -82,6 +97,9 @@ if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
 if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get("AZURE_COGNITIVE_SEARCH_ADMIN_KEY"):
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     azure_ai_search_settings = True
 else:
@@ -148,11 +166,17 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
             ]
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         chat_service = AzureChatCompletion(
             service_id="chat-gpt-extensions",
@@ -183,7 +207,10 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
         )
         chat_function = kernel.get_function("plugin", "chat")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -214,6 +241,9 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
 
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return chat_function, kernel, collection, memory_store
     except Exception as e:
@@ -239,9 +269,12 @@ async def test_azure_e2e_chat_completion_with_extensions(
     use_streaming = False
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     try:
         result: StreamingChatMessageContent = None
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     try:
         result: StreamingChatMessageContent = None
@@ -258,6 +291,9 @@ async def test_azure_e2e_chat_completion_with_extensions(
         result = None
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if use_streaming:
             async for message in kernel.invoke_stream(chat_function, arguments):
@@ -266,18 +302,27 @@ async def test_azure_e2e_chat_completion_with_extensions(
 
             print(f"Answer using input string: '{result}'")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             for item in result.items:
                 if isinstance(item, FunctionResultContent):
                     print(f"Content: {item.result}")
                     assert "two passionate scientists" in item.result
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -287,6 +332,9 @@ async def test_azure_e2e_chat_completion_with_extensions(
             assert len(result.content) > 1
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         else:
             result = await kernel.invoke(chat_function, arguments)

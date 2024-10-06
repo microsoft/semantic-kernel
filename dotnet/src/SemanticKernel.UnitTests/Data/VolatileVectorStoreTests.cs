@@ -62,8 +62,11 @@ public class VolatileVectorStoreTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public sealed class SinglePropsModel<TKey>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public sealed class SinglePropsModel<TKey>
 =======
@@ -87,6 +90,9 @@ public class VolatileVectorStoreTests
     public sealed class SinglePropsModel<TKey>
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         [VectorStoreRecordKey]
@@ -101,7 +107,10 @@ public class VolatileVectorStoreTests
         public string? NotAnnotated { get; set; }
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -118,5 +127,8 @@ public class VolatileVectorStoreTests
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

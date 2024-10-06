@@ -1,4 +1,8 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -8,6 +12,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 // Copyright (c) Microsoft. All rights reserved.
@@ -19,10 +29,13 @@ using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using OpenAI.Chat;
 using Resources;
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using OpenAI.Chat;
 using Resources;
@@ -33,6 +46,9 @@ using Resources;
 using ChatResponseFormat = OpenAI.Chat.ChatResponseFormat;
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 namespace Agents;
 
@@ -125,8 +141,11 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
 
         OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatResponseFormat.JsonObject };
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 =======
@@ -134,6 +153,9 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         ChatCompletionAgent internalLeaderAgent = CreateAgent(InternalLeaderName, InternalLeaderInstructions);
@@ -197,6 +219,10 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
         async Task InvokeChatAsync(string input)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -207,12 +233,18 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
 =======
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(message);

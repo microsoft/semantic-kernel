@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 from typing import Annotated
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 from typing import Annotated
@@ -18,6 +21,9 @@ else:
     from typing_extensions import Annotated
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from semantic_kernel.functions import kernel_function
@@ -41,11 +47,17 @@ class WriterPluginFake:
         input: Annotated[str, "The input of the function"],
         name: Annotated[str, "The name of the function"] = "endMarker",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         description: Annotated[
             str, "The marker to use to end each chapter"
@@ -54,7 +66,10 @@ class WriterPluginFake:
             str, "The default value used for the function"
         ] = "<!--===ENDPART===-->",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -62,6 +77,9 @@ class WriterPluginFake:
         default_value: Annotated[str, "The default value used for the function"] = "<!--===ENDPART===-->",
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ) -> str:
         return f"Novel outline: {input}"

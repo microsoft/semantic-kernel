@@ -2,10 +2,13 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 from semantic_kernel.exceptions import CodeBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
 from semantic_kernel.exceptions import CodeBlockSyntaxError
@@ -20,6 +23,9 @@ from typing import List
 >>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import CodeBlockSyntaxError
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -41,11 +47,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [parameter]      ::= [variable] | [value]
 class CodeTokenizer:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """Tokenize the code text into blocks."""
 
@@ -53,7 +65,10 @@ class CodeTokenizer:
     def tokenize(text: str) -> list[Block]:
         """Tokenize the code text into blocks."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -61,6 +76,9 @@ class CodeTokenizer:
     def tokenize(text: str) -> List[Block]:
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # Remove spaces, which are ignored anyway
         text = text.strip() if text else ""
@@ -76,8 +94,11 @@ class CodeTokenizer:
 
         # Track the content of the current token
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         current_token_content: list[str] = []
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         current_token_content: list[str] = []
 =======
@@ -87,6 +108,9 @@ class CodeTokenizer:
         current_token_content: List[str] = []
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         # Other state we need to track
@@ -95,8 +119,11 @@ class CodeTokenizer:
         skip_next_char = False
         next_char = ""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         blocks: list[Block] = []
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         blocks: list[Block] = []
 =======
@@ -106,6 +133,9 @@ class CodeTokenizer:
         blocks: List[Block] = []
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         for index, current_char in enumerate(text[:-1]):
@@ -168,11 +198,17 @@ class CodeTokenizer:
                 elif current_token_type == BlockTypes.FUNCTION_ID:
                     if Symbols.NAMED_ARG_BLOCK_SEPARATOR.value in current_token_content:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                         blocks.append(
                             NamedArgBlock(content="".join(current_token_content))
@@ -182,7 +218,10 @@ class CodeTokenizer:
                             FunctionIdBlock(content="".join(current_token_content))
                         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -191,6 +230,9 @@ class CodeTokenizer:
                         blocks.append(FunctionIdBlock(content="".join(current_token_content)))
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     current_token_content.clear()
 
@@ -205,10 +247,13 @@ class CodeTokenizer:
             if current_token_type is None:
                 if not space_separator_found:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     raise CodeBlockSyntaxError(
                         "Tokens must be separated by one space least"
                     )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
                     raise CodeBlockSyntaxError(
                         "Tokens must be separated by one space least"
@@ -222,6 +267,9 @@ class CodeTokenizer:
                     raise CodeBlockSyntaxError("Tokens must be separated by one space least")
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
                 if current_char in (Symbols.DBL_QUOTE, Symbols.SGL_QUOTE):

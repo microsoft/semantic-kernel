@@ -19,18 +19,27 @@ public class FlowExtensionsTests
         var flow1 = CreateFlowWithReferenceStep("flow2");
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var flow2 = new Microsoft.SemanticKernel.Experimental.Orchestration.Flow("flow2", "test flow goal 2")
         {
             CompletionType = CompletionType.Optional
         };
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -38,6 +47,9 @@ public class FlowExtensionsTests
         flow2.CompletionType = CompletionType.Optional;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var step5 = new FlowStep("step1");
         step5.AddRequires("a");
@@ -47,8 +59,11 @@ public class FlowExtensionsTests
 
         // Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var catalog = new InMemoryFlowCatalog([flow1, flow2]);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         var catalog = new InMemoryFlowCatalog([flow1, flow2]);
 =======
@@ -58,6 +73,9 @@ public class FlowExtensionsTests
         var catalog = new InMemoryFlowCatalog(new List<Microsoft.SemanticKernel.Experimental.Orchestration.Flow> { flow1, flow2 });
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var flow1InCatalog = await catalog.GetFlowAsync("flow1");
         Assert.NotNull(flow1InCatalog);
@@ -86,8 +104,11 @@ public class FlowExtensionsTests
 
         // Act and assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Throws<AggregateException>(() => new InMemoryFlowCatalog([flow1, flow2]));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         Assert.Throws<AggregateException>(() => new InMemoryFlowCatalog([flow1, flow2]));
 =======
@@ -97,6 +118,9 @@ public class FlowExtensionsTests
         Assert.Throws<AggregateException>(() => new InMemoryFlowCatalog(new List<Microsoft.SemanticKernel.Experimental.Orchestration.Flow> { flow1, flow2 }));
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -126,8 +150,11 @@ public class FlowExtensionsTests
     private sealed class InMemoryFlowCatalog : IFlowCatalog
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         private readonly Dictionary<string, Microsoft.SemanticKernel.Experimental.Orchestration.Flow> _flows = [];
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         private readonly Dictionary<string, Microsoft.SemanticKernel.Experimental.Orchestration.Flow> _flows = [];
 =======
@@ -137,6 +164,9 @@ public class FlowExtensionsTests
         private readonly Dictionary<string, Microsoft.SemanticKernel.Experimental.Orchestration.Flow> _flows = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         internal InMemoryFlowCatalog()

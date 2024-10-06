@@ -14,11 +14,17 @@ async def test_hf_embeddings_with_memories():
     model_id = "sentence-transformers/all-MiniLM-L6-v2"
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     embedding_gen = sk_hf.HuggingFaceTextEmbedding(
         service_id=model_id, ai_model_id=model_id
@@ -39,7 +45,10 @@ async def test_hf_embeddings_with_memories():
         external_source_name="external source",
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     embedding_gen = sk_hf.HuggingFaceTextEmbedding(service_id=model_id, ai_model_id=model_id)
 
@@ -54,6 +63,9 @@ async def test_hf_embeddings_with_memories():
     await memory.save_information("test", id="info3", text="Penguins are birds.")
     await memory.save_information("test", id="info4", text="Dolphins are mammals.")
     await memory.save_information("test", id="info5", text="Flies are insects.")
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     # Add some documents to the semantic memory

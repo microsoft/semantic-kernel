@@ -7,9 +7,12 @@ from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 import pytest
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from openai.resources.beta.threads.runs.runs import Run
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from openai.resources.beta.threads.runs.runs import Run
 <<<<<<< main
@@ -17,6 +20,9 @@ from openai.resources.beta.threads.runs.runs import Run
 from openai.lib.streaming._assistants import AsyncAssistantEventHandler, AsyncAssistantStreamManager
 from openai.resources.beta.threads.runs.runs import Run
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from openai.types.beta.assistant import (
     Assistant,
@@ -26,10 +32,13 @@ from openai.types.beta.assistant import (
 )
 from openai.types.beta.assistant_response_format import AssistantResponseFormat
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 from openai.types.beta.assistant import Assistant, ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
 >>>>>>> upstream/main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from openai.types.beta.assistant import Assistant, ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
@@ -37,6 +46,9 @@ from openai.types.beta.assistant import Assistant, ToolResources, ToolResourcesC
 =======
 from openai.types.beta.assistant import Assistant, ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.threads.annotation import (
@@ -44,8 +56,11 @@ from openai.types.beta.threads.annotation import (
     FilePathAnnotation,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from openai.types.beta.threads.file_citation_annotation import FileCitation
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from openai.types.beta.threads.file_citation_annotation import FileCitation
 =======
@@ -63,6 +78,9 @@ from openai.types.beta.threads.annotation import FileCitationAnnotation, FilePat
 from openai.types.beta.threads.file_citation_annotation import FileCitation
 from openai.types.beta.threads.file_citation_delta_annotation import FileCitationDeltaAnnotation
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from openai.types.beta.threads.file_path_annotation import FilePath
 from openai.types.beta.threads.image_file import ImageFile
@@ -73,10 +91,13 @@ from openai.types.beta.threads.required_action_function_tool_call import (
 )
 from openai.types.beta.threads.run import (
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     RequiredAction,
     RequiredActionFunctionToolCall,
     RequiredActionSubmitToolOutputs,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     RequiredAction,
     RequiredActionFunctionToolCall,
@@ -88,6 +109,9 @@ from openai.types.beta.threads.run import (
     RequiredActionSubmitToolOutputs,
     TruncationStrategy,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 )
 from openai.types.beta.threads.runs import RunStep
@@ -102,12 +126,18 @@ from openai.types.beta.threads.runs.message_creation_step_details import (
     MessageCreationStepDetails,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from openai.types.beta.threads.runs.message_creation_step_details import MessageCreation, MessageCreationStepDetails
 from openai.types.beta.threads.runs.run_step import Usage
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
 from openai.types.beta.threads.text import Text
@@ -225,14 +255,20 @@ def mock_message():
 def mock_thread_messages():
     class MockMessage:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         def __init__(self, role, content, assistant_id=None):
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         def __init__(self, role, content, assistant_id=None):
 =======
         def __init__(self, id, role, content, assistant_id=None):
             self.id = id
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             self.role = role
             self.content = content
@@ -241,11 +277,17 @@ def mock_thread_messages():
     return [
         MockMessage(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             id="test_message_id_1",
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             role="user",
             content=[
@@ -277,11 +319,17 @@ def mock_thread_messages():
         ),
         MockMessage(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             id="test_message_id_2",
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             role="assistant",
             content=[
@@ -403,11 +451,17 @@ def mock_run_in_progress():
                 ),
             )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             self.last_error = None
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         def update_status(self):
@@ -435,6 +489,10 @@ def mock_run_step_tool_call():
                 CodeInterpreterToolCall(
                     type="code_interpreter",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -444,29 +502,45 @@ def mock_run_step_tool_call():
                     id="tool_call_id",
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                     id="test",
                     id="tool_call_id",
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     code_interpreter=CodeInterpreter(input="test code", outputs=[]),
                 ),
                 FunctionToolCall(
                     type="function",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 <<<<<<< main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     id="test",
                     function=RunsFunction(
                         arguments="{}", name="function_name", outpt="test output"
                     ),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -475,11 +549,17 @@ def mock_run_step_tool_call():
                     function=RunsFunction(arguments="{}", name="function_name", outpt="test output"),
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
                     id="tool_call_id",
                     function=RunsFunction(arguments="{}", name="function_name", outpt="test output"),
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 ),
             ],
@@ -520,7 +600,10 @@ def mock_run_step_message_creation():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 class MockEvent:
@@ -759,6 +842,9 @@ class MockStream:
 
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 # endregion
 
@@ -1025,6 +1111,10 @@ async def test_get_assistant_tools_throws_when_no_assistant(
     azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
 ):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1036,13 +1126,19 @@ async def test_get_assistant_tools_throws_when_no_assistant(
     with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     with pytest.raises(
         AgentInitializationError, match="The assistant has not been created."
     ):
     with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         _ = azure_openai_assistant_agent.tools
 
@@ -1311,18 +1407,28 @@ async def test_add_chat_message_invalid_role(
     mock_chat_message_content.role = AuthorRole.SYSTEM
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 <<<<<<< main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     with pytest.raises(AgentExecutionError, match="Invalid message role `tool`"):
         await azure_openai_assistant_agent.add_chat_message(
             "test_thread_id", mock_chat_message_content
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1331,11 +1437,17 @@ async def test_add_chat_message_invalid_role(
         await azure_openai_assistant_agent.add_chat_message("test_thread_id", mock_chat_message_content)
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     with pytest.raises(AgentExecutionException, match="Invalid message role `system`"):
         await azure_openai_assistant_agent.add_chat_message("test_thread_id", mock_chat_message_content)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -1423,6 +1535,10 @@ async def test_invoke(
         mock_client.beta.threads.runs.steps = MagicMock()
         mock_client.beta.threads.runs.steps.list = AsyncMock(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1434,13 +1550,19 @@ async def test_invoke(
             return_value=MagicMock(data=[mock_run_step_message_creation, mock_run_step_tool_call])
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             return_value=MagicMock(
                 data=[mock_run_step_tool_call, mock_run_step_message_creation]
             )
             return_value=MagicMock(data=[mock_run_step_message_creation, mock_run_step_tool_call])
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )
 
@@ -1456,12 +1578,18 @@ async def test_invoke(
             return_value=[{"tool_call_id": "id", "output": "output"}]
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 <<<<<<< main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         azure_openai_assistant_agent._generate_function_call_content = MagicMock(
             return_value=mock_chat_message_content
@@ -1481,10 +1609,13 @@ async def test_invoke(
             async for message in azure_openai_assistant_agent.invoke("thread_id")
         ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
         azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
 >>>>>>> upstream/main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
@@ -1492,6 +1623,9 @@ async def test_invoke(
 =======
         azure_openai_assistant_agent._retrieve_message = AsyncMock(return_value=mock_thread_messages[0])
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         with patch(
@@ -1503,12 +1637,18 @@ async def test_invoke(
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 <<<<<<< main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 async def test_invoke_assistant_not_initialized_throws(
     azure_openai_assistant_agent, openai_unit_test_env
@@ -1521,6 +1661,10 @@ async def test_invoke_assistant_not_initialized_throws(
             async for message in azure_openai_assistant_agent.invoke("thread_id")
         ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1530,7 +1674,10 @@ async def test_invoke_assistant_not_initialized_throws(azure_openai_assistant_ag
         _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 async def test_invoke_stream(
     azure_openai_assistant_agent,
@@ -1651,6 +1798,9 @@ async def test_invoke_assistant_not_initialized_throws(azure_openai_assistant_ag
     with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
         _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -1672,12 +1822,18 @@ async def test_invoke_agent_deleted_throws(
         azure_openai_assistant_agent._is_deleted = True
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 <<<<<<< main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         with pytest.raises(
             AgentInitializationError, match="The assistant has been deleted."
@@ -1687,6 +1843,10 @@ async def test_invoke_agent_deleted_throws(
                 async for message in azure_openai_assistant_agent.invoke("thread_id")
             ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1695,11 +1855,17 @@ async def test_invoke_agent_deleted_throws(
             _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
             _ = [message async for message in azure_openai_assistant_agent.invoke("thread_id")]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -1745,6 +1911,10 @@ async def test_invoke_raises_error(
 
         with pytest.raises(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1755,12 +1925,18 @@ async def test_invoke_raises_error(
             AgentInvokeException, match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`"
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
             AgentInvokeError,
             match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`",
             AgentInvokeException, match="Run failed with status: `failed` for agent `test_name` and thread `thread_id`"
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         ):
             _ = [
@@ -1770,7 +1946,10 @@ async def test_invoke_raises_error(
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @pytest.fixture
@@ -1788,6 +1967,9 @@ def mock_streaming_assistant_stream_manager() -> AsyncAssistantStreamManager[Asy
 
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_format_tool_outputs(azure_openai_assistant_agent, openai_unit_test_env):
     chat_history = ChatHistory()
@@ -1832,12 +2014,18 @@ async def test_invoke_function_calls(
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 <<<<<<< main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_get_function_call_contents(
     azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env
@@ -1846,6 +2034,10 @@ def test_get_function_call_contents(
         run=mock_run_required_action, function_steps={}
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1854,11 +2046,17 @@ def test_get_function_call_contents(azure_openai_assistant_agent, mock_run_requi
     result = get_function_call_contents(run=mock_run_required_action, function_steps={})
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 def test_get_function_call_contents(azure_openai_assistant_agent, mock_run_required_action, openai_unit_test_env):
     result = get_function_call_contents(run=mock_run_required_action, function_steps={})
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert result is not None
 
@@ -1868,6 +2066,10 @@ def test_get_function_call_contents_no_action_required(
 ):
     mock_run_required_action.required_action = None
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1879,13 +2081,19 @@ def test_get_function_call_contents_no_action_required(
     result = get_function_call_contents(run=mock_run_required_action, function_steps={})
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     result = azure_openai_assistant_agent._get_function_call_contents(
         run=mock_run_required_action, function_steps={}
     )
     result = get_function_call_contents(run=mock_run_required_action, function_steps={})
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert result == []
 
@@ -1916,6 +2124,10 @@ async def test_get_tools_no_assistant_returns_empty_list(
     azure_openai_assistant_agent: AzureAssistantAgent, openai_unit_test_env
 ):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1927,13 +2139,19 @@ async def test_get_tools_no_assistant_returns_empty_list(
     with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     with pytest.raises(
         AgentInitializationError, match="The assistant has not been created."
     ):
     with pytest.raises(AgentInitializationException, match="The assistant has not been created."):
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         _ = azure_openai_assistant_agent._get_tools()
 
@@ -1943,6 +2161,10 @@ def test_generate_message_content(
 ):
     for message in mock_thread_messages:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1954,13 +2176,19 @@ def test_generate_message_content(
         result = generate_message_content(assistant_name="test", message=message)
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         result = azure_openai_assistant_agent._generate_message_content(
             assistant_name="test", message=message
         )
         result = generate_message_content(assistant_name="test", message=message)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         assert result is not None
 
@@ -1970,6 +2198,10 @@ def test_check_if_deleted_throws(
 ):
     azure_openai_assistant_agent._is_deleted = True
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1981,13 +2213,19 @@ def test_check_if_deleted_throws(
     with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     with pytest.raises(
         AgentInitializationError, match="The assistant has been deleted."
     ):
     with pytest.raises(AgentInitializationException, match="The assistant has been deleted."):
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         azure_openai_assistant_agent._check_if_deleted()
 
@@ -2110,18 +2348,28 @@ def test_generate_function_result_content(
     )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 <<<<<<< main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     message = azure_openai_assistant_agent._generate_function_result_content(
         agent_name="test",
         function_step=mock_function_call_content,
         tool_call=mock_tool_call,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -2130,11 +2378,17 @@ def test_generate_function_result_content(
         agent_name="test", function_step=mock_function_call_content, tool_call=mock_tool_call
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     message = generate_function_result_content(
         agent_name="test", function_step=mock_function_call_content, tool_call=mock_tool_call
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )
     assert message is not None
@@ -2142,12 +2396,18 @@ def test_generate_function_result_content(
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 <<<<<<< main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_generate_function_call_content(
     azure_openai_assistant_agent, mock_function_call_content, openai_unit_test_env
@@ -2156,6 +2416,10 @@ def test_generate_function_call_content(
         agent_name="test", fccs=[mock_function_call_content]
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -2164,11 +2428,17 @@ def test_generate_function_call_content(azure_openai_assistant_agent, mock_funct
     message = generate_function_call_content(agent_name="test", fccs=[mock_function_call_content])
 >>>>>>> upstream/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 def test_generate_function_call_content(azure_openai_assistant_agent, mock_function_call_content, openai_unit_test_env):
     message = generate_function_call_content(agent_name="test", fccs=[mock_function_call_content])
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert message is not None
     assert isinstance(message, ChatMessageContent)

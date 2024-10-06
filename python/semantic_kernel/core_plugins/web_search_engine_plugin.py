@@ -1,9 +1,15 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 # Copyright (c) Microsoft. All rights reserved.
 
@@ -12,7 +18,10 @@ from typing import TYPE_CHECKING, Annotated
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -27,6 +36,9 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 if TYPE_CHECKING:
     from semantic_kernel.connectors.search_engine.connector import ConnectorBase
@@ -52,11 +64,17 @@ class WebSearchEnginePlugin:
         self._connector = connector
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     @kernel_function(
         name="search", description="Performs a web search for a given query"
@@ -70,7 +88,10 @@ class WebSearchEnginePlugin:
         """Returns the search results of the query provided."""
         return await self._connector.search(query, num_results, offset)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -94,4 +115,7 @@ class WebSearchEnginePlugin:
         return str(result)
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

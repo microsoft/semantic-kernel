@@ -4,8 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Http;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Http;
 =======
@@ -14,6 +17,9 @@ using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using MongoDB.Driver;
 
@@ -77,9 +83,12 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
             {
                 var settings = MongoClientSettings.FromConnectionString(connectionString);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
 
@@ -90,6 +99,9 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 var mongoClient = new MongoClient(settings);
                 var database = mongoClient.GetDatabase(databaseName);
@@ -102,7 +114,10 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
         return services;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -196,5 +211,8 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
             });
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

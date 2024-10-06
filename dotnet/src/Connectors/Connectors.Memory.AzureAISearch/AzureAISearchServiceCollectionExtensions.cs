@@ -1,8 +1,11 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
@@ -13,6 +16,9 @@ using System;
 using System;
 using System.Text.Json;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Azure;
 using Azure.Core;
@@ -26,7 +32,10 @@ using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using Azure.Search.Documents.Indexes;
@@ -35,6 +44,9 @@ using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /// <summary>
@@ -87,11 +99,17 @@ public static class AzureAISearchServiceCollectionExtensions
             (sp, obj) =>
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 var selectedOptions = options ?? sp.GetService<AzureAISearchVectorStoreOptions>();
 
@@ -107,7 +125,10 @@ public static class AzureAISearchServiceCollectionExtensions
 
                 // Construct the vector store.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential);
@@ -119,6 +140,9 @@ public static class AzureAISearchServiceCollectionExtensions
 
                 // Construct the vector store.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 return new AzureAISearchVectorStore(
                     searchIndexClient,
@@ -147,11 +171,17 @@ public static class AzureAISearchServiceCollectionExtensions
             (sp, obj) =>
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 var selectedOptions = options ?? sp.GetService<AzureAISearchVectorStoreOptions>();
 
@@ -167,7 +197,10 @@ public static class AzureAISearchServiceCollectionExtensions
 
                 // Construct the vector store.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 var searchIndexClient = new SearchIndexClient(endpoint, credential);
@@ -179,6 +212,9 @@ public static class AzureAISearchServiceCollectionExtensions
 
                 // Construct the vector store.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 return new AzureAISearchVectorStore(
                     searchIndexClient,
@@ -188,7 +224,10 @@ public static class AzureAISearchServiceCollectionExtensions
         return services;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -371,5 +410,8 @@ public static class AzureAISearchServiceCollectionExtensions
         return searchClientOptions;
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

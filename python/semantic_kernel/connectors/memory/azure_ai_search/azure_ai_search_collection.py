@@ -7,7 +7,10 @@ from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
@@ -18,6 +21,9 @@ from semantic_kernel.data.vector_search_options import VectorSearchOptions
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -28,11 +34,17 @@ from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import SearchIndex
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from azure.search.documents.models import VectorizedQuery
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from pydantic import ValidationError
 
@@ -54,9 +66,12 @@ from semantic_kernel.exceptions import (
 )
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
@@ -65,6 +80,9 @@ from semantic_kernel.data.const import VectorSearchQueryTypes
 from semantic_kernel.data.vector_search import VectorSearch
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
@@ -81,11 +99,17 @@ class AzureAISearchCollection(
     VectorStoreRecordCollection[str, TModel], Generic[TModel]
 ):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """Azure AI Search collection implementation."""
 
@@ -220,12 +244,18 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
 
         result = await asyncio.gather(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 <<<<<<< main
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             *[
                 client.get_document(
@@ -234,10 +264,13 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
                 for key in keys
             ],
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
             *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
 >>>>>>> upstream/main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
@@ -245,6 +278,9 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
 =======
             *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             return_exceptions=True,
         )
@@ -307,7 +343,10 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
     async def delete_collection(self, **kwargs) -> None:
         await self.search_index_client.delete_index(self.collection_name, **kwargs)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -401,4 +440,7 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
     def _get_score_from_result(self, result: dict[str, Any]) -> float | None:
         return result.get("@search.score")
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

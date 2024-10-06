@@ -1,9 +1,14 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "description": "A friendly chat where AI helps, avoiding bad topics",
   "type": "completion",
   "completion": {
+=======
+  "description": "A friendly chat where AI helps, avoiding bad topics",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "A friendly chat where AI helps, avoiding bad topics",
   "default_settings": {
@@ -21,11 +26,17 @@
     "text-davinci-003"
   ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     "stop_sequences": ["</message>"]
   }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

@@ -141,13 +141,19 @@ internal sealed partial class MistralFunction
         if (!string.IsNullOrWhiteSpace(description))
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
 =======
             return KernelJsonSchemaBuilder.Build(typeof(string), description);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

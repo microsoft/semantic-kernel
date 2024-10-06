@@ -1,11 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.Text;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -24,9 +30,12 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// </summary>
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public Task StreamOpenAIChatAsync()
     {
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public Task StreamOpenAIChatAsync()
     {
@@ -37,12 +46,19 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Console.WriteLine("======== Open AI Chat Completion Streaming ========");
 
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -65,7 +81,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         return this.StartStreamingChatAsync(chatCompletionService);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
@@ -87,6 +106,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         // Second assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -97,6 +119,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// </summary>
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -111,7 +137,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     public async Task StreamServicePromptTextAsync()
     {
@@ -123,6 +152,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         // Create chat completion service
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Create chat history with initial system and user messages
@@ -143,7 +175,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// This example demonstrates retrieving extra information chat completion streaming using OpenAI.
@@ -239,6 +274,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
     /// <summary>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// This example demonstrates how the chat completion service streams raw function call content.
     /// See <see cref="FunctionCalling.FunctionCalling.RunStreamingChatCompletionApiWithManualFunctionCallingAsync"/> for a sample demonstrating how to simplify
@@ -248,13 +286,19 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     public async Task StreamFunctionCallContentAsync()
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Console.WriteLine("======== Stream Function Call Content ========");
 
@@ -290,6 +334,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -323,7 +371,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         await foreach (var chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     private async Task StreamMessageOutputAsync(OpenAIChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
     {
@@ -331,6 +382,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         string fullMessage = string.Empty;
 
         await foreach (var chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory))
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         {
             if (!roleWritten && chatUpdate.Role.HasValue)
@@ -345,7 +399,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
                 Console.Write(chatUpdate.Content);
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 
             // The last message in the chunk has the usage metadata.
             // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
@@ -353,6 +410,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             {
                 Console.WriteLine(chatUpdate.Metadata["Usage"]?.AsJson());
             }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -360,7 +420,10 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         chatHistory.AddMessage(authorRole, fullMessage);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 
     private async Task<string> StreamMessageOutputFromKernelAsync(Kernel kernel, string prompt)
     {
@@ -490,5 +553,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         Console.WriteLine("------------------------");
 >>>>>>> main
     }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

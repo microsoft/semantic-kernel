@@ -1,6 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -45,7 +51,10 @@ public sealed partial class CollectEmailPlugin
             MaxTokens = this.MaxTokens,
             StopSequences = ["Observation:"],
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 using System.Collections.Generic;
 >>>>>>> origin/main
@@ -104,12 +113,19 @@ public sealed partial class CollectEmailPlugin
             StopSequences = new List<string>() { "Observation:" },
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             Temperature = 0
         };
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -123,6 +139,11 @@ public sealed partial class CollectEmailPlugin
 #pragma warning restore CA1707 // Identifiers should not contain underscores
         KernelArguments arguments)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -159,7 +180,10 @@ public sealed partial class CollectEmailPlugin
     private static readonly Regex s_emailRegex = new(EmailPattern, RegexOptions.Compiled);
 #endif
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     [SKFunction]
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
@@ -224,5 +248,8 @@ public sealed partial class CollectEmailPlugin
 =======
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

@@ -1,9 +1,12 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 =======
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
@@ -13,6 +16,9 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +27,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TextGeneration;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 using Microsoft.Extensions.Logging;
@@ -32,6 +41,9 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Moq;
 using Xunit;
@@ -51,6 +63,10 @@ public class CodeBlockTests
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(async () => await target.RenderCodeAsync(this._kernel));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+>>>>>>> Stashed changes
 =======
         await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
 >>>>>>> Stashed changes
@@ -63,7 +79,10 @@ public class CodeBlockTests
         static void method() => throw new FormatException("error");
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         var context = new SKContext(skills: this._skills.Object, logger: this._log.Object);
@@ -77,6 +96,9 @@ public class CodeBlockTests
         this._skills.Setup(x => x.GetFunction("functionName")).Returns(function.Object);
         var target = new CodeBlock("functionName", this._log.Object);
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
@@ -86,6 +108,11 @@ public class CodeBlockTests
         // Act & Assert
         await Assert.ThrowsAsync<FormatException>(async () => await target.RenderCodeAsync(this._kernel));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        // Act & Assert
+        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+>>>>>>> Stashed changes
 =======
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
@@ -227,7 +254,10 @@ public class CodeBlockTests
 
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     public async Task ItInvokesFunctionCloningAllVariablesAsync()
     {
         // Arrange
@@ -277,6 +307,9 @@ public class CodeBlockTests
     }
 
     [Fact]
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public async Task ItInvokesFunctionWithCustomVariableAsync()
     {
@@ -298,7 +331,10 @@ public class CodeBlockTests
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         var function = new Mock<ISKFunction>();
@@ -316,6 +352,9 @@ public class CodeBlockTests
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act
@@ -346,7 +385,10 @@ public class CodeBlockTests
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         var function = new Mock<ISKFunction>();
@@ -364,6 +406,9 @@ public class CodeBlockTests
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act
@@ -431,7 +476,10 @@ public class CodeBlockTests
             canary = p1;
         }, "f")]);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         const string Func = "funcName";
@@ -465,6 +513,9 @@ public class CodeBlockTests
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act
@@ -514,7 +565,10 @@ public class CodeBlockTests
         // Assert
         Assert.Equal(2, arguments.Count);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     }
 
@@ -707,6 +761,9 @@ public class CodeBlockTests
     }
 
 =======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -744,7 +801,10 @@ public class CodeBlockTests
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
         // At start, the context is expected to be trusted
         Assert.True(context.IsTrusted);
 
@@ -762,6 +822,9 @@ public class CodeBlockTests
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act
@@ -919,6 +982,10 @@ public class CodeBlockTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes

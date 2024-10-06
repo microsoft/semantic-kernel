@@ -36,13 +36,19 @@ def create_message_with_image_reference(input: str, file_id: str) -> ChatMessage
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 streaming = False
 
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: ChatMessageContent) -> None:
@@ -52,10 +58,13 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: Cha
     print(f"# {AuthorRole.USER}: '{message.items[0].text}'")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     async for content in agent.invoke(thread_id=thread_id):
         if content.role != AuthorRole.TOOL:
             print(f"# {content.role}: {content.content}")
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     async for content in agent.invoke(thread_id=thread_id):
         if content.role != AuthorRole.TOOL:
@@ -75,6 +84,9 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: Cha
             if content.role != AuthorRole.TOOL:
                 print(f"# {content.role}: {content.content}")
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 

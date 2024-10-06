@@ -173,13 +173,19 @@ public sealed class GeminiFunction
         if (!string.IsNullOrWhiteSpace(parameter.Description))
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return KernelJsonSchemaBuilder.Build(null, typeof(string), parameter.Description);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             return KernelJsonSchemaBuilder.Build(null, typeof(string), parameter.Description);
 =======
             return KernelJsonSchemaBuilder.Build(typeof(string), parameter.Description);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 

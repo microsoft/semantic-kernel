@@ -41,7 +41,10 @@ public record AzureCosmosDBNoSQLHotel()
     public string Description { get; set; }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// <summary>A datetime field.</summary>
@@ -49,6 +52,9 @@ public record AzureCosmosDBNoSQLHotel()
     public DateTimeOffset Timestamp { get; set; }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <summary>A vector field.</summary>
     [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]

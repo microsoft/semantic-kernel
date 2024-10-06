@@ -39,6 +39,10 @@ permissions:
 
 jobs:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -51,11 +55,17 @@ jobs:
 >>>>>>> origin/main-auto-tune
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
   # Determines if Java files have changed
   # Determines if Java files have changed
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   paths-filter:
     runs-on: ubuntu-latest
@@ -71,7 +81,10 @@ jobs:
               - 'java/**'
               - '**/java/**'
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
       - name: java tests
@@ -84,6 +97,9 @@ jobs:
   # Builds and tests the Java project
       # run only if 'java' files were changed
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       - name: java tests
         if: steps.filter.outputs.java == 'true'
@@ -130,6 +146,10 @@ jobs:
             version=${{ matrix.java-versions }}
             echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -150,7 +170,10 @@ jobs:
 >>>>>>> origin/main-auto-tune
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
       - uses: actions/setup-java@v4
       - uses: actions/setup-java@v4
@@ -159,6 +182,9 @@ jobs:
       - uses: actions/setup-java@v4
       - uses: actions/setup-java@v4
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         with:
           java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
@@ -176,6 +202,10 @@ jobs:
         working-directory: java
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -193,7 +223,10 @@ jobs:
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 >>>>>>> main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
       - uses: actions/upload-artifact@v4
       - uses: actions/upload-artifact@v4
@@ -201,6 +234,9 @@ jobs:
       - uses: actions/upload-artifact@v2
       - uses: actions/upload-artifact@v4
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if: always()
         with:

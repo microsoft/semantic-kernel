@@ -1,10 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 import logging
@@ -15,7 +21,10 @@ from semantic_kernel.functions.kernel_function_from_prompt import (
     KernelFunctionFromPrompt,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -29,16 +38,22 @@ else:
     from typing_extensions import Annotated
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     from semantic_kernel.prompt_template.prompt_template_config import (
         PromptTemplateConfig,
     )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     from semantic_kernel.prompt_template.prompt_template_config import (
         PromptTemplateConfig,
@@ -52,15 +67,21 @@ if TYPE_CHECKING:
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 logger = logging.getLogger(__name__)
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 class ConversationSummaryPlugin:
     """Semantic plugin that enables conversations summarization."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 class ConversationSummaryPlugin:
     """Semantic plugin that enables conversations summarization."""
@@ -72,6 +93,9 @@ class ConversationSummaryPlugin:
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     # The max tokens to process in a single semantic function call.
@@ -80,9 +104,12 @@ class ConversationSummaryPlugin:
     _summarize_conversation_prompt_template = (
         "BEGIN CONTENT TO SUMMARIZE:\n{{"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         "$input"
         "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         "$input"
         "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
@@ -95,6 +122,9 @@ class ConversationSummaryPlugin:
         + "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         " SUMMARIZE',            identifying main points of discussion and any"
         " conclusions that were reached.\nDo not incorporate other general"
@@ -104,11 +134,17 @@ class ConversationSummaryPlugin:
 
     def __init__(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self,
         prompt_template_config: "PromptTemplateConfig",
@@ -139,7 +175,10 @@ class ConversationSummaryPlugin:
         prompt_template_config.template_format = "semantic-kernel"
         self._summarizeConversationFunction = KernelFunctionFromPrompt(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -157,6 +196,9 @@ class ConversationSummaryPlugin:
             ConversationSummaryPlugin._summarize_conversation_prompt_template,
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             plugin_name=ConversationSummaryPlugin.__name__,
             function_name="SummarizeConversation",
@@ -174,11 +216,17 @@ class ConversationSummaryPlugin:
         arguments: Annotated["KernelArguments", "Arguments used by the kernel."],
     ) -> Annotated[
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         "KernelArguments",
         "KernelArguments with the summarized conversation result in key self.return_key.",
@@ -193,7 +241,10 @@ class ConversationSummaryPlugin:
         Returns:
             KernelArguments with the summarized conversation result in key self.return_key.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -208,6 +259,9 @@ class ConversationSummaryPlugin:
         :return: KernelArguments with the summarized conversation result in key self.return_key.
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         from semantic_kernel.text import text_chunker

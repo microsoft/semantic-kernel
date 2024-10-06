@@ -16,7 +16,10 @@
   <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
     <VersionSuffix>rc</VersionSuffix>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
   </PropertyGroup>
@@ -24,6 +27,9 @@
   <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
     <VersionSuffix>rc</VersionSuffix>
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   </PropertyGroup>
 

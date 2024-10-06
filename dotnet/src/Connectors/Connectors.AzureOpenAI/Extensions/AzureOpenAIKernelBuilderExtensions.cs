@@ -1,4 +1,8 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -9,7 +13,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 // Copyright (c) Microsoft. All rights reserved.
@@ -22,6 +29,9 @@ using System.ClientModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -76,13 +86,19 @@ public static class AzureOpenAIKernelBuilderExtensions
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new AzureKeyCredential(apiKey),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 new AzureKeyCredential(apiKey),
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
 
@@ -277,11 +293,17 @@ public static class AzureOpenAIKernelBuilderExtensions
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <summary>
     /// Adds the <see cref="AzureOpenAITextToAudioService"/> to the <see cref="IKernelBuilder.Services"/>.
@@ -321,12 +343,18 @@ public static class AzureOpenAIKernelBuilderExtensions
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     #endregion
 
@@ -516,13 +544,19 @@ public static class AzureOpenAIKernelBuilderExtensions
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new AzureKeyCredential(apiKey),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 new AzureKeyCredential(apiKey),
 =======
                 new ApiKeyCredential(apiKey),
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
@@ -604,13 +638,19 @@ public static class AzureOpenAIKernelBuilderExtensions
     #endregion
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
 =======
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient) =>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient));
 

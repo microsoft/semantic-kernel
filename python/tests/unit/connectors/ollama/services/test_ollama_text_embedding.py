@@ -1,9 +1,15 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 # Copyright (c) Microsoft. All rights reserved.
 
@@ -138,7 +144,10 @@ async def test_raw_embedding_list_input(mock_embedding_client, model_id, prompt)
     mock_embedding_client.assert_called_with(
         model=model_id, prompt=prompt, options=settings.options
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -171,5 +180,8 @@ async def test_embedding(mock_post):
         },
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     )

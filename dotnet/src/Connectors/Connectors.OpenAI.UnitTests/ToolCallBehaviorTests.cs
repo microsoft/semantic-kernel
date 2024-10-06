@@ -107,15 +107,21 @@ public sealed class ToolCallBehaviorTests
 
         // Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
 =======
         Assert.NotNull(options.Choice);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         this.AssertTools(options.Tools);
     }
@@ -177,15 +183,21 @@ public sealed class ToolCallBehaviorTests
 
         // Assert
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
 =======
         Assert.NotNull(options.Choice);
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         this.AssertTools(options.Tools);
     }

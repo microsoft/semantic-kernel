@@ -1,9 +1,14 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "schema": 1,
   "type": "completion",
   "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
   "completion": {
+=======
+  "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
+  "default_settings": {
+>>>>>>> Stashed changes
 =======
   "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
   "default_settings": {
@@ -21,11 +26,17 @@
     "text-davinci-003"
   ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     "stop_sequences": ["#"]
   }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

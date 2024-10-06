@@ -3,10 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.Text.Json;
 using System.Threading;
@@ -17,6 +20,9 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Internal;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
@@ -30,26 +36,38 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 {
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// The default value for <see cref="KernelFunctionTerminationStrategy.AgentVariableName"/>.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// The default value for <see cref="KernelFunctionTerminationStrategy.AgentVariableName"/>.
 =======
     /// The default value for <see cref="KernelFunctionSelectionStrategy.AgentsVariableName"/>.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// </summary>
     public const string DefaultAgentsVariableName = "_agents_";
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// The default value for <see cref="KernelFunctionTerminationStrategy.HistoryVariableName"/>.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// The default value for <see cref="KernelFunctionTerminationStrategy.HistoryVariableName"/>.
 =======
     /// The default value for <see cref="KernelFunctionSelectionStrategy.HistoryVariableName"/>.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// </summary>
     public const string DefaultHistoryVariableName = "_history_";
@@ -73,7 +91,10 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
@@ -82,6 +103,9 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 
     /// <summary>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// The <see cref="KernelFunction"/> invoked as selection criteria.
     /// </summary>
@@ -89,6 +113,10 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -101,7 +129,10 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// </summary>
     public Kernel Kernel => kernel;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
     /// </summary>
@@ -112,6 +143,9 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// </summary>
     public bool UseInitialAgentAsFallback { get; init; }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>
@@ -124,12 +158,18 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     protected sealed override async Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         history = await history.ReduceAsync(this.HistoryReducer, cancellationToken).ConfigureAwait(false);
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
@@ -137,13 +177,19 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
             {
                 { this.AgentsVariableName, string.Join(",", agents.Select(a => a.Name)) },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
 =======
                 { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             };
 

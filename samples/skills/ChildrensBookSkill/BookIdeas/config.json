@@ -10,7 +10,10 @@
         "frequency_penalty": 0.0
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
   "description": "Given a topic description generate a number of children's book ideas with short descriptions",
@@ -22,5 +25,8 @@
     "frequency_penalty": 0.0
   }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

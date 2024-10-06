@@ -3,11 +3,17 @@
 import logging
 from re import S, compile
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -15,8 +21,11 @@ from pydantic import model_validator
 
 from semantic_kernel.exceptions import ValBlockSyntaxError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -28,6 +37,9 @@ from pydantic import model_validator
 >>>>>>> origin/main
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import ValBlockSyntaxError
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
@@ -68,9 +80,12 @@ class ValBlock(Block):
 
     type: ClassVar[BlockTypes] = BlockTypes.VALUE
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     value: str | None = ""
     quote: str | None = "'"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     value: str | None = ""
     quote: str | None = "'"
@@ -83,6 +98,9 @@ class ValBlock(Block):
     quote: Optional[str] = "'"
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     @model_validator(mode="before")
@@ -106,10 +124,13 @@ class ValBlock(Block):
         return fields
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the value block."""
         return self.value or ""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the value block."""
@@ -124,4 +145,7 @@ class ValBlock(Block):
         return self.value
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

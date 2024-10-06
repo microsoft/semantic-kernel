@@ -8,11 +8,17 @@ from unittest.mock import Mock
 import pytest
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
@@ -75,7 +81,10 @@ class MockModel:
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 class PydanticStep(KernelBaseModel):
@@ -99,6 +108,9 @@ class NonPydanticReasoning:
 
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_build_with_kernel_base_model():
     expected_schema = {
@@ -410,7 +422,10 @@ def test_handle_complex_type():
     expected_schema = {"type": "string", "description": "Description"}
     assert schema == expected_schema
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -480,4 +495,7 @@ def test_build_schema_with_nonpydantic_structured_output():
 
     assert structured_output_schema == expected_schema
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

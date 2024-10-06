@@ -13,11 +13,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class Block(KernelBaseModel):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """A block."""
 
@@ -67,7 +73,10 @@ class Block(ABC):
     def content(self) -> str:
         return self._content
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -80,4 +89,7 @@ class Block(ABC):
         return content.strip()
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

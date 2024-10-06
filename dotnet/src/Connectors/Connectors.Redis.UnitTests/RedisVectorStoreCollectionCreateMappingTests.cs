@@ -15,7 +15,10 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 public class RedisVectorStoreCollectionCreateMappingTests
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
@@ -23,13 +26,19 @@ public class RedisVectorStoreCollectionCreateMappingTests
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void MapToSchemaCreatesSchema(bool useDollarPrefix)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
@@ -40,6 +49,9 @@ public class RedisVectorStoreCollectionCreateMappingTests
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         // Arrange.
@@ -76,8 +88,11 @@ public class RedisVectorStoreCollectionCreateMappingTests
 
         // Act.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, useDollarPrefix);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, useDollarPrefix);
 =======
@@ -91,6 +106,9 @@ public class RedisVectorStoreCollectionCreateMappingTests
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, useDollarPrefix);
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Assert.
@@ -107,7 +125,10 @@ public class RedisVectorStoreCollectionCreateMappingTests
         Assert.IsType<VectorField>(schema.Fields[7]);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
@@ -115,6 +136,9 @@ public class RedisVectorStoreCollectionCreateMappingTests
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if (useDollarPrefix)
         {
@@ -136,6 +160,12 @@ public class RedisVectorStoreCollectionCreateMappingTests
             VerifyFieldName(schema.Fields[2].FieldName, new List<object> { "FilterableStringEnumerable.*", "AS", "FilterableStringEnumerable" });
             VerifyFieldName(schema.Fields[3].FieldName, new List<object> { "FullTextSearchableStringEnumerable", "AS", "FullTextSearchableStringEnumerable" });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 =======
@@ -149,7 +179,10 @@ public class RedisVectorStoreCollectionCreateMappingTests
             VerifyFieldName(schema.Fields[7].FieldName, new List<object> { "vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         VerifyFieldName(schema.Fields[0].FieldName, new List<object> { "$.FilterableString", "AS", "FilterableString" });
         VerifyFieldName(schema.Fields[1].FieldName, new List<object> { "$.FullTextSearchableString", "AS", "FullTextSearchableString" });
@@ -177,6 +210,9 @@ public class RedisVectorStoreCollectionCreateMappingTests
         }
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Assert.Equal("10", ((VectorField)schema.Fields[6]).Attributes!["DIM"]);
@@ -199,8 +235,11 @@ public class RedisVectorStoreCollectionCreateMappingTests
 
         // Act and assert.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, true));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, true));
 =======
@@ -214,6 +253,9 @@ public class RedisVectorStoreCollectionCreateMappingTests
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames, true));
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 

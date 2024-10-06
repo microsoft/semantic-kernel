@@ -5,11 +5,17 @@ from unittest.mock import Mock
 import pytest
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
@@ -20,7 +26,10 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -37,6 +46,9 @@ from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.planners.sequential_planner.sequential_planner import (
     SequentialPlanner,
@@ -44,10 +56,13 @@ from semantic_kernel.planners.sequential_planner.sequential_planner import (
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def create_mock_function(
     kernel_function_metadata: KernelFunctionMetadata, return_value: FunctionResult
 ) -> KernelFunction:
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 def create_mock_function(
     kernel_function_metadata: KernelFunctionMetadata, return_value: FunctionResult
@@ -61,6 +76,9 @@ def create_mock_function(
 def create_mock_function(kernel_function_metadata: KernelFunctionMetadata):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     mock_function = Mock(spec=KernelFunction)
     mock_function.metadata = kernel_function_metadata
@@ -70,9 +88,12 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata):
     mock_function.description = kernel_function_metadata.description
     mock_function.prompt_execution_settings = PromptExecutionSettings()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     mock_function.invoke.return_value = return_value
     mock_function.function_copy.return_value = mock_function
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     mock_function.invoke.return_value = return_value
     mock_function.function_copy.return_value = mock_function
@@ -83,17 +104,26 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata):
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     return mock_function
 
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 @pytest.mark.parametrize(
     "goal", ["Write a poem or joke and send it in an e-mail to Kai."]
@@ -101,7 +131,10 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata):
 async def test_it_can_create_plan(goal, kernel: Kernel):
     # Arrange
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -116,6 +149,9 @@ async def test_it_can_create_plan(goal):
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     input = [
         ("SendEmail", "email", "Send an e-mail", False),
@@ -125,18 +161,27 @@ async def test_it_can_create_plan(goal):
     ]
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     for name, plugin_name, description, is_prompt in input:
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name=plugin_name,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -149,6 +194,9 @@ async def test_it_can_create_plan(goal):
             plugin_name=pluginName,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             description=description,
             parameters=[],
@@ -156,11 +204,17 @@ async def test_it_can_create_plan(goal):
             is_asynchronous=True,
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         kernel.add_function(
             plugin_name,
@@ -174,7 +228,10 @@ async def test_it_can_create_plan(goal):
             ),
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -190,6 +247,9 @@ async def test_it_can_create_plan(goal):
         kernel.plugins.add_functions_to_plugin([mock_function], pluginName)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     expected_functions = [x[0] for x in input]
@@ -198,18 +258,27 @@ async def test_it_can_create_plan(goal):
     plan_string = """
 <plan>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <function.SummarizePlugin-Summarize/>
     <function.WriterPlugin-Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
     <function.email-GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
     <function.email-SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -219,6 +288,9 @@ async def test_it_can_create_plan(goal):
     <function.email.SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 </plan>"""
 
@@ -226,11 +298,17 @@ async def test_it_can_create_plan(goal):
     mock_function_flow_function.invoke.return_value = FunctionResult(
         function=KernelFunctionMetadata(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             name="func",
             plugin_name="plugin",
@@ -238,23 +316,32 @@ async def test_it_can_create_plan(goal):
             parameters=[],
             is_prompt=False,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
             name="func", plugin_name="plugin", description="", parameters=[], is_prompt=False
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         ),
         value=plan_string,
         metadata={},
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
     planner = SequentialPlanner(kernel, service_id="test")
     planner._function_flow_function = mock_function_flow_function
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
     planner = SequentialPlanner(kernel, service_id="test")
@@ -271,6 +358,9 @@ async def test_it_can_create_plan(goal):
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     # Act
     plan = await planner.create_plan(goal)
@@ -278,24 +368,36 @@ async def test_it_can_create_plan(goal):
     # Assert
     assert plan.description == goal
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert any(
         step.name in expected_functions and step.plugin_name in expected_plugins
         for step in plan._steps
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
     assert any(step.name in expected_functions and step.plugin_name in expected_plugins for step in plan._steps)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     for expected_function in expected_functions:
         assert any(step.name == expected_function for step in plan._steps)
@@ -305,11 +407,17 @@ async def test_it_can_create_plan(goal):
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 async def test_empty_goal_throws(kernel: Kernel):
     # Arrange
@@ -318,7 +426,10 @@ async def test_empty_goal_throws(kernel: Kernel):
     # Act & Assert
     with pytest.raises(PlannerInvalidGoalError):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -332,15 +443,21 @@ async def test_empty_goal_throws():
     with pytest.raises(PlanningException):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         await planner.create_plan("")
 
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 async def test_invalid_xml_throws(kernel: Kernel):
     # Arrange
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 async def test_invalid_xml_throws(kernel: Kernel):
     # Arrange
@@ -361,17 +478,26 @@ async def test_invalid_xml_throws():
     plugins.get_list_of_function_metadata.return_value = functions_list
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     plan_string = "<plan>notvalid<</plan>"
     function_result = FunctionResult(
         function=KernelFunctionMetadata(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             name="func",
             plugin_name="plugin",
@@ -379,13 +505,19 @@ async def test_invalid_xml_throws():
             parameters=[],
             is_prompt=False,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
             name="func", plugin_name="plugin", description="", parameters=[], is_prompt=False
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         ),
         value=plan_string,
@@ -396,11 +528,17 @@ async def test_invalid_xml_throws():
     mock_function_flow_function.invoke.return_value = function_result
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     planner = SequentialPlanner(kernel, service_id="test")
     planner._function_flow_function = mock_function_flow_function
@@ -408,7 +546,10 @@ async def test_invalid_xml_throws():
     # Act & Assert
     with pytest.raises(PlannerException):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -421,5 +562,8 @@ async def test_invalid_xml_throws():
     with pytest.raises(PlanningException):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         await planner.create_plan("goal")

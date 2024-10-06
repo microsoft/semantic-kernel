@@ -4,19 +4,28 @@ using System;
 using System.IO;
 using System.Net.Http;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 using System.Text;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Moq;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Moq;
 =======
@@ -24,6 +33,9 @@ using Microsoft.SemanticKernel.TextToImage;
 using Moq;
 using OpenAI.Images;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Xunit;
 
@@ -45,13 +57,19 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
             ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.txt"))
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.txt"))
 =======
                 Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             }
         };
@@ -64,13 +82,19 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     {
         // Arrange & Act
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var sut = new OpenAITextToImageService("apikey", "organization", "model");
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var sut = new OpenAITextToImageService("apikey", "organization", "model");
 =======
         var sut = new OpenAITextToImageService("apiKey", "organization", "model");
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Assert
@@ -102,7 +126,10 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     [Theory]
@@ -287,6 +314,9 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     }
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public void Dispose()
     {

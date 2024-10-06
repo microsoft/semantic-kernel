@@ -3,10 +3,13 @@
 using System;
 using System.Linq;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
@@ -19,6 +22,9 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /// <summary>
@@ -76,8 +82,11 @@ public class FlowValidator : IFlowValidator
         var steps = flow.Steps
             .Select(step => step as ReferenceFlowStep)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             .Where(step => step is not null);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             .Where(step => step is not null);
 =======
@@ -87,6 +96,9 @@ public class FlowValidator : IFlowValidator
             .Where(step => step != null);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         foreach (var step in steps)

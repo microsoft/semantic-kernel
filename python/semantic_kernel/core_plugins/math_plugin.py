@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 from typing import Annotated
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 from typing import Annotated
@@ -19,6 +22,9 @@ else:
     from typing_extensions import Annotated
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -26,8 +32,11 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 class MathPlugin:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     """Description: MathPlugin provides a set of functions to make Math calculations.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     """Description: MathPlugin provides a set of functions to make Math calculations.
 =======
@@ -38,6 +47,9 @@ class MathPlugin:
     Description: MathPlugin provides a set of functions to make Math calculations.
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     Usage:
@@ -62,8 +74,11 @@ class MathPlugin:
         return MathPlugin.add_or_subtract(input, amount, add=True)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     @kernel_function(name="Subtract")
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     @kernel_function(name="Subtract")
 =======
@@ -76,6 +91,9 @@ class MathPlugin:
     )
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def subtract(
         self,
@@ -83,8 +101,11 @@ class MathPlugin:
         amount: Annotated[int, "the number to subtract"],
     ) -> int:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Returns the difference of numbers provided."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Returns the difference of numbers provided."""
 =======
@@ -100,6 +121,9 @@ class MathPlugin:
         """
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if isinstance(input, str):
             input = int(input)
@@ -110,8 +134,11 @@ class MathPlugin:
     @staticmethod
     def add_or_subtract(input: int, amount: int, add: bool) -> int:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Helper function to perform addition or subtraction based on the add flag."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Helper function to perform addition or subtraction based on the add flag."""
 =======
@@ -128,5 +155,8 @@ class MathPlugin:
         """
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return input + amount if add else input - amount

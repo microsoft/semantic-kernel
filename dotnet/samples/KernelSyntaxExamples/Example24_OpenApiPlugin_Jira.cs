@@ -22,10 +22,13 @@ public static class Example24_OpenApiPlugin_Jira
 {
     public static async Task RunAsync()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
         var contextVariables = new ContextVariables();
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
@@ -88,6 +91,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     {
         Kernel kernel = new();
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
@@ -95,13 +101,19 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         contextVariables.Set("server-url", serverUrl);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         IDictionary<string, ISKFunction> jiraFunctions;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         IDictionary<string, ISKFunction> jiraFunctions;
 =======
         KernelPlugin jiraFunctions;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
@@ -118,7 +130,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             var apiPluginFile = "./../../../Plugins/JiraPlugin/openapi.json";
             jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginFile, new OpenApiFunctionExecutionParameters(authCallbackProvider: (_) => tokenProvider.AuthenticateRequestAsync));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
             jiraFunctions = await kernel.ImportPluginFromOpenApiAsync(
@@ -130,6 +145,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
                 )
             );
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
         else
@@ -137,7 +155,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             var apiPluginRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
             jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginRawFileURL, new OpenApiFunctionExecutionParameters(authCallbackProvider: (_) => tokenProvider.AuthenticateRequestAsync));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         }
@@ -178,6 +199,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
                 )
             );
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -190,6 +214,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             var result = await kernel.RunAsync(contextVariables, jiraFunctions["GetIssue"]);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -198,13 +226,19 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             Console.WriteLine("GetIssue jiraPlugin response: \n{0}", formattedContent);
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         WriteLine("\n\n\n");
         var formattedContent = JsonSerializer.Serialize(
             result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         WriteLine($"GetIssue jiraPlugin response: \n{formattedContent}");
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // AddComment Function
@@ -214,6 +248,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             contextVariables.Set("body", "Here is a rad comment");
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -225,7 +263,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         WriteLine("\n\n\n");
 
@@ -380,6 +421,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     public Example24_OpenApiPlugin_Jira(ITestOutputHelper output) : base(output)
     {
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 }

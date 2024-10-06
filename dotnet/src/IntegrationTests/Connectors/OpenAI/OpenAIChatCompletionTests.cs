@@ -26,6 +26,10 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 {
     [Fact]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -34,12 +38,18 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     {
         // 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     public async Task ItCanUseOpenAiChatForTextGenerationAsync()
     {
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var kernel = this.CreateAndInitializeKernel();
 
@@ -60,13 +70,19 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     public async Task OpenAIStreamingTestAsync()
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var kernel = this.CreateAndInitializeKernel();
 
@@ -90,13 +106,19 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     public async Task OpenAIHttpRetryPolicyTestAsync()
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         List<HttpStatusCode?> statusCodes = [];
 
@@ -142,13 +164,19 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     public async Task OpenAIShouldReturnMetadataAsync()
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var kernel = this.CreateAndInitializeKernel();
 
@@ -166,6 +194,10 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 
         var jsonObject = JsonSerializer.SerializeToElement(usageObject);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -175,7 +207,10 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
         Assert.True(jsonObject.TryGetProperty("InputTokenCount", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
@@ -183,6 +218,9 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 
         Assert.True(jsonObject.TryGetProperty("OutputTokenCount", out JsonElement completionTokensJson));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
@@ -194,13 +232,19 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     public async Task CompletionWithDifferentLineEndingsAsync(string lineEnding)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var prompt =
             "Given a json input and a request. Apply the request on the json input and return the result. " +
@@ -222,13 +266,19 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     public async Task ChatSystemPromptIsNotIgnoredAsync()
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var kernel = this.CreateAndInitializeKernel();
 
@@ -245,13 +295,19 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     public async Task SemanticKernelVersionHeaderIsSentAsync()
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         using var defaultHandler = new HttpClientHandler();
         using var httpHeaderHandler = new HttpHeaderHandler(defaultHandler);
@@ -276,13 +332,19 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     public async Task LogProbsDataIsReturnedWhenRequestedAsync(bool? logprobs, int? topLogprobs)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         // 
 =======
         // Arrange
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var settings = new OpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
 
@@ -292,13 +354,19 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         var result = await kernel.InvokePromptAsync("Hi, can you help me today?", new(settings));
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
 =======
         var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityDetails>;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Assert

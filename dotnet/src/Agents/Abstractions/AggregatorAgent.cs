@@ -2,9 +2,12 @@
 using System;
 using System.Collections.Generic;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Threading;
 using System.Threading.Tasks;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +17,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Serialization;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -71,7 +77,10 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
         return Task.FromResult<AgentChannel>(channel);
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -93,5 +102,8 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
         return channel;
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

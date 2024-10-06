@@ -1,11 +1,17 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System;
 using System.ClientModel;
@@ -88,13 +94,19 @@ public sealed class OpenAIClientProvider
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return new(new OpenAIClient(SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         return new(new OpenAIClient(SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 =======
         return new(new OpenAIClient(new ApiKeyCredential(SingleSpaceKey), clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -108,8 +120,11 @@ public sealed class OpenAIClientProvider
     {
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         return new(new OpenAIClient(apiKey ?? SingleSpaceKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 =======
@@ -120,6 +135,9 @@ public sealed class OpenAIClientProvider
         return new(new OpenAIClient(apiKey, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
 >>>>>>> ms/main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -136,13 +154,19 @@ public sealed class OpenAIClientProvider
         AzureOpenAIClientOptions options = new()
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             ApplicationId = HttpHeaderConstant.Values.UserAgent
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             ApplicationId = HttpHeaderConstant.Values.UserAgent
 =======
             UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         };
 
@@ -156,13 +180,19 @@ public sealed class OpenAIClientProvider
         OpenAIClientOptions options = new()
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             ApplicationId = HttpHeaderConstant.Values.UserAgent,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             ApplicationId = HttpHeaderConstant.Values.UserAgent,
 =======
             UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             Endpoint = endpoint ?? httpClient?.BaseAddress,
         };

@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import logging
 import time
@@ -76,7 +82,10 @@ TEMPLATE_FORMAT_MAP = {
 class KernelFunction(KernelBaseModel):
     """Semantic Kernel function.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -130,6 +139,9 @@ class KernelFunction(KernelBaseModel):
     Semantic Kernel function.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     Attributes:
@@ -152,11 +164,17 @@ class KernelFunction(KernelBaseModel):
 
     metadata: KernelFunctionMetadata
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     invocation_duration_histogram: metrics.Histogram = meter.create_histogram(
@@ -220,7 +238,10 @@ class KernelFunction(KernelBaseModel):
     def name(self) -> str:
         """The name of the function."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -312,17 +333,26 @@ class KernelFunction(KernelBaseModel):
     def name(self) -> str:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self.metadata.name
 
     @property
     def plugin_name(self) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """The name of the plugin that contains this function."""
         return self.metadata.plugin_name or ""
@@ -336,7 +366,10 @@ class KernelFunction(KernelBaseModel):
     def description(self) -> str | None:
         """The description of the function."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -346,17 +379,26 @@ class KernelFunction(KernelBaseModel):
     def description(self) -> Optional[str]:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return self.metadata.description
 
     @property
     def is_prompt(self) -> bool:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Whether the function is based on a prompt."""
         return self.metadata.is_prompt
@@ -379,7 +421,10 @@ class KernelFunction(KernelBaseModel):
         **kwargs: Any,
     ) -> FunctionResult | None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -666,16 +711,22 @@ class KernelFunction(KernelBaseModel):
     ) -> "FunctionResult":
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Invoke the function with the given arguments.
 
         Args:
             kernel (Kernel): The kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             arguments (KernelArguments | None): The Kernel arguments.
                 Optional, defaults to None.
             metadata (Dict[str, Any]): Additional metadata.
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             arguments (KernelArguments | None): The Kernel arguments.
                 Optional, defaults to None.
@@ -690,6 +741,9 @@ class KernelFunction(KernelBaseModel):
                 Optional, defaults to None.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             kwargs (Dict[str, Any]): Additional keyword arguments that will be
 
@@ -697,11 +751,17 @@ class KernelFunction(KernelBaseModel):
             FunctionResult: The result of the function
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return await self.invoke(kernel, arguments, metadata, **kwargs)
 
@@ -717,31 +777,46 @@ class KernelFunction(KernelBaseModel):
 
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
         return await self.invoke(kernel, arguments, **kwargs)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     async def invoke(
         self,
         kernel: "Kernel",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         arguments: "KernelArguments | None" = None,
         metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> "FunctionResult | None":
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -750,6 +825,9 @@ class KernelFunction(KernelBaseModel):
     ) -> "FunctionResult":
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Invoke the function with the given arguments.
 
@@ -757,9 +835,12 @@ class KernelFunction(KernelBaseModel):
             kernel (Kernel): The kernel
             arguments (KernelArguments): The Kernel arguments
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             metadata (Dict[str, Any]): Additional metadata.
             kwargs (Any): Additional keyword arguments that will be
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             metadata (Dict[str, Any]): Additional metadata.
             kwargs (Any): Additional keyword arguments that will be
@@ -771,12 +852,16 @@ class KernelFunction(KernelBaseModel):
             kwargs (Dict[str, Any]): Additional keyword arguments that will be
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 added to the KernelArguments.
 
         Returns:
             FunctionResult: The result of the function
         """
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -785,6 +870,8 @@ class KernelFunction(KernelBaseModel):
             function=self, kernel=kernel, arguments=arguments
         )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -805,6 +892,9 @@ class KernelFunction(KernelBaseModel):
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         with tracer.start_as_current_span(self.fully_qualified_name) as current_span:
@@ -841,7 +931,10 @@ class KernelFunction(KernelBaseModel):
         """
         ...
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -865,17 +958,26 @@ class KernelFunction(KernelBaseModel):
         return FunctionResult(function=self.metadata, value=result, metadata={"arguments": function_arguments})
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     async def invoke_stream(
         self,
         kernel: "Kernel",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         arguments: "KernelArguments | None" = None,
         metadata: dict[str, Any] = {},
@@ -883,7 +985,10 @@ class KernelFunction(KernelBaseModel):
     ) -> "AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]":
         """Invoke a stream async function with the given arguments.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -894,17 +999,26 @@ class KernelFunction(KernelBaseModel):
         Invoke a stream async function with the given arguments.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Args:
             kernel (Kernel): The kernel
             arguments (KernelArguments): The Kernel arguments
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             metadata (Dict[str, Any]): Additional metadata.
             kwargs (Any): Additional keyword arguments that will be
@@ -919,10 +1033,13 @@ class KernelFunction(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
         _rebuild_function_invocation_context()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         function_context = FunctionInvocationContext(
             function=self, kernel=kernel, arguments=arguments
         )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         function_context = FunctionInvocationContext(
             function=self, kernel=kernel, arguments=arguments
@@ -936,6 +1053,9 @@ class KernelFunction(KernelBaseModel):
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         with tracer.start_as_current_span(self.fully_qualified_name) as current_span:
@@ -999,7 +1119,10 @@ class KernelFunction(KernelBaseModel):
 
         KernelFunctionLogMessages.log_function_error(logger, exception)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -1076,4 +1199,7 @@ class KernelFunction(KernelBaseModel):
         return arguments
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

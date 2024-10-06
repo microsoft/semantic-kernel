@@ -10,12 +10,18 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInvalidAuthErro
 logger: logging.Logger = logging.getLogger(__name__)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 logging.basicConfig(level=logging.DEBUG)
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 def get_entra_auth_token(token_endpoint: str) -> str | None:
@@ -44,11 +50,17 @@ def get_entra_auth_token(token_endpoint: str) -> str | None:
         return None
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     logger.info(f"Successfully retrieved Azure token for the specified endpoint: `{token_endpoint}`.")
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     return auth_token.token if auth_token else None

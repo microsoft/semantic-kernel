@@ -6,10 +6,13 @@ from typing import Any
 
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
@@ -22,17 +25,26 @@ from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
     ContentFilterAIException,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     OpenAIChatPromptExecutionSettings,
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
@@ -41,9 +53,12 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -54,6 +69,9 @@ from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -80,11 +98,17 @@ class OpenAIHandler(KernelBaseModel, ABC):
         """Execute the appropriate call to OpenAI models."""
         try:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
             settings = request_settings.prepare_settings_dict()
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if self.ai_model_type == OpenAIModelTypes.CHAT:
                 response = await self.client.chat.completions.create(
@@ -95,7 +119,10 @@ class OpenAIHandler(KernelBaseModel, ABC):
                     **request_settings.prepare_settings_dict()
                 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
                 assert isinstance(request_settings, OpenAIChatPromptExecutionSettings)  # nosec
@@ -104,6 +131,9 @@ class OpenAIHandler(KernelBaseModel, ABC):
             else:
                 response = await self.client.completions.create(**settings)
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             self.store_usage(response)
             return response
@@ -139,7 +169,10 @@ class OpenAIHandler(KernelBaseModel, ABC):
             ) from ex
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     def _handle_structured_output(
@@ -162,6 +195,9 @@ class OpenAIHandler(KernelBaseModel, ABC):
                 settings["response_format"] = response_format
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def store_usage(
         self,

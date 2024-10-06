@@ -21,6 +21,10 @@ public sealed record WeaviateHotel
 
     /// <summary>An int metadata field.</summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -30,7 +34,10 @@ public sealed record WeaviateHotel
     /// <summary>A float metadata field.</summary>
     [VectorStoreRecordData]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     [VectorStoreRecordData(IsFilterable = true)]
     public int HotelCode { get; set; }
@@ -38,12 +45,19 @@ public sealed record WeaviateHotel
     /// <summary>A float metadata field.</summary>
     [VectorStoreRecordData(IsFilterable = true)]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
     [JsonPropertyName("parking_is_included")]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -60,7 +74,10 @@ public sealed record WeaviateHotel
 
     [VectorStoreRecordData]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     [VectorStoreRecordData(IsFilterable = true)]
     public bool ParkingIncluded { get; set; }
@@ -75,6 +92,9 @@ public sealed record WeaviateHotel
 
     [VectorStoreRecordData(IsFilterable = true)]
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public DateTimeOffset Timestamp { get; set; }
 

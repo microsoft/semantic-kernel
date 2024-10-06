@@ -6,8 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Http;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Http;
 =======
@@ -16,6 +19,9 @@ using Microsoft.SemanticKernel.Http;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel;
@@ -47,8 +53,11 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                 var database = sp.GetRequiredService<Database>();
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 =======
@@ -57,6 +66,9 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 return new AzureCosmosDBNoSQLVectorStore(database, options);
             });
@@ -89,8 +101,11 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                 var cosmosClient = new CosmosClient(connectionString, new()
                 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     ApplicationName = HttpHeaderConstant.Values.UserAgent,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     ApplicationName = HttpHeaderConstant.Values.UserAgent,
 =======
@@ -99,6 +114,9 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     Serializer = new CosmosSystemTextJsonSerializer(options?.JsonSerializerOptions ?? JsonSerializerOptions.Default)
                 });
@@ -106,8 +124,11 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                 var database = cosmosClient.GetDatabase(databaseName);
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 =======
@@ -116,6 +137,9 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 return new AzureCosmosDBNoSQLVectorStore(database, options);
             });
@@ -123,7 +147,10 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
         return services;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -218,5 +245,8 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
             });
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

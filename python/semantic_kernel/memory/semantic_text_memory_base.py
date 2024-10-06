@@ -82,8 +82,11 @@ class SemanticTextMemoryBase(ABC):
         collection: str,
         key: str,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     ) -> "MemoryQueryResult | None":
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     ) -> "MemoryQueryResult | None":
 =======
@@ -94,6 +97,9 @@ class SemanticTextMemoryBase(ABC):
     ) -> Optional[MemoryQueryResult]:
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """Get information from the memory (calls the memory store's get method).
 

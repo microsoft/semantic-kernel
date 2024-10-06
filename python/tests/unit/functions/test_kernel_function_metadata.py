@@ -88,10 +88,13 @@ def test_kernel_function_not_equals_other_object():
         is_prompt=True,
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     function_metadata_2 = KernelParameterMetadata(
         name="function2", description="Semantic function", default_value=""
     )
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     function_metadata_2 = KernelParameterMetadata(
         name="function2", description="Semantic function", default_value=""
@@ -105,5 +108,8 @@ def test_kernel_function_not_equals_other_object():
     function_metadata_2 = KernelParameterMetadata(name="function2", description="Semantic function", default_value="")
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     assert function_metadata_1 != function_metadata_2

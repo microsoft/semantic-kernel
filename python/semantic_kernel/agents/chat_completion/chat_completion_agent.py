@@ -175,10 +175,13 @@ class ChatCompletionAgent(Agent):
         )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         async for message_list in messages:
             for message in message_list:
                 message.name = self.name
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         async for message_list in messages:
             for message in message_list:
@@ -192,6 +195,9 @@ class ChatCompletionAgent(Agent):
                 message.name = self.name
                 message_builder.append(message.content)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 yield message
 
@@ -202,7 +208,10 @@ class ChatCompletionAgent(Agent):
             history.add_message(message)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         if role != AuthorRole.TOOL:
@@ -213,6 +222,9 @@ class ChatCompletionAgent(Agent):
             )
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def _setup_agent_chat_history(self, history: ChatHistory) -> ChatHistory:
         """Setup the agent chat history."""

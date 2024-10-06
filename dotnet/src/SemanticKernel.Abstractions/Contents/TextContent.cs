@@ -58,7 +58,10 @@ public sealed class TextContent : KernelContent
         return this.Text ?? string.Empty;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -71,5 +74,8 @@ public sealed class TextContent : KernelContent
         return new TextContent(text);
     }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

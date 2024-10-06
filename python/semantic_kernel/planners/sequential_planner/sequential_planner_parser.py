@@ -2,11 +2,17 @@
 
 import re
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from collections.abc import Callable
 
@@ -22,7 +28,10 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -37,6 +46,9 @@ from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 # Constants
@@ -49,8 +61,11 @@ APPEND_TO_RESULT_TAG = "appendToResult"
 
 class SequentialPlanParser:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     """Parser for Sequential planners."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     """Parser for Sequential planners."""
 =======
@@ -74,6 +89,9 @@ class SequentialPlanParser:
         return function
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     @staticmethod
@@ -81,11 +99,17 @@ class SequentialPlanParser:
         xml_string: str,
         goal: str,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         kernel: Kernel,
         get_plugin_function: Callable[[str, str], KernelFunction | None] | None = None,
@@ -93,7 +117,10 @@ class SequentialPlanParser:
     ):
         """Convert an xml string to a plan."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -102,6 +129,9 @@ class SequentialPlanParser:
     ):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         xml_string = "<xml>" + xml_string + "</xml>"
         try:
@@ -117,11 +147,17 @@ class SequentialPlanParser:
                     xml_doc = ET.fromstring("<xml>" + plan_xml + "</xml>")
                 except ET.ParseError:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     raise PlannerInvalidPlanError(
                         f"Failed to parse plan xml strings: '{xml_string}' or '{plan_xml}'"
@@ -130,7 +166,10 @@ class SequentialPlanParser:
                 raise PlannerInvalidPlanError(
                     f"Failed to parse plan xml string: '{xml_string}'"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -144,6 +183,9 @@ class SequentialPlanParser:
                     f"Failed to parse plan xml string: '{xml_string}'",
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 )
 
@@ -153,11 +195,17 @@ class SequentialPlanParser:
         for solution_node in solution:
             for child_node in solution_node:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 if (
                     child_node.tag == "#text"
@@ -223,7 +271,10 @@ class SequentialPlanParser:
 
                 plan.add_steps([plan_step])
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -276,17 +327,26 @@ class SequentialPlanParser:
                             )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         return plan
 
     @staticmethod
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     def get_plugin_function_names(plugin_function_name: str) -> tuple[str, str]:
         """Get the plugin and function names from the plugin function name."""
@@ -300,7 +360,10 @@ class SequentialPlanParser:
             else plugin_function_name
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -310,5 +373,8 @@ class SequentialPlanParser:
         function_name = plugin_function_name_parts[1] if len(plugin_function_name_parts) > 1 else plugin_function_name
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return plugin_name, function_name

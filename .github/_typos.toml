@@ -17,9 +17,12 @@ extend-exclude = [
     "*response.json",
     "test_content.txt",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     "serializedChatHistoryV1_15_1.json",
     "MultipleFunctionsVsParameters.cs"
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     "serializedChatHistoryV1_15_1.json",
     "MultipleFunctionsVsParameters.cs"
@@ -47,6 +50,9 @@ prompty = "prompty"       # prompty is a format name.
 ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ]
 
@@ -76,9 +82,15 @@ extend-ignore-re = [
     'Version=".*"', # ignore package version numbers
 ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 ]
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

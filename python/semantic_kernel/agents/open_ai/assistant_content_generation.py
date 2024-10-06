@@ -4,9 +4,12 @@ from typing import TYPE_CHECKING, Any
 
 from openai import AsyncOpenAI
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.text_content_block import TextContentBlock
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.text_content_block import TextContentBlock
@@ -20,6 +23,9 @@ from openai.types.beta.threads.runs.code_interpreter_tool_call import CodeInterp
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from semantic_kernel.contents.annotation_content import AnnotationContent
@@ -29,10 +35,13 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -47,6 +56,9 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 from semantic_kernel.utils.experimental_decorator import experimental_function
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 if TYPE_CHECKING:
@@ -54,8 +66,11 @@ if TYPE_CHECKING:
     from openai.resources.beta.threads.runs.runs import Run
     from openai.types.beta.threads.annotation import Annotation
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     from openai.types.beta.threads.runs.tool_call import ToolCall
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     from openai.types.beta.threads.runs.tool_call import ToolCall
 =======
@@ -63,6 +78,9 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.runs.tool_call import ToolCall
     from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 
@@ -74,11 +92,17 @@ if TYPE_CHECKING:
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @experimental_function
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 async def create_chat_message(
     client: AsyncOpenAI,
@@ -112,11 +136,17 @@ async def create_chat_message(
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @experimental_function
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
     """Get the message contents.
@@ -141,6 +171,10 @@ def get_message_contents(message: "ChatMessageContent") -> list[dict[str, Any]]:
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -150,7 +184,10 @@ def generate_message_content(assistant_name: str, message: "Message") -> ChatMes
 
     content: ChatMessageContent = ChatMessageContent(role=role, name=assistant_name)  # type: ignore
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 @experimental_function
 def generate_message_content(
@@ -175,6 +212,9 @@ def generate_message_content(
 
     content: ChatMessageContent = ChatMessageContent(role=role, name=assistant_name, metadata=metadata)  # type: ignore
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     for item_content in message.content:
@@ -198,7 +238,10 @@ def generate_message_content(
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @experimental_function
@@ -245,6 +288,9 @@ def generate_streaming_message_content(
 
 @experimental_function
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def generate_function_call_content(agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
     """Generate function call content.
@@ -260,11 +306,17 @@ def generate_function_call_content(agent_name: str, fccs: list[FunctionCallConte
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @experimental_function
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def generate_function_result_content(
     agent_name: str, function_step: FunctionCallContent, tool_call: "ToolCall"
@@ -283,11 +335,17 @@ def generate_function_result_content(
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @experimental_function
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def get_function_call_contents(run: "Run", function_steps: dict[str, FunctionCallContent]) -> list[FunctionCallContent]:
     """Extract function call contents from the run.
@@ -316,11 +374,17 @@ def get_function_call_contents(run: "Run", function_steps: dict[str, FunctionCal
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @experimental_function
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessageContent":
     """Generate code interpreter content.
@@ -341,7 +405,10 @@ def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessag
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 @experimental_function
@@ -396,6 +463,9 @@ def generate_streaming_tools_content(
 
 @experimental_function
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
     """Generate annotation content."""
@@ -412,7 +482,10 @@ def generate_annotation_content(annotation: "Annotation") -> AnnotationContent:
         end_index=annotation.end_index,
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -433,4 +506,7 @@ def generate_streaming_annotation_content(annotation: "Annotation") -> Streaming
         end_index=annotation.end_index,
     )
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

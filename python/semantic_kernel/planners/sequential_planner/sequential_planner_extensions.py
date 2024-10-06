@@ -2,7 +2,10 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -10,14 +13,20 @@ import logging
 from typing import List, Optional
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 =======
@@ -29,6 +38,9 @@ from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.null_memory import NullMemory
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
@@ -38,11 +50,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 class SequentialPlannerFunctionExtension:
     """Function extension for the sequential planner."""
@@ -78,7 +96,10 @@ class SequentialPlannerKernelExtension:
     """Kernel extension for the sequential planner."""
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -109,6 +130,9 @@ class SequentialPlannerFunctionViewExtension:
 class SequentialPlannerKernelExtension:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     PLANNER_MEMORY_COLLECTION_NAME = " Planning.KernelFunctionManual"
     PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED = "Planning.KernelFunctionsAreRemembered"
@@ -118,18 +142,27 @@ class SequentialPlannerKernelExtension:
         kernel: "Kernel",
         arguments: KernelArguments,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         semantic_query: str | None = None,
         config: SequentialPlannerConfig = None,
     ) -> str:
         """Get the functions manual."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -138,6 +171,9 @@ class SequentialPlannerKernelExtension:
     ) -> str:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         config = config or SequentialPlannerConfig()
 
@@ -149,11 +185,17 @@ class SequentialPlannerKernelExtension:
             functions = await config.get_available_functions(config, semantic_query)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         return "\n\n".join(
             [
@@ -162,13 +204,19 @@ class SequentialPlannerKernelExtension:
             ]
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
         return "\n\n".join([SequentialPlannerFunctionViewExtension.to_manual_string(func) for func in functions])
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     @staticmethod
@@ -177,10 +225,13 @@ class SequentialPlannerKernelExtension:
         arguments: KernelArguments,
         config: SequentialPlannerConfig,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         semantic_query: str | None = None,
     ):
         """Get the available functions based on the semantic query."""
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         semantic_query: str | None = None,
     ):
@@ -195,17 +246,26 @@ class SequentialPlannerKernelExtension:
     ):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         excluded_plugins = config.excluded_plugins or []
         excluded_functions = config.excluded_functions or []
         included_functions = config.included_functions or []
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         available_functions = [
             func
@@ -217,7 +277,10 @@ class SequentialPlannerKernelExtension:
 
         if semantic_query is None or config.relevancy_threshold is None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -241,17 +304,26 @@ class SequentialPlannerKernelExtension:
         ):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             # If no semantic query is provided, return all available functions.
             # If a Memory provider has not been registered, return all available functions.
             return available_functions
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # Add functions that were found in the search results.
         relevant_functions = (
@@ -260,7 +332,10 @@ class SequentialPlannerKernelExtension:
                 available_functions,
             )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -280,17 +355,26 @@ class SequentialPlannerKernelExtension:
             kernel, available_functions, memories
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         )
 
         # Add any missing functions that were included but not found in the search results.
         missing_functions = [
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             func
             for func in included_functions
@@ -301,7 +385,10 @@ class SequentialPlannerKernelExtension:
             func for func in available_functions if func.name in missing_functions
         ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -311,6 +398,9 @@ class SequentialPlannerKernelExtension:
         relevant_functions += [func for func in available_functions if func.name in missing_functions]
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         return sorted(relevant_functions, key=lambda x: (x.plugin_name, x.name))
@@ -319,11 +409,17 @@ class SequentialPlannerKernelExtension:
     async def get_relevant_functions(
         kernel: Kernel,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         available_functions: list[KernelFunctionMetadata],
         memories: list[MemoryQueryResult] | None = None,
@@ -335,7 +431,10 @@ class SequentialPlannerKernelExtension:
         if memories is None:
             return relevant_functions
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -346,6 +445,9 @@ class SequentialPlannerKernelExtension:
         # TODO: cancellation
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         for memory_entry in memories:
             function = next(
@@ -353,8 +455,11 @@ class SequentialPlannerKernelExtension:
                     func
                     for func in available_functions
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     if func.fully_qualified_name == memory_entry.id
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     if func.fully_qualified_name == memory_entry.id
 =======
@@ -364,6 +469,9 @@ class SequentialPlannerKernelExtension:
                     if SequentialPlannerFunctionViewExtension.to_fully_qualified_name(func) == memory_entry.id
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 ),
                 None,
@@ -371,10 +479,13 @@ class SequentialPlannerKernelExtension:
             if function is not None:
                 logger.debug(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     "Found relevant function. Relevance Score: {}, Function: {}".format(
                         memory_entry.relevance,
                         function.fully_qualified_name,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     "Found relevant function. Relevance Score: {}, Function: {}".format(
                         memory_entry.relevance,
@@ -390,6 +501,9 @@ class SequentialPlannerKernelExtension:
                         SequentialPlannerFunctionViewExtension.to_fully_qualified_name(function),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     )
                 )
@@ -397,7 +511,10 @@ class SequentialPlannerKernelExtension:
 
         return relevant_functions
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -445,4 +562,7 @@ class SequentialPlannerKernelExtension:
         arguments[SequentialPlannerKernelExtension.PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED] = True
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

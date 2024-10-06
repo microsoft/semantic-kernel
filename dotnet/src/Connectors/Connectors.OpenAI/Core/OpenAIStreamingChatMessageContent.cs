@@ -1,8 +1,11 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 // Copyright (c) Microsoft. All rights reserved.
 
@@ -16,6 +19,9 @@ using System;
 
 using System;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Text;
@@ -52,12 +58,18 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         : base(
             null,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
             null,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             null,
             chatUpdate,
@@ -92,7 +104,10 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             // TODO: Remove this try-catch block once the bug is fixed.
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
         this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
@@ -101,6 +116,9 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             // TODO: Remove this try-catch block once the bug is fixed.
         }
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 

@@ -23,8 +23,11 @@ public class OpenAIAssistantInvocationOptionsTests
         // Assert
         Assert.Null(options.ModelName);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Null(options.AdditionalInstructions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Null(options.AdditionalInstructions);
 =======
@@ -33,6 +36,9 @@ public class OpenAIAssistantInvocationOptionsTests
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Null(options.Metadata);
         Assert.Null(options.Temperature);
@@ -61,8 +67,11 @@ public class OpenAIAssistantInvocationOptionsTests
             {
                 ModelName = "testmodel",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 AdditionalInstructions = "test instructions",
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 AdditionalInstructions = "test instructions",
 =======
@@ -71,6 +80,9 @@ public class OpenAIAssistantInvocationOptionsTests
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 MaxCompletionTokens = 1000,
@@ -87,8 +99,11 @@ public class OpenAIAssistantInvocationOptionsTests
         // Assert
         Assert.Equal("testmodel", options.ModelName);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Equal("test instructions", options.AdditionalInstructions);
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Equal("test instructions", options.AdditionalInstructions);
 =======
@@ -97,6 +112,9 @@ public class OpenAIAssistantInvocationOptionsTests
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Assert.Equal(2, options.Temperature);
         Assert.Equal(0, options.TopP);

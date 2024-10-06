@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
@@ -9,6 +12,9 @@
 from typing import Any, Dict, List, Literal, Optional
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 from typing import Any, Literal
@@ -20,11 +26,17 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 
 class OllamaPromptExecutionSettings(PromptExecutionSettings):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< main
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """Settings for Ollama prompt execution."""
 
@@ -34,7 +46,10 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
     # TODO(@taochen): Add individual properties for execution settings and
     # convert them to the appropriate types in the options dictionary.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 =======
@@ -44,6 +59,9 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
     stream: bool = False
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 

@@ -23,7 +23,10 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
@@ -35,6 +38,9 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 
     /// <summary>
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Gets or sets the content item at the specified index in the collection.
     /// </summary>

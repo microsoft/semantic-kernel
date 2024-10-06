@@ -3,7 +3,10 @@
 using System;
 using System.Collections.Concurrent;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -11,6 +14,9 @@ using System.Collections.Generic;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Linq;
 using System.Threading;
@@ -35,7 +41,10 @@ public class VolatileVectorStoreRecordCollectionTests
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _collectionStore;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -43,13 +52,19 @@ public class VolatileVectorStoreRecordCollectionTests
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     public VolatileVectorStoreRecordCollectionTests()
     {
         this._collectionStore = new();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -57,6 +72,9 @@ public class VolatileVectorStoreRecordCollectionTests
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -72,7 +90,10 @@ public class VolatileVectorStoreRecordCollectionTests
         var sut = new VolatileVectorStoreRecordCollection<string, SinglePropsModel<string>>(
             this._collectionStore,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -80,6 +101,9 @@ public class VolatileVectorStoreRecordCollectionTests
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             collectionName);
 
@@ -306,8 +330,11 @@ public class VolatileVectorStoreRecordCollectionTests
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors)
 =======
@@ -560,6 +587,9 @@ public class VolatileVectorStoreRecordCollectionTests
     private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors)
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         return new SinglePropsModel<TKey>
@@ -567,8 +597,11 @@ public class VolatileVectorStoreRecordCollectionTests
             Key = key,
             Data = "data " + key,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
 =======
@@ -579,6 +612,9 @@ public class VolatileVectorStoreRecordCollectionTests
             Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             NotAnnotated = null,
         };
@@ -590,7 +626,10 @@ public class VolatileVectorStoreRecordCollectionTests
         return new VolatileVectorStoreRecordCollection<TKey, SinglePropsModel<TKey>>(
             this._collectionStore,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
@@ -598,6 +637,9 @@ public class VolatileVectorStoreRecordCollectionTests
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             TestCollectionName,
             new()
@@ -612,8 +654,11 @@ public class VolatileVectorStoreRecordCollectionTests
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             new VectorStoreRecordDataProperty("Data", typeof(string)),
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             new VectorStoreRecordDataProperty("Data", typeof(string)),
 =======
@@ -624,6 +669,9 @@ public class VolatileVectorStoreRecordCollectionTests
             new VectorStoreRecordDataProperty("Data", typeof(string)),
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
         ]
@@ -635,8 +683,11 @@ public class VolatileVectorStoreRecordCollectionTests
         public TKey? Key { get; set; }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         [VectorStoreRecordData]
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         [VectorStoreRecordData]
 =======
@@ -649,6 +700,9 @@ public class VolatileVectorStoreRecordCollectionTests
         [VectorStoreRecordData]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         public string Data { get; set; } = string.Empty;
 

@@ -35,13 +35,19 @@ def selection_strategy():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 # region Non-Streaming
 
 
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def test_agent_group_chat_initialization(agents, termination_strategy, selection_strategy):
     group_chat = AgentGroupChat(
@@ -142,13 +148,19 @@ async def test_invoke_with_agent_joining(agents, termination_strategy):
 async def test_invoke_with_complete_chat(agents, termination_strategy):
     termination_strategy.automatic_reset = False
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     group_chat = AgentGroupChat(termination_strategy=termination_strategy)
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     group_chat = AgentGroupChat(termination_strategy=termination_strategy)
 =======
     group_chat = AgentGroupChat(agents=agents, termination_strategy=termination_strategy)
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     group_chat.is_complete = True
 
@@ -159,7 +171,10 @@ async def test_invoke_with_complete_chat(agents, termination_strategy):
 
 @pytest.mark.asyncio
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 async def test_invoke_agent_with_none_defined_errors(agents):
@@ -172,6 +187,9 @@ async def test_invoke_agent_with_none_defined_errors(agents):
 
 @pytest.mark.asyncio
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 async def test_invoke_selection_strategy_error(agents, selection_strategy):
     group_chat = AgentGroupChat(agents=agents, selection_strategy=selection_strategy)
@@ -239,7 +257,10 @@ async def test_invoke_is_complete_then_reset(agents, termination_strategy, selec
 
         assert iteration_count == 2
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 
@@ -379,4 +400,7 @@ async def test_invoke_streaming_agent_with_none_defined_errors(agents):
 
 # endregion
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

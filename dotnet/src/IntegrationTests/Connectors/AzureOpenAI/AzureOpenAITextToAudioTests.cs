@@ -7,7 +7,10 @@ ususing Azure.Identity;
 >>>>>>>-main
 ion;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 // Copyright (c) Microsoft. All rights reserved.
@@ -15,6 +18,9 @@ ion;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -51,7 +57,10 @@ ration.D                deploymentName: azureOpenAIConfiguration.DeploymentName,
 >>>>>>>-main
 ITextToAudioService>();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
                 azureOpenAIConfiguration.DeploymentName,
@@ -61,6 +70,9 @@ ITextToAudioService>();
 
         var service = kernel.GetRequiredService<ITextToAudioService>();
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Act

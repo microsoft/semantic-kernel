@@ -19,11 +19,17 @@ from semantic_kernel.kernel import Kernel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     anthropic_setup,
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     google_ai_setup,
     mistral_ai_setup,
@@ -401,7 +407,10 @@ pytestmark = pytest.mark.parametrize(
         ),
         pytest.param(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             "anthropic",
@@ -473,6 +482,9 @@ pytestmark = pytest.mark.parametrize(
         ),
         pytest.param(
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             "google_ai",
             {

@@ -6,11 +6,17 @@ import reference_skill.ActivityOuterClass.GetRandomActivityRequest;
 
 import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 import reference_skill.ActivityOuterClass;
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import reference_skill.RandomActivitySkillGrpc;
 
@@ -50,7 +56,10 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
     // Removed duplicate getRandomActivity method
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     public static final String API_ACTIVITY_URL = "https://www.boredapi.com/api/activity";
@@ -60,6 +69,9 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
     }
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     public static final String API_ACTIVITY_URL = "https://www.boredapi.com/api/activity";
 
@@ -78,11 +90,17 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
     @Override
     public void getRandomActivity(GetRandomActivityRequest request, StreamObserver<GetRandomActivityResponse> responseObserver) {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     public void getRandomActivity(ActivityOuterClass.GetRandomActivityRequest request, StreamObserver<ActivityOuterClass.GetRandomActivityResponse> responseObserver) {
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Logger logger =  java.util.logging.Logger.getLogger(this.getClass().getName());
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -94,11 +112,17 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
             logger.info("Response: " + response.get().body());
             responseObserver.onNext(GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
             responseObserver.onNext(ActivityOuterClass.GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             responseObserver.onCompleted();
         } catch (Exception e) {

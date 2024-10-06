@@ -9,7 +9,10 @@ on:
   pull_request:
     branches: ["main", "feature*"]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     paths:
@@ -20,6 +23,9 @@ on:
       - "**.editorconfig"
     branches: [ "main", "feature*" ]
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     paths:
       - "dotnet/**"
@@ -40,13 +46,19 @@ jobs:
         include:
           - { dotnet: "8.0", configuration: Release, os: ubuntu-latest }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         #- { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
         #- { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
         - { dotnet: '8.0', configuration: Release, os: ubuntu-latest }
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     runs-on: ${{ matrix.os }}
@@ -78,11 +90,17 @@ jobs:
           csproj_files=()
           exclude_files=("Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
           exclude_files=("Planners.Core.csproj" "Planners.Core.UnitTests.csproj" "Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")  
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
           if [[ ${{ steps.changed-files.outcome }} == 'success' ]]; then
             for file in ${{ steps.changed-files.outputs.added_modified }}; do
@@ -94,12 +112,18 @@ jobs:
                   if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then
                     csproj_files+=("$csproj_path")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
                   if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then  
                     csproj_files+=("$csproj_path")  
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                   fi
                   break

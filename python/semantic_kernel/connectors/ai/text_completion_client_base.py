@@ -12,10 +12,13 @@ if TYPE_CHECKING:
         PromptExecutionSettings,
     )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     from semantic_kernel.contents import StreamingTextContent, TextContent
 
 
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     from semantic_kernel.contents import StreamingTextContent, TextContent
 =======
@@ -33,6 +36,9 @@ if TYPE_CHECKING:
 
 
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 class TextCompletionClientBase(AIServiceClientBase, ABC):
     """Base class for text completion AI services."""
@@ -53,11 +59,17 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     ) -> List["TextContent"]:
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         raise NotImplementedError("The _inner_get_text_contents method is not implemented.")
@@ -73,13 +85,19 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             prompt (str): The prompt to send to the LLM.
             settings (PromptExecutionSettings): Settings for the request.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
             settings {PromptExecutionSettings} -- Settings for the request.
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         Yields:
@@ -108,7 +126,10 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         """
         # Create a copy of the settings to avoid modifying the original settings
@@ -168,6 +189,9 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         """
 =======
     ) -> AsyncIterable[List["StreamingTextContent"]]:
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         # Create a copy of the settings to avoid modifying the original settings
@@ -204,6 +228,12 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             prompt (str): The prompt to send to the LLM.
             settings (PromptExecutionSettings): Settings for the request.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {PromptExecutionSettings} -- Settings for the request.
+>>>>>>> Stashed changes
 =======
         Arguments:
             prompt {str} -- The prompt to send to the LLM.
@@ -232,6 +262,10 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             StreamingTextContent: A stream representing the response(s) from the LLM.
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
