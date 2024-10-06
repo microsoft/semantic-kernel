@@ -44,6 +44,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Display the entire chat history.
         WriteChatHistory(chat);
 =======
@@ -61,6 +62,11 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        // Display the entire chat history.
+        WriteChatHistory(chat);
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         // Display the entire chat history.
         WriteChatHistory(chat);
@@ -74,6 +80,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             this.WriteAgentChatMessage(message);
         }
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -91,6 +98,9 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
@@ -148,6 +158,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -177,6 +188,11 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(message);
             this.WriteAgentChatMessage(message);
@@ -191,6 +207,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -202,10 +219,13 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 =======
             this.WriteAgentChatMessage(history[index - 1]);
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -224,6 +244,8 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             this.WriteAgentChatMessage(history[index - 1]);
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         }
     }
 
@@ -264,6 +286,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -293,6 +316,11 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
             chat.Add(message);
             this.WriteAgentChatMessage(message);
 
@@ -327,6 +355,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -341,6 +370,9 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
             chat.AddChatMessage(message);
             this.WriteAgentChatMessage(message);
 
@@ -348,6 +380,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 this.WriteAgentChatMessage(response);
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -365,6 +398,9 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             }
         }
     }
@@ -375,6 +411,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -404,6 +441,11 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     [Fact]
     public async Task UseAutoFunctionInvocationFilterWithStreamingAgentChatAsync()
     {
@@ -474,6 +516,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -485,9 +528,12 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -505,6 +551,8 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     private Kernel CreateKernelWithFilter()
     {
         IKernelBuilder builder = Kernel.CreateBuilder();

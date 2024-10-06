@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@ from abc import ABC, abstractmethod
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 from html import escape
 from typing import TYPE_CHECKING
 
@@ -47,6 +53,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -61,10 +68,14 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
 from typing import TYPE_CHECKING
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -82,6 +93,9 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -92,6 +106,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -121,6 +136,11 @@ if TYPE_CHECKING:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     from semantic_kernel.prompt_template.input_variable import InputVariable
 
 
@@ -198,6 +218,7 @@ class PromptTemplateBase(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -212,6 +233,9 @@ class PromptTemplateBase(KernelBaseModel, ABC):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
 
 
 class PromptTemplateBase(KernelBaseModel, ABC):
@@ -219,6 +243,7 @@ class PromptTemplateBase(KernelBaseModel, ABC):
     async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
         pass
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -236,3 +261,6 @@ class PromptTemplateBase(KernelBaseModel, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

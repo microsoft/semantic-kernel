@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +24,9 @@
 =======
 <Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> origin/main
+=======
+<Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> Stashed changes
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Abstractions</AssemblyName>
@@ -31,6 +35,7 @@
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0005</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
     <ApiCompatGenerateSuppressionFile>true</ApiCompatGenerateSuppressionFile>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +43,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -54,6 +61,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -66,6 +74,8 @@
 =======
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
@@ -97,6 +107,7 @@
     <InternalsVisibleTo Include="SemanticKernel.Extensions.PromptTemplates.Liquid.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
   </ItemGroup>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +125,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
   <ItemGroup>
     <!-- Exclude utilities that are not used by the project and causing AOT warnings-->
@@ -130,6 +143,7 @@
     <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Type/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,4 +160,6 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 </Project>

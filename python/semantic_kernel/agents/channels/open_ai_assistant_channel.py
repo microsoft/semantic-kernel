@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 
 =======
@@ -22,10 +23,13 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +45,8 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -57,6 +63,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 =======
 =======
@@ -68,12 +75,15 @@ from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 =======
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -92,6 +102,8 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
@@ -103,6 +115,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -132,6 +145,11 @@ if TYPE_CHECKING:
 =======
 @experimental_class
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+@experimental_class
+>>>>>>> main
+>>>>>>> Stashed changes
 class OpenAIAssistantChannel(AgentChannel):
     """OpenAI Assistant Channel."""
 
@@ -180,6 +198,7 @@ class OpenAIAssistantChannel(AgentChannel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -193,6 +212,9 @@ class OpenAIAssistantChannel(AgentChannel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     async def invoke_stream(
         self, agent: "Agent", messages: list[ChatMessageContent]
     ) -> AsyncIterable["ChatMessageContent"]:
@@ -217,6 +239,7 @@ class OpenAIAssistantChannel(AgentChannel):
             yield message
 
     @override
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -234,6 +257,9 @@ class OpenAIAssistantChannel(AgentChannel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     async def get_history(self) -> AsyncIterable["ChatMessageContent"]:
         """Get the conversation history.
 

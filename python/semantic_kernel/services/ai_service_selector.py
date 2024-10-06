@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -33,6 +34,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import TYPE_CHECKING
@@ -57,6 +63,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -70,6 +77,9 @@ if TYPE_CHECKING:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 from typing import TYPE_CHECKING, Tuple, Union
 
@@ -85,6 +95,7 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -102,6 +113,9 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 class AIServiceSelector:
@@ -118,6 +132,7 @@ class AIServiceSelector:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -147,6 +162,11 @@ class AIServiceSelector:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
         self,
         kernel: "KernelServicesExtension",
         function: "KernelFunction",
@@ -202,6 +222,7 @@ class AIServiceSelector:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -215,6 +236,9 @@ class AIServiceSelector:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
         self, kernel: "Kernel", function: "KernelFunction", arguments: KernelArguments
     ) -> Tuple[ALL_COMPLETION_SERVICE_TYPES, PromptExecutionSettings]:
@@ -234,6 +258,7 @@ class AIServiceSelector:
                 return service, service_settings
         raise AIException(AIException.ErrorCodes.NoServiceFound, "No service found.")
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -251,3 +276,6 @@ class AIServiceSelector:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

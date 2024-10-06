@@ -47,6 +47,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             name: "movie_result",
 =======
 =======
@@ -58,10 +59,13 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             name: "movie_result",
 =======
             jsonSchemaFormatName: "movie_result",
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -78,6 +82,8 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 =======
             jsonSchemaFormatName: "movie_result",
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             jsonSchema: BinaryData.FromString("""
                 {
                     "type": "object",
@@ -109,6 +115,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             strictSchemaEnabled: true);
 =======
 =======
@@ -120,10 +127,13 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             strictSchemaEnabled: true);
 =======
             jsonSchemaIsStrict: true);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -140,6 +150,8 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 =======
             jsonSchemaIsStrict: true);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         // Specify response format by setting ChatResponseFormat object in prompt execution settings.
         var executionSettings = new OpenAIPromptExecutionSettings

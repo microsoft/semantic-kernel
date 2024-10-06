@@ -67,10 +67,14 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
             env_file_path (str | None): The path to the environment file.
             env_file_encoding (str | None): The encoding of the environment file.
             client (MistralAsyncClient | None): The Mistral AI client to use.
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -86,12 +90,15 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             env_file_path (str | None): The path to the environment file.
             env_file_encoding (str | None): The encoding of the environment file.
             client (MistralAsyncClient | None): The Mistral AI client to use.
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -109,6 +116,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             async_client (MistralAsyncClient | None): The Mistral AI client to use.
             env_file_path (str | None): The path to the environment file.
             env_file_encoding (str | None): The encoding of the environment file.
@@ -135,10 +145,14 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
             raise ServiceInitializationError(
                 "The MistralAI embedding model ID is required."
             )
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -154,6 +168,8 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             raise ServiceInitializationError(
                 "The MistralAI embedding model ID is required."
@@ -164,6 +180,7 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
         if not async_client:
             async_client = MistralAsyncClient(api_key=mistralai_settings.api_key.get_secret_value())
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -181,6 +198,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         if not async_client:
             async_client = MistralAsyncClient(api_key=mistralai_settings.api_key.get_secret_value())
@@ -218,6 +238,7 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
             embedding_response: EmbeddingResponse = await self.client.embeddings(
 =======
@@ -235,11 +256,17 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+
+            embedding_response: EmbeddingResponse = await self.client.embeddings(
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
             embedding_response: EmbeddingResponse = await self.client.embeddings(
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -257,6 +284,9 @@ class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             embedding_response: EmbeddingResponse = await self.async_client.embeddings(
                 model=self.ai_model_id, input=texts
             )

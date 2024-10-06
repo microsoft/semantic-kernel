@@ -6,6 +6,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -35,6 +36,11 @@ using System.ClientModel;
 =======
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -83,6 +89,7 @@ public sealed class MixedAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
 =======
 =======
@@ -94,10 +101,13 @@ public sealed class MixedAgentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
 =======
             OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +124,8 @@ public sealed class MixedAgentTests
 =======
             OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             openAISettings.ChatModelId!,
             useNewFunctionCallingModel);
     }
@@ -172,6 +184,7 @@ public sealed class MixedAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
 =======
 =======
@@ -201,6 +214,11 @@ public sealed class MixedAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                kernel: new(),
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 config,
                 new(modelName)
                 {
@@ -211,6 +229,7 @@ public sealed class MixedAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
 =======
@@ -222,11 +241,14 @@ public sealed class MixedAgentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                 });
 =======
                 },
                 new Kernel());
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -244,6 +266,8 @@ public sealed class MixedAgentTests
                 },
                 new Kernel());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         // Act & Assert
         try

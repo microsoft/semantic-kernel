@@ -8,6 +8,7 @@ The function definitions below are in the following format:
  - ...
 
 {{$functionDescriptions}} = "This variable contains the descriptions of available functions.";
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +42,12 @@ The function definitions below are in the following format:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+{{$functionDescriptions}}
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 [END AVAILABLE FUNCTIONS]
 

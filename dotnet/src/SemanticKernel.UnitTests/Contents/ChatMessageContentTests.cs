@@ -208,6 +208,7 @@ public class ChatMessageContentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             new AnnotationContent("quote-8") { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } }
 =======
 =======
@@ -219,10 +220,13 @@ public class ChatMessageContentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             new AnnotationContent("quote-8") { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } }
 =======
             new AnnotationContent("quote-8") { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } },
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -239,6 +243,8 @@ public class ChatMessageContentTests
 =======
             new AnnotationContent("quote-8") { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } },
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         ];
 
         // Act
@@ -362,6 +368,7 @@ public class ChatMessageContentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -375,6 +382,9 @@ public class ChatMessageContentTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     [Fact]
     public void ItCanBePolymorphicallySerializedAndDeserializedAsKernelContentType()
@@ -463,6 +473,7 @@ public class ChatMessageContentTests
         {
         }
     }
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -480,4 +491,7 @@ public class ChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -15,10 +16,13 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +39,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Data;
@@ -47,6 +53,7 @@ namespace Microsoft.SemanticKernel;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -60,10 +67,14 @@ namespace Microsoft.SemanticKernel;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -81,6 +92,9 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 /// <summary>
 /// Extension methods to register Qdrant <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
@@ -121,6 +135,7 @@ public static class QdrantKernelBuilderExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -134,6 +149,9 @@ public static class QdrantKernelBuilderExtensions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
@@ -188,6 +206,7 @@ public static class QdrantKernelBuilderExtensions
         builder.Services.AddQdrantVectorStoreRecordCollection<TKey, TRecord>(collectionName, host, port, https, apiKey, options, serviceId);
         return builder;
     }
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -205,4 +224,7 @@ public static class QdrantKernelBuilderExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

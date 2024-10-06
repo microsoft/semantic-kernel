@@ -7,6 +7,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@ using System.Collections.Generic;
 =======
 using System.Collections.Generic;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.Collections.Generic;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -143,6 +149,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -156,6 +163,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
         // Ollama Sharp always perform streaming even for non-streaming calls,
         // The inner content in this case is the full list of chunks returned by the Ollama Client.
@@ -169,6 +179,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(doneMessageChunk);
         Assert.True(doneMessageChunk.Done);
         Assert.Equal("stop", doneMessageChunk.DoneReason);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -186,6 +197,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -233,6 +247,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -246,6 +261,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     public async Task GetStreamingChatMessageContentsShouldHaveDoneReasonAsync()
     {
         //Arrange
@@ -274,6 +292,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -291,6 +310,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     public async Task GetStreamingChatMessageContentsExecutionSettingsMustBeSentAsync()
     {
         //Arrange

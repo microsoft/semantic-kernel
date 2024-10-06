@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -17,6 +18,8 @@ using System.Collections.Generic;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
@@ -30,6 +33,7 @@ using System.Text.Json.Nodes;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -47,12 +51,15 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TextGeneration;
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -72,6 +79,10 @@ using Microsoft.SemanticKernel.TextGeneration;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -84,6 +95,9 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -110,6 +124,7 @@ public class CodeBlockTests
 
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(async () => await target.RenderCodeAsync(this._kernel));
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -134,6 +149,9 @@ public class CodeBlockTests
 =======
         await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
 >>>>>>> origin/main
+=======
+        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -142,6 +160,7 @@ public class CodeBlockTests
         // Arrange
         static void method() => throw new FormatException("error");
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -161,6 +180,10 @@ public class CodeBlockTests
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         var context = new SKContext(skills: this._skills.Object, logger: this._log.Object);
         var function = new Mock<ISKFunction>();
         function
@@ -171,6 +194,7 @@ public class CodeBlockTests
         this._skills.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction("functionName")).Returns(function.Object);
         var target = new CodeBlock("functionName", this._log.Object);
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -187,6 +211,8 @@ public class CodeBlockTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
@@ -195,6 +221,7 @@ public class CodeBlockTests
 
         // Act & Assert
         await Assert.ThrowsAsync<FormatException>(async () => await target.RenderCodeAsync(this._kernel));
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -225,6 +252,10 @@ public class CodeBlockTests
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
 >>>>>>> origin/main
+=======
+        // Act & Assert
+        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -361,6 +392,7 @@ public class CodeBlockTests
     }
 
     [Fact]
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -378,6 +410,8 @@ public class CodeBlockTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     public async Task ItInvokesFunctionCloningAllVariablesAsync()
     {
         // Arrange
@@ -427,6 +461,7 @@ public class CodeBlockTests
     }
 
     [Fact]
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -443,6 +478,8 @@ public class CodeBlockTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     public async Task ItInvokesFunctionWithCustomVariableAsync()
     {
         // Arrange
@@ -462,6 +499,7 @@ public class CodeBlockTests
         "function");
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -481,6 +519,10 @@ public class CodeBlockTests
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
@@ -495,6 +537,7 @@ public class CodeBlockTests
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -511,6 +554,8 @@ public class CodeBlockTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         // Act
@@ -540,6 +585,7 @@ public class CodeBlockTests
         "function");
 
         this._kernel.ImportPluginFromFunctions("plugin", [function]);
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -559,6 +605,10 @@ public class CodeBlockTests
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
@@ -573,6 +623,7 @@ public class CodeBlockTests
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -589,6 +640,8 @@ public class CodeBlockTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         // Act
@@ -655,6 +708,7 @@ public class CodeBlockTests
         {
             canary = p1;
         }, "f")]);
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -674,6 +728,10 @@ public class CodeBlockTests
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         const string Func = "funcName";
 
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
@@ -704,6 +762,7 @@ public class CodeBlockTests
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -720,6 +779,8 @@ public class CodeBlockTests
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         // Act
@@ -768,6 +829,7 @@ public class CodeBlockTests
 
         // Assert
         Assert.Equal(2, arguments.Count);
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -775,6 +837,8 @@ public class CodeBlockTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -979,6 +1043,9 @@ public class CodeBlockTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1028,7 +1095,10 @@ public class CodeBlockTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1058,6 +1128,9 @@ public class CodeBlockTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1122,6 +1195,7 @@ public class CodeBlockTests
         await codeBlock.RenderCodeAsync(kernel);
     }
 
+<<<<<<< Updated upstream
 =======
     }
 
@@ -1231,6 +1305,8 @@ public class CodeBlockTests
     }
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     [Fact]
     public async Task ItCallsPromptFunctionMatchArgumentWithNamedArgsAsync()
     {
@@ -1331,6 +1407,7 @@ public class CodeBlockTests
             this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1353,6 +1430,8 @@ public class CodeBlockTests
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
     private sealed class FakePromptFilter(
         Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRender = null) : IPromptRenderFilter

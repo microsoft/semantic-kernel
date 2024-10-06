@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -14,6 +15,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 # THIS BRANCH IS NO LONGER IN USE, PLEASE REFER TO THE [java-development](https://github.com/your-repo/your-project/tree/java-development) BRANCH FOR THE LATEST UPDATES.
 =======
@@ -22,6 +25,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -33,6 +37,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 # Semantic Kernel for Java
 
@@ -40,6 +46,7 @@ Semantic Kernel (SK) is a lightweight foundation that lets you easily mix conven
 Semantic Kernel (SK) is a lightweight SDK that lets you easily mix conventional programming languages with the latest in
 Large Language Model (LLM) AI "prompts" with templating, chaining, and planning capabilities out-of-the-box.
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -58,12 +65,15 @@ To learn more about Microsoft Semantic Kernel, visit
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 # Get Started with Semantic Kernel for Java ⚡
 
 ## Overview
 
 Semantic Kernel is a lightweight foundation that lets you easily mix conventional programming languages with the latest in
 Large Language Model (LLM) AI "prompts" with templating, chaining, and planning capabilities out-of-the-box. To learn more about Microsoft Semantic Kernel, visit
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,16 +90,22 @@ Large Language Model (LLM) AI "prompts" with templating, chaining, and planning 
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 the [Microsoft Semantic Kernel documentation](https://learn.microsoft.com/en-us/semantic-kernel/whatissk).
 
 The Microsoft Semantic Kernel for Java is a library that implements the key concepts and foundations of Microsoft Semantic Kernel. It is designed
 to be used in Java applications in both client (desktop, mobile, CLIs) and server environments in an idiomatic way, and to be easily integrated with other Java libraries
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -114,6 +130,7 @@ and frameworks.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -133,6 +150,8 @@ to be used in Java applications and services in an idiomatic way, and to be easi
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -157,12 +176,16 @@ To get an idea of how to use the Semantic Kernel for Java, you can check
 the [syntax-examples](samples/semantickernel-concepts/semantickernel-syntax-examples/src/main/java/com/microsoft/semantickernel/samples/syntaxexamples) folder for
 examples of common AI-enabled scenarios.
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -201,9 +224,12 @@ an [Open AI API Key](https://platform.openai.com/)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/).
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -220,6 +246,7 @@ an [Open AI API Key](https://platform.openai.com/)
 >>>>>>> origin/main
 or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/).
 
+<<<<<<< Updated upstream
 =======
 ## OpenAI / Azure OpenAI API keys
 
@@ -228,6 +255,8 @@ an [Open AI API Key](https://platform.openai.com/)
 or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/).
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 ## Using the Semantic Kernel for Java
 
 The library is organized in a set of dependencies published to Maven Central. For a list of the Maven dependencies and how to use each of them, see [PACKAGES.md](PACKAGES.md).
@@ -245,6 +274,7 @@ and get help from the community. We have a `#java` channel for Java-specific que
 
 ## Contributing
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -261,6 +291,8 @@ and get help from the community. We have a `#java` channel for Java-specific que
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 ### Requirements
 
 To build the Semantic Kernel for Java, you will need:
@@ -274,6 +306,7 @@ To build the Semantic Kernel, you will need:
 
 - **Required**:
    - [OpenJDK 17](https://microsoft.com/openjdk/) or newer
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -281,6 +314,8 @@ To build the Semantic Kernel, you will need:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -297,6 +332,7 @@ To build the Semantic Kernel, you will need:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -309,6 +345,8 @@ To build the Semantic Kernel, you will need:
 =======
   - [JDK 17](https://microsoft.com/openjdk/) or newer
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 ### Build the Semantic Kernel
 
@@ -320,12 +358,16 @@ To build the Semantic Kernel, you will need:
    git clone -b experimental-java https://github.com/microsoft/semantic-kernel/
 3. Build the Semantic Kernel
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -367,6 +409,7 @@ To build the Semantic Kernel, you will need:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -379,11 +422,15 @@ To build the Semantic Kernel, you will need:
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
         git clone -b java-development https://github.com/microsoft/semantic-kernel/
 
 2. Build the project with the Maven Wrapper
 
 4. Build the project with the Maven Wrapper
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -400,6 +447,8 @@ To build the Semantic Kernel, you will need:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         cd semantic-kernel/java
@@ -433,6 +482,7 @@ will need to set the following environment variable:
 
 If you are using Azure OpenAI, you will also need to set the following environment variables:
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< main
@@ -454,6 +504,11 @@ If you are using Azure OpenAI, you will also need to set the following environme
 <<<<<<< main
 >>>>>>> Stashed changes
 =======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+<<<<<<< main
 <<<<<<< main
 >>>>>>> Stashed changes
 =======
@@ -494,6 +549,7 @@ If you are using Azure OpenAI, you will also need to set the following environme
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -519,6 +575,8 @@ If you are using Azure OpenAI, you will also need to set the following environme
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -575,6 +633,7 @@ Also ensure that:
 
 Once your proposal is ready, submit a pull request to the `java-development` branch. The pull request will be reviewed by the
 Once your proposal is ready, submit a pull request to the `main` branch. The pull request will be reviewed by the
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -584,6 +643,8 @@ Once your proposal is ready, submit a pull request to the `main` branch. The pul
 Once your proposal is ready, submit a pull request to the `java-v1` branch. The pull request will be reviewed by the
 project maintainers.
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -602,6 +663,7 @@ Once your proposal is ready, submit a pull request to the `java-v1` branch. The 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -614,6 +676,8 @@ Once your proposal is ready, submit a pull request to the `java-v1` branch. The 
 =======
 Once your proposal is ready, submit a pull request to the `java-v1` branch. The pull request will be reviewed by the project maintainers.
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 Make sure your pull request has an objective title and a clear description explaining the problem and solution.
 
@@ -624,6 +688,7 @@ This project is licensed under the [MIT License](../LICENSE).
 ## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -644,6 +709,10 @@ This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_
 <<<<<<< main
 >>>>>>> Stashed changes
 =======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 <<<<<<< main
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -662,6 +731,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> origin/main
@@ -681,6 +751,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_
 =======
 =======
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
@@ -690,6 +762,7 @@ to that repository. This move is purely to ease the development. The various Sem
 aligned in their development.
 
 Project coordination is still performed within this [Project Board](https://github.com/orgs/microsoft/projects/866).
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -710,6 +783,10 @@ Project coordination is still performed within this [Project Board](https://gith
 <<<<<<< main
 >>>>>>> Stashed changes
 =======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 <<<<<<< main
 >>>>>>> Stashed changes
 >>>>>>> origin/111
@@ -726,6 +803,7 @@ Project coordination is still performed within this [Project Board](https://gith
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).
@@ -750,6 +828,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_
 =======
 This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).

@@ -10,6 +10,7 @@ using System.Linq;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Text.Json.Nodes;
 =======
 =======
@@ -39,6 +40,11 @@ using System.Text.Json.Nodes;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+using System.Text.Json.Nodes;
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
 
@@ -86,10 +92,14 @@ internal static class QdrantVectorStoreRecordFieldMapping
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     /// <returns>The converted native value.</returns>
     /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
     public static JsonNode? ConvertFromGrpcFieldValueToJsonNode(Value payloadValue)
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -105,10 +115,13 @@ internal static class QdrantVectorStoreRecordFieldMapping
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     /// <param name="targetType">The target type to convert the value to.</param>
     /// <returns>The converted native value.</returns>
     /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
     public static object? ConvertFromGrpcFieldValueToNativeType(Value payloadValue, Type targetType)
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -124,6 +137,9 @@ internal static class QdrantVectorStoreRecordFieldMapping
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         return payloadValue.KindCase switch
         {
@@ -133,6 +149,10 @@ internal static class QdrantVectorStoreRecordFieldMapping
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -165,13 +185,19 @@ internal static class QdrantVectorStoreRecordFieldMapping
     /// <returns>The converted native value.</returns>
     /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
     public static object? ConvertFromGrpcFieldValue(Value payloadValue)
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     {
         return payloadValue.KindCase switch
         {
             Value.KindOneofCase.NullValue => null,
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             Value.KindOneofCase.IntegerValue => payloadValue.IntegerValue,
             Value.KindOneofCase.StringValue => payloadValue.StringValue,
             Value.KindOneofCase.DoubleValue => payloadValue.DoubleValue,
@@ -183,6 +209,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -195,6 +222,9 @@ internal static class QdrantVectorStoreRecordFieldMapping
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
             Value.KindOneofCase.IntegerValue =>
                 targetType == typeof(int) || targetType == typeof(int?) ?
                 (object)(int)payloadValue.IntegerValue :
@@ -209,6 +239,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
                 payloadValue.ListValue.Values.Select(
                     x => ConvertFromGrpcFieldValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))),
                 targetType),
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -226,6 +257,9 @@ internal static class QdrantVectorStoreRecordFieldMapping
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             _ => throw new VectorStoreRecordMappingException($"Unsupported grpc value kind {payloadValue.KindCase}."),
         };
     }

@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Agents.Chat;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -21,10 +22,14 @@ using Microsoft.SemanticKernel.Agents.Chat;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Agents.History;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -42,6 +47,9 @@ using Microsoft.SemanticKernel.Agents.History;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted;
@@ -73,6 +81,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -86,10 +95,14 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Never delimit the response with quotation marks.
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -107,6 +120,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         You're laser focused on the goal at hand.
         Don't waste time with chit chat.
         Consider suggestions when refining an idea.
@@ -139,6 +155,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             KernelFunctionFactory.CreateFromPrompt(
 =======
 =======
@@ -154,11 +171,16 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+            KernelFunctionFactory.CreateFromPrompt(
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             AgentGroupChat.CreatePromptFunctionForStrategy(
 =======
             KernelFunctionFactory.CreateFromPrompt(
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -176,6 +198,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 """
                 Determine if the copy has been approved.  If so, respond with a single word: yes
 
@@ -187,6 +212,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -200,6 +226,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 """,
                 safeParameterNames: "history");
@@ -207,6 +236,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
         KernelFunction selectionFunction =
             AgentGroupChat.CreatePromptFunctionForStrategy(
 =======
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -224,6 +254,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 """);
 
         KernelFunction selectionFunction =
@@ -234,6 +267,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -263,6 +297,11 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                 $$$"""
                 Determine which participant takes the next turn in a conversation based on the the most recent participant.
                 State only the name of the participant to take the next turn.
@@ -284,6 +323,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 """);
 =======
 =======
@@ -299,6 +339,10 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                """);
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                 """,
                 safeParameterNames: "history");
@@ -308,6 +352,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
                 """);
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -325,6 +370,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -352,6 +400,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -365,11 +414,15 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                                 // Save tokens by not including the entire history in the prompt
                                 HistoryReducer = strategyReducer,
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -387,6 +440,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                             },
                         // Here a KernelFunctionSelectionStrategy selects agents based on a prompt function.
                         SelectionStrategy =
@@ -402,6 +458,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -415,12 +472,16 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                                 // The prompt variable name for the history argument.
                                 HistoryVariableName = "history",
                                 // Save tokens by not including the entire history in the prompt
                                 HistoryReducer = strategyReducer,
 =======
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -438,6 +499,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                                 // The prompt variable name for the agents argument.
                                 AgentsVariableName = "agents",
                                 // The prompt variable name for the history argument.
@@ -448,6 +512,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -477,6 +542,11 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+>>>>>>> main
+>>>>>>> Stashed changes
                             },
                     }
             };

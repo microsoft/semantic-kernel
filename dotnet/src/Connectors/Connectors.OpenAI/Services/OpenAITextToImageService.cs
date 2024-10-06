@@ -42,6 +42,7 @@ public class OpenAITextToImageService : ITextToImageService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -56,6 +57,8 @@ public class OpenAITextToImageService : ITextToImageService
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         this._client = new(modelId, apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
     }
@@ -63,6 +66,7 @@ public class OpenAITextToImageService : ITextToImageService
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._client.GenerateImageAsync(this._client.ModelId, description, width, height, cancellationToken);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,6 +84,9 @@ public class OpenAITextToImageService : ITextToImageService
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
         this._client = new(modelId ?? "dall-e-2", apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
     }
 
@@ -90,6 +97,7 @@ public class OpenAITextToImageService : ITextToImageService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this._client.GetImageContentsAsync(this._client.ModelId, input, executionSettings, kernel, cancellationToken);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -107,4 +115,7 @@ public class OpenAITextToImageService : ITextToImageService
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

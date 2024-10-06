@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -35,6 +36,11 @@ using System.ClientModel;
 =======
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.IO;
@@ -75,6 +81,7 @@ public sealed class OpenAIStreamingChatMessageContentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var openAIClient = new OpenAIClient("key", new() { Transport = new HttpClientPipelineTransport(httpClient) });
 =======
 =======
@@ -86,10 +93,13 @@ public sealed class OpenAIStreamingChatMessageContentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         var openAIClient = new OpenAIClient("key", new() { Transport = new HttpClientPipelineTransport(httpClient) });
 =======
         var openAIClient = new OpenAIClient(new ApiKeyCredential("key"), new() { Transport = new HttpClientPipelineTransport(httpClient) });
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -106,6 +116,8 @@ public sealed class OpenAIStreamingChatMessageContentTests
 =======
         var openAIClient = new OpenAIClient(new ApiKeyCredential("key"), new() { Transport = new HttpClientPipelineTransport(httpClient) });
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         // Act & Assert
         var enumerator = openAIClient.GetChatClient("modelId").CompleteChatStreamingAsync("Test message").GetAsyncEnumerator();

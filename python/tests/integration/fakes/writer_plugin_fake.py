@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 from typing import Annotated
 =======
@@ -22,6 +23,11 @@ from typing import Annotated
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+
+from typing import Annotated
+=======
+>>>>>>> Stashed changes
 import sys
 
 <<<<<<< main
@@ -32,6 +38,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -49,6 +56,9 @@ else:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 from semantic_kernel.functions import kernel_function
 
@@ -76,6 +86,7 @@ class WriterPluginFake:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -105,6 +116,11 @@ class WriterPluginFake:
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         description: Annotated[
             str, "The marker to use to end each chapter"
         ] = "Write an outline for a novel.",
@@ -112,6 +128,7 @@ class WriterPluginFake:
             str, "The default value used for the function"
         ] = "<!--===ENDPART===-->",
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -151,5 +168,13 @@ class WriterPluginFake:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+        description: Annotated[str, "The marker to use to end each chapter"] = "Write an outline for a novel.",
+        default_value: Annotated[str, "The default value used for the function"] = "<!--===ENDPART===-->",
+>>>>>>> ms/small_fixes
+>>>>>>> main
+>>>>>>> Stashed changes
     ) -> str:
         return f"Novel outline: {input}"

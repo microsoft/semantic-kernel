@@ -569,6 +569,7 @@ public sealed class PlanTests : IDisposable
             c.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -577,6 +578,8 @@ public sealed class PlanTests : IDisposable
 <<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -594,6 +597,7 @@ public sealed class PlanTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -606,12 +610,15 @@ public sealed class PlanTests : IDisposable
 =======
                 credentials: new AzureCliCredential());
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         }
         else
         {
             c.AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -620,6 +627,8 @@ public sealed class PlanTests : IDisposable
 <<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -637,6 +646,7 @@ public sealed class PlanTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -649,6 +659,8 @@ public sealed class PlanTests : IDisposable
 =======
                 credentials: new AzureCliCredential());
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         }
 
         if (useEmbeddings)

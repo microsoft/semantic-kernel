@@ -152,6 +152,7 @@ public abstract class ToolCallBehavior
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     choice = ChatToolChoice.Auto;
 =======
 =======
@@ -163,10 +164,13 @@ public abstract class ToolCallBehavior
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                     choice = ChatToolChoice.Auto;
 =======
                     choice = ChatToolChoice.CreateAutoChoice();
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -183,6 +187,8 @@ public abstract class ToolCallBehavior
 =======
                     choice = ChatToolChoice.CreateAutoChoice();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
                     tools = [];
                     for (int i = 0; i < functions.Count; i++)
                     {
@@ -248,6 +254,7 @@ public abstract class ToolCallBehavior
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 choice = ChatToolChoice.Auto;
 =======
 =======
@@ -259,10 +266,13 @@ public abstract class ToolCallBehavior
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                 choice = ChatToolChoice.Auto;
 =======
                 choice = ChatToolChoice.CreateAutoChoice();
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -279,6 +289,8 @@ public abstract class ToolCallBehavior
 =======
                 choice = ChatToolChoice.CreateAutoChoice();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
                 tools = [];
                 for (int i = 0; i < openAIFunctions.Length; i++)
                 {
@@ -319,6 +331,7 @@ public abstract class ToolCallBehavior
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this._choice = new ChatToolChoice(this._tool);
 =======
 =======
@@ -330,10 +343,13 @@ public abstract class ToolCallBehavior
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             this._choice = new ChatToolChoice(this._tool);
 =======
             this._choice = ChatToolChoice.CreateFunctionChoice(this._tool.FunctionName);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -350,6 +366,8 @@ public abstract class ToolCallBehavior
 =======
             this._choice = ChatToolChoice.CreateFunctionChoice(this._tool.FunctionName);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         }
 
         public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.FunctionName}";

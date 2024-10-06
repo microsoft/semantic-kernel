@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -15,10 +16,13 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +39,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 using Microsoft.SemanticKernel.Data;
 using StackExchange.Redis;
@@ -55,6 +61,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -84,6 +91,11 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
 =======
     /// key names before reading or writing to the Redis store. Default is true.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    /// key names before reading or writing to the Redis store. Default is true.
+>>>>>>> main
+>>>>>>> Stashed changes
     /// key names before reading or writing to the Redis store. Default is false.
     /// </summary>
     /// <remarks>
@@ -96,6 +108,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -125,6 +138,11 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
 =======
     public bool PrefixCollectionNameToKeyNames { get; init; } = true;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    public bool PrefixCollectionNameToKeyNames { get; init; } = true;
+>>>>>>> main
+>>>>>>> Stashed changes
     public bool PrefixCollectionNameToKeyNames { get; init; } = false;
 
     /// <summary>

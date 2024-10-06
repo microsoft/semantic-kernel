@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -15,10 +16,13 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +39,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -99,6 +105,7 @@ public sealed class RedisVectorStore : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -112,6 +119,9 @@ public sealed class RedisVectorStore : IVectorStore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 <<<            var recordCollection = new RedisHashSetVectorStoreRecordCollection<TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
             return recordCollection!;
@@ -131,6 +141,7 @@ public sealed class RedisVectorStore : IVectorStore
             return directlyCreatedStore!;
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 =======
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -148,6 +159,9 @@ public sealed class RedisVectorStore : IVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             var recordCollection = new RedisHashSetVectorStoreRecordCollection<TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
             return recordCollection!;
         }
@@ -161,6 +175,7 @@ public sealed class RedisVectorStore : IVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -190,6 +205,11 @@ public sealed class RedisVectorStore : IVectorStore
 =======
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+>>>>>>> Stashed changes
         }
     }
 

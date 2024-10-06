@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonNode> where TRecord : class
 =======
 =======
@@ -25,10 +26,13 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonNode> where TRecord : class
 =======
 internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonObject> where TRecord : class
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -45,6 +49,8 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonObject> where TRecord : class
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 {
     private readonly string _collectionName;
 
@@ -56,6 +62,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -70,12 +77,15 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private readonly List<string> _dataProperties;
 
     private readonly List<string> _vectorProperties;
 
     private readonly Dictionary<string, string> _storagePropertyNames;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -93,11 +103,15 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     private readonly IReadOnlyList<string> _dataProperties;
 
     private readonly IReadOnlyList<string> _vectorProperties;
 
     private readonly IReadOnlyDictionary<string, string> _storagePropertyNames;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -115,6 +129,9 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
@@ -127,6 +144,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         List<VectorStoreRecordDataProperty> dataProperties,
         List<VectorStoreRecordVectorProperty> vectorProperties,
         Dictionary<string, string> storagePropertyNames,
@@ -140,6 +158,8 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         List<VectorStoreRecordDataProperty> dataProperties,
         List<VectorStoreRecordVectorProperty> vectorProperties,
         Dictionary<string, string> storagePropertyNames,
@@ -148,6 +168,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
         IReadOnlyDictionary<string, string> storagePropertyNames,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -166,6 +187,8 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
         IReadOnlyDictionary<string, string> storagePropertyNames,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         JsonSerializerOptions jsonSerializerOptions)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -190,6 +213,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public JsonNode MapFromDataToStorageModel(TRecord dataModel)
 =======
 =======
@@ -201,10 +225,13 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     public JsonNode MapFromDataToStorageModel(TRecord dataModel)
 =======
     public JsonObject MapFromDataToStorageModel(TRecord dataModel)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -221,6 +248,8 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
     public JsonObject MapFromDataToStorageModel(TRecord dataModel)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     {
         Verify.NotNull(dataModel);
 
@@ -235,6 +264,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             { WeaviateConstants.ReservedCollectionPropertyName, JsonValue.Create(this._collectionName) },
 =======
 =======
@@ -246,10 +276,13 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             { WeaviateConstants.ReservedCollectionPropertyName, JsonValue.Create(this._collectionName) },
 =======
             { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -266,6 +299,8 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
             { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             { WeaviateConstants.ReservedKeyPropertyName, jsonNodeDataModel[this._keyProperty]!.DeepClone() },
             { WeaviateConstants.ReservedDataPropertyName, new JsonObject() },
             { WeaviateConstants.ReservedVectorPropertyName, new JsonObject() },
@@ -302,6 +337,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public TRecord MapFromStorageToDataModel(JsonNode storageModel, StorageToDataModelMapperOptions options)
 =======
 =======
@@ -313,10 +349,13 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     public TRecord MapFromStorageToDataModel(JsonNode storageModel, StorageToDataModelMapperOptions options)
 =======
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -333,6 +372,8 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     {
         Verify.NotNull(storageModel);
 

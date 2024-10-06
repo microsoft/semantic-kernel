@@ -75,6 +75,7 @@ public sealed class FunctionCallContent : KernelContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -86,9 +87,12 @@ public sealed class FunctionCallContent : KernelContent
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
     [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -106,6 +110,8 @@ public sealed class FunctionCallContent : KernelContent
     [RequiresUnreferencedCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection if the function is created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     public async Task<FunctionResultContent> InvokeAsync(Kernel kernel, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel, nameof(kernel));

@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -34,6 +35,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 
 from html import unescape
 from typing import ClassVar, Literal, TypeVar
@@ -73,6 +79,7 @@ class TextContent(KernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -86,6 +93,9 @@ class TextContent(KernelContent):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 from typing import Optional
 
@@ -107,6 +117,7 @@ class TextContent(KernelContent):
         text: Optional[str] - The text of the response.
         encoding: Optional[str] - The encoding of the text.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -124,6 +135,9 @@ class TextContent(KernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     Methods:
         __str__: Returns the text of the response.
@@ -135,6 +149,7 @@ class TextContent(KernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -164,6 +179,11 @@ class TextContent(KernelContent):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     content_type: Literal[ContentTypes.TEXT_CONTENT] = Field(TEXT_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = TEXT_CONTENT_TAG
     text: str
@@ -212,6 +232,7 @@ class TextContent(KernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -226,12 +247,16 @@ class TextContent(KernelContent):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
     text: Optional[str] = None
     encoding: Optional[str] = None
 
     def __str__(self) -> str:
         return self.text
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -249,3 +274,6 @@ class TextContent(KernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

@@ -9,6 +9,7 @@
         "presence_penalty": 0.0,
         "frequency_penalty": 0.0
     }
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,6 +29,10 @@
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
   "description": "Given a topic description generate a number of children's book ideas with short descriptions",
   "default_settings": {
     "max_tokens": 2000,
@@ -36,6 +41,7 @@
     "presence_penalty": 0.0,
     "frequency_penalty": 0.0
   }
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -52,5 +58,7 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 }

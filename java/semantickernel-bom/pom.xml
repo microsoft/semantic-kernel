@@ -5,12 +5,16 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -36,6 +40,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
     <version>1.0.0-alpha.1-SNAPSHOT</version>
@@ -60,6 +65,8 @@
 =======
     <version>1.0.0-alpha.1-SNAPSHOT</version>
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
     <version>1.0.0-alpha.1-SNAPSHOT</version>
@@ -156,10 +163,13 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> main
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -193,6 +203,7 @@
                 <artifactId>aiservices-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -229,6 +240,8 @@
                 <artifactId>aiservices-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
             <dependency>
                 <groupId>com.azure</groupId>
@@ -250,8 +263,11 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 <version>1.12.1</version>
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -266,11 +282,14 @@
                 <version>1.10.4</version>
             </dependency>
             <dependency>
+<<<<<<< Updated upstream
                 <groupId>com.azure</groupId>
                 <artifactId>azure-identity</artifactId>
                 <version>1.10.4</version>
             </dependency>
             <dependency>
+=======
+>>>>>>> Stashed changes
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>2.0.7</version>
@@ -279,6 +298,9 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -326,6 +348,7 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-core-http-netty</artifactId>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -351,6 +374,9 @@
 =======
                 <version>1.13.10</version>
 >>>>>>> origin/main
+=======
+                <version>1.13.10</version>
+>>>>>>> Stashed changes
                 <scope>runtime</scope>
             </dependency>
             <dependency>
@@ -455,6 +481,7 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -480,5 +507,8 @@
 =======
         <tag>java-0.2.11-alpha</tag>
 >>>>>>> origin/main
+=======
+        <tag>java-0.2.11-alpha</tag>
+>>>>>>> Stashed changes
     </scm>
 </project>

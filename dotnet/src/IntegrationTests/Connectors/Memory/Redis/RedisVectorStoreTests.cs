@@ -22,6 +22,7 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -51,6 +52,11 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     // If null, all tests will be enabled
     private const string SkipReason = "Requires Redis docker container up and running";
 
@@ -61,6 +67,7 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -72,10 +79,13 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 =======
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,6 +104,8 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     public async Task ItCanGetAListOfExistingCollectionNamesAsync()
     {
         // Arrange

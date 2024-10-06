@@ -2,6 +2,7 @@
 
 import logging
 from re import compile
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -17,6 +18,8 @@ from re import compile
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -25,6 +28,7 @@ from re import compile
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -37,11 +41,14 @@ from re import compile
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
 from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -50,6 +57,8 @@ from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
 <<<<<<< Updated upstream
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -73,6 +82,7 @@ from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockS
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -92,11 +102,14 @@ from pydantic import model_validator
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockSyntaxError
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
+<<<<<<< Updated upstream
 <<<<<<< head
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -118,6 +131,10 @@ FUNCTION_ID_BLOCK_REGEX = (
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+
+logger: logging.Logger = logging.getLogger(__name__)
+>>>>>>> Stashed changes
 <<<<<<< main
 
 FUNCTION_ID_BLOCK_REGEX = (
@@ -140,6 +157,9 @@ FUNCTION_ID_BLOCK_REGEX = r"^((?P<plugin>[0-9A-Za-z_]+)[.])?(?P<function>[0-9A-Z
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -158,6 +178,10 @@ FUNCTION_ID_BLOCK_MATCHER = compile(FUNCTION_ID_BLOCK_REGEX)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
@@ -184,8 +208,11 @@ class FunctionIdBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Anything other than that and a ValueError is raised.
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -207,6 +234,9 @@ class FunctionIdBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -232,7 +262,10 @@ class FunctionIdBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -245,6 +278,7 @@ class FunctionIdBlock(Block):
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -303,6 +337,11 @@ class FunctionIdBlock(Block):
     plugin_name: str | None = None
 
 >>>>>>> origin/main
+=======
+    function_name: str = ""
+    plugin_name: str | None = None
+
+>>>>>>> Stashed changes
     @model_validator(mode="before")
     @classmethod
     def parse_content(cls, fields: dict[str, Any]) -> dict[str, Any]:
@@ -310,6 +349,7 @@ class FunctionIdBlock(Block):
 
         If both are present in the fields, return the fields as is.
         Otherwise, use the regex to extract the plugin and function name.
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -330,6 +370,11 @@ class FunctionIdBlock(Block):
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
     function_name: Optional[str] = ""
     plugin_name: Optional[str] = None
 
@@ -341,6 +386,7 @@ class FunctionIdBlock(Block):
         If both are present in the fields, return the fields as is.
         Otherwise use the regex to extract the plugin and function name.
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -357,6 +403,8 @@ class FunctionIdBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         """
         if "plugin_name" in fields and "function_name" in fields:
@@ -370,6 +418,7 @@ class FunctionIdBlock(Block):
         fields["function_name"] = matches.group("function")
         return fields
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -387,18 +436,24 @@ class FunctionIdBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
 =======
     def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -415,5 +470,7 @@ class FunctionIdBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         return self.content

@@ -10,12 +10,16 @@ We do our best to respond to each submission.
 ## Public Community Office Hours
 
 We regularly have Community Office Hours that are open to the **public** to join.
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -47,6 +51,7 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -59,6 +64,9 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 
 Add Semantic Kernel events to your calendar - we're running two community calls to cater different timezones:
 
@@ -73,6 +81,7 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 * Americas timezone: download the [calendar.ics](https://aka.ms/sk-community-calendar) file.
 * Asia Pacific timezone: download the [calendar-APAC.ics](https://aka.ms/sk-community-calendar-apac) file.
 
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -89,6 +98,8 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 If you have any questions or if you would like to showcase your project(s), please email what you'd like us to cover here: skofficehours[at]microsoft.com.
 

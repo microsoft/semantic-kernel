@@ -73,6 +73,7 @@ public class AgentChannelTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -86,6 +87,9 @@ public class AgentChannelTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
         protected internal override string Serialize()
         {
             throw new NotImplementedException();
@@ -94,6 +98,7 @@ public class AgentChannelTests
 
     private sealed class NextAgent : TestAgent;
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -111,6 +116,9 @@ public class AgentChannelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
@@ -124,6 +132,7 @@ public class AgentChannelTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -153,11 +162,17 @@ public class AgentChannelTests
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         Mock<Agent> mockAgent = new();
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(mockAgent.Object).ToArrayAsync().AsTask());
         // Assert
         Assert.Equal(1, channel.InvokeCount);
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -178,6 +193,10 @@ public class AgentChannelTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    }
+=======
+>>>>>>> Stashed changes
         protected internal override IEnumerable<string> GetChannelKeys()
         {
             throw new NotImplementedException();
@@ -190,6 +209,7 @@ public class AgentChannelTests
     }
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -207,4 +227,7 @@ public class AgentChannelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

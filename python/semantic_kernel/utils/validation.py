@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15,6 +16,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -23,6 +26,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -35,12 +39,15 @@
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 PLUGIN_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 FUNCTION_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 FULLY_QUALIFIED_FUNCTION_NAME = (
     r"^(?P<plugin>[0-9A-Za-z_]+)[.](?P<function>[0-9A-Za-z_]+)$"
 )
 FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]+$"
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -61,6 +68,11 @@ FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 from re import match as re_match
 from typing import Optional
 
@@ -135,6 +147,7 @@ def validate_function_param_name(value: Optional[str]) -> None:
             f"names may only contain ASCII letters, digits, and underscores."
         )
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -151,4 +164,6 @@ def validate_function_param_name(value: Optional[str]) -> None:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main

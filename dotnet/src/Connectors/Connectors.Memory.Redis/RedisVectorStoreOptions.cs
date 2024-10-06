@@ -14,6 +14,7 @@ public sealed class RedisVectorStoreOptions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// An optional factory to use for constructing <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
 =======
 =======
@@ -29,6 +30,10 @@ public sealed class RedisVectorStoreOptions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    /// An optional factory to use for constructing <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 <<<<<<< HEAD
     /// An optional factory to use for constructing <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
@@ -38,6 +43,7 @@ public sealed class RedisVectorStoreOptions
 =======
     /// An optional factory to use for constructing <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -55,6 +61,9 @@ public sealed class RedisVectorStoreOptions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// </summary>
     public IRedisVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
 

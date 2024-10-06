@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -37,6 +38,11 @@ using System.Text.Json;
 =======
 using System.Text.Json;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.Text.Json;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -48,6 +54,7 @@ using Microsoft.SemanticKernel.Agents.Extensions;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Agents.Internal;
 =======
 =======
@@ -59,12 +66,15 @@ using Microsoft.SemanticKernel.Agents.Internal;
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Agents.Internal;
 =======
 using Microsoft.SemanticKernel.Agents.Filters;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.Agents.Serialization;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -83,6 +93,8 @@ using Microsoft.SemanticKernel.Agents.Filters;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.Agents.Serialization;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -107,6 +119,7 @@ public abstract class AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private ILogger? _logger;
 
     /// <summary>
@@ -120,12 +133,17 @@ public abstract class AgentChat
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     private ILogger? _logger;
 
     /// <summary>
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     private List<IAgentChatFilter>? _filters;
     private ILogger? _logger;
 
@@ -135,6 +153,7 @@ public abstract class AgentChat
     public abstract IReadOnlyList<Agent> Agents { get; }
 
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -152,6 +171,9 @@ public abstract class AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Indicates if a chat operation is active.  Activity is defined as
     /// any the execution of any public method.
     /// </summary>
@@ -174,6 +196,7 @@ public abstract class AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -187,11 +210,15 @@ public abstract class AgentChat
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     /// %%%
     /// </summary>
     public IList<IAgentChatFilter> Filters => this._filters ??= [];
 
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -209,6 +236,9 @@ public abstract class AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Exposes the internal history to subclasses.
     /// </summary>
     protected ChatHistory History { get; }
@@ -388,6 +418,7 @@ public abstract class AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -399,10 +430,13 @@ public abstract class AgentChat
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
             // %%%
             this.OnAgentInvokingFilter(agent, this.History);
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -421,6 +455,8 @@ public abstract class AgentChat
             this.OnAgentInvokingFilter(agent, this.History);
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             // Get or create the required channel and block until channel is synchronized.
             // Will throw exception when propagating a processing failure.
             AgentChannel channel = await this.GetOrCreateChannelAsync(agent, cancellationToken).ConfigureAwait(false);
@@ -442,6 +478,7 @@ public abstract class AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -455,6 +492,9 @@ public abstract class AgentChat
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
                 // Invoke filter
                 AgentChatFilterInvokedContext? context = this.OnAgentInvokedFilter(agent, this.History, message);
 
@@ -466,6 +506,7 @@ public abstract class AgentChat
                 // Add to primary history
                 this.History.Add(effectiveMessage);
                 messages.Add(effectiveMessage);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -483,6 +524,9 @@ public abstract class AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
                 if (isVisible)
                 // Don't expose internal messages to caller.
@@ -498,6 +542,7 @@ public abstract class AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -509,10 +554,13 @@ public abstract class AgentChat
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 
                 // Yield message to caller
                 yield return effectiveMessage;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -531,6 +579,8 @@ public abstract class AgentChat
                 // Yield message to caller
                 yield return effectiveMessage;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             }
 
             // Broadcast message to other channels (in parallel)
@@ -630,6 +680,7 @@ public abstract class AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -643,6 +694,9 @@ public abstract class AgentChat
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     internal async Task DeserializeAsync(AgentChatState state)
     {
         if (this._agentChannels.Count > 0 || this.History.Count > 0)
@@ -697,6 +751,7 @@ public abstract class AgentChat
                         })
         };
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -714,6 +769,9 @@ public abstract class AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>
     /// Clear activity signal to indicate that activity has ceased.
     /// </summary>
@@ -797,6 +855,7 @@ public abstract class AgentChat
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -810,6 +869,9 @@ public abstract class AgentChat
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     private AgentChatFilterInvokingContext? OnAgentInvokingFilter(Agent agent, IReadOnlyList<ChatMessageContent> history)
     {
         AgentChatFilterInvokingContext? context = null;
@@ -844,6 +906,7 @@ public abstract class AgentChat
         return context;
     }
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -861,6 +924,9 @@ public abstract class AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentChat"/> class.
     /// </summary>

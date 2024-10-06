@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 from collections.abc import Callable
 
 import pytest
@@ -67,6 +73,7 @@ async def test_register_valid_native_function(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -80,6 +87,9 @@ async def test_register_valid_native_function(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 import pytest
 
@@ -108,6 +118,7 @@ async def test_register_valid_native_function():
     assert isinstance(registered_func, KernelFunction)
     assert kernel.plugins["TestPlugin"]["getLightStatus"] == registered_func
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -125,6 +136,9 @@ async def test_register_valid_native_function():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     func_result = await registered_func.invoke(kernel, KernelArguments(arg1="testtest"))
     assert str(func_result) == "test"
 
@@ -135,6 +149,7 @@ async def test_register_valid_native_function():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -164,6 +179,11 @@ async def test_register_valid_native_function():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_register_undecorated_native_function(
     kernel: Kernel, not_decorated_native_function: Callable
 ):
@@ -182,6 +202,7 @@ def test_register_with_none_plugin_name(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -195,6 +216,9 @@ def test_register_with_none_plugin_name(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 def test_register_undecorated_native_function():
     kernel = Kernel()
@@ -219,6 +243,7 @@ def test_register_overloaded_native_function():
     with pytest.raises(ValueError):
         kernel.register_native_function("TestPlugin", decorated_native_function)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -236,3 +261,6 @@ def test_register_overloaded_native_function():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

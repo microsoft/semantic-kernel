@@ -1,12 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -584,6 +588,7 @@ from semantic_kernel.kernel_exception import KernelException
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -596,6 +601,9 @@ from semantic_kernel.kernel_exception import KernelException
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from copy import copy
@@ -660,6 +668,7 @@ from semantic_kernel.prompt_template.prompt_template_config import (
 from semantic_kernel.exceptions.kernel_exceptions import KernelServiceNotFoundError
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
+<<<<<<< Updated upstream
 <<<<<<< head
 )
 <<<<<<< main
@@ -695,6 +704,8 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 =======
+=======
+>>>>>>> Stashed changes
 )
 <<<<<<< main
 from semantic_kernel.filters.filter_types import FilterTypes
@@ -1638,6 +1649,7 @@ from semantic_kernel.skill_definition.skill_collection_base import SkillCollecti
 from semantic_kernel.template_engine.prompt_template_engine_base import (
     PromptTemplateEngineBase,
 )
+<<<<<<< Updated upstream
 >>>>>>> origin/main
 
 TDataModel = TypeVar("TDataModel")
@@ -2704,6 +2716,93 @@ class Kernel(KernelBase):
                 "All func arguments to Kernel.run*(inputs, func1, func2, ...) "
                 "must be SKFunctionBase instances"
             )
+=======
+
+
+class Kernel(KernelBase):
+    _log: Logger
+    _config: KernelConfig
+    _skill_collection: SkillCollectionBase
+    _prompt_template_engine: PromptTemplateEngineBase
+    _memory: SemanticTextMemoryBase
+
+    def __init__(
+        self,
+        skill_collection: SkillCollectionBase,
+        prompt_template_engine: PromptTemplateEngineBase,
+        memory: SemanticTextMemoryBase,
+        config: KernelConfig,
+        log: Logger,
+    ) -> None:
+        self._log = log
+        self._config = config
+        self._skill_collection = skill_collection
+        self._prompt_template_engine = prompt_template_engine
+        self._memory = memory
+
+    @property
+    def config(self) -> KernelConfig:
+        return self._config
+
+    @property
+    def logger(self) -> Logger:
+        return self._log
+
+    @property
+    def memory(self) -> SemanticTextMemoryBase:
+        return self._memory
+
+    @property
+    def prompt_template_engine(self) -> PromptTemplateEngineBase:
+        return self._prompt_template_engine
+
+    @property
+    def skills(self) -> ReadOnlySkillCollectionBase:
+        return self._skill_collection.read_only_skill_collection
+
+    def register_semantic_function(
+        self,
+        skill_name: Optional[str],
+        function_name: str,
+        function_config: SemanticFunctionConfig,
+    ) -> SKFunctionBase:
+        if skill_name is None or skill_name == "":
+            skill_name = SkillCollection.GLOBAL_SKILL
+        assert skill_name is not None  # for type checker
+
+        Verify.valid_skill_name(skill_name)
+        Verify.valid_function_name(function_name)
+
+        function = self._create_semantic_function(
+            skill_name, function_name, function_config
+        )
+        self._skill_collection.add_semantic_function(function)
+
+        return function
+
+    async def run_async(self, *functions: Any) -> SKContext:
+        return await self.run_on_vars_async(ContextVariables(), *functions)
+
+    async def run_on_str_async(self, input_str: str, *functions: Any) -> SKContext:
+        return await self.run_on_vars_async(ContextVariables(input_str), *functions)
+
+    async def run_on_vars_async(
+        self, input_vars: ContextVariables, *functions: Any
+    ) -> SKContext:
+        context = SKContext(
+            input_vars,
+            self._memory,
+            self._skill_collection.read_only_skill_collection,
+            self._log,
+        )
+
+        pipeline_step = 0
+        for func in functions:
+            assert isinstance(func, SKFunctionBase), (
+                "All func arguments to Kernel.run*(inputs, func1, func2, ...) "
+                "must be SKFunctionBase instances"
+            )
+>>>>>>> Stashed changes
 
             if context.error_occurred:
                 self._log.error(
@@ -2827,7 +2926,10 @@ class Kernel(KernelBase):
             if len(function_config.prompt_template_config.default_backends) > 0
             else None
         )
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 
         function.set_ai_configuration(
             CompleteRequestSettings.from_completion_config(
@@ -2843,7 +2945,10 @@ class Kernel(KernelBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2878,6 +2983,7 @@ class Kernel(KernelBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2938,6 +3044,8 @@ class Kernel(KernelBase):
         if backend.backend_type == BackendType.AzureOpenAI:
             Verify.not_null(
                 backend.azure_open_ai, "Azure OpenAI configuration is missing"
+=======
+>>>>>>> Stashed changes
             )
             function.set_ai_backend(
                 lambda: AzureTextCompletion(
@@ -2966,6 +3074,7 @@ class Kernel(KernelBase):
                 f"unable to prepare semantic function. Function description: "
                 f"{function_config.prompt_template_config.description}",
             )
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2975,6 +3084,8 @@ class Kernel(KernelBase):
 
         return function
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2996,6 +3107,7 @@ class Kernel(KernelBase):
 
         return plugin
 
+<<<<<<< Updated upstream
 =======
 
         return function
@@ -3007,6 +3119,8 @@ class Kernel(KernelBase):
         return plugin
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     def import_native_plugin_from_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         MODULE_NAME = "native_function"
 
@@ -3302,6 +3416,7 @@ class Kernel(KernelBase):
 
     # endregion
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -3318,4 +3433,6 @@ class Kernel(KernelBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main

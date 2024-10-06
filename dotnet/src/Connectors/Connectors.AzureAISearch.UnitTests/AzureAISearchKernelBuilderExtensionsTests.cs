@@ -64,6 +64,7 @@ public class AzureAISearchKernelBuilderExtensionsTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -77,6 +78,9 @@ public class AzureAISearchKernelBuilderExtensionsTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     [Fact]
     public void AddVectorStoreRecordCollectionRegistersClass()
     {
@@ -110,6 +114,7 @@ public class AzureAISearchKernelBuilderExtensionsTests
         this.AssertVectorStoreRecordCollectionCreated();
     }
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -127,6 +132,9 @@ public class AzureAISearchKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     private void AssertVectorStoreCreated()
     {
         var kernel = this._kernelBuilder.Build();
@@ -135,6 +143,7 @@ public class AzureAISearchKernelBuilderExtensionsTests
         Assert.IsType<AzureAISearchVectorStore>(vectorStore);
     }
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,6 +162,9 @@ public class AzureAISearchKernelBuilderExtensionsTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     private void AssertVectorStoreRecordCollectionCreated()
     {
@@ -178,6 +190,7 @@ public class AzureAISearchKernelBuilderExtensionsTests
         [VectorStoreRecordKey]
         public string Id { get; set; } = string.Empty;
     }
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -195,4 +208,7 @@ public class AzureAISearchKernelBuilderExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

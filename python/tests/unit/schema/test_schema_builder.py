@@ -13,6 +13,7 @@ import pytest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -42,6 +43,11 @@ from semantic_kernel.connectors.utils.structured_output_schema import generate_s
 =======
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 
@@ -108,6 +114,7 @@ class MockModel:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -121,6 +128,9 @@ class MockModel:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 class PydanticStep(KernelBaseModel):
     explanation: str
     output: str
@@ -141,6 +151,7 @@ class NonPydanticReasoning:
     final_answer: str
 
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -158,6 +169,9 @@ class NonPydanticReasoning:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_build_with_kernel_base_model():
     expected_schema = {
         "type": "object",
@@ -473,6 +487,7 @@ def test_handle_complex_type():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -486,6 +501,9 @@ def test_handle_complex_type():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
 
 def test_build_schema_with_pydantic_structured_output():
@@ -552,6 +570,7 @@ def test_build_schema_with_nonpydantic_structured_output():
     }
 
     assert structured_output_schema == expected_schema
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -569,3 +588,6 @@ def test_build_schema_with_nonpydantic_structured_output():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

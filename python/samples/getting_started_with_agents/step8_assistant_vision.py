@@ -41,6 +41,7 @@ def create_message_with_image_reference(input: str, file_id: str) -> ChatMessage
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -52,10 +53,13 @@ def create_message_with_image_reference(input: str, file_id: str) -> ChatMessage
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 streaming = False
 
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,6 +78,8 @@ streaming = False
 
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: ChatMessageContent) -> None:
     """Invoke the agent with the user input."""
@@ -87,6 +93,7 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: Cha
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     async for content in agent.invoke(thread_id=thread_id):
         if content.role != AuthorRole.TOOL:
             print(f"# {content.role}: {content.content}")
@@ -100,12 +107,17 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: Cha
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     async for content in agent.invoke(thread_id=thread_id):
         if content.role != AuthorRole.TOOL:
             print(f"# {content.role}: {content.content}")
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     if streaming:
         first_chunk = True
         async for content in agent.invoke_stream(thread_id=thread_id):
@@ -119,6 +131,7 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: Cha
         async for content in agent.invoke(thread_id=thread_id):
             if content.role != AuthorRole.TOOL:
                 print(f"# {content.role}: {content.content}")
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -136,6 +149,9 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: Cha
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 async def main():

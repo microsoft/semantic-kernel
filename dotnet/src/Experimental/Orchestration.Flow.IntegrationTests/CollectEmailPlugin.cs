@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +35,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -72,6 +78,7 @@ public sealed partial class CollectEmailPlugin
         {
             MaxTokens = this.MaxTokens,
             StopSequences = ["Observation:"],
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,6 +96,8 @@ public sealed partial class CollectEmailPlugin
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 using System.Collections.Generic;
 >>>>>>> origin/main
@@ -106,9 +115,12 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Orchestration;
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
@@ -136,6 +148,7 @@ public sealed partial class CollectEmailPlugin
 
     public CollectEmailPlugin(IKernel kernel)
     {
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
         this._chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -144,6 +157,11 @@ public sealed partial class CollectEmailPlugin
         this._chat = kernel.GetService<IChatCompletion>();
         this._chatRequestSettings = new OpenAIRequestSettings
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        this._chat = kernel.GetRequiredService<IChatCompletionService>();
+        this._chatRequestSettings = new OpenAIPromptExecutionSettings
+>>>>>>> Stashed changes
         {
             MaxTokens = this.MaxTokens,
             StopSequences = ["Observation:"],
@@ -154,6 +172,7 @@ public sealed partial class CollectEmailPlugin
             MaxTokens = this.MaxTokens,
             StopSequences = new List<string>() { "Observation:" },
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -170,11 +189,14 @@ public sealed partial class CollectEmailPlugin
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
             Temperature = 0
         };
     }
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -199,6 +221,9 @@ public sealed partial class CollectEmailPlugin
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     [KernelFunction("ConfigureEmailAddress")]
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
     public async Task<string> CollectEmailAsync(
@@ -208,6 +233,7 @@ public sealed partial class CollectEmailPlugin
         string email_address,
 #pragma warning restore CA1707 // Identifiers should not contain underscores
         KernelArguments arguments)
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -235,6 +261,10 @@ public sealed partial class CollectEmailPlugin
 =======
 >>>>>>> Stashed changes
 =======
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
     {
         var chat = new ChatHistory(SystemPrompt);
         chat.AddUserMessage(Goal);
@@ -279,6 +309,7 @@ public sealed partial class CollectEmailPlugin
         var chat = new ChatHistory(SystemPrompt);
         chat.AddUserMessage(Goal);
 
+<<<<<<< Updated upstream
 <<<<<<< head
         ChatHistory? chatHistory = arguments.GetChatHistory();
         if (chatHistory?.Count > 0)
@@ -339,6 +370,8 @@ public sealed partial class CollectEmailPlugin
         var chat = new ChatHistory(SystemPrompt);
         chat.AddUserMessage(Goal);
 
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         ChatHistory? chatHistory = arguments.GetChatHistory();
         if (chatHistory?.Count > 0)
@@ -368,6 +401,7 @@ public sealed partial class CollectEmailPlugin
         }
 
         // invalid email, prompt user to provide a valid email
+<<<<<<< Updated upstream
 =======
         if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
         {
@@ -378,6 +412,8 @@ public sealed partial class CollectEmailPlugin
 
         // invalid email, prompt user to provide a valid email
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         context.Variables["email_address"] = string.Empty;
         context.PromptInput();
         return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
@@ -388,7 +424,10 @@ public sealed partial class CollectEmailPlugin
 
         return response.Content ?? string.Empty;
     }
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
 #if NET
@@ -405,6 +444,7 @@ public sealed partial class CollectEmailPlugin
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -417,4 +457,6 @@ public sealed partial class CollectEmailPlugin
 =======
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 }

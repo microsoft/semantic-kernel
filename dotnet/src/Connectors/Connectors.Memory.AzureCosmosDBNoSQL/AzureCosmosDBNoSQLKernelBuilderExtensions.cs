@@ -59,6 +59,7 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -72,6 +73,9 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
@@ -118,6 +122,7 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         builder.Services.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(collectionName, connectionString, databaseName, options, serviceId);
         return builder;
     }
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -135,4 +140,7 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

@@ -17,6 +17,7 @@ public sealed class ExecutionState
     /// <summary>
     /// Execution state described by variables.
     /// </summary>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,11 +39,17 @@ public sealed class ExecutionState
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    public Dictionary<string, string> Variables { get; set; } = [];
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public Dictionary<string, string> Variables { get; set; } = [];
 =======
     public Dictionary<string, string> Variables { get; set; } = new Dictionary<string, string>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -59,11 +66,14 @@ public sealed class ExecutionState
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
     /// <summary>
     /// Execution state of each step
     /// </summary>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -85,11 +95,17 @@ public sealed class ExecutionState
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    public Dictionary<string, StepExecutionState> StepStates { get; set; } = [];
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public Dictionary<string, StepExecutionState> StepStates { get; set; } = [];
 =======
     public Dictionary<string, StepExecutionState> StepStates { get; set; } = new Dictionary<string, StepExecutionState>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -106,6 +122,8 @@ public sealed class ExecutionState
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
     /// <summary>
@@ -126,6 +144,7 @@ public sealed class ExecutionState
         /// <summary>
         /// The output variables provided by the step
         /// </summary>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -147,11 +166,17 @@ public sealed class ExecutionState
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        public Dictionary<string, List<string>> Output { get; set; } = [];
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         public Dictionary<string, List<string>> Output { get; set; } = [];
 =======
         public Dictionary<string, List<string>> Output { get; set; } = new Dictionary<string, List<string>>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -168,6 +193,8 @@ public sealed class ExecutionState
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
         /// <summary>
@@ -178,6 +205,7 @@ public sealed class ExecutionState
         /// <param name="value">The value of variable.</param>
         public void AddOrUpdateVariable(int executionIndex, string key, string value)
         {
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -202,11 +230,15 @@ public sealed class ExecutionState
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
             if (!this.Output.TryGetValue(key, out List<string>? output))
             {
                 this.Output[key] = output = [];
             }
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -243,6 +275,11 @@ public sealed class ExecutionState
             var output = this.Output.GetOrAdd(key, new List<string>());
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+=======
+            var output = this.Output.GetOrAdd(key, new List<string>());
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> Stashed changes
             if (output!.Count <= executionIndex)
             {
                 output.Add(value);

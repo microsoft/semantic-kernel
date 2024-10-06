@@ -14,6 +14,7 @@ namespace Agents;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /// on <see cref="ChatHistoryKernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
 =======
 =======
@@ -25,10 +26,13 @@ namespace Agents;
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 /// on <see cref="ChatHistoryKernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
 =======
 /// on <see cref="KernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -45,6 +49,8 @@ namespace Agents;
 =======
 /// on <see cref="KernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 /// when calling <see cref="ChatCompletionAgent.InvokeAsync"/>
 /// </summary>
 public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseTest(output)

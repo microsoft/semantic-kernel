@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.ClientModel;
 =======
 =======
@@ -17,12 +18,15 @@ using System.ClientModel;
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 using System.ClientModel;
 =======
 using System;
 using System.ClientModel;
 using System.Collections.Generic;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +45,8 @@ using System;
 using System.ClientModel;
 using System.Collections.Generic;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using OpenAI.Images;
@@ -93,6 +99,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -106,6 +113,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Generates an image with the provided configuration.
@@ -213,6 +223,7 @@ internal partial class ClientCore
 
         throw new NotSupportedException($"The provided response format type '{responseFormat.GetType()}' is not supported.");
     }
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -230,4 +241,7 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

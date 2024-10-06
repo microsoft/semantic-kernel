@@ -36,6 +36,7 @@ class TestCodeBlock:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -49,6 +50,9 @@ class TestCodeBlock:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
 import pytest
 import asyncio
@@ -81,6 +85,7 @@ class TestCodeBlock:
 
 		# Assert
 		assert result == "arrivederci"
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -98,3 +103,6 @@ class TestCodeBlock:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

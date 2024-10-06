@@ -1,12 +1,16 @@
 <Project>
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -33,6 +37,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
     <VersionPrefix>1.21.1</VersionPrefix>
@@ -57,6 +62,8 @@
 =======
     <VersionPrefix>1.21.1</VersionPrefix>
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
     <VersionPrefix>1.21.1</VersionPrefix>
@@ -68,6 +75,7 @@
     <IsPackable>true</IsPackable>
 
     <!-- Package validation. Baseline Version should be lower or equal to current version. -->
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -76,6 +84,8 @@
 <<<<<<< Updated upstream
     <PackageValidationBaselineVersion>1.16.2</PackageValidationBaselineVersion>
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -93,6 +103,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -105,6 +116,8 @@
 =======
     <PackageValidationBaselineVersion>1.21.1</PackageValidationBaselineVersion>
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     <!-- Validate assembly attributes only for Publish builds -->
     <NoWarn Condition="'$(Configuration)' != 'Publish'">$(NoWarn);CP0003</NoWarn>
     <!-- Do not validate reference assemblies -->

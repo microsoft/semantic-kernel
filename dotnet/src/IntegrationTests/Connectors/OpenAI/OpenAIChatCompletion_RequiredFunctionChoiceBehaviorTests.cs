@@ -102,6 +102,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -131,6 +132,11 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -172,6 +178,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -201,6 +208,11 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -239,6 +251,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
 =======
@@ -250,10 +263,13 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -270,6 +286,8 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -348,6 +366,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -377,6 +396,11 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -422,6 +446,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         Assert.Single(invokedFunctions);
 =======
@@ -434,10 +459,13 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 
         Assert.Single(invokedFunctions);
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -453,6 +481,8 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -493,6 +523,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
 =======
@@ -522,6 +553,11 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
@@ -562,6 +598,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
 =======
@@ -573,10 +610,13 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -593,6 +633,8 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -636,6 +678,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
 =======
@@ -665,6 +708,11 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);

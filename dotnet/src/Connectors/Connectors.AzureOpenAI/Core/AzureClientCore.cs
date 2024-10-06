@@ -4,10 +4,14 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -23,10 +27,13 @@ using System;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -44,6 +51,9 @@ using System.ClientModel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.ClientModel.Primitives;
 using System.Net.Http;
 using System.Threading;
@@ -107,6 +117,7 @@ internal partial class AzureClientCore : ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -136,6 +147,11 @@ internal partial class AzureClientCore : ClientCore
 =======
         this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
+>>>>>>> main
+>>>>>>> Stashed changes
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
@@ -208,6 +224,7 @@ internal partial class AzureClientCore : ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             ? new(serviceVersion.Value) { ApplicationId = HttpHeaderConstant.Values.UserAgent }
             : new() { ApplicationId = HttpHeaderConstant.Values.UserAgent };
 =======
@@ -220,12 +237,15 @@ internal partial class AzureClientCore : ClientCore
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             ? new(serviceVersion.Value) { ApplicationId = HttpHeaderConstant.Values.UserAgent }
             : new() { ApplicationId = HttpHeaderConstant.Values.UserAgent };
 =======
             ? new(serviceVersion.Value) { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent }
             : new() { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent };
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -243,6 +263,8 @@ internal partial class AzureClientCore : ClientCore
             ? new(serviceVersion.Value) { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent }
             : new() { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent };
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
 
@@ -261,6 +283,7 @@ internal partial class AzureClientCore : ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -274,10 +297,14 @@ internal partial class AzureClientCore : ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     /// <inheritdoc/>
     protected override string GetClientModelId()
         => this.DeploymentName;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -295,4 +322,7 @@ internal partial class AzureClientCore : ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

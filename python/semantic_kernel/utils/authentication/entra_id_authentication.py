@@ -15,6 +15,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -26,9 +27,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 logging.basicConfig(level=logging.DEBUG)
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -46,6 +50,8 @@ logging.basicConfig(level=logging.DEBUG)
 logging.basicConfig(level=logging.DEBUG)
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 def get_entra_auth_token(token_endpoint: str) -> str | None:
     """Retrieve a Microsoft Entra Auth Token for a given token endpoint.
@@ -78,6 +84,7 @@ def get_entra_auth_token(token_endpoint: str) -> str | None:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -89,9 +96,12 @@ def get_entra_auth_token(token_endpoint: str) -> str | None:
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
     logger.info(f"Successfully retrieved Azure token for the specified endpoint: `{token_endpoint}`.")
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -109,4 +119,6 @@ def get_entra_auth_token(token_endpoint: str) -> str | None:
     logger.info(f"Successfully retrieved Azure token for the specified endpoint: `{token_endpoint}`.")
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     return auth_token.token if auth_token else None

@@ -8,6 +8,7 @@ using System.Text;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -37,6 +38,11 @@ using System.Text.Json;
 =======
 using System.Text.Json;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.Text.Json;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -54,6 +60,7 @@ namespace Microsoft.SemanticKernel.Agents;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -68,6 +75,8 @@ namespace Microsoft.SemanticKernel.Agents;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 /// NOTE: Enable OpenAIPromptExecutionSettings.FunctionChoiceBehavior for agent plugins.
 /// (<see cref="ChatHistoryKernelAgent.Arguments"/>)
@@ -96,6 +105,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -108,6 +118,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 /// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins.
 /// (<see cref="KernelAgent.Arguments"/>)
 /// </remarks>
@@ -151,6 +164,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -168,6 +182,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         int messageCount = chat.Count;
 
@@ -219,6 +236,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -233,12 +251,15 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         arguments ??= this.Arguments;
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -256,11 +277,15 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
         arguments = this.MergeArguments(arguments);
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -278,6 +303,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         int messageCount = chat.Count;
 
@@ -329,6 +357,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -342,6 +371,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     /// <inheritdoc/>
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
@@ -364,6 +396,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     private (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -381,6 +414,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
         KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
@@ -399,6 +435,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -413,6 +450,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private ChatHistory SetupAgentChatHistory(IReadOnlyList<ChatMessageContent> history)
     {
@@ -421,6 +460,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         if (!string.IsNullOrWhiteSpace(this.Instructions))
         {
             chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -438,6 +478,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     private async Task<ChatHistory> SetupAgentChatHistoryAsync(
         IReadOnlyList<ChatMessageContent> history,
         KernelArguments? arguments,
@@ -451,6 +494,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         if (!string.IsNullOrWhiteSpace(instructions))
         {
             chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -468,6 +512,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         chat.AddRange(history);

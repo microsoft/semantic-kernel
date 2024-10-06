@@ -63,6 +63,7 @@ public sealed class TextContent : KernelContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -76,6 +77,9 @@ public sealed class TextContent : KernelContent
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// When converting a string to a <see cref="TextContent"/>, the content is automatically set to the string value.
@@ -85,6 +89,7 @@ public sealed class TextContent : KernelContent
     {
         return new TextContent(text);
     }
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -102,4 +107,7 @@ public sealed class TextContent : KernelContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

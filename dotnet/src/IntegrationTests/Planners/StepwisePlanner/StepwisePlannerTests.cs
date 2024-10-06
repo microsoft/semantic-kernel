@@ -150,6 +150,7 @@ public sealed class StepwisePlannerTests : IDisposable
             builder.Services.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -158,6 +159,8 @@ public sealed class StepwisePlannerTests : IDisposable
 <<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -175,6 +178,7 @@ public sealed class StepwisePlannerTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -187,12 +191,15 @@ public sealed class StepwisePlannerTests : IDisposable
 =======
                 credentials: new AzureCliCredential());
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         }
         else
         {
             builder.Services.AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -201,6 +208,8 @@ public sealed class StepwisePlannerTests : IDisposable
 <<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -218,6 +227,7 @@ public sealed class StepwisePlannerTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -230,6 +240,8 @@ public sealed class StepwisePlannerTests : IDisposable
 =======
                 credentials: new AzureCliCredential());
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         }
 
         if (useEmbeddings)

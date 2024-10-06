@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 =======
@@ -16,6 +17,8 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 =======
@@ -23,6 +26,7 @@
 
 using System;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +45,8 @@ using System;
 
 using System;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -133,6 +139,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -162,6 +169,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
         Assert.Equal(record.Timestamp.ToUniversalTime(), getResult.Timestamp.ToUniversalTime());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        Assert.Equal(record.Timestamp.ToUniversalTime(), getResult.Timestamp.ToUniversalTime());
+>>>>>>> main
+>>>>>>> Stashed changes
 
         if (includeVectors)
         {
@@ -319,6 +331,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -348,6 +361,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
         var model = new VectorStoreTestModel { Id = "key", HotelName = "Test Name" };
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        var model = new VectorStoreTestModel { Id = "key", HotelName = "Test Name" };
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
@@ -360,6 +378,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -389,6 +408,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
         var getResult = await sut.GetAsync(model.Id);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        var getResult = await sut.GetAsync(model.Id);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert
         Assert.Equal("key", upsertResult);
@@ -401,6 +425,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -430,6 +455,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
         Assert.Equal("key", getResult.Id);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        Assert.Equal("key", getResult.Id);
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
@@ -476,6 +506,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -505,6 +536,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
         var model = new BsonVectorStoreTestModel { Id = "key", HotelName = "Test Name" };
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        var model = new BsonVectorStoreTestModel { Id = "key", HotelName = "Test Name" };
+>>>>>>> main
+>>>>>>> Stashed changes
 
         var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
@@ -517,6 +553,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -546,6 +583,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
         var getResult = await sut.GetAsync(model.Id);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        var getResult = await sut.GetAsync(model.Id);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert
         Assert.Equal("key", upsertResult);
@@ -558,6 +600,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -587,6 +630,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
         Assert.Equal("key", getResult.Id);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        Assert.Equal("key", getResult.Id);
+>>>>>>> main
+>>>>>>> Stashed changes
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
@@ -616,6 +664,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -629,6 +678,9 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     [Fact(Skip = SkipReason)]
     public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
     {
@@ -770,6 +822,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
     }
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -787,6 +840,9 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     #region private
 
     private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId)
@@ -806,6 +862,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
 =======
@@ -821,11 +878,16 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+=======
+>>>>>>> Stashed changes
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
             Timestamp = new DateTime(2024, 09, 23, 15, 32, 33),
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
             Timestamp = new DateTime(2024, 09, 23, 15, 32, 33),
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -843,6 +905,9 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         };
     }
 
@@ -863,6 +928,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -892,6 +958,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
         public string? Id { get; set; }
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        public string? Id { get; set; }
+>>>>>>> main
+>>>>>>> Stashed changes
 
         [VectorStoreRecordData(StoragePropertyName = "hotel_name")]
         public string? HotelName { get; set; }
@@ -917,6 +988,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -946,6 +1018,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 =======
         public string? Id { get; set; }
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        public string? Id { get; set; }
+>>>>>>> main
+>>>>>>> Stashed changes
 
         [BsonElement("hotel_name")]
         [VectorStoreRecordData]

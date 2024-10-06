@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -15,10 +16,13 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +39,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -590,6 +596,7 @@ public class QdrantVectorStoreRecordCollectionTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -603,6 +610,9 @@ public class QdrantVectorStoreRecordCollectionTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     [Theory]
     [MemberData(nameof(TestOptions))]
     public async Task CanSearchWithVectorAndFilterAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
@@ -651,6 +661,7 @@ public class QdrantVectorStoreRecordCollectionTests
         Assert.Equal(0.5f, actual.First().Score);
     }
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -668,6 +679,9 @@ public class QdrantVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     private void SetupRetrieveMock(List<RetrievedPoint> retrievedPoints)
     {
         this._qdrantClientMock
@@ -688,6 +702,7 @@ public class QdrantVectorStoreRecordCollectionTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -701,6 +716,9 @@ public class QdrantVectorStoreRecordCollectionTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     private void SetupQueryMock(List<ScoredPoint> scoredPoints)
     {
         this._qdrantClientMock
@@ -724,6 +742,7 @@ public class QdrantVectorStoreRecordCollectionTests
             .ReturnsAsync(scoredPoints);
     }
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -741,6 +760,9 @@ public class QdrantVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     private void SetupDeleteMocks()
     {
         this._qdrantClientMock
@@ -838,6 +860,7 @@ public class QdrantVectorStoreRecordCollectionTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -851,6 +874,9 @@ public class QdrantVectorStoreRecordCollectionTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     private static ScoredPoint CreateScoredPoint<TKey>(bool hasNamedVectors, TKey recordKey)
     {
         ScoredPoint point;
@@ -888,6 +914,7 @@ public class QdrantVectorStoreRecordCollectionTests
         return point;
     }
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -905,6 +932,9 @@ public class QdrantVectorStoreRecordCollectionTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     private IVectorStoreRecordCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
         where T : notnull
     {

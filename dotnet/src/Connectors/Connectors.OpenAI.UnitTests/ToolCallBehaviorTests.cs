@@ -112,6 +112,7 @@ public sealed class ToolCallBehaviorTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
 =======
@@ -124,11 +125,14 @@ public sealed class ToolCallBehaviorTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
 =======
         Assert.NotNull(options.Choice);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,6 +149,8 @@ public sealed class ToolCallBehaviorTests
 =======
         Assert.NotNull(options.Choice);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         this.AssertTools(options.Tools);
     }
 
@@ -210,6 +216,7 @@ public sealed class ToolCallBehaviorTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
 =======
@@ -222,11 +229,14 @@ public sealed class ToolCallBehaviorTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
 =======
         Assert.NotNull(options.Choice);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -243,6 +253,8 @@ public sealed class ToolCallBehaviorTests
 =======
         Assert.NotNull(options.Choice);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         this.AssertTools(options.Tools);
     }
 

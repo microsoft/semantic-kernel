@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +24,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> origin/main
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -40,6 +44,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -59,10 +64,15 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -79,6 +89,8 @@ using Microsoft.SemanticKernel.SkillDefinition;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -370,6 +382,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = "Any" }));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -387,10 +400,13 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<HttpOperationException>(context.LastException);
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -407,6 +423,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -432,6 +450,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = "Any" }));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -449,10 +468,13 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         // Assert
         Assert.True(context.ErrorOccurred);
         Assert.IsType<HttpOperationException>(context.LastException);
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -469,6 +491,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -493,6 +517,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Act
         // Assert
         await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, new() { [InputParameterName] = string.Join('.', Enumerable.Range(1, 40000)) }));
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -500,6 +525,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -516,6 +543,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -528,6 +556,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 =======
         await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -737,6 +767,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 
         // Assert
         if (logprobs is true)
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -744,6 +775,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -764,6 +797,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -800,6 +834,8 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
         {
             Assert.NotNull(logProbabilityInfo);
             Assert.Equal(topLogprobs, logProbabilityInfo.TokenLogProbabilityResults[0].TopLogProbabilityEntries.Count);

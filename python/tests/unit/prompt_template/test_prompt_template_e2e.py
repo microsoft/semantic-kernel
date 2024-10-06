@@ -7,6 +7,7 @@ import os
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -20,10 +21,14 @@ import os
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from typing import List, Optional, Tuple
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -41,6 +46,9 @@ from typing import List, Optional, Tuple
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 from pytest import mark, raises
 
@@ -51,6 +59,7 @@ from semantic_kernel import Kernel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -80,6 +89,11 @@ from semantic_kernel import Kernel
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions import TemplateSyntaxError
@@ -101,6 +115,7 @@ def _get_template_language_tests(safe: bool = True) -> list[tuple[str, str]]:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -115,6 +130,9 @@ def _get_template_language_tests(safe: bool = True) -> list[tuple[str, str]]:
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
@@ -128,6 +146,7 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
 
     with open(os.path.join(path, "tests.txt"), "r") as file:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -145,6 +164,9 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         content = file.readlines()
 
     key = ""
@@ -163,10 +185,14 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
             if "," in raw_line:
                 raw_line = (raw_line.split(",")[0 if safe else 1].strip()) + "\n"
 
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -182,12 +208,15 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             if "," in raw_line:
                 raw_line = (raw_line.split(",")[0 if safe else 1].strip()) + "\n"
 
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -205,6 +234,9 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             test_data.append((key, raw_line))
             key = ""
 
@@ -218,6 +250,7 @@ class MyPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -247,6 +280,11 @@ class MyPlugin:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     @kernel_function
     def check123(self, input: str) -> str:
         return "123 ok" if input == "123" else f"{input} != 123"
@@ -897,6 +935,7 @@ async def test_it_handle_edge_cases_safe(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -910,6 +949,9 @@ async def test_it_handle_edge_cases_safe(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
     @kernel_function()
     def check123(self, input: str) -> str:
@@ -1034,6 +1076,7 @@ class TestPromptTemplateEngine:
             # Assert
             assert expected_result == result
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1051,3 +1094,6 @@ class TestPromptTemplateEngine:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

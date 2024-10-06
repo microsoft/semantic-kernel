@@ -8,10 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -27,6 +31,8 @@ namespace Microsoft.SemanticKernel;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -36,6 +42,7 @@ namespace Microsoft.SemanticKernel;
 
 namespace Microsoft.SemanticKernel.Data;
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -53,6 +60,9 @@ namespace Microsoft.SemanticKernel.Data;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 /// <summary>
 /// Extension methods to register Data services on an <see cref="IServiceCollection"/>.
@@ -74,6 +84,7 @@ public static class ServiceCollectionExtensions
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         services.AddKeyedSingleton<IVectorStore, VolatileVectorStore>(serviceId);
 =======
 =======
@@ -89,6 +100,10 @@ public static class ServiceCollectionExtensions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        services.AddKeyedSingleton<IVectorStore, VolatileVectorStore>(serviceId);
+=======
+>>>>>>> Stashed changes
         services.AddKeyedSingleton<VolatileVectorStore, VolatileVectorStore>(serviceId);
         services.AddKeyedSingleton<IVectorStore>(serviceId, (sp, obj) => sp.GetRequiredKeyedService<VolatileVectorStore>(serviceId));
         return services;
@@ -128,6 +143,7 @@ public static class ServiceCollectionExtensions
                 return new VectorStoreTextSearch<TRecord>(vectorSearch, generationService, stringMapper, resultMapper, options);
             });
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -145,6 +161,9 @@ public static class ServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         return services;
     }
 }

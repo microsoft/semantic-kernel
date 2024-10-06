@@ -676,6 +676,7 @@ swa-cli.config.json
 
 # python devcontainer
 /python/.devcontainer/*
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -685,12 +686,15 @@ swa-cli.config.json
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 <<<<<<< main
 =======
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -698,11 +702,14 @@ swa-cli.config.json
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 .env*
 .flaskenv*
 !.env.project
 !.env.vault
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -710,6 +717,8 @@ swa-cli.config.json
 .jython_cache/
 /SK.AI/**
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -721,17 +730,21 @@ swa-cli.config.json
 >>>>>>> origin/PR
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 !/dotnet/.SK-dotnet.sln.icloud
 
 !/dotnet/.SK-dotnet.sln.icloud
 
 !/dotnet/.SK-dotnet.sln.icloud
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -750,6 +763,8 @@ swa-cli.config.json
 =======
 =======
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main

@@ -13,6 +13,7 @@ namespace Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 [Experimental("SKEXP0001")]
 public sealed class VolatileVectorStoreRecordCollectionOptions
 =======
@@ -30,12 +31,18 @@ public sealed class VolatileVectorStoreRecordCollectionOptions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+[Experimental("SKEXP0001")]
+public sealed class VolatileVectorStoreRecordCollectionOptions
+=======
+>>>>>>> Stashed changes
 /// <typeparam name="TKey">The data type of the record key of the collection that this options will be used with.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data on the collection that this options will be used with.</typeparam>
 [Experimental("SKEXP0001")]
 public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -53,6 +60,9 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
@@ -64,6 +74,7 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +93,9 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// An optional function that can be used to look up vectors from a record.
@@ -102,6 +116,7 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     /// the key property is located somewhere else on the record.
     /// </remarks>
     public VolatileVectorStoreKeyResolver<TKey, TRecord>? KeyResolver { get; init; } = null;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -119,4 +134,7 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -34,6 +35,11 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.IO;

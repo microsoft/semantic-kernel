@@ -12,6 +12,7 @@ ion;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -25,10 +26,14 @@ ion;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -46,6 +51,9 @@ using Microsoft.Extensions.Configuration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -86,6 +94,7 @@ ITextToAudioService>();
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -99,12 +108,16 @@ ITextToAudioService>();
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
                 azureOpenAIConfiguration.DeploymentName,
                 azureOpenAIConfiguration.Endpoint,
                 azureOpenAIConfiguration.ApiKey)
             .Build();
 
         var service = kernel.GetRequiredService<ITextToAudioService>();
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -122,6 +135,9 @@ ITextToAudioService>();
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Act
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");

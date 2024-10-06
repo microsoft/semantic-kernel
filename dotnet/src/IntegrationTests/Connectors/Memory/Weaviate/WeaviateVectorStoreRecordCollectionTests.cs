@@ -212,10 +212,14 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     #region private
 
     private WeaviateHotel CreateTestHotel(Guid hotelId, string? hotelName = null)
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -231,6 +235,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -509,6 +515,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Guid hotelId,
         string? hotelName = null,
         ReadOnlyMemory<float>? embedding = null)
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -526,6 +533,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         return new WeaviateHotel
         {
@@ -542,6 +552,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
 =======
@@ -553,10 +564,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -573,6 +587,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             Timestamp = new DateTime(2024, 8, 28, 10, 11, 12)
         };
     }
@@ -596,6 +612,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
 =======
 =======
@@ -607,10 +624,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -627,6 +647,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
             ]
         };

@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -19,11 +20,16 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+// Copyright (c) Microsoft. All rights reserved.
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 // Copyright (c) Microsoft. All rights reserved.
 =======
 ﻿// Copyright (c) Microsoft. All rights reserved.
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -41,6 +47,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 using System;
 using System.ClientModel;
@@ -72,6 +81,7 @@ public partial class ClientCoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var openAIClient = new OpenAIClient("key");
 =======
 =======
@@ -83,10 +93,13 @@ public partial class ClientCoreTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         var openAIClient = new OpenAIClient("key");
 =======
         var openAIClient = new OpenAIClient(new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +116,8 @@ public partial class ClientCoreTests
 =======
         var openAIClient = new OpenAIClient(new ApiKeyCredential("key"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         var clientCoreModelConstructor = new ClientCore("model1", "apiKey");
         var clientCoreOpenAIClientConstructor = new ClientCore("model1", openAIClient, logger: logger);
@@ -219,6 +234,7 @@ public partial class ClientCoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -248,6 +264,11 @@ public partial class ClientCoreTests
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 <<<    public async Task ItDoNotAddSemanticKernelHeadersWhenOpenAIClientIsProvidedAsync()
 >>>>>>>+HEAD
 ====
@@ -259,6 +280,7 @@ public partial class ClientCoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -270,10 +292,13 @@ public partial class ClientCoreTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 =======
     public async Task ItDoNotAddSemanticKernelHeadersWhenOpenAIClientIsProvidedAsync()
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -292,6 +317,8 @@ public partial class ClientCoreTests
     public async Task ItDoNotAddSemanticKernelHeadersWhenOpenAIClientIsProvidedAsync()
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     {
         using HttpMessageHandlerStub handler = new();
         using HttpClient client = new(handler);
@@ -307,6 +334,7 @@ public partial class ClientCoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 "test",
 =======
 =======
@@ -318,10 +346,13 @@ public partial class ClientCoreTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                 "test",
 =======
                 new ApiKeyCredential("test"),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -338,6 +369,8 @@ public partial class ClientCoreTests
 =======
                 new ApiKeyCredential("test"),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
                 new OpenAIClientOptions()
                 {
                     Transport = new HttpClientPipelineTransport(client),
@@ -368,6 +401,7 @@ public partial class ClientCoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public void ItAddsAttributesButDoesNothingIfNullOrEmpty(string? value)
 =======
 =======
@@ -383,10 +417,15 @@ public partial class ClientCoreTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    public void ItAddsAttributesButDoesNothingIfNullOrEmpty(string? value)
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public void ItAddsAttributesButDoesNothingIfNullOrEmpty(string? value)
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -404,6 +443,9 @@ public partial class ClientCoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         // Arrange
         var clientCore = new ClientCore("model", "apikey");
@@ -431,6 +473,7 @@ public partial class ClientCoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public void ItAddsModelIdAttributeAsExpected()
 =======
 =======
@@ -446,10 +489,15 @@ public partial class ClientCoreTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    public void ItAddsModelIdAttributeAsExpected()
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public void ItAddsModelIdAttributeAsExpected()
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -467,6 +515,9 @@ public partial class ClientCoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         // Arrange
         var expectedModelId = "modelId";
@@ -479,6 +530,7 @@ public partial class ClientCoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(" "));
 =======
 =======
@@ -490,10 +542,13 @@ public partial class ClientCoreTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(" "));
 =======
         var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(new ApiKeyCredential(" ")));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -510,6 +565,8 @@ public partial class ClientCoreTests
 =======
         var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(new ApiKeyCredential(" ")));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         // Assert
         Assert.True(clientCore.Attributes.ContainsKey(AIServiceExtensions.ModelIdKey));

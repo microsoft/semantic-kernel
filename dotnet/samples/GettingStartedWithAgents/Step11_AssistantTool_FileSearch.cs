@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -15,11 +16,14 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,6 +41,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -64,6 +70,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 new(this.Model)
@@ -77,12 +84,17 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 new(this.Model)
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
@@ -93,6 +105,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -110,6 +123,9 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     EnableFileSearch = true,
                     Metadata = AssistantSampleMetadata,
@@ -120,6 +136,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -134,6 +151,8 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
         // Upload file - Using a table of fictional employees.
@@ -153,6 +172,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -165,6 +185,9 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
  6d73513a859ab2d05e01db3bc1d405827799e34b
                 },
                 kernel: new Kernel());
@@ -181,6 +204,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
                 new VectorStoreCreationOptions()
                 {
                     FileIds = { fileInfo.Id },
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -198,6 +222,9 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                     Metadata = { { AssistantSampleMetadataKey, bool.TrueString } }
                 });
 
@@ -212,6 +239,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     VectorStoreId = vectorStore.Id,
 =======
 =======
@@ -223,10 +251,13 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                     VectorStoreId = vectorStore.Id,
 =======
                     VectorStoreId = result.VectorStoreId,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -243,6 +274,8 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 =======
                     VectorStoreId = result.VectorStoreId,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
                     Metadata = AssistantSampleMetadata,
                 });
 
@@ -263,6 +296,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -277,12 +311,15 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             await agent.DeleteAsync(CancellationToken.None);
 =======
             await agent.DeleteAsync();
 >>>>>>> main
             await vectorStoreClient.DeleteVectorStoreAsync(vectorStore);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -300,12 +337,16 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
             await agent.DeleteAsync(CancellationToken.None);
             await agent.DeleteAsync();
             await agent.DeleteAsync(CancellationToken.None);
  6d73513a859ab2d05e01db3bc1d405827799e34b
             await vectorStoreClient.DeleteVectorStoreAsync(vectorStore);
             await vectorStoreClient.DeleteVectorStoreAsync(result.VectorStoreId);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -323,6 +364,9 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             await fileClient.DeleteFileAsync(fileInfo.Id);
         }
 

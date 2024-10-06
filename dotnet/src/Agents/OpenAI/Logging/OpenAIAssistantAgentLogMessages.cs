@@ -46,6 +46,7 @@ internal static partial class OpenAIAssistantAgentLogMessages
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -59,6 +60,9 @@ internal static partial class OpenAIAssistantAgentLogMessages
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Logs <see cref="OpenAIAssistantAgent"/> restoring serialized channel (started).
@@ -85,6 +89,7 @@ internal static partial class OpenAIAssistantAgentLogMessages
         string methodName,
         string channelType,
         string threadId);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -102,4 +107,7 @@ internal static partial class OpenAIAssistantAgentLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }
