@@ -34,8 +34,11 @@ openai = ">=1.0"
 aiofiles = "^23.1.0"
 python-dotenv = "1.0.1"
 regex = ">=2023.6.3,<2025.0.0"
+<<<<<<< main
 
 # openapi and swagger
+=======
+>>>>>>> origin/dependabot/pip/python/regex-2024.5.15
 openapi_core = ">=0.18,<0.20"
     # azure identity
     "azure-identity ~= 1.13",
