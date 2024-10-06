@@ -11,9 +11,19 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class ProcessBuilder : ProcessStepBuilder
 {
-    private readonly List<ProcessStepBuilder> _steps;
-    private readonly List<ProcessStepBuilder> _entrySteps;
-    private readonly Dictionary<string, ProcessStepBuilder> _stepsMap;
+    /// <summary>The collection of steps within this process.</summary>
+    private readonly List<ProcessStepBuilder> _steps = [];
+
+    /// <summary>The collection of entry steps within this process.</summary>
+    private readonly List<ProcessStepBuilder> _entrySteps = [];
+
+    /// <summary>Maps external event Ids to the target entry step for the event.</summary>
+    private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
+
+    /// <summary>
+    /// A boolean indicating if the current process is a step within another process.
+    /// </summary>
+    internal bool HasParentProcess { get; set; }
 
     /// <summary>
     /// Used to resolve the target function and parameter for a given optional function name and parameter name.
@@ -56,16 +66,13 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <inheritdoc/>
     internal override void LinkTo(string eventId, ProcessStepEdgeBuilder edgeBuilder)
     {
+        Verify.NotNull(edgeBuilder?.Source, nameof(edgeBuilder.Source));
+        Verify.NotNull(edgeBuilder?.Target, nameof(edgeBuilder.Target));
+
         // Keep track of the entry point steps
         this._entrySteps.Add(edgeBuilder.Source);
+        this._externalEventTargetMap[eventId] = edgeBuilder.Target;
         base.LinkTo(eventId, edgeBuilder);
-    }
-
-    /// <inheritdoc/>
-    internal override string GetScopedEventId(string eventId)
-    {
-        // The event id is scoped to the process name
-        return $"{this.Name}.{eventId}";
     }
 
     /// <inheritdoc/>
@@ -104,7 +111,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     {
         var stepBuilder = new ProcessStepBuilder<TStep>(name);
         this._steps.Add(stepBuilder);
-        this._stepsMap[stepBuilder.Name] = stepBuilder;
 
         return stepBuilder;
     }
@@ -114,15 +120,10 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <param name="kernelProcess">The process to add as a step.</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromProcess(ProcessBuilder kernelProcess)
+    public ProcessBuilder AddStepFromProcess(ProcessBuilder kernelProcess)
     {
-        // TODO: Could this method be converted to an "AddStepFromObject" method takes an
-        // instance of ProcessStepBase and adds it to the process?
-        // This would work for processes.
-        // This would benefit steps because the initial value of state could be captured?
-
+        kernelProcess.HasParentProcess = true;
         this._steps.Add(kernelProcess);
-        this._stepsMap[kernelProcess.Name] = kernelProcess;
         return kernelProcess;
     }
 
@@ -136,8 +137,29 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     {
         return new ProcessStepEdgeBuilder(this, eventId);
     public ProcessEdgeBuilder OnExternalEvent(string eventId)
+    public ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return new ProcessEdgeBuilder(this, eventId);
+    }
+
+    /// <summary>
+    /// Retrieves the target for a given external event. The step associated with the target is the process itself (this).
+    /// </summary>
+    /// <param name="eventId">The Id of the event</param>
+    /// <returns>An instance of <see cref="ProcessFunctionTargetBuilder"/></returns>
+    /// <exception cref="KernelException"></exception>
+    public ProcessFunctionTargetBuilder WhereInputEventIs(string eventId)
+    {
+        Verify.NotNullOrWhiteSpace(eventId);
+
+        if (!this._externalEventTargetMap.TryGetValue(eventId, out var target))
+        {
+            throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
+        }
+
+        // Targets for external events on a process should be scoped to the process itself rather than the step inside the process.
+        var processTarget = target with { Step = this, TargetEventId = eventId };
+        return processTarget;
     }
 
     /// <summary>
@@ -155,7 +177,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         var builtSteps = this._steps.Select(step => step.BuildStep()).ToList();
 
         // Create the process
-        var state = new KernelProcessState(this.Name);
+        var state = new KernelProcessState(this.Name, id: this.HasParentProcess ? this.Id : null);
         var process = new KernelProcess(state, builtSteps, builtEdges);
         return process;
     }
@@ -167,9 +189,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessBuilder(string name)
         : base(name)
     {
-        this._steps = [];
-        this._entrySteps = [];
-        this._stepsMap = [];
     }
 
     #endregion

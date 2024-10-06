@@ -53,8 +53,8 @@ public sealed class ProcessStepEdgeBuilder
     /// <summary>
     /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
     /// </summary>
-    /// <param name="outputTarget">The output target.</param>
-    public void SendEventTo(ProcessFunctionTargetBuilder outputTarget)
+    /// <param name="target">The output target.</param>
+    public void SendEventTo(ProcessFunctionTargetBuilder target)
     {
         if (this.OutputTarget is not null)
         if (this.Target is not null)
@@ -64,6 +64,7 @@ public sealed class ProcessStepEdgeBuilder
 
         this.OutputTarget = outputTarget;
         this.Target = outputTarget;
+        this.Target = target;
         this.Source.LinkTo(this.EventId, this);
     }
 

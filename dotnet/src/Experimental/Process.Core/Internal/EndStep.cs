@@ -34,12 +34,6 @@ internal sealed class EndStep : ProcessStepBuilder
     {
     }
 
-    internal override string GetScopedEventId(string eventId)
-    {
-        // No event scoping for the end step.
-        return eventId;
-    }
-
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
         // The end step has no functions.

@@ -48,6 +48,9 @@ public abstract class ProcessStepBuilder
 
     #endregion
 
+    /// <summary>The namespace for events that are scoped to this step.</summary>
+    private readonly string _eventNamespace;
+
     /// <summary>
     /// A mapping of function names to the functions themselves.
     /// </summary>
@@ -144,17 +147,21 @@ public abstract class ProcessStepBuilder
     }
 
     /// <summary>
-    /// Given an event Id, returns a scoped event Id that is unique to this instance of the step.
-    /// </summary>
-    /// <param name="eventId">The Id of the event.</param>
-    /// <returns>An Id that represents the provided event Id scoped to this step instance.</returns>
-    internal abstract string GetScopedEventId(string eventId);
-
-    /// <summary>
     /// Loads a mapping of function names to the associated functions metadata.
     /// </summary>
     /// <returns>A <see cref="Dictionary{TKey, TValue}"/> where TKey is <see cref="string"/> and TValue is <see cref="KernelFunctionMetadata"/></returns>
     internal abstract Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap();
+
+    /// <summary>
+    /// Given an event Id, returns a scoped event Id that is unique to this instance of the step.
+    /// </summary>
+    /// <param name="eventId">The Id of the event.</param>
+    /// <returns>An Id that represents the provided event Id scoped to this step instance.</returns>
+    protected string GetScopedEventId(string eventId)
+    {
+        // Scope the event to this instance of this step by prefixing the event Id with the step's namespace.
+        return $"{this._eventNamespace}.{eventId}";
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepBuilder"/> class.
@@ -167,6 +174,7 @@ public abstract class ProcessStepBuilder
 
         this.FunctionsDict = [];
         this.Id = Guid.NewGuid().ToString("n");
+        this._eventNamespace = $"{this.Name}_{this.Id}";
         this.Edges = new Dictionary<string, List<ProcessStepEdgeBuilder>>(StringComparer.OrdinalIgnoreCase);
     }
 }
@@ -176,16 +184,12 @@ public abstract class ProcessStepBuilder
 /// </summary>
 public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : KernelProcessStep
 {
-    /// <summary>The namespace for events that are scoped to this step.</summary>
-    private readonly string _eventNamespace;
-
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
     /// </summary>
     public ProcessStepBuilder(string? name = null)
         : base(name ?? typeof(TStep).Name)
     {
-        this._eventNamespace = $"{this.Name}_{this.Id}";
         this.FunctionsDict = this.GetFunctionMetadataMap();
     }
 
@@ -223,13 +227,6 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
         // Then build the step with the edges and state.
         var builtStep = new KernelProcessStepInfo(typeof(TStep), stateObject, builtEdges);
         return builtStep;
-    }
-
-    /// <inheritdoc/>
-    internal override string GetScopedEventId(string eventId)
-    {
-        // Scope the event to this instance of this step by prefixing the event Id with the step's namespace.
-        return $"{this._eventNamespace}.{eventId}";
     }
 
     /// <inheritdoc/>

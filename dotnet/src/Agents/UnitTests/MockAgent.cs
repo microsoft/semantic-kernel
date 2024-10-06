@@ -63,5 +63,9 @@ internal class MockAgent : ChatHistoryKernelAgent
             JsonSerializer.Deserialize<ChatHistory>(channelState) ??
             throw new KernelException("Unable to restore channel: invalid state.");
         return Task.FromResult<AgentChannel>(new ChatHistoryChannel(history));
+    // Expose protected method for testing
+    public new KernelArguments? MergeArguments(KernelArguments? arguments)
+    {
+        return base.MergeArguments(arguments);
     }
 }
