@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Mapping
 from typing import Any, TypeVar
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -10,6 +11,8 @@ from typing import Any, TypeVar
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -26,6 +29,7 @@ from typing import Dict, Mapping, Optional, overload
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -38,6 +42,8 @@ from typing import Dict, Mapping, Optional, overload
 =======
 from typing import Dict, Mapping, Optional, overload
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -76,6 +82,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,11 +98,14 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         ai_model_id: str,
         async_client: AsyncOpenAI,
         service_id: Optional[str] = None,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -137,6 +147,8 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     ) -> None:
         """Initializes a new instance of the OpenAITextCompletion class.
 
@@ -154,7 +166,10 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -195,6 +210,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 This is usually optional unless your
                 account belongs to multiple organizations.
             default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -211,6 +227,8 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
                 string values for HTTP requests. (Optional)
             async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
@@ -243,6 +261,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             ),
             ai_model_type=OpenAIModelTypes.EMBEDDING,
             org_id=openai_settings.org_id,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -250,6 +269,8 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -266,6 +287,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -278,6 +300,8 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 =======
             org_id=org_id,
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
             service_id=service_id,
             default_headers=default_headers,
             client=async_client,
@@ -297,6 +321,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers", {}),
             env_file_path=settings.get("env_file_path"),
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -304,6 +329,8 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -320,6 +347,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -332,4 +360,6 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 =======
             default_headers=settings.get("default_headers"),
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         )

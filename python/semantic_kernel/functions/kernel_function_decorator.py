@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -35,6 +36,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 import logging
 import types
 from collections.abc import Callable
@@ -55,6 +61,7 @@ NoneType = type(None)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -69,12 +76,16 @@ NoneType = type(None)
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
 
 import logging
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
 from typing import Callable, Optional, Tuple
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -92,6 +103,9 @@ from typing import Callable, Optional, Tuple
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 logger = logging.getLogger(__name__)
 
 
@@ -102,6 +116,7 @@ def kernel_function(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -131,6 +146,11 @@ def kernel_function(
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     func: Callable[..., object] | None = None,
     name: str | None = None,
     description: str | None = None,
@@ -145,6 +165,7 @@ def kernel_function(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -159,6 +180,9 @@ def kernel_function(
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
     *,
     name: Optional[str] = None,
     description: Optional[str] = None,
@@ -166,6 +190,7 @@ def kernel_function(
     """
     Decorator for kernel functions.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -183,6 +208,9 @@ def kernel_function(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     This decorator is used to mark a function as a kernel function. It also provides metadata for the function.
     The name and description can be left empty, and then the function name and docstring will be used.
@@ -194,6 +222,7 @@ def kernel_function(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     parameter.
 =======
 =======
@@ -209,11 +238,16 @@ def kernel_function(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    parameter.
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     parameter.
 =======
     parameter, in python 3.8, use typing_extensions.Annotated.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -231,6 +265,9 @@ def kernel_function(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     To parse the type, first it checks if the parameter is annotated, and get's the description from there.
     After that it checks recursively until it reaches the lowest level, and it combines
@@ -241,6 +278,7 @@ def kernel_function(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     All of this is are stored in __kernel_function_parameters__.
 =======
 =======
@@ -256,11 +294,16 @@ def kernel_function(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    All of this is are stored in __kernel_function_parameters__.
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     All of this is are stored in __kernel_function_parameters__.
 =======
     All of this is are stored in __kernel_function_context_parameters__.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -278,6 +321,9 @@ def kernel_function(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     The return type and description are parsed from the function signature,
     and that is stored in __kernel_function_return_type__, __kernel_function_return_description__
@@ -293,10 +339,14 @@ def kernel_function(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
         func (Callable[..., object] | None): The function to decorate, can be None (if used as @kernel_function
         name (str | None): The name of the function, if not supplied, the function name will be used.
         description (str | None): The description of the function,
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -312,6 +362,8 @@ def kernel_function(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         func (Callable[..., object] | None): The function to decorate, can be None (if used as @kernel_function
         name (str | None): The name of the function, if not supplied, the function name will be used.
@@ -320,6 +372,7 @@ def kernel_function(
         name (Optional[str]) -- The name of the function, if not supplied, the function name will be used.
         description (Optional[str]) -- The description of the function,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -337,6 +390,9 @@ def kernel_function(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             if not supplied, the function docstring will be used, can be None.
 
     """
@@ -347,6 +403,7 @@ def kernel_function(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -376,6 +433,11 @@ def kernel_function(
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     def decorator(func: Callable[..., object]) -> Callable[..., object]:
         """The actual decorator function."""
         setattr(func, "__kernel_function__", True)
@@ -538,6 +600,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -552,6 +615,10 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     def decorator(func: Callable):
         func.__kernel_function__ = True
         func.__kernel_function_description__ = description or func.__doc__
@@ -623,6 +690,7 @@ def _parse_internal_annotation(annotation: Parameter, required: bool) -> Tuple[s
         return ", ".join(str_results), required
     return getattr(annotation, "__name__", ""), required
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -640,3 +708,6 @@ def _parse_internal_annotation(annotation: Parameter, required: bool) -> Tuple[s
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

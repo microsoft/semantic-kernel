@@ -7,10 +7,14 @@ import logging
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 import sys
 from collections.abc import AsyncGenerator, AsyncIterator, Mapping
 from typing import TYPE_CHECKING, Any, ClassVar
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -26,6 +30,8 @@ from typing import TYPE_CHECKING, Any, ClassVar
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 import sys
 from collections.abc import AsyncGenerator, AsyncIterator, Mapping
@@ -33,6 +39,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 =======
 from typing import AsyncIterable, List, Optional
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -50,6 +57,9 @@ from typing import AsyncIterable, List, Optional
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -76,6 +86,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -105,6 +116,11 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -128,6 +144,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 =======
 =======
@@ -143,11 +160,16 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_c
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
 =======
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion, trace_text_completion
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -165,6 +187,9 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_c
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
@@ -176,6 +201,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -190,12 +216,17 @@ if TYPE_CHECKING:
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -213,6 +244,9 @@ from semantic_kernel.contents.text_content import TextContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -223,6 +257,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -252,6 +287,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 class OllamaChatCompletion(
     OllamaBase, TextCompletionClientBase, ChatCompletionClientBase
 ):
@@ -263,6 +303,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -277,10 +318,14 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
 class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
     """
     Initializes a new instance of the OllamaChatCompletion class.
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -298,6 +343,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     Make sure to have the ollama service running either locally or remotely.
     """
@@ -312,6 +360,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -341,6 +390,11 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         service_id: str | None = None,
         ai_model_id: str | None = None,
         host: str | None = None,
@@ -364,6 +418,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -378,10 +433,14 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
     ) -> List[ChatMessageContent]:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -399,6 +458,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         """
         try:
             ollama_settings = OllamaSettings.create(
@@ -418,6 +480,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -447,6 +510,11 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         if not ollama_settings.model:
             raise ServiceInitializationError("Please provide ai_model_id or OLLAMA_MODEL env variable is required")
 
@@ -462,6 +530,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -491,6 +560,11 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     # region Overriding base class methods
 
     # Override from AIServiceClientBase
@@ -508,6 +582,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -522,10 +597,15 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     @override
     @trace_chat_completion(OllamaBase.MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -543,6 +623,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -631,6 +714,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -644,6 +728,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
         Arguments:
             chat_history {ChatHistory} -- A chat history that contains a list of chat messages,
@@ -718,6 +805,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             chat_history {ChatHistory} -- A chat history that contains the prompt to complete.
             settings {OllamaChatPromptExecutionSettings} -- Settings for the request.
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -735,6 +823,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Returns:
             List["TextContent"]: The completion result(s).
@@ -774,6 +865,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -803,6 +895,11 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """Streams a text completion using an Ollama model.
@@ -818,6 +915,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -832,6 +930,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
         settings: OllamaChatPromptExecutionSettings,
     ) -> AsyncIterable[List[StreamingTextContent]]:
         """
@@ -842,6 +943,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             prompt {str} -- A chat history that contains the prompt to complete.
             settings {OllamaChatPromptExecutionSettings} -- Request settings.
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -859,6 +961,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         Yields:
             List["StreamingTextContent"]: The result stream made up of StreamingTextContent objects.

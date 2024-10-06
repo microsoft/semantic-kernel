@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Reflection;
 =======
@@ -16,6 +17,8 @@ using System.Reflection;
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Reflection;
 =======
@@ -23,6 +26,7 @@ using System.Reflection;
 using System.Reflection;
 using System.Text;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +45,8 @@ using System.Text;
 using System.Reflection;
 using System.Text;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -53,6 +59,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 public abstract class BaseTest
 =======
 =======
@@ -64,10 +71,13 @@ public abstract class BaseTest
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 public abstract class BaseTest
 =======
 public abstract class BaseTest : TextWriter
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -84,6 +94,8 @@ public abstract class BaseTest : TextWriter
 =======
 public abstract class BaseTest : TextWriter
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 {
     /// <summary>
     /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
@@ -142,6 +154,7 @@ public abstract class BaseTest : TextWriter
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     protected BaseTest(ITestOutputHelper output)
 =======
 =======
@@ -153,10 +166,13 @@ public abstract class BaseTest : TextWriter
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     protected BaseTest(ITestOutputHelper output)
 =======
     protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -173,6 +189,8 @@ public abstract class BaseTest : TextWriter
 =======
     protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     {
         this.Output = output;
         this.LoggerFactory = new XunitLogger(output);
@@ -190,6 +208,7 @@ public abstract class BaseTest : TextWriter
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -204,6 +223,8 @@ public abstract class BaseTest : TextWriter
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -218,6 +239,7 @@ public abstract class BaseTest : TextWriter
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -230,6 +252,9 @@ public abstract class BaseTest : TextWriter
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
         // Redirect System.Console output to the test output if requested
         if (redirectSystemConsoleOutput)
@@ -241,6 +266,7 @@ public abstract class BaseTest : TextWriter
     /// <inheritdoc/>
     public override void WriteLine(object? value = null)
         => this.Output.WriteLine(value ?? string.Empty);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -258,6 +284,9 @@ public abstract class BaseTest : TextWriter
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
@@ -271,6 +300,7 @@ public abstract class BaseTest : TextWriter
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         => this.Output.WriteLine(format ?? string.Empty, args);
 =======
 =======
@@ -286,6 +316,10 @@ public abstract class BaseTest : TextWriter
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        => this.Output.WriteLine(format ?? string.Empty, args);
+=======
+>>>>>>> Stashed changes
     {
         if (args is null || args.Length == 0)
         {
@@ -296,6 +330,7 @@ public abstract class BaseTest : TextWriter
             this.Output.WriteLine(format ?? string.Empty, args);
         }
     }
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -313,6 +348,9 @@ public abstract class BaseTest : TextWriter
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
@@ -327,6 +365,7 @@ public void WriteLine(string? message = null)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -341,6 +380,8 @@ public void WriteLine(string? message = null)
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     /// <summary>
@@ -349,6 +390,7 @@ public void WriteLine(string? message = null)
     /// <param name="target">Target object to write</param>
     public void Write(object? target = null)
         => this.Output.WriteLine(target ?? string.Empty);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -366,6 +408,9 @@ public void WriteLine(string? message = null)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     /// <inheritdoc/>
     public override void WriteLine(string? format, params object?[] arg)
         => this.Output.WriteLine(format ?? string.Empty, arg);
@@ -380,6 +425,7 @@ public void WriteLine(string? message = null)
 
     /// <inheritdoc/>
     public override Encoding Encoding => Encoding.UTF8;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -397,6 +443,9 @@ public void WriteLine(string? message = null)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Outputs the last message in the chat history.
@@ -415,6 +464,7 @@ public void WriteLine(string? message = null)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -428,6 +478,9 @@ public void WriteLine(string? message = null)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Utility method to write a horizontal rule to the console.
@@ -435,6 +488,7 @@ public void WriteLine(string? message = null)
     protected void WriteHorizontalRule()
         => Console.WriteLine(new string('-', HorizontalRuleLength));
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -452,6 +506,9 @@ public void WriteLine(string? message = null)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
@@ -498,6 +555,7 @@ public void WriteLine(string? message = null)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -511,10 +569,14 @@ public void WriteLine(string? message = null)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
     #region private
     private const int HorizontalRuleLength = 80;
     #endregion
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -532,4 +594,7 @@ public void WriteLine(string? message = null)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

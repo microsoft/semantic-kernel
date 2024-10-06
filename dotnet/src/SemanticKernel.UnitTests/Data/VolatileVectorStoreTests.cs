@@ -67,6 +67,7 @@ public class VolatileVectorStoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public sealed class SinglePropsModel<TKey>
 =======
 =======
@@ -82,6 +83,10 @@ public class VolatileVectorStoreTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    public sealed class SinglePropsModel<TKey>
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     [Fact]
     public async Task GetCollectionDoesNotAllowADifferentDataTypeThanPreviouslyUsedAsync()
@@ -101,6 +106,7 @@ public class VolatileVectorStoreTests
 =======
     public sealed class SinglePropsModel<TKey>
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -118,6 +124,9 @@ public class VolatileVectorStoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         [VectorStoreRecordKey]
         public required TKey Key { get; set; }
@@ -136,6 +145,7 @@ public class VolatileVectorStoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -149,6 +159,9 @@ public class VolatileVectorStoreTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
     private sealed class SecondModel
@@ -162,6 +175,7 @@ public class VolatileVectorStoreTests
 #pragma warning restore CA1812
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -179,4 +193,7 @@ public class VolatileVectorStoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

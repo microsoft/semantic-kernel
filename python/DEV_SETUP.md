@@ -5,6 +5,7 @@ if you're working on new features or a bug fix for Semantic Kernel, or simply
 want to run the tests included.
 
 ## System setup
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,6 +37,9 @@ want to run the tests included.
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -77,6 +81,7 @@ Avoid `/mnt/c/` and prefer using your WSL user's home directory.
 ```python {"id":"01J6KNPX0HTGAZ4YDQ353PQS4G"}
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
 ```
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -97,12 +102,18 @@ chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 
 ## If you're on WSL
 
 Check that you've cloned the repository to `~/workspace` or a similar folder.
 Avoid `/mnt/c/` and prefer using your WSL user's home directory.
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -119,6 +130,8 @@ Avoid `/mnt/c/` and prefer using your WSL user's home directory.
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
 Ensure you have the WSL extension for VSCode installed.
@@ -130,6 +143,7 @@ if you had SK pip package installed.
 
 To install SK and all the required tools in your system, first, navigate to the directory containing
 this DEV_SETUP using your chosen shell.
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -203,6 +217,9 @@ sudo apt-get update && sudo apt-get install python3 python3-pip
 <<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
 ### For windows (non-WSL)
 
@@ -210,11 +227,16 @@ Check the [uv documentation](https://docs.astral.sh/uv/getting-started/installat
 
 ```powershell
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+<<<<<<< Updated upstream
 <<<<<<< main
 ```python {"id":"01J6KNPX0HTGAZ4YDQ3625T9E4"}
     python3 --version ; pip3 --version ; code -v
 =======
 >>>>>>> ms/features/bugbash-prep
+=======
+```python {"id":"01J6KNPX0HTGAZ4YDQ3625T9E4"}
+    python3 --version ; pip3 --version ; code -v
+>>>>>>> Stashed changes
 ```
 
 You can then run the following commands manually:
@@ -234,7 +256,10 @@ uv run pre-commit install -c python/.pre-commit-config.yaml
 Or you can then either install [`make`](https://gnuwin32.sourceforge.net/packages/make.htm) and then follow the guide for Mac and Linux, or run the following commands, the commands are shown as bash but should work in powershell as well.
 
 ### For Mac and Linux (both native and WSL)
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 
 It is super simple to get started, run the following commands:
 
@@ -253,6 +278,7 @@ sudo apt-get update && sudo apt-get install python3 python3-pip
 
 ℹ️ __Note__: if you don't have your PATH setup to find executables installed by `pip3`,
 =======
+<<<<<<< Updated upstream
 >>>>>>> ms/features/bugbash-prep
 
 It is super simple to get started, run the following commands:
@@ -272,6 +298,8 @@ make install
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
 ### For windows (non-WSL)
@@ -336,6 +364,9 @@ make install
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -355,7 +386,10 @@ If you want to change python version (without installing uv, python and pre-comm
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -378,6 +412,7 @@ If you want to change python version (without installing uv, python and pre-comm
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -396,10 +431,16 @@ make install PYTHON_VERSION=3.12
 
 If you want to change python version (without installing uv, python and pre-commit), you can use the same parameter, but do:
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 
 ```bash
 make install-sk PYTHON_VERSION=3.12
 ```
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
 ℹ️ **Note**: Running the install or install-sk command will wipe away your existing virtual environment and create a new one.
 
@@ -448,6 +489,7 @@ alias python='python3'
 
 After these steps, you should be able to use `python` in your terminal to run
 Python 3 commands.
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
 
@@ -472,19 +514,63 @@ make install-sk PYTHON_VERSION=3.12
 <<<<<<< main
 =======
 >>>>>>> origin/main
+=======
+
+Make sure you have an
+[OpenAI API Key](https://platform.openai.com) or
+[Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
+
+There are two methods to manage keys, secrets, and endpoints:
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3BB96MAY"}
+# Install poetry package if not choosing to install via their official installer
+pip3 install poetry
+
+1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints from the environment. 
+    > When you are using VSCode and have the python extension setup, it automatically loads environment variables from a `.env` file, so you don't have to manually set them in the terminal.
+    > During runtime on different platforms, environment settings set as part of the deployments should be used.
+
+2. Store them in a separate `.env` file, like `dev.env`, you can then pass that name into the constructor for most services, to the `env_file_path` parameter, see below.
+    > Do not store `*.env` files in your repository, and make sure to add them to your `.gitignore` file.
+
+There are a lot of settings, for a more extensive list of settings, see [ALL_SETTINGS.md](./samples/concepts/setup/ALL_SETTINGS.md).
+
+### Example for file-based setup with OpenAI Chat Completions
+To configure a `.env` file with just the keys needed for OpenAI Chat Completions, you can create a `openai.env` (this name is just as an example, a single `.env` with all required keys is more common) file in the root of the `python` folder with the following content:
+
+Content of `openai.env`:
+```env
+OPENAI_API_KEY=""
+OPENAI_CHAT_MODEL_ID="gpt-4o-mini"
+```
+
+You will then configure the ChatCompletion class with the keyword argument `env_file_path`:
+## VSCode Setup
+
+Open the [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VSCode.
+
+> The Python workspace is the `./python` folder if you are at the root of the repository.
+
+=======
+>>>>>>> Stashed changes
 
 ℹ️ **Note**: Running the install or install-sk command will wipe away your existing virtual environment and create a new one.
 
 Alternatively you can run the VSCode task `Python: Install` to run the same command.
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 It is best to install Poetry using their
 [official installer](https://python-poetry.org/docs/#installing-with-the-official-installer).
 
 On MacOS, you might find that `python` commands are not recognized by default,
 and you can only use `python3`. To make it easier to run `python ...` commands
 (which Poetry requires), you can create an alias in your shell configuration file.
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 ## VSCode Setup
 
@@ -496,9 +582,60 @@ command from the command palette. Make sure the virtual env (default path is `.v
 `uv` is selected.
 
 If prompted, install `ruff`. (It should have been installed as part of `uv sync --dev`).
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 
+=======
+
+You also need to install the `ruff` extension in VSCode so that auto-formatting uses the `ruff` formatter on save.
+Read more about the extension [here](https://github.com/astral-sh/ruff-vscode).
+
+## LLM setup
+1. **Open your shell configuration file**:
+
+   - For __Bash__: `nano ~/.bash_profile` or `nano ~/.bashrc`
+   - For **Zsh** (default on macOS Catalina and later): `nano ~/.zshrc`
+
+2. **Add the alias**:
+
+```sh {"id":"01J6KNPX0HTGAZ4YDQ37NQ12T9"}
+alias python='python3'
+```
+
+3. **Save the file and exit**:
+
+   - In `nano`, press `CTRL + X`, then `Y`, and hit `Enter`.
+
+4. **Apply the changes**:
+
+   - For __Bash__: `source ~/.bash_profile` or `source ~/.bashrc`
+   - For **Zsh**: `source ~/.zshrc`
+
+After these steps, you should be able to use `python` in your terminal to run
+Python 3 commands.
+=======
+
+```bash
+make install-sk PYTHON_VERSION=3.12
+```
+
+ℹ️ **Note**: Running the install or install-sk command will wipe away your existing virtual environment and create a new one.
+
+Alternatively you can run the VSCode task `Python: Install` to run the same command.
+
+## VSCode Setup
+
+Open the workspace in [VSCode](https://code.visualstudio.com/docs/editor/workspaces).
+> The workspace for python should be rooted in the `./python` folder.
+
+Open any of the `.py` files in the project and run the `Python: Select Interpreter`
+command from the command palette. Make sure the virtual env (default path is `.venv`) created by
+`uv` is selected.
+
+If prompted, install `ruff`. (It should have been installed as part of `uv sync --dev`).
+
+>>>>>>> Stashed changes
 You also need to install the `ruff` extension in VSCode so that auto-formatting uses the `ruff` formatter on save.
 Read more about the extension [here](https://github.com/astral-sh/ruff-vscode).
 
@@ -546,6 +683,7 @@ Open the [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VS
 =======
 
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 ```python
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path="openai.env")
 ```
@@ -569,6 +707,23 @@ alias python='python3'
 ```bash
     uv run pytest tests/unit
 <<<<<<< main
+=======
+>>>>>>> origin/main
+```python
+chat_completion = OpenAIChatCompletion(service_id="test", env_file_path="openai.env")
+```
+
+## Tests
+
+You can run the unit tests under the [tests/unit](tests/unit/) folder.
+
+```bash
+    uv run pytest tests/unit
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3CVYSJC6"}
     poetry install --with unit-tests
     poetry run pytest tests/unit
@@ -584,11 +739,18 @@ You can run the integration tests under the [tests/integration](tests/integratio
 ```bash
     uv run pytest tests/integration
 <<<<<<< main
+<<<<<<< Updated upstream
+=======
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3ETP16N9"}
     poetry install --with tests
     poetry run pytest tests/integration
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 >>>>>>> origin/main
 ```
 
@@ -1022,6 +1184,30 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 
 
 ## Implementation Decisions
+=======
+```
+
+You can also run all the tests together under the [tests](tests/) folder.
+
+```bash
+    uv run pytest tests
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3GYN6VJR"}
+    poetry install
+    poetry run pytest tests
+=======
+>>>>>>> ms/features/bugbash-prep
+```
+
+Alternatively, you can run them using VSCode Tasks. Open the command palette
+(`Ctrl+Shift+P`) and type `Tasks: Run Task`. Select `Python: Tests - All` from the list.
+
+
+## Implementation Decisions
+>>>>>>> Stashed changes
 
 ### Asynchronous programming
 
@@ -1050,7 +1236,10 @@ They should contain:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1067,6 +1256,9 @@ They should contain:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1085,7 +1277,10 @@ They should contain:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1103,6 +1298,9 @@ They should contain:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1131,7 +1329,10 @@ Or a complete version of this:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1151,6 +1352,9 @@ def equal(arg1: str, arg2: str) -> bool:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1165,6 +1369,7 @@ def equal(arg1: str, arg2: str) -> bool:
 def equal(arg1: str, arg2: str) -> bool:
     """Compares two strings and returns True if they are the same.
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1273,6 +1478,9 @@ Or a complete version of this:
 def equal(arg1: str, arg2: str) -> bool:
     """Compares two strings and returns True if they are the same.
 
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     Here is extra explanation of the logic involved.
 
     Args:
@@ -1296,7 +1504,10 @@ If in doubt, use the link above to read much more considerations of what to do a
 This section describes how one can enable serialization for their class using Pydantic.
 For more info you can refer to the [Pydantic Documentation](https://docs.pydantic.dev/latest/).
 
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 ### Upgrading existing classes to use Pydantic
 
 Let's take the following example:
@@ -1346,6 +1557,7 @@ You can use the `KernelBaseModel` to convert these to pydantic serializable clas
 
 ```python
 from typing import Generic, TypeVar
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1371,6 +1583,8 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -1386,6 +1600,9 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1399,6 +1616,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 T1 = TypeVar("T1")
 T2 = TypeVar("T2", bound=<some class>)
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1423,6 +1641,8 @@ T2 = TypeVar("T2", bound=<some class>)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1452,6 +1672,7 @@ To run the same checks that run during a commit and the GitHub Action `Python Co
 
 ```bash
     uv run pre-commit run -a
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1469,17 +1690,23 @@ To run the same checks that run during a commit and the GitHub Action `Python Co
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3RB8FHQJ"}
     poetry run pre-commit run -a
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3RB8FHQJ"}
     poetry run pre-commit run -a
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1496,6 +1723,8 @@ To run the same checks that run during a commit and the GitHub Action `Python Co
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 ```
 
@@ -1512,6 +1741,7 @@ We try to maintain a high code coverage for the project. To run the code coverag
 
 ```bash
     uv run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1529,17 +1759,23 @@ We try to maintain a high code coverage for the project. To run the code coverag
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3V7S5W7V"}
     poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3V7S5W7V"}
     poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1556,6 +1792,8 @@ We try to maintain a high code coverage for the project. To run the code coverag
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 ```
 
@@ -1581,7 +1819,10 @@ or:
     git fetch upstream main
     git merge upstream/main
     git push
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 ```
 
 This is assuming the upstream branch refers to the main repository. If you have a different name for the upstream branch, you can replace `upstream` with the name of your upstream branch.
@@ -1604,6 +1845,7 @@ AZURE_OPENAI_API_KEY=""
 AZURE_OPENAI_ENDPOINT=""
 ```
 
+<<<<<<< Updated upstream
 =======
 ```
 
@@ -1628,6 +1870,8 @@ AZURE_OPENAI_ENDPOINT=""
 ```
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 We suggest adding a copy of the `.env` file under these folders:
 
 - [python/tests](tests)

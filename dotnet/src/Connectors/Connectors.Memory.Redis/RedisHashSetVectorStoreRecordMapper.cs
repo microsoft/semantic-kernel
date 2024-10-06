@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -15,10 +16,13 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +39,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections.Generic;
@@ -45,6 +51,7 @@ using System.Linq;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -59,11 +66,14 @@ using System.Linq;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -97,6 +107,11 @@ using System.Runtime.InteropServices;
 =======
 using System.Runtime.InteropServices;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.Runtime.InteropServices;
+>>>>>>> main
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 using StackExchange.Redis;
 
@@ -115,6 +130,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -129,6 +145,8 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
@@ -152,7 +170,10 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -165,6 +186,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -182,6 +204,8 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetVectorStoreRecordMapper{TConsumerDataModel}"/> class.
@@ -192,6 +216,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -206,6 +231,8 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
@@ -233,6 +260,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -245,6 +273,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
     public RedisHashSetVectorStoreRecordMapper(
         VectorStoreRecordPropertyReader propertyReader)
@@ -252,6 +283,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         Verify.NotNull(propertyReader);
         propertyReader.VerifyHasParameterlessConstructor();
         this._propertyReader = propertyReader;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -269,6 +301,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <inheritdoc />
@@ -280,6 +315,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -294,6 +330,8 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var keyValue = this._keyPropertyInfo.GetValue(dataModel) as string ?? throw new VectorStoreRecordMappingException($"Missing key property {this._keyPropertyInfo.Name} on provided record of type {typeof(TConsumerDataModel).FullName}.");
 
@@ -306,6 +344,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -318,6 +357,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
         var keyValue = this._propertyReader.KeyPropertyInfo.GetValue(dataModel) as string ??
             throw new VectorStoreRecordMappingException($"Missing key property {this._propertyReader.KeyPropertyName} on provided record of type {typeof(TConsumerDataModel).FullName}.");
 
@@ -325,6 +367,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         foreach (var property in this._propertyReader.DataPropertiesInfo)
         {
             var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -342,6 +385,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             var value = property.GetValue(dataModel);
             hashEntries.Add(new HashEntry(storageName, RedisValue.Unbox(value)));
         }
@@ -352,6 +398,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         foreach (var property in this._vectorPropertiesInfo)
         {
             var storageName = this._storagePropertyNames[property.Name];
@@ -365,6 +412,8 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         foreach (var property in this._vectorPropertiesInfo)
         {
             var storageName = this._storagePropertyNames[property.Name];
@@ -373,6 +422,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         {
             var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -391,6 +441,8 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         {
             var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             var value = property.GetValue(dataModel);
             if (value is not null)
             {
@@ -410,6 +462,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -423,11 +476,15 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
                     hashEntries.Add(new HashEntry(storageName, ConvertVectorToBytes(rom)));
                 }
                 else if (value is ReadOnlyMemory<double> rod)
                 {
                     hashEntries.Add(new HashEntry(storageName, ConvertVectorToBytes(rod)));
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -445,6 +502,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 }
             }
         }
@@ -461,6 +521,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -475,6 +536,8 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var jsonObject = new JsonObject();
 
@@ -534,6 +597,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -546,6 +610,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
         var hashEntriesDictionary = storageModel.HashEntries.ToDictionary(x => (string)x.Name!, x => x.Value);
 
         // Construct the output record.
@@ -604,6 +671,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
     private static byte[] ConvertVectorToBytes(ReadOnlyMemory<double> vector)
     {
         return MemoryMarshal.AsBytes(vector.Span).ToArray();
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -621,5 +689,8 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 }

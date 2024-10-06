@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -18,6 +19,8 @@
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
@@ -26,6 +29,7 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 using Microsoft.SemanticKernel.Data;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,6 +47,9 @@ using Microsoft.SemanticKernel.Data;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
@@ -53,6 +60,7 @@ using System.Runtime.InteropServices;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Data;
 using StackExchange.Redis;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -70,6 +78,9 @@ using StackExchange.Redis;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 using Xunit;
 
 namespace SemanticKernel.Connectors.Redis.UnitTests;
@@ -90,6 +101,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -101,10 +113,13 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(s_vectorStoreRecordDefinition, s_storagePropertyNames);
         var reader = new VectorStoreRecordPropertyReader(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, null);
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(reader);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +138,8 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         var reader = new VectorStoreRecordPropertyReader(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, null);
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(reader);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
@@ -137,6 +154,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -150,6 +168,9 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 
         Assert.Equal("storage_string_data", actual.HashEntries[0].Name.ToString());
         Assert.Equal("data 1", actual.HashEntries[0].Value.ToString());
@@ -201,6 +222,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 
         Assert.Equal("DoubleVector", actual.HashEntries[16].Name.ToString());
         Assert.Equal(new double[] { 5, 6, 7, 8 }, MemoryMarshal.Cast<byte, double>((byte[])actual.HashEntries[16].Value!).ToArray());
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -218,6 +240,9 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     [Fact]
@@ -231,6 +256,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(("test key", RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet()), new() { IncludeVectors = true });
@@ -244,12 +270,17 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(("test key", RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet()), new() { IncludeVectors = true });
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         var reader = new VectorStoreRecordPropertyReader(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, null);
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(reader);
 
@@ -259,6 +290,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(("test key", CreateHashSet()), new() { IncludeVectors = true });
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -276,6 +308,9 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Assert.
         Assert.NotNull(actual);
@@ -332,6 +367,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -345,6 +381,9 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     private static HashEntry[] CreateHashSet()
     {
         var hashSet = new HashEntry[17];
@@ -368,6 +407,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         return hashSet;
     }
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -385,6 +425,9 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     private static readonly Dictionary<string, string> s_storagePropertyNames = new()
     {
         ["StringData"] = "storage_string_data",
@@ -412,6 +455,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -425,6 +469,9 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
     {
         Properties = new List<VectorStoreRecordProperty>()
@@ -450,6 +497,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         }
     };
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -467,6 +515,9 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     private sealed class AllTypesModel
     {
         [VectorStoreRecordKey]
@@ -478,6 +529,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         [VectorStoreRecordData]
 =======
 =======
@@ -489,10 +541,13 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         [VectorStoreRecordData]
 =======
         [VectorStoreRecordData(StoragePropertyName = "storage_string_data")]
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -509,6 +564,8 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 =======
         [VectorStoreRecordData(StoragePropertyName = "storage_string_data")]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         public string StringData { get; set; } = string.Empty;
 
         [VectorStoreRecordData]

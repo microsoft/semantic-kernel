@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -15,10 +16,13 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +39,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -65,6 +71,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -79,6 +86,8 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 kernel: new(),
                 provider,
@@ -86,6 +95,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
                 {
                     Metadata = AssistantSampleMetadata,
                 });
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +113,9 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
@@ -118,6 +131,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
  6d73513a859ab2d05e01db3bc1d405827799e34b
                 },
                 kernel: new Kernel());
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -135,6 +149,9 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;
@@ -162,6 +179,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             await provider.Client.GetFileClient().DeleteFileAsync(fileId);
 =======
 =======
@@ -173,10 +191,13 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             await provider.Client.GetFileClient().DeleteFileAsync(fileId);
 =======
             await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,6 +214,8 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 =======
             await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         }
 
         // Local function to invoke agent and display the conversation messages.

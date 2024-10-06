@@ -3,6 +3,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,11 @@ namespace Microsoft.SemanticKernel.Memory;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+namespace Microsoft.SemanticKernel.Memory;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Memory;
 =======
@@ -31,6 +37,7 @@ namespace Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel.Memory.Collections;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -47,6 +54,8 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
 /// <summary>
@@ -54,6 +63,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// Automatically flushes out any not in the top N.
 /// By default, items are not sorted by score until you call <see cref="TopNCollection{T}.SortByScore"/>.
 /// </summary>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -61,6 +71,8 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -77,6 +89,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -89,6 +102,8 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<T>>
 {
     private readonly MinHeap<ScoredValue<T>> _heap = new(ScoredValue<T>.Min(), maxItems);
@@ -96,6 +111,7 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
 
     /// <summary>
     /// Gets the maximum number of items allowed in the collection.
+<<<<<<< Updated upstream
 <<<<<<< head
     /// </summary>
     public int MaxItems { get; } = maxItems;
@@ -124,10 +140,17 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+    /// </summary>
+    public int MaxItems { get; } = maxItems;
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Gets the current number of items in the collection.
     /// </summary>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -150,6 +173,8 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
     /// Gets the current number of items in the collection.
     /// </summary>
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 {
@@ -166,6 +191,7 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 >>>>>>> origin/main
 
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -182,12 +208,15 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     public int Count => this._heap.Count;
 
     internal ScoredValue<T> this[int i] => this._heap[i];
     internal ScoredValue<T> Top => this._heap.Top;
 
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -206,11 +235,14 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// Resets the collection, allowing it to be reused.
 =======
     /// Call this to reuse the buffer
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -227,6 +259,8 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     /// </summary>
     public void Reset()
     {
@@ -234,6 +268,7 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     }
 
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -243,10 +278,14 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// Adds a single scored value to the collection.
     /// </summary>
     /// <param name="value">The scored value to add.</param>
 =======
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 >>>>>>> Stashed changes
@@ -282,6 +321,11 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     /// </summary>
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+    /// Adds a single scored value
+    /// </summary>
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
     public void Add(ScoredValue<T> value)
     {
         if (this._sorted)
@@ -305,6 +349,7 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         this._heap.Add(value);
     }
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -329,12 +374,16 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// <summary>
     /// Adds a value with a specified score to the collection.
     /// </summary>
     /// <param name="value">The value to add.</param>
     /// <param name="score">The score associated with the value.</param>
     public void Add(T value, double score)
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -371,11 +420,17 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     public void Add(T value, Score score)
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+    public void Add(T value, Score score)
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
     {
         this.Add(new ScoredValue<T>(value, score));
     }
 
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -394,11 +449,14 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// Sorts the collection in descending order by score.
 =======
     /// Sort in relevancy order.
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -415,6 +473,8 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     /// </summary>
     public void SortByScore()
     {
@@ -425,6 +485,7 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         }
     }
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -449,10 +510,14 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// <summary>
     /// Returns a list containing the scored values in the collection.
     /// </summary>
     /// <returns>A list of scored values.</returns>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -483,6 +548,10 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
     public IList<ScoredValue<T>> ToList()
     {
         var list = new List<ScoredValue<T>>(this.Count);
@@ -494,6 +563,7 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         return list;
     }
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -518,10 +588,14 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
     /// <summary>
     /// Returns an enumerator that iterates through the collection.
     /// </summary>
     /// <returns>An enumerator for the collection.</returns>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -552,6 +626,10 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 =======
 >>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> f5c8882d73157409ff27fb857a432fda2fa6c2a3
+>>>>>>> Stashed changes
     public IEnumerator<ScoredValue<T>> GetEnumerator()
     {
         return this._heap.GetEnumerator();

@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -33,6 +34,10 @@
   "description": "Given a chat message decide whether to block it",
   "default_settings": {
 >>>>>>> origin/main
+=======
+  "description": "Given a chat message decide whether to block it",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 1000,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -45,6 +50,7 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,6 +58,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -69,6 +77,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -82,4 +91,6 @@
     "stop_sequences": ["</scenario>"]
   }
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 }

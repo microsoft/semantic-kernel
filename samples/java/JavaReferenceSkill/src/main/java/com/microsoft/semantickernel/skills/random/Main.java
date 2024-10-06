@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,10 @@ import io.grpc.ServerBuilder;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -32,6 +37,9 @@ import io.grpc.ServerBuilder;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -55,6 +63,7 @@ public class Main {
                 // allows the server to handle requests related to the functionality provided by the
                 // `RandomActivitySkill` class.
                 addService(new RandomActivitySkill()).build();
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -88,6 +97,12 @@ public class Main {
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+                .addService(new RandomActivitySkill()).build();
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 
         System.out.println("Starting server...");

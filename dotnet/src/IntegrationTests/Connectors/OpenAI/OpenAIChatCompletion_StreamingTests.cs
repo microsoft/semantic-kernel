@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -15,10 +16,13 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +39,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 using System.Collections.Generic;
 using System.Text;
@@ -114,6 +120,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
 =======
@@ -125,10 +132,13 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,6 +155,8 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
@@ -198,6 +210,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -227,6 +240,11 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 =======
         await foreach (var update in textGeneration.GetStreamingTextContentsAsync("Reply \"I don't know\" to every question. What is the capital of France?", null, kernel))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        await foreach (var update in textGeneration.GetStreamingTextContentsAsync("Reply \"I don't know\" to every question. What is the capital of France?", null, kernel))
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             stringBuilder.Append(update);
 
@@ -248,6 +266,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
 =======
@@ -259,10 +278,13 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -279,6 +301,8 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));

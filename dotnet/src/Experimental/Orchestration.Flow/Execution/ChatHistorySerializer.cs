@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15,14 +16,19 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< main
 =======
+<<<<<<< Updated upstream
 =======
 // Copyright (c) Microsoft. All rights reserved.
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -32,6 +38,9 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -58,6 +67,7 @@ internal static class ChatHistorySerializer
 
         var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? [];
         ChatHistory history = [];
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -93,6 +103,13 @@ internal static class ChatHistorySerializer
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+        var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? Array.Empty<SerializableChatMessage>();
+        ChatHistory history = new();
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         foreach (var message in messages)
         {
             history.AddMessage(new AuthorRole(message.Role!), message.Content!);
@@ -109,6 +126,7 @@ internal static class ChatHistorySerializer
         }
 
         var messages = history.Select(m => new SerializableChatMessage()
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -133,6 +151,9 @@ internal static class ChatHistorySerializer
 =======
         var messages = history.Messages.Select(m => new SerializableChatMessage()
 >>>>>>> origin/main
+=======
+        var messages = history.Messages.Select(m => new SerializableChatMessage()
+>>>>>>> Stashed changes
         {
             Role = m.Role.Label,
             Content = m.Content,
@@ -142,6 +163,7 @@ internal static class ChatHistorySerializer
     }
 
     private sealed class SerializableChatMessage
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,6 +197,12 @@ internal static class ChatHistorySerializer
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+    private class SerializableChatMessage
+>>>>>>> origin/main
 >>>>>>> Stashed changes
     {
         public string? Role { get; set; }

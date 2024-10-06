@@ -10,6 +10,7 @@ from semantic_kernel.contents.file_reference_content import FileReferenceContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -39,6 +40,11 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 =======
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
@@ -60,6 +66,7 @@ use_azure_openai = True
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -71,9 +78,12 @@ use_azure_openai = True
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 streaming = True
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,6 +101,8 @@ streaming = True
 streaming = True
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) -> None:
@@ -105,6 +117,7 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -119,6 +132,8 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     async for message in agent.invoke(thread_id=thread_id):
         if message.content:
@@ -128,6 +143,7 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
             for item in message.items:
                 if isinstance(item, FileReferenceContent):
                     print(f"\n`{message.role}` => {item.file_id}")
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,6 +161,9 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     if streaming:
         first_chunk = True
         async for message in agent.invoke_stream(thread_id=thread_id):
@@ -168,6 +187,7 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
                 for item in message.items:
                     if isinstance(item, FileReferenceContent):
                         print(f"\n`{message.role}` => {item.file_id}")
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -185,6 +205,9 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 async def main():

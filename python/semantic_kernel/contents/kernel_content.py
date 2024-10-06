@@ -5,10 +5,14 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 
 from abc import ABC, abstractmethod
 from typing import Any, TypeVar
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -24,6 +28,8 @@ from typing import Any, TypeVar
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
 from abc import ABC, abstractmethod
@@ -32,6 +38,7 @@ from typing import Any, TypeVar
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -49,6 +56,9 @@ from typing import Any, Dict, Optional
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 from pydantic import Field
 
@@ -60,6 +70,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 _T = TypeVar("_T", bound="KernelContent")
 
 =======
@@ -77,11 +88,17 @@ _T = TypeVar("_T", bound="KernelContent")
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+_T = TypeVar("_T", bound="KernelContent")
+
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 _T = TypeVar("_T", bound="KernelContent")
 
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -99,6 +116,9 @@ _T = TypeVar("_T", bound="KernelContent")
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 class KernelContent(KernelBaseModel, ABC):
     """Base class for all kernel contents."""
@@ -109,6 +129,7 @@ class KernelContent(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -138,6 +159,11 @@ class KernelContent(KernelBaseModel, ABC):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     inner_content: Any | None = None
     ai_model_id: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -164,6 +190,7 @@ class KernelContent(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -178,6 +205,10 @@ class KernelContent(KernelBaseModel, ABC):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     inner_content: Optional[Any] = None
     ai_model_id: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
@@ -186,6 +217,7 @@ class KernelContent(KernelBaseModel, ABC):
     def __str__(self) -> str:
         pass
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -203,3 +235,6 @@ class KernelContent(KernelBaseModel, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

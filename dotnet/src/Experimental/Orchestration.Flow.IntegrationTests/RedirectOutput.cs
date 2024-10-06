@@ -8,12 +8,16 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -38,6 +42,7 @@ public sealed class RedirectOutput(ITestOutputHelper output) : TextWriter, ILogg
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -50,6 +55,9 @@ public sealed class RedirectOutput(ITestOutputHelper output) : TextWriter, ILogg
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 public sealed class RedirectOutput(ITestOutputHelper output) : TextWriter, ILogger, ILoggerFactory
 {
@@ -67,6 +75,7 @@ public sealed class RedirectOutput : TextWriter, ILogger, ILoggerFactory
         this._logs = new StringBuilder();
     }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -83,6 +92,8 @@ public sealed class RedirectOutput : TextWriter, ILogger, ILoggerFactory
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
     public override Encoding Encoding { get; } = Encoding.UTF8;

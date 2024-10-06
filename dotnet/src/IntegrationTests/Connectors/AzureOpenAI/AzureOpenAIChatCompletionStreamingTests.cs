@@ -76,6 +76,7 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
 =======
@@ -87,10 +88,13 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,6 +111,8 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));
@@ -172,6 +178,7 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
 =======
@@ -183,10 +190,13 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         Assert.True(metadata.TryGetValue("Id", out object? id));
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -203,6 +213,8 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 =======
         Assert.True(metadata.TryGetValue("CompletionId", out object? id));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         Assert.NotNull(id);
 
         Assert.True(metadata.TryGetValue("CreatedAt", out object? createdAt));

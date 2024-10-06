@@ -34,6 +34,7 @@ They can then be run by:
 
 # Configuration
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +42,8 @@ They can then be run by:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -57,6 +60,9 @@ They can then be run by:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -192,8 +198,11 @@ They can then be run by:
 
 # Configuration
 
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< AI
 =======
 <<<<<<< HEAD
@@ -230,6 +239,7 @@ OR
 
 ## Client Settings
 <<<<<<< AI
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -237,6 +247,8 @@ OR
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -256,6 +268,7 @@ The samples search for the client settings in the following order:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -267,11 +280,14 @@ The samples search for the client settings in the following order:
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 The samples search for the client settings in the following order:
 The tests search for the client settings in the following order:
 =======
 <<<<<<< HEAD
 The samples search for the client settings in the following order:
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -294,6 +310,8 @@ The samples search for the client settings in the following order:
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 =======
 The tests search for the client settings in the following order:
@@ -313,6 +331,7 @@ You can set the location of a properties file, by setting the `CONF_PROPERTIES` 
 ```shell
 CONF_PROPERTIES=my.properties \
 <<<<<<< AI
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -331,10 +350,14 @@ CONF_PROPERTIES=my.properties \
 <<<<<<< main
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 OPENAI_CLIENT_TYPE=OPEN_AI \
 OPENAI_CLIENT_TYPE=OPENAI \
 =======
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< head
 OPENAI_CLIENT_TYPE=OPEN_AI \
 =======
@@ -351,6 +374,10 @@ OPENAI_CLIENT_TYPE=OPEN_AI \
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+OPENAI_CLIENT_TYPE=OPEN_AI \
+=======
+>>>>>>> Stashed changes
 OPENAI_CLIENT_TYPE=OPEN_AI \
 OPENAI_CLIENT_TYPE=OPENAI \
 =======
@@ -361,6 +388,7 @@ OPENAI_CLIENT_TYPE=OPEN_AI \
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
@@ -378,6 +406,8 @@ OPENAI_CLIENT_TYPE=OPEN_AI \
 >>>>>>> Stashed changes
 =======
 OPENAI_CLIENT_TYPE=OPEN_AI \
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 =======
 OPENAI_CLIENT_TYPE=OPENAI \

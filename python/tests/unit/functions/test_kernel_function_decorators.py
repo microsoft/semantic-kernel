@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -33,6 +34,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import AsyncGenerator, AsyncIterable
@@ -52,6 +58,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -65,6 +72,9 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 import sys
 from typing import TYPE_CHECKING, AsyncIterable, Optional, Union
@@ -78,6 +88,7 @@ else:
 
 from semantic_kernel.functions.kernel_function_decorator import _parse_annotation, kernel_function
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -95,6 +106,9 @@ from semantic_kernel.functions.kernel_function_decorator import _parse_annotatio
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -106,6 +120,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -135,6 +150,11 @@ if TYPE_CHECKING:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 class InputObject(KernelBaseModel):
     arg1: str
     arg2: int
@@ -146,6 +166,7 @@ class InputObject(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -157,9 +178,12 @@ class InputObject(KernelBaseModel):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,6 +201,8 @@ class InputObject(KernelBaseModel):
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 class MiscClass:
     __test__ = False
 
@@ -198,6 +224,7 @@ class MiscClass:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -227,6 +254,11 @@ class MiscClass:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     @kernel_function
     def func_docstring_as_description(self, input):
         """Description."""
@@ -296,6 +328,7 @@ class MiscClass:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -310,6 +343,10 @@ class MiscClass:
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     @kernel_function()
     def func_docstring_as_description(self, input):
         """description"""
@@ -344,6 +381,7 @@ class MiscClass:
         yield input
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -361,6 +399,9 @@ class MiscClass:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 def test_func_name_as_name():
     decorator_test = MiscClass()
@@ -395,6 +436,7 @@ def test_kernel_function_docstring_as_description():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     assert my_func.__kernel_function_description__ == "Description."
 =======
 =======
@@ -410,11 +452,16 @@ def test_kernel_function_docstring_as_description():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    assert my_func.__kernel_function_description__ == "Description."
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     assert my_func.__kernel_function_description__ == "Description."
 =======
     assert my_func.__kernel_function_description__ == "description"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -432,6 +479,9 @@ def test_kernel_function_docstring_as_description():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_kernel_function_param_annotated():
@@ -443,6 +493,7 @@ def test_kernel_function_param_annotated():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -472,6 +523,11 @@ def test_kernel_function_param_annotated():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     assert (
         my_func.__kernel_function_parameters__[0]["description"] == "input description"
     )
@@ -485,6 +541,7 @@ def test_kernel_function_param_annotated():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -499,12 +556,16 @@ def test_kernel_function_param_annotated():
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
     assert my_func.__kernel_function_context_parameters__[0]["description"] == "input description"
     assert my_func.__kernel_function_context_parameters__[0]["type"] == "str"
     assert my_func.__kernel_function_context_parameters__[0]["required"]
     assert my_func.__kernel_function_context_parameters__[0]["default_value"] is None
     assert my_func.__kernel_function_context_parameters__[0]["name"] == "input"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -522,6 +583,9 @@ def test_kernel_function_param_annotated():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_kernel_function_param_optional():
@@ -533,6 +597,7 @@ def test_kernel_function_param_optional():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -562,6 +627,11 @@ def test_kernel_function_param_optional():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     assert my_func.__kernel_function_parameters__[0]["type_"] == "str"
     assert not my_func.__kernel_function_parameters__[0]["is_required"]
     assert my_func.__kernel_function_parameters__[0]["default_value"] == "test"
@@ -572,6 +642,7 @@ def test_kernel_function_param_optional():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -586,12 +657,16 @@ def test_kernel_function_param_optional():
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
     assert my_func.__kernel_function_context_parameters__[0]["description"] == ""
     assert my_func.__kernel_function_context_parameters__[0]["type"] == "str"
     assert not my_func.__kernel_function_context_parameters__[0]["required"]
     assert my_func.__kernel_function_context_parameters__[0]["default_value"] == "test"
     assert my_func.__kernel_function_context_parameters__[0]["name"] == "input"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -609,6 +684,9 @@ def test_kernel_function_param_optional():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_kernel_function_param_annotated_optional():
@@ -620,6 +698,7 @@ def test_kernel_function_param_annotated_optional():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -649,6 +728,11 @@ def test_kernel_function_param_annotated_optional():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     assert (
         my_func.__kernel_function_parameters__[0]["description"] == "input description"
     )
@@ -662,6 +746,7 @@ def test_kernel_function_param_annotated_optional():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -676,12 +761,16 @@ def test_kernel_function_param_annotated_optional():
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
     assert my_func.__kernel_function_context_parameters__[0]["description"] == "input description"
     assert my_func.__kernel_function_context_parameters__[0]["type"] == "str"
     assert not my_func.__kernel_function_context_parameters__[0]["required"]
     assert my_func.__kernel_function_context_parameters__[0]["default_value"] == "test"
     assert my_func.__kernel_function_context_parameters__[0]["name"] == "input"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -699,6 +788,9 @@ def test_kernel_function_param_annotated_optional():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_kernel_function_return_type():
@@ -711,6 +803,7 @@ def test_kernel_function_return_type():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -724,10 +817,14 @@ def test_kernel_function_return_type():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
     assert my_func.__kernel_function_return_description__ == ""
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -745,6 +842,9 @@ def test_kernel_function_return_type():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     assert my_func.__kernel_function_return_required__
     assert not my_func.__kernel_function_streaming__
 
@@ -776,6 +876,7 @@ def test_kernel_function_return_type_streaming():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     assert my_func.__kernel_function_return_type__ in ("str, Any", "str, typing.Any")
 =======
 =======
@@ -791,11 +892,16 @@ def test_kernel_function_return_type_streaming():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    assert my_func.__kernel_function_return_type__ in ("str, Any", "str, typing.Any")
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     assert my_func.__kernel_function_return_type__ in ("str, Any", "str, typing.Any")
 =======
     assert my_func.__kernel_function_return_type__ == "str"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -813,6 +919,9 @@ def test_kernel_function_return_type_streaming():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     assert my_func.__kernel_function_return_description__ == "test return"
     assert my_func.__kernel_function_return_required__
     assert my_func.__kernel_function_streaming__
@@ -824,6 +933,7 @@ def test_kernel_function_return_type_streaming():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -853,6 +963,11 @@ def test_kernel_function_return_type_streaming():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 def test_kernel_function_input_object():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_object")
@@ -988,6 +1103,7 @@ def test_annotation_parsing(name, annotation, description, type_, is_required):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1002,6 +1118,10 @@ def test_annotation_parsing(name, annotation, description, type_, is_required):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 @pytest.mark.parametrize(
     ("annotation", "description", "type_", "required"),
     [
@@ -1020,6 +1140,7 @@ def test_annotation_parsing(annotation, description, type_, required):
     assert out_type_ == type_
     assert out_required == required
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1037,3 +1158,6 @@ def test_annotation_parsing(annotation, description, type_, required):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

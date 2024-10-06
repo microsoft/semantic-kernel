@@ -1,4 +1,5 @@
 SHELL = /bin/bash
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +104,9 @@ SHELL = bash
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
 .PHONY: help install clean build
 .SILENT:
@@ -179,6 +183,7 @@ build:
 <<<<<<< main
 SHELL = bash
 =======
+<<<<<<< Updated upstream
 >>>>>>> ms/features/bugbash-prep
 
 .PHONY: help install clean build
@@ -244,6 +249,8 @@ install-python:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> origin/main
 
@@ -388,6 +395,7 @@ install-pre-commit:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -404,12 +412,15 @@ install-pre-commit:
 
 .ONESHELL:
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 install-pre-commit:
 	poetry run pre-commit install
 	# Edit the pre-commit config file to change the config path
 	sed -i 's|\.pre-commit-config\.yaml|\.conf/\.pre-commit-config\.yaml|g' .git/hooks/pre-commit
 =======
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -430,6 +441,11 @@ install-pre-commit:
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 install-sk:
 	echo "Creating and activating venv for python $(PYTHON_VERSION)"
 	uv venv --python $(PYTHON_VERSION)
@@ -444,6 +460,7 @@ clean:
 build:
 	uvx --from build pyproject-build --installer uv
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -460,4 +477,6 @@ build:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main

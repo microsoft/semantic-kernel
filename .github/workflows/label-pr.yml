@@ -17,6 +17,7 @@ jobs:
 
     steps:
       - uses: actions/labeler@v5
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,6 +37,10 @@ jobs:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         with:
           repo-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
  
@@ -45,6 +50,9 @@ jobs:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

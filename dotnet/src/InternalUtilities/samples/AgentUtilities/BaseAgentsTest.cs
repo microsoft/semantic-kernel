@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -16,9 +17,12 @@
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 
 using System.ClientModel;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,6 +40,8 @@ using System.ClientModel;
 
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.SemanticKernel;
@@ -79,6 +85,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 OpenAIClientProvider.ForOpenAI(this.ApiKey) :
                 OpenAIClientProvider.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 =======
@@ -91,12 +98,15 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                 OpenAIClientProvider.ForOpenAI(this.ApiKey) :
                 OpenAIClientProvider.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 =======
                 OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey)) :
                 OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +124,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                 OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey)) :
                 OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
@@ -160,6 +172,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
 =======
 =======
@@ -171,10 +184,13 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
 =======
     protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -191,6 +207,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 =======
     protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     {
         foreach (KernelContent item in message.Items)
         {
@@ -207,6 +225,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
 =======
 =======
@@ -218,10 +237,13 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
 =======
     protected async Task DownloadResponseImageAsync(OpenAIFileClient client, ChatMessageContent message)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -238,6 +260,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 =======
     protected async Task DownloadResponseImageAsync(OpenAIFileClient client, ChatMessageContent message)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     {
         foreach (KernelContent item in message.Items)
         {
@@ -254,6 +278,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -268,11 +293,14 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private async Task DownloadFileContentAsync(FileClient client, string fileId, bool launchViewer = false)
     {
         OpenAIFileInfo fileInfo = client.GetFile(fileId);
         if (fileInfo.Purpose == OpenAIFilePurpose.AssistantsOutput)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -290,10 +318,14 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     private async Task DownloadFileContentAsync(OpenAIFileClient client, string fileId, bool launchViewer = false)
     {
         OpenAIFile fileInfo = client.GetFile(fileId);
         if (fileInfo.Purpose == FilePurpose.AssistantsOutput)
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -311,6 +343,9 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         {
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
             if (launchViewer)
@@ -333,6 +368,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                         FileName = "cmd.exe",
                         Arguments = $"/C start {filePath}"
 =======
@@ -345,12 +381,15 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                         FileName = "cmd.exe",
                         Arguments = $"/C start {filePath}"
 =======
                         FileName = filePath,
                         UseShellExecute = true
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -368,6 +407,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                         FileName = filePath,
                         UseShellExecute = true
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
                     });
             }
         }

@@ -21,6 +21,7 @@ using OpenAI.Chat;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -32,9 +33,12 @@ using OpenAI.Chat;
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,6 +56,8 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 namespace Planners;
 
 /// <summary>
@@ -374,6 +380,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 tokens += completionsUsage.TotalTokens;
 =======
 =======
@@ -385,10 +392,13 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                 tokens += completionsUsage.TotalTokens;
 =======
                 tokens += completionsUsage.TotalTokenCount;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -405,6 +415,8 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 =======
                 tokens += completionsUsage.TotalTokenCount;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             }
         }
 

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 from pydantic import model_validator
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +24,8 @@ from semantic_kernel.template_engine.blocks.block import Block
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from semantic_kernel.exceptions import VarBlockRenderError, VarBlockSyntaxError
 =======
@@ -37,6 +40,7 @@ from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxEr
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -54,12 +58,15 @@ from semantic_kernel.exceptions import VarBlockRenderError, VarBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,6 +82,8 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -83,6 +92,9 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -179,6 +191,7 @@ class VarBlock(Block):
     def __init__(self, content: str, log: Logger) -> None:
         super().__init__(BlockTypes.Variable, content, log)
 
+<<<<<<< Updated upstream
 =======
 <<<<<<< main
 
@@ -269,6 +282,8 @@ class VarBlock(Block):
         super().__init__(BlockTypes.Variable, content, log)
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     def is_valid(self) -> Tuple[bool, str]:
         error = ""
 
@@ -296,7 +311,10 @@ class VarBlock(Block):
 
         if self.name is not None and self.name.strip() != "":
             exists, value = variables.get(self.name)
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 
             if not exists:
                 self._log.warning(f"Variable {VarBlock.PREFIX}{self.name} not found")
@@ -315,6 +333,7 @@ class VarBlock(Block):
             return ""
 
         return self._content[1:]
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -352,6 +371,10 @@ class VarBlock(Block):
         return self._content[1:]
 
 >>>>>>> origin/main
+=======
+<<<<<<< main
+
+>>>>>>> Stashed changes
     @staticmethod
     def has_var_prefix(text: str) -> bool:
         return text is not None and text.strip() != "" and text[0] == VarBlock.PREFIX
@@ -364,6 +387,7 @@ class VarBlock(Block):
     def PREFIX() -> Literal["$"]:
         return "$"
 =======
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -378,6 +402,8 @@ class VarBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
     @staticmethod
     def has_var_prefix(text: str) -> bool:
@@ -390,6 +416,7 @@ class VarBlock(Block):
     @static_property
     def PREFIX() -> Literal["$"]:
         return "$"
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -407,6 +434,9 @@ class VarBlock(Block):
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -469,6 +499,7 @@ class VarBlock(Block):
 
         return str(value) if value else ""
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -485,4 +516,6 @@ class VarBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main

@@ -7,6 +7,7 @@ from semantic_kernel.data.const import DistanceFunction, IndexKind
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -18,10 +19,13 @@ from semantic_kernel.data.const import DistanceFunction, IndexKind
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
 from semantic_kernel.data.filters.text_search_filter import TextSearchFilter
 from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,6 +44,8 @@ from semantic_kernel.data.filters.text_search_filter import TextSearchFilter
 from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search_options import VectorSearchOptions
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.data.vector_store import VectorStore
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
 from semantic_kernel.data.vector_store_model_definition import (
@@ -64,6 +70,7 @@ __all__ = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -75,10 +82,13 @@ __all__ = [
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
     "TextSearchFilter",
     "VectorSearchFilter",
     "VectorSearchOptions",
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -97,6 +107,8 @@ __all__ = [
     "VectorSearchFilter",
     "VectorSearchOptions",
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     "VectorStore",
     "VectorStoreRecordCollection",
     "VectorStoreRecordDataField",

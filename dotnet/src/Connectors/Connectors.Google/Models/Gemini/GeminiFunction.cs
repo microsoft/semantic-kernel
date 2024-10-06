@@ -178,6 +178,7 @@ public sealed class GeminiFunction
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return KernelJsonSchemaBuilder.Build(null, typeof(string), parameter.Description);
 =======
 =======
@@ -189,10 +190,13 @@ public sealed class GeminiFunction
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             return KernelJsonSchemaBuilder.Build(null, typeof(string), parameter.Description);
 =======
             return KernelJsonSchemaBuilder.Build(typeof(string), parameter.Description);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -209,6 +213,8 @@ public sealed class GeminiFunction
 =======
             return KernelJsonSchemaBuilder.Build(typeof(string), parameter.Description);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         }
 
         // Otherwise, we can use a cached schema for a string with no description.

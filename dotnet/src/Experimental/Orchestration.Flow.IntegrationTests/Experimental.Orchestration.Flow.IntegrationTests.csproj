@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,10 +24,14 @@
 =======
 <Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> origin/main
+=======
+<Project Sdk="Microsoft.NET.Sdk">
+>>>>>>> Stashed changes
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests</AssemblyName>
     <RootNamespace>SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,6 +42,8 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101,SKEXP0050</NoWarn>
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -50,8 +57,11 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101,SKEXP0050</NoWarn>
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101,SKEXP0050</NoWarn>
@@ -61,6 +71,7 @@
     <IsPackable>false</IsPackable>
     <NoWarn>CA2007,VSTHRD111</NoWarn>
  9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -77,6 +88,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
@@ -101,6 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -120,6 +134,10 @@
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
     <!-- Because some of the referenced projects have dependencies that themselves have System.Text.Json set with a minimum of 7.0. -->
     <PackageReference Include="System.Text.Json" />
     <PackageVersion Update="System.Text.Json" Version="7.0.3" />
@@ -130,6 +148,7 @@
     <ProjectReference Include="..\..\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
  9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -146,6 +165,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
     <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Web\Plugins.Web.csproj" />

@@ -105,6 +105,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -134,6 +135,11 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return GoogleAITextPromptExecutionSettings
 
@@ -146,6 +152,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -160,9 +167,13 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
     @trace_text_completion(GoogleAIBase.MODEL_PROVIDER_NAME)
     async def get_text_contents(
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -180,6 +191,9 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         self,
         prompt: str,
         settings: "PromptExecutionSettings",

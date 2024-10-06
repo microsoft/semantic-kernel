@@ -4,6 +4,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # Copyright (c) Microsoft. All rights reserved.
 
 =======
@@ -21,11 +22,17 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+# Copyright (c) Microsoft. All rights reserved.
+
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 # Copyright (c) Microsoft. All rights reserved.
 
 =======
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -43,6 +50,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 from unittest.mock import patch
 
 import pytest
@@ -97,6 +107,7 @@ async def test_wait_valid_params(wait_time):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
 =======
@@ -112,11 +123,16 @@ async def test_wait_valid_params(wait_time):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        patched_sleep.assert_called_once_with(abs(float(wait_time)))
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
         assert patched_sleep.called_once_with(abs(float(wait_time)))
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -134,6 +150,9 @@ async def test_wait_valid_params(wait_time):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio

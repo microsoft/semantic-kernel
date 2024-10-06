@@ -38,4 +38,4 @@ class BingPlugin:
         if result:
             return result[0]
         else:
-            return f"Nothing found, try again or try to adjust the topic."
+            return "Nothing found, try again or try to adjust the topic."

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,9 @@ using System.Collections.Generic;
 =======
 using System.Collections.Generic;
 >>>>>>> origin/main
+=======
+using System.Collections.Generic;
+>>>>>>> Stashed changes
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +42,7 @@ namespace Microsoft.SemanticKernel.TextToImage;
 public interface ITextToImageService : IAIService
 {
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -46,6 +51,11 @@ public interface ITextToImageService : IAIService
 <<<<<<< Updated upstream
     /// Generate an image matching the given description
     /// </summary>
+=======
+    /// Given a prompt and/or an input text, the model will generate a new image.
+    /// </summary>
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
     /// Given a prompt and/or an input text, the model will generate a new image.
     /// </summary>
@@ -87,6 +97,7 @@ public interface ITextToImageService : IAIService
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -104,16 +115,23 @@ public interface ITextToImageService : IAIService
 =======
     /// Given a prompt and/or an input text, the model will generate a new image.
     /// </summary>
+=======
+=======
+>>>>>>> Stashed changes
     /// <param name="input">Input text for image generation</param>
     /// <param name="executionSettings">Text to image execution settings</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     /// <returns>Generated image contents</returns>
     [Experimental("SKEXP0001")]
     public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
         TextContent input,
         PromptExecutionSettings? executionSettings = null,
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -130,6 +148,8 @@ public interface ITextToImageService : IAIService
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);

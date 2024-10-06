@@ -13,6 +13,7 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -26,6 +27,9 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 from typing import Optional
 
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
@@ -36,6 +40,7 @@ class StreamingTextContent(StreamingKernelContent):
 
     All Text Completion Services should return a instance of this class as streaming response.
     Or they can implement their own subclass of this class and return an instance.
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -53,6 +58,9 @@ class StreamingTextContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     Args:
         choice_index: int - The index of the choice that generated this response.
@@ -85,10 +93,14 @@ class StreamingTextContent(StreamingKernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
         """When combining two StreamingTextContent instances, the text fields are combined.
 
         The inner_content of the first one is used, choice_index, ai_model_id and encoding should be the same.
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -104,6 +116,8 @@ class StreamingTextContent(StreamingKernelContent):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     text: Optional[str] = None
     encoding: Optional[str] = None
 
@@ -122,6 +136,7 @@ class StreamingTextContent(StreamingKernelContent):
             3. encoding should be the same.
             4. choice_index should be the same.
             5. Metadata will be combined.
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -139,6 +154,9 @@ class StreamingTextContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         """
         if (
             isinstance(other, StreamingTextContent)
@@ -161,6 +179,7 @@ class StreamingTextContent(StreamingKernelContent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return StreamingTextContent(
             choice_index=self.choice_index,
             inner_content=self.inner_content,
@@ -174,12 +193,17 @@ class StreamingTextContent(StreamingKernelContent):
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         return StreamingTextContent(
             choice_index=self.choice_index,
             inner_content=self.inner_content,
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         if self.choice_index != other.choice_index:
             raise ValueError("Cannot add StreamingTextContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
@@ -194,6 +218,7 @@ class StreamingTextContent(StreamingKernelContent):
         return StreamingTextContent(
             choice_index=self.choice_index,
             inner_content=self._merge_inner_contents(other.inner_content),
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -211,6 +236,9 @@ class StreamingTextContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             ai_model_id=self.ai_model_id,
             metadata=self.metadata,
             text=(self.text or "") + (other.text or ""),

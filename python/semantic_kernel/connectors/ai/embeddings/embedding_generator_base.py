@@ -6,12 +6,16 @@ from typing import TYPE_CHECKING, Any
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -44,6 +48,7 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -60,6 +65,11 @@ from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 >>>>>>> origin/main
+=======
+=======
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
+>>>>>>> Stashed changes
 if TYPE_CHECKING:
     from numpy import ndarray
 
@@ -73,6 +83,7 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
     """Base class for embedding generators."""
 
 class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -89,6 +100,8 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
     @abstractmethod
     async def generate_embeddings(

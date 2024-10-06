@@ -11,6 +11,7 @@ from pydantic import Field, model_validator
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 =======
 =======
@@ -22,12 +23,15 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 =======
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -46,6 +50,8 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +75,7 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -98,6 +105,11 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 =======
     max_tokens: int = Field(default=1024, gt=0)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    max_tokens: int = Field(default=1024, gt=0)
+>>>>>>> main
+>>>>>>> Stashed changes
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     stop_sequences: list[str] | None = None
     top_p: float | None = Field(None, ge=0.0, le=1.0)
@@ -108,6 +120,7 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -121,6 +134,9 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     tools: list[dict[str, Any]] | None = Field(
         None,
         max_length=64,
@@ -130,6 +146,7 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
         None,
         description="Do not set this manually. It is set by the service based on the function choice configuration.",
     )
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -147,6 +164,9 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
     @model_validator(mode="after")
     def check_function_call_behavior(self) -> "AnthropicChatPromptExecutionSettings":
@@ -160,6 +180,7 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -173,6 +194,9 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
     def validate_tool_choice(self) -> "AnthropicChatPromptExecutionSettings":
         """Validate tool choice. Anthropic doesn't support NONE tool choice."""
         tool_choice = self.tool_choice
@@ -180,6 +204,7 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
         if tool_choice and tool_choice.get("type") == FunctionChoiceType.NONE.value:
             raise ServiceInvalidExecutionSettingsError("Tool choice 'none' is not supported by Anthropic.")
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -197,4 +222,7 @@ class AnthropicChatPromptExecutionSettings(AnthropicPromptExecutionSettings):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         return self

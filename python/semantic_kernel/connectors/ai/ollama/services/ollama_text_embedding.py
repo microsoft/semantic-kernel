@@ -40,6 +40,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 @experimental_class
 class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 =======
@@ -57,12 +58,18 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+@experimental_class
+class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 @experimental_class
 class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 =======
 class OllamaTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -80,6 +87,9 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     """Ollama embeddings client.
 
     Make sure to have the ollama service running either locally or remotely.

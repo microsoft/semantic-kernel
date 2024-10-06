@@ -44,6 +44,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -73,6 +74,11 @@ class KernelJsonSchemaBuilder:
 =======
         cls, parameter_type: type | str | Any, description: str | None = None, structured_output: bool = False
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        cls, parameter_type: type | str | Any, description: str | None = None, structured_output: bool = False
+>>>>>>> main
+>>>>>>> Stashed changes
     ) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type and description.
 
@@ -83,6 +89,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             parameter_type (type | str): The parameter type.
             description (str, optional): The description of the parameter. Defaults to None.
 =======
@@ -95,6 +102,8 @@ class KernelJsonSchemaBuilder:
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             parameter_type (type | str): The parameter type.
             description (str, optional): The description of the parameter. Defaults to None.
 =======
@@ -102,6 +111,7 @@ class KernelJsonSchemaBuilder:
             description: The description of the parameter. Defaults to None.
             structured_output: Whether the outputs are structured. Defaults to False.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -120,6 +130,8 @@ class KernelJsonSchemaBuilder:
             description: The description of the parameter. Defaults to None.
             structured_output: Whether the outputs are structured. Defaults to False.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
@@ -133,6 +145,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -147,6 +160,8 @@ class KernelJsonSchemaBuilder:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             return cls.build_model_schema(parameter_type, description)
         if isinstance(parameter_type, type) and issubclass(parameter_type, Enum):
@@ -155,6 +170,7 @@ class KernelJsonSchemaBuilder:
             return cls.build_model_schema(parameter_type, description)
         if hasattr(parameter_type, "__args__"):
             return cls.handle_complex_type(parameter_type, description)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -172,6 +188,9 @@ class KernelJsonSchemaBuilder:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
             return cls.build_model_schema(parameter_type, description, structured_output)
         if isinstance(parameter_type, type) and issubclass(parameter_type, Enum):
             return cls.build_enum_schema(parameter_type, description)
@@ -179,6 +198,7 @@ class KernelJsonSchemaBuilder:
             return cls.build_model_schema(parameter_type, description, structured_output)
         if hasattr(parameter_type, "__args__"):
             return cls.handle_complex_type(parameter_type, description, structured_output)
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -196,6 +216,9 @@ class KernelJsonSchemaBuilder:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         schema = cls.get_json_schema(parameter_type)
         if description:
             schema["description"] = description
@@ -210,6 +233,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -239,6 +263,11 @@ class KernelJsonSchemaBuilder:
 =======
         cls, model: type | KernelBaseModel, description: str | None = None, structured_output: bool = False
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        cls, model: type | KernelBaseModel, description: str | None = None, structured_output: bool = False
+>>>>>>> main
+>>>>>>> Stashed changes
     ) -> dict[str, Any]:
         """Builds the JSON schema for a given model and description.
 
@@ -249,6 +278,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             model (type): The model type.
             description (str, optional): The description of the model. Defaults to None.
 =======
@@ -261,6 +291,8 @@ class KernelJsonSchemaBuilder:
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             model (type): The model type.
             description (str, optional): The description of the model. Defaults to None.
 =======
@@ -268,6 +300,7 @@ class KernelJsonSchemaBuilder:
             description: The description of the model. Defaults to None.
             structured_output: Whether the outputs are structured. Defaults to False.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -286,6 +319,8 @@ class KernelJsonSchemaBuilder:
             description: The description of the model. Defaults to None.
             structured_output: Whether the outputs are structured. Defaults to False.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         Returns:
             dict[str, Any]: The JSON schema for the model.
@@ -314,6 +349,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             properties[field_name] = cls.build(field_type, field_description)
 =======
 =======
@@ -325,10 +361,13 @@ class KernelJsonSchemaBuilder:
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             properties[field_name] = cls.build(field_type, field_description)
 =======
             properties[field_name] = cls.build(field_type, field_description, structured_output)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -345,6 +384,8 @@ class KernelJsonSchemaBuilder:
 =======
             properties[field_name] = cls.build(field_type, field_description, structured_output)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         schema = {"type": "object", "properties": properties}
         if required:
@@ -355,6 +396,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -366,9 +408,12 @@ class KernelJsonSchemaBuilder:
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
         if structured_output:
             schema["additionalProperties"] = False  # type: ignore
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -386,6 +431,8 @@ class KernelJsonSchemaBuilder:
         if structured_output:
             schema["additionalProperties"] = False  # type: ignore
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         if description:
             schema["description"] = description
 
@@ -445,6 +492,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -474,6 +522,11 @@ class KernelJsonSchemaBuilder:
 =======
         cls, parameter_type: type, description: str | None = None, structured_output: bool = False
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        cls, parameter_type: type, description: str | None = None, structured_output: bool = False
+>>>>>>> main
+>>>>>>> Stashed changes
     ) -> dict[str, Any]:
         """Handles building the JSON schema for complex types.
 
@@ -484,6 +537,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             parameter_type (type): The parameter type.
             description (str, optional): The description of the parameter. Defaults to None.
 =======
@@ -496,6 +550,8 @@ class KernelJsonSchemaBuilder:
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             parameter_type (type): The parameter type.
             description (str, optional): The description of the parameter. Defaults to None.
 =======
@@ -503,6 +559,7 @@ class KernelJsonSchemaBuilder:
             description: The description of the parameter. Defaults to None.
             structured_output: Whether the outputs are structured. Defaults to False.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -521,6 +578,8 @@ class KernelJsonSchemaBuilder:
             description: The description of the parameter. Defaults to None.
             structured_output: Whether the outputs are structured. Defaults to False.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
@@ -537,6 +596,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             schema = {"type": "array", "items": cls.build(item_type)}
 =======
 =======
@@ -552,10 +612,15 @@ class KernelJsonSchemaBuilder:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+            schema = {"type": "array", "items": cls.build(item_type)}
+=======
+>>>>>>> Stashed changes
             schema = {
                 "type": "array",
                 "items": cls.build(item_type, structured_output=structured_output),
             }
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -573,6 +638,9 @@ class KernelJsonSchemaBuilder:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             if description:
                 schema["description"] = description
             return schema
@@ -584,6 +652,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             additional_properties = cls.build(value_type)
 =======
 =======
@@ -595,10 +664,13 @@ class KernelJsonSchemaBuilder:
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             additional_properties = cls.build(value_type)
 =======
             additional_properties = cls.build(value_type, structured_output=structured_output)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -615,6 +687,8 @@ class KernelJsonSchemaBuilder:
 =======
             additional_properties = cls.build(value_type, structured_output=structured_output)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             if additional_properties == {"type": "object"}:
                 additional_properties["properties"] = (
                     {}
@@ -628,6 +702,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -642,6 +717,8 @@ class KernelJsonSchemaBuilder:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             return schema
         if origin is tuple:
@@ -654,6 +731,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -666,6 +744,9 @@ class KernelJsonSchemaBuilder:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
             if structured_output:
                 schema["additionalProperties"] = False
             return schema
@@ -676,6 +757,7 @@ class KernelJsonSchemaBuilder:
                 schema["description"] = description
             if structured_output:
                 schema["additionalProperties"] = False
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -693,6 +775,9 @@ class KernelJsonSchemaBuilder:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             return schema
         if origin in {Union, types.UnionType}:
             # Handle Optional[T] (Union[T, None]) by making schema nullable
@@ -704,6 +789,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -718,6 +804,8 @@ class KernelJsonSchemaBuilder:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 schema = cls.build(non_none_type)
                 schema["type"] = [schema["type"], "null"]
@@ -730,6 +818,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -742,6 +831,9 @@ class KernelJsonSchemaBuilder:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
                 schema = cls.build(non_none_type, structured_output=structured_output)
                 schema["type"] = [schema["type"], "null"]
                 if description:
@@ -750,6 +842,7 @@ class KernelJsonSchemaBuilder:
                     schema["additionalProperties"] = False
                 return schema
             schemas = [cls.build(arg, description, structured_output=structured_output) for arg in args]
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -767,6 +860,9 @@ class KernelJsonSchemaBuilder:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             return {"anyOf": schemas}
         schema = cls.get_json_schema(parameter_type)
         if description:
@@ -777,6 +873,7 @@ class KernelJsonSchemaBuilder:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -788,9 +885,12 @@ class KernelJsonSchemaBuilder:
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
         if structured_output:
             schema["additionalProperties"] = False
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -808,6 +908,8 @@ class KernelJsonSchemaBuilder:
         if structured_output:
             schema["additionalProperties"] = False
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         return schema
 
     @classmethod

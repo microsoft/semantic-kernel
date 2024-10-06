@@ -81,6 +81,7 @@ class SemanticTextMemoryBase(ABC):
         self,
         collection: str,
         key: str,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -102,12 +103,18 @@ class SemanticTextMemoryBase(ABC):
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    ) -> "MemoryQueryResult | None":
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     ) -> "MemoryQueryResult | None":
 =======
         # TODO: with_embedding: bool,
     ) -> Optional[MemoryQueryResult]:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -124,6 +131,8 @@ class SemanticTextMemoryBase(ABC):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         """Get information from the memory (calls the memory store's get method).
 

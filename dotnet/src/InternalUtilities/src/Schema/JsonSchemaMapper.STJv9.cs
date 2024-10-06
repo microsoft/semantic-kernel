@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -19,10 +20,14 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 // Source copied from https://github.com/eiriktsarpalis/stj-schema-mapper
 // It should be kept in sync with any changes made in that repo,
 // and should be removed once the relevant replacements are available in STJv9.
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -40,6 +45,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 #if NET9_0_OR_GREATER || SYSTEM_TEXT_JSON_V9
 using System;
 using System.Collections.Generic;

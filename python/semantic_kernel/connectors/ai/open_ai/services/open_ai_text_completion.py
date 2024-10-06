@@ -4,6 +4,7 @@ import json
 import logging
 from collections.abc import Mapping
 from typing import Any
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -11,6 +12,8 @@ from typing import Any
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -27,6 +30,7 @@ from typing import Dict, Mapping, Optional, overload
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -39,6 +43,8 @@ from typing import Dict, Mapping, Optional, overload
 =======
 from typing import Dict, Mapping, Optional, overload
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -73,6 +79,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -158,10 +165,15 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             org_id=openai_settings.org_id,
 
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
     @overload
     def __init__(
         self,
         ai_model_id: str,
+<<<<<<< Updated upstream
 <<<<<<< head
         async_client: AsyncOpenAI,
         service_id: Optional[str] = None,
@@ -170,6 +182,10 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
 >>>>>>> origin/main
+=======
+        async_client: AsyncOpenAI,
+        service_id: Optional[str] = None,
+>>>>>>> Stashed changes
     ) -> None:
         """
         Initialize an OpenAITextCompletion service.
@@ -177,11 +193,15 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         Arguments:
             ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
             async_client {AsyncOpenAI} -- An existing client to use.
         """
 
     @overload
+<<<<<<< Updated upstream
 =======
             api_key {Optional[str]} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys (Optional)
@@ -190,6 +210,8 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         """
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     def __init__(
         self,
         ai_model_id: str,
@@ -197,11 +219,14 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         org_id: Optional[str] = None,
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -257,7 +282,10 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -274,9 +302,12 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         api_key: Optional[str] = None,
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< Updated upstream
 =======
         async_client: Optional[AsyncOpenAI] = None,
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     ) -> None:
         """
         Initialize an OpenAITextCompletion service.
@@ -286,7 +317,10 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
                 https://platform.openai.com/docs/models
             api_key {Optional[str]} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys (Optional)
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
         """
@@ -321,17 +355,23 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
 =======
             api_key {Optional[str]} -- OpenAI API key, see
                 https://platform.openai.com/account/api-keys (Optional)
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
                 account belongs to multiple organizations.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         """
         try:
@@ -363,6 +403,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             api_key=api_key,
             org_id=org_id,
             service_id=service_id,
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -379,6 +420,8 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
             ai_model_type=OpenAIModelTypes.TEXT,
             default_headers=default_headers,

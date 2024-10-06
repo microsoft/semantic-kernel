@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,11 +23,17 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+from typing import TYPE_CHECKING, ClassVar, Optional
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from typing import TYPE_CHECKING, ClassVar, Optional
 =======
 from typing import TYPE_CHECKING, ClassVar, Optional, Tuple
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -43,6 +50,8 @@ from typing import TYPE_CHECKING, ClassVar, Optional, Tuple
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
 from pydantic import field_validator
@@ -58,6 +67,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TextBlock(Block):
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,17 +85,23 @@ class TextBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     """A block with text content."""
 
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     """A block with text content."""
 
 =======
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -102,12 +118,15 @@ class TextBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
     type: ClassVar[BlockTypes] = BlockTypes.TEXT
 
     @field_validator("content", mode="before")
     @classmethod
     def content_strip(cls, content: str):
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +142,8 @@ class TextBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -131,6 +152,7 @@ class TextBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -143,10 +165,13 @@ class TextBlock(Block):
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         """Strip the content of the text block.
 
         Overload strip method, text blocks are not stripped.
         """
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -154,6 +179,8 @@ class TextBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -172,6 +199,7 @@ class TextBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -186,17 +214,23 @@ class TextBlock(Block):
         # overload strip method text blocks are not stripped.
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         return content
 
     @classmethod
     def from_text(
         cls,
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -222,6 +256,7 @@ class TextBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -234,6 +269,9 @@ class TextBlock(Block):
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         text: str | None = None,
         start_index: int | None = None,
@@ -246,6 +284,7 @@ class TextBlock(Block):
         stop_index: Optional[int] = None,
     ):
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -262,6 +301,8 @@ class TextBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         if text is None:
             return cls(content="")
@@ -281,12 +322,16 @@ class TextBlock(Block):
             text = text[:stop_index]
 
         return cls(content=text)
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -309,6 +354,7 @@ class TextBlock(Block):
 from logging import Logger
 from typing import Optional, Tuple
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -337,6 +383,8 @@ from typing import Optional, Tuple
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -370,6 +418,7 @@ class TextBlock(Block):
 
     def render(self, _: Optional[ContextVariables]) -> str:
         return self._content
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -409,4 +458,12 @@ class TextBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+<<<<<<< main
+=======
+=======
+    def render(self, *_: Tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
+        return self.content
+>>>>>>> ms/small_fixes
+>>>>>>> Stashed changes
 >>>>>>> origin/main

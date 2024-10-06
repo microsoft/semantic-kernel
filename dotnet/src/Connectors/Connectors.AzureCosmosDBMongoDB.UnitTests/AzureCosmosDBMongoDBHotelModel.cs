@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using MongoDB.Bson.Serialization.Attributes;
 =======
 =======
@@ -24,10 +25,15 @@ using MongoDB.Bson.Serialization.Attributes;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+using MongoDB.Bson.Serialization.Attributes;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using MongoDB.Bson.Serialization.Attributes;
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -45,6 +51,9 @@ using MongoDB.Bson.Serialization.Attributes;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 
@@ -61,6 +70,7 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     [VectorStoreRecordData]
 =======
 =======
@@ -76,11 +86,16 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    [VectorStoreRecordData]
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     [VectorStoreRecordData(IsFilterable = true)]
 =======
     [VectorStoreRecordData]
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -98,6 +113,9 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
@@ -115,6 +133,7 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     [BsonElement("parking_is_included")]
     [VectorStoreRecordData]
 =======
@@ -132,12 +151,18 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    [BsonElement("parking_is_included")]
+    [VectorStoreRecordData]
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     [BsonElement("parking_is_included")]
     [VectorStoreRecordData]
 =======
     [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -155,6 +180,9 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     public bool ParkingIncluded { get; set; }
 
     /// <summary>An array metadata field.</summary>

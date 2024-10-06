@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -18,11 +19,15 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 
 from typing import Any, Dict, List, Literal, Optional
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -40,6 +45,9 @@ from typing import Any, Dict, List, Literal, Optional
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 from typing import Any, Literal
 
@@ -55,6 +63,7 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -84,6 +93,11 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
     """Settings for Ollama prompt execution."""
 
     format: Literal["json"] | None = None
@@ -97,6 +111,7 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -111,11 +126,15 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
+=======
     ai_model_id: str = Field("", serialization_alias="model")
     format: Optional[Literal["json"]] = None
     options: Optional[Dict[str, Any]] = None
     stream: bool = False
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -133,6 +152,9 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 class OllamaTextPromptExecutionSettings(OllamaPromptExecutionSettings):

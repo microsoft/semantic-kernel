@@ -55,6 +55,7 @@ repos:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       entry: uv run mypy -p semantic_kernel --config-file python/mypy.ini
 =======
 =======
@@ -66,10 +67,13 @@ repos:
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
       entry: uv run mypy -p semantic_kernel --config-file python/mypy.ini
 =======
       entry: cd python && uv run mypy -p semantic_kernel --config-file mypy.ini
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -86,6 +90,8 @@ repos:
 =======
       entry: cd python && uv run mypy -p semantic_kernel --config-file mypy.ini
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
       language: system
       types: [python]
       pass_filenames: false

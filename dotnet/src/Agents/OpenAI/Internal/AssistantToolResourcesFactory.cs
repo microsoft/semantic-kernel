@@ -32,6 +32,7 @@ internal static class AssistantToolResourcesFactory
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -46,6 +47,8 @@ internal static class AssistantToolResourcesFactory
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             toolResources =
                 new ToolResources()
@@ -70,6 +73,7 @@ internal static class AssistantToolResourcesFactory
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -82,6 +86,9 @@ internal static class AssistantToolResourcesFactory
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
             FileSearchToolResources? fileSearch =
                 hasVectorStore ?
                     new()
@@ -101,6 +108,7 @@ internal static class AssistantToolResourcesFactory
                 FileSearch = fileSearch,
                 CodeInterpreter = codeInterpreter
             };
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -118,6 +126,9 @@ internal static class AssistantToolResourcesFactory
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
         return toolResources;
