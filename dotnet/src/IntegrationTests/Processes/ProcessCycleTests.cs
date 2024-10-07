@@ -83,7 +83,7 @@ public sealed class ProcessCycleTests
     /// <summary>
     /// Kick off step for the process.
     /// </summary>
-    private class KickoffStep : KernelProcessStep
+    private sealed class KickoffStep : KernelProcessStep
     {
         public static class Functions
         {
@@ -101,7 +101,7 @@ public sealed class ProcessCycleTests
     /// <summary>
     /// A step in the process.
     /// </summary>
-    private class AStep : KernelProcessStep
+    private sealed class AStep : KernelProcessStep
     {
         [KernelFunction]
         public async ValueTask DoItAsync(KernelProcessStepContext context)
@@ -114,7 +114,7 @@ public sealed class ProcessCycleTests
     /// <summary>
     /// A step in the process.
     /// </summary>
-    private class BStep : KernelProcessStep
+    private sealed class BStep : KernelProcessStep
     {
         [KernelFunction]
         public async ValueTask DoItAsync(KernelProcessStepContext context)
@@ -127,7 +127,7 @@ public sealed class ProcessCycleTests
     /// <summary>
     /// A step in the process.
     /// </summary>
-    private class CStep : KernelProcessStep
+    private sealed class CStep : KernelProcessStep
     {
         private int CurrentCycle { get; set; } = 0;
 
