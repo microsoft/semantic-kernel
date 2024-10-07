@@ -82,7 +82,7 @@ Cons:
 - Similar to the above, it may not be clear which component/API needs JSOs, postponing discovery to runtime.  
 - Will add another way of providing JSOs in SK. Low-level KernelFunctionFactory and KernelPluginFactory accept JSOs via method parameters.  
 - SK AI connectors accept an **optional** instance of the kernel in their operation, which sends mixed signals. On one hand, it's optional, meaning AI connectors can work without it; on the other hand, the operation will fail in an AOT app if no kernel is provided.
-- SK components that accept a Kernel as a parameter of operations, rather than as a parameter of a constructor, and that need to combine external source-generated contexts with internal ones, will combine them at the first invocation of the operation and cache the result for subsequent operation invocations. This may be misleading because the operation can accept a new JSO instance per invocation, but the component will only use the first cached one.
+- SK components that accept JSOs via Kernel as a parameter of operations, rather than as a parameter of a constructor, and that need to combine external source-generated contexts with internal ones, will combine them at the first invocation of the operation and cache the result for subsequent operation invocations. This may be misleading because the operation can accept a new JSO instance per invocation, but the component will only use the first cached one.
 
 ### Ways to Provide JSON Serializer Options (JSOs) to the Kernel:
 1. Via `Kernel` constructor.
@@ -182,6 +182,7 @@ Cons:
 - New operations/methods overloads accepting JSOs will have to be added for all SK components requiring external source-generated contracts.
 - If components need to combine internal and external source-generated contexts, it can be inefficient if done per operation invocation or semantically incorrect if the first JSOs are cached and used for subsequent invocations.
 - Will add another way of providing JSOs in SK. Low-level KernelFunctionFactory and KernelPluginFactory accept JSOs via method parameters.  
+- Not applicable to all SK components. KernelFunction needs JSOs before it is invoked for schema generation purposes. 
 
 ## Decision Outcome
 TBD
