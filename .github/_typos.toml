@@ -20,6 +20,7 @@ extend-exclude = [
     "MultipleFunctionsVsParameters.cs",
     "PopulationByCountry.csv",
     "PopulationByAdmin1.csv",
+	"WomensSuffrage.txt",
 ]
 
 [default.extend-words]
