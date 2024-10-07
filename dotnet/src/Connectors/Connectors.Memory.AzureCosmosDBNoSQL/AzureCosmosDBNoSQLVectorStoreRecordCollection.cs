@@ -363,10 +363,10 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         VectorSearchOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
         const string ScorePropertyName = "SimilarityScore";
@@ -401,21 +401,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             ScorePropertyName,
             searchOptions);
 
-        await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken).ConfigureAwait(false))
-        {
-            var score = jsonObject[ScorePropertyName]?.AsValue().GetValue<double>();
-
-            // Remove score from result object for mapping.
-            jsonObject.Remove(ScorePropertyName);
-
-            var record = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
-                this.CollectionName,
-                OperationName,
-                () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = searchOptions.IncludeVectors }));
-
-            yield return new VectorSearchResult<TRecord>(record, score);
-        }
+        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
+        var mappedResults = this.MapSearchResultsAsync(
+            searchResults,
+            ScorePropertyName,
+            OperationName,
+            searchOptions,
+            cancellationToken);
+        return Task.FromResult(new VectorSearchResults<TRecord>(mappedResults));
     }
 
     #endregion
@@ -673,6 +666,30 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
                     yield return record;
                 }
             }
+        }
+    }
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> MapSearchResultsAsync(
+        IAsyncEnumerable<JsonObject> jsonObjects,
+        string scorePropertyName,
+        string operationName,
+        VectorSearchOptions searchOptions,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var jsonObject in jsonObjects.ConfigureAwait(false))
+        {
+            var score = jsonObject[scorePropertyName]?.AsValue().GetValue<double>();
+
+            // Remove score from result object for mapping.
+            jsonObject.Remove(scorePropertyName);
+
+            var record = VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this.CollectionName,
+                operationName,
+                () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = searchOptions.IncludeVectors }));
+
+            yield return new VectorSearchResult<TRecord>(record, score);
         }
     }
 

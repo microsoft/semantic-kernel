@@ -95,6 +95,9 @@ dotnet user-secrets set "Planners:AzureOpenAI:ApiKey" "..."
 
 dotnet user-secrets set "Planners:OpenAI:ModelId" "gpt-3.5-turbo-1106"
 dotnet user-secrets set "Planners:OpenAI:ApiKey" "..."
+
+dotnet user-secrets set "AzureAISearch:ServiceUrl" "..."
+dotnet user-secrets set "AzureAISearch:ApiKey" "..."
 ```
 
 ### Option 2: Use Configuration File

@@ -52,16 +52,18 @@ public class VectorStore_VectorSearch_Paging(ITestOutputHelper output) : BaseTes
                 {
                     Top = 10,
                     Skip = page * 10
-                }).ToListAsync();
+                });
 
             // Print the results.
-            foreach (var result in currentPageResults)
+            var pageCount = 0;
+            await foreach (var result in currentPageResults.Results)
             {
                 Console.WriteLine($"Key: {result.Record.Key}, Text: {result.Record.Text}");
+                pageCount++;
             }
 
             // Stop when we got back less than the requested number of results.
-            moreResults = currentPageResults.Count == 10;
+            moreResults = pageCount == 10;
             page++;
         }
     }

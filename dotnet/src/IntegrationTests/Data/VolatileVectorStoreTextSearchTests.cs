@@ -58,5 +58,17 @@ public class VolatileVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
     public override TextSearchFilter GetTextSearchFilter() => new TextSearchFilter().Equality("Tag", "Even");
 
     /// <inheritdoc/>
-    public override bool VerifySearchResult(object result, TextSearchFilter? filter = null) => result is DataModel;
+    public override bool VerifySearchResults(object[] results, string query, TextSearchFilter? filter = null)
+    {
+        Assert.NotNull(results);
+        Assert.NotEmpty(results);
+        Assert.Equal(4, results.Length);
+        foreach (var result in results)
+        {
+            Assert.NotNull(result);
+            Assert.IsType<DataModel>(result);
+        }
+
+        return true;
+    }
 }

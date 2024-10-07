@@ -32,5 +32,17 @@ public class BingTextSearchTests : BaseTextSearchTests
     public override TextSearchFilter GetTextSearchFilter() => new TextSearchFilter().Equality("site", "devblogs.microsoft.com");
 
     /// <inheritdoc/>
-    public override bool VerifySearchResult(object result, TextSearchFilter? filter = null) => result is BingWebPage;
+    public override bool VerifySearchResults(object[] results, string query, TextSearchFilter? filter = null)
+    {
+        Assert.NotNull(results);
+        Assert.NotEmpty(results);
+        Assert.Equal(4, results.Length);
+        foreach (var result in results)
+        {
+            Assert.NotNull(result);
+            Assert.IsType<BingWebPage>(result);
+        }
+
+        return true;
+    }
 }
