@@ -5,37 +5,6 @@ if you're working on new features or a bug fix for Semantic Kernel, or simply
 want to run the tests included.
 
 ## System setup
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-<<<<<<< main
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ## LLM setup
 
 Make sure you have an
@@ -73,43 +42,11 @@ Avoid `/mnt/c/` and prefer using your WSL user's home directory.
 ```python {"id":"01J6KNPX0HTGAZ4YDQ353PQS4G"}
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
 ```
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
 
 ## If you're on WSL
 
 Check that you've cloned the repository to `~/workspace` or a similar folder.
 Avoid `/mnt/c/` and prefer using your WSL user's home directory.
->>>>>>> ms/features/bugbash-prep
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 Ensure you have the WSL extension for VSCode installed.
 
@@ -120,26 +57,6 @@ if you had SK pip package installed.
 
 To install SK and all the required tools in your system, first, navigate to the directory containing
 this DEV_SETUP using your chosen shell.
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
 
 ### For windows (non-WSL)
 
@@ -185,11 +102,6 @@ sudo apt-get update && sudo apt-get install python3 python3-pip
 ```
 
 ℹ️ __Note__: if you don't have your PATH setup to find executables installed by `pip3`,
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
 Ensure you have the WSL extension for VSCode installed (and the Python extension
 for VSCode installed).
@@ -211,17 +123,6 @@ your `~/.bashrc` and closing/re-opening the terminal.\_
 Poetry allows to use SK from the local files, without worrying about paths, as
 if you had SK pip package installed.
 
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
 
 ### For windows (non-WSL)
 
@@ -229,11 +130,8 @@ Check the [uv documentation](https://docs.astral.sh/uv/getting-started/installat
 
 ```powershell
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-<<<<<<< main
 ```python {"id":"01J6KNPX0HTGAZ4YDQ3625T9E4"}
     python3 --version ; pip3 --version ; code -v
-=======
->>>>>>> ms/features/bugbash-prep
 ```
 
 You can then run the following commands manually:
@@ -253,7 +151,6 @@ uv run pre-commit install -c python/.pre-commit-config.yaml
 Or you can then either install [`make`](https://gnuwin32.sourceforge.net/packages/make.htm) and then follow the guide for Mac and Linux, or run the following commands, the commands are shown as bash but should work in powershell as well.
 
 ### For Mac and Linux (both native and WSL)
-<<<<<<< main
 
 It is super simple to get started, run the following commands:
 
@@ -271,8 +168,6 @@ sudo apt-get update && sudo apt-get install python3 python3-pip
 ```
 
 ℹ️ __Note__: if you don't have your PATH setup to find executables installed by `pip3`,
-=======
->>>>>>> ms/features/bugbash-prep
 
 It is super simple to get started, run the following commands:
 
@@ -280,40 +175,11 @@ It is super simple to get started, run the following commands:
 make install
 ```
 
-<<<<<<< main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 To install Poetry in your system, first, navigate to the directory containing
 this README using your chosen shell. You will need to have Python 3.10, 3.11, or 3.12
 installed.
 
 If you want to change python version (without installing uv, python and pre-commit), you can use the same parameter, but do:
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
 This will install uv, python, Semantic Kernel and all dependencies and the pre-commit config. It uses python 3.10 by default, if you want to change that set the `PYTHON_VERSION` environment variable to the desired version (currently supported are 3.10, 3.11, 3.12). For instance for 3.12"
     
 ```bash
@@ -321,40 +187,10 @@ make install PYTHON_VERSION=3.12
 ```
 
 If you want to change python version (without installing uv, python and pre-commit), you can use the same parameter, but do:
-<<<<<<< main
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 ```bash
 make install-sk PYTHON_VERSION=3.12
 ```
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
 
 ℹ️ **Note**: Running the install or install-sk command will wipe away your existing virtual environment and create a new one.
 
@@ -438,21 +274,6 @@ Open the [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VS
 
 > The Python workspace is the `./python` folder if you are at the root of the repository.
 
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-
 ℹ️ **Note**: Running the install or install-sk command will wipe away your existing virtual environment and create a new one.
 
 Alternatively you can run the VSCode task `Python: Install` to run the same command.
@@ -500,21 +321,6 @@ alias python='python3'
 
 After these steps, you should be able to use `python` in your terminal to run
 Python 3 commands.
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
 
 ```bash
 make install-sk PYTHON_VERSION=3.12
@@ -539,62 +345,18 @@ You also need to install the `ruff` extension in VSCode so that auto-formatting 
 Read more about the extension [here](https://github.com/astral-sh/ruff-vscode).
 
 ## LLM setup
->>>>>>> ms/features/bugbash-prep
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 Make sure you have an
 [OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 There are two methods to manage keys, secrets, and endpoints:
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3BB96MAY"}
 # Install poetry package if not choosing to install via their official installer
 pip3 install poetry
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3BB96MAY"}
 # Install poetry package if not choosing to install via their official installer
 pip3 install poetry
-=======
->>>>>>> ms/features/bugbash-prep
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints from the environment. 
     > When you are using VSCode and have the python extension setup, it automatically loads environment variables from a `.env` file, so you don't have to manually set them in the terminal.
@@ -615,63 +377,13 @@ OPENAI_CHAT_MODEL_ID="gpt-4o-mini"
 ```
 
 You will then configure the ChatCompletion class with the keyword argument `env_file_path`:
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
 ## VSCode Setup
 
 Open the [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VSCode.
 
 > The Python workspace is the `./python` folder if you are at the root of the repository.
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
 
->>>>>>> ms/features/bugbash-prep
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ```python
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path="openai.env")
 ```
@@ -682,45 +394,12 @@ You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
 ```bash
     uv run pytest tests/unit
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3CVYSJC6"}
     poetry install --with unit-tests
     poetry run pytest tests/unit
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-<<<<<<< main
->>>>>>> origin/main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3CVYSJC6"}
     poetry install --with unit-tests
     poetry run pytest tests/unit
-=======
->>>>>>> ms/features/bugbash-prep
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ```
 
 Alternatively, you can run them using VSCode Tasks. Open the command palette
@@ -730,90 +409,24 @@ You can run the integration tests under the [tests/integration](tests/integratio
 
 ```bash
     uv run pytest tests/integration
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3ETP16N9"}
     poetry install --with tests
     poetry run pytest tests/integration
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-<<<<<<< main
->>>>>>> origin/main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3ETP16N9"}
     poetry install --with tests
     poetry run pytest tests/integration
-=======
->>>>>>> ms/features/bugbash-prep
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ```
 
 You can also run all the tests together under the [tests](tests/) folder.
 
 ```bash
     uv run pytest tests
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3GYN6VJR"}
     poetry install
     poetry run pytest tests
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-<<<<<<< main
->>>>>>> origin/main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3GYN6VJR"}
     poetry install
     poetry run pytest tests
-=======
->>>>>>> ms/features/bugbash-prep
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ```
 
 Alternatively, you can run them using VSCode Tasks. Open the command palette
@@ -844,73 +457,10 @@ They should contain:
     - `arg_name`: Explanation of the argument.
     - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
     - Type and default values do not have to be specified, they will be pulled from the definition.
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-<<<<<<< main
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
    - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
    - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
    - Default values do not have to be specified, they will be pulled from the definition.
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
->>>>>>> ms/features/bugbash-prep
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 - Returns are specified after a header called `Returns:` or `Yields:`, with the return type and explanation of the return value.
 - Finally, a header for exceptions can be added, called `Raises:`, with each exception being specified in the following format:
    - `ExceptionType`: Explanation of the exception.
@@ -925,65 +475,96 @@ def equal(arg1: str, arg2: str) -> bool:
 ```
 
 Or a complete version of this:
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
 
 ```python {"id":"01J6KNPX0HTGAZ4YDQ3JGT3D67"}
 def equal(arg1: str, arg2: str) -> bool:
     """Compares two strings and returns True if they are the same.
 
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+```python {"id":"01J6KNPX0HTGAZ4YDQ3JGT3D67"}
+def equal(arg1: str, arg2: str) -> bool:
+    """Compares two strings and returns True if they are the same.
+
+    Here is extra explanation of the logic involved.
+
+    Args:
+        arg1: The first string to compare.
+        arg2: The second string to compare.
+            This string requires extra explanation.
+
+    Returns:
+        True if the strings are the same, False otherwise.
+
+    Raises:
+        ValueError: If one of the strings is empty.
+    """
+    ...
+```
+
+If in doubt, use the link above to read much more considerations of what to do and when, or use common sense.
+
+## Pydantic and Serialization
+
+This section describes how one can enable serialization for their class using Pydantic.
+For more info you can refer to the [Pydantic Documentation](https://docs.pydantic.dev/latest/).
+
+```bash
+    uv run pytest tests
+```bash {"id":"01J6KNPX0HTGAZ4YDQ3GYN6VJR"}
+    poetry install
+    poetry run pytest tests
+```
+
+Alternatively, you can run them using VSCode Tasks. Open the command palette
+(`Ctrl+Shift+P`) and type `Tasks: Run Task`. Select `Python: Tests - All` from the list.
+
+
+## Implementation Decisions
+
+### Asynchronous programming
+
+It's important to note that most of this library is written with asynchronous programming in mind. The
+developer should always assume everything is asynchronous. One can use the function signature
+with either `async def` or `def` to understand if something is asynchronous or not.
+
+### Documentation
+
+Each file should have a single first line containing: # Copyright (c) Microsoft. All rights reserved.
+
+We follow the [Google Docstring](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#383-functions-and-methods) style guide for functions and methods.
+They are currently not checked for private functions (functions starting with '_').
+
+They should contain:
+
+- Single line explaining what the function does, ending with a period.
+- If necessary to further explain the logic a newline follows the first line and then the explanation is given.
+- The following three sections are optional, and if used should be separated by a single empty line.
+- Arguments are then specified after a header called `Args:`, with each argument being specified in the following format:
+    - `arg_name`: Explanation of the argument.
+    - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
+    - Type and default values do not have to be specified, they will be pulled from the definition.
+   - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
+   - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
+   - Default values do not have to be specified, they will be pulled from the definition.
+
+- Returns are specified after a header called `Returns:` or `Yields:`, with the return type and explanation of the return value.
+- Finally, a header for exceptions can be added, called `Raises:`, with each exception being specified in the following format:
+   - `ExceptionType`: Explanation of the exception.
+   - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
+
+Putting them all together, gives you at minimum this:
+
+```python {"id":"01J6KNPX0HTGAZ4YDQ3GZ160F4"}
+def equal(arg1: str, arg2: str) -> bool:
+    """Compares two strings and returns True if they are the same."""
+    ...
+```
+
+Or a complete version of this:
 
 ```python {"id":"01J6KNPX0HTGAZ4YDQ3JGT3D67"}
 def equal(arg1: str, arg2: str) -> bool:
     """Compares two strings and returns True if they are the same.
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
     Here is extra explanation of the logic involved.
 
     Args:
@@ -1056,85 +637,21 @@ You can use the `KernelBaseModel` to convert these to pydantic serializable clas
 
 ```python
 from typing import Generic, TypeVar
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 ```python {"id":"01J6KNPX0HTGAZ4YDQ3R7VE7KV"}
 from typing import Generic
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-<<<<<<< main
->>>>>>> origin/main
 ```python {"id":"01J6KNPX0HTGAZ4YDQ3R7VE7KV"}
 from typing import Generic
-=======
->>>>>>> ms/features/bugbash-prep
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-<<<<<<< main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 T1 = TypeVar("T1")
 T2 = TypeVar("T2", bound=<some class>)
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-
 T1 = TypeVar("T1")
 T2 = TypeVar("T2", bound=<some class>)
 
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 class A(KernelBaseModel, Generic[T1, T2]):
     # T1 and T2 must be specified in the Generic argument otherwise, pydantic will
     # NOT be able to serialize this class
@@ -1149,45 +666,12 @@ To run the same checks that run during a commit and the GitHub Action `Python Co
 
 ```bash
     uv run pre-commit run -a
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3RB8FHQJ"}
     poetry run pre-commit run -a
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3RB8FHQJ"}
     poetry run pre-commit run -a
-=======
-<<<<<<< main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3RB8FHQJ"}
     poetry run pre-commit run -a
-=======
->>>>>>> ms/features/bugbash-prep
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ```
 
 or use the following task (using `Ctrl+Shift+P`):
@@ -1203,45 +687,12 @@ We try to maintain a high code coverage for the project. To run the code coverag
 
 ```bash
     uv run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3V7S5W7V"}
     poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3V7S5W7V"}
     poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
-=======
-<<<<<<< main
 ```bash {"id":"01J6KNPX0HTGAZ4YDQ3V7S5W7V"}
     poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
-=======
->>>>>>> ms/features/bugbash-prep
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ```
 
 or use the following task (using `Ctrl+Shift+P`):

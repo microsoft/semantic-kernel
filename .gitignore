@@ -747,3 +747,5 @@ swa-cli.config.json
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+!/python/.env.example
+
