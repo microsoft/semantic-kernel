@@ -319,17 +319,21 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         The content block start event contains tool information.
         https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ContentBlockStartEvent.html
         """
-        return StreamingChatMessageContent(
-            ai_model_id=self.ai_model_id,
-            role=AuthorRole.ASSISTANT,  # Assume the role is always assistant
-            items=[
+        items: list[STREAMING_ITEM_TYPES] = []
+        if "toolUse" in event["contentBlockStart"]["start"]:
+            items.append(
                 FunctionCallContent(
                     id=event["contentBlockStart"]["start"]["toolUse"]["toolUseId"],
                     name=format_bedrock_function_name_to_kernel_function_fully_qualified_name(
                         event["contentBlockStart"]["start"]["toolUse"]["name"]
                     ),
                 )
-            ],
+            )
+
+        return StreamingChatMessageContent(
+            ai_model_id=self.ai_model_id,
+            role=AuthorRole.ASSISTANT,  # Assume the role is always assistant
+            items=items,
             choice_index=0,
             inner_content=event,
         )

@@ -104,12 +104,10 @@ def get_text_embedding_request_body(text: str, settings: BedrockEmbeddingPromptE
 
 def parse_text_embedding_response(response: dict[str, Any]) -> list[float]:
     """Parse the response from text embedding for Amazon Titan models."""
-    if "embedding" not in response:
+    if "embedding" not in response or not isinstance(response["embedding"], list):
         raise ServiceInvalidResponseError("The response from Amazon Titan model does not contain embeddings.")
-    if not isinstance(response["embedding"], list):
-        raise ServiceInvalidResponseError("The response from Amazon Titan model does not contain a list of embeddings.")
 
-    return response.get["embedding"]  # type: ignore
+    return response.get("embedding")  # type: ignore
 
 
 # endregion

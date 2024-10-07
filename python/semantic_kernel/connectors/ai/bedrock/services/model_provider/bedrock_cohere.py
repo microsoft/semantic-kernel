@@ -92,12 +92,8 @@ def get_text_embedding_request_body(text: str, settings: BedrockEmbeddingPromptE
 
 def parse_text_embedding_response(response: dict[str, Any]) -> list[float]:
     """Parse the response from text embedding for Cohere Command models."""
-    if "embeddings" not in response:
+    if "embeddings" not in response or not isinstance(response["embeddings"], list) or len(response["embeddings"]) == 0:
         raise ServiceInvalidResponseError("The response from Cohere model does not contain embeddings.")
-    if not isinstance(response["embeddings"], list):
-        raise ServiceInvalidResponseError("The response from Cohere model does not contain a list of embeddings.")
-    if len(response["embeddings"]) == 0:
-        raise ServiceInvalidResponseError("The response from Cohere model contains an empty list of embeddings.")
 
     return response.get("embeddings")[0]  # type: ignore
 
