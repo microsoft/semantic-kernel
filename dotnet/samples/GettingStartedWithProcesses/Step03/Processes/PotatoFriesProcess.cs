@@ -15,7 +15,10 @@ public static class PotatoFriesProcess
     public static class ProcessEvents
     {
         public const string PreparePotatoFries = nameof(PreparePotatoFries);
-        public const string PotatoFriesReady = nameof(PotatoFriesReady);
+        // When multiple processes use the same final step, the should event marked as public
+        // so that the step event can be used as the output event of the process too.
+        // In these samples both fried fish and potato fries end with FryStep sucesss
+        public const string PotatoFriesReady = nameof(FryFoodStep.OutputEvents.FriedFoodReady);
     }
 
     public static ProcessBuilder CreateProcess(string processName = "PotatoFriesProcess")
@@ -25,7 +28,6 @@ public static class PotatoFriesProcess
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherPotatoFriesIngredientsStep>();
         var sliceStep = processBuilder.AddStepFromType<CutFoodStep>();
         var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
-        var externalStep = processBuilder.AddStepFromType<ExternalPotatoFriesStep>();
 
         processBuilder
                 .OnInputEvent(ProcessEvents.PreparePotatoFries)
@@ -42,10 +44,6 @@ public static class PotatoFriesProcess
         fryStep
             .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
-
-        fryStep
-            .OnEvent(FryFoodStep.OutputEvents.FriedFoodReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
 
         return processBuilder;
     }

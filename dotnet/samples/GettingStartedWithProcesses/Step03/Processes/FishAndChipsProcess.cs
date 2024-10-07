@@ -25,6 +25,7 @@ public static class FishAndChipsProcess
         var makeFriedFishStep = processBuilder.AddStepFromProcess(FriedFishProcess.CreateProcess());
         var makePotatoFriesStep = processBuilder.AddStepFromProcess(PotatoFriesProcess.CreateProcess());
         var addCondimentsStep = processBuilder.AddStepFromType<AddFishAndChipsCondimentsStep>();
+        // An additional step that is the only one that emits an public event in a process can be added to maintain event names unique
         var externalStep = processBuilder.AddStepFromType<ExternalFishAndChipsStep>();
 
         processBuilder
@@ -68,7 +69,7 @@ public static class FishAndChipsProcess
             Console.WriteLine($"ADD_CONDIMENTS: Added condiments to Fish & Chips - Fish: {JsonSerializer.Serialize(fishActions)}, Potatoes: {JsonSerializer.Serialize(potatoActions)}");
             fishActions.AddRange(potatoActions);
             fishActions.Add(FoodIngredients.Condiments.ToFriendlyString());
-            await context.EmitEventAsync(new() { Id = OutputEvents.CondimentsAdded, Data = fishActions, Visibility = KernelProcessEventVisibility.Public });
+            await context.EmitEventAsync(new() { Id = OutputEvents.CondimentsAdded, Data = fishActions });
         }
     }
 

@@ -24,6 +24,7 @@ public static class FishSandwichProcess
         var makeFriedFishStep = processBuilder.AddStepFromProcess(FriedFishProcess.CreateProcess());
         var addBunsStep = processBuilder.AddStepFromType<AddBunsStep>();
         var addSpecialSauceStep = processBuilder.AddStepFromType<AddSpecialSauceStep>();
+        // An additional step that is the only one that emits an public event in a process can be added to maintain event names unique
         var externalStep = processBuilder.AddStepFromType<ExternalFriedFishStep>();
 
         processBuilder

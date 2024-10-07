@@ -14,7 +14,10 @@ public static class FriedFishProcess
     public static class ProcessEvents
     {
         public const string PrepareFriedFish = nameof(PrepareFriedFish);
-        public const string FriedFishReady = nameof(FriedFishReady);
+        // When multiple processes use the same final step, the should event marked as public
+        // so that the step event can be used as the output event of the process too.
+        // In these samples both fried fish and potato fries end with FryStep sucesss
+        public const string FriedFishReady = nameof(FryFoodStep.OutputEvents.FriedFoodReady);
     }
 
     public static ProcessBuilder CreateProcess(string processName = "FriedFish")
@@ -24,7 +27,6 @@ public static class FriedFishProcess
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsStep>();
         var chopStep = processBuilder.AddStepFromType<CutFoodStep>();
         var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
-        var externalStep = processBuilder.AddStepFromType<ExternalFriedFishStep>();
 
         processBuilder
             .OnInputEvent(ProcessEvents.PrepareFriedFish)
@@ -41,10 +43,6 @@ public static class FriedFishProcess
         fryStep
             .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
-
-        fryStep
-            .OnEvent(FryFoodStep.OutputEvents.FriedFoodReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
 
         return processBuilder;
     }
@@ -65,10 +63,5 @@ public static class FriedFishProcess
             Console.WriteLine($"GATHER_INGREDIENT: Gathered ingredient {ingredient}");
             await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = updatedFoodActions });
         }
-    }
-
-    private sealed class ExternalFriedFishStep : ExternalStep
-    {
-        public ExternalFriedFishStep() : base(ProcessEvents.FriedFishReady) { }
     }
 }
