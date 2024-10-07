@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Data.TextSearch;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -66,7 +65,7 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 
         this._vectorizedSearch = vectorizedSearch;
         this._textEmbeddingGeneration = textEmbeddingGeneration;
-        this._propertyReader = new TextSearchResultPropertyReader(typeof(TRecord));
+        this._propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
         this._stringMapper = stringMapper ?? this.CreateTextSearchStringMapper();
         this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();
     }
@@ -109,9 +108,11 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
         VectorStoreTextSearchOptions? options = null)
     {
         Verify.NotNull(vectorizableTextSearch);
+        Verify.NotNull(stringMapper);
+        Verify.NotNull(resultMapper);
 
         this._vectorizableTextSearch = vectorizableTextSearch;
-        this._propertyReader = new TextSearchResultPropertyReader(typeof(TRecord));
+        this._propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
         this._stringMapper = stringMapper ?? this.CreateTextSearchStringMapper();
         this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();
     }
@@ -152,7 +153,7 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
     private readonly IVectorizableTextSearch<TRecord>? _vectorizableTextSearch;
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
-    private readonly TextSearchResultPropertyReader _propertyReader;
+    private readonly Lazy<TextSearchResultPropertyReader> _propertyReader;
 
     /// <summary>
     /// Result mapper which converts a TRecord to a <see cref="TextSearchResult"/>.
@@ -167,9 +168,9 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
             }
 
             return new TextSearchResult(
-                name: this._propertyReader.GetName(result),
-                value: this._propertyReader.GetValue(result),
-                link: this._propertyReader.GetLink(result));
+                name: this._propertyReader.Value.GetName(result),
+                value: this._propertyReader.Value.GetValue(result),
+                link: this._propertyReader.Value.GetLink(result));
         };
 
         return new TextSearchResultMapper(MapFromResultToTextSearchResult);
@@ -187,10 +188,9 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
                 throw new ArgumentException($"Expected result of type {typeof(TRecord).FullName} but got {result.GetType().FullName}.");
             }
 
-            var value = this._propertyReader.GetValue(result);
+            var value = this._propertyReader.Value.GetValue(result);
             return (string?)value ?? throw new InvalidOperationException("Value property cannot be null.");
         };
-
         return new TextSearchStringMapper(MapFromResultToString);
     }
 

@@ -3,7 +3,11 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.SemanticKernel.Data.TextSearch;
+namespace Microsoft.SemanticKernel.Data;
+
+/// <summary>
+/// Contains helpers for reading <see cref="TextSearchResult" /> attributes.
+/// </summary>
 internal sealed class TextSearchResultPropertyReader
 {
     /// <summary>The <see cref="Type"/> of the data model.</summary>
@@ -18,6 +22,10 @@ internal sealed class TextSearchResultPropertyReader
     /// <summary>The <see cref="PropertyInfo"/> of the link property.</summary>
     private readonly PropertyInfo? _linkProperty;
 
+    /// <summary>
+    /// Create a new instance of <see cref="TextSearchResultPropertyReader"/>.
+    /// </summary>
+    /// <param name="dataModelType">Type of the data model.</param>
     public TextSearchResultPropertyReader(Type dataModelType)
     {
         this._dataModelType = dataModelType;
@@ -71,18 +79,30 @@ internal sealed class TextSearchResultPropertyReader
             // Get name property.
             if (property.GetCustomAttribute<TextSearchResultNameAttribute>() is not null)
             {
+                if (nameProperty is not null)
+                {
+                    throw new InvalidOperationException($"Multiple properties with {nameof(TextSearchResultNameAttribute)} found on {type}.");
+                }
                 nameProperty = property;
             }
 
             // Get value property.
             if (property.GetCustomAttribute<TextSearchResultValueAttribute>() is not null)
             {
+                if (valueProperty is not null)
+                {
+                    throw new InvalidOperationException($"Multiple properties with {nameof(TextSearchResultValueAttribute)} found on {type}.");
+                }
                 valueProperty = property;
             }
 
             // Get link property.
             if (property.GetCustomAttribute<TextSearchResultLinkAttribute>() is not null)
             {
+                if (linkProperty is not null)
+                {
+                    throw new InvalidOperationException($"Multiple properties with {nameof(TextSearchResultLinkAttribute)} found on {type}.");
+                }
                 linkProperty = property;
             }
         }
