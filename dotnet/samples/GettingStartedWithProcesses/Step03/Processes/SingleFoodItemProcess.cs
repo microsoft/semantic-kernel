@@ -3,6 +3,7 @@
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Step03.Models;
+using Step03.Steps;
 
 namespace Step03.Processes;
 
@@ -15,7 +16,7 @@ public static class SingleFoodItemProcess
     public static class ProcessEvents
     {
         public const string SingleOrderReceived = nameof(SingleOrderReceived);
-        public const string SingleOrderReady = PackOrderStep.OutputEvents.FoodPacked;
+        public const string SingleOrderReady = nameof(SingleOrderReady);
     }
 
     public static ProcessBuilder CreateProcess(string processName = "SingleFoodItemProcess")
@@ -28,6 +29,7 @@ public static class SingleFoodItemProcess
         var makeFishSandwichStep = processBuilder.AddStepFromProcess(FishSandwichProcess.CreateProcess());
         var makeFishAndChipsStep = processBuilder.AddStepFromProcess(FishAndChipsProcess.CreateProcess());
         var packOrderStep = processBuilder.AddStepFromType<PackOrderStep>();
+        var externalStep = processBuilder.AddStepFromType<ExternalSingleOrderStep>();
 
         processBuilder
             .OnInputEvent(ProcessEvents.SingleOrderReceived)
@@ -64,6 +66,10 @@ public static class SingleFoodItemProcess
         makeFishAndChipsStep
             .OnEvent(FishAndChipsProcess.ProcessEvents.FishAndChipsReady)
             .SendEventTo(new ProcessFunctionTargetBuilder(packOrderStep));
+
+        packOrderStep
+            .OnEvent(PackOrderStep.OutputEvents.FoodPacked)
+            .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
 
         return processBuilder;
     }
@@ -127,5 +133,10 @@ public static class SingleFoodItemProcess
             Console.WriteLine($"PACKING_FOOD: Food {foodActions.First()} Packed! - {JsonSerializer.Serialize(foodActions)}");
             await context.EmitEventAsync(new() { Id = OutputEvents.FoodPacked });
         }
+    }
+
+    private sealed class ExternalSingleOrderStep : ExternalStep
+    {
+        public ExternalSingleOrderStep() : base(ProcessEvents.SingleOrderReady) { }
     }
 }

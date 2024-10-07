@@ -43,6 +43,6 @@ public class FryFoodStep : KernelProcessStep
 
         foodActions.Add($"{foodToFry}_frying_succeeded");
         Console.WriteLine($"FRYING_STEP: Ingredient {foodToFry} is ready!");
-        await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReady, Data = foodActions, Visibility = KernelProcessEventVisibility.Public });
+        await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReady, Data = foodActions });
     }
 }

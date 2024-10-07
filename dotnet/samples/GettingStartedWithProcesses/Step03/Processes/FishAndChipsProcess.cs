@@ -3,6 +3,7 @@
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Step03.Models;
+using Step03.Steps;
 
 namespace Step03.Processes;
 
@@ -15,7 +16,7 @@ public static class FishAndChipsProcess
     public static class ProcessEvents
     {
         public const string PrepareFishAndChips = nameof(PrepareFishAndChips);
-        public const string FishAndChipsReady = AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded;
+        public const string FishAndChipsReady = nameof(FishAndChipsReady);
     }
 
     public static ProcessBuilder CreateProcess(string processName = "FishAndChipsProcess")
@@ -24,6 +25,7 @@ public static class FishAndChipsProcess
         var makeFriedFishStep = processBuilder.AddStepFromProcess(FriedFishProcess.CreateProcess());
         var makePotatoFriesStep = processBuilder.AddStepFromProcess(PotatoFriesProcess.CreateProcess());
         var addCondimentsStep = processBuilder.AddStepFromType<AddFishAndChipsCondimentsStep>();
+        var externalStep = processBuilder.AddStepFromType<ExternalFishAndChipsStep>();
 
         processBuilder
             .OnInputEvent(ProcessEvents.PrepareFishAndChips)
@@ -40,6 +42,10 @@ public static class FishAndChipsProcess
         makePotatoFriesStep
             .OnEvent(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)
             .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "potatoActions"));
+
+        addCondimentsStep
+            .OnEvent(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded)
+            .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
 
         return processBuilder;
     }
@@ -64,5 +70,10 @@ public static class FishAndChipsProcess
             fishActions.Add(FoodIngredients.Condiments.ToFriendlyString());
             await context.EmitEventAsync(new() { Id = OutputEvents.CondimentsAdded, Data = fishActions, Visibility = KernelProcessEventVisibility.Public });
         }
+    }
+
+    private sealed class ExternalFishAndChipsStep : ExternalStep
+    {
+        public ExternalFishAndChipsStep() : base(ProcessEvents.FishAndChipsReady) { }
     }
 }

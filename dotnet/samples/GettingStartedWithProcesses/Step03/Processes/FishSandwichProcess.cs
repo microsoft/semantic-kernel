@@ -2,6 +2,7 @@
 
 using Microsoft.SemanticKernel;
 using Step03.Models;
+using Step03.Steps;
 
 namespace Step03.Processes;
 
@@ -14,7 +15,7 @@ public static class FishSandwichProcess
     public static class ProcessEvents
     {
         public const string PrepareFishSandwich = nameof(PrepareFishSandwich);
-        public const string FishSandwichReady = AddSpecialSauceStep.OutputEvents.SpecialSauceAdded;
+        public const string FishSandwichReady = nameof(FishSandwichReady);
     }
 
     public static ProcessBuilder CreateProcess(string processName = "FishSandwichProcess")
@@ -23,6 +24,7 @@ public static class FishSandwichProcess
         var makeFriedFishStep = processBuilder.AddStepFromProcess(FriedFishProcess.CreateProcess());
         var addBunsStep = processBuilder.AddStepFromType<AddBunsStep>();
         var addSpecialSauceStep = processBuilder.AddStepFromType<AddSpecialSauceStep>();
+        var externalStep = processBuilder.AddStepFromType<ExternalFriedFishStep>();
 
         processBuilder
             .OnInputEvent(ProcessEvents.PrepareFishSandwich)
@@ -35,6 +37,10 @@ public static class FishSandwichProcess
         addBunsStep
             .OnEvent(AddBunsStep.OutputEvents.BunsAdded)
             .SendEventTo(new ProcessFunctionTargetBuilder(addSpecialSauceStep));
+
+        addSpecialSauceStep
+            .OnEvent(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded)
+            .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
 
         return processBuilder;
     }
@@ -79,5 +85,10 @@ public static class FishSandwichProcess
             foodActions.Add(FoodIngredients.Sauce.ToFriendlyString());
             await context.EmitEventAsync(new() { Id = OutputEvents.SpecialSauceAdded, Data = foodActions, Visibility = KernelProcessEventVisibility.Public });
         }
+    }
+
+    private sealed class ExternalFriedFishStep : ExternalStep
+    {
+        public ExternalFriedFishStep() : base(ProcessEvents.FishSandwichReady) { }
     }
 }

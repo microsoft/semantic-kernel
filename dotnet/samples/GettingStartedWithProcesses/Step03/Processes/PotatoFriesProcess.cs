@@ -15,7 +15,7 @@ public static class PotatoFriesProcess
     public static class ProcessEvents
     {
         public const string PreparePotatoFries = nameof(PreparePotatoFries);
-        public const string PotatoFriesReady = FryFoodStep.OutputEvents.FriedFoodReady;
+        public const string PotatoFriesReady = nameof(PotatoFriesReady);
     }
 
     public static ProcessBuilder CreateProcess(string processName = "PotatoFriesProcess")
@@ -25,10 +25,11 @@ public static class PotatoFriesProcess
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherPotatoFriesIngredientsStep>();
         var sliceStep = processBuilder.AddStepFromType<CutFoodStep>();
         var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
+        var externalStep = processBuilder.AddStepFromType<ExternalPotatoFriesStep>();
 
         processBuilder
-            .OnInputEvent(ProcessEvents.PreparePotatoFries)
-            .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
+                .OnInputEvent(ProcessEvents.PreparePotatoFries)
+                .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
 
         gatherIngredientsStep
             .OnEvent(GatherPotatoFriesIngredientsStep.OutputEvents.IngredientsGathered)
@@ -41,6 +42,10 @@ public static class PotatoFriesProcess
         fryStep
             .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
             .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
+
+        fryStep
+            .OnEvent(FryFoodStep.OutputEvents.FriedFoodReady)
+            .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
 
         return processBuilder;
     }
@@ -60,5 +65,10 @@ public static class PotatoFriesProcess
             Console.WriteLine($"GATHER_INGREDIENT: Gathered ingredient {ingredient}");
             await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = foodActions });
         }
+    }
+
+    private sealed class ExternalPotatoFriesStep : ExternalStep
+    {
+        public ExternalPotatoFriesStep() : base(ProcessEvents.PotatoFriesReady) { }
     }
 }
