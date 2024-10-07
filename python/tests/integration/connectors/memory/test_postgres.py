@@ -99,9 +99,10 @@ def test_create_store(vector_store):
     assert vector_store.connection_pool is not None
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 async def test_create_does_collection_exist_and_delete(vector_store: PostgresStore):
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
+
     collection = vector_store.get_collection(f"test_collection_{suffix}", SimpleDataModel)
 
     does_exist_1 = await collection.does_collection_exist()
@@ -116,14 +117,14 @@ async def test_create_does_collection_exist_and_delete(vector_store: PostgresSto
     assert does_exist_3 is False
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 async def test_list_collection_names(vector_store, simple_collection):
     simple_collection_id = simple_collection.collection_name
     result = await vector_store.list_collection_names()
     assert simple_collection_id in result
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 async def test_upsert_get_and_delete(simple_collection: PostgresCollection):
     record = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
 
@@ -150,7 +151,7 @@ async def test_upsert_get_and_delete(simple_collection: PostgresCollection):
     assert result_after_delete is None
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 async def test_upsert_get_and_delete_pandas(vector_store):
     record = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
     definition, df = DataModelPandas(record.model_dump())
@@ -180,7 +181,7 @@ async def test_upsert_get_and_delete_pandas(vector_store):
         await collection.delete_collection()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 async def test_upsert_get_and_delete_batch(simple_collection: VectorStoreRecordCollection):
     record1 = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
     record2 = SimpleDataModel(id=2, embedding=[4.4, 5.5, 6.6], data={"key": "value"})
