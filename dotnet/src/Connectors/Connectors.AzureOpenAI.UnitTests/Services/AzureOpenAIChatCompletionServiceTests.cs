@@ -1373,6 +1373,51 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
     }
 
+    [Fact]
+    public async Task ItSendsEmptyStringWhenAssistantMessageContentIsNull()
+    {
+        // Arrange
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        List<ChatToolCall> assistantToolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
+
+        var chatHistory = new ChatHistory()
+        {
+            new ChatMessageContent(role: AuthorRole.User, content: "User content", modelId: "any"),
+            new ChatMessageContent(role: AuthorRole.Assistant, content: null, modelId: "any", metadata: new Dictionary<string, object?>
+            {
+                ["ChatResponseMessage.FunctionToolCalls"] = assistantToolCalls
+            }),
+            new ChatMessageContent(role: AuthorRole.Tool, content: null, modelId: "any")
+            {
+                Items = [new FunctionResultContent("FunctionName", "PluginName", "CallId", "Function result")]
+            },
+        };
+
+        var executionSettings = new AzureOpenAIPromptExecutionSettings();
+
+        // Act
+        await sut.GetChatMessageContentsAsync(chatHistory, executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestContent = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var messages = requestContent.GetProperty("messages").EnumerateArray().ToList();
+
+        var assistantMessage = messages.First(message => message.GetProperty("role").GetString() == "assistant");
+        var assistantMessageContent = assistantMessage.GetProperty("content").GetString();
+
+        Assert.Equal(string.Empty, assistantMessageContent);
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
