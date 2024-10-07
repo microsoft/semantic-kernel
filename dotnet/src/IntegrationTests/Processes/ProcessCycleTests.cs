@@ -1,4 +1,6 @@
-﻿using Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.SemanticKernel;
 using System.Threading.Tasks;
 using System;
 using Microsoft.Extensions.Configuration;
@@ -74,6 +76,9 @@ public sealed class ProcessCycleTests
         await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
         Console.WriteLine("finished");
     }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    // These classes are dynamically instantiated by the processes used in tests.
 
     /// <summary>
     /// Kick off step for the process.
@@ -163,4 +168,5 @@ public sealed class ProcessCycleTests
         public const string ExitRequested = nameof(ExitRequested);
         public const string StartProcess = nameof(StartProcess);
     }
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 }
