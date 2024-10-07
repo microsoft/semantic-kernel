@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Data;
 using SemanticKernel.IntegrationTests.Data;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using static SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch.AzureAISearchVectorStoreFixture;
 

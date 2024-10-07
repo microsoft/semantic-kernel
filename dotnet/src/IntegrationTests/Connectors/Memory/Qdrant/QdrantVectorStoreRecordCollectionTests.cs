@@ -64,9 +64,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
-        var searchResult = await sut.VectorizedSearchAsync(
+        var actual = await sut.VectorizedSearchAsync(
             vector,
-            new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30) }).ToListAsync();
+            new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30) });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -390,7 +390,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         // Act.
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 11") : new VectorSearchFilter().AnyTagEqualTo("Tags", "t1");
-        var actual = sut.VectorizedSearchAsync(
+        var actual = await sut.VectorizedSearchAsync(
             vector,
             new()
             {
