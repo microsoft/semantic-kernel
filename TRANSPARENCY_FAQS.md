@@ -68,3 +68,13 @@ Potential issues that may arise include:
 -	Invocation Failures: Incorrectly triggered plugins can result in unexpected outputs.
 -	Output Misinformation: Errors in plugin handling can lead to generation of inaccurate or misleading results.
 -	Dependency Compatibility: Changes in external dependencies may affect plugin functionality. To prevent these issues, users are advised to keep plugins updated and to rigorously test their implementations for stability and accuracy
+#### When working with AI, the developer can enable content moderation in the AI platforms used, and has complete control on the prompts being used, including the ability to define responsible boundaries and guidelines. For instance:
+-	When using Azure OpenAI, by default the service includes a content filtering system that works alongside core models. This system works by running both the prompt and completion through an ensemble of classification models aimed at detecting and preventing the output of harmful content. In addition to the content filtering system, the Azure OpenAI Service performs monitoring to detect content and/or behaviors that suggest use of the service in a manner that might violate applicable product terms. The filter configuration can be adjusted, for example to block also "low severity level" content. See here for more information.
+-	The developer can integrate Azure AI Content Safety to detect harmful user-generated and AI-generated content, including text and images. The service includes an interactive Studio online tool with templates and customized workflows. See here for more information.
+-	When using OpenAI the developer can integrate OpenAI Moderation to identify problematic content and take action, for instance by filtering it. See here for more information.
+-	Other AI providers provide content moderation and moderation APIs, which developers can integrate with Node Engine.
+#### If a sequence of components are run, additional risks/failures may arise when using non-deterministic behavior. To mitigate this, developers can:
+
+Implement safety measures and bounds on each component to prevent undesired outcomes.
+Add output to the user to maintain control and awareness of the system's state.
+In multi-agent scenarios, build in places that prompt the user for a response, ensuring user involvement and reducing the likelihood of undesired results due to multi-agent looping.
