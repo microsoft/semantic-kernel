@@ -160,7 +160,7 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
     /// </summary>
     private TextSearchResultMapper CreateTextSearchResultMapper()
     {
-        TextSearchResult MapFromResultToTextSearchResult(object result)
+        return new TextSearchResultMapper(result =>
         {
             if (typeof(TRecord) != result.GetType())
             {
@@ -171,9 +171,7 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
                 name: this._propertyReader.Value.GetName(result),
                 value: this._propertyReader.Value.GetValue(result),
                 link: this._propertyReader.Value.GetLink(result));
-        };
-
-        return new TextSearchResultMapper(MapFromResultToTextSearchResult);
+        });
     }
 
     /// <summary>
@@ -181,7 +179,7 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
     /// </summary>
     private TextSearchStringMapper CreateTextSearchStringMapper()
     {
-        string MapFromResultToString(object result)
+        return new TextSearchStringMapper(result =>
         {
             if (typeof(TRecord) != result.GetType())
             {
@@ -190,8 +188,7 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 
             var value = this._propertyReader.Value.GetValue(result);
             return (string?)value ?? throw new InvalidOperationException("Value property cannot be null.");
-        };
-        return new TextSearchStringMapper(MapFromResultToString);
+        });
     }
 
     /// <summary>
