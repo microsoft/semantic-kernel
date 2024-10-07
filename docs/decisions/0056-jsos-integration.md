@@ -22,7 +22,7 @@ This ADR outlines potential options for passing JSOs with configured source-gene
 ## Decision Drivers
 
 - It's possible to provide external source-generated context contracts down to SK JSON serialization functionality.
-- It's intuitevely clear and easy to supply source-generated context contracts to SK components. 
+- It's intuitively clear and easy to supply source-generated context contracts to SK components. 
 
 ## Considered Options
 
