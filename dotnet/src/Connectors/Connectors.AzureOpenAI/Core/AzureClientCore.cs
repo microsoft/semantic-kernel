@@ -125,8 +125,8 @@ internal partial class AzureClientCore : ClientCore
     internal static AzureOpenAIClientOptions GetAzureOpenAIClientOptions(HttpClient? httpClient, AzureOpenAIClientOptions.ServiceVersion? serviceVersion = null)
     {
         AzureOpenAIClientOptions options = serviceVersion is not null
-            ? new(serviceVersion.Value) { ApplicationId = HttpHeaderConstant.Values.UserAgent }
-            : new() { ApplicationId = HttpHeaderConstant.Values.UserAgent };
+            ? new(serviceVersion.Value) { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent }
+            : new() { UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent };
 
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
 

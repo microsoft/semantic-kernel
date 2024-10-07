@@ -245,13 +245,13 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The file identifier</returns>
     /// <remarks>
-    /// Use the <see cref="FileClient"/> directly for more advanced file operations.
+    /// Use the <see cref="OpenAIFileClient"/> directly for more advanced file operations.
     /// </remarks>
     public async Task<string> UploadFileAsync(Stream stream, string name, CancellationToken cancellationToken = default)
     {
-        FileClient client = this._provider.Client.GetFileClient();
+        OpenAIFileClient client = this._provider.Client.GetOpenAIFileClient();
 
-        OpenAIFileInfo fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
+        OpenAIFile fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
 
         return fileInfo.Id;
     }
@@ -341,7 +341,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.ThrowIfDeleted();
 
         kernel ??= this.Kernel;
-        arguments ??= this.Arguments;
+        arguments = this.MergeArguments(arguments);
 
         await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
         {
@@ -396,7 +396,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.ThrowIfDeleted();
 
         kernel ??= this.Kernel;
-        arguments ??= this.Arguments;
+        arguments = this.MergeArguments(arguments);
 
         return AssistantThreadActions.InvokeStreamingAsync(this, this._client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
     }

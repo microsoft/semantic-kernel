@@ -22,6 +22,8 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using OpenAI.Chat;
 
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
 /// <summary>
@@ -137,12 +139,14 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             StopSequences = ["stop_sequence"],
             Logprobs = true,
             TopLogprobs = 5,
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             AzureChatDataSource = new AzureSearchChatDataSource()
             {
                 Endpoint = new Uri("http://test-search-endpoint"),
                 IndexName = "test-index-name",
                 Authentication = DataSourceAuthentication.FromApiKey("api-key"),
             }
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         };
 
         var chatHistory = new ChatHistory();
