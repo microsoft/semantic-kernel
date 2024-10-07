@@ -56,23 +56,7 @@ public sealed class KernelTests : IDisposable
         this._mockLogger.VerifyLog(LogLevel.Warning, "Error while parsing usage details from model result", Times.Never());
         this._mockLogger.VerifyLog(LogLevel.Warning, "Unable to get token details from model result", Times.Never());
     }
-
-    private static MeterListener EnableTelemetryMeters()
-    {
-        var listener = new MeterListener();
-        // Enable the listener to collect data for our specific histogram
-        listener.InstrumentPublished = (instrument, listener) =>
-        {
-            if (instrument.Name == "semantic_kernel.function.invocation.token_usage.prompt" ||
-                instrument.Name == "semantic_kernel.function.invocation.token_usage.completion")
-            {
-                listener.EnableMeasurementEvents(instrument);
-            }
-        };
-        listener.Start();
-        return listener;
-    }
-
+    
     [Fact]
     public async Task FunctionUsageMetricsAreCapturedByTelemetryAsExpected()
     {
@@ -122,6 +106,22 @@ public sealed class KernelTests : IDisposable
     {
         this._httpClient.Dispose();
         this._multiMessageHandlerStub.Dispose();
+    }
+
+    private static MeterListener EnableTelemetryMeters()
+    {
+        var listener = new MeterListener();
+        // Enable the listener to collect data for our specific histogram
+        listener.InstrumentPublished = (instrument, listener) =>
+        {
+            if (instrument.Name == "semantic_kernel.function.invocation.token_usage.prompt" ||
+                instrument.Name == "semantic_kernel.function.invocation.token_usage.completion")
+            {
+                listener.EnableMeasurementEvents(instrument);
+            }
+        };
+        listener.Start();
+        return listener;
     }
 
     private const string ChatCompletionResponse = """
