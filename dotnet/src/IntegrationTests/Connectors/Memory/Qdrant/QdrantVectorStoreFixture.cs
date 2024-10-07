@@ -33,7 +33,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
     /// Test Configuration setup.
     /// </summary>
     private static readonly IConfigurationRoot s_configuration = new ConfigurationBuilder()
-        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
         .AddUserSecrets<QdrantVectorStoreFixture>()
