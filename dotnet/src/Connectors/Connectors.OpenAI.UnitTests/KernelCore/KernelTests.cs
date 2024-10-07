@@ -56,7 +56,7 @@ public sealed class KernelTests : IDisposable
         this._mockLogger.VerifyLog(LogLevel.Warning, "Error while parsing usage details from model result", Times.Never());
         this._mockLogger.VerifyLog(LogLevel.Warning, "Unable to get token details from model result", Times.Never());
     }
-    
+
     [Fact]
     public async Task FunctionUsageMetricsAreCapturedByTelemetryAsExpected()
     {
