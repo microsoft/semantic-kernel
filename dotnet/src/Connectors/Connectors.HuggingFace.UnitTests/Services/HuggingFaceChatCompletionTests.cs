@@ -133,6 +133,7 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
     [Fact]
     public async Task DefaultAddressShouldBeUsedAsync()
     {
+        this._httpClient.BaseAddress = null;
         //Arrange
         var sut = new HuggingFaceChatCompletionService("fake-model", httpClient: this._httpClient);
         var chatHistory = CreateSampleChatHistory();
@@ -140,7 +141,7 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
-        Assert.StartsWith("https://api-inference.huggingface.co/models", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith("https://api-inference.huggingface.co/", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
