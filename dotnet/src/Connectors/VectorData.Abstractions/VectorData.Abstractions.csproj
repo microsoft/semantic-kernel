@@ -4,8 +4,8 @@
     <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <VersionPrefix>1.21.1</VersionPrefix>
-    <VersionSuffix>alpha</VersionSuffix>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionSuffix>alpha.1</VersionSuffix>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
@@ -30,5 +30,9 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/**/*.cs" Link="Diagnostics/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
