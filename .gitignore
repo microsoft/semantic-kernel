@@ -749,3 +749,5 @@ swa-cli.config.json
 >>>>>>> Stashed changes
 !/python/.env.example
 
+!/build/CMakeFiles/3.22.1/*
+
