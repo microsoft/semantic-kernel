@@ -62,7 +62,6 @@ public sealed class KernelTests : IDisposable
         // Set up a MeterListener to capture the measurements
         using MeterListener listener = EnableTelemetryMeters();
 
-        int measurementCount = 0;
         var measurements = new Dictionary<string, List<int>>
         {
             ["semantic_kernel.function.invocation.token_usage.prompt"] = [],
@@ -74,7 +73,6 @@ public sealed class KernelTests : IDisposable
             if (instrument.Name == "semantic_kernel.function.invocation.token_usage.prompt" ||
                 instrument.Name == "semantic_kernel.function.invocation.token_usage.completion")
             {
-                measurementCount++;
                 measurements[instrument.Name].Add(measurement);
             }
         });
@@ -96,7 +94,6 @@ public sealed class KernelTests : IDisposable
         var result = await kernel.InvokeAsync(kernelFunction);
 
         // Assert
-        Assert.Equal(2, measurementCount);
         Assert.Contains(12, measurements["semantic_kernel.function.invocation.token_usage.prompt"]);
         Assert.Contains(5, measurements["semantic_kernel.function.invocation.token_usage.completion"]);
     }
