@@ -500,3 +500,13 @@ class PostgresMemoryStore(MemoryStoreBase):
             "description": record._description,
             "additional_metadata": record._additional_metadata,
         })
+
+    # Enable the connection pool to be closed when using as a context manager
+    def __enter__(self) -> "PostgresMemoryStore":
+        """Enter the runtime context."""
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> bool:
+        """Exit the runtime context and dispose of the connection pool."""
+        self._connection_pool.close()
+        return False
