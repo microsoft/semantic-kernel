@@ -55,15 +55,16 @@ public static class PotatoFriesProcess
         public override async Task GatherIngredientsAsync(KernelProcessStepContext context, List<string> foodActions)
         {
             var ingredient = FoodIngredients.Pototoes.ToFriendlyString();
-
-            if (foodActions.Count == 0)
+            var updatedFoodActions = new List<string>();
+            updatedFoodActions.AddRange(foodActions);
+            if (updatedFoodActions.Count == 0)
             {
-                foodActions.Add(ingredient);
+                updatedFoodActions.Add(ingredient);
             }
-            foodActions.Add($"{ingredient}_gathered");
+            updatedFoodActions.Add($"{ingredient}_gathered");
 
             Console.WriteLine($"GATHER_INGREDIENT: Gathered ingredient {ingredient}");
-            await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = foodActions });
+            await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = updatedFoodActions });
         }
     }
 
