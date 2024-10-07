@@ -126,12 +126,14 @@ flowchart LR
     PrepareFishAndChipsEvent([Prepare <br/> Fish And Chips <br/> Event])
     FishAndChipsReadyEvent([Fish And Chips <br/> Ready Event])
 
+    Dispatch[Dispatch <br/> Fish & Chips <br/> Step]
     FriedFishStep[[Fried Fish <br/> Process Step]]
     PotatoFriesStep[[Potato Fries  <br/> Process Step]]
     AddCondiments[Add Condiments <br/> Step ]
 
-    PrepareFishAndChipsEvent -->|Prepare Fried Fish| FriedFishStep --> |Fried Fish Ready| AddCondiments
-    PrepareFishAndChipsEvent -->|Prepare Potato Fries| PotatoFriesStep -->|Potato Fries Ready| AddCondiments
+    PrepareFishAndChipsEvent-->Dispatch
+    Dispatch -->|Prepare Fried Fish| FriedFishStep --> |Fried Fish Ready| AddCondiments
+    Dispatch -->|Prepare Potato Fries| PotatoFriesStep -->|Potato Fries Ready| AddCondiments
     AddCondiments -->|Condiments Added| FishAndChipsReadyEvent
 ```
 

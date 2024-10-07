@@ -21,7 +21,8 @@ public class GatherIngredientsStep : KernelProcessStep
     /// <summary>
     /// Method to be overridden by the user set custom ingredients to be gathered and events to be triggered
     /// </summary>
-    /// <param name="context"></param>
+    /// <param name="context">The context for the current step and process. <see cref="KernelProcessStepContext"/></param>
+    /// <param name="foodActions">list of actions taken to the food</param>
     /// <returns></returns>
     [KernelFunction(Functions.GatherIngredients)]
     public virtual async Task GatherIngredientsAsync(KernelProcessStepContext context, List<string> foodActions)

@@ -22,6 +22,7 @@ public static class FishAndChipsProcess
     public static ProcessBuilder CreateProcess(string processName = "FishAndChipsProcess")
     {
         var processBuilder = new ProcessBuilder(processName);
+        var dispatchStep = processBuilder.AddStepFromType<DispatchFishAndChipsStep>();
         var makeFriedFishStep = processBuilder.AddStepFromProcess(FriedFishProcess.CreateProcess());
         var makePotatoFriesStep = processBuilder.AddStepFromProcess(PotatoFriesProcess.CreateProcess());
         var addCondimentsStep = processBuilder.AddStepFromType<AddFishAndChipsCondimentsStep>();
@@ -30,10 +31,14 @@ public static class FishAndChipsProcess
 
         processBuilder
             .OnInputEvent(ProcessEvents.PrepareFishAndChips)
+            .SendEventTo(new ProcessFunctionTargetBuilder(dispatchStep));
+
+        dispatchStep
+            .OnEvent(DispatchFishAndChipsStep.OutputEvents.PrepareFriedFish)
             .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish));
 
-        processBuilder
-            .OnInputEvent(ProcessEvents.PrepareFishAndChips)
+        dispatchStep
+            .OnEvent(DispatchFishAndChipsStep.OutputEvents.PrepareFries)
             .SendEventTo(makePotatoFriesStep.WhereInputEventIs(PotatoFriesProcess.ProcessEvents.PreparePotatoFries));
 
         makeFriedFishStep
@@ -70,6 +75,23 @@ public static class FishAndChipsProcess
             fishActions.AddRange(potatoActions);
             fishActions.Add(FoodIngredients.Condiments.ToFriendlyString());
             await context.EmitEventAsync(new() { Id = OutputEvents.CondimentsAdded, Data = fishActions });
+        }
+    }
+    private sealed class DispatchFishAndChipsStep : KernelProcessStep
+    {
+        public static class OutputEvents
+        {
+            public const string PrepareFries = nameof(PrepareFries);
+            public const string PrepareFriedFish = nameof(PrepareFriedFish);
+        }
+
+        [KernelFunction()]
+        public async Task DispatchSingleOrderAsync(KernelProcessStepContext context)
+        {
+            Console.WriteLine("DISPATCH_FISH_AND_CHIPS: Dispatching!");
+            var foodActions = new List<string>();
+            await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFries, Data = foodActions });
+            await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFriedFish, Data = foodActions });
         }
     }
 
