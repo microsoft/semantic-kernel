@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Web.Google;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace GettingStartedWithTextSearch;
@@ -12,11 +13,11 @@ namespace GettingStartedWithTextSearch;
 public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="ITextSearch"/> and use it to
+    /// Show how to create a default <see cref="KernelPlugin"/> from a <see cref="BingTextSearch"/> and use it to
     /// add grounding context to a prompt.
     /// </summary>
     [Fact]
-    public async Task RagWithBingTextSearchAsync()
+    public async Task RagWithTextSearchAsync()
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -26,7 +27,12 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using Bing search
-        var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+        ITextSearch textSearch = this.UseBingSearch ?
+            new BingTextSearch(
+                apiKey: TestConfiguration.Bing.ApiKey) :
+            new GoogleTextSearch(
+                searchEngineId: TestConfiguration.Google.SearchEngineId,
+                apiKey: TestConfiguration.Google.ApiKey);
 
         // Build a text search plugin with Bing search and add to the kernel
         var searchPlugin = textSearch.CreateWithSearch("SearchPlugin");
@@ -34,8 +40,9 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
 
         // Invoke prompt and use text search plugin to provide grounding information
         var query = "What is the Semantic Kernel?";
+        var prompt = "{{SearchPlugin.Search $query}}. {{$query}}";
         KernelArguments arguments = new() { { "query", query } };
-        Console.WriteLine(await kernel.InvokePromptAsync("{{SearchPlugin.Search $query}}. {{$query}}", arguments));
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt, arguments));
     }
 
     /// <summary>

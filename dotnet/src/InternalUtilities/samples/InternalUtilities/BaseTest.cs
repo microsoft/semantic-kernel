@@ -158,6 +158,11 @@ public abstract class BaseTest : TextWriter
         }
     }
 
+    /// <summary>
+    /// Returns true if the test configuration has a valid Bing API key.
+    /// </summary>
+    public bool UseBingSearch => TestConfiguration.Bing.ApiKey is not null;
+
     #region private
     private const int HorizontalRuleLength = 80;
     #endregion
