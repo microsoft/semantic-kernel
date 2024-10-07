@@ -16,7 +16,7 @@ public static class FriedFishProcess
         public const string PrepareFriedFish = nameof(PrepareFriedFish);
         // When multiple processes use the same final step, the should event marked as public
         // so that the step event can be used as the output event of the process too.
-        // In these samples both fried fish and potato fries end with FryStep successs
+        // In these samples both fried fish and potato fries end with FryStep success
         public const string FriedFishReady = nameof(FryFoodStep.OutputEvents.FriedFoodReady);
     }
 
