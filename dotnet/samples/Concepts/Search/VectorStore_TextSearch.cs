@@ -48,14 +48,12 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
             vectorStore, collectionName, lines, textEmbeddingGeneration, CreateRecord);
 
         // Create a text search instance using the volatile vector store.
-        var stringMapper = new DataModelTextSearchStringMapper();
-        var resultMapper = new DataModelTextSearchResultMapper();
-        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration, stringMapper, resultMapper);
+        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
         await ExecuteSearchesAsync(textSearch);
 
         // Create a text search instance using a vectorized search wrapper around the volatile vector store.
         IVectorizableTextSearch<DataModel> vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorizedSearch, textEmbeddingGeneration);
-        textSearch = new VectorStoreTextSearch<DataModel>(vectorizableTextSearch, stringMapper, resultMapper);
+        textSearch = new VectorStoreTextSearch<DataModel>(vectorizableTextSearch);
         await ExecuteSearchesAsync(textSearch);
     }
 
@@ -92,38 +90,6 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine($"Text:        {result.Text}");
             Console.WriteLine($"Embedding:   {result.Embedding.Length}");
             WriteHorizontalRule();
-        }
-    }
-
-    /// <summary>
-    /// String mapper which converts a DataModel to a string.
-    /// </summary>
-    private sealed class DataModelTextSearchStringMapper : ITextSearchStringMapper
-    {
-        /// <inheritdoc />
-        public string MapFromResultToString(object result)
-        {
-            if (result is DataModel dataModel)
-            {
-                return dataModel.Text;
-            }
-            throw new ArgumentException("Invalid result type.");
-        }
-    }
-
-    /// <summary>
-    /// Result mapper which converts a DataModel to a TextSearchResult.
-    /// </summary>
-    private sealed class DataModelTextSearchResultMapper : ITextSearchResultMapper
-    {
-        /// <inheritdoc />
-        public TextSearchResult MapFromResultToTextSearchResult(object result)
-        {
-            if (result is DataModel dataModel)
-            {
-                return new TextSearchResult(name: dataModel.Key.ToString(), value: dataModel.Text);
-            }
-            throw new ArgumentException("Invalid result type.");
         }
     }
 
@@ -195,9 +161,11 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     private sealed class DataModel
     {
         [VectorStoreRecordKey]
+        [TextSearchResultName]
         public Guid Key { get; init; }
 
         [VectorStoreRecordData]
+        [TextSearchResultValue]
         public string Text { get; init; }
 
         [VectorStoreRecordVector(1536)]
