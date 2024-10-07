@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Step03.Models;
 
 namespace Step03.Steps;
 
@@ -26,23 +25,24 @@ public class FryFoodStep : KernelProcessStep
     private readonly Random _randomSeed = new();
 
     [KernelFunction(Functions.FryFood)]
-    public async Task FryFoodAsync(KernelProcessStepContext context, FoodIngredients foodToBeFried)
+    public async Task FryFoodAsync(KernelProcessStepContext context, List<string> foodActions)
     {
+        var foodToFry = foodActions.First();
         // This step may fail sometimes
         int fryerMalfunction = _randomSeed.Next(0, 10);
 
-        // foodToBeFried could potentially be used to set the frying temperature and cooking duration
-
+        // foodToFry could potentially be used to set the frying temperature and cooking duration
         if (fryerMalfunction > 6)
         {
             // Oh no! Food got burnt :(
-            Console.WriteLine($"FRYING_STEP: Ingredient {foodToBeFried.ToFriendlyString()} got burnt while frying :(");
-            await context.EmitEventAsync(new() { Id = OutputEvents.FoodRuined, Data = foodToBeFried });
+            foodActions.Add($"{foodToFry}_frying_failed");
+            Console.WriteLine($"FRYING_STEP: Ingredient {foodToFry} got burnt while frying :(");
+            await context.EmitEventAsync(new() { Id = OutputEvents.FoodRuined, Data = foodActions });
             return;
         }
 
-        Console.WriteLine($"FRYING_STEP: Ingredient {foodToBeFried.ToFriendlyString()} is ready!");
-        await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReadyInternal, Data = foodToBeFried, Visibility = KernelProcessEventVisibility.Internal });
-        await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReady, Data = foodToBeFried, Visibility = KernelProcessEventVisibility.Public });
+        foodActions.Add($"{foodToFry}_frying_succeeded");
+        Console.WriteLine($"FRYING_STEP: Ingredient {foodToFry} is ready!");
+        await context.EmitEventAsync(new() { Id = OutputEvents.FriedFoodReady, Data = foodActions, Visibility = KernelProcessEventVisibility.Public });
     }
 }

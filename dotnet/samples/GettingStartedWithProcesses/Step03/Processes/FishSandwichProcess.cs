@@ -14,7 +14,7 @@ public static class FishSandwichProcess
     public static class ProcessEvents
     {
         public const string PrepareFishSandwich = nameof(PrepareFishSandwich);
-        public const string FishSandwichReady = AddBunsStep.OutputEvents.BunsAdded;
+        public const string FishSandwichReady = AddSpecialSauceStep.OutputEvents.SpecialSauceAdded;
     }
 
     public static ProcessBuilder CreateProcess(string processName = "FishSandwichProcess")
@@ -52,10 +52,11 @@ public static class FishSandwichProcess
         }
 
         [KernelFunction(Functions.AddBuns)]
-        public async Task SliceFoodAsync(KernelProcessStepContext context, FoodIngredients food)
+        public async Task SliceFoodAsync(KernelProcessStepContext context, List<string> foodActions)
         {
-            Console.WriteLine($"BUNS_ADDED_STEP: Buns added to ingredient {food.ToFriendlyString()}");
-            await context.EmitEventAsync(new() { Id = OutputEvents.BunsAdded, Data = food });
+            Console.WriteLine($"BUNS_ADDED_STEP: Buns added to ingredient {foodActions.First()}");
+            foodActions.Add(FoodIngredients.Buns.ToFriendlyString());
+            await context.EmitEventAsync(new() { Id = OutputEvents.BunsAdded, Data = foodActions });
         }
     }
 
@@ -72,10 +73,11 @@ public static class FishSandwichProcess
         }
 
         [KernelFunction(Functions.AddSpecialSauce)]
-        public async Task SliceFoodAsync(KernelProcessStepContext context, FoodIngredients food)
+        public async Task SliceFoodAsync(KernelProcessStepContext context, List<string> foodActions)
         {
-            Console.WriteLine($"SPECIAL_SAUCE_ADDED: Special sauce added to ingredient {food.ToFriendlyString()}");
-            await context.EmitEventAsync(new() { Id = OutputEvents.SpecialSauceAdded, Visibility = KernelProcessEventVisibility.Public });
+            Console.WriteLine($"SPECIAL_SAUCE_ADDED: Special sauce added to ingredient {foodActions.First()}");
+            foodActions.Add(FoodIngredients.Sauce.ToFriendlyString());
+            await context.EmitEventAsync(new() { Id = OutputEvents.SpecialSauceAdded, Data = foodActions, Visibility = KernelProcessEventVisibility.Public });
         }
     }
 }

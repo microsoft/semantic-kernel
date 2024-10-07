@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Step03.Models;
 
@@ -34,11 +35,11 @@ public static class FishAndChipsProcess
 
         makeFriedFishStep
             .OnEvent(FriedFishProcess.ProcessEvents.FriedFishReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "fishPrepared"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "fishActions"));
 
         makePotatoFriesStep
             .OnEvent(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)
-            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "potatoFriesPrepared"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "potatoActions"));
 
         return processBuilder;
     }
@@ -56,10 +57,12 @@ public static class FishAndChipsProcess
         }
 
         [KernelFunction(Functions.AddCondiments)]
-        public async Task AddCondimentsAsync(KernelProcessStepContext context, FoodIngredients fishPrepared, FoodIngredients potatoFriesPrepared)
+        public async Task AddCondimentsAsync(KernelProcessStepContext context, List<string> fishActions, List<string> potatoActions)
         {
-            Console.WriteLine("ADD_CONDIMENTS: Added condiments to Fish & Chips");
-            await context.EmitEventAsync(new() { Id = OutputEvents.CondimentsAdded, Visibility = KernelProcessEventVisibility.Public });
+            Console.WriteLine($"ADD_CONDIMENTS: Added condiments to Fish & Chips - Fish: {JsonSerializer.Serialize(fishActions)}, Potatoes: {JsonSerializer.Serialize(potatoActions)}");
+            fishActions.AddRange(potatoActions);
+            fishActions.Add(FoodIngredients.Condiments.ToFriendlyString());
+            await context.EmitEventAsync(new() { Id = OutputEvents.CondimentsAdded, Data = fishActions, Visibility = KernelProcessEventVisibility.Public });
         }
     }
 }

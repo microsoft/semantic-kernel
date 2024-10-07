@@ -47,11 +47,18 @@ public static class PotatoFriesProcess
 
     private sealed class GatherPotatoFriesIngredientsStep : GatherIngredientsStep
     {
-        public override async Task GatherIngredientsAsync(KernelProcessStepContext context)
+        public override async Task GatherIngredientsAsync(KernelProcessStepContext context, List<string> foodActions)
         {
-            var ingredient = FoodIngredients.Pototoes;
-            Console.WriteLine($"GATHER_INGREDIENT: Gathered ingredient {ingredient.ToFriendlyString()}");
-            await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = ingredient });
+            var ingredient = FoodIngredients.Pototoes.ToFriendlyString();
+
+            if (foodActions.Count == 0)
+            {
+                foodActions.Add(ingredient);
+            }
+            foodActions.Add($"{ingredient}_gathered");
+
+            Console.WriteLine($"GATHER_INGREDIENT: Gathered ingredient {ingredient}");
+            await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = foodActions });
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Step03.Models;
 
@@ -87,20 +88,21 @@ public static class SingleFoodItemProcess
         {
             var foodName = foodItem.ToFriendlyString();
             Console.WriteLine($"DISPATCH_SINGLE_ORDER: Dispatching '{foodName}'!");
+            var foodActions = new List<string>();
 
             switch (foodItem)
             {
                 case FoodItem.PotatoFries:
-                    await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFries, Data = foodName });
+                    await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFries, Data = foodActions });
                     break;
                 case FoodItem.FriedFish:
-                    await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFriedFish, Data = foodName });
+                    await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFriedFish, Data = foodActions });
                     break;
                 case FoodItem.FishSandwich:
-                    await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFishSandwich, Data = foodName });
+                    await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFishSandwich, Data = foodActions });
                     break;
                 case FoodItem.FishAndChips:
-                    await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFishAndChips, Data = foodName });
+                    await context.EmitEventAsync(new() { Id = OutputEvents.PrepareFishAndChips, Data = foodActions });
                     break;
                 default:
                     break;
@@ -120,9 +122,9 @@ public static class SingleFoodItemProcess
         }
 
         [KernelFunction(Functions.PackFood)]
-        public async Task PackFoodAsync(KernelProcessStepContext context, string foodName)
+        public async Task PackFoodAsync(KernelProcessStepContext context, List<string> foodActions)
         {
-            Console.WriteLine($"PACKING_FOOD: Food {foodName} Packed!");
+            Console.WriteLine($"PACKING_FOOD: Food {foodActions.First()} Packed! - {JsonSerializer.Serialize(foodActions)}");
             await context.EmitEventAsync(new() { Id = OutputEvents.FoodPacked });
         }
     }

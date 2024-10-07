@@ -9,6 +9,9 @@ public enum FoodIngredients
 {
     Pototoes,
     Fish,
+    Buns,
+    Sauce,
+    Condiments,
     None
 }
 
@@ -21,6 +24,9 @@ public static class FoodIngredientsExtensions
     {
         { FoodIngredients.Pototoes, "Potatoes" },
         { FoodIngredients.Fish, "Fish" },
+        { FoodIngredients.Buns, "Buns" },
+        { FoodIngredients.Sauce, "Sauce" },
+        { FoodIngredients.Condiments, "Condiments" },
         { FoodIngredients.None, "None" }
     };
 

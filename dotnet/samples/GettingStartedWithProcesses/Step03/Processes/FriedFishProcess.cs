@@ -46,11 +46,18 @@ public static class FriedFishProcess
 
     private sealed class GatherFriedFishIngredientsStep : GatherIngredientsStep
     {
-        public override async Task GatherIngredientsAsync(KernelProcessStepContext context)
+        public override async Task GatherIngredientsAsync(KernelProcessStepContext context, List<string> foodActions)
         {
-            var ingredient = FoodIngredients.Fish;
-            Console.WriteLine($"GATHER_INGREDIENT: Gathered ingredient {ingredient.ToFriendlyString()}");
-            await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = ingredient });
+            var ingredient = FoodIngredients.Fish.ToFriendlyString();
+
+            if (foodActions.Count == 0)
+            {
+                foodActions.Add(ingredient);
+            }
+            foodActions.Add($"{ingredient}_gathered");
+
+            Console.WriteLine($"GATHER_INGREDIENT: Gathered ingredient {ingredient}");
+            await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = foodActions });
         }
     }
 }

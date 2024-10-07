@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Step03.Models;
 
 namespace Step03.Steps;
 
@@ -24,16 +23,25 @@ public class CutFoodStep : KernelProcessStep
     }
 
     [KernelFunction(Functions.ChopFood)]
-    public async Task ChopFoodAsync(KernelProcessStepContext context, FoodIngredients foodToBeCut)
+    public async Task ChopFoodAsync(KernelProcessStepContext context, List<string> foodActions)
     {
-        Console.WriteLine($"CUTTING_STEP: Ingredient {foodToBeCut.ToFriendlyString()} has been chopped!");
-        await context.EmitEventAsync(new() { Id = OutputEvents.ChoppingReady, Data = foodToBeCut });
+        var foodToBeCut = foodActions.First();
+        foodActions.Add(this.getActionString(foodToBeCut, "chopped"));
+        Console.WriteLine($"CUTTING_STEP: Ingredient {foodToBeCut} has been chopped!");
+        await context.EmitEventAsync(new() { Id = OutputEvents.ChoppingReady, Data = foodActions });
     }
 
     [KernelFunction(Functions.SliceFood)]
-    public async Task SliceFoodAsync(KernelProcessStepContext context, FoodIngredients foodToBeCut)
+    public async Task SliceFoodAsync(KernelProcessStepContext context, List<string> foodActions)
     {
-        Console.WriteLine($"CUTTING_STEP: Ingredient {foodToBeCut.ToFriendlyString()} has been sliced!");
-        await context.EmitEventAsync(new() { Id = OutputEvents.SlicingReady, Data = foodToBeCut });
+        var foodToBeCut = foodActions.First();
+        foodActions.Add(this.getActionString(foodToBeCut, "sliced"));
+        Console.WriteLine($"CUTTING_STEP: Ingredient {foodToBeCut} has been sliced!");
+        await context.EmitEventAsync(new() { Id = OutputEvents.SlicingReady, Data = foodActions });
+    }
+
+    private string getActionString(string food, string action)
+    {
+        return $"{food}_{action}";
     }
 }

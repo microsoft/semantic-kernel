@@ -52,7 +52,7 @@ public class Step03_FoodPreparation(ITestOutputHelper output) : BaseTest(output,
         // Assert
         var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
         {
-            Id = externalTriggerEvent,
+            Id = externalTriggerEvent, Data = new List<string>()
         });
     }
 

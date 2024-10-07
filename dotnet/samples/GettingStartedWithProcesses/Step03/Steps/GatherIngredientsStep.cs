@@ -24,8 +24,8 @@ public class GatherIngredientsStep : KernelProcessStep
     /// <param name="context"></param>
     /// <returns></returns>
     [KernelFunction(Functions.GatherIngredients)]
-    public virtual async Task GatherIngredientsAsync(KernelProcessStepContext context)
+    public virtual async Task GatherIngredientsAsync(KernelProcessStepContext context, List<string> foodActions)
     {
-        await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered });
+        await context.EmitEventAsync(new() { Id = OutputEvents.IngredientsGathered, Data = foodActions });
     }
 }
