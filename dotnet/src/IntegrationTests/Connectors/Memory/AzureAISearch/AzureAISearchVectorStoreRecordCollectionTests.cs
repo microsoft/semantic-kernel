@@ -193,6 +193,10 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         {
             Assert.Equal(new[] { 30f, 31f, 32f, 33f }, getResult.DescriptionEmbedding!.Value.ToArray());
         }
+        else
+        {
+            Assert.Null(getResult.DescriptionEmbedding);
+        }
         Assert.Equal(new[] { "pool", "air conditioning", "concierge" }, getResult.Tags);
         Assert.False(getResult.ParkingIncluded);
         Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), getResult.LastRenovationDate);
