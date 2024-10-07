@@ -7,7 +7,7 @@ namespace Memory;
 
 /// <summary>
 /// Common code for all examples showing how to use the VectorStore abstractions to consume data that was
-/// uploaded using the MemoryStore abstactions.
+/// uploaded using the MemoryStore abstractions.
 /// </summary>
 /// <remarks>
 /// The IMemoryStore abstraction has limitations that constrain its use in many scenarios

@@ -71,7 +71,7 @@ public class VectorStore_MigrateFromMemoryStore_Redis(ITestOutputHelper output, 
             MemoryStoreCollectionName,
             new float[VectorSize],  // Since we want to get all records, and we don't care about similarity here, we can just pass in any vector.
             limit: 10000,           // Since we want to get all records, pass in the largest possible limit.
-            minRelevanceScore: -1,  // Since we want to get all records, and Qdrant is using cosine similiarty, pass in -1 to avoid filtering out anything.
+            minRelevanceScore: -1,  // Since we want to get all records, and Qdrant is using cosine similarity, pass in -1 to avoid filtering out anything.
             withEmbeddings: true);
 
         await foreach (var memoryStoreResult in memoryStoreResults)
