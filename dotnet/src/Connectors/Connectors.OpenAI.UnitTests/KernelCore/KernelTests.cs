@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Moq;
 using Xunit;
-using Microsoft.Extensions.Logging;
-using System;
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
-using System.Diagnostics.Metrics;
-using System.Collections.Generic;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.KernelCore;
 
