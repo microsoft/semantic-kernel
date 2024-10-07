@@ -82,8 +82,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(record.Tags.ToArray(), getResult?.Tags.ToArray());
         Assert.Equal(record.Description, getResult?.Description);
 
-        Assert.Single(searchResult);
-        var searchResultRecord = searchResult.First().Record;
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResultRecord = searchResults.First().Record;
         Assert.Equal(record.HotelId, searchResultRecord?.HotelId);
         Assert.Equal(record.HotelName, searchResultRecord?.HotelName);
         Assert.Equal(record.HotelCode, searchResultRecord?.HotelCode);
@@ -389,7 +390,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         // Act.
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 11") : new VectorSearchFilter().AnyTagEqualTo("Tags", "t1");
-        var searchResults = sut.VectorizedSearchAsync(
+        var actual = sut.VectorizedSearchAsync(
             vector,
             new()
             {
@@ -397,11 +398,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             });
 
         // Assert.
-        Assert.NotNull(searchResults);
-        var searchResultsList = await searchResults.ToListAsync();
-        Assert.Single(searchResultsList);
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
 
-        var searchResultRecord = searchResultsList.First().Record;
+        var searchResultRecord = searchResults.First().Record;
         Assert.Equal(11ul, searchResultRecord?.HotelId);
         Assert.Equal("My Hotel 11", searchResultRecord?.HotelName);
         Assert.Equal(11, searchResultRecord?.HotelCode);

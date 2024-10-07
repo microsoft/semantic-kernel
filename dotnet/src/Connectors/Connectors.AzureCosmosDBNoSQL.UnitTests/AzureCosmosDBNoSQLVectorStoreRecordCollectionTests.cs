@@ -588,8 +588,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f])).ToListAsync();
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]));
 
+        var results = await actual.Results.ToListAsync();
         var result = results[0];
 
         // Assert
@@ -609,7 +610,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await sut.VectorizedSearchAsync(new List<double>([1, 2, 3])).ToListAsync());
+            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]))).Results.ToListAsync());
     }
 
     [Fact]
@@ -624,7 +625,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions).ToListAsync());
+            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions)).Results.ToListAsync());
     }
 
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()

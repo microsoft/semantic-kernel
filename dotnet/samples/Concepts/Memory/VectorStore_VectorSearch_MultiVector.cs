@@ -58,11 +58,12 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
             {
                 Top = 1,
                 VectorPropertyName = nameof(Product.DescriptionEmbedding)
-            }).ToListAsync();
+            });
+        var resultRecords = await searchResult.Results.ToListAsync();
 
         WriteLine("Search string: " + searchString);
-        WriteLine("Result: " + searchResult.First().Record.Description);
-        WriteLine("Score: " + searchResult.First().Score);
+        WriteLine("Result: " + resultRecords.First().Record.Description);
+        WriteLine("Score: " + resultRecords.First().Score);
         WriteLine();
 
         // Search the store using the feature list embedding.
@@ -74,11 +75,12 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
             {
                 Top = 1,
                 VectorPropertyName = nameof(Product.FeatureListEmbedding)
-            }).ToListAsync();
+            });
+        resultRecords = await searchResult.Results.ToListAsync();
 
         WriteLine("Search string: " + searchString);
-        WriteLine("Result: " + searchResult.First().Record.Description);
-        WriteLine("Score: " + searchResult.First().Score);
+        WriteLine("Result: " + resultRecords.First().Record.Description);
+        WriteLine("Score: " + resultRecords.First().Score);
         WriteLine();
     }
 

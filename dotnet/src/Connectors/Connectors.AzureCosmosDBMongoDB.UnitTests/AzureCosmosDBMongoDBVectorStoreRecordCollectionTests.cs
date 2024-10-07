@@ -560,13 +560,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Act & Assert
         if (exceptionExpected)
         {
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.VectorizedSearchAsync(vector).ToListAsync());
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.VectorizedSearchAsync(vector));
         }
         else
         {
-            var result = await sut.VectorizedSearchAsync(vector).FirstOrDefaultAsync();
+            var actual = await sut.VectorizedSearchAsync(vector);
 
-            Assert.NotNull(result);
+            Assert.NotNull(actual);
         }
     }
 
@@ -620,14 +620,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var result = await sut.VectorizedSearchAsync(vector, new()
+        var actual = await sut.VectorizedSearchAsync(vector, new()
         {
             VectorPropertyName = vectorPropertyName,
             Top = actualTop,
-        }).FirstOrDefaultAsync();
+        });
 
         // Assert
-        Assert.NotNull(result);
+        Assert.NotNull(await actual.Results.FirstOrDefaultAsync());
 
         this._mockMongoCollection.Verify(l => l.AggregateAsync(
             It.Is<PipelineDefinition<BsonDocument, BsonDocument>>(pipeline =>
@@ -649,7 +649,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         var options = new VectorSearchOptions { VectorPropertyName = "non-existent-property" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), options).FirstOrDefaultAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), options)).Results.FirstOrDefaultAsync());
     }
 
     [Fact]
@@ -663,9 +663,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var result = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f])).FirstOrDefaultAsync();
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]));
 
         // Assert
+        var result = await actual.Results.FirstOrDefaultAsync();
         Assert.NotNull(result);
         Assert.Equal("key", result.Record.HotelId);
         Assert.Equal("Test Name", result.Record.HotelName);
