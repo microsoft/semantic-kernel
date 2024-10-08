@@ -33,7 +33,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         string endpoint,
@@ -61,7 +61,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         string endpoint,

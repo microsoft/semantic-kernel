@@ -157,11 +157,8 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null, "2024-08-01-preview")]
-    [InlineData("2024-10-01-preview")]
-    [InlineData("2024-08-01-preview")]
-    [InlineData("2024-06-01")]
-    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? defaultVersion = null)
+    [MemberData(nameof(Versions))]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? expectedVersion = null)
     {
         // Arrange
         var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
@@ -178,8 +175,27 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         Assert.NotNull(this._messageHandlerStub.RequestContent);
         Assert.NotNull(result);
 
-        Assert.Contains($"api-version={apiVersion ?? defaultVersion}", this._messageHandlerStub.RequestUri!.ToString());
+        Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUri!.ToString());
     }
+
+    public static TheoryData<string?, string?> Versions => new()
+    {
+        { null, "2024-08-01-preview" },
+        { "V2024_10_01_preview", "2024-10-01-preview" },
+        { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
+        { "2024_10_01_Preview", "2024-10-01-preview" },
+        { "2024-10-01-preview", "2024-10-01-preview" },
+        { "V2024_08_01_preview", "2024-08-01-preview" },
+        { "V2024_08_01_PREVIEW", "2024-08-01-preview" },
+        { "2024_08_01_Preview", "2024-08-01-preview" },
+        { "2024-08-01-preview", "2024-08-01-preview" },
+        { "V2024_06_01", "2024-06-01" },
+        { "2024_06_01", "2024-06-01" },
+        { "2024-06-01", "2024-06-01" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
+    };
 
     public void Dispose()
     {

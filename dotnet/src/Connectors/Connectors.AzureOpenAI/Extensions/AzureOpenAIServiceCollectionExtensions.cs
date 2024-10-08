@@ -37,7 +37,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
@@ -78,7 +78,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
@@ -152,7 +152,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
@@ -189,7 +189,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
@@ -261,7 +261,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToAudio(
@@ -303,7 +303,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToImage(
@@ -340,7 +340,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToImage(
@@ -409,7 +409,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIAudioToText(
@@ -450,7 +450,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIAudioToText(

@@ -41,7 +41,7 @@ internal partial class AzureClientCore : ClientCore
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     internal AzureClientCore(
         string deploymentName,
         string endpoint,
@@ -74,7 +74,7 @@ internal partial class AzureClientCore : ClientCore
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     internal AzureClientCore(
         string deploymentName,
         string endpoint,
@@ -131,11 +131,11 @@ internal partial class AzureClientCore : ClientCore
         AzureOpenAIClientOptions.ServiceVersion? sdkVersion = null;
         if (serviceVersion is not null)
         {
-            sdkVersion = serviceVersion switch // Azure SDK versioning
+            sdkVersion = serviceVersion.ToUpperInvariant() switch // Azure SDK versioning
             {
-                "2024-06-01" => AzureOpenAIClientOptions.ServiceVersion.V2024_06_01,
-                "2024-08-01-preview" => AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview,
-                "2024-10-01-preview" => AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview,
+                "2024-06-01" or "V2024_06_01" or "2024_06_01" => AzureOpenAIClientOptions.ServiceVersion.V2024_06_01,
+                "2024-08-01-PREVIEW" or "V2024_08_01_PREVIEW" or "2024_08_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview,
+                "2024-10-01-PREVIEW" or "V2024_10_01_PREVIEW" or "2024_10_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview,
                 _ => throw new NotSupportedException($"The service version '{serviceVersion}' is not supported.")
             };
         }

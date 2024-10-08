@@ -38,7 +38,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
@@ -80,7 +80,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
@@ -155,7 +155,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
@@ -196,7 +196,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
@@ -269,7 +269,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToAudio(
@@ -313,7 +313,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToAudio(
@@ -469,7 +469,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIAudioToText(
@@ -513,7 +513,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIAudioToText(
