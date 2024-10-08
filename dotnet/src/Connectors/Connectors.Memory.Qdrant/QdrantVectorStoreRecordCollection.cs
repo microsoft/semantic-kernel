@@ -445,7 +445,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
 
@@ -493,17 +493,16 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        // Map to data model and return results.
-        foreach (var point in points)
-        {
-            yield return QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
+        // Map to data model.
+        var mappedResults = points.Select(point => QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
                 point,
                 this._mapper,
                 internalOptions.IncludeVectors,
                 DatabaseName,
                 this._collectionName,
-                "Query");
-        }
+                "Query"));
+
+        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
     /// <summary>

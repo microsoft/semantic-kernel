@@ -33,5 +33,17 @@ public class GoogleTextSearchTests : BaseTextSearchTests
     public override TextSearchFilter GetTextSearchFilter() => new TextSearchFilter().Equality("siteSearch", "devblogs.microsoft.com");
 
     /// <inheritdoc/>
-    public override bool VerifySearchResult(object result, TextSearchFilter? filter = null) => result is global::Google.Apis.CustomSearchAPI.v1.Data.Result;
+    public override bool VerifySearchResults(object[] results, string query, TextSearchFilter? filter = null)
+    {
+        Assert.NotNull(results);
+        Assert.NotEmpty(results);
+        Assert.Equal(4, results.Length);
+        foreach (var result in results)
+        {
+            Assert.NotNull(result);
+            Assert.IsType<global::Google.Apis.CustomSearchAPI.v1.Data.Result>(result);
+        }
+
+        return true;
+    }
 }

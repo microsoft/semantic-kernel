@@ -578,7 +578,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 Filter = filter,
                 VectorPropertyName = nameof(MultiPropsModel.Vector1)
             },
-            this._testCancellationToken).ToListAsync();
+            this._testCancellationToken);
 
         // Assert.
         this._searchClientMock.Verify(
@@ -620,7 +620,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 Filter = filter,
                 VectorPropertyName = nameof(MultiPropsModel.Vector1)
             },
-            this._testCancellationToken).ToListAsync();
+            this._testCancellationToken);
 
         // Assert.
         this._searchClientMock.Verify(

@@ -210,7 +210,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
 #pragma warning restore CS1998
     {
         Verify.NotNull(vector);
@@ -251,16 +251,25 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
             return (record, convertedscore);
         });
 
-        // Get the non-null results, sort them appropriately for the selected distance function and return the requested page.
+        // Get the non-null results since any record with a null vector results in a null result.
         var nonNullResults = results.Where(x => x.HasValue).Select(x => x!.Value);
+
+        // Calculate the total results count if requested.
+        long? count = null;
+        if (internalOptions.IncludeTotalCount)
+        {
+            count = nonNullResults.Count();
+        }
+
+        // Sort the results appropriately for the selected distance function and get the right page of results .
         var sortedScoredResults = VolatileVectorStoreCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
             nonNullResults.OrderByDescending(x => x.score) :
             nonNullResults.OrderBy(x => x.score);
+        var resultsPage = sortedScoredResults.Skip(internalOptions.Skip).Take(internalOptions.Top);
 
-        foreach (var scoredResult in sortedScoredResults.Skip(internalOptions.Skip).Take(internalOptions.Top))
-        {
-            yield return new VectorSearchResult<TRecord>((TRecord)scoredResult.record, scoredResult.score);
-        }
+        // Build the response.
+        var vectorSearchResultList = resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)).ToAsyncEnumerable();
+        return new VectorSearchResults<TRecord>(vectorSearchResultList) { TotalCount = count };
     }
 
     /// <summary>

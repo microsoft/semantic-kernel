@@ -19,10 +19,14 @@ namespace SemanticKernel.IntegrationTests.Data;
 public abstract class BaseTextSearchTests : BaseIntegrationTest
 {
     [Fact]
-    public async Task CanSearchAsync()
+    public virtual async Task CanSearchAsync()
     {
         // Arrange
         var textSearch = await this.CreateTextSearchAsync();
+        if (textSearch is null)
+        {
+            return;
+        }
         var query = this.GetQuery();
 
         // Act
@@ -39,10 +43,14 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task CanGetTextSearchResultsAsync()
+    public virtual async Task CanGetTextSearchResultsAsync()
     {
         // Arrange
         var textSearch = await this.CreateTextSearchAsync();
+        if (textSearch is null)
+        {
+            return;
+        }
         var query = this.GetQuery();
 
         // Act
@@ -65,10 +73,14 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task CanGetSearchResultsAsync()
+    public virtual async Task CanGetSearchResultsAsync()
     {
         // Arrange
         var textSearch = await this.CreateTextSearchAsync();
+        if (textSearch is null)
+        {
+            return;
+        }
         var query = this.GetQuery();
 
         // Act
@@ -77,18 +89,18 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         // Assert
         Assert.NotNull(fullResults);
         var results = await fullResults.Results.ToArrayAsync<object>();
-        Assert.Equal(4, results.Length);
-        foreach (var result in results)
-        {
-            Assert.True(this.VerifySearchResult(result));
-        }
+        Assert.True(this.VerifySearchResults(results, query));
     }
 
     [Fact]
-    public async Task UsingTextSearchWithAFilterAsync()
+    public virtual async Task UsingTextSearchWithAFilterAsync()
     {
         // Arrange
         var textSearch = await this.CreateTextSearchAsync();
+        if (textSearch is null)
+        {
+            return;
+        }
         var query = this.GetQuery();
         var filter = this.GetTextSearchFilter();
 
@@ -98,27 +110,27 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         // Assert
         Assert.NotNull(fullResults);
         var results = await fullResults.Results.ToArrayAsync<object>();
-        Assert.Equal(4, results.Length);
-        foreach (var result in results)
-        {
-            Assert.True(this.VerifySearchResult(result, filter));
-        }
+        Assert.True(this.VerifySearchResults(results, query, filter));
     }
 
     [Fact]
-    public async Task FunctionCallingUsingCreateWithSearchAsync()
+    public virtual async Task FunctionCallingUsingCreateWithSearchAsync()
     {
         // Arrange
+        var textSearch = await this.CreateTextSearchAsync();
+        if (textSearch is null)
+        {
+            return;
+        }
         var filter = new AutoFunctionInvocationFilter();
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
-        var textSearch = await this.CreateTextSearchAsync();
 
         var searchPlugin = textSearch.CreateWithSearch("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(searchPlugin) };
         KernelArguments arguments = new(settings);
         var result = await kernel.InvokePromptAsync(this.GetQuery(), arguments);
 
@@ -131,19 +143,23 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task FunctionCallingUsingCreateWithGetSearchResultsAsync()
+    public virtual async Task FunctionCallingUsingCreateWithGetSearchResultsAsync()
     {
         // Arrange
+        var textSearch = await this.CreateTextSearchAsync();
+        if (textSearch is null)
+        {
+            return;
+        }
         var filter = new AutoFunctionInvocationFilter();
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
-        var textSearch = await this.CreateTextSearchAsync();
 
         var searchPlugin = textSearch.CreateWithGetSearchResults("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(searchPlugin) };
         KernelArguments arguments = new(settings);
         var result = await kernel.InvokePromptAsync(this.GetQuery(), arguments);
 
@@ -156,19 +172,23 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task FunctionCallingUsingGetTextSearchResultsAsync()
+    public virtual async Task FunctionCallingUsingGetTextSearchResultsAsync()
     {
         // Arrange
+        var textSearch = await this.CreateTextSearchAsync();
+        if (textSearch is null)
+        {
+            return;
+        }
         var filter = new AutoFunctionInvocationFilter();
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
-        var textSearch = await this.CreateTextSearchAsync();
 
         var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(searchPlugin) };
         KernelArguments arguments = new(settings);
         var result = await kernel.InvokePromptAsync(this.GetQuery(), arguments);
 
@@ -198,7 +218,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
     /// <summary>
     /// Verify a search result from the instance of <see cref="ITextSearch"/> being used in tests.
     /// </summary>
-    public abstract bool VerifySearchResult(object result, TextSearchFilter? filter = null);
+    public abstract bool VerifySearchResults(object[] results, string query, TextSearchFilter? filter = null);
 
     /// <summary>
     /// Gets the <see cref="IConfigurationRoot"/> for the test.

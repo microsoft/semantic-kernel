@@ -236,7 +236,7 @@ public sealed class BingTextSearch : ITextSearch
                 throw new ArgumentException("Result must be a BingWebPage", nameof(result));
             }
 
-            return new TextSearchResult(webPage.Name, webPage.Snippet, webPage.Url);
+            return new TextSearchResult(webPage.Snippet ?? string.Empty) { Name = webPage.Name, Link = webPage.Url };
         }
     }
 

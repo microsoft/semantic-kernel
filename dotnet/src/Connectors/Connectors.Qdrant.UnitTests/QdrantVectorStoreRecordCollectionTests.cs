@@ -564,7 +564,7 @@ public class QdrantVectorStoreRecordCollectionTests
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
             new() { IncludeVectors = true, Filter = filter, Top = 5, Skip = 2 },
-            this._testCancellationToken).ToListAsync();
+            this._testCancellationToken);
 
         // Assert.
         this._qdrantClientMock
@@ -588,12 +588,13 @@ public class QdrantVectorStoreRecordCollectionTests
                     this._testCancellationToken),
                 Times.Once);
 
-        Assert.Single(actual);
-        Assert.Equal(testRecordKey, actual.First().Record.Key);
-        Assert.Equal("data 1", actual.First().Record.OriginalNameData);
-        Assert.Equal("data 1", actual.First().Record.Data);
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.First().Record.Vector!.Value.ToArray());
-        Assert.Equal(0.5f, actual.First().Score);
+        var results = await actual.Results.ToListAsync();
+        Assert.Single(results);
+        Assert.Equal(testRecordKey, results.First().Record.Key);
+        Assert.Equal("data 1", results.First().Record.OriginalNameData);
+        Assert.Equal("data 1", results.First().Record.Data);
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector!.Value.ToArray());
+        Assert.Equal(0.5f, results.First().Score);
     }
 
     private void SetupRetrieveMock(List<RetrievedPoint> retrievedPoints)

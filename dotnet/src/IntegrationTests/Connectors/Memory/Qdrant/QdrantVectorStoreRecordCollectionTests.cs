@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Embeddings;
 using Qdrant.Client.Grpc;
 using Xunit;
 using Xunit.Abstractions;
@@ -56,15 +57,16 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         };
         var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, testCollectionName, options);
 
-        var record = this.CreateTestHotel(30);
+        var record = await this.CreateTestHotelAsync(30, fixture.EmbeddingGenerator);
 
         // Act
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
-        var searchResult = await sut.VectorizedSearchAsync(
-            new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
-            new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30) }).ToListAsync();
+        var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
+            new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30) });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -80,8 +82,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(record.Tags.ToArray(), getResult?.Tags.ToArray());
         Assert.Equal(record.Description, getResult?.Description);
 
-        Assert.Single(searchResult);
-        var searchResultRecord = searchResult.First().Record;
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResultRecord = searchResults.First().Record;
         Assert.Equal(record.HotelId, searchResultRecord?.HotelId);
         Assert.Equal(record.HotelName, searchResultRecord?.HotelName);
         Assert.Equal(record.HotelCode, searchResultRecord?.HotelCode);
@@ -129,7 +132,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         };
         var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
 
-        var record = this.CreateTestHotel(20);
+        var record = await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator);
 
         // Act.
         var upsertResult = await sut.UpsertAsync(record);
@@ -165,7 +168,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HotelId = Guid.Parse("55555555-5555-5555-5555-555555555555"),
             HotelName = "My Hotel 5",
             Description = "This is a great hotel.",
-            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+            DescriptionEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel."),
         };
 
         // Act.
@@ -307,7 +310,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         };
         var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
 
-        await sut.UpsertAsync(this.CreateTestHotel(20));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator));
 
         // Act.
         await sut.DeleteAsync(20);
@@ -333,7 +336,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         };
         var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
 
-        await sut.UpsertAsync(this.CreateTestHotel(20));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator));
 
         // Act.
         // Also delete a non-existing key to test that the operation does not fail for these.
@@ -385,20 +388,20 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         // Act.
+        var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 11") : new VectorSearchFilter().AnyTagEqualTo("Tags", "t1");
-        var searchResults = sut.VectorizedSearchAsync(
-            new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]),
+        var actual = await sut.VectorizedSearchAsync(
+            vector,
             new()
             {
                 Filter = filter
             });
 
         // Assert.
-        Assert.NotNull(searchResults);
-        var searchResultsList = await searchResults.ToListAsync();
-        Assert.Single(searchResultsList);
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
 
-        var searchResultRecord = searchResultsList.First().Record;
+        var searchResultRecord = searchResults.First().Record;
         Assert.Equal(11ul, searchResultRecord?.HotelId);
         Assert.Equal("My Hotel 11", searchResultRecord?.HotelName);
         Assert.Equal(11, searchResultRecord?.HotelCode);
@@ -433,7 +436,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             },
             Vectors =
             {
-                { "DescriptionEmbedding", new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }) }
+                { "DescriptionEmbedding", await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a generic mapper hotel") }
             }
         });
         var localGetResult = await sut.GetAsync(40, new GetRecordOptions { IncludeVectors = true });
@@ -464,7 +467,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.IsType<ReadOnlyMemory<float>>(localGetResult.Vectors["DescriptionEmbedding"]);
     }
 
-    private HotelInfo CreateTestHotel(uint hotelId)
+    private async Task<HotelInfo> CreateTestHotelAsync(uint hotelId, ITextEmbeddingGenerationService embeddingGenerator)
     {
         return new HotelInfo
         {
@@ -475,7 +478,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             ParkingIncluded = true,
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
-            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+            DescriptionEmbedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel."),
         };
     }
 

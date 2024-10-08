@@ -48,33 +48,36 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 1 }).ToListAsync();
+        var searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 1 });
+        var resultRecords = await searchResult.Results.ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
-        Console.WriteLine("Result: " + searchResult.First().Record.Definition);
+        Console.WriteLine("Result: " + resultRecords.First().Record.Definition);
         Console.WriteLine();
 
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 1 }).ToListAsync();
+        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 1 });
+        resultRecords = await searchResult.Results.ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
-        Console.WriteLine("Result: " + searchResult.First().Record.Definition);
+        Console.WriteLine("Result: " + resultRecords.First().Record.Definition);
         Console.WriteLine();
 
         // Search the collection using a vector search with pre-filtering.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
         var filter = new VectorSearchFilter().EqualTo(nameof(Glossary.Category), "External Definitions");
-        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 3, Filter = filter }).ToListAsync();
+        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 3, Filter = filter });
+        resultRecords = await searchResult.Results.ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
-        Console.WriteLine("Number of results: " + searchResult.Count);
-        Console.WriteLine("Result 1 Score: " + searchResult[0].Score);
-        Console.WriteLine("Result 1: " + searchResult[0].Record.Definition);
-        Console.WriteLine("Result 2 Score: " + searchResult[1].Score);
-        Console.WriteLine("Result 2: " + searchResult[1].Record.Definition);
+        Console.WriteLine("Number of results: " + resultRecords.Count);
+        Console.WriteLine("Result 1 Score: " + resultRecords[0].Score);
+        Console.WriteLine("Result 1: " + resultRecords[0].Record.Definition);
+        Console.WriteLine("Result 2 Score: " + resultRecords[1].Score);
+        Console.WriteLine("Result 2: " + resultRecords[1].Record.Definition);
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ using Azure;
 using Azure.Search.Documents.Indexes;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 using Xunit.Abstractions;
 using static SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch.AzureAISearchVectorStoreFixture;
@@ -46,7 +47,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     public async Task ItCanCreateACollectionUpsertGetAndSearchAsync(bool useRecordDefinition)
     {
         // Arrange
-        var hotel = CreateTestHotel("Upsert-1");
+        var hotel = await this.CreateTestHotelAsync("Upsert-1");
         var testCollectionName = $"{fixture.TestIndexName}-createtest";
         var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel>
         {
@@ -60,14 +61,14 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1");
-        var embedding = new ReadOnlyMemory<float>(AzureAISearchVectorStoreFixture.CreateTestEmbedding());
-        var searchResult = await sut.VectorizedSearchAsync(
+        var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
+        var actual = await sut.VectorizedSearchAsync(
             embedding,
             new VectorSearchOptions
             {
                 IncludeVectors = true,
                 Filter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")
-            }).ToListAsync();
+            });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -87,8 +88,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Equal(hotel.LastRenovationDate, getResult.LastRenovationDate);
         Assert.Equal(hotel.Rating, getResult.Rating);
 
-        Assert.Single(searchResult);
-        var searchResultRecord = searchResult.First().Record;
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResultRecord = searchResults.First().Record;
         Assert.Equal(hotel.HotelName, searchResultRecord.HotelName);
         Assert.Equal(hotel.Description, searchResultRecord.Description);
         Assert.NotNull(searchResultRecord.DescriptionEmbedding);
@@ -132,7 +134,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
         // Act
-        var hotel = CreateTestHotel("Upsert-1");
+        var hotel = await this.CreateTestHotelAsync("Upsert-1");
         var upsertResult = await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1");
 
@@ -164,9 +166,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         // Act
         var results = sut.UpsertBatchAsync(
             [
-                CreateTestHotel("UpsertMany-1"),
-                CreateTestHotel("UpsertMany-2"),
-                CreateTestHotel("UpsertMany-3"),
+                await this.CreateTestHotelAsync("UpsertMany-1"),
+                await this.CreateTestHotelAsync("UpsertMany-2"),
+                await this.CreateTestHotelAsync("UpsertMany-3"),
             ]);
 
         // Assert
@@ -210,7 +212,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Equal(includeVectors, getResult.DescriptionEmbedding != null);
         if (includeVectors)
         {
-            Assert.Equal(AzureAISearchVectorStoreFixture.CreateTestEmbedding(), getResult.DescriptionEmbedding!.Value.ToArray());
+            var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
+            Assert.Equal(embedding, getResult.DescriptionEmbedding!.Value.ToArray());
         }
         Assert.Equal(new[] { "pool", "air conditioning", "concierge" }, getResult.Tags);
         Assert.False(getResult.ParkingIncluded);
@@ -254,7 +257,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
-        await sut.UpsertAsync(CreateTestHotel("Remove-1"));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync("Remove-1"));
 
         // Act
         await sut.DeleteAsync("Remove-1");
@@ -270,9 +273,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     {
         // Arrange
         var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
-        await sut.UpsertAsync(CreateTestHotel("RemoveMany-1"));
-        await sut.UpsertAsync(CreateTestHotel("RemoveMany-2"));
-        await sut.UpsertAsync(CreateTestHotel("RemoveMany-3"));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync("RemoveMany-1"));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync("RemoveMany-2"));
+        await sut.UpsertAsync(await this.CreateTestHotelAsync("RemoveMany-3"));
 
         // Act
         // Also include a non-existing key to test that the operation does not fail for these.
@@ -337,8 +340,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = option == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "Hotel 3") : new VectorSearchFilter().AnyTagEqualTo("Tags", "bar");
-        var searchResults = sut.VectorizedSearchAsync(
-            new ReadOnlyMemory<float>(AzureAISearchVectorStoreFixture.CreateTestEmbedding()),
+        var actual = await sut.VectorizedSearchAsync(
+            await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel"),
             new()
             {
                 IncludeVectors = includeVectors,
@@ -347,10 +350,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             });
 
         // Assert.
-        Assert.NotNull(searchResults);
-        var searchResultsList = await searchResults.ToListAsync();
-        Assert.Single(searchResultsList);
-        var searchResult = searchResultsList.First();
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResult = searchResults.First();
         Assert.Equal("BaseSet-3", searchResult.Record.HotelId);
         Assert.Equal("Hotel 3", searchResult.Record.HotelName);
         Assert.Equal("This is a great hotel", searchResult.Record.Description);
@@ -361,7 +363,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         if (includeVectors)
         {
             Assert.NotNull(searchResult.Record.DescriptionEmbedding);
-            Assert.Equal(AzureAISearchVectorStoreFixture.CreateTestEmbedding(), searchResult.Record.DescriptionEmbedding!.Value.ToArray());
+            var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
+            Assert.Equal(embedding, searchResult.Record.DescriptionEmbedding!.Value.ToArray());
         }
         else
         {
@@ -377,7 +380,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = new VectorSearchFilter().EqualTo("HotelName", "Hotel 3");
-        var searchResults = sut.VectorizableTextSearchAsync(
+        var actual = await sut.VectorizableTextSearchAsync(
             "A hotel with great views.",
             new()
             {
@@ -386,9 +389,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             });
 
         // Assert.
-        Assert.NotNull(searchResults);
-        var searchResultsList = await searchResults.ToListAsync();
-        Assert.Single(searchResultsList);
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
     }
 
     [Fact(Skip = SkipReason)]
@@ -403,7 +405,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act
         var baseSetGetResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true });
-        var testEmbedding = AzureAISearchVectorStoreFixture.CreateTestEmbedding();
+        var baseSetEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
+        var genericMapperEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a generic mapper hotel");
         var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>("GenericMapper-1")
         {
             Data =
@@ -417,7 +420,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             },
             Vectors =
             {
-                { "DescriptionEmbedding", new ReadOnlyMemory<float>(testEmbedding) }
+                { "DescriptionEmbedding", genericMapperEmbedding }
             }
         });
         var localGetResult = await sut.GetAsync("GenericMapper-1", new GetRecordOptions { IncludeVectors = true });
@@ -430,7 +433,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.False((bool?)baseSetGetResult.Data["ParkingIncluded"]);
         Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), baseSetGetResult.Data["LastRenovationDate"]);
         Assert.Equal(3.6d, baseSetGetResult.Data["Rating"]);
-        Assert.Equal(testEmbedding, ((ReadOnlyMemory<float>)baseSetGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+        Assert.Equal(baseSetEmbedding, (ReadOnlyMemory<float>)baseSetGetResult.Vectors["DescriptionEmbedding"]!);
 
         Assert.NotNull(upsertResult);
         Assert.Equal("GenericMapper-1", upsertResult);
@@ -442,15 +445,15 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.False((bool?)localGetResult.Data["ParkingIncluded"]);
         Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), localGetResult.Data["LastRenovationDate"]);
         Assert.Equal(3.6d, localGetResult.Data["Rating"]);
-        Assert.Equal(testEmbedding, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+        Assert.Equal(genericMapperEmbedding, (ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!);
     }
 
-    private static Hotel CreateTestHotel(string hotelId) => new()
+    private async Task<Hotel> CreateTestHotelAsync(string hotelId) => new()
     {
         HotelId = hotelId,
         HotelName = $"MyHotel {hotelId}",
         Description = "My Hotel is great.",
-        DescriptionEmbedding = AzureAISearchVectorStoreFixture.CreateTestEmbedding(),
+        DescriptionEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("My hotel is great"),
         Tags = ["pool", "air conditioning", "concierge"],
         ParkingIncluded = true,
         LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),

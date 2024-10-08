@@ -273,10 +273,9 @@ public sealed class BingTextSearchTests : IDisposable
                 throw new ArgumentException("Result must be a BingWebPage", nameof(result));
             }
 
-            return new TextSearchResult
+            return new TextSearchResult(webPage.Snippet?.ToUpperInvariant() ?? string.Empty)
             {
                 Name = webPage.Name?.ToUpperInvariant(),
-                Value = webPage.Snippet?.ToUpperInvariant(),
                 Link = webPage.DisplayUrl?.ToUpperInvariant(),
             };
         }

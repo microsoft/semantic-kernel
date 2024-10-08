@@ -291,7 +291,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
                 throw new ArgumentException("Result must be a Google Result", nameof(result));
             }
 
-            return new TextSearchResult(googleResult.Title, googleResult.Snippet, googleResult.Link);
+            return new TextSearchResult(googleResult.Snippet) { Name = googleResult.Title, Link = googleResult.Link };
         }
     }
     #endregion
