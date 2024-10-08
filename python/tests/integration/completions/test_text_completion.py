@@ -120,11 +120,46 @@ pytestmark = pytest.mark.parametrize(
             id="vertex_ai_text_completion",
         ),
         pytest.param(
-            "bedrock",
+            "bedrock_amazon_titan",
             {},
             ["Repeat the word Hello once"],
             {},
-            id="bedrock_text_completion",
+            id="bedrock_amazon_titan_text_completion",
+        ),
+        pytest.param(
+            "bedrock_anthropic_claude",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            id="bedrock_anthropic_claude_text_completion",
+        ),
+        pytest.param(
+            "bedrock_cohere_command",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            id="bedrock_cohere_command_text_completion",
+        ),
+        pytest.param(
+            "bedrock_ai21labs",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            id="bedrock_ai21labs_text_completion",
+        ),
+        pytest.param(
+            "bedrock_meta_llama",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            id="bedrock_meta_llama_text_completion",
+        ),
+        pytest.param(
+            "bedrock_mistralai",
+            {},
+            ["Repeat the word Hello once"],
+            {"streaming": False},  # Streaming is not supported for models from this provider
+            id="bedrock_mistralai_text_completion",
         ),
     ],
 )
@@ -183,7 +218,32 @@ class TestTextCompletion(CompletionTestBase):
                 ),
                 HuggingFacePromptExecutionSettings,
             ),
-            "bedrock": (BedrockTextCompletion(), BedrockTextPromptExecutionSettings),
+            # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
+            # inconsistent. So we need to test each model separately.
+            "bedrock_amazon_titan": (
+                BedrockTextCompletion(model_id="amazon.titan-text-premier-v1:0"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_anthropic_claude": (
+                BedrockTextCompletion(model_id="anthropic.claude-v2"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_cohere_command": (
+                BedrockTextCompletion(model_id="cohere.command-text-v14"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_ai21labs": (
+                BedrockTextCompletion(model_id="ai21.j2-mid-v1"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_meta_llama": (
+                BedrockTextCompletion(model_id="meta.llama3-8b-instruct-v1:0"),
+                BedrockTextPromptExecutionSettings,
+            ),
+            "bedrock_mistralai": (
+                BedrockTextCompletion(model_id="mistral.mistral-7b-instruct-v0:2"),
+                BedrockTextPromptExecutionSettings,
+            ),
         }
 
     async def get_text_completion_response(
@@ -242,6 +302,9 @@ class TestTextCompletion(CompletionTestBase):
         inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
         kwargs: dict[str, Any],
     ):
+        if "streaming" in kwargs and not kwargs["streaming"]:
+            pytest.skip("Skipping streaming test")
+
         await self._test_helper(service_id, services, execution_settings_kwargs, inputs, True)
 
     @override

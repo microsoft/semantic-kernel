@@ -22,7 +22,7 @@ def get_text_completion_request_body(prompt: str, settings: BedrockTextPromptExe
         "temperature": settings.temperature,
         "top_p": settings.top_p,
         "top_k": settings.top_k,
-        "max_tokens_to_sample": settings.max_tokens,
+        "max_tokens_to_sample": settings.max_tokens or 200,
         "stop_sequences": settings.stop,
     })
 

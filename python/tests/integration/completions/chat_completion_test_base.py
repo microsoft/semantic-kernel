@@ -151,7 +151,30 @@ class ChatCompletionTestBase(CompletionTestBase):
             "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
             "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
-            "bedrock": (BedrockChatCompletion(), BedrockChatPromptExecutionSettings),
+            "bedrock_amazon_titan": (
+                BedrockChatCompletion(model_id="amazon.titan-text-premier-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_ai21labs": (
+                BedrockChatCompletion(model_id="ai21.jamba-1-5-mini-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_anthropic_claude": (
+                BedrockChatCompletion(model_id="anthropic.claude-3-5-sonnet-20240620-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_cohere_command": (
+                BedrockChatCompletion(model_id="cohere.command-r-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_meta_llama": (
+                BedrockChatCompletion(model_id="meta.llama3-8b-instruct-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_mistralai": (
+                BedrockChatCompletion(model_id="mistral.mistral-small-2402-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
         }
 
     def setup(self, kernel: Kernel):

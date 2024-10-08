@@ -10,8 +10,17 @@ from semantic_kernel.memory.volatile_memory_store import VolatileMemoryStore
 
 
 @pytest.mark.asyncio
-async def test_bedrock_embedding_service(kernel: Kernel):
-    embeddings_gen = BedrockTextEmbedding()
+@pytest.mark.parametrize(
+    # These are fake model ids with the supported prefixes
+    "model_id",
+    [
+        "amazon.titan-embed-text-v1",
+        "amazon.titan-embed-text-v2:0",
+        "cohere.embed-english-v3",
+    ],
+)
+async def test_bedrock_embedding_service(model_id: str, kernel: Kernel):
+    embeddings_gen = BedrockTextEmbedding(model_id=model_id)
 
     kernel.add_service(embeddings_gen)
 

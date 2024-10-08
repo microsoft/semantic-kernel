@@ -186,7 +186,7 @@ pytestmark = pytest.mark.parametrize(
             id="vertex_ai_image_input_file",
         ),
         pytest.param(
-            "bedrock",
+            "bedrock_anthropic_claude",
             {},
             [
                 ChatMessageContent(
@@ -201,7 +201,25 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             {},
-            id="bedrock_image_input_file",
+            id="bedrock_anthropic_claude_image_input_file",
+        ),
+        pytest.param(
+            "bedrock_meta_llama",
+            {},
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+            ],
+            {},
+            id="bedrock_meta_llama_image_input_file",
         ),
     ],
 )
