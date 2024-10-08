@@ -45,7 +45,6 @@ Having a single repository will also provide valuable statistics on commits, pul
 We have in the past run out of a separate branch within the [Semantic Kernel](https://github.co/microsoft/semantic-kernel) repository which solved 
 some of the issues however significantly hindered user discoverability as users expect to find the latest code on the main branch.
 
-
 ## Decision Outcome
 
-TBA
+Java repository has been moved to [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java)
