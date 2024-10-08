@@ -47,7 +47,7 @@ public class KernelPluginFactoryTests
         Assert.Equal("p1", plugin.Name);
         Assert.Single(plugin);
 
-        // Assert funciton prperties
+        // Assert function prperties
         KernelFunction function = plugin["MyMethod"];
 
         Assert.NotEmpty(function.Metadata.Parameters);
@@ -58,7 +58,7 @@ public class KernelPluginFactoryTests
         Assert.NotNull(function.Metadata.ReturnParameter.Schema);
         Assert.Equal("{\"type\":\"object\",\"properties\":{\"Result\":{\"type\":\"integer\"}}}", function.Metadata.ReturnParameter.Schema!.ToString());
 
-        // Assert funciton invocation
+        // Assert function invocation
         var invokeResult = await function.InvokeAsync(kernel, new() { ["p1"] = """{"Value": "34"}""" }); // Check marshaling logic that deserialize JSON into target type using JSOs
         var result = invokeResult?.GetValue<TestReturnType>();
         Assert.Equal(34, result?.Result);
