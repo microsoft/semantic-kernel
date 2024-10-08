@@ -3,6 +3,7 @@
 using System;
 using System.ClientModel;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -335,6 +336,31 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 
         var breakingGlass = imageContent.InnerContent as GeneratedImage;
         Assert.Equal("my prompt", breakingGlass!.RevisedPrompt);
+    }
+
+    [Theory]
+    [InlineData(null, "2024-08-01-preview")]
+    [InlineData("2024-10-01-preview")]
+    [InlineData("2024-08-01-preview")]
+    [InlineData("2024-06-01")]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? defaultVersion = null)
+    {
+        // Arrange
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-to-image-b64_json-format-response.json"))
+        };
+
+        this._httpClient.BaseAddress = new Uri("https://api-host");
+        var sut = new AzureOpenAITextToImageService("deployment", endpoint: null!, credential: new Mock<TokenCredential>().Object, "dall-e-3", this._httpClient, apiVersion: apiVersion);
+
+        // Act
+        var result = await sut.GetImageContentsAsync("my prompt", new OpenAITextToImageExecutionSettings { ResponseFormat = "b64_json" });
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        Assert.Contains($"api-version={apiVersion ?? defaultVersion}", this._messageHandlerStub.RequestUri!.ToString());
     }
 
     public void Dispose()

@@ -37,6 +37,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
@@ -44,7 +45,8 @@ public static class AzureOpenAIServiceCollectionExtensions
         string endpoint,
         string apiKey,
         string? serviceId = null,
-        string? modelId = null)
+        string? modelId = null,
+        string? apiVersion = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -55,7 +57,8 @@ public static class AzureOpenAIServiceCollectionExtensions
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 new ApiKeyCredential(apiKey),
-                HttpClientProvider.GetHttpClient(serviceProvider));
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                apiVersion);
 
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
@@ -75,6 +78,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
@@ -82,7 +86,8 @@ public static class AzureOpenAIServiceCollectionExtensions
         string endpoint,
         TokenCredential credentials,
         string? serviceId = null,
-        string? modelId = null)
+        string? modelId = null,
+        string? apiVersion = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -93,7 +98,8 @@ public static class AzureOpenAIServiceCollectionExtensions
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 credentials,
-                HttpClientProvider.GetHttpClient(serviceProvider));
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                apiVersion);
 
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
@@ -391,6 +397,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIAudioToText(
@@ -399,7 +406,8 @@ public static class AzureOpenAIServiceCollectionExtensions
         string endpoint,
         string apiKey,
         string? serviceId = null,
-        string? modelId = null)
+        string? modelId = null,
+        string? apiVersion = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
@@ -411,7 +419,8 @@ public static class AzureOpenAIServiceCollectionExtensions
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 new ApiKeyCredential(apiKey),
-                HttpClientProvider.GetHttpClient(serviceProvider));
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                apiVersion);
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
@@ -429,6 +438,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIClientOptions.cs#L58</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIAudioToText(
@@ -437,7 +447,8 @@ public static class AzureOpenAIServiceCollectionExtensions
         string endpoint,
         TokenCredential credentials,
         string? serviceId = null,
-        string? modelId = null)
+        string? modelId = null,
+        string? apiVersion = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(deploymentName);
@@ -449,7 +460,8 @@ public static class AzureOpenAIServiceCollectionExtensions
             AzureOpenAIClient client = CreateAzureOpenAIClient(
                 endpoint,
                 credentials,
-                HttpClientProvider.GetHttpClient(serviceProvider));
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                apiVersion);
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
@@ -488,9 +500,9 @@ public static class AzureOpenAIServiceCollectionExtensions
 
     #endregion
 
-    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient));
+    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient, string? apiVersion) =>
+        new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion));
 
-    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient));
+    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient, string? apiVersion) =>
+        new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion));
 }

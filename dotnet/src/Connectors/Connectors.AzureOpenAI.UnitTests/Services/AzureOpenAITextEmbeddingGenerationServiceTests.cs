@@ -5,6 +5,7 @@ using System.ClientModel;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
@@ -19,12 +20,16 @@ namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAITextEmbeddingGenerationService"/> class.
 /// </summary>
-public class AzureOpenAITextEmbeddingGenerationServiceTests
+public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
 {
+    private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly HttpClient _httpClient;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
     public AzureOpenAITextEmbeddingGenerationServiceTests()
     {
+        this._messageHandlerStub = new HttpMessageHandlerStub();
+        this._httpClient = new HttpClient(this._messageHandlerStub, false);
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
     }
 
@@ -99,5 +104,34 @@ public class AzureOpenAITextEmbeddingGenerationServiceTests
 
         // Act & Assert
         await Assert.ThrowsAsync<KernelException>(async () => await sut.GenerateEmbeddingsAsync(["test"], null, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData(null, "2024-08-01-preview")]
+    [InlineData("2024-10-01-preview")]
+    [InlineData("2024-08-01-preview")]
+    [InlineData("2024-06-01")]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? defaultVersion = null)
+    {
+        // Arrange
+        var sut = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("./TestData/text-embeddings-response.txt"))
+        };
+
+        // Act
+        await sut.GenerateEmbeddingsAsync(["test"], null, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        Assert.Contains($"api-version={apiVersion ?? defaultVersion}", this._messageHandlerStub.RequestUri!.ToString());
+    }
+
+    public void Dispose()
+    {
+        this._httpClient.Dispose();
+        this._messageHandlerStub.Dispose();
     }
 }

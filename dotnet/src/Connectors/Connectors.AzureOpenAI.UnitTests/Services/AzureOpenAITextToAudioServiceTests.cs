@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -205,6 +206,33 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         // Assert
         var requestBody = JsonSerializer.Deserialize<JsonObject>(this._messageHandlerStub.RequestContent!);
         Assert.Equal(expectedModel, requestBody?["model"]?.ToString());
+    }
+
+    [Theory]
+    [InlineData(null, "2024-08-01-preview")]
+    [InlineData("2024-10-01-preview")]
+    [InlineData("2024-08-01-preview")]
+    [InlineData("2024-06-01")]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? defaultVersion = null)
+    {
+        // Arrange
+        var expectedByteArray = new byte[] { 0x00, 0x00, 0xFF, 0x7F };
+
+        var service = new AzureOpenAITextToAudioService("deploymentName", "https://endpoint", "api-key", "model", this._httpClient, apiVersion: apiVersion);
+        await using var stream = new MemoryStream(expectedByteArray);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        // Act
+        var result = await service.GetAudioContentsAsync("Some text");
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        Assert.Contains($"api-version={apiVersion ?? defaultVersion}", this._messageHandlerStub.RequestUri!.ToString());
     }
 
     public void Dispose()

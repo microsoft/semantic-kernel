@@ -1373,6 +1373,33 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
     }
 
+    [Theory]
+    [InlineData(null, "2024-08-01-preview")]
+    [InlineData("2024-10-01-preview")]
+    [InlineData("2024-08-01-preview")]
+    [InlineData("2024-06-01")]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? defaultVersion = null)
+    {
+        // Arrange
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        // Act
+
+        await sut.GetChatMessageContentsAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContents[0]);
+
+        Assert.Contains($"api-version={apiVersion ?? defaultVersion}", this._messageHandlerStub.RequestUris[0]!.ToString());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

@@ -156,6 +156,31 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         Assert.Equal("Test audio-to-text response", result[0].Text);
     }
 
+    [Theory]
+    [InlineData(null, "2024-08-01-preview")]
+    [InlineData("2024-10-01-preview")]
+    [InlineData("2024-08-01-preview")]
+    [InlineData("2024-06-01")]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? defaultVersion = null)
+    {
+        // Arrange
+        var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("Test audio-to-text response")
+        };
+
+        // Act
+        var settings = new OpenAIAudioToTextExecutionSettings("file.mp3");
+        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), settings);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(result);
+
+        Assert.Contains($"api-version={apiVersion ?? defaultVersion}", this._messageHandlerStub.RequestUri!.ToString());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
