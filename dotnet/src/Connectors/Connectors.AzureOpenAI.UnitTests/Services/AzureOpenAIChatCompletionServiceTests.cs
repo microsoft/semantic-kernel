@@ -1372,7 +1372,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.False(optionsJson.TryGetProperty("tools", out var _));
         Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
     }
-    
+
     [Fact]
     public async Task ItSendsEmptyStringWhenAssistantMessageContentIsNull()
     {
@@ -1384,13 +1384,6 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         };
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
-
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Fake prompt");
-        
-        // Act
-
-        await sut.GetChatMessageContentsAsync(chatHistory);
 
         List<ChatToolCall> assistantToolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
 
@@ -1438,7 +1431,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Fake prompt");
-        
+
         // Act
 
         await sut.GetChatMessageContentsAsync(chatHistory);
@@ -1448,7 +1441,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUris[0]!.ToString());
     }
-    
+
     public static TheoryData<string?, string?> Versions => new()
     {
         { null, "2024-08-01-preview" },
@@ -1467,7 +1460,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
     };
-    
+
     public void Dispose()
     {
         this._httpClient.Dispose();
