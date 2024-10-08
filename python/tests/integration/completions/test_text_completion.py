@@ -237,7 +237,7 @@ class TestTextCompletion(CompletionTestBase):
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_meta_llama": (
-                BedrockTextCompletion(model_id="meta.llama3-8b-instruct-v1:0"),
+                BedrockTextCompletion(model_id="meta.llama3-70b-instruct-v1:0"),
                 BedrockTextPromptExecutionSettings,
             ),
             "bedrock_mistralai": (

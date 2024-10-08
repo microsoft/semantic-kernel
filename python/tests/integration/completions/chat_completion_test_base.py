@@ -168,7 +168,7 @@ class ChatCompletionTestBase(CompletionTestBase):
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_meta_llama": (
-                BedrockChatCompletion(model_id="meta.llama3-8b-instruct-v1:0"),
+                BedrockChatCompletion(model_id="meta.llama3-70b-instruct-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_mistralai": (

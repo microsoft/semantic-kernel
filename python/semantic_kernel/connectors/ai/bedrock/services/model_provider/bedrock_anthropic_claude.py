@@ -18,7 +18,7 @@ def get_text_completion_request_body(prompt: str, settings: BedrockTextPromptExe
     https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-text-completion.html
     """
     return remove_none_recursively({
-        "prompt": prompt,
+        "prompt": f"\n\nHuman:{prompt}\n\nAssistant:",
         "temperature": settings.temperature,
         "top_p": settings.top_p,
         "top_k": settings.top_k,
