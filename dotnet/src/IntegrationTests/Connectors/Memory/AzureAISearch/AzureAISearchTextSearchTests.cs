@@ -137,7 +137,7 @@ public class AzureAISearchTextSearchTests(AzureAISearchVectorStoreFixture fixtur
         {
             if (result is Hotel hotel)
             {
-                return new TextSearchResult(name: hotel.HotelName, value: hotel.Description, link: $"id://{hotel.HotelId}");
+                return new TextSearchResult(value: hotel.Description) { Name = hotel.HotelName, Link = $"id://{hotel.HotelId}" };
             }
             throw new ArgumentException("Invalid result type.");
         }

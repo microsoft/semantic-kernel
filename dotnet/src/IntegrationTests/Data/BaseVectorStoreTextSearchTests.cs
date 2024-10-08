@@ -74,7 +74,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         {
             if (result is DataModel dataModel)
             {
-                return new TextSearchResult(name: dataModel.Key.ToString(), value: dataModel.Text, link: dataModel.Link);
+                return new TextSearchResult(value: dataModel.Text) { Name = dataModel.Key.ToString(), Link = dataModel.Link };
             }
             throw new ArgumentException("Invalid result type.");
         }

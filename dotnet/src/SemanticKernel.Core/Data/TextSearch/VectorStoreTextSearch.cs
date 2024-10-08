@@ -161,10 +161,15 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
                 throw new ArgumentException($"Expected result of type {typeof(TRecord).FullName} but got {result.GetType().FullName}.");
             }
 
-            return new TextSearchResult(
-                name: this._propertyReader.Value.GetName(result),
-                value: this._propertyReader.Value.GetValue(result),
-                link: this._propertyReader.Value.GetLink(result));
+            var value = this._propertyReader.Value.GetValue(result) ?? throw new InvalidOperationException($"Value property of {typeof(TRecord).FullName} cannot be null.");
+            var name = this._propertyReader.Value.GetName(result);
+            var link = this._propertyReader.Value.GetLink(result);
+
+            return new TextSearchResult(value)
+            {
+                Name = name,
+                Link = link,
+            };
         });
     }
 

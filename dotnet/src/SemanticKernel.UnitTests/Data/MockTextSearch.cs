@@ -25,7 +25,9 @@ internal sealed class MockTextSearch(int count = 3, long totalCount = 30) : ITex
     public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         int count = searchOptions?.Top ?? this._count;
-        var results = Enumerable.Range(1, count).Select(i => new TextSearchResult($"Name {i}", $"Result {i}", $"http://example.com/page{i}")).ToList();
+        var results = Enumerable.Range(1, count).Select(
+            i => new TextSearchResult($"Result {i}") { Name = $"Name {i}", Link = $"http://example.com/page{i}" })
+            .ToList();
         long? totalCount = searchOptions?.IncludeTotalCount ?? false ? this._totalCount : null;
         return Task.FromResult(new KernelSearchResults<TextSearchResult>(results.ToAsyncEnumerable(), totalCount));
     }

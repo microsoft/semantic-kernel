@@ -96,7 +96,7 @@ public class VectorStoreTextSearchTestBase
         {
             if (result is DataModel dataModel)
             {
-                return new TextSearchResult(name: dataModel.Key.ToString(), value: dataModel.Text);
+                return new TextSearchResult(value: dataModel.Text) { Name = dataModel.Key.ToString() };
             }
             throw new ArgumentException("Invalid result type.");
         }
