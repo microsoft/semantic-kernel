@@ -1372,6 +1372,58 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.False(optionsJson.TryGetProperty("tools", out var _));
         Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
     }
+    
+    [Fact]
+    public async Task ItSendsEmptyStringWhenAssistantMessageContentIsNull()
+    {
+        // Arrange
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+        
+        // Act
+
+        await sut.GetChatMessageContentsAsync(chatHistory);
+
+        List<ChatToolCall> assistantToolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
+
+        var chatHistory = new ChatHistory()
+        {
+            new ChatMessageContent(role: AuthorRole.User, content: "User content", modelId: "any"),
+            new ChatMessageContent(role: AuthorRole.Assistant, content: null, modelId: "any", metadata: new Dictionary<string, object?>
+            {
+                ["ChatResponseMessage.FunctionToolCalls"] = assistantToolCalls
+            }),
+            new ChatMessageContent(role: AuthorRole.Tool, content: null, modelId: "any")
+            {
+                Items = [new FunctionResultContent("FunctionName", "PluginName", "CallId", "Function result")]
+            },
+        };
+
+        var executionSettings = new AzureOpenAIPromptExecutionSettings();
+
+        // Act
+        await sut.GetChatMessageContentsAsync(chatHistory, executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestContent = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var messages = requestContent.GetProperty("messages").EnumerateArray().ToList();
+
+        var assistantMessage = messages.First(message => message.GetProperty("role").GetString() == "assistant");
+        var assistantMessageContent = assistantMessage.GetProperty("content").GetString();
+
+        Assert.Equal(string.Empty, assistantMessageContent);
+    }
 
     [Theory]
     [MemberData(nameof(Versions))]
@@ -1386,7 +1438,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Fake prompt");
-
+        
         // Act
 
         await sut.GetChatMessageContentsAsync(chatHistory);
@@ -1396,7 +1448,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUris[0]!.ToString());
     }
-
+    
     public static TheoryData<string?, string?> Versions => new()
     {
         { null, "2024-08-01-preview" },
@@ -1415,7 +1467,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
         { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
     };
-
+    
     public void Dispose()
     {
         this._httpClient.Dispose();
