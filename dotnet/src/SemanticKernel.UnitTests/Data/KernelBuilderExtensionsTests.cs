@@ -64,7 +64,7 @@ public class KernelBuilderExtensionsTests
         this._kernelBuilder.AddVolatileVectorStoreTextSearch<Guid, DataModel>(
             "records",
             obj => ((DataModel)obj).Text,
-            obj => new TextSearchResult(name: ((DataModel)obj).Key.ToString(), value: ((DataModel)obj).Text));
+            obj => new TextSearchResult(value: ((DataModel)obj).Text) { Name = ((DataModel)obj).Key.ToString() });
 
         // Assert.
         var kernel = this._kernelBuilder.Build();
@@ -99,7 +99,7 @@ public class KernelBuilderExtensionsTests
         {
             if (result is DataModel dataModel)
             {
-                return new TextSearchResult(name: dataModel.Key.ToString(), value: dataModel.Text);
+                return new TextSearchResult(value: dataModel.Text) { Name = dataModel.Key.ToString() };
             }
             throw new ArgumentException("Invalid result type.");
         }

@@ -298,10 +298,9 @@ public sealed class GoogleTextSearchTests : IDisposable
                 throw new ArgumentException("Result must be a Google Result", nameof(result));
             }
 
-            return new TextSearchResult
+            return new TextSearchResult(googleResult.Snippet?.ToUpperInvariant() ?? string.Empty)
             {
                 Name = googleResult.Title?.ToUpperInvariant(),
-                Value = googleResult.Snippet?.ToUpperInvariant(),
                 Link = googleResult.Link?.ToUpperInvariant(),
             };
         }
