@@ -1418,6 +1418,49 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(string.Empty, assistantMessageContent);
     }
 
+    [Theory]
+    [MemberData(nameof(Versions))]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? expectedVersion = null)
+    {
+        // Arrange
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        // Act
+
+        await sut.GetChatMessageContentsAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContents[0]);
+
+        Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUris[0]!.ToString());
+    }
+
+    public static TheoryData<string?, string?> Versions => new()
+    {
+        { null, "2024-08-01-preview" },
+        { "V2024_10_01_preview", "2024-10-01-preview" },
+        { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
+        { "2024_10_01_Preview", "2024-10-01-preview" },
+        { "2024-10-01-preview", "2024-10-01-preview" },
+        { "V2024_08_01_preview", "2024-08-01-preview" },
+        { "V2024_08_01_PREVIEW", "2024-08-01-preview" },
+        { "2024_08_01_Preview", "2024-08-01-preview" },
+        { "2024-08-01-preview", "2024-08-01-preview" },
+        { "V2024_06_01", "2024-06-01" },
+        { "2024_06_01", "2024-06-01" },
+        { "2024-06-01", "2024-06-01" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
+    };
+
     public void Dispose()
     {
         this._httpClient.Dispose();
