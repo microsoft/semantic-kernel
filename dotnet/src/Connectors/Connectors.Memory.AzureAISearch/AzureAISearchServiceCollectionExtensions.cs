@@ -3,10 +3,13 @@
 using System;
 using Azure;
 using Azure.Core;
+using Azure.Core.Serialization;
+using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
 
@@ -59,9 +62,19 @@ public static class AzureAISearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential);
                 var selectedOptions = options ?? sp.GetService<AzureAISearchVectorStoreOptions>();
 
+                // Build options for the Azure AI Search client and construct it.
+                var searchClientOptions = new SearchClientOptions();
+                searchClientOptions.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
+                if (selectedOptions?.JsonSerializerOptions != null)
+                {
+                    searchClientOptions.Serializer = new JsonObjectSerializer(selectedOptions.JsonSerializerOptions);
+                }
+
+                var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
+
+                // Construct the vector store.
                 return new AzureAISearchVectorStore(
                     searchIndexClient,
                     selectedOptions);
@@ -88,9 +101,19 @@ public static class AzureAISearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                var searchIndexClient = new SearchIndexClient(endpoint, credential);
                 var selectedOptions = options ?? sp.GetService<AzureAISearchVectorStoreOptions>();
 
+                // Build options for the Azure AI Search client and construct it.
+                var searchClientOptions = new SearchClientOptions();
+                searchClientOptions.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
+                if (selectedOptions?.JsonSerializerOptions != null)
+                {
+                    searchClientOptions.Serializer = new JsonObjectSerializer(selectedOptions.JsonSerializerOptions);
+                }
+
+                var searchIndexClient = new SearchIndexClient(endpoint, credential, searchClientOptions);
+
+                // Construct the vector store.
                 return new AzureAISearchVectorStore(
                     searchIndexClient,
                     selectedOptions);

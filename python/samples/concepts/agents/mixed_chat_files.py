@@ -5,8 +5,8 @@ import os
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
-from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
@@ -19,21 +19,12 @@ from semantic_kernel.kernel import Kernel
 #####################################################################
 
 
-class ApprovalTerminationStrategy(TerminationStrategy):
-    """A strategy for determining when an agent should terminate."""
-
-    async def should_agent_terminate(self, agent, history):
-        """Check if the agent should terminate."""
-        return "approved" in history[-1].content.lower()
-
-
 SUMMARY_INSTRUCTIONS = "Summarize the entire conversation for the user in natural language."
 
 
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
     kernel = Kernel()
     kernel.add_service(AzureChatCompletion(service_id=service_id))
-    # kernel.add_service(OpenAIChatCompletion(service_id=service_id))
     return kernel
 
 
@@ -47,6 +38,12 @@ async def invoke_agent(
 
     async for content in chat.invoke(agent=agent):
         print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+        if len(content.items) > 0:
+            for item in content.items:
+                if isinstance(item, AnnotationContent):
+                    print(f"\n`{item.quote}` => {item.file_id}")
+                    response_content = await agent.client.files.content(item.file_id)
+                    print(response_content.text)
 
 
 async def main():

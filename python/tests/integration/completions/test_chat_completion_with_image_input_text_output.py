@@ -12,7 +12,11 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents import ChatHistory, ChatMessageContent, TextContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from tests.integration.completions.chat_completion_test_base import ChatCompletionTestBase
+from tests.integration.completions.chat_completion_test_base import (
+    ChatCompletionTestBase,
+    google_ai_setup,
+    vertex_ai_setup,
+)
 from tests.integration.completions.completion_test_base import ServiceType
 from tests.integration.completions.test_utils import retry
 
@@ -156,6 +160,7 @@ pytestmark = pytest.mark.parametrize(
                 ),
             ],
             {},
+            marks=pytest.mark.skipif(not google_ai_setup, reason="Google AI Environment Variables not set"),
             id="google_ai_image_input_file",
         ),
         pytest.param(
@@ -177,6 +182,7 @@ pytestmark = pytest.mark.parametrize(
                 ),
             ],
             {},
+            marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_image_input_file",
         ),
     ],

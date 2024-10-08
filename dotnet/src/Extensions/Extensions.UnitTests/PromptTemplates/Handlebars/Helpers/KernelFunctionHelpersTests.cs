@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -91,6 +92,21 @@ public sealed class KernelFunctionHelpersTests
     }
 
     [Fact]
+    public async Task ItRendersFunctionHelpersWitHashArgumentsAndInputVariableAsync()
+    {
+        // Arrange and Act
+        const string VarName = "param_x";
+        var template = """{{Foo-StringifyInt (""" + VarName + """)}}""";
+        var inputVariables = new List<InputVariable> { new() { Name = VarName } };
+        var arguments = new KernelArguments { [VarName] = 5 };
+
+        var result = await this.RenderPromptTemplateAsync(template, inputVariables, arguments);
+
+        // Assert
+        Assert.Equal("5", result);
+    }
+
+    [Fact]
     public async Task ShouldThrowExceptionWhenMissingRequiredParameterAsync()
     {
         // Arrange and Act
@@ -121,6 +137,34 @@ public sealed class KernelFunctionHelpersTests
         // Assert
         var exception = await Assert.ThrowsAsync<KernelException>(() => this.RenderPromptTemplateAsync(template));
         Assert.Contains("Invalid argument type", exception.Message, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ShouldThrowExceptionWhenFunctionHasNullPositionalParameterAsync()
+    {
+        // Arrange and Act
+        var template = """{{Foo-StringifyInt (nullParameter)}}""";
+        var inputVariables = new List<InputVariable> { new() { Name = "nullParameter" } };
+        var arguments = new KernelArguments { ["nullParameter"] = null };
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<KernelException>(() => this.RenderPromptTemplateAsync(template, inputVariables, arguments));
+        Assert.Contains("Invalid parameter type for function", exception.Message, StringComparison.CurrentCultureIgnoreCase);
+        Assert.Contains("<null>", exception.Message, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ShouldThrowExceptionWhenFunctionHasNullHashParameterAsync()
+    {
+        // Arrange and Act
+        var template = """{{Foo-StringifyInt x=(nullParameter)}}""";
+        var inputVariables = new List<InputVariable> { new() { Name = "nullParameter" } };
+        var arguments = new KernelArguments { ["nullParameter"] = null };
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<KernelException>(() => this.RenderPromptTemplateAsync(template, inputVariables, arguments));
+        Assert.Contains("Invalid argument type for function", exception.Message, StringComparison.CurrentCultureIgnoreCase);
+        Assert.Contains("<null>", exception.Message, StringComparison.CurrentCultureIgnoreCase);
     }
 
     [Fact]
@@ -176,15 +220,20 @@ public sealed class KernelFunctionHelpersTests
     private readonly Kernel _kernel;
     private readonly KernelArguments _arguments;
 
-    private async Task<string> RenderPromptTemplateAsync(string template)
+    private async Task<string> RenderPromptTemplateAsync(string template, List<InputVariable>? inputVariables = null, KernelArguments? arguments = null)
     {
         // Arrange
         this._kernel.ImportPluginFromObject(new Foo());
         var resultConfig = InitializeHbPromptConfig(template);
+        if (inputVariables != null)
+        {
+            resultConfig.InputVariables = inputVariables;
+        }
+
         var target = (HandlebarsPromptTemplate)this._factory.Create(resultConfig);
 
         // Act
-        var result = await target.RenderAsync(this._kernel, this._arguments);
+        var result = await target.RenderAsync(this._kernel, arguments ?? this._arguments);
 
         return result;
     }

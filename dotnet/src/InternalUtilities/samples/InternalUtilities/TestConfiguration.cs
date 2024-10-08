@@ -19,8 +19,11 @@ public sealed class TestConfiguration
         s_instance = new TestConfiguration(configRoot);
     }
 
+    public static OllamaConfig Ollama => LoadSection<OllamaConfig>();
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
+    public static OnnxConfig Onnx => LoadSection<OnnxConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
+    public static AzureAIInferenceConfig AzureAIInference => LoadSection<AzureAIInferenceConfig>();
     public static AzureOpenAIConfig AzureOpenAIImages => LoadSection<AzureOpenAIConfig>();
     public static AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => LoadSection<AzureOpenAIEmbeddingsConfig>();
     public static AzureAISearchConfig AzureAISearch => LoadSection<AzureAISearchConfig>();
@@ -69,6 +72,22 @@ public sealed class TestConfiguration
         public string ChatModelId { get; set; }
         public string EmbeddingModelId { get; set; }
         public string ApiKey { get; set; }
+    }
+
+    public class AzureAIInferenceConfig
+    {
+        public string ServiceId { get; set; }
+        public string Endpoint { get; set; }
+        public string? ApiKey { get; set; }
+    }
+
+    public class OnnxConfig
+    {
+        public string ModelId { get; set; }
+        public string ModelPath { get; set; }
+        public string EmbeddingModelId { get; set; }
+        public string EmbeddingModelPath { get; set; }
+        public string EmbeddingVocabPath { get; set; }
     }
 
     public class AzureOpenAIConfig
@@ -218,6 +237,14 @@ public sealed class TestConfiguration
         {
             public string ModelId { get; set; }
         }
+    }
+
+    public class OllamaConfig
+    {
+        public string? ModelId { get; set; }
+        public string? EmbeddingModelId { get; set; }
+
+        public string Endpoint { get; set; } = "http://localhost:11434";
     }
 
     public class AzureCosmosDbMongoDbConfig

@@ -30,8 +30,10 @@ public class ChatHistoryReducerExtensionsTests
     [InlineData(100, 0, int.MaxValue, 100)]
     public void VerifyChatHistoryExtraction(int messageCount, int startIndex, int? endIndex = null, int? expectedCount = null)
     {
+        // Arrange
         ChatHistory history = [.. MockHistoryGenerator.CreateSimpleHistory(messageCount)];
 
+        // Act
         ChatMessageContent[] extractedHistory = history.Extract(startIndex, endIndex).ToArray();
 
         int finalIndex = endIndex ?? messageCount - 1;
@@ -39,6 +41,7 @@ public class ChatHistoryReducerExtensionsTests
 
         expectedCount ??= finalIndex - startIndex + 1;
 
+        // Assert
         Assert.Equal(expectedCount, extractedHistory.Length);
 
         if (extractedHistory.Length > 0)
@@ -58,16 +61,19 @@ public class ChatHistoryReducerExtensionsTests
     [InlineData(100, 0)]
     public void VerifyGetFinalSummaryIndex(int summaryCount, int regularCount)
     {
+        // Arrange
         ChatHistory summaries = [.. MockHistoryGenerator.CreateSimpleHistory(summaryCount)];
         foreach (ChatMessageContent summary in summaries)
         {
             summary.Metadata = new Dictionary<string, object?>() { { "summary", true } };
         }
 
+        // Act
         ChatHistory history = [.. summaries, .. MockHistoryGenerator.CreateSimpleHistory(regularCount)];
 
         int finalSummaryIndex = history.LocateSummarizationBoundary("summary");
 
+        // Assert
         Assert.Equal(summaryCount, finalSummaryIndex);
     }
 
@@ -77,17 +83,22 @@ public class ChatHistoryReducerExtensionsTests
     [Fact]
     public async Task VerifyChatHistoryNotReducedAsync()
     {
+        // Arrange
         ChatHistory history = [];
+        Mock<IChatHistoryReducer> mockReducer = new();
+        mockReducer.Setup(r => r.ReduceAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), default)).ReturnsAsync((IEnumerable<ChatMessageContent>?)null);
 
+        // Act
         bool isReduced = await history.ReduceAsync(null, default);
 
+        // Assert
         Assert.False(isReduced);
         Assert.Empty(history);
 
-        Mock<IChatHistoryReducer> mockReducer = new();
-        mockReducer.Setup(r => r.ReduceAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), default)).ReturnsAsync((IEnumerable<ChatMessageContent>?)null);
+        // Act
         isReduced = await history.ReduceAsync(mockReducer.Object, default);
 
+        // Assert
         Assert.False(isReduced);
         Assert.Empty(history);
     }
@@ -98,13 +109,16 @@ public class ChatHistoryReducerExtensionsTests
     [Fact]
     public async Task VerifyChatHistoryReducedAsync()
     {
+        // Arrange
         Mock<IChatHistoryReducer> mockReducer = new();
         mockReducer.Setup(r => r.ReduceAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), default)).ReturnsAsync((IEnumerable<ChatMessageContent>?)[]);
 
         ChatHistory history = [.. MockHistoryGenerator.CreateSimpleHistory(10)];
 
+        // Act
         bool isReduced = await history.ReduceAsync(mockReducer.Object, default);
 
+        // Assert
         Assert.True(isReduced);
         Assert.Empty(history);
     }
@@ -124,11 +138,13 @@ public class ChatHistoryReducerExtensionsTests
     [InlineData(900, 500, int.MaxValue)]
     public void VerifyLocateSafeReductionIndexNone(int messageCount, int targetCount, int? thresholdCount = null)
     {
-        // Shape of history doesn't matter since reduction is not expected
+        // Arrange: Shape of history doesn't matter since reduction is not expected
         ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateHistoryWithUserInput(messageCount)];
 
+        // Act
         int reductionIndex = sourceHistory.LocateSafeReductionIndex(targetCount, thresholdCount);
 
+        // Assert
         Assert.Equal(0, reductionIndex);
     }
 
@@ -146,11 +162,13 @@ public class ChatHistoryReducerExtensionsTests
     [InlineData(1000, 500, 499)]
     public void VerifyLocateSafeReductionIndexFound(int messageCount, int targetCount, int? thresholdCount = null)
     {
-        // Generate history with only assistant messages
+        // Arrange: Generate history with only assistant messages
         ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateSimpleHistory(messageCount)];
 
+        // Act
         int reductionIndex = sourceHistory.LocateSafeReductionIndex(targetCount, thresholdCount);
 
+        // Assert
         Assert.True(reductionIndex > 0);
         Assert.Equal(targetCount, messageCount - reductionIndex);
     }
@@ -170,17 +188,20 @@ public class ChatHistoryReducerExtensionsTests
     [InlineData(1000, 500, 499)]
     public void VerifyLocateSafeReductionIndexFoundWithUser(int messageCount, int targetCount, int? thresholdCount = null)
     {
-        // Generate history with alternating user and assistant messages
+        // Arrange: Generate history with alternating user and assistant messages
         ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateHistoryWithUserInput(messageCount)];
 
+        // Act
         int reductionIndex = sourceHistory.LocateSafeReductionIndex(targetCount, thresholdCount);
 
+        // Assert
         Assert.True(reductionIndex > 0);
 
-        // The reduction length should align with a user message, if threshold is specified
+        // Act: The reduction length should align with a user message, if threshold is specified
         bool hasThreshold = thresholdCount > 0;
         int expectedCount = targetCount + (hasThreshold && sourceHistory[^targetCount].Role != AuthorRole.User ? 1 : 0);
 
+        // Assert
         Assert.Equal(expectedCount, messageCount - reductionIndex);
     }
 
@@ -201,14 +222,16 @@ public class ChatHistoryReducerExtensionsTests
     [InlineData(9)]
     public void VerifyLocateSafeReductionIndexWithFunctionContent(int targetCount, int? thresholdCount = null)
     {
-        // Generate a history with function call on index 5 and 9 and
+        // Arrange: Generate a history with function call on index 5 and 9 and
         // function result on index 6 and 10 (total length: 14)
         ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateHistoryWithFunctionContent()];
 
         ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
+        // Act
         int reductionIndex = sourceHistory.LocateSafeReductionIndex(targetCount, thresholdCount);
 
+        // Assert
         Assert.True(reductionIndex > 0);
 
         // The reduction length avoid splitting function call and result, regardless of threshold
@@ -216,7 +239,7 @@ public class ChatHistoryReducerExtensionsTests
 
         if (sourceHistory[sourceHistory.Count - targetCount].Items.Any(i => i is FunctionCallContent))
         {
-            expectedCount += 1;
+            expectedCount++;
         }
         else if (sourceHistory[sourceHistory.Count - targetCount].Items.Any(i => i is FunctionResultContent))
         {

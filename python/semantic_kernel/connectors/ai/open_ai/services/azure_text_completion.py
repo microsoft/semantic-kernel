@@ -70,6 +70,24 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         if not azure_openai_settings.text_deployment_name:
             raise ServiceInitializationError("The Azure Text deployment name is required.")
 
+        # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
+        # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
+        if (
+            azure_openai_settings.api_key is None
+            and ad_token_provider is None
+            and azure_openai_settings.token_endpoint
+            and ad_token is None
+            and async_client is None
+        ):
+            ad_token = azure_openai_settings.get_azure_openai_auth_token(
+                token_endpoint=azure_openai_settings.token_endpoint
+            )
+
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider and not async_client:
+            raise ServiceInitializationError(
+                "Please provide either api_key, ad_token, ad_token_provider, or a custom client."
+            )
+
         super().__init__(
             deployment_name=azure_openai_settings.text_deployment_name,
             endpoint=azure_openai_settings.endpoint,

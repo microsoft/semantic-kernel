@@ -14,7 +14,7 @@ public sealed class QdrantVectorStoreOptions
     public bool HasNamedVectors { get; set; } = false;
 
     /// <summary>
-    /// An optional factory to use for constructing <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> instances, if custom options are required.
+    /// An optional factory to use for constructing <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
     /// </summary>
     public IQdrantVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
 }

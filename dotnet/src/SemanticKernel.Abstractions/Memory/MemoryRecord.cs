@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -18,7 +17,6 @@ public class MemoryRecord : DataEntryBase
     /// Source content embeddings.
     /// </summary>
     [JsonPropertyName("embedding")]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Embedding { get; }
 
     /// <summary>

@@ -1,17 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 import pytest
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 
 def test_default_anthropic_chat_prompt_execution_settings():
     settings = AnthropicChatPromptExecutionSettings()
     assert settings.temperature is None
     assert settings.top_p is None
-    assert settings.max_tokens is None
+    assert settings.max_tokens == 1024
     assert settings.messages is None
 
 
@@ -34,7 +37,7 @@ def test_anthropic_chat_prompt_execution_settings_from_default_completion_config
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature is None
     assert chat_settings.top_p is None
-    assert chat_settings.max_tokens is None
+    assert chat_settings.max_tokens == 1024
 
 
 def test_anthropic_chat_prompt_execution_settings_from_openai_prompt_execution_settings():
@@ -111,16 +114,16 @@ def test_create_options():
     assert options["max_tokens"] == 128
 
 
-def test_create_options_with_function_choice_behavior():
-    with pytest.raises(NotImplementedError):
+def test_tool_choice_none():
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="Tool choice 'none' is not supported by Anthropic."):
         AnthropicChatPromptExecutionSettings(
             service_id="test_service",
-            function_choice_behavior="auto",
             extension_data={
                 "temperature": 0.5,
                 "top_p": 0.5,
                 "max_tokens": 128,
-                "tools": [{}],
+                "tool_choice": {"type": "none"},
                 "messages": [{"role": "system", "content": "Hello"}],
             },
+            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke(),
         )

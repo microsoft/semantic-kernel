@@ -313,6 +313,59 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    {
+        // Arrange
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<string>>
+        {
+            PrefixCollectionNameToKeyNames = true,
+            VectorStoreRecordDefinition = fixture.BasicVectorStoreRecordDefinition
+        };
+        var sut = new RedisHashSetVectorStoreRecordCollection<VectorStoreGenericDataModel<string>>(fixture.Database, TestCollectionName, options);
+
+        // Act
+        var baseSetGetResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true });
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>("GenericMapper-1")
+        {
+            Data =
+            {
+                { "HotelName", "Generic Mapper Hotel" },
+                { "HotelCode", 40 },
+                { "ParkingIncluded", true },
+                { "Rating", 3.6d },
+                { "Description", "This is a generic mapper hotel" },
+            },
+            Vectors =
+            {
+                { "DescriptionEmbedding", new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }) }
+            }
+        });
+        var localGetResult = await sut.GetAsync("GenericMapper-1", new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.NotNull(baseSetGetResult);
+        Assert.Equal("BaseSet-1", baseSetGetResult.Key);
+        Assert.Equal("My Hotel 1", baseSetGetResult.Data["HotelName"]);
+        Assert.Equal(1, baseSetGetResult.Data["HotelCode"]);
+        Assert.True((bool)baseSetGetResult.Data["ParkingIncluded"]!);
+        Assert.Equal(3.6d, baseSetGetResult.Data["Rating"]);
+        Assert.Equal("This is a great hotel.", baseSetGetResult.Data["Description"]);
+        Assert.NotNull(baseSetGetResult.Vectors["DescriptionEmbedding"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)baseSetGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+
+        Assert.Equal("GenericMapper-1", upsertResult);
+
+        Assert.NotNull(localGetResult);
+        Assert.Equal("GenericMapper-1", localGetResult.Key);
+        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
+        Assert.Equal(40, localGetResult.Data["HotelCode"]);
+        Assert.True((bool)localGetResult.Data["ParkingIncluded"]!);
+        Assert.Equal(3.6d, localGetResult.Data["Rating"]);
+        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+    }
+
     private static BasicHotel CreateTestHotel(string hotelId, int hotelCode)
     {
         var record = new BasicHotel

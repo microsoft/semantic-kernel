@@ -13,11 +13,11 @@ public class YamlPromptTest
 {
     [Theory]
     [InlineData(false, "./CrossLanguage/Data/SimplePromptTest.yaml", "./CrossLanguage/Data/SimplePromptTest.json")]
-    [InlineData(true, "./CrossLanguage/Data/SimplePromptTest.yaml", "./CrossLanguage/Data/SimplePromptTest.json")]
+    [InlineData(true, "./CrossLanguage/Data/SimplePromptTest.yaml", "./CrossLanguage/Data/SimplePromptStreamingTest.json")]
     [InlineData(false, "./CrossLanguage/Data/PromptWithChatRolesTest-HB.yaml", "./CrossLanguage/Data/PromptWithChatRolesTest.json")]
-    [InlineData(true, "./CrossLanguage/Data/PromptWithChatRolesTest-HB.yaml", "./CrossLanguage/Data/PromptWithChatRolesTest.json")]
+    [InlineData(true, "./CrossLanguage/Data/PromptWithChatRolesTest-HB.yaml", "./CrossLanguage/Data/PromptWithChatRolesStreamingTest.json")]
     [InlineData(false, "./CrossLanguage/Data/PromptWithSimpleVariableTest.yaml", "./CrossLanguage/Data/PromptWithSimpleVariableTest.json")]
-    [InlineData(true, "./CrossLanguage/Data/PromptWithSimpleVariableTest.yaml", "./CrossLanguage/Data/PromptWithSimpleVariableTest.json")]
+    [InlineData(true, "./CrossLanguage/Data/PromptWithSimpleVariableTest.yaml", "./CrossLanguage/Data/PromptWithSimpleVariableStreamingTest.json")]
     public async Task YamlPromptAsync(bool isStreaming, string promptPath, string expectedResultPath)
     {
         using var kernelProvider = new KernelRequestTracer();

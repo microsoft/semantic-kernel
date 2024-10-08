@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
@@ -22,8 +19,10 @@ public class BroadcastQueueTests
     [Fact]
     public void VerifyBroadcastQueueDefaultConfiguration()
     {
+        // Arrange
         BroadcastQueue queue = new();
 
+        // Assert
         Assert.True(queue.BlockDuration.TotalSeconds > 0);
     }
 
@@ -33,32 +32,40 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueReceiveAsync()
     {
-        // Create queue and channel.
+        // Arrange: Create queue and channel.
         BroadcastQueue queue =
             new()
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-        TestChannel channel = new();
+        MockChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
-        // Verify initial state
+        // Act: Verify initial state
         await VerifyReceivingStateAsync(receiveCount: 0, queue, channel, "test");
+
+        // Assert
         Assert.Empty(channel.ReceivedMessages);
 
-        // Verify empty invocation with no channels.
+        // Act: Verify empty invocation with no channels.
         queue.Enqueue([], []);
         await VerifyReceivingStateAsync(receiveCount: 0, queue, channel, "test");
+
+        // Assert
         Assert.Empty(channel.ReceivedMessages);
 
-        // Verify empty invocation of channel.
+        // Act: Verify empty invocation of channel.
         queue.Enqueue([reference], []);
         await VerifyReceivingStateAsync(receiveCount: 1, queue, channel, "test");
+
+        // Assert
         Assert.Empty(channel.ReceivedMessages);
 
-        // Verify expected invocation of channel.
+        // Act: Verify expected invocation of channel.
         queue.Enqueue([reference], [new ChatMessageContent(AuthorRole.User, "hi")]);
         await VerifyReceivingStateAsync(receiveCount: 2, queue, channel, "test");
+
+        // Assert
         Assert.NotEmpty(channel.ReceivedMessages);
     }
 
@@ -68,18 +75,19 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueFailureAsync()
     {
-        // Create queue and channel.
+        // Arrange: Create queue and channel.
         BroadcastQueue queue =
             new()
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-        BadChannel channel = new();
+        MockChannel channel = new() { MockException = new InvalidOperationException("Test") };
         ChannelReference reference = new(channel, "test");
 
-        // Verify expected invocation of channel.
+        // Act: Verify expected invocation of channel.
         queue.Enqueue([reference], [new ChatMessageContent(AuthorRole.User, "hi")]);
 
+        // Assert
         await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
         await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
         await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
@@ -91,16 +99,16 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueConcurrencyAsync()
     {
-        // Create queue and channel.
+        // Arrange: Create queue and channel.
         BroadcastQueue queue =
             new()
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-        TestChannel channel = new();
+        MockChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
-        // Enqueue multiple channels
+        // Act: Enqueue multiple channels
         for (int count = 0; count < 10; ++count)
         {
             queue.Enqueue([new(channel, $"test{count}")], [new ChatMessageContent(AuthorRole.User, "hi")]);
@@ -112,73 +120,14 @@ public class BroadcastQueueTests
             await queue.EnsureSynchronizedAsync(new ChannelReference(channel, $"test{count}"));
         }
 
-        // Verify result
+        // Assert
         Assert.NotEmpty(channel.ReceivedMessages);
         Assert.Equal(10, channel.ReceivedMessages.Count);
     }
 
-    private static async Task VerifyReceivingStateAsync(int receiveCount, BroadcastQueue queue, TestChannel channel, string hash)
+    private static async Task VerifyReceivingStateAsync(int receiveCount, BroadcastQueue queue, MockChannel channel, string hash)
     {
         await queue.EnsureSynchronizedAsync(new ChannelReference(channel, hash));
         Assert.Equal(receiveCount, channel.ReceiveCount);
-    }
-
-    private sealed class TestChannel : AgentChannel
-    {
-        public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.3);
-
-        public int ReceiveCount { get; private set; }
-
-        public List<ChatMessageContent> ReceivedMessages { get; } = [];
-
-        protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
-        {
-            this.ReceivedMessages.AddRange(history);
-            this.ReceiveCount++;
-
-            await Task.Delay(this.ReceiveDuration, cancellationToken);
-        }
-
-        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    private sealed class BadChannel : AgentChannel
-    {
-        public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.1);
-
-        protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
-        {
-            await Task.Delay(this.ReceiveDuration, cancellationToken);
-
-            throw new InvalidOperationException("Test");
-        }
-
-        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

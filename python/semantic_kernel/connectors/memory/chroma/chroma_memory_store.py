@@ -181,7 +181,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         # upsert is checking collection existence
         return [await self.upsert(collection_name, record) for record in records]
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
         Args:
@@ -200,7 +200,12 @@ class ChromaMemoryStore(MemoryStoreBase):
                 f"Record with key '{key}' does not exist in collection '{collection_name}'"
             ) from exc
 
-    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
+    async def get_batch(
+        self, 
+        collection_name: str, 
+        keys: list[str], 
+        with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Args:

@@ -37,7 +37,7 @@ async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory
             contents.append(content)
         streaming_chat_message = reduce(lambda first, second: first + second, contents)
         print(f"# {content.role} - {content_name or '*'}: '{streaming_chat_message}'")
-        chat.add_message(content)
+        chat.add_message(streaming_chat_message)
     else:
         async for content in agent.invoke(chat):
             print(f"# {content.role} - {content.name or '*'}: '{content.content}'")

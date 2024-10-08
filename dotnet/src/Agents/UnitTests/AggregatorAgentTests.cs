@@ -21,6 +21,7 @@ public class AggregatorAgentTests
     [InlineData(AggregatorMode.Flat, 2)]
     public async Task VerifyAggregatorAgentUsageAsync(AggregatorMode mode, int modeOffset)
     {
+        // Arrange
         Agent agent1 = CreateMockAgent();
         Agent agent2 = CreateMockAgent();
         Agent agent3 = CreateMockAgent();
@@ -44,38 +45,57 @@ public class AggregatorAgentTests
         // Add message to outer chat (no agent has joined)
         uberChat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test uber"));
 
+        // Act
         var messages = await uberChat.GetChatMessagesAsync().ToArrayAsync();
+        // Assert
         Assert.Single(messages);
 
+        // Act
         messages = await uberChat.GetChatMessagesAsync(uberAgent).ToArrayAsync();
+        // Assert
         Assert.Empty(messages); // Agent hasn't joined chat, no broadcast
 
+        // Act
         messages = await groupChat.GetChatMessagesAsync().ToArrayAsync();
+        // Assert
         Assert.Empty(messages); // Agent hasn't joined chat, no broadcast
 
-        // Add message to inner chat (not visible to parent)
+        // Arrange: Add message to inner chat (not visible to parent)
         groupChat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test inner"));
 
+        // Act
         messages = await uberChat.GetChatMessagesAsync().ToArrayAsync();
+        // Assert
         Assert.Single(messages);
 
+        // Act
         messages = await uberChat.GetChatMessagesAsync(uberAgent).ToArrayAsync();
+        // Assert
         Assert.Empty(messages); // Agent still hasn't joined chat
 
+        // Act
         messages = await groupChat.GetChatMessagesAsync().ToArrayAsync();
+        // Assert
         Assert.Single(messages);
 
-        // Invoke outer chat (outer chat captures final inner message)
+        // Act: Invoke outer chat (outer chat captures final inner message)
         messages = await uberChat.InvokeAsync(uberAgent).ToArrayAsync();
+        // Assert
         Assert.Equal(1 + modeOffset, messages.Length); // New messages generated from inner chat
 
+        // Act
         messages = await uberChat.GetChatMessagesAsync().ToArrayAsync();
+        // Assert
         Assert.Equal(2 + modeOffset, messages.Length); // Total messages on uber chat
 
+        // Act
         messages = await groupChat.GetChatMessagesAsync().ToArrayAsync();
+        // Assert
         Assert.Equal(5, messages.Length); // Total messages on inner chat once synchronized
 
+        // Act
         messages = await uberChat.GetChatMessagesAsync(uberAgent).ToArrayAsync();
+        // Assert
         Assert.Equal(5, messages.Length); // Total messages on inner chat once synchronized (agent equivalent)
     }
 

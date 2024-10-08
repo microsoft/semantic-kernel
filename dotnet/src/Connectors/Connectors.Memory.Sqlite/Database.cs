@@ -146,6 +146,41 @@ internal sealed class Database
         return null;
     }
 
+    public async IAsyncEnumerable<DatabaseEntry> ReadBatchAsync(SqliteConnection conn,
+    string collectionName,
+    string[] keys,
+    bool withEmbeddings = false,
+    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        using SqliteCommand cmd = conn.CreateCommand();
+        var keyParameters = keys.Select((key, index) => $"@key{index}");
+        var parameters = string.Join(", ", keyParameters);
+
+        var selectFieldQuery = withEmbeddings ? "*" : "key, metadata, timestamp";
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+             SELECT {selectFieldQuery} FROM {TableName}
+             WHERE collection=@collection
+                AND key IN ({parameters})";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+        cmd.Parameters.Add(new SqliteParameter("@collection", collectionName));
+        for (int i = 0; i < keys.Length; i++)
+        {
+            cmd.Parameters.Add(new SqliteParameter($"@key{i}", keys[i]));
+        }
+
+        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            string key = dataReader.GetString("key");
+            string metadata = dataReader.GetString("metadata");
+            string embedding = withEmbeddings ? dataReader.GetString("embedding") : string.Empty;
+            string timestamp = dataReader.GetString("timestamp");
+            yield return new DatabaseEntry() { Key = key, MetadataString = metadata, EmbeddingString = embedding, Timestamp = timestamp };
+        }
+    }
+
     public Task DeleteCollectionAsync(SqliteConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();

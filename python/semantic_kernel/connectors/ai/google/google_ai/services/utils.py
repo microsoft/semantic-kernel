@@ -16,6 +16,7 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
     format_function_result_content_name_to_gemini_function_name,
     format_kernel_function_fully_qualified_name_to_gemini_function_name,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -125,7 +126,7 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
                         name=gemini_function_name,
                         response={
                             "name": gemini_function_name,
-                            "content": item.result,
+                            "content": str(item.result),
                         },
                     )
                 )
@@ -149,10 +150,12 @@ def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelF
 
 def update_settings_from_function_choice_configuration(
     function_choice_configuration: FunctionCallChoiceConfiguration,
-    settings: GoogleAIChatPromptExecutionSettings,
+    settings: PromptExecutionSettings,
     type: FunctionChoiceType,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
+    assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
+
     if function_choice_configuration.available_functions:
         settings.tool_config = {
             "function_calling_config": {

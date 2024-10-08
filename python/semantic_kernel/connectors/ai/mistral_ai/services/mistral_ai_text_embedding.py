@@ -6,6 +6,7 @@ if sys.version_info >= (3, 12):
     from typing import Any, override  # pragma: no cover
 else:
     from typing_extensions import Any, override  # pragma: no cover
+
 import logging
 
 from mistralai.async_client import MistralAsyncClient
@@ -14,6 +15,7 @@ from numpy import array, ndarray
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_base import MistralAIBase
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
@@ -23,19 +25,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class MistralAITextEmbedding(EmbeddingGeneratorBase):
+class MistralAITextEmbedding(MistralAIBase, EmbeddingGeneratorBase):
     """Mistral AI Inference Text Embedding Service."""
-
-    client: MistralAsyncClient
 
     def __init__(
         self,
         ai_model_id: str | None = None,
         api_key: str | None = None,
         service_id: str | None = None,
+        async_client: MistralAsyncClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        client: MistralAsyncClient | None = None,
     ) -> None:
         """Initialize the Mistral AI Text Embedding service.
 
@@ -45,12 +45,12 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         - MISTRALAI_EMBEDDING_MODEL_ID
 
         Args:
-            ai_model_id: (str | None): A string that is used to identify the model such as the model name. 
-            api_key (str | None): The API key for the Mistral AI service deployment. 
-            service_id (str | None): Service ID for the embedding completion service. 
-            env_file_path (str | None): The path to the environment file. 
-            env_file_encoding (str | None): The encoding of the environment file. 
-            client (MistralAsyncClient | None): The Mistral AI client to use. 
+            ai_model_id: (str | None): A string that is used to identify the model such as the model name.
+            api_key (str | None): The API key for the Mistral AI service deployment.
+            service_id (str | None): Service ID for the embedding completion service.
+            async_client (MistralAsyncClient | None): The Mistral AI client to use.
+            env_file_path (str | None): The path to the environment file.
+            env_file_encoding (str | None): The encoding of the environment file.
 
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
@@ -68,15 +68,13 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         if not mistralai_settings.embedding_model_id:
             raise ServiceInitializationError("The MistralAI embedding model ID is required.")
 
-        if not client:
-            client = MistralAsyncClient(
-                api_key=mistralai_settings.api_key.get_secret_value()
-            )
+        if not async_client:
+            async_client = MistralAsyncClient(api_key=mistralai_settings.api_key.get_secret_value())
 
         super().__init__(
             service_id=service_id or mistralai_settings.embedding_model_id,
             ai_model_id=ai_model_id or mistralai_settings.embedding_model_id,
-            client=client,
+            async_client=async_client,
         )
 
     @override
@@ -98,10 +96,8 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
     ) -> Any:
         """Generate embeddings from the Mistral AI service."""
         try:
-
-            embedding_response: EmbeddingResponse = await self.client.embeddings(
-                model=self.ai_model_id,
-                input=texts
+            embedding_response: EmbeddingResponse = await self.async_client.embeddings(
+                model=self.ai_model_id, input=texts
             )
         except Exception as ex:
             raise ServiceResponseException(
