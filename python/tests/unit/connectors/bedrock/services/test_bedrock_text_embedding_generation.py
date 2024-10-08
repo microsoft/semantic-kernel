@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import ANY, patch
+from unittest.mock import ANY, Mock, patch
 
+import boto3
 import pytest
 
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import (
@@ -18,7 +19,8 @@ from tests.unit.connectors.bedrock.conftest import MockBedrockClient, MockBedroc
 # region init
 
 
-def test_bedrock_text_embedding_init(bedrock_unit_test_env) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_text_embedding_init(mock_client, bedrock_unit_test_env) -> None:
     """Test initialization of Amazon Bedrock Text Embedding service"""
     bedrock_text_embedding = BedrockTextEmbedding()
 
@@ -29,7 +31,8 @@ def test_bedrock_text_embedding_init(bedrock_unit_test_env) -> None:
     assert bedrock_text_embedding.bedrock_runtime_client is not None
 
 
-def test_bedrock_text_embedding_init_model_id_override(bedrock_unit_test_env, model_id) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_text_embedding_init_model_id_override(mock_client, bedrock_unit_test_env, model_id) -> None:
     """Test initialization of Amazon Bedrock Text Embedding service"""
     bedrock_text_embedding = BedrockTextEmbedding(model_id=model_id)
 
@@ -40,7 +43,8 @@ def test_bedrock_text_embedding_init_model_id_override(bedrock_unit_test_env, mo
     assert bedrock_text_embedding.bedrock_runtime_client is not None
 
 
-def test_bedrock_text_embedding_init_custom_service_id(bedrock_unit_test_env, service_id) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_text_embedding_init_custom_service_id(mock_client, bedrock_unit_test_env, service_id) -> None:
     """Test initialization of Amazon Bedrock Text Embedding service"""
     bedrock_text_embedding = BedrockTextEmbedding(service_id=service_id)
 
@@ -61,7 +65,8 @@ def test_bedrock_text_embedding_init_custom_clients(bedrock_unit_test_env) -> No
     assert isinstance(bedrock_text_embedding.bedrock_runtime_client, MockBedrockRuntimeClient)
 
 
-def test_bedrock_text_embedding_init_custom_client(bedrock_unit_test_env) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_text_embedding_init_custom_client(mock_client, bedrock_unit_test_env) -> None:
     """Test initialization of Amazon Bedrock Text Embedding service"""
     bedrock_text_embedding = BedrockTextEmbedding(
         client=MockBedrockClient(),
@@ -71,7 +76,8 @@ def test_bedrock_text_embedding_init_custom_client(bedrock_unit_test_env) -> Non
     assert bedrock_text_embedding.bedrock_runtime_client is not None
 
 
-def test_bedrock_text_embedding_init_custom_runtime_client(bedrock_unit_test_env) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_text_embedding_init_custom_runtime_client(mock_client, bedrock_unit_test_env) -> None:
     """Test initialization of Amazon Bedrock Text Embedding service"""
     bedrock_text_embedding = BedrockTextEmbedding(
         runtime_client=MockBedrockRuntimeClient(),
@@ -96,7 +102,8 @@ def test_bedrock_text_embedding_client_init_invalid_settings(bedrock_unit_test_e
         BedrockTextEmbedding(model_id=123)  # Model ID must be a string
 
 
-def test_prompt_execution_settings_class(bedrock_unit_test_env) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_prompt_execution_settings_class(mock_client, bedrock_unit_test_env) -> None:
     """Test getting prompt execution settings class"""
     bedrock_completion_client = BedrockTextEmbedding()
     assert bedrock_completion_client.get_prompt_execution_settings_class() == BedrockEmbeddingPromptExecutionSettings

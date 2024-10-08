@@ -2,8 +2,9 @@
 
 
 from functools import reduce
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+import boto3
 import pytest
 
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
@@ -25,7 +26,8 @@ from tests.unit.connectors.bedrock.conftest import MockBedrockClient, MockBedroc
 # region init
 
 
-def test_bedrock_chat_completion_init(bedrock_unit_test_env) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_chat_completion_init(mock_client, bedrock_unit_test_env) -> None:
     """Test initialization of Amazon Bedrock Chat Completion service"""
     bedrock_chat_completion = BedrockChatCompletion()
 
@@ -36,7 +38,8 @@ def test_bedrock_chat_completion_init(bedrock_unit_test_env) -> None:
     assert bedrock_chat_completion.bedrock_runtime_client is not None
 
 
-def test_bedrock_chat_completion_init_model_id_override(bedrock_unit_test_env, model_id) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_chat_completion_init_model_id_override(mock_client, bedrock_unit_test_env, model_id) -> None:
     """Test initialization of Amazon Bedrock Chat Completion service"""
     bedrock_chat_completion = BedrockChatCompletion(model_id=model_id)
 
@@ -47,7 +50,8 @@ def test_bedrock_chat_completion_init_model_id_override(bedrock_unit_test_env, m
     assert bedrock_chat_completion.bedrock_runtime_client is not None
 
 
-def test_bedrock_chat_completion_init_custom_service_id(bedrock_unit_test_env, service_id) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_chat_completion_init_custom_service_id(mock_client, bedrock_unit_test_env, service_id) -> None:
     """Test initialization of Amazon Bedrock Chat Completion service"""
     bedrock_chat_completion = BedrockChatCompletion(service_id=service_id)
 
@@ -68,7 +72,8 @@ def test_bedrock_chat_completion_init_custom_clients(bedrock_unit_test_env) -> N
     assert isinstance(bedrock_chat_completion.bedrock_runtime_client, MockBedrockRuntimeClient)
 
 
-def test_bedrock_chat_completion_init_custom_client(bedrock_unit_test_env) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_chat_completion_init_custom_client(mock_client, bedrock_unit_test_env) -> None:
     """Test initialization of Amazon Bedrock Chat Completion service"""
     bedrock_chat_completion = BedrockChatCompletion(
         client=MockBedrockClient(),
@@ -78,7 +83,8 @@ def test_bedrock_chat_completion_init_custom_client(bedrock_unit_test_env) -> No
     assert bedrock_chat_completion.bedrock_runtime_client is not None
 
 
-def test_bedrock_chat_completion_init_custom_runtime_client(bedrock_unit_test_env) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_bedrock_chat_completion_init_custom_runtime_client(mock_client, bedrock_unit_test_env) -> None:
     """Test initialization of Amazon Bedrock Chat Completion service"""
     bedrock_chat_completion = BedrockChatCompletion(
         runtime_client=MockBedrockRuntimeClient(),
@@ -103,7 +109,8 @@ def test_bedrock_chat_completion_client_init_invalid_settings(bedrock_unit_test_
         BedrockChatCompletion(model_id=123)  # Model ID must be a string
 
 
-def test_prompt_execution_settings_class(bedrock_unit_test_env) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_prompt_execution_settings_class(mock_client, bedrock_unit_test_env) -> None:
     """Test getting prompt execution settings class"""
     bedrock_completion_client = BedrockChatCompletion()
     assert bedrock_completion_client.get_prompt_execution_settings_class() == BedrockChatPromptExecutionSettings
@@ -114,7 +121,8 @@ def test_prompt_execution_settings_class(bedrock_unit_test_env) -> None:
 # region private methods
 
 
-def test_prepare_chat_history_for_request(bedrock_unit_test_env, chat_history) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_prepare_chat_history_for_request(mock_client, bedrock_unit_test_env, chat_history) -> None:
     """Test preparing chat history for request"""
     bedrock_chat_completion = BedrockChatCompletion()
     parsed_chat_history = bedrock_chat_completion._prepare_chat_history_for_request(chat_history)
@@ -124,7 +132,8 @@ def test_prepare_chat_history_for_request(bedrock_unit_test_env, chat_history) -
     assert all([item["role"] in ["user", "assistant"] for item in parsed_chat_history])
 
 
-def test_prepare_system_message_for_request(bedrock_unit_test_env, chat_history) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_prepare_system_message_for_request(mock_client, bedrock_unit_test_env, chat_history) -> None:
     """Test preparing system message for request"""
     bedrock_chat_completion = BedrockChatCompletion()
     parsed_system_message = bedrock_chat_completion._prepare_system_messages_for_request(chat_history)
@@ -144,7 +153,8 @@ def test_prepare_system_message_for_request(bedrock_unit_test_env, chat_history)
         "mistral.ai",
     ],
 )
-def test_prepare_settings_for_request(model_id, chat_history) -> None:
+@patch.object(boto3, "client", return_value=Mock())
+def test_prepare_settings_for_request(mock_client, model_id, chat_history) -> None:
     """Test preparing settings for request"""
     bedrock_chat_completion = BedrockChatCompletion(model_id=model_id)
     settings = BedrockChatPromptExecutionSettings()
@@ -190,6 +200,7 @@ async def test_bedrock_chat_completion(
         bedrock_chat_completion = BedrockChatCompletion(
             model_id=model_id,
             runtime_client=MockBedrockRuntimeClient(),
+            client=MockBedrockClient(),
         )
 
         # Act
