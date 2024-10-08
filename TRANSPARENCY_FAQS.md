@@ -5,7 +5,6 @@ Microsoft Semantic Kernel is a lightweight, open-source development kit designed
 
 It serves as efficient middleware that supports developers in building AI agents, automating business processes, and connecting their code with the latest AI technologies. Input to this system can range from text data to structured commands, and it produces various outputs, including natural language responses, function calls, and other actionable data.
 
-
 ## What can Microsoft Semantic Kernel do?
 Building upon its foundational capabilities, Microsoft Semantic Kernel facilitates several functionalities:
 -	AI Agent Development: Users can create agents capable of performing specific tasks or interactions based on user input.
@@ -14,7 +13,6 @@ Building upon its foundational capabilities, Microsoft Semantic Kernel facilitat
 -	Multi-Modal Support: The kernel easily expands existing applications to support modalities like voice and video through its architecture
 -   Filtering: Developers can use filters to monitor the application, control function invocation or implement Responsible AI.
 -   Prompt Templates: Developer can define their prompts using various template languages including Handlebars and Liquid or the built-in Semantic Kernel format.
-
 
 ## What is/are Microsoft Semantic Kernel’s intended use(s)?
 The intended uses of Microsoft Semantic Kernel include:
@@ -51,7 +49,6 @@ Operational factors and settings for optimal use include:
 -	Real-Time Monitoring: System behavior should be regularly monitored to detect unexpected patterns or malfunctions promptly.
 -	Incorporate RAI and safety tools like Prompt Shield with filters to ensure responsible use.
 
-
 ### Plugins and Extensibility
 
 #### What are plugins and how does Microsoft Semantic Kernel use them?
@@ -68,11 +65,13 @@ Potential issues that may arise include:
 -	Invocation Failures: Incorrectly triggered plugins can result in unexpected outputs.
 -	Output Misinformation: Errors in plugin handling can lead to generation of inaccurate or misleading results.
 -	Dependency Compatibility: Changes in external dependencies may affect plugin functionality. To prevent these issues, users are advised to keep plugins updated and to rigorously test their implementations for stability and accuracy
+
 #### When working with AI, the developer can enable content moderation in the AI platforms used, and has complete control on the prompts being used, including the ability to define responsible boundaries and guidelines. For instance:
 -	When using Azure OpenAI, by default the service includes a content filtering system that works alongside core models. This system works by running both the prompt and completion through an ensemble of classification models aimed at detecting and preventing the output of harmful content. In addition to the content filtering system, the Azure OpenAI Service performs monitoring to detect content and/or behaviors that suggest use of the service in a manner that might violate applicable product terms. The filter configuration can be adjusted, for example to block also "low severity level" content. See here for more information.
 -	The developer can integrate Azure AI Content Safety to detect harmful user-generated and AI-generated content, including text and images. The service includes an interactive Studio online tool with templates and customized workflows. See here for more information.
 -	When using OpenAI the developer can integrate OpenAI Moderation to identify problematic content and take action, for instance by filtering it. See here for more information.
 -	Other AI providers provide content moderation and moderation APIs, which developers can integrate with Node Engine.
+
 #### If a sequence of components are run, additional risks/failures may arise when using non-deterministic behavior. To mitigate this, developers can:
 
 Implement safety measures and bounds on each component to prevent undesired outcomes.
