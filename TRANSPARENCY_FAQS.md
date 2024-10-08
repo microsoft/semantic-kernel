@@ -73,7 +73,6 @@ Potential issues that may arise include:
 -	Other AI providers provide content moderation and moderation APIs, which developers can integrate with Node Engine.
 
 #### If a sequence of components are run, additional risks/failures may arise when using non-deterministic behavior. To mitigate this, developers can:
-
 Implement safety measures and bounds on each component to prevent undesired outcomes.
 Add output to the user to maintain control and awareness of the system's state.
 In multi-agent scenarios, build in places that prompt the user for a response, ensuring user involvement and reducing the likelihood of undesired results due to multi-agent looping.
