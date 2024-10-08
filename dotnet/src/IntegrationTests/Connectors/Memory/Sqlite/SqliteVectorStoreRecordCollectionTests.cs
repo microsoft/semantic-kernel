@@ -278,10 +278,11 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])).ToListAsync();
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]));
+        var results = await searchResults.Results.ToListAsync();
 
         // Assert
-        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+        var ids = results.Select(l => l.Record.HotelId).ToList();
 
         Assert.Equal("key1", ids[0]);
         Assert.Equal("key2", ids[1]);
@@ -289,7 +290,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         Assert.DoesNotContain("key4", ids);
 
-        Assert.Equal(0, searchResults.First(l => l.Record.HotelId == "key1").Score);
+        Assert.Equal(0, results.First(l => l.Record.HotelId == "key1").Score);
     }
 
     [Fact(Skip = SkipReason)]
@@ -312,10 +313,12 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         {
             Top = 2,
             Skip = 2
-        }).ToListAsync();
+        });
+
+        var results = await searchResults.Results.ToListAsync();
 
         // Assert
-        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+        var ids = results.Select(l => l.Record.HotelId).ToList();
 
         Assert.Equal("key3", ids[0]);
         Assert.Equal("key4", ids[1]);
@@ -343,10 +346,12 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
             Filter = new VectorSearchFilter().EqualTo(nameof(SqliteHotel<string>.HotelName), "My Hotel key2")
-        }).ToListAsync();
+        });
+
+        var results = await searchResults.Results.ToListAsync();
 
         // Assert
-        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+        var ids = results.Select(l => l.Record.HotelId).ToList();
 
         Assert.Equal("key2", ids[0]);
 

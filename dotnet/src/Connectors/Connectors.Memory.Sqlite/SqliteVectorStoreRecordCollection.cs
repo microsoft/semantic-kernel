@@ -167,10 +167,8 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
-        const string OperationName = "VectorizedSearch";
-        const string DistancePropertyName = "distance";
         const string LimitPropertyName = "k";
 
         Verify.NotNull(vector);
@@ -211,39 +209,12 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
             conditions.AddRange(filterConditions);
         }
 
-        using var command = this._commandBuilder.BuildSelectLeftJoinCommand(
-            this._vectorTableName,
-            this._dataTableName,
-            this._propertyReader.KeyPropertyStoragePropertyName,
-            this._propertyReader.VectorPropertyStoragePropertyNames.Concat([DistancePropertyName]).ToList(),
-            this._dataTableStoragePropertyNames.Value,
+        var vectorSearchResults = new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(
             conditions,
-            DistancePropertyName);
+            searchOptions,
+            cancellationToken));
 
-        List<VectorStoreRecordProperty> properties =
-        [
-            this._propertyReader.KeyProperty,
-            .. this._propertyReader.DataProperties,
-            .. this._propertyReader.VectorProperties
-        ];
-
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-
-        for (var recordCounter = 0; await reader.ReadAsync(cancellationToken).ConfigureAwait(false); recordCounter++)
-        {
-            if (recordCounter >= searchOptions.Skip)
-            {
-                var score = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue<double>(reader, DistancePropertyName);
-
-                var record = this.GetAndMapRecord(
-                    OperationName,
-                    reader,
-                    properties,
-                    searchOptions.IncludeVectors);
-
-                yield return new VectorSearchResult<TRecord>(record, score);
-            }
-        }
+        return Task.FromResult(vectorSearchResults);
     }
 
     #region Implementation of IVectorStoreRecordCollection<ulong, TRecord>
@@ -345,6 +316,49 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     #endregion
 
     #region private
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
+        List<SqliteWhereCondition> conditions,
+        VectorSearchOptions searchOptions,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        const string OperationName = "VectorizedSearch";
+        const string DistancePropertyName = "distance";
+
+        using var command = this._commandBuilder.BuildSelectLeftJoinCommand(
+            this._vectorTableName,
+            this._dataTableName,
+            this._propertyReader.KeyPropertyStoragePropertyName,
+            this._propertyReader.VectorPropertyStoragePropertyNames.Concat([DistancePropertyName]).ToList(),
+            this._dataTableStoragePropertyNames.Value,
+            conditions,
+            DistancePropertyName);
+
+        List<VectorStoreRecordProperty> properties =
+        [
+            this._propertyReader.KeyProperty,
+            .. this._propertyReader.DataProperties,
+            .. this._propertyReader.VectorProperties
+        ];
+
+        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+        for (var recordCounter = 0; await reader.ReadAsync(cancellationToken).ConfigureAwait(false); recordCounter++)
+        {
+            if (recordCounter >= searchOptions.Skip)
+            {
+                var score = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue<double>(reader, DistancePropertyName);
+
+                var record = this.GetAndMapRecord(
+                    OperationName,
+                    reader,
+                    properties,
+                    searchOptions.IncludeVectors);
+
+                yield return new VectorSearchResult<TRecord>(record, score);
+            }
+        }
+    }
 
     private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
