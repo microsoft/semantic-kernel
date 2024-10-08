@@ -85,9 +85,6 @@ Cons:
 - SK AI connectors accept an **optional** instance of the kernel in their operation, which sends mixed signals. On one hand, it's optional, meaning AI connectors can work without it; on the other hand, the operation will fail in an AOT app if no kernel is provided.
 - In scenarios that require more than one kernel instance, where each instance may have unique JSOs, the JSOs of the kernel a function was created with will be used for the lifetime of the function. JSOs from any other kernel the function might be invoked with won't be applied, and the ones from the kernel the function was created with will be used.
 
-for a Kernel funciton a kernel funciton 
-Today Kernel funciton can be executed on any Kernel. Having 
-
 ### Ways to Provide JSON Serializer Options (JSOs) to the Kernel:
 1. Via `Kernel` constructor.
     ```csharp
