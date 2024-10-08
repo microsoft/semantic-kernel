@@ -49,7 +49,7 @@ async def main():
         kernel=_create_kernel_with_chat_completion(REVIEWER_NAME),
         name=REVIEWER_NAME,
         instructions="""
-            Your responsiblity is to review and identify how to improve user provided content.
+            Your responsibility is to review and identify how to improve user provided content.
             If the user has providing input or direction for content already provided, specify how to 
             address this input.
             Never directly perform the correction or provide example.
@@ -69,7 +69,7 @@ async def main():
         kernel=_create_kernel_with_chat_completion(COPYWRITER_NAME),
         name=COPYWRITER_NAME,
         instructions="""
-            Your sole responsiblity is to rewrite content according to review suggestions.
+            Your sole responsibility is to rewrite content according to review suggestions.
 
             - Always apply all review direction.
             - Always revise the content in its entirety without explanation.
