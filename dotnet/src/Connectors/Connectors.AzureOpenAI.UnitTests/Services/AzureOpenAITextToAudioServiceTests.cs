@@ -231,6 +231,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
 
         Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUri!.ToString());
     }
+
     public static TheoryData<string?, string?> Versions => new()
     {
         { null, "2024-08-01-preview" },
