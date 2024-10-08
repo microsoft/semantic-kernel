@@ -155,15 +155,12 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         string eventId = message.TargetEventId!;
         if (this._outputEdges!.TryGetValue(eventId, out List<KernelProcessEdge>? edges) && edges is not null)
         {
-            foreach (var edge in edges)
-            {
-                // Create the external event that will be used to start the nested process. Since this event came
-                // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
-                var nestedEvent = new KernelProcessEvent() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
+            // Create the external event that will be used to start the nested process. Since this event came
+            // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
+            var nestedEvent = new KernelProcessEvent() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
 
-                // Run the nested process completely within a single superstep.
-                await this.RunOnceAsync(nestedEvent, this._kernel).ConfigureAwait(false);
-            }
+            // Run the nested process completely within a single superstep.
+            await this.RunOnceAsync(nestedEvent, this._kernel).ConfigureAwait(false);
         }
     }
 
