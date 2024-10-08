@@ -177,7 +177,7 @@ public class KernelExtensionsCreateAddAImportPluginsTests
 
     [Theory]
     [ClassData(typeof(TestJsonSerializerOptionsForTestParameterAndReturnTypes))]
-    public async Task ItShouldCreatePlugingFromObject(JsonSerializerOptions? jsos)
+    public async Task ItShouldCreatePluginFromObject(JsonSerializerOptions? jsos)
     {
         // Arrange
         var myPlugin = new MyPlugin();
