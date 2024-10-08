@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -358,6 +359,101 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.DoesNotContain("key1", ids);
         Assert.DoesNotContain("key3", ids);
         Assert.DoesNotContain("key4", ids);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperWithNumericKeyAsync()
+    {
+        const ulong HotelId = 5;
+
+        var options = new SqliteVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<ulong>>
+        {
+            VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<ulong>()
+        };
+
+        var sut = fixture.GetCollection<VectorStoreGenericDataModel<ulong>>("GenericMapperWithNumericKey", options);
+
+        await sut.CreateCollectionAsync();
+
+        var record = CreateTestHotel(HotelId);
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<ulong>(HotelId)
+        {
+            Data =
+            {
+                { "HotelName", "Generic Mapper Hotel" },
+                { "Description", "This is a generic mapper hotel" },
+                { "ParkingIncluded", true },
+                { "Timestamp", new DateTime(1970, 1, 18, 0, 0, 0) },
+                { "HotelRating", 3.6f }
+            },
+            Vectors =
+            {
+                { "DescriptionEmbedding", new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]) }
+            }
+        });
+
+        var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.Equal(HotelId, upsertResult);
+
+        Assert.NotNull(localGetResult);
+        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
+        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
+        Assert.True((bool?)localGetResult.Data["ParkingIncluded"]);
+        Assert.Equal(new DateTime(1970, 1, 18, 0, 0, 0), localGetResult.Data["Timestamp"]);
+        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperWithStringKeyAsync()
+    {
+        const string HotelId = "key";
+
+        var options = new SqliteVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<string>>
+        {
+            VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<string>()
+        };
+
+        var sut = fixture.GetCollection<VectorStoreGenericDataModel<string>>("GenericMapperWithStringKey", options)
+            as IVectorStoreRecordCollection<string, VectorStoreGenericDataModel<string>>;
+
+        await sut.CreateCollectionAsync();
+
+        var record = CreateTestHotel(HotelId);
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>(HotelId)
+        {
+            Data =
+            {
+                { "HotelName", "Generic Mapper Hotel" },
+                { "Description", "This is a generic mapper hotel" },
+                { "ParkingIncluded", true },
+                { "Timestamp", new DateTime(1970, 1, 18, 0, 0, 0) },
+                { "HotelRating", 3.6f }
+            },
+            Vectors =
+            {
+                { "DescriptionEmbedding", new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]) }
+            }
+        });
+
+        var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.Equal(HotelId, upsertResult);
+
+        Assert.NotNull(localGetResult);
+        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
+        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
+        Assert.True((bool?)localGetResult.Data["ParkingIncluded"]);
+        Assert.Equal(new DateTime(1970, 1, 18, 0, 0, 0), localGetResult.Data["Timestamp"]);
+        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
     }
 
     #region

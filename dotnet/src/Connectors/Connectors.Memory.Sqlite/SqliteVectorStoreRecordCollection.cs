@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
@@ -699,6 +700,13 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         if (options.DictionaryCustomMapper is not null)
         {
             return options.DictionaryCustomMapper;
+        }
+
+        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>) ||
+            typeof(TRecord) == typeof(VectorStoreGenericDataModel<ulong>))
+        {
+            var mapper = new SqliteGenericDataModelMapper(propertyReader);
+            return (mapper as IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>)!;
         }
 
         return new SqliteVectorStoreRecordMapper<TRecord>(propertyReader);
