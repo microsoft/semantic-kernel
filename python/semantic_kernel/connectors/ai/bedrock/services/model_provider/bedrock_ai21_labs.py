@@ -24,9 +24,9 @@ def get_text_completion_request_body(prompt: str, settings: BedrockTextPromptExe
         "maxTokens": settings.max_tokens,
         "stopSequences": settings.stop,
         # Extension data
-        "countPenalty": settings.countPenalty if hasattr(settings, "countPenalty") else None,
-        "presencePenalty": settings.presencePenalty if hasattr(settings, "presencePenalty") else None,
-        "frequencyPenalty": settings.frequencyPenalty if hasattr(settings, "frequencyPenalty") else None,
+        "countPenalty": settings.extension_data.get("countPenalty", None),
+        "presencePenalty": settings.extension_data.get("presencePenalty", None),
+        "frequencyPenalty": settings.extension_data.get("frequencyPenalty", None),
     })
 
 
@@ -54,12 +54,11 @@ def get_chat_completion_additional_model_request_fields(
     """Get the additional model request fields for chat completion for AI21 Labs models.
 
     https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-jamba.html
+    Note: We are not supporting multiple responses for now.
     """
     additional_fields: dict[str, Any] = remove_none_recursively({
-        # TODO(taochen@microsoft.com): verify what a response that contains multiple completions looks like
-        "n": settings.n if hasattr(settings, "n") else None,
-        "frequency_penalty": settings.frequency_penalty if hasattr(settings, "frequency_penalty") else None,
-        "presence_penalty": settings.presence_penalty if hasattr(settings, "presence_penalty") else None,
+        "frequency_penalty": settings.extension_data.get("frequency_penalty", None),
+        "presence_penalty": settings.extension_data.get("presence_penalty", None),
     })
 
     if not additional_fields:

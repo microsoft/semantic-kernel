@@ -3,7 +3,8 @@
 import asyncio
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion
+from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.bedrock.services.bedrock_chat_completion import BedrockChatCompletion
 from semantic_kernel.contents import ChatHistory
 
 system_message = """
@@ -17,14 +18,19 @@ flowery prose.
 
 kernel = Kernel()
 
-service_id = "mistral-ai-chat"
-kernel.add_service(AnthropicChatCompletion(service_id=service_id, ai_model_id="claude-3-opus-20240229"))
+service_id = "bedrock-chat"
+kernel.add_service(BedrockChatCompletion(service_id=service_id, model_id="cohere.command-r-v1:0"))
 
-settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
-settings.system = system_message
-settings.max_tokens = 2000
-settings.temperature = 0.7
-settings.top_p = 0.8
+settings = BedrockChatPromptExecutionSettings(
+    max_tokens=2000,
+    temperature=0.7,
+    top_p=0.8,
+    # Cohere Command specific settings: https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-cohere-command-r-plus.html
+    extension_data={
+        "presence_penalty": 0.5,
+        "seed": 5,
+    },
+)
 
 chat_function = kernel.add_function(
     plugin_name="ChatBot",

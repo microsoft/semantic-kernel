@@ -27,10 +27,10 @@ def get_text_completion_request_body(prompt: str, settings: BedrockTextPromptExe
         "max_tokens": settings.max_tokens,
         "stop_sequences": settings.stop,
         # Extension data
-        "return_likelihoods": settings.return_likelihoods if hasattr(settings, "return_likelihoods") else "NONE",
-        "num_generations": settings.num_generations if hasattr(settings, "num_generations") else 1,
-        "logit_bias": settings.logit_bias if hasattr(settings, "logit_bias") else None,
-        "truncate": settings.truncate if hasattr(settings, "truncate") else "NONE",
+        "return_likelihoods": settings.extension_data.get("return_likelihoods", "NONE"),
+        "num_generations": settings.extension_data.get("num_generations", 1),
+        "logit_bias": settings.extension_data.get("logit_bias", None),
+        "truncate": settings.extension_data.get("truncate", "NONE"),
     })
 
 
@@ -59,14 +59,14 @@ def get_chat_completion_additional_model_request_fields(
     https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-cohere-command-r-plus.html
     """
     additional_fields: dict[str, Any] = remove_none_recursively({
-        "search_queries_only": settings.search_queries_only if hasattr(settings, "search_queries_only") else None,
-        "preamble": settings.preamble if hasattr(settings, "preamble") else None,
-        "prompt_truncation": settings.prompt_truncation if hasattr(settings, "prompt_truncation") else None,
-        "frequency_penalty": settings.frequency_penalty if hasattr(settings, "frequency_penalty") else None,
-        "presence_penalty": settings.presence_penalty if hasattr(settings, "presence_penalty") else None,
-        "seed": settings.seed if hasattr(settings, "seed") else None,
-        "return_prompt": settings.return_prompt if hasattr(settings, "return_prompt") else None,
-        "raw_prompting": settings.raw_prompting if hasattr(settings, "raw_prompting") else None,
+        "search_queries_only": settings.extension_data.get("search_queries_only", None),
+        "preamble": settings.extension_data.get("preamble", None),
+        "prompt_truncation": settings.extension_data.get("prompt_truncation", None),
+        "frequency_penalty": settings.extension_data.get("frequency_penalty", None),
+        "presence_penalty": settings.extension_data.get("presence_penalty", None),
+        "seed": settings.extension_data.get("seed", None),
+        "return_prompt": settings.extension_data.get("return_prompt", None),
+        "raw_prompting": settings.extension_data.get("raw_prompting", None),
     })
 
     if not additional_fields:
@@ -84,9 +84,9 @@ def get_text_embedding_request_body(text: str, settings: BedrockEmbeddingPromptE
     """Get the request body for text embedding for Cohere Command models."""
     return remove_none_recursively({
         "texts": [text],
-        "input_type": settings.input_type if hasattr(settings, "input_type") else "search_document",
-        "truncate": settings.truncate if hasattr(settings, "truncate") else None,
-        "embedding_types": settings.embedding_types if hasattr(settings, "embedding_types") else None,
+        "input_type": settings.extension_data.get("input_type", "search_document"),
+        "truncate": settings.extension_data.get("truncate", None),
+        "embedding_types": settings.extension_data.get("embedding_types", None),
     })
 
 

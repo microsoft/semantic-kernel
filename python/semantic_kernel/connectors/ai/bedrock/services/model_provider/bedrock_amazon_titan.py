@@ -94,11 +94,11 @@ def get_text_embedding_request_body(text: str, settings: BedrockEmbeddingPromptE
     return remove_none_recursively({
         "inputText": text,
         # Extension data: https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-titan-embed-text.html
-        "dimensions": settings.dimensions if hasattr(settings, "dimensions") else None,
-        "normalize": settings.normalize if hasattr(settings, "normalize") else None,
-        "embeddingTypes": settings.embedding_types if hasattr(settings, "embedding_types") else None,
+        "dimensions": settings.extension_data.get("dimensions", None),
+        "normalize": settings.extension_data.get("normalize", None),
+        "embeddingTypes": settings.extension_data.get("embeddingTypes", None),
         # Extension data: https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-titan-embed-mm.html
-        "embeddingConfig": settings.embedding_config if hasattr(settings, "embedding_config") else None,
+        "embeddingConfig": settings.extension_data.get("embeddingConfig", None),
     })
 
 

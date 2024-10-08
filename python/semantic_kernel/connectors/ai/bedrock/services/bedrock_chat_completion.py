@@ -218,10 +218,10 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 "temperature": settings.temperature,
                 "topP": settings.top_p,
                 "stopSequences": settings.stop,
-                "additionalModelRequestFields": get_chat_completion_additional_model_request_fields(
-                    self.ai_model_id, settings
-                ),
             }),
+            "additionalModelRequestFields": get_chat_completion_additional_model_request_fields(
+                self.ai_model_id, settings
+            ),
         }
 
         if settings.tools and settings.tool_choice:
