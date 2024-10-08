@@ -101,5 +101,6 @@
   "azureFunctions.deploySubpath": "samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions/bin/Release/net6.0/publish",
   "azureFunctions.projectLanguage": "C#",
   "azureFunctions.projectRuntime": "~4",
-  "azureFunctions.preDeployTask": "publish (functions)"
+  "azureFunctions.preDeployTask": "publish (functions)",
+  "cmake.sourceDirectory": "/home/broe/Documents/GitHub/semantic-kernel/build"
 }
