@@ -24,6 +24,8 @@ using OpenAI;
 using OpenAI.Chat;
 using Xunit;
 
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
 
 /// <summary>
