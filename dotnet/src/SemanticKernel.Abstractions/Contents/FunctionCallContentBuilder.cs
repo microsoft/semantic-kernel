@@ -19,6 +19,25 @@ public sealed class FunctionCallContentBuilder
     private Dictionary<int, string>? _functionCallIdsByIndex = null;
     private Dictionary<int, string>? _functionNamesByIndex = null;
     private Dictionary<int, StringBuilder>? _functionArgumentBuildersByIndex = null;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
+    /// </summary>
+    [RequiresUnreferencedCode("Uses reflection to deserialize function arguments, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to deserialize function arguments, making it incompatible with AOT scenarios.")]
+    public FunctionCallContentBuilder()
+    {
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
+    /// </summary>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
+    public FunctionCallContentBuilder(JsonSerializerOptions jsonSerializerOptions)
+    {
+        this._jsonSerializerOptions = jsonSerializerOptions;
+    }
 
     /// <summary>
     /// Extracts function call updates from the content and track them for later building.
@@ -41,33 +60,7 @@ public sealed class FunctionCallContentBuilder
     /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
     /// </summary>
     /// <returns>A list of <see cref="FunctionCallContent"/> objects.</returns>
-    [RequiresUnreferencedCode("Uses reflection to deserialize function arguments, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("Uses reflection to deserialize function arguments, making it incompatible with AOT scenarios.")]
     public IReadOnlyList<FunctionCallContent> Build()
-    {
-        return this.BuildInternal(jsonSerializerOptions: null);
-    }
-
-    /// <summary>
-    /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
-    /// </summary>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
-    /// <returns>A list of <see cref="FunctionCallContent"/> objects.</returns>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
-    public IReadOnlyList<FunctionCallContent> Build(JsonSerializerOptions jsonSerializerOptions)
-    {
-        return this.BuildInternal(jsonSerializerOptions: jsonSerializerOptions);
-    }
-
-    /// <summary>
-    /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
-    /// </summary>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
-    /// <returns>A list of <see cref="FunctionCallContent"/> objects.</returns>
-    [RequiresUnreferencedCode("Uses reflection to deserialize function arguments if no JSOs are provided, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("Uses reflection to deserialize function arguments if no JSOs are provided, making it incompatible with AOT scenarios.")]
-    private FunctionCallContent[] BuildInternal(JsonSerializerOptions? jsonSerializerOptions)
     {
         FunctionCallContent[]? functionCalls = null;
 
@@ -89,7 +82,7 @@ public sealed class FunctionCallContentBuilder
                     functionName = functionFullyQualifiedName.Name;
                 }
 
-                (KernelArguments? arguments, Exception? exception) = this.GetFunctionArguments(functionCallIndexAndId.Key, jsonSerializerOptions);
+                (KernelArguments? arguments, Exception? exception) = GetFunctionArgumentsSafe(functionCallIndexAndId.Key);
 
                 functionCalls[i] = new FunctionCallContent(
                     functionName: functionName,
@@ -99,6 +92,18 @@ public sealed class FunctionCallContentBuilder
                 {
                     Exception = exception
                 };
+            }
+
+            [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the class creation site; there is no need to show it again at the function invocation sites.")]
+            [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the class creation site; there is no need to show it again at the function invocation sites.")]
+            (KernelArguments? Arguments, Exception? Exception) GetFunctionArgumentsSafe(int functionCallIndex)
+            {
+                if (this._jsonSerializerOptions is not null)
+                {
+                    return this.GetFunctionArguments(functionCallIndex, this._jsonSerializerOptions);
+                }
+
+                return this.GetFunctionArguments(functionCallIndex);
             }
         }
 

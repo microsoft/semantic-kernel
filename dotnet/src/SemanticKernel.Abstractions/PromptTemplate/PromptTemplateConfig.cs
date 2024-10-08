@@ -331,7 +331,7 @@ public sealed class PromptTemplateConfig
         {
             if (jsonSerializerOptions is not null)
             {
-                JsonTypeInfo<PromptTemplateConfig> typeInfo = (JsonTypeInfo<PromptTemplateConfig>)jsonSerializerOptions.GetTypeInfo(typeof(KernelArguments));
+                JsonTypeInfo<PromptTemplateConfig> typeInfo = (JsonTypeInfo<PromptTemplateConfig>)jsonSerializerOptions.GetTypeInfo(typeof(PromptTemplateConfig));
                 config = JsonSerializer.Deserialize<PromptTemplateConfig>(json, typeInfo);
             }
             else

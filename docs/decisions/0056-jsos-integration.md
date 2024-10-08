@@ -2,9 +2,9 @@
 # These are optional elements. Feel free to remove any of them.
 status: accepted
 contact: sergeymenshykh
-date: 2024-10-03
-deciders: sergeymenshykh, westey-m, markwallace
-consulted: stephentoub, eiriktsarpalis
+date: 2024-10-07
+deciders: markwallace, sergeymenshykh, westey-m, 
+consulted: eiriktsarpalis, stephentoub
 informed:
 ---
 
@@ -22,7 +22,8 @@ This ADR outlines potential options for passing JSOs with configured source-gene
 ## Decision Drivers
 
 - It's possible to provide external source-generated context contracts down to SK JSON serialization functionality.
-- It's intuitively clear and easy to supply source-generated context contracts to SK components. 
+- It's intuitively clear and easy to supply source-generated context contracts to SK components.
+- It's easy to integrate with Microsoft.Extensions.AI
 
 ## Considered Options
 
@@ -82,7 +83,10 @@ Cons:
 - Similar to the above, it may not be clear which component/API needs JSOs, postponing discovery to runtime.  
 - Will add another way of providing JSOs in SK. Low-level KernelFunctionFactory and KernelPluginFactory accept JSOs via method parameters.  
 - SK AI connectors accept an **optional** instance of the kernel in their operation, which sends mixed signals. On one hand, it's optional, meaning AI connectors can work without it; on the other hand, the operation will fail in an AOT app if no kernel is provided.
-- SK components that accept JSOs via Kernel as a parameter of operations, rather than as a parameter of a constructor, and that need to combine external source-generated contexts with internal ones, will combine them at the first invocation of the operation and cache the result for subsequent operation invocations. This may be misleading because the operation can accept a new JSO instance per invocation, but the component will only use the first cached one.
+- In scenarios that require more than one kernel instance, where each instance may have unique JSOs, the JSOs of the kernel a function was created with will be used for the lifetime of the function. JSOs from any other kernel the function might be invoked with won't be applied, and the ones from the kernel the function was created with will be used.
+
+for a Kernel funciton a kernel funciton 
+Today Kernel funciton can be executed on any Kernel. Having 
 
 ### Ways to Provide JSON Serializer Options (JSOs) to the Kernel:
 1. Via `Kernel` constructor.
@@ -118,7 +122,6 @@ Cons:
         }
         set
         {
-            value.MakeReadOnly(true); // prevent future modifications
             this._serializerOptions = value;
         }
     }
@@ -166,11 +169,12 @@ This option presumes supplying JSOs at the component's instantiation site or con
 Pros:
 - AOT warnings will be generated at compile time at each component instantiation site.
 - Same way of working with JSOs across all SK components.
-- Each component will combine external source-generated contexts with internal ones at instantiation time and the result will be used by all it's operations.
 - Does't require SK components to depend on Kernel.
 
 Cons:
-- There's no one central place to register source-generated contexts
+- There's no central place to register source-generated contexts. It can be a advantage in cases where applications have a large amount of bootstrapping code residing in many different classes that may have inheritance relationships between them.
+
+AI connectors may accept JSOs as a parameter in the constructor or as an optional property. The decision will be made when one or a few connectors are refactored to be AOT compatible.
 
 ## Option #3: JSOs per SK component operation
 This option presumes supplying JSOs at component operation invocation sites rather than at instantiation sites.
@@ -180,9 +184,9 @@ Pros:
 
 Cons:
 - New operations/methods overloads accepting JSOs will have to be added for all SK components requiring external source-generated contracts.
-- If components need to combine internal and external source-generated contexts, it can be inefficient if done per operation invocation or semantically incorrect if the first JSOs are cached and used for subsequent invocations.
 - Will add another way of providing JSOs in SK. Low-level KernelFunctionFactory and KernelPluginFactory accept JSOs via method parameters.  
 - Not applicable to all SK components. KernelFunction needs JSOs before it is invoked for schema generation purposes. 
+- Encourage ineffective usage of JSOs where JSOs may be created per method call, which may be expensive memory-wise.
 
 ## Decision Outcome
-TBD
+The "Option #2 JSOs per SK component" was preferred over the other options since it provides an explicit, unified, clear, simple, and effective way of supplying JSOs at the component's instantiation/creation sites.
