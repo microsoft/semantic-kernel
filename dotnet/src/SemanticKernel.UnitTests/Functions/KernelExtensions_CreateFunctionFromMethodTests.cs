@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
-using System.Reflection;
 using System;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Xunit;
+using Microsoft.SemanticKernel;
 using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
+using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
 
