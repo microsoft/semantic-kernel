@@ -112,6 +112,4 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
             Console.WriteLine($"Link:  {result.Link}");
         }
     }
-
-
 }
