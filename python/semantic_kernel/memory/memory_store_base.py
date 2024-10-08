@@ -10,6 +10,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class MemoryStoreBase(ABC):
+    """Base class for memory store."""
+
     async def __aenter__(self):
         """Enter the context manager."""
         return self

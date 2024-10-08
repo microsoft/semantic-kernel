@@ -15,6 +15,12 @@ extend-exclude = [
     "CodeTokenizerTests.cs",
     "test_code_tokenizer.py",
     "*response.json",
+    "test_content.txt",
+    "serializedChatHistoryV1_15_1.json",
+    "MultipleFunctionsVsParameters.cs",
+    "PopulationByCountry.csv",
+    "PopulationByAdmin1.csv",
+    "WomensSuffrage.txt",
 ]
 
 [default.extend-words]

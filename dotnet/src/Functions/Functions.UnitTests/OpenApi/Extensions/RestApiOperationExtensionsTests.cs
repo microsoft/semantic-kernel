@@ -256,7 +256,7 @@ public class RestApiOperationExtensionsTests
     {
         return new RestApiOperation(
                     id: "fake-id",
-                    serverUrl: url,
+                    server: new(url?.AbsoluteUri),
                     path: "fake-path",
                     method: new HttpMethod(method),
                     description: "fake-description",

@@ -56,7 +56,9 @@ internal sealed class TextGenerationRequest
                 RepetitionPenalty = executionSettings.RepetitionPenalty,
                 MaxTime = executionSettings.MaxTime,
                 NumReturnSequences = executionSettings.ResultsPerPrompt,
-                Details = executionSettings.Details
+                Details = executionSettings.Details,
+                ReturnFullText = executionSettings.ReturnFullText,
+                DoSample = executionSettings.DoSample,
             },
             Options = new()
             {
@@ -124,7 +126,8 @@ internal sealed class TextGenerationRequest
         /// (Default: True). If set to False, the return results will not contain the original query making it easier for prompting.
         /// </summary>
         [JsonPropertyName("return_full_text")]
-        public bool ReturnFullText { get; set; } = true;
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? ReturnFullText { get; set; } = true;
 
         /// <summary>
         /// (Default: 1). The number of proposition you want to be returned.

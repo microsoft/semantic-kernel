@@ -75,7 +75,14 @@ internal static class ChatPromptParser
         {
             if (childNode.TagName.Equals(ImageTagName, StringComparison.OrdinalIgnoreCase))
             {
-                items.Add(new ImageContent(new Uri(childNode.Content!)));
+                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                {
+                    items.Add(new ImageContent(childNode.Content));
+                }
+                else
+                {
+                    items.Add(new ImageContent(new Uri(childNode.Content!)));
+                }
             }
             else if (childNode.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase))
             {

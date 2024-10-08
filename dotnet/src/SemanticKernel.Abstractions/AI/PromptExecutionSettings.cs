@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -28,6 +29,27 @@ public class PromptExecutionSettings
     public static string DefaultServiceId => "default";
 
     /// <summary>
+    /// Service identifier.
+    /// This identifies the service these settings are configured for e.g., azure_openai_eastus, openai, ollama, huggingface, etc.
+    /// </summary>
+    /// <remarks>
+    /// When provided, this service identifier will be the key in a dictionary collection of execution settings for both <see cref="KernelArguments"/> and <see cref="PromptTemplateConfig"/>.
+    /// If not provided the service identifier will be the default value in <see cref="DefaultServiceId"/>.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    [JsonPropertyName("service_id")]
+    public string? ServiceId
+    {
+        get => this._serviceId;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._serviceId = value;
+        }
+    }
+
+    /// <summary>
     /// Model identifier.
     /// This identifies the AI model these settings are configured for e.g., gpt-4, gpt-3.5-turbo
     /// </summary>
@@ -40,6 +62,43 @@ public class PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._modelId = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the behavior defining the way functions are chosen by LLM and how they are invoked by AI connectors.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>To disable function calling, and have the model only generate a user-facing message, set the property to null (the default).</item>
+    /// <item>
+    /// To allow the model to decide whether to call the functions and, if so, which ones to call, set the property to an instance returned
+    /// by the <see cref="FunctionChoiceBehavior.Auto(IEnumerable{KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
+    /// </item>
+    /// <item>
+    /// To force the model to always call one or more functions set the property to an instance returned
+    /// by the <see cref="FunctionChoiceBehavior.Required(IEnumerable{KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
+    /// </item>
+    /// <item>
+    /// To instruct the model to not call any functions and only generate a user-facing message, set the property to an instance returned
+    /// by the <see cref="FunctionChoiceBehavior.None(IEnumerable{KernelFunction}?, FunctionChoiceBehaviorOptions?)"/> method.
+    /// </item>
+    /// </list>
+    /// For all the behaviors that presume the model to call functions, auto-invoke can be specified. If LLM
+    /// call a function and auto-invoke enabled, SK will attempt to resolve that function from the functions
+    /// available, and if found, rather than returning the response back to the caller, it will invoke the function automatically.
+    /// The intermediate messages will be retained in the provided <see cref="ChatHistory"/>.
+    /// </remarks>
+    [JsonPropertyName("function_choice_behavior")]
+    [Experimental("SKEXP0001")]
+    public FunctionChoiceBehavior? FunctionChoiceBehavior
+    {
+        get => this._functionChoiceBehavior;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._functionChoiceBehavior = value;
         }
     }
 
@@ -90,11 +149,15 @@ public class PromptExecutionSettings
     /// </summary>
     public virtual PromptExecutionSettings Clone()
     {
+#pragma warning disable SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
         return new()
         {
             ModelId = this.ModelId,
+            ServiceId = this.ServiceId,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
         };
+#pragma warning restore SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
     }
 
     /// <summary>
@@ -113,6 +176,8 @@ public class PromptExecutionSettings
 
     private string? _modelId;
     private IDictionary<string, object>? _extensionData;
+    private string? _serviceId;
+    private FunctionChoiceBehavior? _functionChoiceBehavior;
 
     #endregion
 }

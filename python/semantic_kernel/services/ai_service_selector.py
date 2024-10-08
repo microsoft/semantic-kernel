@@ -51,10 +51,11 @@ class AIServiceSelector:
             execution_settings_dict = {DEFAULT_SERVICE_NAME: PromptExecutionSettings()}
         for service_id, settings in execution_settings_dict.items():
             try:
-                service = kernel.get_service(service_id, type=type_)
+                if (service := kernel.get_service(service_id, type=type_)) is not None:
+                    settings_class = service.get_prompt_execution_settings_class()
+                    if isinstance(settings, settings_class):
+                        return service, settings
+                    return service, settings_class.from_prompt_execution_settings(settings)
             except KernelServiceNotFoundError:
                 continue
-            if service is not None:
-                service_settings = service.get_prompt_execution_settings_from_settings(settings)
-                return service, service_settings
         raise KernelServiceNotFoundError("No service found.")

@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
+from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSource,
+    AzureAISearchDataSourceParameters,
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
@@ -12,7 +14,22 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+
+############################################
+# Test classes for structured output
+class TestClass:
+    attribute: str
+
+
+class TestClassPydantic(KernelBaseModel):
+    attribute: str
+
+
+############################################
 
 
 def test_default_openai_chat_prompt_execution_settings():
@@ -198,13 +215,26 @@ def test_create_options_azure_data():
         parameters={
             "indexName": "test-index",
             "endpoint": "test-endpoint",
-            "authentication": {"type": "api_key", "api_key": "test-key"},
+            "authentication": {"type": "api_key", "key": "test-key"},
         }
     )
-    extra = ExtraBody(dataSources=[az_source])
+    extra = ExtraBody(data_sources=[az_source])
+    assert extra["data_sources"] is not None
+    assert extra.data_sources is not None
     settings = AzureChatPromptExecutionSettings(extra_body=extra)
     options = settings.prepare_settings_dict()
     assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)
+    assert options["extra_body"]["data_sources"][0]["type"] == "azure_search"
+
+
+def test_create_options_azure_data_from_azure_ai_settings(azure_ai_search_unit_test_env):
+    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(AzureAISearchSettings.create())
+    extra = ExtraBody(data_sources=[az_source])
+    assert extra["data_sources"] is not None
+    settings = AzureChatPromptExecutionSettings(extra_body=extra)
+    options = settings.prepare_settings_dict()
+    assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)
+    assert options["extra_body"]["data_sources"][0]["type"] == "azure_search"
 
 
 def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources():
@@ -265,8 +295,76 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"
 
 
+@pytest.mark.parametrize(
+    "authentication",
+    [
+        {"type": "APIKey", "key": "test_key"},
+        {"type": "api_key", "key": "test_key"},
+        pytest.param({"type": "api_key"}, marks=pytest.mark.xfail),
+        {"type": "SystemAssignedManagedIdentity"},
+        {"type": "system_assigned_managed_identity"},
+        {"type": "UserAssignedManagedIdentity", "managed_identity_resource_id": "test_id"},
+        {"type": "user_assigned_managed_identity", "managed_identity_resource_id": "test_id"},
+        pytest.param({"type": "user_assigned_managed_identity"}, marks=pytest.mark.xfail),
+        {"type": "AccessToken", "access_token": "test_token"},
+        {"type": "access_token", "access_token": "test_token"},
+        pytest.param({"type": "access_token"}, marks=pytest.mark.xfail),
+        pytest.param({"type": "invalid"}, marks=pytest.mark.xfail),
+    ],
+)
+def test_aisearch_data_source_parameters(authentication) -> None:
+    AzureAISearchDataSourceParameters(index_name="test_index", authentication=authentication)
+
+
 def test_azure_open_ai_chat_prompt_execution_settings_with_response_format_json():
     response_format = {"type": "json_object"}
     settings = AzureChatPromptExecutionSettings(response_format=response_format)
     options = settings.prepare_settings_dict()
     assert options["response_format"] == response_format
+
+
+def test_openai_chat_prompt_execution_settings_with_json_structured_output():
+    settings = OpenAIChatPromptExecutionSettings()
+    settings.response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "math_response",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {"explanation": {"type": "string"}, "output": {"type": "string"}},
+                            "required": ["explanation", "output"],
+                            "additionalProperties": False,
+                        },
+                    },
+                    "final_answer": {"type": "string"},
+                },
+                "required": ["steps", "final_answer"],
+                "additionalProperties": False,
+            },
+            "strict": True,
+        },
+    }
+    assert isinstance(settings.response_format, dict)
+
+
+def test_openai_chat_prompt_execution_settings_with_nonpydantic_type_structured_output():
+    settings = OpenAIChatPromptExecutionSettings()
+    settings.response_format = TestClass
+    assert isinstance(settings.response_format, type)
+
+
+def test_openai_chat_prompt_execution_settings_with_pydantic_type_structured_output():
+    settings = OpenAIChatPromptExecutionSettings()
+    settings.response_format = TestClassPydantic
+    assert issubclass(settings.response_format, BaseModel)
+
+
+def test_openai_chat_prompt_execution_settings_with_invalid_structured_output():
+    settings = OpenAIChatPromptExecutionSettings()
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        settings.response_format = "invalid"

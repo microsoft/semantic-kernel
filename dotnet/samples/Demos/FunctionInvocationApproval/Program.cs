@@ -37,7 +37,7 @@ internal sealed class Program
         var executionSettings = new OpenAIPromptExecutionSettings
         {
             Temperature = 0,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         // Initialize kernel arguments.

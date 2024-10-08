@@ -21,6 +21,7 @@ concurrency:
 
 permissions:
   contents: read
+  id-token: "write"
 
 jobs:
   paths-filter:
@@ -57,11 +58,13 @@ jobs:
               os: "ubuntu-latest",
               configuration: Release,
               integration-tests: true,
+              environment: "integration",
             }
           - { dotnet: "8.0", os: "windows-latest", configuration: Debug }
           - { dotnet: "8.0", os: "windows-latest", configuration: Release }
 
     runs-on: ${{ matrix.os }}
+    environment: ${{ matrix.environment }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup dotnet ${{ matrix.dotnet }}
@@ -84,6 +87,14 @@ jobs:
             dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute
           done
 
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request' && matrix.integration-tests
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Run Integration Tests
         shell: bash
         if: github.event_name != 'pull_request' && matrix.integration-tests
@@ -96,6 +107,7 @@ jobs:
           AzureOpenAI__Label: azure-text-davinci-003
           AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
           AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAI__ChatDeploymentName: ${{ vars.AZUREOPENAI__CHATDEPLOYMENTNAME }}
           AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
           AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
@@ -110,23 +122,31 @@ jobs:
           OpenAITextToAudio__ModelId: ${{ vars.OPENAITEXTTOAUDIO__MODELID }}
           OpenAIAudioToText__ApiKey: ${{ secrets.OPENAIAUDIOTOTEXT__APIKEY }}
           OpenAIAudioToText__ModelId: ${{ vars.OPENAIAUDIOTOTEXT__MODELID }}
+          OpenAITextToImage__ApiKey: ${{ secrets.OPENAITEXTTOIMAGE__APIKEY }}
+          OpenAITextToImage__ModelId: ${{ vars.OPENAITEXTTOIMAGE__MODELID }}
           AzureOpenAITextToAudio__ApiKey: ${{ secrets.AZUREOPENAITEXTTOAUDIO__APIKEY }}
           AzureOpenAITextToAudio__Endpoint: ${{ secrets.AZUREOPENAITEXTTOAUDIO__ENDPOINT }}
           AzureOpenAITextToAudio__DeploymentName: ${{ vars.AZUREOPENAITEXTTOAUDIO__DEPLOYMENTNAME }}
           AzureOpenAIAudioToText__ApiKey: ${{ secrets.AZUREOPENAIAUDIOTOTEXT__APIKEY }}
           AzureOpenAIAudioToText__Endpoint: ${{ secrets.AZUREOPENAIAUDIOTOTEXT__ENDPOINT }}
           AzureOpenAIAudioToText__DeploymentName: ${{ vars.AZUREOPENAIAUDIOTOTEXT__DEPLOYMENTNAME }}
+          AzureOpenAITextToImage__ApiKey: ${{ secrets.AZUREOPENAITEXTTOIMAGE__APIKEY }}
+          AzureOpenAITextToImage__Endpoint: ${{ secrets.AZUREOPENAITEXTTOIMAGE__ENDPOINT }}
+          AzureOpenAITextToImage__DeploymentName: ${{ vars.AZUREOPENAITEXTTOIMAGE__DEPLOYMENTNAME }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+          OpenAI__ChatModelId: ${{ vars.OPENAI__CHATMODELID }}
+          AzureAIInference__ApiKey: ${{ secrets.AZUREAIINFERENCE__APIKEY }}
+          AzureAIInference__Endpoint: ${{ secrets.AZUREAIINFERENCE__ENDPOINT }}
 
       # Generate test reports and check coverage
       - name: Generate test reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.9
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
           reporttypes: "JsonSummary"
-          assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Yaml;+Microsoft.SemanticKernel.Agents.Abstractions;+Microsoft.SemanticKernel.Agents.Core;+Microsoft.SemanticKernel.Agents.OpenAI"
+          assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Connectors.AzureOpenAI;+Microsoft.SemanticKernel.Yaml;+Microsoft.SemanticKernel.Agents.Abstractions;+Microsoft.SemanticKernel.Agents.Core;+Microsoft.SemanticKernel.Agents.OpenAI"
 
       - name: Check coverage
         shell: pwsh

@@ -51,6 +51,7 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
@@ -68,6 +69,6 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
-    <Using Include="Xunit.Abstractions"/>
+    <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 </Project>

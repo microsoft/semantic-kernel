@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class PromptTemplateBase(KernelBaseModel, ABC):
+    """Base class for prompt templates."""
+
     prompt_template_config: PromptTemplateConfig
     allow_dangerously_set_content: bool = False
 

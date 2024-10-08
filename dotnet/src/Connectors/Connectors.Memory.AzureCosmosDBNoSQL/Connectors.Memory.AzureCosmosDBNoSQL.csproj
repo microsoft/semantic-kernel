@@ -27,4 +27,8 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests" />
+  </ItemGroup>
+
 </Project>
