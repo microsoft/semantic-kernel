@@ -96,5 +96,10 @@
     "python/tests"
   ],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "azureFunctions.projectSubpath": "samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions",
+  "azureFunctions.deploySubpath": "samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions/bin/Release/net6.0/publish",
+  "azureFunctions.projectLanguage": "C#",
+  "azureFunctions.projectRuntime": "~4",
+  "azureFunctions.preDeployTask": "publish (functions)"
 }

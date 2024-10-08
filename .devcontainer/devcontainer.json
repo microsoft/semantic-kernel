@@ -178,6 +178,13 @@
     }
   },
   "postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet" // avoids needing to run as 'sudo' when starting KernelHttpServer
+},
+"customizations": {
+	"vscode": {
+		"extensions": [
+			"ms-semantic-kernel.semantic-kernel"
+		]
+	}
 }
 <<<<<<< Updated upstream
 <<<<<<< head
