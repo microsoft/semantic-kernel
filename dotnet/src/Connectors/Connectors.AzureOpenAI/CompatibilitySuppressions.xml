@@ -87,6 +87,34 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.AddAzureOpenAITextEmbeddingGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String,System.Nullable{System.Int32})</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
+    <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.AddAzureOpenAITextEmbeddingGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Int32})</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
+    <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.AddAzureOpenAITextToAudio(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
+    <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.AddAzureOpenAITextToImage(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String,System.Int32)</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
+    <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.Connectors.AzureOpenAI.AzureOpenAIAudioToTextService.#ctor(System.String,System.String,Azure.Core.TokenCredential,System.String,System.Net.Http.HttpClient,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
     <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
     <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
@@ -235,6 +263,34 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.AddAzureOpenAIChatCompletion(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.AddAzureOpenAITextEmbeddingGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String,System.Nullable{System.Int32})</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.AddAzureOpenAITextEmbeddingGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Int32})</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.AddAzureOpenAITextToAudio(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.AddAzureOpenAITextToImage(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String,System.Int32)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
