@@ -19,6 +19,8 @@ builder.Services.Configure<RagConfig>(builder.Configuration.GetSection(RagConfig
 
 var vectorStoreRagConfig = new VectorStoreRagConfig(builder.Configuration);
 
+// Register the kernel with the dependency injection container
+// and add Chat Completion and Text Embedding Generation services.
 var kernelBuilder = builder.Services.AddKernel()
     .AddAzureOpenAIChatCompletion(
         vectorStoreRagConfig.AzureOpenAIConfig.ChatDeploymentName,
@@ -29,6 +31,8 @@ var kernelBuilder = builder.Services.AddKernel()
         vectorStoreRagConfig.AzureOpenAIEmbeddingsConfig.Endpoint,
         new AzureCliCredential());
 
+// Add the configured vector store record collection type to the
+// dependency injection container.
 switch (vectorStoreRagConfig.RagConfig.VectorStoreType)
 {
     case "Qdrant":
@@ -49,6 +53,7 @@ switch (vectorStoreRagConfig.RagConfig.VectorStoreType)
         throw new NotSupportedException($"Vector store type '{vectorStoreRagConfig.RagConfig.VectorStoreType}' is not supported.");
 }
 
+// Register all the other required services.
 switch (vectorStoreRagConfig.RagConfig.VectorStoreType)
 {
     case "Qdrant":
@@ -61,13 +66,14 @@ switch (vectorStoreRagConfig.RagConfig.VectorStoreType)
         throw new NotSupportedException($"Vector store type '{vectorStoreRagConfig.RagConfig.VectorStoreType}' is not supported.");
 }
 
+// Build and run the host.
 using IHost host = builder.Build();
-
 await host.RunAsync().ConfigureAwait(false);
 
 static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilder kernelBuilder, VectorStoreRagConfig vectorStoreRagConfig)
     where TKey : notnull
 {
+    // Add a text search implementation that uses the registered vector store record collection for search.
     kernelBuilder.AddVectorStoreTextSearch<TextSnippet<TKey>>(
         new TextSearchStringMapper((result) => (result as TextSnippet<TKey>)!.Text!),
         new TextSearchResultMapper((result) =>
@@ -76,7 +82,10 @@ static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilde
             return new TextSearchResult(value: castResult!.Text) { Link = castResult.ReferenceLink };
         }));
 
+    // Add the key generator and data loader to the dependency injection container.
     builder.Services.AddSingleton<UniqueKeyGenerator<Guid>>(new UniqueKeyGenerator<Guid>(() => Guid.NewGuid()));
     builder.Services.AddSingleton<IDataLoader, DataLoader<Guid>>();
+
+    // Add the main service for this application.
     builder.Services.AddHostedService<RAGChatService<Guid>>();
 }

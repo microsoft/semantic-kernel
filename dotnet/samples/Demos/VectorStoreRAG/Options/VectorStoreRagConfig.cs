@@ -4,6 +4,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace VectorStoreRAG.Options;
 
+/// <summary>
+/// Helper class to load all configuration settings for the VectorStoreRAG project.
+/// </summary>
 internal class VectorStoreRagConfig
 {
     private readonly AzureOpenAIConfig _azureOpenAIConfig;
