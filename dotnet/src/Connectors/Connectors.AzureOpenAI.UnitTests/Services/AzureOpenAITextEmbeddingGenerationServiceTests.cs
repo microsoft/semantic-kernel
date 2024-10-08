@@ -5,7 +5,6 @@ using System.ClientModel;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
