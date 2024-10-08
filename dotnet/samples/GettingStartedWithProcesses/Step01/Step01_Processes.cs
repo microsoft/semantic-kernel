@@ -38,7 +38,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
 
         // Define the behavior when the process receives an external event
         process
-            .OnExternalEvent(ChatBotEvents.StartProcess)
+            .OnInputEvent(ChatBotEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(introStep));
 
         // When the intro is complete, notify the userInput step
@@ -46,9 +46,9 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
             .OnFunctionResult(nameof(IntroStep.PrintIntroMessage))
             .SendEventTo(new ProcessFunctionTargetBuilder(userInputStep));
 
-        // When the userInput step emits an exit event, send it to the end steprt
+        // When the userInput step emits an exit event, send it to the end step
         userInputStep
-            .OnFunctionResult("GetUserInput")
+            .OnEvent(ChatBotEvents.Exit)
             .StopProcess();
 
         // When the userInput step emits a user input event, send it to the assistantResponse step
