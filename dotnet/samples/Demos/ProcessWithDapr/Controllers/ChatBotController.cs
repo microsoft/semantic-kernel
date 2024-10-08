@@ -1,50 +1,60 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using System.Runtime.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
-using SemanticKernel.IntegrationTests.Agents;
-using SemanticKernel.IntegrationTests.TestSettings;
-using Xunit;
-using SemanticKernel.IntegrationTests.Agents;
-using System.Linq;
 
-namespace SemanticKernel.IntegrationTests.Processes;
+namespace ProcessWithDapr.Controllers;
 
-public sealed class ProcessCycleTests
+/// <summary>
+/// A controller for chatbot.
+/// </summary>
+[ApiController]
+public class ChatBotController : ControllerBase
 {
-    private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
-    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAIAssistantAgentTests>()
-            .Build();
+    private readonly Dictionary<string, KernelProcess> _processMap = [];
+    private readonly Kernel _kernel;
 
     /// <summary>
-    /// Tests a process which cycles a fixed number of times and then exits.
+    /// Initializes a new instance of the <see cref="ChatBotController"/> class.
     /// </summary>
-    /// <returns>A <see cref="Task"/></returns>
-    [Fact]
-    public async Task TestCycleAndExitWithFanInAsync()
+    /// <param name="kernel">An instance of <see cref="Kernel"/></param>
+    public ChatBotController(Kernel kernel)
     {
-        // Arrange
-        OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
-        this._kernelBuilder.AddOpenAIChatCompletion(
-            modelId: configuration.ModelId!,
-            apiKey: configuration.ApiKey);
+        this._kernel = kernel;
+    }
 
-        Kernel kernel = this._kernelBuilder.Build();
+    /// <summary>
+    /// Post a message to a chat bot.
+    /// </summary>
+    /// <param name="chatBotId">The Id of the chat bot.</param>
+    /// <param name="message">The message to send.</param>
+    /// <returns></returns>
+    [HttpGet("chatbots/{chatBotId}/{message}")]
+    public async Task<IActionResult> PostAsync(string chatBotId, string message)
+    {
+        var process = this.GetProcess(chatBotId);
+        var processContext = await process.StartAsync(this._kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" }, processId: chatBotId);
+        var finalState = await processContext.GetStateAsync();
 
-        ProcessBuilder process = new("Test Process");
+        return this.Ok(chatBotId);
+    }
 
-        var kickoffStep = process.AddStepFromType<KickoffStep>();
-        var myAStep = process.AddStepFromType<AStep>();
-        var myBStep = process.AddStepFromType<BStep>();
-        var myCStep = process.AddStepFromType<CStep>();
+    private KernelProcess GetProcess(string processId)
+    {
+        if (this._processMap.TryGetValue(processId, out var process))
+        {
+            return process;
+        }
 
-        process
+        ProcessBuilder processBuilder = new("Test Process");
+
+        var kickoffStep = processBuilder.AddStepFromType<KickoffStep>();
+        var myAStep = processBuilder.AddStepFromType<AStep>();
+        var myBStep = processBuilder.AddStepFromType<BStep>();
+        var myCStep = processBuilder.AddStepFromType<CStep, CStepState>(new() { CurrentCycle = 1 });
+
+        processBuilder
             .OnInputEvent(CommonEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(kickoffStep));
 
@@ -72,14 +82,9 @@ public sealed class ProcessCycleTests
             .OnEvent(CommonEvents.ExitRequested)
             .StopProcess();
 
-        KernelProcess kernelProcess = process.Build();
-        var processContext = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
-
-        var processState = await processContext.GetStateAsync();
-        var cStepState = processState.Steps.Where(s => s.State.Name == "CStep").FirstOrDefault()?.State as KernelProcessStepState<CStepState>;
-
-        Assert.NotNull(cStepState?.State);
-        Assert.Equal(3, cStepState.State.CurrentCycle);
+        process = processBuilder.Build();
+        this._processMap[processId] = process;
+        return process;
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
@@ -98,6 +103,7 @@ public sealed class ProcessCycleTests
         [KernelFunction(Functions.KickOff)]
         public async ValueTask PrintWelcomeMessageAsync(KernelProcessStepContext context)
         {
+            Console.WriteLine("##### Kickoff ran.");
             await context.EmitEventAsync(new() { Id = CommonEvents.StartARequested, Data = "Get Going A" });
             await context.EmitEventAsync(new() { Id = CommonEvents.StartBRequested, Data = "Get Going B" });
         }
@@ -111,6 +117,7 @@ public sealed class ProcessCycleTests
         [KernelFunction]
         public async ValueTask DoItAsync(KernelProcessStepContext context)
         {
+            Console.WriteLine("##### AStep ran.");
             await Task.Delay(TimeSpan.FromSeconds(1));
             await context.EmitEventAsync(new() { Id = CommonEvents.AStepDone, Data = "I did A" });
         }
@@ -124,6 +131,7 @@ public sealed class ProcessCycleTests
         [KernelFunction]
         public async ValueTask DoItAsync(KernelProcessStepContext context)
         {
+            Console.WriteLine("##### BStep ran.");
             await Task.Delay(TimeSpan.FromSeconds(2));
             await context.EmitEventAsync(new() { Id = CommonEvents.BStepDone, Data = "I did B" });
         }
@@ -134,11 +142,12 @@ public sealed class ProcessCycleTests
     /// </summary>
     private sealed class CStep : KernelProcessStep<CStepState>
     {
-        private readonly CStepState _state = new();
+        private CStepState _state = new();
 
         public override ValueTask ActivateAsync(KernelProcessStepState<CStepState> state)
         {
-            state.State = this._state;
+            this._state = state.State ?? new CStepState();
+            Console.WriteLine($"##### CStep activated with Cycle = '{state.State?.CurrentCycle}'.");
             return base.ActivateAsync(state);
         }
 
@@ -146,14 +155,16 @@ public sealed class ProcessCycleTests
         public async ValueTask DoItAsync(KernelProcessStepContext context, string astepdata, string bstepdata)
         {
             this._state.CurrentCycle++;
-            if (this._state.CurrentCycle == 3)
+            if (this._state.CurrentCycle >= 3)
             {
                 // Exit the processes
+                Console.WriteLine("##### CStep run cycle 3 - exiting.");
                 await context.EmitEventAsync(new() { Id = CommonEvents.ExitRequested });
                 return;
             }
 
             // Cycle back to the start
+            Console.WriteLine($"##### CStep run cycle {this._state.CurrentCycle}.");
             await context.EmitEventAsync(new() { Id = CommonEvents.CStepDone });
         }
     }
@@ -161,8 +172,10 @@ public sealed class ProcessCycleTests
     /// <summary>
     /// A state object for the CStep.
     /// </summary>
+    [DataContract]
     private sealed record CStepState
     {
+        [DataMember]
         public int CurrentCycle { get; set; }
     }
 

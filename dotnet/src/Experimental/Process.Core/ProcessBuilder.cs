@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process;
 
 namespace Microsoft.SemanticKernel;
 
@@ -109,7 +110,39 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep>(string? name = null) where TStep : KernelProcessStep
     {
+        // If the step has a user-defined state then we need to register it as a know type for the DataContractSerialization used by Dapr.
+        if (typeof(TStep).TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
+        {
+            // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
+            // and create an instance of the corresponding KernelProcessStepState<>.
+            var userStateType = genericStepType.GetGenericArguments()[0];
+            Verify.NotNull(userStateType);
+
+            var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
+            KernelProcessState.RegisterDerivedType(stateType);
+        }
+
         var stepBuilder = new ProcessStepBuilder<TStep>(name);
+        this._steps.Add(stepBuilder);
+
+        return stepBuilder;
+    }
+
+    /// <summary>
+    /// Adds a step to the process and define it's initial user-defined state.
+    /// </summary>
+    /// <typeparam name="TStep">The step Type.</typeparam>
+    /// <typeparam name="TState">The state Type.</typeparam>
+    /// <param name="initialState">The initial state of the step.</param>
+    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
+    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? name = null) where TStep : KernelProcessStep<TState> where TState : class, new()
+    {
+        // The step has a user-defined state so we need to register it as a know type for the DataContractSerialization used by Dapr.
+        var stateType = typeof(KernelProcessStepState<TState>);
+        KernelProcessState.RegisterDerivedType(stateType);
+
+        var stepBuilder = new ProcessStepBuilder<TStep>(name, initialState);
         this._steps.Add(stepBuilder);
 
         return stepBuilder;

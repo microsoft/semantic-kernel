@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a step in a process that is running in-process.
 /// </summary>
-internal class LocalStep : KernelProcessMessageChannel
+internal class LocalStep : IKernelProcessMessageChannel
 {
     /// <summary>
     /// The generic state type for a process step.
@@ -113,7 +113,7 @@ internal class LocalStep : KernelProcessMessageChannel
     /// </summary>
     /// <param name="processEvent">The event to emit.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public override ValueTask EmitEventAsync(KernelProcessEvent processEvent)
+    public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
         this.EmitEvent(LocalEvent.FromKernelProcessEvent(processEvent, this._eventNamespace));
         return default;
