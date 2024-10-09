@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -63,7 +62,7 @@ public class ProcessStepBuilderTests
         // Assert
         Assert.NotNull(edgeBuilder);
         Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
-        Assert.EndsWith(".OnResult", edgeBuilder.EventId);
+        Assert.EndsWith("TestFunction.OnResult", edgeBuilder.EventId);
     }
 
     /// <summary>
@@ -81,7 +80,7 @@ public class ProcessStepBuilderTests
         // Assert
         Assert.NotNull(edgeBuilder);
         Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
-        Assert.EndsWith(".OnError", edgeBuilder.EventId);
+        Assert.EndsWith("TestFunction.OnError", edgeBuilder.EventId);
     }
 
     /// <summary>
