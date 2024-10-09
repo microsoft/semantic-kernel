@@ -283,7 +283,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// </remarks>
     private void OutputInnerContent(OpenAI.Chat.StreamingChatCompletionUpdate streamChunk)
     {
-        Console.WriteLine($"Id: {streamChunk.Id}");
+        Console.WriteLine($"Id: {streamChunk.CompletionId}");
         Console.WriteLine($"Model: {streamChunk.Model}");
         Console.WriteLine($"Created at: {streamChunk.CreatedAt}");
         Console.WriteLine($"Finish reason: {(streamChunk.FinishReason?.ToString() ?? "--")}");

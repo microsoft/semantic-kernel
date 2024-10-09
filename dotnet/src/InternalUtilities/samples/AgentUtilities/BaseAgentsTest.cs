@@ -80,7 +80,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
-    protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
+    protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)
     {
         foreach (KernelContent item in message.Items)
         {
@@ -91,7 +91,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
-    protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
+    protected async Task DownloadResponseImageAsync(OpenAIFileClient client, ChatMessageContent message)
     {
         foreach (KernelContent item in message.Items)
         {
@@ -102,10 +102,10 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
-    private async Task DownloadFileContentAsync(FileClient client, string fileId, bool launchViewer = false)
+    private async Task DownloadFileContentAsync(OpenAIFileClient client, string fileId, bool launchViewer = false)
     {
-        OpenAIFileInfo fileInfo = client.GetFile(fileId);
-        if (fileInfo.Purpose == OpenAIFilePurpose.AssistantsOutput)
+        OpenAIFile fileInfo = client.GetFile(fileId);
+        if (fileInfo.Purpose == FilePurpose.AssistantsOutput)
         {
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
             if (launchViewer)

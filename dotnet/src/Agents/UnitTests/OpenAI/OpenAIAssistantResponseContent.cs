@@ -441,7 +441,7 @@ internal static class OpenAIAssistantResponseContent
           "bytes": 120000,
           "created_at": 1677610602,
           "filename": "test.txt",
-          "purpose": "assistant"
+          "purpose": "assistants"
         }
         """;
 
