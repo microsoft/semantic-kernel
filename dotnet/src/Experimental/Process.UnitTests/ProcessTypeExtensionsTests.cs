@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Process;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Tests;
+namespace Microsoft.SemanticKernel.Process.UnitTests;
 
 /// <summary>
 /// Unit tests for the <see cref="ProcessTypeExtensions"/> class.

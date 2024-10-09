@@ -2,7 +2,7 @@
 
 using Xunit;
 
-namespace Microsoft.SemanticKernel.UnitTests;
+namespace Microsoft.SemanticKernel.Process.UnitTests;
 
 /// <summary>
 /// Unit testing of <see cref="ProcessEdgeBuilder"/>.
@@ -22,6 +22,66 @@ public class ProcessEdgeBuilderTests
         var edgeBuilder = new ProcessEdgeBuilder(processBuilder, "TestEvent");
 
         // Assert
-        Assert.NotNull(edgeBuilder);
+        Assert.StrictEqual(processBuilder, edgeBuilder.Source);
+        Assert.Equal("TestEvent", edgeBuilder.EventId);
+    }
+
+    /// <summary>
+    /// Verify initialization of <see cref="ProcessEdgeBuilder"/>.
+    /// </summary>
+    [Fact]
+    public void SendEventToShouldSetOutputTarget()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder("TestProcess");
+        var source = new ProcessStepBuilder<TestStep>("TestStep");
+        var outputTarget = new ProcessFunctionTargetBuilder(source, "TestFunction");
+
+        // Act
+        var edgeBuilder = new ProcessEdgeBuilder(processBuilder, "TestEvent");
+        edgeBuilder.SendEventTo(outputTarget);
+
+        // Assert
+        Assert.Equal(outputTarget, edgeBuilder.Target);
+    }
+
+    /// <summary>
+    /// Verify initialization of <see cref="ProcessEdgeBuilder"/>.
+    /// </summary>
+    [Fact]
+    public void SendEventToShouldSetMultipleOutputTargets()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder("TestProcess");
+        var outputTargetA = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<TestStep>("TestStep1"), "TestFunction");
+        var outputTargetB = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<TestStep>("TestStep2"), "TestFunction");
+
+        // Act
+        var edgeBuilder = new ProcessEdgeBuilder(processBuilder, "TestEvent");
+        var edgeBuilder2 = edgeBuilder.SendEventTo(outputTargetA);
+        edgeBuilder2.SendEventTo(outputTargetB);
+
+        // Assert
+        Assert.Equal(outputTargetA, edgeBuilder.Target);
+        Assert.Equal(outputTargetB, edgeBuilder2.Target);
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    private sealed class TestStep : KernelProcessStep
+    {
+        /// <summary>
+        /// The name of the step.
+        /// </summary>
+        public static string Name => "TestStep";
+
+        /// <summary>
+        /// A method that represents a function for testing.
+        /// </summary>
+        [KernelFunction]
+        public void TestFunction()
+        {
+        }
     }
 }
