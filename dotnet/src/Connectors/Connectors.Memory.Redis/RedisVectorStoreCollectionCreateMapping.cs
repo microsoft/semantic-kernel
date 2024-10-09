@@ -51,7 +51,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
-    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, Dictionary<string, string> storagePropertyNames, bool useDollarPrefix)
+    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, IReadOnlyDictionary<string, string> storagePropertyNames, bool useDollarPrefix)
     {
         var schema = new Schema();
         var fieldNamePrefix = useDollarPrefix ? "$." : string.Empty;

@@ -24,7 +24,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
     {
         OpenAIClientProvider provider = this.GetClientProvider();
 
-        FileClient fileClient = provider.Client.GetFileClient();
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 
         // Define the agents
         OpenAIAssistantAgent analystAgent =

@@ -50,7 +50,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         {
             await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
-            await provider.Client.GetFileClient().DeleteFileAsync(fileId);
+            await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
         }
 
         // Local function to invoke agent and display the conversation messages.

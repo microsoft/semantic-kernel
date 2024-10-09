@@ -26,7 +26,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
         string collectionName,
         IEnumerable<VectorStoreRecordDataProperty> dataProperties,
         IEnumerable<VectorStoreRecordVectorProperty> vectorProperties,
-        Dictionary<string, string> storagePropertyNames)
+        IReadOnlyDictionary<string, string> storagePropertyNames)
     {
         var schema = new WeaviateCollectionSchema(collectionName);
 

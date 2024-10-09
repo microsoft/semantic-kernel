@@ -32,7 +32,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
             ]
         };
 
-        this._sut = new(definition, keyProperty.DataModelPropertyName);
+        this._sut = new(new VectorStoreRecordPropertyReader(typeof(AzureCosmosDBMongoDBHotelModel), definition, null));
     }
 
     [Fact]

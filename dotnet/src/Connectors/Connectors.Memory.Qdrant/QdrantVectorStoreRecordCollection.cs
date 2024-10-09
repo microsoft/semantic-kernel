@@ -47,14 +47,11 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     /// <summary>Optional configuration options for this class.</summary>
     private readonly QdrantVectorStoreRecordCollectionOptions<TRecord> _options;
 
-    /// <summary>A definition of the current storage model.</summary>
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+    /// <summary>A helper to access property information for the current data model and record definition.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, PointStruct> _mapper;
-
-    /// <summary>A dictionary that maps from a property name to the configured name that should be used when storing it.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
@@ -89,14 +86,18 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         this._qdrantClient = qdrantClient;
         this._collectionName = collectionName;
         this._options = options ?? new QdrantVectorStoreRecordCollectionOptions<TRecord>();
-        this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
+        this._propertyReader = new VectorStoreRecordPropertyReader(
+            typeof(TRecord),
+            this._options.VectorStoreRecordDefinition,
+            new()
+            {
+                RequiresAtLeastOneVector = !this._options.HasNamedVectors,
+                SupportsMultipleKeys = false,
+                SupportsMultipleVectors = this._options.HasNamedVectors
+            });
 
         // Validate property types.
-        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: this._options.HasNamedVectors, requiresAtLeastOneVector: !this._options.HasNamedVectors);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
-
-        // Build a map of property names to storage names.
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+        this._propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
 
         // Assign Mapper.
         if (this._options.PointStructCustomMapper is not null)
@@ -108,16 +109,15 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         {
             // Generic data model mapper.
             this._mapper = (IVectorStoreRecordMapper<TRecord, PointStruct>)new QdrantGenericDataModelMapper(
-                this._vectorStoreRecordDefinition,
+                this._propertyReader,
                 this._options.HasNamedVectors);
         }
         else
         {
             // Default Mapper.
             this._mapper = new QdrantVectorStoreRecordMapper<TRecord>(
-                this._vectorStoreRecordDefinition,
-                this._options.HasNamedVectors,
-                this._storagePropertyNames);
+                this._propertyReader,
+                this._options.HasNamedVectors);
         }
     }
 
@@ -138,7 +138,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         if (!this._options.HasNamedVectors)
         {
             // If we are not using named vectors, we can only have one vector property. We can assume we have exactly one, since this is already verified in the constructor.
-            var singleVectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
+            var singleVectorProperty = this._propertyReader.VectorProperty;
 
             // Map the single vector property to the qdrant config.
             var vectorParams = QdrantVectorStoreCollectionCreateMapping.MapSingleVector(singleVectorProperty!);
@@ -154,10 +154,10 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         else
         {
             // Since we are using named vectors, iterate over all vector properties.
-            var vectorProperties = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>();
+            var vectorProperties = this._propertyReader.VectorProperties;
 
             // Map the named vectors to the qdrant config.
-            var vectorParamsMap = QdrantVectorStoreCollectionCreateMapping.MapNamedVectors(vectorProperties, this._storagePropertyNames);
+            var vectorParamsMap = QdrantVectorStoreCollectionCreateMapping.MapNamedVectors(vectorProperties, this._propertyReader.StoragePropertyNamesMap);
 
             // Create the collection with named vectors.
             await this.RunOperationAsync(
@@ -169,10 +169,10 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         }
 
         // Add indexes for each of the data properties that require filtering.
-        var dataProperties = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>().Where(x => x.IsFilterable);
+        var dataProperties = this._propertyReader.DataProperties.Where(x => x.IsFilterable);
         foreach (var dataProperty in dataProperties)
         {
-            var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
+            var storageFieldName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
             var schemaType = QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap[dataProperty.PropertyType!];
 
             await this.RunOperationAsync(
@@ -185,7 +185,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         }
 
         // Add indexes for each of the data properties that require full text search.
-        dataProperties = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>().Where(x => x.IsFullTextSearchable);
+        dataProperties = this._propertyReader.DataProperties.Where(x => x.IsFullTextSearchable);
         foreach (var dataProperty in dataProperties)
         {
             if (dataProperty.PropertyType != typeof(string))
@@ -193,7 +193,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
             }
 
-            var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
+            var storageFieldName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
 
             await this.RunOperationAsync(
                 "CreatePayloadIndex",

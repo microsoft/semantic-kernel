@@ -35,6 +35,9 @@ def create_message_with_image_reference(input: str, file_id: str) -> ChatMessage
     )
 
 
+streaming = False
+
+
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: ChatMessageContent) -> None:
     """Invoke the agent with the user input."""
@@ -42,9 +45,19 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, message: Cha
 
     print(f"# {AuthorRole.USER}: '{message.items[0].text}'")
 
-    async for content in agent.invoke(thread_id=thread_id):
-        if content.role != AuthorRole.TOOL:
-            print(f"# {content.role}: {content.content}")
+    if streaming:
+        first_chunk = True
+        async for content in agent.invoke_stream(thread_id=thread_id):
+            if content.role != AuthorRole.TOOL:
+                if first_chunk:
+                    print(f"# {content.role}: ", end="", flush=True)
+                    first_chunk = False
+                print(content.content, end="", flush=True)
+        print()
+    else:
+        async for content in agent.invoke(thread_id=thread_id):
+            if content.role != AuthorRole.TOOL:
+                print(f"# {content.role}: {content.content}")
 
 
 async def main():

@@ -13,8 +13,8 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, PointStruct>, IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>
 {
-    /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+    /// <summary>A helper to access property information for the current data model and record definition.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
 
     /// <summary>A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</summary>
     private readonly bool _hasNamedVectors;
@@ -22,21 +22,20 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantGenericDataModelMapper"/> class.
     /// </summary>
-    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
     /// <param name="hasNamedVectors">A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</param>
     public QdrantGenericDataModelMapper(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition,
+        VectorStoreRecordPropertyReader propertyReader,
         bool hasNamedVectors)
     {
-        Verify.NotNull(vectorStoreRecordDefinition);
+        Verify.NotNull(propertyReader);
 
         // Validate property types.
-        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify("VectorStoreGenericDataModel", vectorStoreRecordDefinition, supportsMultipleVectors: hasNamedVectors, requiresAtLeastOneVector: !hasNamedVectors);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes, "Vector");
+        propertyReader.VerifyDataProperties(QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, supportEnumerable: true);
+        propertyReader.VerifyVectorProperties(QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes);
 
         // Assign.
-        this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
+        this._propertyReader = propertyReader;
         this._hasNamedVectors = hasNamedVectors;
     }
 
@@ -53,7 +52,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 
         // Loop through all properties and map each from the data model to the storage model.
         MapProperties(
-            this._vectorStoreRecordDefinition.Properties,
+            this._propertyReader.Properties,
             dataModel.Data,
             dataModel.Vectors,
             pointStruct,
@@ -66,7 +65,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
     public VectorStoreGenericDataModel<ulong> MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         var dataModel = new VectorStoreGenericDataModel<ulong>(storageModel.Id.Num);
-        MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+        MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
         return dataModel;
     }
 
@@ -83,7 +82,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 
         // Loop through all properties and map each from the data model to the storage model.
         MapProperties(
-            this._vectorStoreRecordDefinition.Properties,
+            this._propertyReader.Properties,
             dataModel.Data,
             dataModel.Vectors,
             pointStruct,
@@ -96,7 +95,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
     VectorStoreGenericDataModel<Guid> IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>.MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         var dataModel = new VectorStoreGenericDataModel<Guid>(new Guid(storageModel.Id.Uuid));
-        MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+        MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
         return dataModel;
     }
 
