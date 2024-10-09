@@ -42,13 +42,11 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        HttpClient internalHttpClient = HttpClientProvider.GetHttpClient(httpClient);
-
         this.Client = new HuggingFaceMessageApiClient(
             modelId: model,
             endpoint: endpoint,
             apiKey: apiKey,
-            httpClient: internalHttpClient,
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
             logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
         );
 
