@@ -23,6 +23,7 @@ Example|Description
 ---|---
 [Step01_Processes](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step01/Step01_Processes.cs)|How to create a simple process with a loop and a conditional exit
 [Step02_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02_AccountOpening.cs)|Showcasing processes cycles, fan in, fan out for opening an account.
+[Step03_FoodPreparation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03_FoodPreparation.cs)|Showcasing reuse of steps, creation of processes, spawning of multiple events.
 
 ### Step01_Processes
 
@@ -66,6 +67,100 @@ flowchart LR
     Mailer -->|End of Interaction| User
 ```
 
+### Step03_FoodPreparation
+
+This tutorial contains a set of food recipes associated with the Food Preparation Processes of a restaurant.
+
+The following recipes for preparation of Order Items are defined as SK Processes:
+
+#### Product Preparation Processes
+
+##### Potato Fries Preparation Process
+
+``` mermaid
+flowchart LR
+    PreparePotatoFriesEvent([Prepare Potato <br/> Fries Event])
+    PotatoFriesReadyEvent([Potato Fries <br/> Ready Event])
+
+    GatherIngredientsStep[Gather Ingredients <br/> Step]
+    CutStep[Cut Food <br/> Step]
+    FryStep[Fry Food <br/> Step]
+
+    PreparePotatoFriesEvent --> GatherIngredientsStep -->| Slice Potatoes <br/> _Ingredients Gathered_ | CutStep --> |**Potato Sliced Ready** <br/> _Food Sliced Ready_ | FryStep --> |_Fried Food Ready_|PotatoFriesReadyEvent
+    FryStep -->|Fried Potato Ruined <br/> _Fried Food Ruined_| GatherIngredientsStep
+```
+
+##### Fried Fish Preparation Process
+
+``` mermaid
+flowchart LR
+    PrepareFriedFishEvent([Prepare Fried <br/> Fish Event])
+    FriedFishReadyEvent([Fried Fish <br/> Ready Event])
+
+    GatherIngredientsStep[Gather Ingredients <br/> Step]
+    CutStep[Cut Food <br/> Step]
+    FryStep[Fry Food <br/> Step]
+
+    PrepareFriedFishEvent --> GatherIngredientsStep -->| Chop Fish <br/> _Ingredients Gathered_ | CutStep --> |**Fish Chopped Ready** <br/> _Food Chopped Ready_| FryStep --> |_Fried Food Ready_ | FriedFishReadyEvent
+    FryStep -->|**Fried Fish Ruined** <br/> _Fried Food Ruined_| GatherIngredientsStep
+```
+
+##### Fish Sandwich Preparation Process
+
+``` mermaid
+flowchart LR
+    PrepareFishSandwichEvent([Prepare Fish <br/> Sandwich Event])
+    FishSandwichReadyEvent([Fish Sandwich <br/> Ready Event])
+
+    FriedFishStep[[Fried Fish <br/> Process Step]]
+    AddBunsStep[Add Buns <br/> Step]
+    AddSpecialSauceStep[Add Special <br/> Sauce Step]
+
+    PrepareFishSandwichEvent -->|Prepare Fried Fish| FriedFishStep -->|Fried Fish Ready| AddBunsStep --> |Buns Added  | AddSpecialSauceStep --> |Special Sauce Added | FishSandwichReadyEvent
+```
+
+##### Fish And Chips Preparation Process
+
+``` mermaid
+flowchart LR
+    PrepareFishAndChipsEvent([Prepare <br/> Fish And Chips <br/> Event])
+    FishAndChipsReadyEvent([Fish And Chips <br/> Ready Event])
+
+    FriedFishStep[[Fried Fish <br/> Process Step]]
+    PotatoFriesStep[[Potato Fries  <br/> Process Step]]
+    AddCondiments[Add Condiments <br/> Step ]
+
+    PrepareFishAndChipsEvent -->|Prepare Fried Fish| FriedFishStep --> |Fried Fish Ready| AddCondiments
+    PrepareFishAndChipsEvent -->|Prepare Potato Fries| PotatoFriesStep -->|Potato Fries Ready| AddCondiments
+    AddCondiments -->|Condiments Added| FishAndChipsReadyEvent
+```
+
+#### Single Order Preparation Process
+
+Now with the existing product preparation processes, they can be used to create an even more complex process that can decide what product order to dispatch.
+
+```mermaid
+graph TD
+    PrepareSingleOrderEvent([Prepare Single Order <br/> Event])
+    SingleOrderReadyEvent([Single Order <br/> Ready Event])
+    OrderPackedEvent([Order Packed <br/> Event])
+
+    DispatchOrderStep{{Dispatch <br/> Order Step}}
+    FriedFishStep[[Fried Fish  <br/> Process Step]]
+    PotatoFriesStep[[Potato Fries <br/> Process Step]]
+    FishSandwichStep[[Fish Sandwich <br/> Process Step]]
+    FishAndChipsStep[[Fish & Chips <br/> Process Step]]
+
+    PackFoodStep[Pack Food <br/> Step]
+
+    PrepareSingleOrderEvent -->|Order Received| DispatchOrderStep
+    DispatchOrderStep -->|Prepare Fried Fish| FriedFishStep -->|Fried Fish Ready| SingleOrderReadyEvent
+    DispatchOrderStep -->|Prepare Potato Fries| PotatoFriesStep -->|Potato Fries Ready| SingleOrderReadyEvent
+    DispatchOrderStep -->|Prepare Fish Sandwich| FishSandwichStep -->|Fish Sandwich Ready| SingleOrderReadyEvent
+    DispatchOrderStep -->|Prepare Fish & Chips| FishAndChipsStep -->|Fish & Chips Ready| SingleOrderReadyEvent
+
+    SingleOrderReadyEvent-->PackFoodStep --> OrderPackedEvent
+```
 
 ## Running Examples with Filters
 Examples may be explored and ran within _Visual Studio_ using _Test Explorer_.
