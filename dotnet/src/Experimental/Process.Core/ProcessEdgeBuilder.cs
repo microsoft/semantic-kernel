@@ -17,7 +17,7 @@ public sealed class ProcessEdgeBuilder
     /// <summary>
     /// The source step of the edge.
     /// </summary>
-    internal ProcessStepBuilder Source { get; }
+    internal ProcessBuilder Source { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessEdgeBuilder"/> class.
@@ -33,10 +33,12 @@ public sealed class ProcessEdgeBuilder
     /// <summary>
     /// Sends the output of the source step to the specified target when the associated event fires.
     /// </summary>
-    public void SendEventTo(ProcessFunctionTargetBuilder target)
+    public ProcessEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target)
     {
         this.Target = target;
         ProcessStepEdgeBuilder edgeBuilder = new(this.Source, this.EventId) { Target = this.Target };
         this.Source.LinkTo(this.EventId, edgeBuilder);
+
+        return new ProcessEdgeBuilder(this.Source, this.EventId);
     }
 }

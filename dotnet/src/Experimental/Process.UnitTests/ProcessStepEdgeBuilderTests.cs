@@ -36,9 +36,8 @@ public class ProcessStepEdgeBuilderTests
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var eventType = "Event1";
-        var builder = new ProcessStepEdgeBuilder(source, eventType);
-        var outputTarget = new ProcessFunctionTargetBuilder(source);
+        var builder = new ProcessStepEdgeBuilder(source, "Event1");
+        var outputTarget = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<KernelProcessStep>());
 
         // Act
         builder.SendEventTo(outputTarget);
@@ -55,19 +54,17 @@ public class ProcessStepEdgeBuilderTests
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var eventType = "Event1";
-        var builder = new ProcessStepEdgeBuilder(source, eventType);
-        var outputTargetA = new ProcessFunctionTargetBuilder(source);
-        var outputTargetB = new ProcessFunctionTargetBuilder(source);
+        var builder = new ProcessStepEdgeBuilder(source, "Event1");
+        var outputTargetA = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<TestStep>("StepA"));
+        var outputTargetB = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<TestStep>("StepB"));
 
         // Act
-        builder
-            .SendEventTo(outputTargetA)
-            .SendEventTo(outputTargetB);
+        var builder2 = builder.SendEventTo(outputTargetA);
+        builder2.SendEventTo(outputTargetB);
 
         // Assert
         Assert.Equal(outputTargetA, builder.Target); // Assuming GetOutputTarget() is a method to access _outputTarget
-        Assert.Equal(outputTargetB, builder.Target); // Assuming GetOutputTarget() is a method to access _outputTarget
+        Assert.Equal(outputTargetB, builder2.Target); // Assuming GetOutputTarget() is a method to access _outputTarget
     }
 
     /// <summary>
@@ -78,8 +75,7 @@ public class ProcessStepEdgeBuilderTests
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var eventType = "Event1";
-        var builder = new ProcessStepEdgeBuilder(source, eventType);
+        var builder = new ProcessStepEdgeBuilder(source, "Event1");
         var outputTarget1 = new ProcessFunctionTargetBuilder(source);
         var outputTarget2 = new ProcessFunctionTargetBuilder(source);
 
@@ -98,8 +94,7 @@ public class ProcessStepEdgeBuilderTests
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var eventType = "Event1";
-        var builder = new ProcessStepEdgeBuilder(source, eventType);
+        var builder = new ProcessStepEdgeBuilder(source, "Event1");
 
         // Act
         builder.StopProcess();
@@ -116,8 +111,7 @@ public class ProcessStepEdgeBuilderTests
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var eventType = "Event1";
-        var builder = new ProcessStepEdgeBuilder(source, eventType);
+        var builder = new ProcessStepEdgeBuilder(source, "Event1");
         var outputTarget = new ProcessFunctionTargetBuilder(source);
 
         // Act
@@ -135,8 +129,7 @@ public class ProcessStepEdgeBuilderTests
     {
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
-        var eventType = "Event1";
-        var builder = new ProcessStepEdgeBuilder(source, eventType);
+        var builder = new ProcessStepEdgeBuilder(source, "Event1");
         var outputTarget = new ProcessFunctionTargetBuilder(source);
         builder.SendEventTo(outputTarget);
 
