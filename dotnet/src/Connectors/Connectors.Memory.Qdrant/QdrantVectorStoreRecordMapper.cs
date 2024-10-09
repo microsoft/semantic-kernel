@@ -120,7 +120,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         // Construct the output record.
         var outputRecord = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
 
-        // Set Key.
+        // Set Key
         this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, keyPropertyValue);
 
         // Set each vector property if embeddings are included in the point.

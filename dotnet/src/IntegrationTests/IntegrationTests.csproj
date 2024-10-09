@@ -39,6 +39,7 @@
     <None Remove="prompts\GenerateStoryHandlebars.yaml" />
     <None Remove="skills\FunSkill\Joke\config.json" />
     <None Remove="skills\FunSkill\Joke\skprompt.txt" />
+    <None Remove="TestData\semantic-kernel-info.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
@@ -173,6 +174,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="skills\FunSkill\Joke\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TestData\semantic-kernel-info.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
