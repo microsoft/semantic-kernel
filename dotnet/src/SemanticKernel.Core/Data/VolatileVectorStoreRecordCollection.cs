@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -50,16 +48,10 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._collectionName = collectionName;
         this._internalCollection = new();
         this._options = options ?? new VolatileVectorStoreRecordCollectionOptions();
-        var vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
+        var vectorStorePropertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new() { RequiresAtLeastOneVector = false, SupportsMultipleKeys = false, SupportsMultipleVectors = true });
 
         // Get the key property info.
-        var keyProperty = vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordKeyProperty>().FirstOrDefault();
-        if (keyProperty is null)
-        {
-            throw new ArgumentException($"No Key property found on {typeof(TRecord).Name} or provided via {nameof(VectorStoreRecordDefinition)}");
-        }
-
-        this._keyPropertyInfo = typeof(TRecord).GetProperty(keyProperty.DataModelPropertyName) ?? throw new ArgumentException($"Key property {keyProperty.DataModelPropertyName} not found on {typeof(TRecord).Name}");
+        this._keyPropertyInfo = vectorStorePropertyReader.KeyPropertyInfo;
     }
 
     /// <summary>

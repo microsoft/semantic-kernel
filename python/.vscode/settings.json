@@ -30,5 +30,8 @@
     "notebook.codeActionsOnSave": {
         "source.fixAll": true,
         "source.organizeImports": true
-    }
+    },
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/samples/learn_resources"
+    ],
 }
