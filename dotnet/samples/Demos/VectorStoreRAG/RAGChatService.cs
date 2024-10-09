@@ -66,6 +66,8 @@ internal sealed class RAGChatService<TKey>(
     /// <returns>An async task that completes when the chat loop is shut down.</returns>
     private async Task ChatLoopAsync(CancellationToken cancellationToken)
     {
+        var pdfFiles = string.Join(", ", ragConfigOptions.Value.PdfFilePaths ?? []);
+
         // Wait for the data to be loaded before starting the chat loop.
         while (this._dataLoaded != null && !this._dataLoaded.IsCompleted && !cancellationToken.IsCancellationRequested)
         {
@@ -90,7 +92,7 @@ internal sealed class RAGChatService<TKey>(
         {
             // Prompt the user for a question.
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Assistant > What would you like to know from the PDFs?");
+            Console.WriteLine($"Assistant > What would you like to know from the loaded PDFs: ({pdfFiles})?");
 
             // Read the user question.
             Console.ForegroundColor = ConsoleColor.White;
@@ -105,12 +107,13 @@ internal sealed class RAGChatService<TKey>(
                     Please use this information to answer the question:
                     {{#with (SearchPlugin-GetTextSearchResults question)}}  
                       {{#each this}}  
-                        Name: {{Name}}
                         Value: {{Value}}
                         Link: {{Link}}
                         -----------------
-                      {{/each}}  
-                    {{/with}}  
+                      {{/each}}
+                    {{/with}}
+
+                    Include citations to the relevant information where it is referenced in the response.
                     
                     Question: {{question}}
                     """,

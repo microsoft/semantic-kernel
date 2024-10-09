@@ -27,20 +27,19 @@ internal sealed class DataLoader<TKey>(
         await vectorStoreRecordCollection.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // Load the paragraphs from the PDF file and split them into batches.
-        var sectionsText = LoadParagraphs(pdfPath, cancellationToken);
-        var batches = sectionsText.Chunk(10);
+        var sections = LoadParagraphs(pdfPath, cancellationToken);
+        var batches = sections.Chunk(10);
 
         // Process each batch of paragraphs.
-        var sectionNumber = 0;
         foreach (var batch in batches)
         {
             // Map each paragraph to a TextSnippet and generate an embedding for it.
-            var recordTasks = batch.Select(async sectionText => new TextSnippet<TKey>
+            var recordTasks = batch.Select(async section => new TextSnippet<TKey>
             {
                 Key = uniqueKeyGenerator.GenerateKey(),
-                Text = sectionText,
-                ReferenceLink = pdfPath + "#" + sectionNumber++,
-                TextEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(sectionText).ConfigureAwait(false)
+                Text = section.ParagraphText,
+                ReferenceLink = pdfPath + "#" + section.PageNumber,
+                TextEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(section.ParagraphText).ConfigureAwait(false)
             });
 
             // Upsert the records into the vector store.
@@ -58,8 +57,8 @@ internal sealed class DataLoader<TKey>(
     /// </summary>
     /// <param name="pdfPath">The pdf file to read the paragraphs from.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>The paragraphs from the pdf file.</returns>
-    private static IEnumerable<string> LoadParagraphs(string pdfPath, CancellationToken cancellationToken)
+    /// <returns>The paragraphs from the pdf file, plus the page that they are on.</returns>
+    private static IEnumerable<(string ParagraphText, int PageNumber)> LoadParagraphs(string pdfPath, CancellationToken cancellationToken)
     {
         using (PdfDocument document = PdfDocument.Open(pdfPath))
         {
@@ -78,7 +77,7 @@ internal sealed class DataLoader<TKey>(
                         break;
                     }
 
-                    yield return block.Text;
+                    yield return (ParagraphText: block.Text, PageNumber: page.Number);
                 }
             }
         }
