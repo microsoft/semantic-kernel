@@ -517,6 +517,34 @@ def mock_thread_run_step_completed():
     )
 
 
+def mock_thread_run_step_completed_with_code():
+    return ThreadRunStepCompleted(
+        data=RunStep(
+            id="step_id_2",
+            type="message_creation",
+            completed_at=int(datetime.now(timezone.utc).timestamp()),
+            created_at=int((datetime.now(timezone.utc) - timedelta(minutes=2)).timestamp()),
+            step_details=ToolCallsStepDetails(
+                type="tool_calls",
+                tool_calls=[
+                    CodeInterpreterToolCall(
+                        id="tool_call_id",
+                        code_interpreter=CodeInterpreter(input="test code", outputs=[]),
+                        type="code_interpreter",
+                    )
+                ],
+            ),
+            assistant_id="assistant_id",
+            object="thread.run.step",
+            run_id="run_id",
+            status="completed",
+            thread_id="thread_id",
+            usage=Usage(completion_tokens=10, prompt_tokens=5, total_tokens=15),
+        ),
+        event="thread.run.step.completed",
+    )
+
+
 def mock_run_with_last_error():
     return ThreadRunFailed(
         data=Run(
@@ -1159,6 +1187,31 @@ async def test_invoke_stream(
             assert content is not None
 
         assert len(messages) > 0
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_code_output(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    azure_openai_unit_test_env,
+):
+    events = [mock_thread_run_step_completed_with_code()]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+
+        messages = []
+        async for content in azure_openai_assistant_agent.invoke_stream("thread_id", messages=messages):
+            assert content is not None
+            assert content.metadata.get("code") is True
 
 
 @pytest.mark.asyncio
