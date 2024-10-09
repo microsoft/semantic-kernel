@@ -98,8 +98,20 @@ public abstract class BaseTest : TextWriter
         => this.Output.WriteLine(value ?? string.Empty);
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// <see cref="ITestOutputHelper"/> only supports output that ends with a newline.
+    /// User this method will resolve in a call to <see cref="WriteLine(string?)"/>.
+    /// </remarks>
     public override void Write(object? value = null)
         => this.Output.WriteLine(value ?? string.Empty);
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// <see cref="ITestOutputHelper"/> only supports output that ends with a newline.
+    /// User this method will resolve in a call to <see cref="WriteLine(string?)"/>.
+    /// </remarks>
+    public override void Write(char[]? buffer)
+        => this.Output.WriteLine(new string(buffer));
 
     /// <inheritdoc/>
     public override Encoding Encoding => Encoding.UTF8;
