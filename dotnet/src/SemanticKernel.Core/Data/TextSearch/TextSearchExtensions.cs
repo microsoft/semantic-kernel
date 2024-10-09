@@ -14,6 +14,11 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public static class TextSearchExtensions
 {
+    /// <summary>
+    /// Default number of search results to return.
+    /// </summary>
+    public static readonly int DefaultTop = 5;
+
     #region KernelPlugin factory methods
     /// <summary>
     /// Creates a plugin from an ITextSearch implementation.
@@ -95,7 +100,7 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Top = GetArgumentValue(arguments, parameters, "count", 2),
+                Top = GetArgumentValue(arguments, parameters, "top", DefaultTop),
                 Skip = GetArgumentValue(arguments, parameters, "skip", 0),
                 Filter = CreateBasicFilter(options, arguments)
             };
@@ -132,7 +137,7 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Top = GetArgumentValue(arguments, parameters, "count", 2),
+                Top = GetArgumentValue(arguments, parameters, "top", DefaultTop),
                 Skip = GetArgumentValue(arguments, parameters, "skip", 0),
                 Filter = CreateBasicFilter(options, arguments)
             };
@@ -168,7 +173,7 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Top = GetArgumentValue(arguments, parameters, "count", 2),
+                Top = GetArgumentValue(arguments, parameters, "top", DefaultTop),
                 Skip = GetArgumentValue(arguments, parameters, "skip", 0),
                 Filter = CreateBasicFilter(options, arguments)
             };
@@ -220,7 +225,7 @@ public static class TextSearchExtensions
             Parameters =
             [
                 new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("top") { Description = "Number of results", IsRequired = false, DefaultValue = DefaultTop },
                 new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
             ],
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
@@ -237,7 +242,7 @@ public static class TextSearchExtensions
             Parameters =
             [
                 new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("top") { Description = "Number of results", IsRequired = false, DefaultValue = DefaultTop },
                 new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
             ],
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
@@ -254,7 +259,7 @@ public static class TextSearchExtensions
             Parameters =
             [
                 new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("top") { Description = "Number of results", IsRequired = false, DefaultValue = DefaultTop },
                 new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
             ],
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
@@ -277,7 +282,7 @@ public static class TextSearchExtensions
         {
             // treat non standard parameters as equality filter clauses
             if (!parameter.Name.Equals("query", System.StringComparison.Ordinal) &&
-                !parameter.Name.Equals("count", System.StringComparison.Ordinal) &&
+                !parameter.Name.Equals("top", System.StringComparison.Ordinal) &&
                 !parameter.Name.Equals("skip", System.StringComparison.Ordinal))
             {
                 if (arguments.TryGetValue(parameter.Name, out var value) && value is not null)
