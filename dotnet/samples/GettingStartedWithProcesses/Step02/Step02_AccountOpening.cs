@@ -16,6 +16,9 @@ namespace Step02;
 /// </summary>
 public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
+    // Target Open AI Services
+    protected override bool ForceOpenAI => true;
+
     private KernelProcess SetupAccountOpeningProcess<TUserInputStep>() where TUserInputStep : ScriptedUserInputStep
     {
         ProcessBuilder process = new("AccountOpeningProcess");
@@ -143,21 +146,18 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output, 
     {
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputSuccessfulInteraction>();
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
     }
 
     private sealed class UserInputSuccessfulInteraction : ScriptedUserInputStep
     {
-        public override void PopulateUserInputs()
+        public override void PopulateUserInputs(UserInputState state)
         {
-            if (_state != null)
-            {
-                _state.UserInputs.Add("I would like to open an account");
-                _state.UserInputs.Add("My name is John Contoso, dob 02/03/1990");
-                _state.UserInputs.Add("I live in Washington and my phone number es 222-222-1234");
-                _state.UserInputs.Add("My userId is 987-654-3210");
-                _state.UserInputs.Add("My email is john.contoso@contoso.com, what else do you need?");
-            }
+            state.UserInputs.Add("I would like to open an account");
+            state.UserInputs.Add("My name is John Contoso, dob 02/03/1990");
+            state.UserInputs.Add("I live in Washington and my phone number es 222-222-1234");
+            state.UserInputs.Add("My userId is 987-654-3210");
+            state.UserInputs.Add("My email is john.contoso@contoso.com, what else do you need?");
         }
     }
 
@@ -169,21 +169,18 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output, 
     {
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputCreditScoreFailureInteraction>();
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
     }
 
     private sealed class UserInputCreditScoreFailureInteraction : ScriptedUserInputStep
     {
-        public override void PopulateUserInputs()
+        public override void PopulateUserInputs(UserInputState state)
         {
-            if (_state != null)
-            {
-                _state.UserInputs.Add("I would like to open an account");
-                _state.UserInputs.Add("My name is John Contoso, dob 01/01/1990");
-                _state.UserInputs.Add("I live in Washington and my phone number es 222-222-1234");
-                _state.UserInputs.Add("My userId is 987-654-3210");
-                _state.UserInputs.Add("My email is john.contoso@contoso.com, what else do you need?");
-            }
+            state.UserInputs.Add("I would like to open an account");
+            state.UserInputs.Add("My name is John Contoso, dob 01/01/1990");
+            state.UserInputs.Add("I live in Washington and my phone number es 222-222-1234");
+            state.UserInputs.Add("My userId is 987-654-3210");
+            state.UserInputs.Add("My email is john.contoso@contoso.com, what else do you need?");
         }
     }
 
@@ -195,31 +192,18 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output, 
     {
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SetupAccountOpeningProcess<UserInputFraudFailureInteraction>();
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
+        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = AccountOpeningEvents.StartProcess, Data = null });
     }
 
     private sealed class UserInputFraudFailureInteraction : ScriptedUserInputStep
     {
-        public override void PopulateUserInputs()
+        public override void PopulateUserInputs(UserInputState state)
         {
-            if (_state != null)
-            {
-                _state.UserInputs.Add("I would like to open an account");
-                _state.UserInputs.Add("My name is John Contoso, dob 02/03/1990");
-                _state.UserInputs.Add("I live in Washington and my phone number es 222-222-1234");
-                _state.UserInputs.Add("My userId is 123-456-7890");
-                _state.UserInputs.Add("My email is john.contoso@contoso.com, what else do you need?");
-            }
+            state.UserInputs.Add("I would like to open an account");
+            state.UserInputs.Add("My name is John Contoso, dob 02/03/1990");
+            state.UserInputs.Add("I live in Washington and my phone number es 222-222-1234");
+            state.UserInputs.Add("My userId is 123-456-7890");
+            state.UserInputs.Add("My email is john.contoso@contoso.com, what else do you need?");
         }
-    }
-
-    protected new Kernel CreateKernelWithChatCompletion()
-    {
-        var builder = Kernel.CreateBuilder();
-        builder.AddOpenAIChatCompletion(
-            TestConfiguration.OpenAI.ChatModelId,
-            TestConfiguration.OpenAI.ApiKey);
-
-        return builder.Build();
     }
 }
