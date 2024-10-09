@@ -15,8 +15,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 [Collection("SqliteVectorStoreCollection")]
 public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixture fixture)
 {
-    //private const string? SkipReason = "SQLite vector search extension is required";
-    private const string? SkipReason = null;
+    private const string? SkipReason = "SQLite vector search extension is required";
 
     [Theory]
     [InlineData(true)]

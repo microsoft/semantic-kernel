@@ -13,8 +13,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 [Collection("SqliteVectorStoreCollection")]
 public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
 {
-    //private const string? SkipReason = "SQLite vector search extension is required";
-    private const string? SkipReason = null;
+    private const string? SkipReason = "SQLite vector search extension is required";
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanGetAListOfExistingCollectionNamesAsync()
