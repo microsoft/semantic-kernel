@@ -15,10 +15,10 @@ namespace VectorStoreRAG;
 /// <param name="uniqueKeyGenerator">A function to generate unique keys with.</param>
 /// <param name="vectorStoreRecordCollection">The collection to load the data into.</param>
 /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings from the text.</param>
-internal class DataLoader<TKey>(
-        UniqueKeyGenerator<TKey> uniqueKeyGenerator,
-        IVectorStoreRecordCollection<TKey, TextSnippet<TKey>> vectorStoreRecordCollection,
-        ITextEmbeddingGenerationService textEmbeddingGenerationService) : IDataLoader where TKey : notnull
+internal sealed class DataLoader<TKey>(
+    UniqueKeyGenerator<TKey> uniqueKeyGenerator,
+    IVectorStoreRecordCollection<TKey, TextSnippet<TKey>> vectorStoreRecordCollection,
+    ITextEmbeddingGenerationService textEmbeddingGenerationService) : IDataLoader where TKey : notnull
 {
     /// <inheritdoc/>
     public async Task LoadPdf(string pdfPath, CancellationToken cancellationToken)

@@ -12,6 +12,9 @@ internal sealed class RagConfig
     public const string ConfigSectionName = "Rag";
 
     [Required]
+    public bool BuildCollection { get; set; } = true;
+
+    [Required]
     public string[]? PdfFilePaths { get; set; }
 
     [Required]

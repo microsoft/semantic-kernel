@@ -17,60 +17,87 @@ builder.Configuration
 
 builder.Services.Configure<RagConfig>(builder.Configuration.GetSection(RagConfig.ConfigSectionName));
 
-var vectorStoreRagConfig = new VectorStoreRagConfig(builder.Configuration);
+var appConfig = new ApplicationConfig(builder.Configuration);
 
 // Register the kernel with the dependency injection container
 // and add Chat Completion and Text Embedding Generation services.
 var kernelBuilder = builder.Services.AddKernel()
     .AddAzureOpenAIChatCompletion(
-        vectorStoreRagConfig.AzureOpenAIConfig.ChatDeploymentName,
-        vectorStoreRagConfig.AzureOpenAIConfig.Endpoint,
+        appConfig.AzureOpenAIConfig.ChatDeploymentName,
+        appConfig.AzureOpenAIConfig.Endpoint,
         new AzureCliCredential())
     .AddAzureOpenAITextEmbeddingGeneration(
-        vectorStoreRagConfig.AzureOpenAIEmbeddingsConfig.DeploymentName,
-        vectorStoreRagConfig.AzureOpenAIEmbeddingsConfig.Endpoint,
+        appConfig.AzureOpenAIEmbeddingsConfig.DeploymentName,
+        appConfig.AzureOpenAIEmbeddingsConfig.Endpoint,
         new AzureCliCredential());
 
 // Add the configured vector store record collection type to the
 // dependency injection container.
-switch (vectorStoreRagConfig.RagConfig.VectorStoreType)
+switch (appConfig.RagConfig.VectorStoreType)
 {
+    case "AzureAISearch":
+        kernelBuilder.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(
+            appConfig.RagConfig.CollectionName,
+            new Uri(appConfig.AzureAISearchConfig.Endpoint),
+            new AzureKeyCredential(appConfig.AzureAISearchConfig.ApiKey));
+        break;
+    case "AzureCosmosDBMongoDB":
+        kernelBuilder.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TextSnippet<string>>(
+            appConfig.RagConfig.CollectionName,
+            appConfig.AzureCosmosDBMongoDBConfig.ConnectionString,
+            appConfig.AzureCosmosDBMongoDBConfig.DatabaseName);
+        break;
+    case "AzureCosmosDBNoSQL":
+        kernelBuilder.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TextSnippet<string>>(
+            appConfig.RagConfig.CollectionName,
+            appConfig.AzureCosmosDBNoSQLConfig.ConnectionString,
+            appConfig.AzureCosmosDBNoSQLConfig.DatabaseName);
+        break;
     case "Qdrant":
         kernelBuilder.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
-            vectorStoreRagConfig.RagConfig.CollectionName,
-            vectorStoreRagConfig.QdrantConfig.Host,
-            vectorStoreRagConfig.QdrantConfig.Port,
-            vectorStoreRagConfig.QdrantConfig.Https,
-            vectorStoreRagConfig.QdrantConfig.ApiKey);
+            appConfig.RagConfig.CollectionName,
+            appConfig.QdrantConfig.Host,
+            appConfig.QdrantConfig.Port,
+            appConfig.QdrantConfig.Https,
+            appConfig.QdrantConfig.ApiKey);
         break;
-    case "AzureAISearch":
-        kernelBuilder.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<Guid>>(
-            vectorStoreRagConfig.RagConfig.CollectionName,
-            new Uri(vectorStoreRagConfig.AzureAISearchConfig.Endpoint),
-            new AzureKeyCredential(vectorStoreRagConfig.AzureAISearchConfig.ApiKey));
+    case "Redis":
+        kernelBuilder.AddRedisJsonVectorStoreRecordCollection<TextSnippet<string>>(
+            appConfig.RagConfig.CollectionName,
+            appConfig.RedisConfig.ConnectionConfiguration);
+        break;
+    case "Weaviate":
+        kernelBuilder.AddWeaviateVectorStoreRecordCollection<TextSnippet<Guid>>(
+            appConfig.RagConfig.CollectionName,
+            null,
+            new() { Endpoint = new Uri(appConfig.WeaviateConfig.Endpoint) });
         break;
     default:
-        throw new NotSupportedException($"Vector store type '{vectorStoreRagConfig.RagConfig.VectorStoreType}' is not supported.");
+        throw new NotSupportedException($"Vector store type '{appConfig.RagConfig.VectorStoreType}' is not supported.");
 }
 
 // Register all the other required services.
-switch (vectorStoreRagConfig.RagConfig.VectorStoreType)
+switch (appConfig.RagConfig.VectorStoreType)
 {
-    case "Qdrant":
-        RegisterServices<Guid>(builder, kernelBuilder, vectorStoreRagConfig);
-        break;
     case "AzureAISearch":
-        RegisterServices<string>(builder, kernelBuilder, vectorStoreRagConfig);
+    case "AzureCosmosDBMongoDB":
+    case "AzureCosmosDBNoSQL":
+    case "Redis":
+        RegisterServices<string>(builder, kernelBuilder, appConfig);
+        break;
+    case "Qdrant":
+    case "Weaviate":
+        RegisterServices<Guid>(builder, kernelBuilder, appConfig);
         break;
     default:
-        throw new NotSupportedException($"Vector store type '{vectorStoreRagConfig.RagConfig.VectorStoreType}' is not supported.");
+        throw new NotSupportedException($"Vector store type '{appConfig.RagConfig.VectorStoreType}' is not supported.");
 }
 
 // Build and run the host.
 using IHost host = builder.Build();
 await host.RunAsync().ConfigureAwait(false);
 
-static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilder kernelBuilder, VectorStoreRagConfig vectorStoreRagConfig)
+static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilder kernelBuilder, ApplicationConfig vectorStoreRagConfig)
     where TKey : notnull
 {
     // Add a text search implementation that uses the registered vector store record collection for search.
@@ -79,13 +106,14 @@ static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilde
         new TextSearchResultMapper((result) =>
         {
             var castResult = result as TextSnippet<TKey>;
-            return new TextSearchResult(value: castResult!.Text) { Link = castResult.ReferenceLink };
+            return new TextSearchResult(value: castResult!.Text!) { Link = castResult.ReferenceLink };
         }));
 
     // Add the key generator and data loader to the dependency injection container.
     builder.Services.AddSingleton<UniqueKeyGenerator<Guid>>(new UniqueKeyGenerator<Guid>(() => Guid.NewGuid()));
-    builder.Services.AddSingleton<IDataLoader, DataLoader<Guid>>();
+    builder.Services.AddSingleton<UniqueKeyGenerator<string>>(new UniqueKeyGenerator<string>(() => Guid.NewGuid().ToString()));
+    builder.Services.AddSingleton<IDataLoader, DataLoader<TKey>>();
 
     // Add the main service for this application.
-    builder.Services.AddHostedService<RAGChatService<Guid>>();
+    builder.Services.AddHostedService<RAGChatService<TKey>>();
 }

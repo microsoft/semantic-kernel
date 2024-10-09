@@ -17,7 +17,7 @@ namespace VectorStoreRAG;
 /// <param name="vectorStoreTextSearch">Used to search the vector store.</param>
 /// <param name="kernel">Used to make requests to the LLM.</param>
 /// <param name="ragConfigOptions">The configuration options for the application.</param>
-internal class RAGChatService<TKey>(
+internal sealed class RAGChatService<TKey>(
     IDataLoader dataLoader,
     VectorStoreTextSearch<TextSnippet<TKey>> vectorStoreTextSearch,
     Kernel kernel,
@@ -26,10 +26,22 @@ internal class RAGChatService<TKey>(
     private Task? _dataLoaded;
     private Task? _chatLoop;
 
+    /// <summary>
+    /// Start the service.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>An async task that completes when the service is started.</returns>
     public Task StartAsync(CancellationToken cancellationToken)
     {
         // Start to load all the configured PDFs into the vector store.
-        this._dataLoaded = this.LoadDataAsync(cancellationToken);
+        if (ragConfigOptions.Value.BuildCollection)
+        {
+            this._dataLoaded = this.LoadDataAsync(cancellationToken);
+        }
+        else
+        {
+            this._dataLoaded = Task.CompletedTask;
+        }
 
         // Start the chat loop.
         this._chatLoop = this.ChatLoopAsync(cancellationToken);
@@ -37,11 +49,21 @@ internal class RAGChatService<TKey>(
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Stop the service.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>An async task that completes when the service is stopped.</returns>
     public Task StopAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Contains the main chat loop for the application.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>An async task that completes when the chat loop is shut down.</returns>
     private async Task ChatLoopAsync(CancellationToken cancellationToken)
     {
         // Wait for the data to be loaded before starting the chat loop.
@@ -75,8 +97,9 @@ internal class RAGChatService<TKey>(
             Console.Write("User > ");
             var question = Console.ReadLine();
 
-            // Invoke the LLM with a template, that uses the search plugin to get related information
-            // to the user query from the vector store and add it to the LLM prompt.
+            // Invoke the LLM with a template that uses the search plugin to
+            // 1. get related information to the user query from the vector store
+            // 2. add the information to the LLM prompt.
             var response = kernel.InvokePromptStreamingAsync(
                 promptTemplate: """
                     Please use this information to answer the question:
@@ -99,14 +122,23 @@ internal class RAGChatService<TKey>(
                 promptTemplateFactory: new HandlebarsPromptTemplateFactory(),
                 cancellationToken: cancellationToken);
 
-            // Stream the LLM response to the console.
+            // Stream the LLM response to the console with error handling.
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("\nAssistant > ");
-            await foreach (var message in response.ConfigureAwait(false))
+
+            try
             {
-                Console.Write(message);
+                await foreach (var message in response.ConfigureAwait(false))
+                {
+                    Console.Write(message);
+                }
+                Console.WriteLine();
             }
-            Console.WriteLine();
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Call to LLM failed with error: {ex}");
+            }
         }
     }
 
@@ -127,7 +159,7 @@ internal class RAGChatService<TKey>(
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to load PDFs: {ex.Message}");
+            Console.WriteLine($"Failed to load PDFs: {ex}");
             throw;
         }
     }
