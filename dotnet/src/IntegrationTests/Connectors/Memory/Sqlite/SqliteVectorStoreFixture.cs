@@ -16,11 +16,11 @@ public class SqliteVectorStoreFixture : IAsyncLifetime, IDisposable
     /// </summary>
     private const string VectorSearchExtensionName = "vec0";
 
-    private readonly SqliteConnection _connection;
+    public SqliteConnection Connection { get; }
 
     public SqliteVectorStoreFixture()
     {
-        this._connection = new SqliteConnection("Data Source=:memory:");
+        this.Connection = new SqliteConnection("Data Source=:memory:");
     }
 
     public SqliteVectorStoreRecordCollection<TRecord> GetCollection<TRecord>(
@@ -29,9 +29,8 @@ public class SqliteVectorStoreFixture : IAsyncLifetime, IDisposable
         where TRecord : class
     {
         return new SqliteVectorStoreRecordCollection<TRecord>(
-            this._connection,
+            this.Connection,
             collectionName,
-            VectorSearchExtensionName,
             options);
     }
 
@@ -42,9 +41,9 @@ public class SqliteVectorStoreFixture : IAsyncLifetime, IDisposable
 
     public async Task InitializeAsync()
     {
-        await this._connection.OpenAsync();
+        await this.Connection.OpenAsync();
 
-        this._connection.LoadExtension(VectorSearchExtensionName);
+        this.Connection.LoadExtension(VectorSearchExtensionName);
     }
 
     public void Dispose()
@@ -57,7 +56,7 @@ public class SqliteVectorStoreFixture : IAsyncLifetime, IDisposable
     {
         if (disposing)
         {
-            this._connection.Dispose();
+            this.Connection.Dispose();
         }
     }
 }

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
@@ -29,6 +28,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
     /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
     private readonly SqliteConnection _connection;
+
+    /// <summary>Optional configuration options for this class.</summary>
+    private readonly SqliteVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
@@ -63,9 +65,6 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <summary>Table name in SQLite for vector properties.</summary>
     private readonly string _vectorTableName;
 
-    /// <summary>SQLite extension name for vector search operations.</summary>
-    private readonly string _vectorSearchExtensionName;
-
     /// <inheritdoc />
     public string CollectionName { get; }
 
@@ -74,32 +73,27 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// </summary>
     /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
     /// <param name="collectionName">The name of the collection/table that this <see cref="SqliteVectorStoreRecordCollection{TRecord}"/> will access.</param>
-    /// <param name="vectorSearchExtensionName">SQLite extension name for vector search operations.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public SqliteVectorStoreRecordCollection(
         SqliteConnection connection,
         string collectionName,
-        string vectorSearchExtensionName,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(connection);
         Verify.NotNullOrWhiteSpace(collectionName);
-        Verify.NotNullOrWhiteSpace(vectorSearchExtensionName);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), customMapperSupplied: false, SqliteConstants.SupportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._connection = connection;
         this.CollectionName = collectionName;
-        this._vectorSearchExtensionName = vectorSearchExtensionName;
-
-        var collectionOptions = options ?? new();
+        this._options = options ?? new();
 
         this._dataTableName = this.CollectionName;
-        this._vectorTableName = GetVectorTableName(this._dataTableName, collectionOptions);
+        this._vectorTableName = GetVectorTableName(this._dataTableName, this._options);
 
-        this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), collectionOptions.VectorStoreRecordDefinition, new()
+        this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new()
         {
             RequiresAtLeastOneVector = false,
             SupportsMultipleKeys = false,
@@ -119,7 +113,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         this._dataTableStoragePropertyNames = new(() => [this._propertyReader.KeyPropertyStoragePropertyName, .. this._propertyReader.DataPropertyStoragePropertyNames]);
         this._vectorTableStoragePropertyNames = new(() => [this._propertyReader.KeyPropertyStoragePropertyName, .. this._propertyReader.VectorPropertyStoragePropertyNames]);
 
-        this._mapper = InitializeMapper(this._propertyReader, collectionOptions);
+        this._mapper = this.InitializeMapper();
 
         this._commandBuilder = new SqliteVectorStoreCollectionCommandBuilder(this._connection);
     }
@@ -375,6 +369,10 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         if (this._vectorPropertiesExist)
         {
+            var extensionName = !string.IsNullOrWhiteSpace(this._options.VectorSearchExtensionName) ?
+                this._options.VectorSearchExtensionName :
+                SqliteConstants.VectorSearchExtensionName;
+
             List<SqliteColumn> vectorTableColumns = SqliteVectorStoreRecordPropertyMapping.GetColumns(
                 this._vectorTableProperties.Value,
                 this._propertyReader.StoragePropertyNamesMap);
@@ -383,7 +381,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
                 this._vectorTableName,
                 vectorTableColumns,
                 ifNotExists,
-                this._vectorSearchExtensionName,
+                extensionName!,
                 cancellationToken));
         }
 
@@ -693,23 +691,21 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         }
     }
 
-    private static IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> InitializeMapper(
-        VectorStoreRecordPropertyReader propertyReader,
-        SqliteVectorStoreRecordCollectionOptions<TRecord> options)
+    private IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> InitializeMapper()
     {
-        if (options.DictionaryCustomMapper is not null)
+        if (this._options.DictionaryCustomMapper is not null)
         {
-            return options.DictionaryCustomMapper;
+            return this._options.DictionaryCustomMapper;
         }
 
         if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>) ||
             typeof(TRecord) == typeof(VectorStoreGenericDataModel<ulong>))
         {
-            var mapper = new SqliteGenericDataModelMapper(propertyReader);
+            var mapper = new SqliteGenericDataModelMapper(this._propertyReader);
             return (mapper as IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>)!;
         }
 
-        return new SqliteVectorStoreRecordMapper<TRecord>(propertyReader);
+        return new SqliteVectorStoreRecordMapper<TRecord>(this._propertyReader);
     }
 
     private List<SqliteWhereCondition>? GetFilterConditions(VectorSearchFilter? filter, string? tableName = null)

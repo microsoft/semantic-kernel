@@ -10,8 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within SQLite.
 /// </summary>
 internal sealed class SqliteGenericDataModelMapper :
-    IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, Dictionary<string, object?>>,
-    IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, Dictionary<string, object?>>
+    IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, Dictionary<string, object?>>,
+    IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, Dictionary<string, object?>>
 {
     /// <summary><see cref="VectorStoreRecordPropertyReader"/> with helpers for reading vector store model properties and their attributes.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;

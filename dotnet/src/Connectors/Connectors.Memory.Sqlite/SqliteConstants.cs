@@ -7,6 +7,12 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 internal static class SqliteConstants
 {
+    /// <summary>
+    /// SQLite extension name for vector search.
+    /// More information here: <see href="https://github.com/asg017/sqlite-vec"/>.
+    /// </summary>
+    public const string VectorSearchExtensionName = "vec0";
+
     /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
     public static readonly HashSet<Type> SupportedKeyTypes =
     [

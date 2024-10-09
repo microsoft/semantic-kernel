@@ -26,6 +26,11 @@ public sealed class SqliteVectorStoreRecordCollectionOptions<TRecord> where TRec
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
 
     /// <summary>
+    /// SQLite extension name for vector search operations.
+    /// </summary>
+    public string? VectorSearchExtensionName { get; set; } = null;
+
+    /// <summary>
     /// Custom virtual table name to store vectors.
     /// </summary>
     /// <remarks>
