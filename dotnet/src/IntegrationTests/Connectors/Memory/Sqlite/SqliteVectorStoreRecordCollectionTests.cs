@@ -486,6 +486,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         };
     }
 
+#pragma warning disable CA1812
     private sealed class RecordWithSupportedDistanceFunctions
     {
         [VectorStoreRecordKey]
@@ -500,6 +501,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.ManhattanDistance)]
         public ReadOnlyMemory<float>? Embedding3 { get; set; }
     }
+#pragma warning restore CA1812
 
     #endregion
 }
