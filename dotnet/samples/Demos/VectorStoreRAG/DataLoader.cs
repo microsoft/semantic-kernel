@@ -2,8 +2,8 @@
 
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
-using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig;
+using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
 
 namespace VectorStoreRAG;
