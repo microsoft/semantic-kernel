@@ -256,6 +256,9 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <summary>Gets the storage names of the data properties in the definition.</summary>
     public IReadOnlyList<string> DataPropertyStoragePropertyNames => this._dataPropertyStoragePropertyNames.Value;
 
+    /// <summary>Gets the storage name of the first vector property in the definition or null if there are no vectors.</summary>
+    public string? FirstVectorPropertyStoragePropertyName => this.FirstVectorPropertyName == null ? null : this.StoragePropertyNamesMap[this.FirstVectorPropertyName];
+
     /// <summary>Gets the storage names of the vector properties in the definition.</summary>
     public IReadOnlyList<string> VectorPropertyStoragePropertyNames => this._vectorPropertyStoragePropertyNames.Value;
 
@@ -267,6 +270,9 @@ internal sealed class VectorStoreRecordPropertyReader
 
     /// <summary>Gets the json names of the data properties in the definition.</summary>
     public IReadOnlyList<string> DataPropertyJsonNames => this._dataPropertyJsonNames.Value;
+
+    /// <summary>Gets the json name of the first vector property in the definition or null if there are no vectors.</summary>
+    public string? FirstVectorPropertyJsonName => this.FirstVectorPropertyName == null ? null : this.JsonPropertyNamesMap[this.FirstVectorPropertyName];
 
     /// <summary>Gets the json names of the vector properties in the definition.</summary>
     public IReadOnlyList<string> VectorPropertyJsonNames => this._vectorPropertyJsonNames.Value;

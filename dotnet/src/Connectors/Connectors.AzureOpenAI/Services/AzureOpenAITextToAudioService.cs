@@ -48,17 +48,19 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     public AzureOpenAITextToAudioService(
         string deploymentName,
         string endpoint,
         string apiKey,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        string? apiVersion = null)
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
-        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), new ApiKeyCredential(apiKey), options);
 
@@ -78,17 +80,19 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     public AzureOpenAITextToAudioService(
         string deploymentName,
         string endpoint,
         TokenCredential credential,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        string? apiVersion = null)
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
-        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 
         var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), credential, options);
 
