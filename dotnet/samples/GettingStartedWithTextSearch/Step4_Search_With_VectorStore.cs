@@ -27,7 +27,7 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output) : BaseTest(
 
         // Construct the Volatile VectorStore.
         var vectorStore = new VolatileVectorStore();
-        var vectorizedSearch = await InitialiseRecordCollectionAsync(vectorStore, textEmbeddingGeneration, "records");
+        var vectorizedSearch = await InitializeRecordCollectionAsync(vectorStore, textEmbeddingGeneration, "records");
 
         // Create a text search instance using the volatile vector store.
         var stringMapper = new DataModelTextSearchStringMapper();
@@ -48,7 +48,10 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output) : BaseTest(
     }
 
     #region private
-    private async Task<IVectorStoreRecordCollection<Guid, DataModel>> InitialiseRecordCollectionAsync(
+    /// <summary>
+    /// Initialize a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with a list of strings.
+    /// </summary>
+    private async Task<IVectorStoreRecordCollection<Guid, DataModel>> InitializeRecordCollectionAsync(
         VolatileVectorStore vectorStore,
         ITextEmbeddingGenerationService embeddingGenerationService,
         string collectionName)
@@ -145,7 +148,7 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output) : BaseTest(
         {
             if (result is DataModel dataModel)
             {
-                return new TextSearchResult(name: dataModel.Key.ToString(), value: dataModel.Text);
+                return new TextSearchResult(value: dataModel.Text) { Name = dataModel.Key.ToString() };
             }
             throw new ArgumentException("Invalid result type.");
         }

@@ -12,6 +12,7 @@
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />

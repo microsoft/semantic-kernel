@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -269,7 +271,7 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text search using Bing search
-        var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+        var textSearch = new TextSearchWithFullValues(new BingTextSearch(new(TestConfiguration.Bing.ApiKey)));
 
         // Create a filter to search only the Microsoft Developer Blogs site
         var filter = new TextSearchFilter().Equality("site", "devblogs.microsoft.com");
@@ -306,4 +308,67 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
             promptTemplateFactory: promptTemplateFactory
         ));
     }
+}
+
+/// <summary>
+/// Wraps a <see cref="ITextSearch"/> to provide full web pages as search results.
+/// </summary>
+public partial class TextSearchWithFullValues(ITextSearch searchDelegate) : ITextSearch
+{
+    /// <inheritdoc/>
+    public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        return searchDelegate.GetSearchResultsAsync(query, searchOptions, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        var results = await searchDelegate.GetTextSearchResultsAsync(query, searchOptions, cancellationToken);
+
+        var resultList = new List<TextSearchResult>();
+
+        using HttpClient client = new();
+        await foreach (var item in results.Results.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            string? value = item.Value;
+            try
+            {
+                if (item.Link is not null)
+                {
+                    value = await client.GetStringAsync(new Uri(item.Link), cancellationToken);
+                    value = ConvertHtmlToPlainText(value);
+                }
+            }
+            catch (HttpRequestException)
+            {
+            }
+
+            resultList.Add(new(value) { Name = item.Name, Link = item.Link });
+        }
+
+        return new KernelSearchResults<TextSearchResult>(resultList.ToAsyncEnumerable<TextSearchResult>(), results.TotalCount, results.Metadata);
+    }
+
+    /// <inheritdoc/>
+    public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        return searchDelegate.SearchAsync(query, searchOptions, cancellationToken);
+    }
+
+    /// <summary>
+    /// Convert HTML to plain text.
+    /// </summary>
+    private static string ConvertHtmlToPlainText(string html)
+    {
+        HtmlDocument doc = new();
+        doc.LoadHtml(html);
+
+        string text = doc.DocumentNode.InnerText;
+        text = MyRegex().Replace(text, " "); // Remove unnecessary whitespace  
+        return text.Trim();
+    }
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex MyRegex();
 }
