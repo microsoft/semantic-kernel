@@ -123,11 +123,12 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
                 var storageName = storagePropertyNames[vectorProperty.DataModelPropertyName];
                 var indexKind = GetSDKIndexKind(vectorProperty);
-                var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
+                var vectorType = GetSDKVectorType(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
+                var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
                 {
-                    ["TYPE"] = "FLOAT32",
+                    ["TYPE"] = vectorType,
                     ["DIM"] = dimensions,
                     ["DISTANCE_METRIC"] = distanceAlgorithm
                 });
@@ -179,6 +180,24 @@ internal static class RedisVectorStoreCollectionCreateMapping
             DistanceFunction.DotProductSimilarity => "IP",
             DistanceFunction.EuclideanDistance => "L2",
             _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
+        };
+    }
+
+    /// <summary>
+    /// Get the vector type to pass to the SDK based on the data type of the vector property.
+    /// </summary>
+    /// <param name="vectorProperty">The vector property definition.</param>
+    /// <returns>The SDK required vector type.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the property data type is not supported by the connector.</exception>
+    public static string GetSDKVectorType(VectorStoreRecordVectorProperty vectorProperty)
+    {
+        return vectorProperty.PropertyType switch
+        {
+            Type t when t == typeof(ReadOnlyMemory<float>) => "FLOAT32",
+            Type t when t == typeof(ReadOnlyMemory<float>?) => "FLOAT32",
+            Type t when t == typeof(ReadOnlyMemory<double>) => "FLOAT64",
+            Type t when t == typeof(ReadOnlyMemory<double>?) => "FLOAT64",
+            _ => throw new InvalidOperationException($"Vector data type '{vectorProperty.PropertyType.FullName}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
         };
     }
 
