@@ -4,10 +4,12 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion
 from semantic_kernel.contents import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError
 from tests.unit.connectors.onnx.conftest import gen_ai_config
+
+pytest.importorskip("onnxruntime_genai")
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion  # noqa: E402
 
 
 @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))

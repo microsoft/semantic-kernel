@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
 from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
 from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent, ImageContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
@@ -14,6 +13,9 @@ from tests.unit.connectors.onnx.conftest import (
     gen_ai_config,
     gen_ai_config_vision,
 )
+
+pytest.importorskip("onnxruntime_genai")
+from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings  # noqa: E402
 
 
 @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(gen_ai_config))
