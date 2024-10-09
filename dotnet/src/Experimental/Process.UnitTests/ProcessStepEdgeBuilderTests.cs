@@ -37,7 +37,7 @@ public class ProcessStepEdgeBuilderTests
         // Arrange
         var source = new ProcessStepBuilder<TestStep>(TestStep.Name);
         var builder = new ProcessStepEdgeBuilder(source, "Event1");
-        var outputTarget = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<KernelProcessStep>());
+        var outputTarget = new ProcessFunctionTargetBuilder(new ProcessStepBuilder<TestStep>("OutputStep"));
 
         // Act
         builder.SendEventTo(outputTarget);
