@@ -22,7 +22,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     /// <summary>
     /// The state object for the user input step. This object holds the user inputs and the current input index.
     /// </summary>
-    private  UserInputState? _state;
+    private UserInputState? _state;
 
     /// <summary>
     /// Method to be overridden by the user to populate with custom user messages
