@@ -123,6 +123,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         this._dataStoragePropertyNames = this._propertyReader
             .DataPropertyStoragePropertyNames
             .ToArray();
+
         this._dataStoragePropertyNameRedisValues = this._dataStoragePropertyNames
             .Select(RedisValue.Unbox)
             .ToArray();

@@ -107,6 +107,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
                 var convertedValue = Convert.ChangeType(hashEntry.Value, typeOrNullableType);
                 dataModel.Data.Add(dataProperty.DataModelPropertyName, convertedValue);
             }
+
             // Map vector properties
             else if (property is VectorStoreRecordVectorProperty vectorProperty)
             {
