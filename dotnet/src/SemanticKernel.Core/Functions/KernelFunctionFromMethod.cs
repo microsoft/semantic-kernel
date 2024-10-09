@@ -776,13 +776,11 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         {
             // Task<T>
 #if NET6_0_OR_GREATER
-            if (returnType.GetGenericTypeDefinition() is Type genericTask &&
-                genericTask == typeof(Task<>) &&
+            if (returnType.GetGenericTypeDefinition() == typeof(Task<>) &&
                 ((PropertyInfo)returnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo)) is PropertyInfo taskPropertyInfo &&
                 taskPropertyInfo.GetGetMethod() is MethodInfo taskResultGetter)
 #else
-            if (returnType.GetGenericTypeDefinition() is Type genericTask &&
-                genericTask == typeof(Task<>) &&
+            if (returnType.GetGenericTypeDefinition() == typeof(Task<>) &&
                 returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter)
 #endif
             {
@@ -798,12 +796,12 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
             // ValueTask<T>
 #if NET6_0_OR_GREATER
-            if (returnType.GetGenericTypeDefinition() is Type genericValueTask && genericValueTask == typeof(ValueTask<>) &&
+            if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>) &&
                    returnType.GetMemberWithSameMetadataDefinitionAs(s_valueTaskGetAsTaskMethodInfo) is MethodInfo valueTaskAsTask &&
                    valueTaskAsTask.ReturnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo) is PropertyInfo valueTaskPropertyInfo &&
                    valueTaskPropertyInfo.GetGetMethod() is MethodInfo asTaskResultGetter)
 #else
-            if (returnType.GetGenericTypeDefinition() is Type genericValueTask && genericValueTask == typeof(ValueTask<>) &&
+            if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>) &&
                     returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
                     valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter)
 #endif
@@ -820,7 +818,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             }
 
             // IAsyncEnumerable<T>
-            if (returnType.GetGenericTypeDefinition() is Type genericAsyncEnumerable && genericAsyncEnumerable == typeof(IAsyncEnumerable<>))
+            if (returnType.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
             {
 #if NET6_0_OR_GREATER
                 //typeof(IAsyncEnumerable<>).GetMethod("GetAsyncEnumerator")!;
