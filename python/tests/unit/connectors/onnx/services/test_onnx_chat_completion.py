@@ -88,9 +88,7 @@ async def test_onnx_chat_completion(gen_ai_config, model, tokenizer):
     generator_mock = MagicMock()
     generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]
 
-    chat_completion = OnnxGenAIChatCompletion(
-        template=ONNXTemplate.PHI3,
-    )
+    chat_completion = OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3, ai_model_path="test")
 
     history = ChatHistory()
     history.add_system_message("test")
@@ -112,9 +110,7 @@ async def test_onnx_chat_completion_streaming(gen_ai_config, model, tokenizer):
     generator_mock = MagicMock()
     generator_mock.__aiter__.return_value = [["H"], ["e"], ["l"], ["l"], ["o"]]
 
-    chat_completion = OnnxGenAIChatCompletion(
-        template=ONNXTemplate.PHI3,
-    )
+    chat_completion = OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3, ai_model_path="test")
 
     history = ChatHistory()
     history.add_system_message("test")
