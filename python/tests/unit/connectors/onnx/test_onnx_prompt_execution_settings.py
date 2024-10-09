@@ -2,10 +2,13 @@
 import pytest
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import (
-    OnnxGenAIPromptExecutionSettings,
-)
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
+onnx_available = pytest.importorskip("onnxruntime_genai")
+if onnx_available:
+    from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import (
+        OnnxGenAIPromptExecutionSettings,
+    )
 
 
 def test_default_onnx_chat_prompt_execution_settings():

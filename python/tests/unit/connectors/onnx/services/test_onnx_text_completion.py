@@ -10,7 +10,7 @@ from tests.unit.connectors.onnx.conftest import gen_ai_config
 
 onnx_available = pytest.importorskip("onnxruntime_genai")
 if onnx_available:
-    from semantic_kernel.connectors.ai.onnx import (  # noqa: E402
+    from semantic_kernel.connectors.ai.onnx import (
         OnnxGenAIPromptExecutionSettings,
         OnnxGenAITextCompletion,
     )
