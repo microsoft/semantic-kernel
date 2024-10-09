@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite.Conditions;
 
-internal record SqliteWhereEqualsCondition(string Operand, object Value, string? TableName = null)
+internal sealed record SqliteWhereEqualsCondition(string Operand, object Value, string? TableName = null)
     : SqliteWhereCondition(Operand, [Value], TableName)
 {
     public override string Build(List<string> parameterNames)

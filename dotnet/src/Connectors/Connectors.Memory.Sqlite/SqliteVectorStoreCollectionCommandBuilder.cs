@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// Command builder for queries in SQLite database.
 /// </summary>
 [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "User input is passed using command parameters.")]
-internal class SqliteVectorStoreCollectionCommandBuilder
+internal sealed class SqliteVectorStoreCollectionCommandBuilder
 {
     /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
     private readonly SqliteConnection _connection;
