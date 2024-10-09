@@ -245,7 +245,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
                 command.Parameters.AddWithValue(parameterName, condition.Values[parameterIndex]);
             }
 
-            whereClauseParts.Add(condition.Build(parameterNames));
+            whereClauseParts.Add(condition.BuildQuery(parameterNames));
         }
 
         var whereClause = string.Join(WhereClauseOperator, whereClauseParts);

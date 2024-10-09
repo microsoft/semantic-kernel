@@ -2,12 +2,12 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Connectors.Sqlite.Conditions;
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 internal sealed record SqliteWhereInCondition(string Operand, List<object> Values, string? TableName = null)
     : SqliteWhereCondition(Operand, Values, TableName)
 {
-    public override string Build(List<string> parameterNames)
+    public override string BuildQuery(List<string> parameterNames)
     {
         const string InOperator = "IN";
 

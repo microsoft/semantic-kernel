@@ -6,7 +6,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 internal abstract record SqliteWhereCondition(string Operand, List<object> Values, string? TableName = null)
 {
-    public abstract string Build(List<string> parameterNames);
+    public abstract string BuildQuery(List<string> parameterNames);
 
     protected string GetOperand() => !string.IsNullOrWhiteSpace(this.TableName) ?
         $"{this.TableName}.{this.Operand}" :

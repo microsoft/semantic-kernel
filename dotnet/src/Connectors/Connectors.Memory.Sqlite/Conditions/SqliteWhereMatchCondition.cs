@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 internal sealed record SqliteWhereMatchCondition(string Operand, object Value, string? TableName = null)
     : SqliteWhereCondition(Operand, [Value], TableName)
 {
-    public override string Build(List<string> parameterNames)
+    public override string BuildQuery(List<string> parameterNames)
     {
         const string MatchOperator = "MATCH";
 
