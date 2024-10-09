@@ -25,7 +25,6 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
     <PackageTags>Vector, Database, SDK</PackageTags>
     <Description>$(PackageDescription)</Description>
     <PackageProjectUrl>https://dot.net/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/microsoft/semantic-kernel</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">

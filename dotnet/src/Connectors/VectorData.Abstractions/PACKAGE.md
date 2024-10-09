@@ -18,12 +18,20 @@ The main types provided by this library are:
 
 ## Additional Documentation
 
-- [Conceptual documentation](https://learn.microsoft.com/dotnet/core/extensions/vector-data)
+- [Conceptual documentation](https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors)
 
 - API documentation
   - [IVectorStore](https://learn.microsoft.com/dotnet/api/microsoft.extensions.vectordata.ivectorstore)
 
 ## Related Packages
+
+- `Microsoft.SemanticKernel.Connectors.AzureAISearch`
+- `Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB`
+- `Microsoft.SemanticKernel.Connectors.AzureCosmosNoSQL`
+- `Microsoft.SemanticKernel.Connectors.Pinecone`
+- `Microsoft.SemanticKernel.Connectors.Qdrant`
+- `Microsoft.SemanticKernel.Connectors.Redis`
+- `Microsoft.SemanticKernel.Connectors.Weaviate`
 
 ## Feedback & Contributing
 
