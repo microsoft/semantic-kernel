@@ -1,7 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
+import pytest
 
-from semantic_kernel.connectors.ai.onnx.utils import gemma_template, llama_template, phi3_template, phi3v_template
 from semantic_kernel.contents import AuthorRole, ChatHistory, ImageContent, TextContent
+
+onnx_available = pytest.importorskip("onnxruntime_genai")
+if onnx_available:
+    from semantic_kernel.connectors.ai.onnx.utils import (  # noqa: E402
+        gemma_template,
+        llama_template,
+        phi3_template,
+        phi3v_template,
+    )
 
 
 def test_phi3v_template_with_text_and_image():

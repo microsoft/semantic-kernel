@@ -2,7 +2,7 @@
 import pytest
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.onnx import (
+from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import (
     OnnxGenAIPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
