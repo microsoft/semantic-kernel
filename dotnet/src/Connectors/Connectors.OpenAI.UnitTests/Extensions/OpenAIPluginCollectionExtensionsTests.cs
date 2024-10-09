@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
@@ -16,10 +18,11 @@ public sealed class OpenAIPluginCollectionExtensionsTests
     public void TryGetFunctionAndArgumentsWithNonExistingFunctionReturnsFalse()
     {
         // Arrange
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin");
         var plugins = new KernelPluginCollection([plugin]);
 
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", string.Empty);
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", args);
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -34,11 +37,12 @@ public sealed class OpenAIPluginCollectionExtensionsTests
     public void TryGetFunctionAndArgumentsWithoutArgumentsReturnsTrue()
     {
         // Arrange
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
         var function = KernelFunctionFactory.CreateFromMethod(() => "Result", "MyFunction");
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         var plugins = new KernelPluginCollection([plugin]);
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", string.Empty);
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", args);
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -46,7 +50,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         // Assert
         Assert.True(result);
         Assert.Equal(function.Name, actualFunction?.Name);
-        Assert.Null(actualArguments);
+        Assert.Empty(actualArguments!);
     }
 
     [Fact]

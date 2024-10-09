@@ -82,8 +82,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         // Verify.
         Verify.NotNull(qdrantClient);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.PointStructCustomMapper is not null, s_supportedKeyTypes);
-        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.PointStructCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._qdrantClient = qdrantClient;
@@ -93,7 +93,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: this._options.HasNamedVectors, requiresAtLeastOneVector: !this._options.HasNamedVectors);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
 
         // Build a map of property names to storage names.
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);

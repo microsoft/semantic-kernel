@@ -28,6 +28,9 @@ dependencies = [
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
 
+    # azure identity
+    "azure-identity ~= 1.13",
+
     # embeddings
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
@@ -76,7 +79,7 @@ notebooks = [
     "ipykernel ~= 6.29"
 ]
 milvus = [
-    "pymilvus >= 2.3,<2.4",
+    "pymilvus >= 2.3,< 2.5",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [

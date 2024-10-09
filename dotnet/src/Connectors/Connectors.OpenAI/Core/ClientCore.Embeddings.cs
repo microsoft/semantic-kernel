@@ -49,7 +49,7 @@ internal partial class ClientCore
 
             for (var i = 0; i < embeddings.Count; i++)
             {
-                result.Add(embeddings[i].Vector);
+                result.Add(embeddings[i].ToFloats());
             }
         }
 

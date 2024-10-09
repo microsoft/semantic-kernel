@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -23,6 +22,23 @@ internal static class VectorStoreRecordPropertyReader
 
     /// <summary>Cache of property enumerations so that we don't incur reflection costs with each invocation.</summary>
     private static readonly ConcurrentDictionary<Type, (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties)> s_multipleVectorsPropertiesCache = new();
+
+    /// <summary>
+    /// Verify that the given type has a public parameterless constructor and return it if it exists.
+    /// </summary>
+    /// <param name="type">The type to get the constructor for.</param>
+    /// <returns>The public parameterless constructor.</returns>
+    /// <exception cref="ArgumentException">Thrown if the provided type doesn't have a public parameterless constructor.</exception>
+    public static ConstructorInfo GetParameterlessConstructor(Type type)
+    {
+        var constructor = type.GetConstructor(Type.EmptyTypes);
+        if (constructor == null)
+        {
+            throw new ArgumentException($"Type {type.FullName} must have a parameterless constructor.");
+        }
+
+        return constructor;
+    }
 
     /// <summary>
     /// Split the given <paramref name="definition"/> into key, data and vector properties and verify that we have the expected numbers of each type.
@@ -288,164 +304,6 @@ internal static class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
-    /// Verify that the given properties are of the supported types.
-    /// </summary>
-    /// <param name="properties">The properties to check.</param>
-    /// <param name="supportedTypes">A set of supported types that the provided properties may have.</param>
-    /// <param name="propertyCategoryDescription">A description of the category of properties being checked. Used for error messaging.</param>
-    /// <param name="supportEnumerable">A value indicating whether <see cref="IEnumerable{T}"/> versions of all the types should also be supported.</param>
-    /// <exception cref="ArgumentException">Thrown if any of the properties are not in the given set of types.</exception>
-    public static void VerifyPropertyTypes(List<PropertyInfo> properties, HashSet<Type> supportedTypes, string propertyCategoryDescription, bool? supportEnumerable = false)
-    {
-        var supportedEnumerableTypes = supportEnumerable == true
-            ? supportedTypes
-            : [];
-
-        VerifyPropertyTypes(properties, supportedTypes, supportedEnumerableTypes, propertyCategoryDescription);
-    }
-
-    /// <summary>
-    /// Verify that the given properties are of the supported types.
-    /// </summary>
-    /// <param name="properties">The properties to check.</param>
-    /// <param name="supportedTypes">A set of supported types that the provided properties may have.</param>
-    /// <param name="supportedEnumerableTypes">A set of supported types that the provided enumerable properties may use as their element type.</param>
-    /// <param name="propertyCategoryDescription">A description of the category of properties being checked. Used for error messaging.</param>
-    /// <exception cref="ArgumentException">Thrown if any of the properties are not in the given set of types.</exception>
-    public static void VerifyPropertyTypes(List<PropertyInfo> properties, HashSet<Type> supportedTypes, HashSet<Type> supportedEnumerableTypes, string propertyCategoryDescription)
-    {
-        foreach (var property in properties)
-        {
-            VerifyPropertyType(property.Name, property.PropertyType, supportedTypes, supportedEnumerableTypes, propertyCategoryDescription);
-        }
-    }
-
-    /// <summary>
-    /// Verify that the given properties are of the supported types.
-    /// </summary>
-    /// <param name="properties">The properties to check.</param>
-    /// <param name="supportedTypes">A set of supported types that the provided properties may have.</param>
-    /// <param name="propertyCategoryDescription">A description of the category of properties being checked. Used for error messaging.</param>
-    /// <param name="supportEnumerable">A value indicating whether <see cref="IEnumerable{T}"/> versions of all the types should also be supported.</param>
-    /// <exception cref="ArgumentException">Thrown if any of the properties are not in the given set of types.</exception>
-    public static void VerifyPropertyTypes(IEnumerable<VectorStoreRecordProperty> properties, HashSet<Type> supportedTypes, string propertyCategoryDescription, bool? supportEnumerable = false)
-    {
-        var supportedEnumerableTypes = supportEnumerable == true
-            ? supportedTypes
-            : [];
-
-        VerifyPropertyTypes(properties, supportedTypes, supportedEnumerableTypes, propertyCategoryDescription);
-    }
-
-    /// <summary>
-    /// Verify that the given properties are of the supported types.
-    /// </summary>
-    /// <param name="properties">The properties to check.</param>
-    /// <param name="supportedTypes">A set of supported types that the provided properties may have.</param>
-    /// <param name="supportedEnumerableTypes">A set of supported types that the provided enumerable properties may use as their element type.</param>
-    /// <param name="propertyCategoryDescription">A description of the category of properties being checked. Used for error messaging.</param>
-    /// <exception cref="ArgumentException">Thrown if any of the properties are not in the given set of types.</exception>
-    public static void VerifyPropertyTypes(IEnumerable<VectorStoreRecordProperty> properties, HashSet<Type> supportedTypes, HashSet<Type> supportedEnumerableTypes, string propertyCategoryDescription)
-    {
-        foreach (var property in properties)
-        {
-            VerifyPropertyType(property.DataModelPropertyName, property.PropertyType, supportedTypes, supportedEnumerableTypes, propertyCategoryDescription);
-        }
-    }
-
-    /// <summary>
-    /// Verify that the given property is of the supported types.
-    /// </summary>
-    /// <param name="propertyName">The name of the property being checked. Used for error messaging.</param>
-    /// <param name="propertyType">The type of the property being checked.</param>
-    /// <param name="supportedTypes">A set of supported types that the provided property may have.</param>
-    /// <param name="supportedEnumerableTypes">A set of supported types that the provided property may use as its element type if it's enumerable.</param>
-    /// <param name="propertyCategoryDescription">A description of the category of property being checked. Used for error messaging.</param>
-    /// <exception cref="ArgumentException">Thrown if the property is not in the given set of types.</exception>
-    public static void VerifyPropertyType(string propertyName, Type propertyType, HashSet<Type> supportedTypes, HashSet<Type> supportedEnumerableTypes, string propertyCategoryDescription)
-    {
-        // Add shortcut before testing all the more expensive scenarios.
-        if (supportedTypes.Contains(propertyType))
-        {
-            return;
-        }
-
-        // Check all collection scenarios and get stored type.
-        if (supportedEnumerableTypes.Count > 0 && typeof(IEnumerable).IsAssignableFrom(propertyType))
-        {
-            var typeToCheck = GetCollectionElementType(propertyType);
-
-            if (!supportedEnumerableTypes.Contains(typeToCheck))
-            {
-                var supportedEnumerableElementTypesString = string.Join(", ", supportedEnumerableTypes!.Select(t => t.FullName));
-                throw new ArgumentException($"Enumerable {propertyCategoryDescription} properties must have one of the supported element types: {supportedEnumerableElementTypesString}. Element type of the property '{propertyName}' is {typeToCheck.FullName}.");
-            }
-        }
-        else
-        {
-            // if we got here, we know the type is not supported
-            var supportedTypesString = string.Join(", ", supportedTypes.Select(t => t.FullName));
-            throw new ArgumentException($"{propertyCategoryDescription} properties must be one of the supported types: {supportedTypesString}. Type of the property '{propertyName}' is {propertyType.FullName}.");
-        }
-    }
-
-    /// <summary>
-    /// Checks that if the provided <paramref name="recordType"/> is a <see cref="VectorStoreGenericDataModel{T}"/> that the key type is supported by the default mappers.
-    /// If not supported, a custom mapper must be supplied, otherwise an exception is thrown.
-    /// </summary>
-    /// <param name="recordType">The type of the record data model used by the connector.</param>
-    /// <param name="customMapperSupplied">A value indicating whether a custom mapper was supplied to the connector</param>
-    /// <param name="allowedKeyTypes">The list of key types supported by the default mappers.</param>
-    /// <exception cref="ArgumentException">Thrown if the key type of the <see cref="VectorStoreGenericDataModel{T}"/> is not supported by the default mappers and a custom mapper was not supplied.</exception>
-    public static void VerifyGenericDataModelKeyType(Type recordType, bool customMapperSupplied, IEnumerable<Type> allowedKeyTypes)
-    {
-        // If we are not dealing with a generic data model, no need to check anything else.
-        if (!recordType.IsGenericType || recordType.GetGenericTypeDefinition() != typeof(VectorStoreGenericDataModel<>))
-        {
-            return;
-        }
-
-        // If the key type is supported, we are good.
-        var keyType = recordType.GetGenericArguments()[0];
-        if (allowedKeyTypes.Contains(keyType))
-        {
-            return;
-        }
-
-        // If the key type is not supported out of the box, but a custom mapper was supplied, we are good.
-        if (customMapperSupplied)
-        {
-            return;
-        }
-
-        throw new ArgumentException($"The key type '{keyType.FullName}' of data model '{nameof(VectorStoreGenericDataModel<string>)}' is not supported by the default mappers. " +
-            $"Only the following key types are supported: {string.Join(", ", allowedKeyTypes)}. Please provide your own mapper to map to your chosen key type.");
-    }
-
-    /// <summary>
-    /// Checks that if the provided <paramref name="recordType"/> is a <see cref="VectorStoreGenericDataModel{T}"/> that a <see cref="VectorStoreRecordDefinition"/> is also provided.
-    /// </summary>
-    /// <param name="recordType">The type of the record data model used by the connector.</param>
-    /// <param name="recordDefinitionSupplied">A value indicating whether a record definition was supplied to the connector.</param>
-    /// <exception cref="ArgumentException">Thrown if a <see cref="VectorStoreRecordDefinition"/> is not provided when using <see cref="VectorStoreGenericDataModel{T}"/>.</exception>
-    public static void VerifyGenericDataModelDefinitionSupplied(Type recordType, bool recordDefinitionSupplied)
-    {
-        // If we are not dealing with a generic data model, no need to check anything else.
-        if (!recordType.IsGenericType || recordType.GetGenericTypeDefinition() != typeof(VectorStoreGenericDataModel<>))
-        {
-            return;
-        }
-
-        // If we are dealing with a generic data model, and a record definition was supplied, we are good.
-        if (recordDefinitionSupplied)
-        {
-            return;
-        }
-
-        throw new ArgumentException($"A {nameof(VectorStoreRecordDefinition)} must be provided when using '{nameof(VectorStoreGenericDataModel<string>)}'.");
-    }
-
-    /// <summary>
     /// Get the JSON property name of a property by using the <see cref="JsonPropertyNameAttribute"/> if available, otherwise
     /// using the <see cref="JsonNamingPolicy"/> if available, otherwise falling back to the property name.
     /// The provided <paramref name="dataModel"/> may not actually contain the property, e.g. when the user has a data model that
@@ -576,21 +434,5 @@ internal static class VectorStoreRecordPropertyReader
         }
 
         return storagePropertyNameMap;
-    }
-
-    /// <summary>
-    /// Returns <see cref="Type"/> of collection elements.
-    /// </summary>
-    public static Type GetCollectionElementType(Type collectionType)
-    {
-        return collectionType switch
-        {
-            IEnumerable => typeof(object),
-            var enumerableType when enumerableType.IsGenericType && enumerableType.GetGenericTypeDefinition() == typeof(IEnumerable<>) => enumerableType.GetGenericArguments()[0],
-            var arrayType when arrayType.IsArray => arrayType.GetElementType()!,
-            var interfaceType when interfaceType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface =>
-                enumerableInterface.GetGenericArguments()[0],
-            _ => collectionType
-        };
     }
 }

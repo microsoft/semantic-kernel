@@ -133,6 +133,7 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [VectorStore_DataIngestion_Simple: A simple example of how to do data ingestion into a vector store when getting started.](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/VectorStore_DataIngestion_Simple.cs)
 - [VectorStore_DataIngestion_MultiStore: An example of data ingestion that uses the same code to ingest into multiple vector stores types.](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/VectorStore_DataIngestion_MultiStore.cs)
 - [VectorStore_DataIngestion_CustomMapper: An example that shows how to use a custom mapper for when your data model and storage model doesn't match.](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/VectorStore_DataIngestion_CustomMapper.cs)
+- [VectorStore_GenericDataModel_Interop: An example that shows how you can use the built-in, generic data model from Semantic Kernel to read and write to a Vector Store.](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/VectorStore_GenericDataModel_Interop.cs)
 
 ### Optimization - Examples of different cost and performance optimization techniques
 

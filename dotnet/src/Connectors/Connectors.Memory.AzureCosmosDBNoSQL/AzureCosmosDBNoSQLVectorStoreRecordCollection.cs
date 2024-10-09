@@ -121,8 +121,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyReader.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonObjectCustomMapper is not null, s_supportedKeyTypes);
-        VectorStoreRecordPropertyReader.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonObjectCustomMapper is not null, s_supportedKeyTypes);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._database = database;
@@ -133,9 +133,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
 
         // Get storage names and store for later use.
         this._keyProperty = properties.KeyProperty;

@@ -4,15 +4,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToImage;
 
 namespace TextToImage;
 
 // The following example shows how to use Semantic Kernel with OpenAI DALL-E 2 to create images
-public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(output)
+public class OpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task OpenAIDallEAsync()
+    public async Task OpenAIDallE2Async()
     {
         Console.WriteLine("======== OpenAI DALL-E 2 Text To Image ========");
 
@@ -24,8 +25,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
         ITextToImageService dallE = kernel.GetRequiredService<ITextToImageService>();
 
         var imageDescription = "A cute baby sea otter";
-        var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
-
+        var images = await dallE.GetImageContentsAsync(imageDescription, new OpenAITextToImageExecutionSettings { Size = (256, 256) });
+        var image = images[0].Uri!.ToString();
         Console.WriteLine(imageDescription);
         Console.WriteLine("Image URL: " + image);
 
@@ -51,7 +52,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
+        images = await dallE.GetImageContentsAsync(reply.Content!, new OpenAITextToImageExecutionSettings { Size = (256, 256) });
+        image = images[0].Uri!.ToString();
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -61,7 +63,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
+        images = await dallE.GetImageContentsAsync(reply.Content!, new OpenAITextToImageExecutionSettings { Size = (256, 256) });
+        image = images[0].Uri!.ToString();
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -78,22 +81,36 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
         */
     }
 
-    [Fact(Skip = "Generating the Image can take too long and often break the test")]
-    public async Task AzureOpenAIDallEAsync()
+    [Fact]
+    public async Task SimpleTextToImageExampleAsync()
     {
-        Console.WriteLine("========Azure OpenAI DALL-E 3 Text To Image ========");
+        var builder = Kernel.CreateBuilder()
+           .AddAzureOpenAITextToImage( // Add your text to image service
+               deploymentName: TestConfiguration.AzureOpenAI.ImageDeploymentName,
+               endpoint: TestConfiguration.AzureOpenAI.ImageEndpoint,
+               apiKey: TestConfiguration.AzureOpenAI.ImageApiKey,
+               modelId: TestConfiguration.AzureOpenAI.ImageModelId);
+
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<ITextToImageService>();
+
+        var generatedImages = await service.GetImageContentsAsync(new TextContent("A cute baby sea otter"), new OpenAITextToImageExecutionSettings { Size = (Width: 1792, Height: 1024) });
+
+        this.Output.WriteLine(generatedImages[0].Uri!.ToString());
+    }
+
+    [Fact]
+    public async Task OpenAIDallE3Async()
+    {
+        Console.WriteLine("======== OpenAI DALL-E 3 Text To Image ========");
 
         var builder = Kernel.CreateBuilder()
-            .AddAzureOpenAITextToImage( // Add your text to image service
-                deploymentName: TestConfiguration.AzureOpenAI.ImageDeploymentName,
-                endpoint: TestConfiguration.AzureOpenAI.ImageEndpoint,
-                apiKey: TestConfiguration.AzureOpenAI.ImageApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ImageModelId,
-                apiVersion: "2024-02-15-preview") //DALL-E 3 is only supported in this version
-            .AddAzureOpenAIChatCompletion( // Add your chat completion service
-                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-                apiKey: TestConfiguration.AzureOpenAI.ApiKey);
+            .AddOpenAITextToImage( // Add your text to image service
+                modelId: "dall-e-3",
+                apiKey: TestConfiguration.OpenAI.ApiKey) //DALL-E 3 is only supported in this version
+            .AddOpenAIChatCompletion( // Add your chat completion service
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey);
 
         builder.Services.ConfigureHttpClientDefaults(c =>
         {
@@ -101,7 +118,7 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
             c.AddStandardResilienceHandler().Configure(o =>
             {
                 o.Retry.MaxRetryAttempts = 5;
-                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(120);
             });
         });
 
@@ -109,15 +126,15 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         ITextToImageService dallE = kernel.GetRequiredService<ITextToImageService>();
         var imageDescription = "A cute baby sea otter";
-        var image = await dallE.GenerateImageAsync(imageDescription, 1024, 1024);
+        var images = await dallE.GetImageContentsAsync(imageDescription, new OpenAITextToImageExecutionSettings { Size = (1024, 1024) });
 
         Console.WriteLine(imageDescription);
-        Console.WriteLine("Image URL: " + image);
+        Console.WriteLine("Image URL: " + images[0].Uri!);
 
         /* Output:
 
         A cute baby sea otter
-        Image URL: https://dalleproduse.blob.core.windows.net/private/images/....
+        Image URL: https://oaidalleapiprodscus.blob.core.windows.net/private/org-/....
 
         */
 
@@ -136,7 +153,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content!, 1024, 1024);
+        images = await dallE.GetImageContentsAsync(reply.Content!, new OpenAITextToImageExecutionSettings { Size = (1024, 1024) });
+        var image = images[0].Uri!.ToString();
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -146,7 +164,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content!, 1024, 1024);
+        images = await dallE.GetImageContentsAsync(reply.Content!, new OpenAITextToImageExecutionSettings { Size = (1024, 1024) });
+        image = images[0].Uri!.ToString();
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 

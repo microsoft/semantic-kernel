@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.ClientModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.SemanticKernel;
@@ -36,8 +38,8 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
     protected OpenAIClientProvider GetClientProvider()
         =>
             this.UseOpenAIConfig ?
-                OpenAIClientProvider.ForOpenAI(this.ApiKey) :
-                OpenAIClientProvider.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
+                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey)) :
+                OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!));
 
     /// <summary>
     /// Common method to write formatted agent chat content to the console.

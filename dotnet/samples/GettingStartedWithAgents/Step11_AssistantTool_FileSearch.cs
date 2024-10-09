@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -39,7 +40,7 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
             await vectorStoreClient.CreateVectorStoreAsync(
                 new VectorStoreCreationOptions()
                 {
-                    FileIds = [fileInfo.Id],
+                    FileIds = { fileInfo.Id },
                     Metadata = { { AssistantSampleMetadataKey, bool.TrueString } }
                 });
 

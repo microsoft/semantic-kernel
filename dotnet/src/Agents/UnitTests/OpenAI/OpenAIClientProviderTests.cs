@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel;
 using System.Net.Http;
 using Azure.Core;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -21,7 +22,7 @@ public class OpenAIClientProviderTests
     public void VerifyOpenAIClientProviderTargetAzureByKey()
     {
         // Act
-        OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI("key", new Uri("https://localhost"));
+        OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential("key"), new Uri("https://localhost"));
 
         // Assert
         Assert.NotNull(provider.Client);
@@ -67,7 +68,7 @@ public class OpenAIClientProviderTests
     public void VerifyOpenAIClientProviderTargetOpenAIByKey(string key, string? endpoint)
     {
         // Act
-        OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
+        OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(key), endpoint != null ? new Uri(endpoint) : null);
 
         // Assert
         Assert.NotNull(provider.Client);
