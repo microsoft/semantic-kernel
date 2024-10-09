@@ -13,7 +13,7 @@
 
   <PropertyGroup>
     <PackageVersion>9.0.0-preview.9.24001.1</PackageVersion>
-    <Title>Semantic Kernel - Abstractions</Title>
+    <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
     <PackageId>$(AssemblyName)</PackageId>
     <PackageDescription>Abstractions for vector database access.
 
