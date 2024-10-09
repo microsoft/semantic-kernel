@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using Azure.Identity;
 using Memory.VectorStoreFixtures;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -31,7 +32,7 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+                new AzureCliCredential());
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();

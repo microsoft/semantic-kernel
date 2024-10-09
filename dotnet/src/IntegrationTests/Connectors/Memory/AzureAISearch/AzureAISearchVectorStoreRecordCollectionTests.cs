@@ -215,6 +215,10 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
             Assert.Equal(embedding, getResult.DescriptionEmbedding!.Value.ToArray());
         }
+        else
+        {
+            Assert.Null(getResult.DescriptionEmbedding);
+        }
         Assert.Equal(new[] { "pool", "air conditioning", "concierge" }, getResult.Tags);
         Assert.False(getResult.ParkingIncluded);
         Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), getResult.LastRenovationDate);

@@ -547,7 +547,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     private GetDocumentOptions ConvertGetDocumentOptions(GetRecordOptions? options)
     {
         var innerOptions = new GetDocumentOptions();
-        if (options?.IncludeVectors is false)
+        if (options?.IncludeVectors is not true)
         {
             innerOptions.SelectedFields.AddRange(this._propertyReader.KeyPropertyJsonNames);
             innerOptions.SelectedFields.AddRange(this._propertyReader.DataPropertyJsonNames);
