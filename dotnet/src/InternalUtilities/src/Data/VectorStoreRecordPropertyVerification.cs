@@ -247,7 +247,7 @@ internal static class VectorStoreRecordPropertyVerification
         throw new ArgumentException($"A {nameof(VectorStoreRecordDefinition)} must be provided when using '{nameof(VectorStoreGenericDataModel<string>)}'.");
     }
 
-#pragma warning disable CA1823 // Avoid unused private fields. The fields are used in preprocessor directives like NET6_0_OR_GREATER.
+#if NET6_0_OR_GREATER
     private static readonly ConstructorInfo s_objectGetDefaultConstructorInfo = typeof(object).GetConstructor(Type.EmptyTypes)!;
-#pragma warning restore CA1823 // Avoid unused private fields. The fields are used in preprocessor directives like NET6_0_OR_GREATER.
+#endif
 }

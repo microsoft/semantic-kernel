@@ -997,9 +997,9 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, object?>?> s_parsers = new();
-#pragma warning disable CA1823 // Avoid unused private fields. The fields are used in preprocessor directives like NET6_0_OR_GREATER.
+#if NET6_0_OR_GREATER
     private static readonly MethodInfo s_valueTaskGetAsTaskMethodInfo = typeof(ValueTask<>).GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance)!;
     private static readonly MemberInfo s_taskGetResultPropertyInfo = typeof(Task<>).GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)!;
     private static readonly MethodInfo s_asyncEnumerableGetAsyncEnumeratorMethodInfo = typeof(IAsyncEnumerable<>).GetMethod("GetAsyncEnumerator")!;
-#pragma warning restore CA1823 // Avoid unused private fields. The fields are used in preprocessor directives like NET6_0_OR_GREATER
+#endif
 }
