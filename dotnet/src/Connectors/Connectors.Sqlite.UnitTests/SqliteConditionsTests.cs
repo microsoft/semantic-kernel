@@ -22,16 +22,16 @@ public sealed class SqliteConditionsTests
     }
 
     [Theory]
-    [InlineData(null, "Name = Name0")]
-    [InlineData("", "Name = Name0")]
-    [InlineData("TableName", "TableName.Name = Name0")]
+    [InlineData(null, "Name = @Name0")]
+    [InlineData("", "Name = @Name0")]
+    [InlineData("TableName", "TableName.Name = @Name0")]
     public void SqliteWhereEqualsConditionBuildsValidQuery(string? tableName, string expectedQuery)
     {
         // Arrange
         var condition = new SqliteWhereEqualsCondition("Name", "Value", tableName);
 
         // Act
-        var query = condition.BuildQuery(["Name0"]);
+        var query = condition.BuildQuery(["@Name0"]);
 
         // Assert
         Assert.Equal(expectedQuery, query);
@@ -48,16 +48,16 @@ public sealed class SqliteConditionsTests
     }
 
     [Theory]
-    [InlineData(null, "Name IN (Name0, Name1)")]
-    [InlineData("", "Name IN (Name0, Name1)")]
-    [InlineData("TableName", "TableName.Name IN (Name0, Name1)")]
+    [InlineData(null, "Name IN (@Name0, @Name1)")]
+    [InlineData("", "Name IN (@Name0, @Name1)")]
+    [InlineData("TableName", "TableName.Name IN (@Name0, @Name1)")]
     public void SqliteWhereInConditionBuildsValidQuery(string? tableName, string expectedQuery)
     {
         // Arrange
         var condition = new SqliteWhereInCondition("Name", ["Value1", "Value2"], tableName);
 
         // Act
-        var query = condition.BuildQuery(["Name0", "Name1"]);
+        var query = condition.BuildQuery(["@Name0", "@Name1"]);
 
         // Assert
         Assert.Equal(expectedQuery, query);
@@ -74,16 +74,16 @@ public sealed class SqliteConditionsTests
     }
 
     [Theory]
-    [InlineData(null, "Name MATCH Name0")]
-    [InlineData("", "Name MATCH Name0")]
-    [InlineData("TableName", "TableName.Name MATCH Name0")]
+    [InlineData(null, "Name MATCH @Name0")]
+    [InlineData("", "Name MATCH @Name0")]
+    [InlineData("TableName", "TableName.Name MATCH @Name0")]
     public void SqliteWhereMatchConditionBuildsValidQuery(string? tableName, string expectedQuery)
     {
         // Arrange
         var condition = new SqliteWhereMatchCondition("Name", "Value", tableName);
 
         // Act
-        var query = condition.BuildQuery(["Name0"]);
+        var query = condition.BuildQuery(["@Name0"]);
 
         // Assert
         Assert.Equal(expectedQuery, query);

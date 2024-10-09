@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Runtime.InteropServices;
-using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -60,7 +60,7 @@ internal static class SqliteVectorStoreRecordPropertyMapping
         return columns;
     }
 
-    public static TPropertyType? GetPropertyValue<TPropertyType>(SqliteDataReader reader, string propertyName)
+    public static TPropertyType? GetPropertyValue<TPropertyType>(DbDataReader reader, string propertyName)
     {
         int propertyIndex = reader.GetOrdinal(propertyName);
 
@@ -72,7 +72,7 @@ internal static class SqliteVectorStoreRecordPropertyMapping
         return reader.GetFieldValue<TPropertyType>(propertyIndex);
     }
 
-    public static object? GetPropertyValue(SqliteDataReader reader, string propertyName, Type propertyType)
+    public static object? GetPropertyValue(DbDataReader reader, string propertyName, Type propertyType)
     {
         int propertyIndex = reader.GetOrdinal(propertyName);
 

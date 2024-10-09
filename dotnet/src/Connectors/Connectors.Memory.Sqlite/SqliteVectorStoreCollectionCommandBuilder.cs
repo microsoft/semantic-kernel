@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -15,35 +16,39 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "User input is passed using command parameters.")]
 internal sealed class SqliteVectorStoreCollectionCommandBuilder
 {
-    /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
-    private readonly SqliteConnection _connection;
+    /// <summary><see cref="DbConnection"/> that will be used to manage the data in SQLite.</summary>
+    private readonly DbConnection _connection;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStoreCollectionCommandBuilder"/> class.
     /// </summary>
-    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
-    public SqliteVectorStoreCollectionCommandBuilder(SqliteConnection connection)
+    /// <param name="connection"><see cref="DbConnection"/> that will be used to manage the data in SQLite.</param>
+    public SqliteVectorStoreCollectionCommandBuilder(DbConnection connection)
     {
         Verify.NotNull(connection);
 
         this._connection = connection;
     }
 
-    public SqliteCommand BuildTableCountCommand(string tableName)
+    public DbCommand BuildTableCountCommand(string tableName)
     {
+        Verify.NotNullOrWhiteSpace(tableName);
+
         const string SystemTable = "sqlite_master";
         const string ParameterName = "@tableName";
 
         var query = $"SELECT count(*) FROM {SystemTable} WHERE type='table' AND name={ParameterName};";
 
-        var command = new SqliteCommand(query, this._connection);
+        var command = this._connection.CreateCommand();
 
-        command.Parameters.AddWithValue(ParameterName, tableName);
+        command.CommandText = query;
+
+        command.Parameters.Add(new SqliteParameter(ParameterName, tableName));
 
         return command;
     }
 
-    public SqliteCommand BuildCreateTableCommand(string tableName, IReadOnlyList<SqliteColumn> columns, bool ifNotExists)
+    public DbCommand BuildCreateTableCommand(string tableName, IReadOnlyList<SqliteColumn> columns, bool ifNotExists)
     {
         var builder = new StringBuilder();
 
@@ -52,10 +57,14 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
         builder.Append(");");
 
-        return new SqliteCommand(builder.ToString(), this._connection);
+        var command = this._connection.CreateCommand();
+
+        command.CommandText = builder.ToString();
+
+        return command;
     }
 
-    public SqliteCommand BuildCreateVirtualTableCommand(
+    public DbCommand BuildCreateVirtualTableCommand(
         string tableName,
         IReadOnlyList<SqliteColumn> columns,
         bool ifNotExists,
@@ -68,17 +77,25 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
         builder.Append(");");
 
-        return new SqliteCommand(builder.ToString(), this._connection);
+        var command = this._connection.CreateCommand();
+
+        command.CommandText = builder.ToString();
+
+        return command;
     }
 
-    public SqliteCommand BuildDropTableCommand(string tableName)
+    public DbCommand BuildDropTableCommand(string tableName)
     {
         string query = $"DROP TABLE [{tableName}];";
 
-        return new SqliteCommand(query, this._connection);
+        var command = this._connection.CreateCommand();
+
+        command.CommandText = query;
+
+        return command;
     }
 
-    public SqliteCommand BuildInsertCommand(
+    public DbCommand BuildInsertCommand(
         string tableName,
         string rowIdentifier,
         IReadOnlyList<string> columnNames,
@@ -86,7 +103,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         bool replaceIfExists = false)
     {
         var builder = new StringBuilder();
-        var command = new SqliteCommand();
+        var command = this._connection.CreateCommand();
 
         var replacePlaceholder = replaceIfExists ? " OR REPLACE" : string.Empty;
 
@@ -105,17 +122,16 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
 
             for (var i = 0; i < parameters.Count; i++)
             {
-                command.Parameters.AddWithValue(parameters[i], values[i]);
+                command.Parameters.Add(new SqliteParameter(parameters[i], values[i]));
             }
         }
 
         command.CommandText = builder.ToString();
-        command.Connection = this._connection;
 
         return command;
     }
 
-    public SqliteCommand BuildSelectCommand(
+    public DbCommand BuildSelectCommand(
         string tableName,
         IReadOnlyList<string> columnNames,
         List<SqliteWhereCondition> conditions,
@@ -123,7 +139,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
     {
         var builder = new StringBuilder();
 
-        var (command, whereClause) = GetCommandWithWhereClause(conditions);
+        var (command, whereClause) = this.GetCommandWithWhereClause(conditions);
 
         builder.AppendLine($"SELECT {string.Join(", ", columnNames)}");
         builder.AppendLine($"FROM {tableName}");
@@ -132,12 +148,11 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         AppendOrderByIfExists(builder, orderByPropertyName);
 
         command.CommandText = builder.ToString();
-        command.Connection = this._connection;
 
         return command;
     }
 
-    public SqliteCommand BuildSelectLeftJoinCommand(
+    public DbCommand BuildSelectLeftJoinCommand(
         string leftTable,
         string rightTable,
         string joinColumnName,
@@ -154,7 +169,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
             .. rightTablePropertyNames.Select(property => $"{rightTable}.{property}"),
         ];
 
-        var (command, whereClause) = GetCommandWithWhereClause(conditions);
+        var (command, whereClause) = this.GetCommandWithWhereClause(conditions);
 
         builder.AppendLine($"SELECT {string.Join(", ", propertyNames)}");
         builder.AppendLine($"FROM {leftTable} ");
@@ -164,25 +179,23 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         AppendOrderByIfExists(builder, orderByPropertyName);
 
         command.CommandText = builder.ToString();
-        command.Connection = this._connection;
 
         return command;
     }
 
-    public SqliteCommand BuildDeleteCommand(
+    public DbCommand BuildDeleteCommand(
         string tableName,
         List<SqliteWhereCondition> conditions)
     {
         var builder = new StringBuilder();
 
-        var (command, whereClause) = GetCommandWithWhereClause(conditions);
+        var (command, whereClause) = this.GetCommandWithWhereClause(conditions);
 
         builder.AppendLine($"DELETE FROM {tableName}");
 
         AppendWhereClauseIfExists(builder, whereClause);
 
         command.CommandText = builder.ToString();
-        command.Connection = this._connection;
 
         return command;
     }
@@ -225,11 +238,11 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return string.Join(" ", columnDefinitionParts);
     }
 
-    private static (SqliteCommand Command, string WhereClause) GetCommandWithWhereClause(List<SqliteWhereCondition> conditions)
+    private (DbCommand Command, string WhereClause) GetCommandWithWhereClause(List<SqliteWhereCondition> conditions)
     {
         const string WhereClauseOperator = " AND ";
 
-        var command = new SqliteCommand();
+        var command = this._connection.CreateCommand();
         var whereClauseParts = new List<string>();
 
         foreach (var condition in conditions)
@@ -242,7 +255,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
 
                 parameterNames.Add(parameterName);
 
-                command.Parameters.AddWithValue(parameterName, condition.Values[parameterIndex]);
+                command.Parameters.Add(new SqliteParameter(parameterName, condition.Values[parameterIndex]));
             }
 
             whereClauseParts.Add(condition.BuildQuery(parameterNames));

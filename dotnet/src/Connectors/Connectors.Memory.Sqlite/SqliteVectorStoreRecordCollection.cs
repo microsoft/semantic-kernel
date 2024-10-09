@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -25,8 +25,8 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "SQLite";
 
-    /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
-    private readonly SqliteConnection _connection;
+    /// <summary><see cref="DbConnection"/> that will be used to manage the data in SQLite.</summary>
+    private readonly DbConnection _connection;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly SqliteVectorStoreRecordCollectionOptions<TRecord> _options;
@@ -70,11 +70,11 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
-    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="connection"><see cref="DbConnection"/> that will be used to manage the data in SQLite.</param>
     /// <param name="collectionName">The name of the collection/table that this <see cref="SqliteVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public SqliteVectorStoreRecordCollection(
-        SqliteConnection connection,
+        DbConnection connection,
         string collectionName,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
@@ -459,7 +459,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         bool includeVectors = options?.IncludeVectors is true && this._vectorPropertiesExist;
 
-        SqliteCommand command;
+        DbCommand command;
         List<VectorStoreRecordProperty> properties = [this._propertyReader.KeyProperty, .. this._propertyReader.DataProperties];
 
         if (includeVectors)
@@ -651,7 +651,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
     private TRecord GetAndMapRecord(
         string operationName,
-        SqliteDataReader reader,
+        DbDataReader reader,
         List<VectorStoreRecordProperty> properties,
         bool includeVectors)
     {

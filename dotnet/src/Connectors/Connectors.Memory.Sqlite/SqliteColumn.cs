@@ -11,4 +11,4 @@ internal sealed record SqliteColumn(
     string Name,
     string Type,
     bool IsPrimary,
-    Dictionary<string, object>? Configuration);
+    Dictionary<string, object>? Configuration = null);

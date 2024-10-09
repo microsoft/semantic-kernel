@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Data.Sqlite;
@@ -17,8 +18,8 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </remarks>
 public sealed class SqliteVectorStore : IVectorStore
 {
-    /// <summary><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</summary>
-    private readonly SqliteConnection _connection;
+    /// <summary><see cref="DbConnection"/> that will be used to manage the data in SQLite.</summary>
+    private readonly DbConnection _connection;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly SqliteVectorStoreOptions _options;
@@ -29,7 +30,7 @@ public sealed class SqliteVectorStore : IVectorStore
     /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public SqliteVectorStore(
-        SqliteConnection connection,
+        DbConnection connection,
         SqliteVectorStoreOptions? options = default)
     {
         Verify.NotNull(connection);
@@ -75,12 +76,16 @@ public sealed class SqliteVectorStore : IVectorStore
         const string TablePropertyName = "name";
         const string Query = $"SELECT {TablePropertyName} FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";
 
-        using var command = new SqliteCommand(Query, this._connection);
+        using var command = this._connection.CreateCommand();
+
+        command.CommandText = Query;
+
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            yield return reader.GetString(TablePropertyName);
+            var ordinal = reader.GetOrdinal(TablePropertyName);
+            yield return reader.GetString(ordinal);
         }
     }
 }
