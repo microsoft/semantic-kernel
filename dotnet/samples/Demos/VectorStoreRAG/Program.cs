@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
 using Azure;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
@@ -68,7 +69,8 @@ switch (appConfig.RagConfig.VectorStoreType)
         break;
     case "Weaviate":
         kernelBuilder.AddWeaviateVectorStoreRecordCollection<TextSnippet<Guid>>(
-            appConfig.RagConfig.CollectionName,
+            // Weaviate collection names must start with an upper case letter.
+            char.ToUpper(appConfig.RagConfig.CollectionName[0], CultureInfo.InvariantCulture) + appConfig.RagConfig.CollectionName.Substring(1),
             null,
             new() { Endpoint = new Uri(appConfig.WeaviateConfig.Endpoint) });
         break;
