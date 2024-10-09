@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// In addition to identity and descriptive meta-data, an <see cref="Agent"/>
 /// must define its communication protocol, or <see cref="AgentChannel"/>.
 /// </remarks>
-public abstract class Agent
+public abstract class Agent : IAgent
 {
     /// <summary>
     /// The description of the agent (optional)

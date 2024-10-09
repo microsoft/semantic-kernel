@@ -27,7 +27,7 @@ public enum AggregatorMode
 /// Allows an <see cref="AgentChat"/> to participate in another <see cref="AgentChat"/> as an <see cref="Agent"/>.
 /// </summary>
 /// <param name="chatProvider">A factory method that produces a new <see cref="AgentChat"/> instance.</param>
-public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
+public class AggregatorAgent(Func<IAgentChat> chatProvider) : Agent, IAggregatorAgent
 {
     /// <summary>
     /// Defines the relationship between the internal aggregated chat and the chat
@@ -47,7 +47,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     {
         this.Logger.LogAggregatorAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
-        AgentChat chat = chatProvider.Invoke();
+        IAgentChat chat = chatProvider.Invoke();
         AggregatorChannel channel = new(chat);
 
         this.Logger.LogAggregatorAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode, chat.GetType());

@@ -10,9 +10,9 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Adapt channel contract to underlying <see cref="AgentChat"/>.
 /// </summary>
-internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
+internal sealed class AggregatorChannel(IAgentChat chat) : AgentChannel<AggregatorAgent>
 {
-    private readonly AgentChat _chat = chat;
+    private readonly IAgentChat _chat = chat;
 
     /// <inheritdoc/>
     protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default)

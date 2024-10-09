@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
 /// will throw exception if concurrent activity is attempted for any public method.
 /// </remarks>
-public abstract class AgentChat
+public abstract class AgentChat : IAgentChat
 {
     private readonly BroadcastQueue _broadcastQueue;
     private readonly Dictionary<string, AgentChannel> _agentChannels; // Map channel hash to channel: one entry per channel.
