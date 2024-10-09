@@ -93,8 +93,20 @@ public abstract class BaseTest : TextWriter
         => this.Output.WriteLine(value ?? string.Empty);
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// <see cref="ITestOutputHelper"/> only supports output that ends with a newline.
+    /// User this method will resolve in a call to <see cref="WriteLine(string?)"/>.
+    /// </remarks>
     public override void Write(object? value = null)
         => this.Output.WriteLine(value ?? string.Empty);
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// <see cref="ITestOutputHelper"/> only supports output that ends with a newline.
+    /// User this method will resolve in a call to <see cref="WriteLine(string?)"/>.
+    /// </remarks>
+    public override void Write(char[]? buffer)
+        => this.Output.WriteLine(new string(buffer));
 
     /// <inheritdoc/>
     public override Encoding Encoding => Encoding.UTF8;
@@ -110,6 +122,13 @@ public abstract class BaseTest : TextWriter
         Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
     }
+
+    /// <summary>
+    /// Utility method to write a horizontal rule to the console.
+    /// </summary>
+    protected void WriteHorizontalRule()
+        => Console.WriteLine(new string('-', HorizontalRuleLength));
+
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
@@ -150,4 +169,8 @@ public abstract class BaseTest : TextWriter
             return response;
         }
     }
+
+    #region private
+    private const int HorizontalRuleLength = 80;
+    #endregion
 }

@@ -27,7 +27,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         VectorStoreRecordPropertyReader propertyReader)
     {
         Verify.NotNull(propertyReader);
+
         propertyReader.VerifyHasParameterlessConstructor();
+
         this._propertyReader = propertyReader;
     }
 

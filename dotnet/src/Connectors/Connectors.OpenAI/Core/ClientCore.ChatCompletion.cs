@@ -758,10 +758,10 @@ internal partial class ClientCore
             }
 
             var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
-            if (message.Content is { } content)
-            {
-                assistantMessage.Content.Add(content);
-            }
+
+            // If message content is null, adding it as empty string,
+            // because chat message content must be string.
+            assistantMessage.Content.Add(message.Content ?? string.Empty);
 
             return [assistantMessage];
         }
