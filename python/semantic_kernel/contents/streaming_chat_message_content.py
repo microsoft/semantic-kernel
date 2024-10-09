@@ -8,7 +8,9 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -19,6 +21,8 @@ ITEM_TYPES = Union[
     StreamingTextContent,
     FunctionCallContent,
     FunctionResultContent,
+    StreamingFileReferenceContent,
+    StreamingAnnotationContent,
 ]
 
 
@@ -200,3 +204,15 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         for index, item in enumerate(self.items):
             root.insert(index, item.to_element())
         return root
+
+    def __hash__(self) -> int:
+        """Return the hash of the streaming chat message content."""
+        return hash((
+            self.tag,
+            self.role,
+            self.content,
+            self.encoding,
+            self.finish_reason,
+            self.choice_index,
+            *self.items,
+        ))

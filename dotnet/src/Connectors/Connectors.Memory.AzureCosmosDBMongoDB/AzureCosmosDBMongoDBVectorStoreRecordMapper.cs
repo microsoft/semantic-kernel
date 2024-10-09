@@ -21,18 +21,15 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordMapper{TRecord}"/> class.
     /// </summary>
-    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
-    /// <param name="keyPropertyName">A key property name of the data model.</param>
-    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition, string keyPropertyName)
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
+    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordPropertyReader propertyReader)
     {
-        var (keyProperty, dataProperties, vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: true);
+        propertyReader.VerifyKeyProperties(AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
+        propertyReader.VerifyDataProperties(AzureCosmosDBMongoDBConstants.SupportedDataTypes, supportEnumerable: true);
+        propertyReader.VerifyVectorProperties(AzureCosmosDBMongoDBConstants.SupportedVectorTypes);
 
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([keyProperty], AzureCosmosDBMongoDBConstants.SupportedKeyTypes, "Key");
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(dataProperties, AzureCosmosDBMongoDBConstants.SupportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(vectorProperties, AzureCosmosDBMongoDBConstants.SupportedVectorTypes, "Vector");
-
-        this._keyPropertyName = keyPropertyName;
-        this._keyProperty = keyProperty;
+        this._keyPropertyName = propertyReader.KeyPropertyName;
+        this._keyProperty = propertyReader.KeyPropertyInfo;
     }
 
     public BsonDocument MapFromDataToStorageModel(TRecord dataModel)

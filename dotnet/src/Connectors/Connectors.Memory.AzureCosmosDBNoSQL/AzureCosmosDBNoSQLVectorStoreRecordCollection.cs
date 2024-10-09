@@ -80,8 +80,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <summary>Optional configuration options for this class.</summary>
     private readonly AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord> _options;
 
-    /// <summary>A definition of the current storage model.</summary>
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+    /// <summary>A helper to access property information for the current data model and record definition.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
 
     /// <summary>The storage names of all non vector fields on the current model.</summary>
     private readonly List<string> _nonVectorStoragePropertyNames = [];
@@ -91,9 +91,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
     /// <summary>The storage name of the key field for the collections that this class is used with.</summary>
     private readonly string _keyStoragePropertyName;
-
-    /// <summary>The key property of the current storage model.</summary>
-    private readonly VectorStoreRecordKeyProperty _keyProperty;
 
     /// <summary>The property name to use as partition key.</summary>
     private readonly string _partitionKeyPropertyName;
@@ -128,38 +125,42 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         this._database = database;
         this.CollectionName = collectionName;
         this._options = options ?? new();
-        this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
         var jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+        this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new()
+        {
+            RequiresAtLeastOneVector = false,
+            SupportsMultipleKeys = false,
+            SupportsMultipleVectors = true,
+            JsonSerializerOptions = jsonSerializerOptions
+        });
 
         // Validate property types.
-        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyVerification.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
+        this._propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
+        this._propertyReader.VerifyDataProperties(s_supportedDataTypes, supportEnumerable: true);
+        this._propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
 
         // Get storage names and store for later use.
-        this._keyProperty = properties.KeyProperty;
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), jsonSerializerOptions);
+        this._storagePropertyNames = this._propertyReader.JsonPropertyNamesMap.ToDictionary(x => x.Key, x => x.Value);
 
         // Assign mapper.
         this._mapper = this.InitializeMapper(jsonSerializerOptions);
 
         // Use Azure CosmosDB NoSQL reserved key property name as storage key property name.
-        this._storagePropertyNames[this._keyProperty.DataModelPropertyName] = AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName;
+        this._storagePropertyNames[this._propertyReader.KeyPropertyName] = AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName;
         this._keyStoragePropertyName = AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName;
 
         // If partition key is not provided, use key property as a partition key.
         this._partitionKeyPropertyName = !string.IsNullOrWhiteSpace(this._options.PartitionKeyPropertyName) ?
             this._options.PartitionKeyPropertyName! :
-            this._keyProperty.DataModelPropertyName;
+            this._propertyReader.KeyPropertyName;
 
-        VerifyPartitionKeyProperty(this._partitionKeyPropertyName, this._vectorStoreRecordDefinition);
+        VerifyPartitionKeyProperty(this._partitionKeyPropertyName, this._propertyReader.Properties);
 
         this._partitionKeyStoragePropertyName = this._storagePropertyNames[this._partitionKeyPropertyName];
 
-        this._nonVectorStoragePropertyNames = properties.DataProperties
+        this._nonVectorStoragePropertyNames = this._propertyReader.DataProperties
             .Cast<VectorStoreRecordProperty>()
-            .Concat([properties.KeyProperty])
+            .Concat([this._propertyReader.KeyProperty])
             .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
             .ToList();
     }
@@ -379,9 +380,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         }
     }
 
-    private static void VerifyPartitionKeyProperty(string partitionKeyPropertyName, VectorStoreRecordDefinition definition)
+    private static void VerifyPartitionKeyProperty(string partitionKeyPropertyName, IReadOnlyList<VectorStoreRecordProperty> properties)
     {
-        var partitionKeyProperty = definition.Properties
+        var partitionKeyProperty = properties
             .FirstOrDefault(l => l.DataModelPropertyName.Equals(partitionKeyPropertyName, StringComparison.Ordinal));
 
         if (partitionKeyProperty is null)
@@ -405,7 +406,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         var embeddings = new Collection<Embedding>();
         var vectorIndexPaths = new Collection<VectorIndexPath>();
 
-        foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>())
+        foreach (var property in this._propertyReader.VectorProperties)
         {
             var vectorPropertyName = this._storagePropertyNames[property.DataModelPropertyName];
 
@@ -445,7 +446,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         if (indexingPolicy.IndexingMode != IndexingMode.None)
         {
             // Process Data properties.
-            foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>())
+            foreach (var property in this._propertyReader.DataProperties)
             {
                 if (property.IsFilterable || property.IsFullTextSearchable)
                 {
@@ -557,7 +558,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         if (string.IsNullOrWhiteSpace(keyValue))
         {
-            throw new VectorStoreOperationException($"Key property {this._keyProperty.DataModelPropertyName} is not initialized.");
+            throw new VectorStoreOperationException($"Key property {this._propertyReader.KeyPropertyName} is not initialized.");
         }
 
         if (string.IsNullOrWhiteSpace(partitionKeyValue))
@@ -663,12 +664,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
         {
-            var mapper = new AzureCosmosDBNoSQLGenericDataModelMapper(this._vectorStoreRecordDefinition, this._storagePropertyNames, jsonSerializerOptions);
+            var mapper = new AzureCosmosDBNoSQLGenericDataModelMapper(this._propertyReader.Properties, this._storagePropertyNames, jsonSerializerOptions);
             return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
         }
 
         return new AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(
-            this._storagePropertyNames[this._keyProperty.DataModelPropertyName],
+            this._storagePropertyNames[this._propertyReader.KeyPropertyName],
             this._storagePropertyNames,
             jsonSerializerOptions);
     }
