@@ -20,9 +20,6 @@ The main types provided by this library are:
 
 - [Conceptual documentation](https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors)
 
-- API documentation
-  - [IVectorStore](https://learn.microsoft.com/dotnet/api/microsoft.extensions.vectordata.ivectorstore)
-
 ## Related Packages
 
 - `Microsoft.SemanticKernel.Connectors.AzureAISearch`
