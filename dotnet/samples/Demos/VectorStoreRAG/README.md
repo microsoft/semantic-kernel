@@ -20,7 +20,24 @@ The sample can be configured in various ways:
 
 ## Dependency Setup
 
-To run this sample, you need to setup your vector store and AI services add secrets for these in some cases.
+To run this sample, you need to setup your source data, setup your vector store and AI services, and setup secrets for these.
+
+### Source PDF File
+
+You will need to supply some source pdf files to load into the vector store.
+Once you have a file ready, update the `PdfFilePaths` array in the `appsettings.json` file with the path to the file.
+
+```json
+{
+    "Rag": {
+        "PdfFilePaths": [ "sourcedocument.pdf" ],
+    }
+}
+```
+
+Why not try the semantic kernel documentation as your input.
+You can download it as a PDF from the https://learn.microsoft.com/en-us/semantic-kernel/overview/ page.
+See the Download PDF button at the bottom of the page.
 
 ### Azure OpenAI
 
