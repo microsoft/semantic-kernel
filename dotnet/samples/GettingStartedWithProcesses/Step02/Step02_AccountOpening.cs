@@ -33,7 +33,7 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output, 
         var crmRecordStep = process.AddStepFromType<CRMRecordCreationStep>();
         var welcomePacketStep = process.AddStepFromType<WelcomePacketStep>();
 
-        process.OnEvent(AccountOpeningEvents.StartProcess)
+        process.OnInputEvent(AccountOpeningEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.Functions.NewAccountWelcome));
 
         // When the welcome message is generated, send message to displayAssistantMessageStep
