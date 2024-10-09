@@ -2,9 +2,12 @@
 
 from typing import Any
 
-from weaviate.classes.config import Property
+from weaviate.classes.config import Configure, Property
+from weaviate.collections.classes.config_named_vectors import _NamedVectorConfigCreate
+from weaviate.collections.classes.config_vector_index import _VectorIndexConfigCreate
 
 from semantic_kernel.connectors.memory.weaviate.const import TYPE_MAPPER_DATA
+from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField, VectorStoreRecordVectorField
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelDeserializationException
@@ -13,7 +16,7 @@ from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreMo
 def data_model_definition_to_weaviate_properties(
     data_model_definition: VectorStoreRecordDefinition,
 ) -> list[Property]:
-    """Convert a data model definition to Weaviate properties.
+    """Convert vector store data fields to Weaviate properties.
 
     Args:
         data_model_definition (VectorStoreRecordDefinition): The data model definition.
@@ -29,10 +32,78 @@ def data_model_definition_to_weaviate_properties(
                 Property(
                     name=field.name,
                     data_type=TYPE_MAPPER_DATA[field.property_type or "default"],
+                    index_filterable=field.is_filterable,
+                    index_full_text=field.is_full_text_searchable,
                 )
             )
 
     return properties
+
+
+def data_model_definition_to_weaviate_named_vectors(
+    data_model_definition: VectorStoreRecordDefinition,
+) -> list[_NamedVectorConfigCreate]:
+    """Convert vector store vector fields to Weaviate named vectors.
+
+    Args:
+        data_model_definition (VectorStoreRecordDefinition): The data model definition.
+
+    Returns:
+        list[_NamedVectorConfigCreate]: The Weaviate named vectors.
+    """
+    named_vectors: list[_NamedVectorConfigCreate] = []
+
+    for vector in data_model_definition.fields.values():
+        if isinstance(vector, VectorStoreRecordVectorField):
+            named_vectors.append(
+                Configure.NamedVectors.none(
+                    name=vector.name,
+                    vector_index_config=to_weaviate_vector_index_config(vector),
+                )
+            )
+
+
+def to_weaviate_vector_index_config(vector: VectorStoreRecordVectorField) -> _VectorIndexConfigCreate:
+    """Convert a vector field to a Weaviate vector index configuration.
+
+    Args:
+        vector (VectorStoreRecordVectorField): The vector field.
+
+    Returns:
+        The Weaviate vector index configuration.
+    """
+    if vector.index_kind == IndexKind.HNSW:
+        return Configure.VectorIndex.hnsw(
+            distance_metric=to_weaviate_vector_distance(vector.distance_function),
+        )
+    if vector.index_kind == IndexKind.FLAT:
+        return Configure.VectorIndex.flat(
+            distance_metric=to_weaviate_vector_distance(vector.distance_function),
+        )
+
+    return Configure.VectorIndex.none()
+
+
+def to_weaviate_vector_distance(distance_function: DistanceFunction | None) -> str | None:
+    """Convert a distance function to a Weaviate vector distance metric.
+
+    Args:
+        distance_function (DistanceFunction | None): The distance function.
+
+    Returns:
+        str: The Weaviate vector distance metric name.
+    """
+    match distance_function:
+        case DistanceFunction.COSINE:
+            return "cosine"
+        case DistanceFunction.DOT_PROD:
+            return "dot"
+        case DistanceFunction.EUCLIDEAN:
+            return "l2-squared"
+        case DistanceFunction.MANHATTAN:
+            return "manhattan"
+
+    return None
 
 
 # region Serialization helpers

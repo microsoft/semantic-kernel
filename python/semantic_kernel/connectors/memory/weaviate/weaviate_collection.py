@@ -17,6 +17,7 @@ from weaviate.collections.classes.data import DataObject
 from weaviate.collections.collection import CollectionAsync
 
 from semantic_kernel.connectors.memory.weaviate.utils import (
+    data_model_definition_to_weaviate_named_vectors,
     data_model_definition_to_weaviate_properties,
     extract_key_from_dict_record_based_on_data_model_definition,
     extract_key_from_weaviate_object_based_on_data_model_definition,
@@ -228,6 +229,7 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
                 await self.async_client.collections.create(
                     self.collection_name,
                     properties=data_model_definition_to_weaviate_properties(self.data_model_definition),
+                    vectorizer_config=data_model_definition_to_weaviate_named_vectors(self.data_model_definition),
                 )
             except Exception as ex:
                 raise MemoryConnectorException(f"Failed to create collection: {ex}")
