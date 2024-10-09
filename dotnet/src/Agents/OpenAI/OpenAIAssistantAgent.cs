@@ -341,7 +341,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.ThrowIfDeleted();
 
         kernel ??= this.Kernel;
-        arguments ??= this.Arguments;
+        arguments = this.MergeArguments(arguments);
 
         await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
         {
@@ -396,7 +396,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.ThrowIfDeleted();
 
         kernel ??= this.Kernel;
-        arguments ??= this.Arguments;
+        arguments = this.MergeArguments(arguments);
 
         return AssistantThreadActions.InvokeStreamingAsync(this, this._client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
     }
