@@ -197,7 +197,7 @@ internal class LocalStep : KernelProcessMessageChannel
         {
             this._logger?.LogError("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             eventName = $"{targetFunction}.OnError";
-            eventValue = ex.Message;
+            eventValue = ex;
         }
         finally
         {

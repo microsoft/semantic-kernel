@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -43,6 +44,8 @@ public class ProcessStepBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
+        Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
+        Assert.EndsWith("TestEvent", edgeBuilder.EventId);
     }
 
     /// <summary>
@@ -59,6 +62,26 @@ public class ProcessStepBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
+        Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
+        Assert.EndsWith(".OnResult", edgeBuilder.EventId);
+    }
+
+    /// <summary>
+    /// Verify that the <see cref="ProcessStepBuilder.OnFunctionResult(string)"/> method returns a <see cref="ProcessStepEdgeBuilder"/>.
+    /// </summary>
+    [Fact]
+    public void OnFunctionErrorShouldReturnProcessStepEdgeBuilder()
+    {
+        // Arrange
+        var stepBuilder = new TestProcessStepBuilder("TestStep");
+
+        // Act
+        var edgeBuilder = stepBuilder.OnFunctionError("TestFunction");
+
+        // Assert
+        Assert.NotNull(edgeBuilder);
+        Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
+        Assert.EndsWith(".OnError", edgeBuilder.EventId);
     }
 
     /// <summary>
