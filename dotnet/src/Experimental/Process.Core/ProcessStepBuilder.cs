@@ -29,7 +29,7 @@ public abstract class ProcessStepBuilder
     /// </summary>
     /// <param name="eventId">The Id of the event of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public virtual ProcessStepEdgeBuilder OnEvent(string eventId)
+    public ProcessStepEdgeBuilder OnEvent(string eventId)
     {
         // scope the event to this instance of this step
         var scopedEventId = this.GetScopedEventId(eventId);
@@ -41,7 +41,7 @@ public abstract class ProcessStepBuilder
     /// </summary>
     /// <param name="functionName">The name of the function of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public virtual ProcessStepEdgeBuilder OnFunctionResult(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionResult(string functionName)
     {
         return this.OnEvent($"{functionName}.OnResult");
     }

@@ -11,6 +11,7 @@ namespace SharedSteps;
 /// Step used in the Processes Samples:
 /// - Step_01_Processes.cs
 /// - Step_02_AccountOpening.cs
+/// - Step04_AgentOrchestration
 /// </summary>
 public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
 {
@@ -18,6 +19,8 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     {
         public const string GetUserInput = nameof(GetUserInput);
     }
+
+    protected bool SuppressOutput { get; init; }
 
     /// <summary>
     /// The state object for the user input step. This object holds the user inputs and the current input index.
@@ -61,10 +64,12 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
         var userMessage = _state!.UserInputs[_state.CurrentInputIndex];
         _state.CurrentInputIndex++;
 
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"USER: {userMessage}");
-        Console.ResetColor();
-
+        if (!this.SuppressOutput)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"USER: {userMessage}");
+            Console.ResetColor();
+        }
         // Emit the user input
         await context.EmitEventAsync(new() { Id = CommonEvents.UserInputReceived, Data = userMessage });
     }
