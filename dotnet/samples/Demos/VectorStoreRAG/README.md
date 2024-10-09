@@ -1,6 +1,7 @@
 ﻿# Vector Store RAG Demo
 
-This sample demonstrates how to ingest data from a pdf into a vector store and ask questions from an LLM while using RAG to suppliment the LLM with additional information.
+This sample demonstrates how to ingest text from pdf files into a vector store and ask questions about the content
+using an LLM while using RAG to suppliment the LLM with additional information from the vector store.
 
 ## Configuring the Sample
 
@@ -19,7 +20,7 @@ The sample can be configured in various ways:
 
 ## Dependency Setup
 
-To run this sample, you need to add some secrets to the secret store for this project or setup some services.
+To run this sample, you need to setup your vector store and AI services add secrets for these in some cases.
 
 ### Azure OpenAI
 
