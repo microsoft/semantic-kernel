@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -177,6 +178,58 @@ public sealed class ProcessTests
     }
 
     /// <summary>
+    /// Test with a fan in process where the same event triggers 2 steps inside the process that then connect to a step that expects
+    /// the outputs of these steps
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    [Fact]
+    public async Task FanInProcessAsync()
+    {
+        // Arrange
+        Kernel kernel = this._kernelBuilder.Build();
+        var process = this.CreateFanInProcess("FanIn").Build();
+
+        // Act
+        string testInput = "Test";
+        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
+
+        // Assert
+        var outputStep = processInfo.Steps.Where(s => s.State.Name == nameof(FanInStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
+        Assert.NotNull(outputStep?.State);
+        Assert.Equal($"{testInput}-{testInput} {testInput}", outputStep.State.LastMessage);
+    }
+
+    /// <summary>
+    /// Test with a single step that then connects to a nested fan in process with 2 input steps
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    [Fact]
+    public async Task StepAndFanInProcessAsync()
+    {
+        // Arrange
+        Kernel kernel = this._kernelBuilder.Build();
+        var processBuilder = new ProcessBuilder("StepAndFanIn");
+        var startStep = processBuilder.AddStepFromType<StartStep>();
+        var fanInStepName = "InnerFanIn";
+        var fanInStep = processBuilder.AddStepFromProcess(this.CreateFanInProcess(fanInStepName));
+
+        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(startStep));
+        startStep.OnEvent(ProcessTestsEvents.StartProcess).SendEventTo(fanInStep.WhereInputEventIs(ProcessTestsEvents.StartProcess));
+        var process = processBuilder.Build();
+
+        // Act
+        string testInput = "Test";
+        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
+
+        // Assert
+        var outputStep = (processInfo.Steps.Where(s => s.State.Name == fanInStepName).FirstOrDefault() as KernelProcess)?.Steps.Where(s => s.State.Name == nameof(FanInStep)).FirstOrDefault()?.State as KernelProcessStepState<StepState>;
+        Assert.NotNull(outputStep?.State);
+        Assert.Equal($"{testInput}-{testInput} {testInput}", outputStep.State.LastMessage);
+    }
+
+    /// <summary>
     /// Creates a simple linear process with two steps.
     /// </summary>
     private ProcessBuilder CreateLinearProcess(string name)
@@ -194,6 +247,23 @@ public sealed class ProcessTests
         return processBuilder;
     }
 
+    private ProcessBuilder CreateFanInProcess(string name)
+    {
+        var processBuilder = new ProcessBuilder(name);
+        var echoAStep = processBuilder.AddStepFromType<EchoStep>("EchoStepA");
+        var repeatBStep = processBuilder.AddStepFromType<RepeatStep>("RepeatStepB");
+        var fanInCStep = processBuilder.AddStepFromType<FanInStep>();
+        var echoDStep = processBuilder.AddStepFromType<EchoStep>();
+
+        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(echoAStep));
+        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(repeatBStep, parameterName: "message"));
+
+        echoAStep.OnFunctionResult(nameof(EchoStep.Echo)).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "firstInput"));
+        repeatBStep.OnEvent(ProcessTestsEvents.OutputReadyPublic).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "secondInput"));
+
+        return processBuilder;
+    }
+
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
     // These classes are dynamically instantiated by the processes used in tests.
 
@@ -203,7 +273,11 @@ public sealed class ProcessTests
     private sealed class EchoStep : KernelProcessStep
     {
         [KernelFunction]
-        public string Echo(string message) => message;
+        public string Echo(string message)
+        {
+            Console.WriteLine($"[ECHO] {message}");
+            return message;
+        }
     }
 
     /// <summary>
@@ -224,6 +298,7 @@ public sealed class ProcessTests
         public async Task RepeatAsync(string message, KernelProcessStepContext context, int count = 2)
         {
             var output = string.Join(" ", Enumerable.Repeat(message, count));
+            Console.WriteLine($"[REPEAT] {output}");
             this._state.LastMessage = output;
 
             // Emit the OnReady event with a public visibility and an internal visibility to aid in testing
@@ -233,7 +308,61 @@ public sealed class ProcessTests
     }
 
     /// <summary>
-    /// The state object for the repeat step.
+    /// A step that emits a startProcess event
+    /// </summary>
+    private sealed class StartStep : KernelProcessStep
+    {
+        [KernelFunction]
+        public async Task SendStartMessageAsync(KernelProcessStepContext context, string text)
+        {
+            Console.WriteLine($"[START] {text}");
+            await context.EmitEventAsync(new()
+            {
+                Id = ProcessTestsEvents.StartProcess,
+                Data = text,
+                Visibility = KernelProcessEventVisibility.Public
+            });
+        }
+    }
+
+    /// <summary>
+    /// A step that combines string inputs received.
+    /// </summary>
+    private sealed class FanInStep : KernelProcessStep<StepState>
+    {
+        private readonly StepState _state = new();
+
+        public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
+        {
+            state.State ??= this._state;
+
+            return default;
+        }
+
+        [KernelFunction]
+        public async Task EmitCombinedMessageAsync(KernelProcessStepContext context, string firstInput, string secondInput)
+        {
+            var output = $"{firstInput}-{secondInput}";
+            Console.WriteLine($"[EMIT_COMBINED] {output}");
+            this._state.LastMessage = output;
+
+            await context.EmitEventAsync(new()
+            {
+                Id = ProcessTestsEvents.OutputReadyInternal,
+                Data = output,
+                Visibility = KernelProcessEventVisibility.Internal
+            });
+            await context.EmitEventAsync(new()
+            {
+                Id = ProcessTestsEvents.OutputReadyPublic,
+                Data = output,
+                Visibility = KernelProcessEventVisibility.Public
+            });
+        }
+    }
+
+    /// <summary>
+    /// The state object for the repeat and fanIn step.
     /// </summary>
     private sealed record StepState
     {
