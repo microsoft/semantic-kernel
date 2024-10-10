@@ -12,7 +12,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 
 ## Experimental Feature Codes
 
-| SKEXP​ | Experimental Features Category​​ |
+| SKEXP | Experimental Features Category |
 |-------|--------------------------------|
 | SKEXP0001 | Semantic Kernel core features |
 | SKEXP0010 | OpenAI and Azure OpenAI services |
@@ -27,7 +27,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 
 ## Experimental Features Tracking
 
-| SKEXP​ | Features​​ |
+| SKEXP | Features |
 |-------|----------|
 | SKEXP0001 | Embedding services |
 | SKEXP0001 | Image services |
@@ -75,6 +75,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0070 | Gemini AI connector |
 | SKEXP0070 | Mistral AI connector |
 | SKEXP0070 | ONNX AI connector |
+| SKEXP0070 | Assembly AI connector               |            |              |           |          |                  |
 | SKEXP0070 | Hugging Face AI connector |
 | | | | | | | |
 | SKEXP0080 | Process Framework |

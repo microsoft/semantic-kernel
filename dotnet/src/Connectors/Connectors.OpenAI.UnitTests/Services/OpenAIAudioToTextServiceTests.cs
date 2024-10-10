@@ -35,9 +35,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ?
-            new OpenAIAudioToTextService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) :
-            new OpenAIAudioToTextService("model-id", "api-key", "organization");
+        var service = includeLoggerFactory ? new OpenAIAudioToTextService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) : new OpenAIAudioToTextService("model-id", "api-key", "organization");
 
         // Assert
         Assert.NotNull(service);
