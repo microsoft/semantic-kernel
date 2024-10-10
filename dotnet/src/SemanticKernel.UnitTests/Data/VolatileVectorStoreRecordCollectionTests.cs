@@ -15,6 +15,7 @@ namespace SemanticKernel.UnitTests.Data;
 /// <summary>
 /// Contains tests for the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
 /// </summary>
+[Obsolete("The VolatileVectorStoreRecordCollection is obsolete so these tests are as well.")]
 public class VolatileVectorStoreRecordCollectionTests
 {
     private const string TestCollectionName = "testcollection";
