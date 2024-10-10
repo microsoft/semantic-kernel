@@ -17,6 +17,8 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
     AzureAIInferenceChatCompletion,
 )
+from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.bedrock.services.bedrock_chat_completion import BedrockChatCompletion
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
@@ -149,6 +151,30 @@ class ChatCompletionTestBase(CompletionTestBase):
             "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
             "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
+            "bedrock_amazon_titan": (
+                BedrockChatCompletion(model_id="amazon.titan-text-premier-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_ai21labs": (
+                BedrockChatCompletion(model_id="ai21.jamba-1-5-mini-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_anthropic_claude": (
+                BedrockChatCompletion(model_id="anthropic.claude-3-5-sonnet-20240620-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_cohere_command": (
+                BedrockChatCompletion(model_id="cohere.command-r-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_meta_llama": (
+                BedrockChatCompletion(model_id="meta.llama3-70b-instruct-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
+            "bedrock_mistralai": (
+                BedrockChatCompletion(model_id="mistral.mistral-small-2402-v1:0"),
+                BedrockChatPromptExecutionSettings,
+            ),
         }
 
     def setup(self, kernel: Kernel):
