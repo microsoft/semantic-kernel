@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel.Data;
 /// <param name="key">The key of the record.</param>
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreGenericDataModel<TKey>(TKey key)
-    where TKey : notnull
 {
     /// <summary>
     /// Gets or sets the key of the record.

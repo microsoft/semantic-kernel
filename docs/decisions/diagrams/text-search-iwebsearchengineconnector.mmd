@@ -1,0 +1,23 @@
+block-beta
+columns 1
+  block:Plugin
+    PluginAbstraction[["WebSearchEnginePlugin"]]
+    PluginDescription["Provides a plugin to perform a web search."]
+  end
+  space
+  block:Connector
+    ConnectorAbstraction[["IWebSearchEngineConnector"]]
+    ConnectorDescription["An interface for a web search engine connector.<br/>Returns either search result summaries or a normalised <code>WebPage</code> instance."]
+  end
+  space
+  block:Service
+    ServiceType[["Web Search Service"]]
+    ServiceDescription["A web search service e.g. Bing, Google, ..."]
+  end
+
+  Plugin-- "Uses the provided IWebSearchEngineConnector implementation to invoke a web search engine." -->Connector
+  Connector-- "Invokes the web search engine using REST or a service client." -->Service
+
+  style PluginDescription fill:#FFF,stroke-width:0px
+  style ConnectorDescription fill:#FFF,stroke-width:0px
+  style ServiceDescription fill:#FFF,stroke-width:0px
