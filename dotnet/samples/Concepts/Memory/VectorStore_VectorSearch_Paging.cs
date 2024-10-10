@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Data;
 
 namespace Memory;

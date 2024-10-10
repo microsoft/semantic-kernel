@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Contains helpers for reading vector store model properties and their attributes.

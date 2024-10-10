@@ -3,6 +3,7 @@
 using System.Text.Json;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;

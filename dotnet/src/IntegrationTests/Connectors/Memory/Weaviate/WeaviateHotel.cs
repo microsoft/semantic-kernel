@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 

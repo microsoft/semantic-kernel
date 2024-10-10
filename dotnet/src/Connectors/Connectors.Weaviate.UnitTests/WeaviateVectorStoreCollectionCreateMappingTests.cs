@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
-using Microsoft.SemanticKernel.Data;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Weaviate.UnitTests;
