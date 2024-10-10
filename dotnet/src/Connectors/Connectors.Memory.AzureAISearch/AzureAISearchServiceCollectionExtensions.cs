@@ -140,7 +140,6 @@ public static class AzureAISearchServiceCollectionExtensions
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
-        AddVectorizableTextSearch<TRecord>(services, serviceId);
 
         return services;
     }
@@ -185,7 +184,6 @@ public static class AzureAISearchServiceCollectionExtensions
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
-        AddVectorizableTextSearch<TRecord>(services, serviceId);
 
         return services;
     }
@@ -230,7 +228,6 @@ public static class AzureAISearchServiceCollectionExtensions
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
-        AddVectorizableTextSearch<TRecord>(services, serviceId);
 
         return services;
     }
@@ -249,23 +246,6 @@ public static class AzureAISearchServiceCollectionExtensions
             (sp, obj) =>
             {
                 return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId);
-            });
-    }
-
-    /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizableTextSearch{TRecord}"/>.
-    /// </summary>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The service collection to register on.</param>
-    /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizableTextSearch<TRecord>(IServiceCollection services, string? serviceId)
-        where TRecord : class
-    {
-        services.AddKeyedTransient<IVectorizableTextSearch<TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                return (sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId) as IVectorizableTextSearch<TRecord>)!;
             });
     }
 
