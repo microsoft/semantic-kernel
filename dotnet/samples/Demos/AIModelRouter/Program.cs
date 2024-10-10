@@ -74,6 +74,16 @@ internal sealed class Program
             Console.WriteLine("• Azure AI Inference Added - Use \"azureai\" in the prompt.");
         }
 
+        if (config["Anthropic:ApiKey"] is not null)
+        {
+            services.AddAnthropicChatCompletion(
+                serviceId: "anthropic",
+                modelId: config["Anthropic:ModelId"] ?? "claude-3-5-sonnet-20240620",
+                apiKey: config["Anthropic:ApiKey"]!);
+
+            Console.WriteLine("• Anthropic Added - Use \"anthropic\" in the prompt.");
+        }
+
         // Adding a custom filter to capture router selected service id
         services.AddSingleton<IPromptRenderFilter>(new SelectedServiceFilter());
 
@@ -92,7 +102,7 @@ internal sealed class Program
             // Find the best service to use based on the user's input
             KernelArguments arguments = new(new PromptExecutionSettings()
             {
-                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai", "onnx", "azureai"])
+                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai", "onnx", "azureai", "anthropic"])
             });
 
             // Invoke the prompt and print the response

@@ -22,11 +22,17 @@ The sample can be configured by using the command line with .NET [Secret Manager
 
 ```powershell
 dotnet user-secrets set "OpenAI:ApiKey" "... your api key ... "
-dotnet user-secrets set "OpenAI:ModelId" ".. Openai model .. " (default: gpt-4o)
+dotnet user-secrets set "OpenAI:ModelId" ".. Openai model id .. " (default: gpt-4o)
+
+dotnet user-secrets set "Anthropic:ApiKey" "... your api key ... "
+dotnet user-secrets set "Anthropic:ModelId" "... Anthropic model id .. " (default: claude-3-5-sonnet-20240620)
+
 dotnet user-secrets set "Ollama:ModelId" ".. Ollama model id .. "
 dotnet user-secrets set "Ollama:Endpoint" ".. Ollama endpoint .. " (default: http://localhost:11434)
+
 dotnet user-secrets set "LMStudio:Endpoint" ".. LM Studio endpoint .. " (default: http://localhost:1234)
-dotnet user-secrets set "Onnx:ModelId" ".. Onnx model id"
+
+dotnet user-secrets set "Onnx:ModelId" ".. Onnx model id .. "
 dotnet user-secrets set "Onnx:ModelPath" ".. your Onnx model folder path .."
 ```
 
@@ -52,5 +58,17 @@ dotnet run
 > **Assistant** > Jupiter is a giant planet in our solar system known for being the largest and most massive, famous for its spectacled clouds and dozens of moons including Ganymede which is bigger than Earth!
 
 > **User** > LMStudio, what is Jupiter? Keep it simple.
+
+> **Assistant** > Jupiter is the fifth planet from the Sun in our Solar System and one of its gas giants alongside Saturn, Uranus, and Neptune. It's famous for having a massive storm called the Great Red Spot that has been raging for hundreds of years.
+
+> **User** > AzureAI, what is Jupiter? Keep it simple.
+
+> **Assistant** > Jupiter is the fifth planet from the Sun in our Solar System and one of its gas giants alongside Saturn, Uranus, and Neptune. It's famous for having a massive storm called the Great Red Spot that has been raging for hundreds of years.
+
+> **User** > Anthropic, what is Jupiter? Keep it simple.
+
+> **Assistant** > Jupiter is the fifth planet from the Sun in our Solar System and one of its gas giants alongside Saturn, Uranus, and Neptune. It's famous for having a massive storm called the Great Red Spot that has been raging for hundreds of years.
+
+> **User** > ONNX, what is Jupiter? Keep it simple.
 
 > **Assistant** > Jupiter is the fifth planet from the Sun in our Solar System and one of its gas giants alongside Saturn, Uranus, and Neptune. It's famous for having a massive storm called the Great Red Spot that has been raging for hundreds of years.
