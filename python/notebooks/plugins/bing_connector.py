@@ -18,7 +18,7 @@ class BingConnector(ConnectorBase):
 
     def __init__(self, api_key: str, logger: Optional[Logger] = None) -> None:
         self._api_key = api_key
-        self._logger = logger if logger else NullLogger()
+        self._logger = logger or NullLogger()
 
         if not self._api_key:
             raise ValueError(

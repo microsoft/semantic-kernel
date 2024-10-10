@@ -34,6 +34,37 @@ def test_can_be_imported():
         (-192, -13, -205),
     ],
 )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+def test_add_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+def test_add_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 def test_add_when_valid_parameters_should_succeed(
     initial_value, amount, expected_result
@@ -41,6 +72,27 @@ def test_add_when_valid_parameters_should_succeed(
 =======
 def test_add_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     # Arrange
     plugin = MathPlugin()
     arguments = KernelArguments(input=initial_value, amount=amount)
@@ -65,6 +117,37 @@ def test_add_when_valid_parameters_should_succeed(initial_value, amount, expecte
         (-192, -13, -179),
     ],
 )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+def test_subtract_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+def test_subtract_when_valid_parameters_should_succeed(
+    initial_value, amount, expected_result
+):
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 def test_subtract_when_valid_parameters_should_succeed(
     initial_value, amount, expected_result
@@ -72,6 +155,27 @@ def test_subtract_when_valid_parameters_should_succeed(
 =======
 def test_subtract_when_valid_parameters_should_succeed(initial_value, amount, expected_result):
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     # Arrange
     plugin = MathPlugin()
     arguments = KernelArguments(input=initial_value, amount=amount)
@@ -105,6 +209,35 @@ def test_add_when_invalid_initial_value_should_throw(initial_value):
     arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     with pytest.raises(ValueError):
         plugin.add(**arguments)
@@ -115,6 +248,27 @@ def test_add_when_invalid_initial_value_should_throw(initial_value):
     # Assert
     assert exception.type == ValueError
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.parametrize(
@@ -139,6 +293,35 @@ def test_add_when_invalid_amount_should_throw(amount):
     arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    with pytest.raises(ValueError):
+        plugin.add(**arguments)
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     with pytest.raises(ValueError):
         plugin.add(**arguments)
@@ -148,6 +331,27 @@ def test_add_when_invalid_amount_should_throw(amount):
 
     assert exception.type == ValueError
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.parametrize(
@@ -172,6 +376,35 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
     arguments = KernelArguments(input=initial_value, amount=1)
 
     # Act / Assert
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     with pytest.raises(ValueError):
         plugin.subtract(**arguments)
@@ -182,6 +415,27 @@ def test_subtract_when_invalid_initial_value_should_throw(initial_value):
     # Assert
     assert exception.type == ValueError
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 @pytest.mark.parametrize(
@@ -206,6 +460,35 @@ def test_subtract_when_invalid_amount_should_throw(amount):
     arguments = KernelArguments(input=1, amount=amount)
 
     # Act / Assert
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    with pytest.raises(ValueError):
+        plugin.subtract(**arguments)
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     with pytest.raises(ValueError):
         plugin.subtract(**arguments)
@@ -216,3 +499,24 @@ def test_subtract_when_invalid_amount_should_throw(amount):
     # Assert
     assert exception.type == ValueError
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

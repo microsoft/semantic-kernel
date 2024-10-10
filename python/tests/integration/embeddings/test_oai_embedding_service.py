@@ -22,6 +22,54 @@ async def test_oai_embedding_service(kernel: Kernel):
 
     kernel.add_service(embedding_gen)
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+    memory = SemanticTextMemory(
+        storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
+    )
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
+
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 <<<<<<< main
     memory = SemanticTextMemory(
         storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
@@ -36,6 +84,21 @@ async def test_oai_embedding_service(kernel: Kernel):
     kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
 >>>>>>> ms/small_fixes
 
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     await memory.save_reference(
         "test",
         external_id="info1",
@@ -43,6 +106,34 @@ async def test_oai_embedding_service(kernel: Kernel):
         external_source_name="external source",
     )
 
+=======
+<<<<<<< main
+    memory = SemanticTextMemory(
+        storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
+    )
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
+=======
+    embedding_gen = sk_oai.OpenAITextEmbedding(
+        service_id="oai-ada", ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id
+    )
+
+    kernel.add_service(embedding_gen)
+    kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+>>>>>>> ms/small_fixes
+
+=======
+>>>>>>> Stashed changes
+    await memory.save_reference(
+        "test",
+        external_id="info1",
+        text="this is a test",
+        external_source_name="external source",
+    )
+
+<<<<<<< Updated upstream
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 @pytest.mark.asyncio
 async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
@@ -57,7 +148,47 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
 
     embedding_gen = sk_oai.OpenAITextEmbedding(
         service_id="oai-ada", ai_model_id="text-embedding-ada-002", async_client=client
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     )
 
     kernel.add_service(embedding_gen)
@@ -65,12 +196,57 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
         storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
     )
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
     )
 
     kernel.add_service(embedding_gen)
     kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 
     await memory.save_reference(
         "test",

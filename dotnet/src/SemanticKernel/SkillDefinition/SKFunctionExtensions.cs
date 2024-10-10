@@ -1,7 +1,47 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
 using System.Text.Json.Nodes;
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+using System.Text.Json.Nodes;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.Text.Json.Nodes;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,6 +56,133 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 public static class SKFunctionExtensions
 {
     /// <summary>
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+    /// Configure the LLM settings used by semantic function.
+    /// </summary>
+    /// <param name="skFunction">Semantic function</param>
+    /// <param name="settings">Completion settings</param>
+    /// <returns>Self instance</returns>
+    public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, CompleteRequestSettings settings)
+    {
+        return skFunction.SetAIConfiguration(settings);
+    }
+
+    /// <summary>
+    /// Change the LLM Max Tokens configuration
+    /// </summary>
+    /// <param name="skFunction">Semantic function</param>
+    /// <param name="maxTokens">Tokens count</param>
+    /// <returns>Self instance</returns>
+    public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int maxTokens)
+    {
+        skFunction.RequestSettings.MaxTokens = maxTokens;
+        return skFunction;
+    }
+
+    /// <summary>
+    /// Change the LLM Temperature configuration
+    /// </summary>
+    /// <param name="skFunction">Semantic function</param>
+    /// <param name="temperature">Temperature value</param>
+    /// <returns>Self instance</returns>
+    public static ISKFunction UseTemperature(this ISKFunction skFunction, double temperature)
+    {
+        skFunction.RequestSettings.Temperature = temperature;
+        return skFunction;
+    }
+
+    /// <summary>
+    /// Change the Max Tokens configuration
+    /// </summary>
+    /// <param name="skFunction">Semantic function</param>
+    /// <param name="topP">TopP value</param>
+    /// <returns>Self instance</returns>
+    public static ISKFunction UseTopP(this ISKFunction skFunction, double topP)
+    {
+        skFunction.RequestSettings.TopP = topP;
+        return skFunction;
+    }
+
+    /// <summary>
+    /// Change the Max Tokens configuration
+    /// </summary>
+    /// <param name="skFunction">Semantic function</param>
+    /// <param name="presencePenalty">Presence penalty value</param>
+    /// <returns>Self instance</returns>
+    public static ISKFunction UsePresencePenalty(this ISKFunction skFunction, double presencePenalty)
+    {
+        skFunction.RequestSettings.PresencePenalty = presencePenalty;
+        return skFunction;
+    }
+
+    /// <summary>
+    /// Change the Max Tokens configuration
+    /// </summary>
+    /// <param name="skFunction">Semantic function</param>
+    /// <param name="frequencyPenalty">Frequency penalty value</param>
+    /// <returns>Self instance</returns>
+    public static ISKFunction UseFrequencyPenalty(this ISKFunction skFunction, double frequencyPenalty)
+    {
+        skFunction.RequestSettings.FrequencyPenalty = frequencyPenalty;
+        return skFunction;
+    }
+
+    /// <summary>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Execute a function with a custom set of context variables.
     /// Use case: template engine: semantic function with custom input variable.
     /// </summary>
@@ -37,6 +204,29 @@ public static class SKFunctionExtensions
         // var tmpContext = new SKContext(input, memory, skills, log, cancellationToken);
         var tmpContext = new SKContext(input);
         try
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
         return function.InvokeAsync(input, settings: null, memory: null, logger: null, cancellationToken: cancellationToken);
     }
 
@@ -61,6 +251,27 @@ public static class SKFunctionExtensions
         // Log a warning if the given input is overriding a different input in the context
         var inputInContext = context.Variables.Input;
         if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         {
 #pragma warning disable CA2016 // the token is passed in via the context
             await function.InvokeAsync(tmpContext).ConfigureAwait(false);
@@ -74,6 +285,29 @@ public static class SKFunctionExtensions
         }
 
         return tmpContext;
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
             return function.InvokeAsync(context, textCompletionService, settings);
         }
 
@@ -84,5 +318,26 @@ public static class SKFunctionExtensions
         contextClone.Variables.Update(input);
 
         return function.InvokeAsync(contextClone, textCompletionService, settings);
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 }

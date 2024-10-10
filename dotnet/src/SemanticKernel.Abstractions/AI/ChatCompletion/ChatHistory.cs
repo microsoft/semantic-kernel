@@ -1,4 +1,32 @@
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
 // Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> origin/main
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections;
@@ -23,6 +51,62 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// Creates a new instance of the <see cref="ChatHistory"/> class
     /// </summary>
     public ChatHistory()
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    {
+        this._messages = [];
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+#pragma warning disable CA1710
+
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+
+public class ChatHistory : List<ChatMessageBase>
+{
+    [Obsolete("This enumeration is deprecated, use AuthorRole struct instead")]
+    public enum AuthorRoles
+    {
+        this._messages = [];
+    }
+
+    private sealed class ChatMessage : ChatMessageBase
+    {
+<<<<<<< main
+        this._messages = [];
+=======
+        public ChatMessage(AuthorRole authorRole, string content) : base(authorRole, content)
+        {
+        }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 #pragma warning disable CA1710
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -40,6 +124,9 @@ public class ChatHistory : List<ChatMessageBase>
         public ChatMessage(AuthorRole authorRole, string content) : base(authorRole, content)
         {
         }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -52,6 +139,26 @@ public class ChatHistory : List<ChatMessageBase>
 
         this._messages = [];
         this.AddSystemMessage(systemMessage);
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     [Obsolete("This class is deprecated, using instances of this class will not be supported")]
     public class Message : ChatMessageBase
     {
@@ -69,6 +176,25 @@ public class ChatHistory : List<ChatMessageBase>
         {
             this.AuthorRole = authorRole;
         }
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     }
 
     /// <summary>Initializes the history will all of the specified messages.</summary>
@@ -155,6 +281,26 @@ public class ChatHistory : List<ChatMessageBase>
     {
         Verify.NotNull(item);
         this._messages.Insert(index, item);
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     public List<ChatMessageBase> Messages => this;
 
     /// <summary>
@@ -166,6 +312,25 @@ public class ChatHistory : List<ChatMessageBase>
     public void AddMessage(AuthorRoles authorRole, string content)
     {
         this.Add(new Message(authorRole, content));
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -204,6 +369,26 @@ public class ChatHistory : List<ChatMessageBase>
     {
         Verify.NotNull(item);
         return this._messages.Contains(item);
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
     public void AddMessage(AuthorRole authorRole, string content)
@@ -236,6 +421,25 @@ public class ChatHistory : List<ChatMessageBase>
     public void AddSystemMessage(string content)
     {
         this.AddMessage(AuthorRole.System, content);
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     }
 
     /// <summary>Searches for the specified message and returns the index of the first occurrence.</summary>

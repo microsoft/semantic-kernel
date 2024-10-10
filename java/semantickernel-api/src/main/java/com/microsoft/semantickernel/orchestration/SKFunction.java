@@ -1,6 +1,29 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.skilldefinition.FunctionView;
+import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 import javax.annotation.CheckReturnValue;
@@ -12,6 +35,35 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.Kernel;
+>>>>>>> origin/dsgrieve/java-v1-api
+import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.skilldefinition.FunctionView;
+import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 import reactor.core.publisher.Mono;
 
 /**
@@ -38,6 +90,27 @@ public interface SKFunction<RequestConfiguration> {
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    Mono<SKContext> invokeAsync(String input, SKContext context, RequestConfiguration settings);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     Mono<SKContext> invokeAsync(String input, SKContext context, RequestConfiguration settings);
 =======
@@ -46,6 +119,25 @@ public interface SKFunction<RequestConfiguration> {
         throw new UnsupportedOperationException("Deprecated");
     }
 >>>>>>> origin/dsgrieve/java-v1-api
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
     /**
      * Invokes the function
@@ -78,11 +170,41 @@ public interface SKFunction<RequestConfiguration> {
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> origin/main
+    Mono<SKContext> invokeAsync(SKContext context);
+
+    /**
+=======
+<<<<<<< head
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     Mono<SKContext> invokeAsync(SKContext context);
 
     /**
 =======
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
     @Deprecated
     default Mono<SKContext> invokeAsync(SKContext context) {
         throw new UnsupportedOperationException("Deprecated");
@@ -110,6 +232,25 @@ public interface SKFunction<RequestConfiguration> {
 
     /**
 >>>>>>> origin/dsgrieve/java-v1-api
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
      * Invokes the function with the given context and settings
      *
      * @param context Request context
@@ -117,14 +258,60 @@ public interface SKFunction<RequestConfiguration> {
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
 =======
+=======
+<<<<<<< main
+    Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+    Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
+=======
+>>>>>>> Stashed changes
     @Deprecated
     default Mono<SKContext> invokeAsync(SKContext context, @Nullable Object settings) {
         throw new UnsupportedOperationException("Deprecated");
     }
 >>>>>>> origin/dsgrieve/java-v1-api
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
     /**
      * @return The name of the skill that this function is within
@@ -177,11 +364,55 @@ public interface SKFunction<RequestConfiguration> {
     String toManualString();
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 
     @Deprecated
     default Class<?> getType() {
         throw new UnsupportedOperationException("Deprecated");
     }
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 
     /**
      * Invokes the function with the given input, context and settings

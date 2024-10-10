@@ -1,0 +1,121 @@
+[
+  {
+    "Role": { "Label": "user" },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Check current UTC time and return current weather in Boston city."
+      }
+    ]
+  },
+  {
+    "Role": { "Label": "assistant" },
+    "Items": [
+      {
+        "$type": "FunctionCallContent",
+        "Id": "call_NbFR26Ui7GaIlVgpGvsLWR8H",
+        "PluginName": "TimePlugin",
+        "FunctionName": "GetCurrentUtcTime",
+        "Arguments": {}
+      }
+    ],
+    "ModelId": "gpt-4",
+    "Metadata": {
+      "Id": "chatcmpl-9h56QcFJ2DlDcX0GSwZHz0me8o0Xt",
+      "Created": "2024-07-04T00:59:06+00:00",
+      "PromptFilterResults": [],
+      "SystemFingerprint": null,
+      "Usage": {
+        "CompletionTokens": 11,
+        "PromptTokens": 86,
+        "TotalTokens": 97
+      },
+      "ContentFilterResults": null,
+      "FinishReason": "tool_calls",
+      "FinishDetails": null,
+      "LogProbabilityInfo": null,
+      "Index": 0,
+      "Enhancements": null,
+      "ChatResponseMessage.FunctionToolCalls": [
+        {
+          "Name": "TimePlugin-GetCurrentUtcTime",
+          "Arguments": "{}",
+          "Id": "call_NbFR26Ui7GaIlVgpGvsLWR8H"
+        }
+      ]
+    }
+  },
+  {
+    "Role": { "Label": "tool" },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Thu, 04 Jul 2024 00:59:07 GMT",
+        "Metadata": { "ChatCompletionsToolCall.Id": "call_NbFR26Ui7GaIlVgpGvsLWR8H" }
+      },
+      {
+        "$type": "FunctionResultContent",
+        "CallId": "call_NbFR26Ui7GaIlVgpGvsLWR8H",
+        "PluginName": "TimePlugin",
+        "FunctionName": "GetCurrentUtcTime",
+        "Result": "Thu, 04 Jul 2024 00:59:07 GMT"
+      }
+    ],
+    "Metadata": { "ChatCompletionsToolCall.Id": "call_NbFR26Ui7GaIlVgpGvsLWR8H" }
+  },
+  {
+    "Role": { "Label": "assistant" },
+    "Items": [
+      {
+        "$type": "FunctionCallContent",
+        "Id": "call_HZrx5uHt89ogb2J5KG7quVsd",
+        "PluginName": "WeatherPlugin",
+        "FunctionName": "GetWeatherForCity",
+        "Arguments": { "cityName": "Boston" }
+      }
+    ],
+    "ModelId": "gpt-4",
+    "Metadata": {
+      "Id": "chatcmpl-9h56R3fdeXBn7pPOSZUDtE0fSnrzU",
+      "Created": "2024-07-04T00:59:07+00:00",
+      "PromptFilterResults": [],
+      "SystemFingerprint": null,
+      "Usage": {
+        "CompletionTokens": 22,
+        "PromptTokens": 124,
+        "TotalTokens": 146
+      },
+      "ContentFilterResults": null,
+      "FinishReason": "tool_calls",
+      "FinishDetails": null,
+      "LogProbabilityInfo": null,
+      "Index": 0,
+      "Enhancements": null,
+      "ChatResponseMessage.FunctionToolCalls": [
+        {
+          "Name": "WeatherPlugin-GetWeatherForCity",
+          "Arguments": "{\n  \u0022cityName\u0022: \u0022Boston\u0022\n}",
+          "Id": "call_HZrx5uHt89ogb2J5KG7quVsd"
+        }
+      ]
+    }
+  },
+  {
+    "Role": { "Label": "tool" },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "61 and rainy",
+        "Metadata": { "ChatCompletionsToolCall.Id": "call_HZrx5uHt89ogb2J5KG7quVsd" }
+      },
+      {
+        "$type": "FunctionResultContent",
+        "CallId": "call_HZrx5uHt89ogb2J5KG7quVsd",
+        "PluginName": "WeatherPlugin",
+        "FunctionName": "GetWeatherForCity",
+        "Result": "61 and rainy"
+      }
+    ],
+    "Metadata": { "ChatCompletionsToolCall.Id": "call_HZrx5uHt89ogb2J5KG7quVsd" }
+  }
+]

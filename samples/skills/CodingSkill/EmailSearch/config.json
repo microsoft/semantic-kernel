@@ -1,6 +1,43 @@
 {
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "description": "Search the Microsoft Graph for Email",
+  "type": "completion",
+  "completion": {
+=======
   "description": "Search the Microsoft Graph for Email",
   "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Search the Microsoft Graph for Email",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Search the Microsoft Graph for Email",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Search the Microsoft Graph for Email",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Search the Microsoft Graph for Email",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Search the Microsoft Graph for Email",
+  "default_settings": {
+>>>>>>> origin/main
+=======
+  "description": "Search the Microsoft Graph for Email",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 256,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -13,6 +50,47 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
     "stop_sequences": ["[done]"]
   }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    "stop_sequences": ["[done]"]
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 }

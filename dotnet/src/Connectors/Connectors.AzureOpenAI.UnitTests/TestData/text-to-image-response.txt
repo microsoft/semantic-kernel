@@ -1,0 +1,9 @@
+{
+    "created": 1702575371,
+    "data": [
+        {
+            "revised_prompt": "A photo capturing the diversity of the Earth's landscapes.",
+            "url": "https://image-url/"
+        }
+    ]
+}
