@@ -1,8 +1,8 @@
-[submodule "Singularity"]
-[submodule "Bryan-Roe"]
-[submodule "semantic-kernel"]
-	path = semantic-kernel
-	url = git@github.com:Bryan-Roe/semantic-kernel.git
-[submodule "SK.AI"]
-	path = SK.AI
-	url = https://Bryan-Roe@github.com/Bryan-Roe/SK.AI
+
+
+
+
+
+
+
+
