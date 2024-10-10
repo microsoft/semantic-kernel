@@ -10,6 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+#pragma warning disable IDE0005 // Using directive is unnecessary
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using OpenAI;
@@ -64,6 +67,11 @@ internal partial class ClientCore
     internal Dictionary<string, object?> Attributes { get; } = [];
 
     /// <summary>
+    /// The function calls processor.
+    /// </summary>
+    protected FunctionCallsProcessor FunctionCallsProcessor { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ClientCore"/> class.
     /// </summary>
     /// <param name="modelId">Model name.</param>
@@ -80,6 +88,8 @@ internal partial class ClientCore
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+
         // Empty constructor will be used when inherited by a specialized Client.
         if (modelId is null
             && apiKey is null
@@ -122,7 +132,7 @@ internal partial class ClientCore
             this.AddAttribute(ClientCore.OrganizationKey, organizationId);
         }
 
-        this.Client = new OpenAIClient(apiKey!, options);
+        this.Client = new OpenAIClient(new ApiKeyCredential(apiKey!), options);
     }
 
     /// <summary>
@@ -149,6 +159,7 @@ internal partial class ClientCore
 
         this.Logger = logger ?? NullLogger.Instance;
         this.Client = openAIClient;
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
     }
 
     /// <summary>
@@ -184,7 +195,7 @@ internal partial class ClientCore
     {
         OpenAIClientOptions options = new()
         {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
             Endpoint = endpoint
         };
 
@@ -199,6 +210,12 @@ internal partial class ClientCore
 
         return options;
     }
+
+    /// <summary>
+    /// Gets the model identifier to use for the client.
+    /// </summary>
+    protected virtual string GetClientModelId()
+        => this.ModelId;
 
     /// <summary>
     /// Invokes the specified request and handles exceptions.

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import inspect
 import logging
 import os
 import re
@@ -34,22 +35,25 @@ class SessionsPythonTool(KernelBaseModel):
 
     pool_management_endpoint: HttpsUrl
     settings: SessionsPythonSettings
-    auth_callback: Callable[..., Awaitable[Any]]
+    auth_callback: Callable[..., Any | Awaitable[Any]]
     http_client: AsyncClient
 
     def __init__(
         self,
-        auth_callback: Callable[..., Awaitable[Any]],
+        auth_callback: Callable[..., Any | Awaitable[Any]] | None = None,
         pool_management_endpoint: str | None = None,
         settings: SessionsPythonSettings | None = None,
         http_client: AsyncClient | None = None,
         env_file_path: str | None = None,
+        token_endpoint: str | None = None,
         **kwargs,
     ):
         """Initializes a new instance of the SessionsPythonTool class."""
         try:
             aca_settings = ACASessionsSettings.create(
-                env_file_path=env_file_path, pool_management_endpoint=pool_management_endpoint
+                env_file_path=env_file_path,
+                pool_management_endpoint=pool_management_endpoint,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as e:
             logger.error(f"Failed to load the ACASessionsSettings with message: {e!s}")
@@ -61,6 +65,9 @@ class SessionsPythonTool(KernelBaseModel):
         if not http_client:
             http_client = AsyncClient()
 
+        if auth_callback is None:
+            auth_callback = self._default_auth_callback(aca_settings)
+
         super().__init__(
             pool_management_endpoint=aca_settings.pool_management_endpoint,
             settings=settings,
@@ -70,13 +77,29 @@ class SessionsPythonTool(KernelBaseModel):
         )
 
     # region Helper Methods
+    def _default_auth_callback(self, aca_settings: ACASessionsSettings) -> Callable[..., Any | Awaitable[Any]]:
+        """Generates a default authentication callback using the ACA settings."""
+        token = aca_settings.get_sessions_auth_token()
+
+        if token is None:
+            raise FunctionInitializationError("Failed to retrieve the client auth token.")
+
+        def auth_callback() -> str:
+            """Retrieve the client auth token."""
+            return token
+
+        return auth_callback
+
     async def _ensure_auth_token(self) -> str:
-        """Ensure the auth token is valid."""
+        """Ensure the auth token is valid and handle both sync and async callbacks."""
         try:
-            auth_token = await self.auth_callback()
+            if inspect.iscoroutinefunction(self.auth_callback):
+                auth_token = await self.auth_callback()
+            else:
+                auth_token = self.auth_callback()
         except Exception as e:
             logger.error(f"Failed to retrieve the client auth token with message: {e!s}")
-            raise FunctionExecutionException(f"Failed to retrieve the client auth token with messages: {e!s}") from e
+            raise FunctionExecutionException(f"Failed to retrieve the client auth token with message: {e!s}") from e
 
         return auth_token
 
@@ -152,13 +175,11 @@ class SessionsPythonTool(KernelBaseModel):
 
         logger.info(f"Executing Python code: {code}")
 
-        self.http_client.headers.update(
-            {
-                "Authorization": f"Bearer {auth_token}",
-                "Content-Type": "application/json",
-                USER_AGENT: SESSIONS_USER_AGENT,
-            }
-        )
+        self.http_client.headers.update({
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json",
+            USER_AGENT: SESSIONS_USER_AGENT,
+        })
 
         self.settings.python_code = code
 
@@ -213,12 +234,10 @@ class SessionsPythonTool(KernelBaseModel):
         remote_file_path = self._construct_remote_file_path(remote_file_path or os.path.basename(local_file_path))
 
         auth_token = await self._ensure_auth_token()
-        self.http_client.headers.update(
-            {
-                "Authorization": f"Bearer {auth_token}",
-                USER_AGENT: SESSIONS_USER_AGENT,
-            }
-        )
+        self.http_client.headers.update({
+            "Authorization": f"Bearer {auth_token}",
+            USER_AGENT: SESSIONS_USER_AGENT,
+        })
 
         url = self._build_url_with_version(
             base_url=str(self.pool_management_endpoint),
@@ -247,12 +266,10 @@ class SessionsPythonTool(KernelBaseModel):
             list[SessionsRemoteFileMetadata]: The metadata for the files in the session pool
         """
         auth_token = await self._ensure_auth_token()
-        self.http_client.headers.update(
-            {
-                "Authorization": f"Bearer {auth_token}",
-                USER_AGENT: SESSIONS_USER_AGENT,
-            }
-        )
+        self.http_client.headers.update({
+            "Authorization": f"Bearer {auth_token}",
+            USER_AGENT: SESSIONS_USER_AGENT,
+        })
 
         url = self._build_url_with_version(
             base_url=str(self.pool_management_endpoint),
@@ -290,12 +307,10 @@ class SessionsPythonTool(KernelBaseModel):
             BufferedReader: The data of the downloaded file.
         """
         auth_token = await self._ensure_auth_token()
-        self.http_client.headers.update(
-            {
-                "Authorization": f"Bearer {auth_token}",
-                USER_AGENT: SESSIONS_USER_AGENT,
-            }
-        )
+        self.http_client.headers.update({
+            "Authorization": f"Bearer {auth_token}",
+            USER_AGENT: SESSIONS_USER_AGENT,
+        })
 
         url = self._build_url_with_version(
             base_url=str(self.pool_management_endpoint),

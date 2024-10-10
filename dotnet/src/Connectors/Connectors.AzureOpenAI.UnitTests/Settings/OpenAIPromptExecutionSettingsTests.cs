@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Azure.AI.OpenAI.Chat;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -30,12 +31,14 @@ public class OpenAIPromptExecutionSettingsTests
             Logprobs = true,
             Seed = 123456,
             TopLogprobs = 5,
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             AzureChatDataSource = new AzureSearchChatDataSource
             {
                 Endpoint = new Uri("https://test-host"),
                 Authentication = DataSourceAuthentication.FromApiKey("api-key"),
                 IndexName = "index-name"
             }
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         };
 
         // Act
@@ -43,6 +46,22 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         AssertExecutionSettings(executionSettings);
+    }
+
+    [Fact]
+    public void ItRestoresOriginalFunctionChoiceBehavior()
+    {
+        // Arrange
+        var functionChoiceBehavior = FunctionChoiceBehavior.Auto();
+
+        var originalExecutionSettings = new PromptExecutionSettings();
+        originalExecutionSettings.FunctionChoiceBehavior = functionChoiceBehavior;
+
+        // Act
+        var result = OpenAIPromptExecutionSettings.FromExecutionSettings(originalExecutionSettings);
+
+        // Assert
+        Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
     }
 
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)

@@ -2,9 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.History;
+using Microsoft.SemanticKernel.Agents.Internal;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -43,14 +44,14 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     public KernelArguments? Arguments { get; init; }
 
     /// <summary>
-    /// The <see cref="KernelFunction"/> invoked as termination criteria.
-    /// </summary>
-    public KernelFunction Function { get; } = function;
-
-    /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
     public Kernel Kernel => kernel;
+
+    /// <summary>
+    /// The <see cref="KernelFunction"/> invoked as termination criteria.
+    /// </summary>
+    public KernelFunction Function { get; } = function;
 
     /// <summary>
     /// A callback responsible for translating the <see cref="FunctionResult"/>
@@ -58,15 +59,22 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// </summary>
     public Func<FunctionResult, bool> ResultParser { get; init; } = (_) => true;
 
+    /// <summary>
+    /// Optionally specify a <see cref="IChatHistoryReducer"/> to reduce the history.
+    /// </summary>
+    public IChatHistoryReducer? HistoryReducer { get; init; }
+
     /// <inheritdoc/>
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+        history = await history.ReduceAsync(this.HistoryReducer, cancellationToken).ConfigureAwait(false);
+
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
                 { this.AgentVariableName, agent.Name ?? agent.Id },
-                { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
+                { this.HistoryVariableName, ChatMessageForPrompt.Format(history) },
             };
 
         this.Logger.LogKernelFunctionTerminationStrategyInvokingFunction(nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name);

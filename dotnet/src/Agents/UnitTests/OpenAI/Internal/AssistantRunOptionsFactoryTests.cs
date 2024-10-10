@@ -23,15 +23,22 @@ public class AssistantRunOptionsFactoryTests
             new("gpt-anything")
             {
                 Temperature = 0.5F,
+                ExecutionOptions =
+                    new()
+                    {
+                        AdditionalInstructions = "test",
+                    },
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, null);
 
         // Assert
         Assert.NotNull(options);
+        Assert.Null(options.InstructionsOverride);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
+        Assert.Equal("test", options.AdditionalInstructions);
         Assert.Empty(options.Metadata);
     }
 
@@ -55,10 +62,11 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, "test", invocationOptions);
 
         // Assert
         Assert.NotNull(options);
+        Assert.Equal("test", options.InstructionsOverride);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
     }
@@ -77,6 +85,7 @@ public class AssistantRunOptionsFactoryTests
                 ExecutionOptions =
                     new()
                     {
+                        AdditionalInstructions = "test1",
                         TruncationMessageCount = 5,
                     },
             };
@@ -84,18 +93,20 @@ public class AssistantRunOptionsFactoryTests
         OpenAIAssistantInvocationOptions invocationOptions =
             new()
             {
+                AdditionalInstructions = "test2",
                 Temperature = 0.9F,
                 TruncationMessageCount = 8,
                 EnableJsonResponse = true,
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
 
         // Assert
         Assert.NotNull(options);
         Assert.Equal(0.9F, options.Temperature);
         Assert.Equal(8, options.TruncationStrategy.LastMessages);
+        Assert.Equal("test2", options.AdditionalInstructions);
         Assert.Equal(AssistantResponseFormat.JsonObject, options.ResponseFormat);
         Assert.Null(options.NucleusSamplingFactor);
     }
@@ -129,7 +140,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null, invocationOptions);
 
         // Assert
         Assert.Equal(2, options.Metadata.Count);

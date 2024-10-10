@@ -22,7 +22,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonIgnore]
-    public AzureChatDataSource? AzureChatDataSource
+    public AzureSearchChatDataSource? AzureChatDataSource
     {
         get => this._azureChatDataSource;
 
@@ -73,6 +73,9 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
+        // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
+        openAIExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
+
         return openAIExecutionSettings!;
     }
 
@@ -98,8 +101,8 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     }
 
     #region private ================================================================================
-
-    private AzureChatDataSource? _azureChatDataSource;
+    [Experimental("SKEXP0010")]
+    private AzureSearchChatDataSource? _azureChatDataSource;
 
     #endregion
 }

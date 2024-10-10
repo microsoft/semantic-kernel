@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -86,6 +87,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal(record.ParkingIncluded, getResult.ParkingIncluded);
         Assert.Equal(record.Tags.ToArray(), getResult.Tags.ToArray());
         Assert.Equal(record.Description, getResult.Description);
+        Assert.Equal(record.Timestamp.ToUniversalTime(), getResult.Timestamp.ToUniversalTime());
 
         if (includeVectors)
         {
@@ -236,19 +238,19 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task UpsertWithVectorStoreModelWorksCorrectlyAsync()
     {
         // Arrange
-        var model = new VectorStoreTestModel { Id = "key", HotelName = "Test Name" };
+        var model = new VectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
 
         var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
         var upsertResult = await sut.UpsertAsync(model);
-        var getResult = await sut.GetAsync(model.Id);
+        var getResult = await sut.GetAsync(model.HotelId);
 
         // Assert
         Assert.Equal("key", upsertResult);
 
         Assert.NotNull(getResult);
-        Assert.Equal("key", getResult.Id);
+        Assert.Equal("key", getResult.HotelId);
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
@@ -288,19 +290,19 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task UpsertWithBsonVectorStoreModelWorksCorrectlyAsync()
     {
         // Arrange
-        var model = new BsonVectorStoreTestModel { Id = "key", HotelName = "Test Name" };
+        var model = new BsonVectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
 
         var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
         var upsertResult = await sut.UpsertAsync(model);
-        var getResult = await sut.GetAsync(model.Id);
+        var getResult = await sut.GetAsync(model.HotelId);
 
         // Assert
         Assert.Equal("key", upsertResult);
 
         Assert.NotNull(getResult);
-        Assert.Equal("key", getResult.Id);
+        Assert.Equal("key", getResult.HotelId);
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
@@ -324,9 +326,150 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
+    [Fact(Skip = SkipReason)]
+    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: "key2", embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearch");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]));
+
+        // Assert
+        var searchResults = await actual.Results.ToListAsync();
+        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+
+        Assert.Equal("key1", ids[0]);
+        Assert.Equal("key2", ids[1]);
+        Assert.Equal("key3", ids[2]);
+
+        Assert.DoesNotContain("key4", ids);
+
+        Assert.Equal(1, searchResults.First(l => l.Record.HotelId == "key1").Score);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task VectorizedSearchReturnsValidResultsWithOffsetAsync()
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: "key2", embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        {
+            Top = 2,
+            Skip = 2
+        });
+
+        // Assert
+        var searchResults = await actual.Results.ToListAsync();
+        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+
+        Assert.Equal("key3", ids[0]);
+        Assert.Equal("key4", ids[1]);
+
+        Assert.DoesNotContain("key1", ids);
+        Assert.DoesNotContain("key2", ids);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task VectorizedSearchReturnsValidResultsWithFilterAsync()
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: "key2", embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        {
+            Filter = new VectorSearchFilter().EqualTo(nameof(AzureCosmosDBMongoDBHotel.HotelName), "My Hotel key2")
+        });
+
+        // Assert
+        var searchResults = await actual.Results.ToListAsync();
+        var ids = searchResults.Select(l => l.Record.HotelId).ToList();
+
+        Assert.Equal("key2", ids[0]);
+
+        Assert.DoesNotContain("key1", ids);
+        Assert.DoesNotContain("key3", ids);
+        Assert.DoesNotContain("key4", ids);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    {
+        // Arrange
+        var options = new AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<string>>
+        {
+            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
+        };
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<VectorStoreGenericDataModel<string>>(fixture.MongoDatabase, fixture.TestCollection, options);
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>("GenericMapper-1")
+        {
+            Data =
+            {
+                { "HotelName", "Generic Mapper Hotel" },
+                { "Description", "This is a generic mapper hotel" },
+                { "Tags", new string[] { "generic" } },
+                { "ParkingIncluded", false },
+                { "Timestamp", new DateTime(1970, 1, 18, 0, 0, 0).ToUniversalTime() },
+                { "HotelRating", 3.6f }
+            },
+            Vectors =
+            {
+                { "DescriptionEmbedding", new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]) }
+            }
+        });
+
+        var localGetResult = await sut.GetAsync("GenericMapper-1", new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.NotNull(upsertResult);
+        Assert.Equal("GenericMapper-1", upsertResult);
+
+        Assert.NotNull(localGetResult);
+        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
+        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
+        Assert.Equal(new[] { "generic" }, localGetResult.Data["Tags"]);
+        Assert.False((bool?)localGetResult.Data["ParkingIncluded"]);
+        Assert.Equal(new DateTime(1970, 1, 18, 0, 0, 0).ToUniversalTime(), localGetResult.Data["Timestamp"]);
+        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+    }
+
     #region private
 
-    private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId)
+    private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId, ReadOnlyMemory<float>? embedding = null)
     {
         return new AzureCosmosDBMongoDBHotel
         {
@@ -337,7 +480,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
             ParkingIncluded = true,
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
-            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+            Timestamp = new DateTime(2024, 09, 23, 15, 32, 33),
+            DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
         };
     }
 
@@ -351,7 +495,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     private sealed class VectorStoreTestModel
     {
         [VectorStoreRecordKey]
-        public string? Id { get; set; }
+        public string? HotelId { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "hotel_name")]
         public string? HotelName { get; set; }
@@ -370,7 +514,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     {
         [BsonId]
         [VectorStoreRecordKey]
-        public string? Id { get; set; }
+        public string? HotelId { get; set; }
 
         [BsonElement("hotel_name")]
         [VectorStoreRecordData]

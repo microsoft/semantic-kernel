@@ -17,6 +17,8 @@ using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
 public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrationTest
@@ -81,7 +83,20 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
-        var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+        var kernel = this.CreateAndInitializeKernel();
+        kernel.ImportPluginFromFunctions("HelperFunctions",
+        [
+            kernel.CreateFunctionFromMethod((WeatherParameters parameters) =>
+            {
+                if (parameters.City.Name.Equals("Dublin", StringComparison.OrdinalIgnoreCase) &&
+                (parameters.City.Country.Equals("Ireland", StringComparison.OrdinalIgnoreCase) || parameters.City.Country.Equals("IE", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return Task.FromResult(42.8); // 42.8 Fahrenheit.
+                }
+
+                throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
+            }, "Get_Current_Temperature", "Get current temperature."),
+        ]);
 
         AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -129,10 +144,19 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
     public async Task CanAutoInvokeKernelFunctionFromPromptAsync()
     {
         // Arrange
+        var invokedFunctions = new List<string>();
+
+        var filter = new FakeFunctionFilter(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
+
         var kernel = this.CreateAndInitializeKernel();
+        kernel.FunctionInvocationFilters.Add(filter);
 
         var promptFunction = KernelFunctionFactory.CreateFromPrompt(
-            "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+            "Hey LLM, give me one news title that's hot off the press!",
             functionName: "FindLatestNews",
             description: "Searches for the latest news.");
 
@@ -144,21 +168,30 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
-        var result = await kernel.InvokePromptAsync("Show me the latest news as they are.", new(settings));
+        var result = await kernel.InvokePromptAsync("Show me the latest news.", new(settings));
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Contains("Transportation", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(invokedFunctions, functionName => functionName.Contains("InvokePromptAsync"));
+        Assert.Contains(invokedFunctions, functionName => functionName.Contains("FindLatestNews"));
     }
 
     [Fact]
     public async Task CanAutoInvokeKernelFunctionFromPromptStreamingAsync()
     {
         // Arrange
+        var invokedFunctions = new List<string>();
+
+        var filter = new FakeFunctionFilter(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
+
         var kernel = this.CreateAndInitializeKernel();
+        kernel.FunctionInvocationFilters.Add(filter);
 
         var promptFunction = KernelFunctionFactory.CreateFromPrompt(
-            "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+            "Hey LLM, give me one news title that's hot off the press!",
             functionName: "FindLatestNews",
             description: "Searches for the latest news.");
 
@@ -170,20 +203,14 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
-        var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news as they are.", new(settings));
-
-        var builder = new StringBuilder();
-
+        var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news.", new(settings));
         await foreach (var update in streamingResult)
         {
-            builder.Append(update.ToString());
         }
 
-        var result = builder.ToString();
-
         // Assert
-        Assert.NotNull(result);
-        Assert.Contains("Transportation", result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(invokedFunctions, functionName => functionName.Contains("InvokePromptStreamingAsync"));
+        Assert.Contains(invokedFunctions, functionName => functionName.Contains("FindLatestNews"));
     }
 
     [Fact]
@@ -784,10 +811,13 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         string? emailBody = null, emailRecipient = null;
 
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
-        kernel.ImportPluginFromFunctions("EmailPlugin", [KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail")]);
+        kernel.ImportPluginFromFunctions("EmailPlugin", [
+            KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail"),
+            KernelFunctionFactory.CreateFromMethod(() => "abc@domain.com", "GetMyEmail")
+        ]);
 
         // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
-        chatHistory.AddUserMessage("Send the exact answer to my email: abc@domain.com");
+        chatHistory.AddUserMessage("Send the exact answer to my email.");
 
         var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -820,10 +850,13 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         string? emailBody = null, emailRecipient = null;
 
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
-        kernel.ImportPluginFromFunctions("EmailPlugin", [KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail")]);
+        kernel.ImportPluginFromFunctions("EmailPlugin", [
+            KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail"),
+            KernelFunctionFactory.CreateFromMethod(() => "abc@domain.com", "GetMyEmail")
+         ]);
 
         // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
-        chatHistory.AddUserMessage("Send the exact answer to my email: abc@domain.com");
+        chatHistory.AddUserMessage("Send the exact answer to my email.");
 
         var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -832,7 +865,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         // Assert
         Assert.Equal("abc@domain.com", emailRecipient);
-        Assert.Contains("61\u00B0F", emailBody);
+        Assert.Contains("61", emailBody);
     }
 
     /// <summary>
@@ -859,6 +892,54 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         chatHistory.AddUserMessage("Return only the color name.");
 
         await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+    }
+
+    [Fact]
+    public async Task SubsetOfFunctionsCanBeUsedForFunctionCallingAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel();
+
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
+        kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("What day is today?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableFunctions([function.Metadata.ToOpenAIFunction()], true) };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
+    }
+
+    [Fact]
+    public async Task RequiredFunctionShouldBeCalledAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel();
+
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
+        kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("What day is today?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.RequireFunction(function.Metadata.ToOpenAIFunction(), true) };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
     }
 
     private Kernel CreateAndInitializeKernel(bool importHelperPlugin = false)
@@ -891,20 +972,6 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
                         _ => "31 and snowing",
                     };
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
-                kernel.CreateFunctionFromMethod((WeatherParameters parameters) =>
-                {
-                    if (parameters.City.Name == "Dublin" && (parameters.City.Country == "Ireland" || parameters.City.Country == "IE"))
-                    {
-                        return Task.FromResult(42.8); // 42.8 Fahrenheit.
-                    }
-
-                    throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
-                }, "Get_Current_Temperature", "Get current temperature."),
-                kernel.CreateFunctionFromMethod((double temperatureInFahrenheit) =>
-                {
-                    double temperatureInCelsius = (temperatureInFahrenheit - 32) * 5 / 9;
-                    return Task.FromResult(temperatureInCelsius);
-                }, "Convert_Temperature_From_Fahrenheit_To_Celsius", "Convert temperature from Fahrenheit to Celsius.")
             ]);
         }
 

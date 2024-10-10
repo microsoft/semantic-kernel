@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Net.Http;
 using System.Threading;
@@ -8,6 +9,9 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+#pragma warning disable IDE0005 // Using directive is unnecessary
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
@@ -37,24 +41,27 @@ internal partial class AzureClientCore : ClientCore
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     internal AzureClientCore(
         string deploymentName,
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        string? apiVersion = null)
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        var options = GetAzureOpenAIClientOptions(httpClient);
+        var options = GetAzureOpenAIClientOptions(httpClient, apiVersion);
 
         this.Logger = logger ?? NullLogger.Instance;
         this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
-        this.Client = new AzureOpenAIClient(this.Endpoint, apiKey, options);
+        this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -67,23 +74,26 @@ internal partial class AzureClientCore : ClientCore
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     internal AzureClientCore(
         string deploymentName,
         string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        string? apiVersion = null)
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        var options = GetAzureOpenAIClientOptions(httpClient);
+        var options = GetAzureOpenAIClientOptions(httpClient, apiVersion);
 
         this.Logger = logger ?? NullLogger.Instance;
         this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, credential, options);
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -107,6 +117,7 @@ internal partial class AzureClientCore : ClientCore
         this.Logger = logger ?? NullLogger.Instance;
         this.DeploymentName = deploymentName;
         this.Client = openAIClient;
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
@@ -115,12 +126,25 @@ internal partial class AzureClientCore : ClientCore
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="serviceVersion">Optional API version.</param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    internal static AzureOpenAIClientOptions GetAzureOpenAIClientOptions(HttpClient? httpClient, AzureOpenAIClientOptions.ServiceVersion? serviceVersion = null)
+    internal static AzureOpenAIClientOptions GetAzureOpenAIClientOptions(HttpClient? httpClient, string? serviceVersion = null)
     {
-        AzureOpenAIClientOptions options = serviceVersion is not null
-            ? new(serviceVersion.Value) { ApplicationId = HttpHeaderConstant.Values.UserAgent }
-            : new() { ApplicationId = HttpHeaderConstant.Values.UserAgent };
+        AzureOpenAIClientOptions.ServiceVersion? sdkVersion = null;
+        if (serviceVersion is not null)
+        {
+            sdkVersion = serviceVersion.ToUpperInvariant() switch // Azure SDK versioning
+            {
+                "2024-06-01" or "V2024_06_01" or "2024_06_01" => AzureOpenAIClientOptions.ServiceVersion.V2024_06_01,
+                "2024-08-01-PREVIEW" or "V2024_08_01_PREVIEW" or "2024_08_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview,
+                "2024-10-01-PREVIEW" or "V2024_10_01_PREVIEW" or "2024_10_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview,
+                _ => throw new NotSupportedException($"The service version '{serviceVersion}' is not supported.")
+            };
+        }
 
+        AzureOpenAIClientOptions options = sdkVersion is not null
+            ? new AzureOpenAIClientOptions(sdkVersion.Value)
+            : new();
+
+        options.UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
 
         if (httpClient is not null)
@@ -132,4 +156,8 @@ internal partial class AzureClientCore : ClientCore
 
         return options;
     }
+
+    /// <inheritdoc/>
+    protected override string GetClientModelId()
+        => this.DeploymentName;
 }

@@ -21,6 +21,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0050 | Out-of-the-box plugins |
 | SKEXP0060 | Planners |
 | SKEXP0070 | AI connectors |
+| SKEXP0080 | Processes |
 | SKEXP0100 | Advanced Semantic Kernel features |
 | SKEXP0110 | Semantic Kernel Agents |
 
@@ -75,6 +76,8 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0070 | Mistral AI connector |
 | SKEXP0070 | ONNX AI connector |
 | SKEXP0070 | Hugging Face AI connector |
+| | | | | | | |
+| SKEXP0080 | Process Framework |
 | | | | | | | |
 | SKEXP0101 | Experiment with Assistants |
 | SKEXP0101 | Experiment with Flow Orchestration |

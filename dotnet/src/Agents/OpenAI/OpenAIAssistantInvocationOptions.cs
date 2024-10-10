@@ -19,6 +19,12 @@ public sealed class OpenAIAssistantInvocationOptions
     public string? ModelName { get; init; }
 
     /// <summary>
+    /// Appends additional instructions.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AdditionalInstructions { get; init; }
+
+    /// <summary>
     /// Set if code_interpreter tool is enabled.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

@@ -22,6 +22,7 @@ public class OpenAIAssistantInvocationOptionsTests
 
         // Assert
         Assert.Null(options.ModelName);
+        Assert.Null(options.AdditionalInstructions);
         Assert.Null(options.Metadata);
         Assert.Null(options.Temperature);
         Assert.Null(options.TopP);
@@ -48,6 +49,7 @@ public class OpenAIAssistantInvocationOptionsTests
             new()
             {
                 ModelName = "testmodel",
+                AdditionalInstructions = "test instructions",
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 MaxCompletionTokens = 1000,
                 MaxPromptTokens = 1000,
@@ -62,6 +64,7 @@ public class OpenAIAssistantInvocationOptionsTests
 
         // Assert
         Assert.Equal("testmodel", options.ModelName);
+        Assert.Equal("test instructions", options.AdditionalInstructions);
         Assert.Equal(2, options.Temperature);
         Assert.Equal(0, options.TopP);
         Assert.Equal(1000, options.MaxCompletionTokens);

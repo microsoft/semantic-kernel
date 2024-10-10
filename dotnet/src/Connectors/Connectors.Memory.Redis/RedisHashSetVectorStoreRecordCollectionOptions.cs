@@ -13,13 +13,13 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the
-    /// key names before reading or writing to the Redis store. Default is false.
+    /// key names before reading or writing to the Redis store. Default is true.
     /// </summary>
     /// <remarks>
     /// For a record to be indexed by a specific Redis index, the key name must be prefixed with the matching prefix configured on the Redis index.
     /// You can either pass in keys that are already prefixed, or set this option to true to have the collection name prefixed to the key names automatically.
     /// </remarks>
-    public bool PrefixCollectionNameToKeyNames { get; init; } = false;
+    public bool PrefixCollectionNameToKeyNames { get; init; } = true;
 
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Redis record.

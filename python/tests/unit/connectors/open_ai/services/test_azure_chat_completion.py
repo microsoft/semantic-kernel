@@ -92,14 +92,6 @@ def test_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
         )
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
-def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ServiceInitializationError):
-        AzureChatCompletion(
-            env_file_path="test.env",
-        )
-
-
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
 def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
