@@ -2,9 +2,9 @@
 
 using Azure.Identity;
 using Memory.VectorStoreFixtures;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Memory;
 using StackExchange.Redis;
 

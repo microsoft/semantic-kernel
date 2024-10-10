@@ -3,9 +3,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Memory.VectorStoreFixtures;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using StackExchange.Redis;
 

@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel;

@@ -12,7 +12,7 @@ public sealed class EqualToFilterClause : FilterClause
     /// </summary>
     /// <param name="fieldName">Field name.</param>
     /// <param name="value">Field value.</param>
-    internal EqualToFilterClause(string fieldName, object value)
+    public EqualToFilterClause(string fieldName, object value)
     {
         this.FieldName = fieldName;
         this.Value = value;

@@ -12,7 +12,7 @@ public sealed class AnyTagEqualToFilterClause : FilterClause
     /// </summary>
     /// <param name="fieldName">The name of the field with the list of values.</param>
     /// <param name="value">The value that the list should contain.</param>
-    internal AnyTagEqualToFilterClause(string fieldName, string value)
+    public AnyTagEqualToFilterClause(string fieldName, string value)
     {
         this.FieldName = fieldName;
         this.Value = value;

@@ -11,4 +11,7 @@ namespace Microsoft.Extensions.VectorData;
 /// </remarks>
 public abstract class FilterClause
 {
+    internal FilterClause()
+    {
+    }
 }
