@@ -41,7 +41,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 
         // Initialize ChatResponseFormat object with JSON schema of desired response format.
         ChatResponseFormat chatResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
-            name: "movie_result",
+            jsonSchemaFormatName: "movie_result",
             jsonSchema: BinaryData.FromString("""
                 {
                     "type": "object",
@@ -67,7 +67,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
                     "additionalProperties": false
                 }
                 """),
-            strictSchemaEnabled: true);
+            jsonSchemaIsStrict: true);
 
         // Specify response format by setting ChatResponseFormat object in prompt execution settings.
         var executionSettings = new OpenAIPromptExecutionSettings

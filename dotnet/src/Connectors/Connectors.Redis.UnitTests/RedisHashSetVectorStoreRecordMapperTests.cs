@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 using Microsoft.SemanticKernel.Data;
@@ -18,7 +17,8 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, s_storagePropertyNames);
+        var reader = new VectorStoreRecordPropertyReader(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, null);
+        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(reader);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
@@ -33,7 +33,8 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, s_storagePropertyNames);
+        var reader = new VectorStoreRecordPropertyReader(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, null);
+        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(reader);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(("test key", RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet()), new() { IncludeVectors = true });
@@ -87,33 +88,12 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         };
     }
 
-    private static readonly Dictionary<string, string> s_storagePropertyNames = new()
-    {
-        ["StringData"] = "storage_string_data",
-        ["IntData"] = "IntData",
-        ["UIntData"] = "UIntData",
-        ["LongData"] = "LongData",
-        ["ULongData"] = "ULongData",
-        ["DoubleData"] = "DoubleData",
-        ["FloatData"] = "FloatData",
-        ["BoolData"] = "BoolData",
-        ["NullableIntData"] = "NullableIntData",
-        ["NullableUIntData"] = "NullableUIntData",
-        ["NullableLongData"] = "NullableLongData",
-        ["NullableULongData"] = "NullableULongData",
-        ["NullableDoubleData"] = "NullableDoubleData",
-        ["NullableFloatData"] = "NullableFloatData",
-        ["NullableBoolData"] = "NullableBoolData",
-        ["FloatVector"] = "FloatVector",
-        ["DoubleVector"] = "DoubleVector",
-    };
-
     private sealed class AllTypesModel
     {
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(StoragePropertyName = "storage_string_data")]
         public string StringData { get; set; } = string.Empty;
 
         [VectorStoreRecordData]

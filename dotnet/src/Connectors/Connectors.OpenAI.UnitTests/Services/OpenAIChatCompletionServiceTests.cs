@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -22,6 +23,8 @@ using Moq;
 using OpenAI;
 using OpenAI.Chat;
 using Xunit;
+
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
 
@@ -153,7 +156,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var client = new OpenAIClient("key");
+        var client = new OpenAIClient(new ApiKeyCredential("key"));
         var service = includeLoggerFactory ?
             new OpenAIChatCompletionService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) :
             new OpenAIChatCompletionService("model-id", client);
@@ -323,6 +326,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         await enumerator.MoveNextAsync();
         Assert.Equal("Stop", enumerator.Current.Metadata?["FinishReason"]);
+
+        await enumerator.MoveNextAsync();
+        Assert.NotNull(enumerator.Current.Metadata?["Usage"]);
+        var serializedUsage = JsonSerializer.Serialize(enumerator.Current.Metadata?["Usage"])!;
+        Assert.Contains("\"OutputTokenCount\":8", serializedUsage);
+        Assert.Contains("\"InputTokenCount\":13", serializedUsage);
+        Assert.Contains("\"TotalTokenCount\":21", serializedUsage);
     }
 
     [Fact]
@@ -829,7 +839,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
                 format = JsonSerializer.Deserialize<JsonElement>(formatValue);
                 break;
             case "ChatResponseFormat":
-                format = formatValue == "text" ? ChatResponseFormat.Text : ChatResponseFormat.JsonObject;
+                format = formatValue == "text" ? ChatResponseFormat.CreateTextFormat() : ChatResponseFormat.CreateJsonObjectFormat();
                 break;
         }
 
@@ -1039,7 +1049,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         object responseFormat = typedResponseFormat ? typeof(MathReasoning) : ChatResponseFormat.CreateJsonSchemaFormat(
-            name: "MathReasoning",
+            jsonSchemaFormatName: "MathReasoning",
             jsonSchema: BinaryData.FromString("""
                 {
                     "type": "object",
@@ -1062,7 +1072,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
                     "additionalProperties": false
                 }
                 """),
-            strictSchemaEnabled: true);
+            jsonSchemaIsStrict: true);
 
         var executionSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormat };
 
@@ -1347,6 +1357,47 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
         Assert.False(optionsJson.TryGetProperty("tools", out var _));
         Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
+    }
+
+    [Fact]
+    public async Task ItSendsEmptyStringWhenAssistantMessageContentIsNull()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        List<ChatToolCall> assistantToolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
+
+        var chatHistory = new ChatHistory()
+        {
+            new ChatMessageContent(role: AuthorRole.User, content: "User content", modelId: "any"),
+            new ChatMessageContent(role: AuthorRole.Assistant, content: null, modelId: "any", metadata: new Dictionary<string, object?>
+            {
+                ["ChatResponseMessage.FunctionToolCalls"] = assistantToolCalls
+            }),
+            new ChatMessageContent(role: AuthorRole.Tool, content: null, modelId: "any")
+            {
+                Items = [new FunctionResultContent("FunctionName", "PluginName", "CallId", "Function result")]
+            },
+        };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestContent = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var messages = requestContent.GetProperty("messages").EnumerateArray().ToList();
+
+        var assistantMessage = messages.First(message => message.GetProperty("role").GetString() == "assistant");
+        var assistantMessageContent = assistantMessage.GetProperty("content").GetString();
+
+        Assert.Equal(string.Empty, assistantMessageContent);
     }
 
     public void Dispose()

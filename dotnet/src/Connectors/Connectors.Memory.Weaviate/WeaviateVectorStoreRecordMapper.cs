@@ -14,20 +14,20 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 
     private readonly string _keyProperty;
 
-    private readonly List<string> _dataProperties;
+    private readonly IReadOnlyList<string> _dataProperties;
 
-    private readonly List<string> _vectorProperties;
+    private readonly IReadOnlyList<string> _vectorProperties;
 
-    private readonly Dictionary<string, string> _storagePropertyNames;
+    private readonly IReadOnlyDictionary<string, string> _storagePropertyNames;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     public WeaviateVectorStoreRecordMapper(
         string collectionName,
         VectorStoreRecordKeyProperty keyProperty,
-        List<VectorStoreRecordDataProperty> dataProperties,
-        List<VectorStoreRecordVectorProperty> vectorProperties,
-        Dictionary<string, string> storagePropertyNames,
+        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
+        IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
+        IReadOnlyDictionary<string, string> storagePropertyNames,
         JsonSerializerOptions jsonSerializerOptions)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -55,7 +55,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         // Transform data model to Weaviate object model.
         var weaviateObjectModel = new JsonObject
         {
-            { WeaviateConstants.ReservedCollectionPropertyName, JsonValue.Create(this._collectionName) },
+            { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
             { WeaviateConstants.ReservedKeyPropertyName, jsonNodeDataModel[this._keyProperty]!.DeepClone() },
             { WeaviateConstants.ReservedDataPropertyName, new JsonObject() },
             { WeaviateConstants.ReservedVectorPropertyName, new JsonObject() },

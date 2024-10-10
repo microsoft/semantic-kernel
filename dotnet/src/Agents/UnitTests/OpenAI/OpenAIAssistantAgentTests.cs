@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -883,8 +884,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     private OpenAIClientProvider CreateTestConfiguration(bool targetAzure = false)
         => targetAzure ?
-            OpenAIClientProvider.ForAzureOpenAI(apiKey: "fakekey", endpoint: new Uri("https://localhost"), this._httpClient) :
-            OpenAIClientProvider.ForOpenAI(apiKey: "fakekey", endpoint: null, this._httpClient);
+            OpenAIClientProvider.ForAzureOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: new Uri("https://localhost"), this._httpClient) :
+            OpenAIClientProvider.ForOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
 
     private void SetupResponse(HttpStatusCode statusCode, string content) =>
         this._messageHandlerStub.SetupResponses(statusCode, content);

@@ -15,6 +15,7 @@ class ContentFilterResultSeverity(Enum):
     HIGH = "high"
     MEDIUM = "medium"
     SAFE = "safe"
+    LOW = "low"
 
 
 @dataclass

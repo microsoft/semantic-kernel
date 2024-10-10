@@ -8,6 +8,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
@@ -25,7 +26,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal readonly KernelProcess _process;
     internal readonly Kernel _kernel;
 
-    private readonly ILogger? _logger;
+    private readonly ILogger _logger;
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
 
@@ -125,6 +126,44 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Gets the process information.
+    /// </summary>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    internal async Task<KernelProcess> GetProcessInfoAsync()
+    {
+        return await this.ToKernelProcessAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Handles a <see cref="LocalMessage"/> that has been sent to the process. This happens only in the case
+    /// of a process (this one) running as a step within another process (this one's parent). In this case the
+    /// entire sub-process should be executed within a single superstep.
+    /// </summary>
+    /// <param name="message">The message to process.</param>
+    /// <returns>A <see cref="Task"/></returns>
+    /// <exception cref="KernelException"></exception>
+    internal override async Task HandleMessageAsync(LocalMessage message)
+    {
+        if (string.IsNullOrWhiteSpace(message.TargetEventId))
+        {
+            string errorMessage = "Internal Process Error: The target event id must be specified when sending a message to a step.";
+            this._logger.LogError("{ErrorMessage}", errorMessage);
+            throw new KernelException(errorMessage);
+        }
+
+        string eventId = message.TargetEventId!;
+        if (this._outputEdges!.TryGetValue(eventId, out List<KernelProcessEdge>? edges) && edges is not null)
+        {
+            // Create the external event that will be used to start the nested process. Since this event came
+            // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
+            var nestedEvent = new KernelProcessEvent() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
+
+            // Run the nested process completely within a single superstep.
+            await this.RunOnceAsync(nestedEvent, this._kernel).ConfigureAwait(false);
+        }
+    }
+
     #region Private Methods
 
     /// <summary>
@@ -158,6 +197,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     parentProcessId: this.Id,
                     loggerFactory: this.LoggerFactory);
 
+                //await process.StartAsync(kernel: this._kernel, keepAlive: true).ConfigureAwait(false);
                 localStep = process;
             }
             else
@@ -179,17 +219,17 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     }
 
     /// <summary>
-    /// Executes the process asynchronously until one of the following conditions is met:
-    /// - The process has been cancelled.
-    /// - The process has hit the specified limit of supersteps.
-    /// - There are no more messages to be process AND <paramref name="keepAlive"/> is false. No more messages means that
-    /// none of the steps in this process emitted any events in the last superstep, indicating that they have finished processing.
+    /// Initializes this process as a step within another process.
     /// </summary>
-    /// <param name="kernel">An options override of the process level kernel.</param>
-    /// <param name="maxSupersteps">The maximum number of supersteps that this process can execute. Defaults to 100.</param>
-    /// <param name="keepAlive">If true, the process will continue running after internal events have stopped. This allows the process to wait for external events.</param>
-    /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
-    /// <returns></returns>
+    /// <returns>A <see cref="ValueTask"/></returns>
+    /// <exception cref="KernelException"></exception>
+    protected override ValueTask InitializeStepAsync()
+    {
+        // The process does not need any further initialization as it's already been initialized.
+        // Override the base method to prevent it from being called.
+        return default;
+    }
+
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
     {
         Kernel localKernel = kernel ?? this._kernel;
@@ -275,14 +315,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             {
                 foreach (var edge in edges)
                 {
-                    Dictionary<string, object?> parameterValue = new();
-                    if (!string.IsNullOrWhiteSpace(edge.OutputTarget.ParameterName))
-                    {
-                        parameterValue.Add(edge.OutputTarget.ParameterName!, externalEvent.Data);
-                    }
-
-                    LocalMessage newMessage = new(edge.SourceStepId, edge.OutputTarget.StepId, edge.OutputTarget.FunctionName, parameterValue);
-                    messageChannel.Enqueue(newMessage);
+                    LocalMessage message = LocalMessageFactory.CreateFromEdge(edge, externalEvent.Data);
+                    messageChannel.Enqueue(message);
                 }
             }
         }
@@ -299,19 +333,42 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         var allStepEvents = step.GetAllEvents();
         foreach (var stepEvent in allStepEvents)
         {
+            // Emit the event out of the process (this one) if it's visibility is public.
+            if (stepEvent.Visibility == KernelProcessEventVisibility.Public)
+            {
+                base.EmitEvent(stepEvent);
+            }
+
+            // Get the edges for the event and queue up the messages to be sent to the next steps.
             foreach (var edge in step.GetEdgeForEvent(stepEvent.Id!))
             {
-                var target = edge.OutputTarget;
-                Dictionary<string, object?> parameterValue = new();
-                if (!string.IsNullOrWhiteSpace(target.ParameterName))
-                {
-                    parameterValue.Add(target.ParameterName!, stepEvent.Data);
-                }
-
-                LocalMessage newMessage = new(edge.SourceStepId, target.StepId, target.FunctionName, parameterValue);
-                messageChannel.Enqueue(newMessage);
+                LocalMessage message = LocalMessageFactory.CreateFromEdge(edge, stepEvent.Data);
+                messageChannel.Enqueue(message);
             }
         }
+    }
+
+    /// <summary>
+    /// Builds a <see cref="KernelProcess"/> from the current <see cref="LocalProcess"/>.
+    /// </summary>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    private async Task<KernelProcess> ToKernelProcessAsync()
+    {
+        var processState = new KernelProcessState(this.Name, this.Id);
+        var stepTasks = this._steps.Select(step => step.ToKernelProcessStepInfoAsync()).ToList();
+        var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
+        return new KernelProcess(processState, steps, this._outputEdges);
+    }
+
+    /// <summary>
+    /// When the process is used as a step within another process, this method will be called
+    /// rather than ToKernelProcessAsync when extracting the state.
+    /// </summary>
+    /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
+    internal override async Task<KernelProcessStepInfo> ToKernelProcessStepInfoAsync()
+    {
+        return await this.ToKernelProcessAsync().ConfigureAwait(false);
     }
 
     #endregion
