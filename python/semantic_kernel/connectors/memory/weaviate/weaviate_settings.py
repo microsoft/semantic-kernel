@@ -2,8 +2,9 @@
 
 from typing import Any, ClassVar
 
-from pydantic import SecretStr, ValidationError, model_validator
+from pydantic import SecretStr, model_validator
 
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -47,12 +48,12 @@ class WeaviateSettings(KernelBaseSettings):
         ])
 
         if enabled == 0:
-            raise ValidationError(
+            raise ServiceInvalidExecutionSettingsError(
                 "Weaviate settings must specify either a ",
                 "Weaviate Cloud instance, a local Weaviate instance, or the client embedding options.",
             )
         if enabled > 1:
-            raise ValidationError(
+            raise ServiceInvalidExecutionSettingsError(
                 "Weaviate settings must specify only one of the following: ",
                 "Weaviate Cloud instance, a local Weaviate instance, or the client embedding options.",
             )
