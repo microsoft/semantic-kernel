@@ -7,7 +7,7 @@ temp/
 */.ipynb_checkpoints/*
 .virtual_documents/
 */.virtual_documents/*
-.vscode
+
 .DS_Store
 *.pyc
 *.zip
