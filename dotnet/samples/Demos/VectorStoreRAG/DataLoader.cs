@@ -40,7 +40,7 @@ internal sealed class DataLoader<TKey>(
                 Text = section.ParagraphText,
                 ReferenceDescription = $"{new FileInfo(pdfPath).Name}#page={section.PageNumber}",
                 ReferenceLink = $"{new Uri(new FileInfo(pdfPath).FullName).AbsoluteUri}#page={section.PageNumber}",
-                TextEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(section.ParagraphText).ConfigureAwait(false)
+                TextEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(section.ParagraphText, cancellationToken: cancellationToken).ConfigureAwait(false)
             });
 
             // Upsert the records into the vector store.
