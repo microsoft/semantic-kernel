@@ -108,7 +108,7 @@ static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilde
         new TextSearchResultMapper((result) =>
         {
             var castResult = result as TextSnippet<TKey>;
-            return new TextSearchResult(value: castResult!.Text!) { Link = castResult.ReferenceLink };
+            return new TextSearchResult(value: castResult!.Text!) { Name = castResult.ReferenceDescription, Link = castResult.ReferenceLink };
         }));
 
     // Add the key generator and data loader to the dependency injection container.

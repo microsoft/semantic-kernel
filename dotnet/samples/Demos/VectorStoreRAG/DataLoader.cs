@@ -38,7 +38,8 @@ internal sealed class DataLoader<TKey>(
             {
                 Key = uniqueKeyGenerator.GenerateKey(),
                 Text = section.ParagraphText,
-                ReferenceLink = pdfPath + "#" + section.PageNumber,
+                ReferenceDescription = $"{new FileInfo(pdfPath).Name}#page={section.PageNumber}",
+                ReferenceLink = $"{new Uri(new FileInfo(pdfPath).FullName).AbsoluteUri}#page={section.PageNumber}",
                 TextEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(section.ParagraphText).ConfigureAwait(false)
             });
 

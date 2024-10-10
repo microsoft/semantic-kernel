@@ -17,6 +17,9 @@ internal sealed class TextSnippet<TKey>
     public string? Text { get; set; }
 
     [VectorStoreRecordData]
+    public string? ReferenceDescription { get; set; }
+
+    [VectorStoreRecordData]
     public string? ReferenceLink { get; set; }
 
     [VectorStoreRecordVector(1536)]

@@ -107,6 +107,7 @@ internal sealed class RAGChatService<TKey>(
                     Please use this information to answer the question:
                     {{#with (SearchPlugin-GetTextSearchResults question)}}  
                       {{#each this}}  
+                        Name: {{Name}}
                         Value: {{Value}}
                         Link: {{Link}}
                         -----------------
