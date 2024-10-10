@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Data;
 using Pinecone;
 
@@ -61,6 +59,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         VectorStoreRecordPropertyReader propertyReader)
     {
         // Validate property types.
+        propertyReader.VerifyHasParameterlessConstructor();
         propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
         propertyReader.VerifyDataProperties(s_supportedDataTypes, s_supportedEnumerableDataElementTypes);
         propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
@@ -110,51 +109,69 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     /// <inheritdoc />
     public TRecord MapFromStorageToDataModel(Vector storageModel, StorageToDataModelMapperOptions options)
     {
-        var keyJsonName = this._propertyReader.KeyPropertyJsonName;
-        var outputJsonObject = new JsonObject
-        {
-            { keyJsonName, JsonValue.Create(storageModel.Id) },
-        };
+        // Construct the output record.
+        var outputRecord = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
 
+        // Set Key.
+        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, storageModel.Id);
+
+        // Set Vector.
         if (options?.IncludeVectors is true)
         {
-            var propertyName = this._propertyReader.GetStoragePropertyName(this._propertyReader.FirstVectorPropertyName!);
-            var jsonName = this._propertyReader.GetJsonPropertyName(this._propertyReader.FirstVectorPropertyName!);
-            outputJsonObject.Add(jsonName, new JsonArray(storageModel.Values.Select(x => JsonValue.Create(x)).ToArray()));
+            this._propertyReader.FirstVectorPropertyInfo!.SetValue(
+                outputRecord,
+                new ReadOnlyMemory<float>(storageModel.Values));
         }
 
+        // Set Data.
         if (storageModel.Metadata != null)
         {
-            foreach (var dataProperty in this._propertyReader.DataPropertiesInfo)
-            {
-                var propertyName = this._propertyReader.GetStoragePropertyName(dataProperty.Name);
-                var jsonName = this._propertyReader.GetJsonPropertyName(dataProperty.Name);
-
-                if (storageModel.Metadata.TryGetValue(propertyName, out var value))
-                {
-                    outputJsonObject.Add(jsonName, ConvertFromMetadataValueToJsonNode(value));
-                }
-            }
+            VectorStoreRecordMapping.SetValuesOnProperties(
+                outputRecord,
+                this._propertyReader.DataPropertiesInfo,
+                this._propertyReader.StoragePropertyNamesMap,
+                storageModel.Metadata,
+                ConvertFromMetadataValueToNativeType);
         }
 
-        return outputJsonObject.Deserialize<TRecord>()!;
+        return outputRecord;
     }
 
-    private static JsonNode? ConvertFromMetadataValueToJsonNode(MetadataValue metadataValue)
+    private static object? ConvertFromMetadataValueToNativeType(MetadataValue metadataValue, Type targetType)
         => metadataValue.Inner switch
         {
             null => null,
-            bool boolValue => JsonValue.Create(boolValue),
-            string stringValue => JsonValue.Create(stringValue),
-            int intValue => JsonValue.Create(intValue),
-            long longValue => JsonValue.Create(longValue),
-            float floatValue => JsonValue.Create(floatValue),
-            double doubleValue => JsonValue.Create(doubleValue),
-            decimal decimalValue => JsonValue.Create(decimalValue),
-            MetadataValue[] array => new JsonArray(array.Select(ConvertFromMetadataValueToJsonNode).ToArray()),
-            List<MetadataValue> list => new JsonArray(list.Select(ConvertFromMetadataValueToJsonNode).ToArray()),
+            bool boolValue => boolValue,
+            string stringValue => stringValue,
+            // Numeric values are not always coming from the SDK in the desired type
+            // that the data model requires, so we need to convert them.
+            int intValue => ConvertToNumericValue(intValue, targetType),
+            long longValue => ConvertToNumericValue(longValue, targetType),
+            float floatValue => ConvertToNumericValue(floatValue, targetType),
+            double doubleValue => ConvertToNumericValue(doubleValue, targetType),
+            decimal decimalValue => ConvertToNumericValue(decimalValue, targetType),
+            MetadataValue[] array => VectorStoreRecordMapping.CreateEnumerable(array.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
+            List<MetadataValue> list => VectorStoreRecordMapping.CreateEnumerable(list.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
             _ => throw new VectorStoreRecordMappingException($"Unsupported metadata type: '{metadataValue.Inner?.GetType().FullName}'."),
         };
+
+    private static object? ConvertToNumericValue(object? number, Type targetType)
+    {
+        if (number is null)
+        {
+            return null;
+        }
+
+        return targetType switch
+        {
+            Type intType when intType == typeof(int) || intType == typeof(int?) => Convert.ToInt32(number),
+            Type longType when longType == typeof(long) || longType == typeof(long?) => Convert.ToInt64(number),
+            Type floatType when floatType == typeof(float) || floatType == typeof(float?) => Convert.ToSingle(number),
+            Type doubleType when doubleType == typeof(double) || doubleType == typeof(double?) => Convert.ToDouble(number),
+            Type decimalType when decimalType == typeof(decimal) || decimalType == typeof(decimal?) => Convert.ToDecimal(number),
+            _ => throw new VectorStoreRecordMappingException($"Unsupported target numeric type '{targetType.FullName}'."),
+        };
+    }
 
     // TODO: take advantage of MetadataValue.TryCreate once we upgrade the version of Pinecone.NET
     private static MetadataValue ConvertToMetadataValue(object? sourceValue)

@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Tests;
+namespace Microsoft.SemanticKernel.Process.UnitTests;
 
 /// <summary>
 /// Unit tests for the <see cref="ProcessStepBuilder"/> class.
@@ -216,11 +216,6 @@ public class ProcessStepBuilderTests
         internal override KernelProcessStepInfo BuildStep()
         {
             return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, this.Id), []);
-        }
-
-        internal override string GetScopedEventId(string eventId)
-        {
-            return $"TestScope.{eventId}";
         }
 
         internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()

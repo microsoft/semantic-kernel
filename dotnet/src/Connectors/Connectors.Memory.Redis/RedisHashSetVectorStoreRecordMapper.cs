@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Data;
 using StackExchange.Redis;
 
@@ -29,6 +27,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         VectorStoreRecordPropertyReader propertyReader)
     {
         Verify.NotNull(propertyReader);
+
+        propertyReader.VerifyHasParameterlessConstructor();
+
         this._propertyReader = propertyReader;
     }
 
@@ -72,58 +73,53 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
     /// <inheritdoc />
     public TConsumerDataModel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, StorageToDataModelMapperOptions options)
     {
-        var jsonObject = new JsonObject();
+        var hashEntriesDictionary = storageModel.HashEntries.ToDictionary(x => (string)x.Name!, x => x.Value);
 
-        foreach (var property in this._propertyReader.DataPropertiesInfo)
+        // Construct the output record.
+        var outputRecord = (TConsumerDataModel)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
+
+        // Set Key.
+        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, storageModel.Key);
+
+        // Set each vector property if embeddings should be returned.
+        if (options?.IncludeVectors is true)
         {
-            var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
-            var jsonName = this._propertyReader.GetJsonPropertyName(property.Name);
-            var hashEntry = storageModel.HashEntries.FirstOrDefault(x => x.Name == storageName);
-            if (hashEntry.Name.HasValue)
-            {
-                var typeOrNullableType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
-                var convertedValue = Convert.ChangeType(hashEntry.Value, typeOrNullableType);
-                jsonObject.Add(jsonName, JsonValue.Create(convertedValue));
-            }
-        }
-
-        if (options.IncludeVectors)
-        {
-            foreach (var property in this._propertyReader.VectorPropertiesInfo)
-            {
-                var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
-                var jsonName = this._propertyReader.GetJsonPropertyName(property.Name);
-
-                var hashEntry = storageModel.HashEntries.FirstOrDefault(x => x.Name == storageName);
-                if (hashEntry.Name.HasValue)
+            VectorStoreRecordMapping.SetValuesOnProperties(
+                outputRecord,
+                this._propertyReader.VectorPropertiesInfo,
+                this._propertyReader.StoragePropertyNamesMap,
+                hashEntriesDictionary,
+                (RedisValue vector, Type targetType) =>
                 {
-                    if (property.PropertyType == typeof(ReadOnlyMemory<float>) || property.PropertyType == typeof(ReadOnlyMemory<float>?))
+                    if (targetType == typeof(ReadOnlyMemory<float>) || targetType == typeof(ReadOnlyMemory<float>?))
                     {
-                        var array = MemoryMarshal.Cast<byte, float>((byte[])hashEntry.Value!).ToArray();
-                        jsonObject.Add(jsonName, JsonValue.Create(array));
+                        var array = MemoryMarshal.Cast<byte, float>((byte[])vector!).ToArray();
+                        return new ReadOnlyMemory<float>(array);
                     }
-                    else if (property.PropertyType == typeof(ReadOnlyMemory<double>) || property.PropertyType == typeof(ReadOnlyMemory<double>?))
+                    else if (targetType == typeof(ReadOnlyMemory<double>) || targetType == typeof(ReadOnlyMemory<double>?))
                     {
-                        var array = MemoryMarshal.Cast<byte, double>((byte[])hashEntry.Value!).ToArray();
-                        jsonObject.Add(jsonName, JsonValue.Create(array));
+                        var array = MemoryMarshal.Cast<byte, double>((byte[])vector!).ToArray();
+                        return new ReadOnlyMemory<double>(array);
                     }
                     else
                     {
-                        throw new VectorStoreRecordMappingException($"Invalid vector type '{property.PropertyType.Name}' found on property '{property.Name}' on provided record of type '{typeof(TConsumerDataModel).FullName}'. Only float and double vectors are supported.");
+                        throw new VectorStoreRecordMappingException($"Unsupported vector type '{targetType}'. Only float and double vectors are supported.");
                     }
-                }
-            }
+                });
         }
 
-        // Check that the key field is not already present in the redis value.
-        if (jsonObject.ContainsKey(this._propertyReader.KeyPropertyJsonName))
-        {
-            throw new VectorStoreRecordMappingException($"Invalid data format for document with key '{storageModel.Key}'. Key property '{this._propertyReader.KeyPropertyJsonName}' is already present on retrieved object.");
-        }
+        // Set each data property.
+        VectorStoreRecordMapping.SetValuesOnProperties(
+            outputRecord,
+            this._propertyReader.DataPropertiesInfo,
+            this._propertyReader.StoragePropertyNamesMap,
+            hashEntriesDictionary,
+            (RedisValue hashValue, Type targetType) =>
+            {
+                var typeOrNullableType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+                return Convert.ChangeType(hashValue, typeOrNullableType);
+            });
 
-        // Since the key is not stored in the redis value, add it back in before deserializing into the data model.
-        jsonObject.Add(this._propertyReader.KeyPropertyJsonName, storageModel.Key);
-
-        return JsonSerializer.Deserialize<TConsumerDataModel>(jsonObject)!;
+        return outputRecord;
     }
 }

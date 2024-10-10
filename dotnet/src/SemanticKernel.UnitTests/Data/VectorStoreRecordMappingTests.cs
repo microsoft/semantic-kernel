@@ -124,6 +124,28 @@ public class VectorStoreRecordMappingTests
     }
 
     [Theory]
+    [InlineData(typeof(List<string>))]
+    [InlineData(typeof(ICollection<string>))]
+    [InlineData(typeof(IEnumerable<string>))]
+    [InlineData(typeof(IList<string>))]
+    [InlineData(typeof(IReadOnlyCollection<string>))]
+    [InlineData(typeof(IReadOnlyList<string>))]
+    [InlineData(typeof(string[]))]
+    [InlineData(typeof(IEnumerable))]
+    [InlineData(typeof(ArrayList))]
+    public void CreateEnumerableCanCreateEnumerablesOfAllRequiredTypesUsingObjectEnumerable(Type expectedType)
+    {
+        // Arrange.
+        IEnumerable<object> input = new List<object> { "one", "two", "three", "four" };
+
+        // Act.
+        var actual = VectorStoreRecordMapping.CreateEnumerable(input, expectedType);
+
+        // Assert.
+        Assert.True(expectedType.IsAssignableFrom(actual!.GetType()));
+    }
+
+    [Theory]
     [InlineData(typeof(string))]
     [InlineData(typeof(HashSet<string>))]
     [InlineData(typeof(ISet<string>))]

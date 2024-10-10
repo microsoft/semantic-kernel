@@ -127,6 +127,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureSearchChatDataSource"/> class.
     /// </summary>
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     private static AzureSearchChatDataSource GetAzureSearchDataSource()
     {
         return new AzureSearchChatDataSource
@@ -136,4 +137,5 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
             IndexName = TestConfiguration.AzureAISearch.IndexName
         };
     }
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 }
