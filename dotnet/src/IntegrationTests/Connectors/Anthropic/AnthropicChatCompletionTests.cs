@@ -226,14 +226,17 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
         var responses = await sut.GetStreamingChatMessageContentsAsync(chatHistory).ToListAsync();
 
         // Assert
-        var metadata = responses.Last().Metadata as AnthropicMetadata;
-        Assert.NotNull(metadata);
-        this.Output.WriteLine($"TotalTokenCount: {metadata.TotalTokenCount}");
-        this.Output.WriteLine($"InputTokenCount: {metadata.InputTokenCount}");
-        this.Output.WriteLine($"OutputTokenCount: {metadata.OutputTokenCount}");
-        Assert.True(metadata.TotalTokenCount > 0);
-        Assert.True(metadata.InputTokenCount > 0);
-        Assert.True(metadata.OutputTokenCount > 0);
+        var metadata = responses
+            .Where(c => c.Metadata is not null)
+            .Select(c => c.Metadata)
+            .Cast<AnthropicMetadata>().ToList();
+        Assert.NotEmpty(metadata);
+        this.Output.WriteLine($"TotalTokenCount: {metadata.Sum(m => m.TotalTokenCount)}");
+        this.Output.WriteLine($"InputTokenCount: {metadata.Sum(m => m.InputTokenCount)}");
+        this.Output.WriteLine($"OutputTokenCount: {metadata.Sum(m => m.OutputTokenCount)}");
+        Assert.True(metadata.Sum(m => m.TotalTokenCount) > 0);
+        Assert.True(metadata.Sum(m => m.InputTokenCount) > 0);
+        Assert.True(metadata.Sum(m => m.OutputTokenCount) > 0);
     }
 
     [RetryTheory]

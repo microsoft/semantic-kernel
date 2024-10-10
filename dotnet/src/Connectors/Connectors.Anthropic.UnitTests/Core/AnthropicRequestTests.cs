@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Anthropic;
 using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
+using Microsoft.SemanticKernel.Connectors.Anthropic.Core.Models;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Anthropic.UnitTests.Core;

@@ -3,20 +3,22 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Anthropic.Core.Models;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
@@ -26,6 +28,7 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 internal sealed class AnthropicClient
 {
     private const string ModelProvider = "anthropic";
+    private const string AnthropicUrl = "https://api.anthropic.com/v1/messages";
     private readonly Func<ValueTask<string>>? _bearerTokenProvider;
     private readonly Dictionary<string, object?> _attributesInternal = new();
 
@@ -88,6 +91,7 @@ internal sealed class AnthropicClient
         ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
+
         Verify.NotNull(options);
         Verify.NotNull(httpClient);
 
@@ -97,7 +101,7 @@ internal sealed class AnthropicClient
             // If a custom endpoint is not provided, the ApiKey is required
             Verify.NotNullOrWhiteSpace(apiKey);
             this._apiKey = apiKey;
-            targetUri = new Uri("https://api.anthropic.com/v1/messages");
+            targetUri = new Uri(AnthropicUrl);
         }
 
         this._httpClient = httpClient;
@@ -189,6 +193,97 @@ internal sealed class AnthropicClient
         return chatResponses;
     }
 
+    /// <summary>
+    /// Generates a stream of chat messages asynchronously.
+    /// </summary>
+    /// <param name="chatHistory">The chat history containing the conversation data.</param>
+    /// <param name="executionSettings">Optional settings for prompt execution.</param>
+    /// <param name="kernel">A kernel instance.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>An asynchronous enumerable of <see cref="StreamingChatMessageContent"/> streaming chat contents.</returns>
+    internal async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var state = this.ValidateInputAndCreateChatCompletionState(chatHistory, executionSettings);
+        state.AnthropicRequest.Stream = true;
+
+        using var activity = ModelDiagnostics.StartCompletionActivity(
+            this._endpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings);
+
+        List<AnthropicStreamingChatMessageContent> chatResponses = [];
+
+        HttpRequestMessage? httpRequestMessage = null;
+        HttpResponseMessage? httpResponseMessage = null;
+        Stream? responseStream = null;
+        try
+        {
+            try
+            {
+                httpRequestMessage = await this.CreateHttpRequestAsync(state.AnthropicRequest, this._endpoint).ConfigureAwait(false);
+                httpResponseMessage = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+                responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex) when (activity is not null)
+            {
+                activity.SetError(ex);
+                throw;
+            }
+
+            AnthropicResponse? lastAnthropicResponse = null;
+            await foreach (var streamingResponse in SseJsonParser.ParseAsync<AnthropicStreamingResponse>(responseStream, cancellationToken).ConfigureAwait(false))
+            {
+                string? content = null;
+                AnthropicMetadata? metadata = null;
+                switch (streamingResponse.Type)
+                {
+                    case "message_start":
+                        Verify.NotNull(streamingResponse.Response);
+                        lastAnthropicResponse = streamingResponse.Response;
+                        metadata = GetResponseMetadata(lastAnthropicResponse);
+                        content = string.Empty;
+                        break;
+                    case "content_block_start" or "content_block_delta":
+                        content = streamingResponse.ContentDelta?.Text ?? string.Empty;
+                        break;
+                    case "message_delta":
+                        Verify.NotNull(lastAnthropicResponse);
+                        metadata = GetResponseMetadata(streamingResponse, lastAnthropicResponse);
+                        content = string.Empty;
+                        break;
+                    case "message_stop":
+                        lastAnthropicResponse = null;
+                        break;
+                }
+
+                if (lastAnthropicResponse is null || content is null)
+                {
+                    continue;
+                }
+
+                var streamingChatMessageContent = new AnthropicStreamingChatMessageContent(
+                    role: lastAnthropicResponse.Role,
+                    content: content,
+                    innerContent: lastAnthropicResponse,
+                    modelId: lastAnthropicResponse.ModelId ?? this._modelId,
+                    choiceIndex: streamingResponse.Index,
+                    metadata: metadata);
+                chatResponses.Add(streamingChatMessageContent);
+                yield return streamingChatMessageContent;
+            }
+
+            activity?.EndStreaming(chatResponses);
+        }
+        finally
+        {
+            httpRequestMessage?.Dispose();
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
+        }
+    }
+
     private List<AnthropicChatMessageContent> GetChatResponseFrom(AnthropicResponse response)
     {
         var chatMessageContents = this.GetChatMessageContentsFromResponse(response);
@@ -198,7 +293,7 @@ internal sealed class AnthropicClient
 
     private void LogUsage(List<AnthropicChatMessageContent> chatMessageContents)
     {
-        if (chatMessageContents[0].Metadata is not { TotalTokenCount: > 0 } metadata)
+        if (chatMessageContents[0]?.Metadata is not { TotalTokenCount: > 0 } metadata)
         {
             this.Log(LogLevel.Debug, "Token usage information unavailable.");
             return;
@@ -227,7 +322,7 @@ internal sealed class AnthropicClient
     }
 
     private List<AnthropicChatMessageContent> GetChatMessageContentsFromResponse(AnthropicResponse response)
-        => response.Contents.Select(content => this.GetChatMessageContentFromAnthropicContent(response, content)).ToList();
+        => response.Contents is null ? [] : response.Contents.Select(content => this.GetChatMessageContentFromAnthropicContent(response, content)).ToList();
 
     private AnthropicChatMessageContent GetChatMessageContentFromAnthropicContent(AnthropicResponse response, AnthropicContent content)
     {
@@ -254,6 +349,16 @@ internal sealed class AnthropicClient
             StopSequence = response.StopSequence,
             InputTokenCount = response.Usage?.InputTokens ?? 0,
             OutputTokenCount = response.Usage?.OutputTokens ?? 0
+        };
+
+    private static AnthropicMetadata GetResponseMetadata(AnthropicStreamingResponse deltaResponse, AnthropicResponse rootResponse)
+        => new()
+        {
+            MessageId = rootResponse.Id,
+            FinishReason = deltaResponse.StopMetadata?.StopReason,
+            StopSequence = deltaResponse.StopMetadata?.StopSequence,
+            InputTokenCount = deltaResponse.Usage?.InputTokens ?? 0,
+            OutputTokenCount = deltaResponse.Usage?.OutputTokens ?? 0
         };
 
     private async Task<AnthropicResponse> SendRequestAndReturnValidResponseAsync(
@@ -283,7 +388,7 @@ internal sealed class AnthropicClient
 
         var filteredChatHistory = new ChatHistory(chatHistory.Where(IsAssistantOrUserOrSystem));
         var anthropicRequest = AnthropicRequest.FromChatHistoryAndExecutionSettings(filteredChatHistory, anthropicExecutionSettings);
-        anthropicRequest.Version = this._version;
+        anthropicRequest.Version = this._endpoint.OriginalString.Equals(AnthropicUrl, StringComparison.Ordinal) ? null : this._version;
 
         return new ChatCompletionState
         {
@@ -294,25 +399,6 @@ internal sealed class AnthropicClient
 
         static bool IsAssistantOrUserOrSystem(ChatMessageContent msg)
             => msg.Role == AuthorRole.Assistant || msg.Role == AuthorRole.User || msg.Role == AuthorRole.System;
-    }
-
-    /// <summary>
-    /// Generates a stream of chat messages asynchronously.
-    /// </summary>
-    /// <param name="chatHistory">The chat history containing the conversation data.</param>
-    /// <param name="executionSettings">Optional settings for prompt execution.</param>
-    /// <param name="kernel">A kernel instance.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <returns>An asynchronous enumerable of <see cref="StreamingChatMessageContent"/> streaming chat contents.</returns>
-    internal async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await Task.Yield();
-        yield return new StreamingChatMessageContent(null, null);
-        throw new NotImplementedException("Implement this method in next PR.");
     }
 
     private static void ValidateMaxTokens(int? maxTokens)
@@ -392,29 +478,14 @@ internal sealed class AnthropicClient
         {
             httpRequestMessage.Headers.Add("x-api-key", this._apiKey);
         }
-        else
-        if (this._bearerTokenProvider is not null && !httpRequestMessage.Headers.Contains("Authentication") && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
+        else if (this._bearerTokenProvider is not null
+                 && !httpRequestMessage.Headers.Contains("Authentication")
+                 && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
         {
             httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerKey);
         }
 
         return httpRequestMessage;
-    }
-
-    private static HttpContent? CreateJsonContent(object? payload)
-    {
-        HttpContent? content = null;
-        if (payload is not null)
-        {
-            byte[] utf8Bytes = payload is string s
-                ? Encoding.UTF8.GetBytes(s)
-                : JsonSerializer.SerializeToUtf8Bytes(payload);
-
-            content = new ByteArrayContent(utf8Bytes);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
-        }
-
-        return content;
     }
 
     private void Log(LogLevel logLevel, string? message, params object?[] args)
