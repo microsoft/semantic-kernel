@@ -36,6 +36,28 @@ public static partial class KernelPluginFactory
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
 
+    /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
+    /// <param name="instanceType">
+    /// Specifies the type of the object to wrap.
+    /// </param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
+    /// </param>
+    /// <param name="serviceProvider">
+    /// The <see cref="IServiceProvider"/> to use for resolving any required services, such as an <see cref="ILoggerFactory"/>
+    /// and any services required to satisfy a constructor on <typeparamref name="T"/>.
+    /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
+    /// <remarks>
+    /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
+    /// Attributed methods must all have different names; overloads are not supported.
+    /// </remarks>
+    public static KernelPlugin CreateFromType(Type instanceType, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    {
+        serviceProvider ??= EmptyServiceProvider.Instance;
+        return CreateFromObject(ActivatorUtilities.CreateInstance(serviceProvider, instanceType)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+    }
+
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
@@ -77,6 +99,55 @@ public static partial class KernelPluginFactory
         }
 
         var description = target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
+    }
+
+    /// <summary>
+    /// Creates a plugin that wraps and instance the specified type that is created using the specified delegate.
+    /// </summary>
+    /// <param name="instanceType">Specifies the type of the object to extract <see cref="KernelFunctionMetadata"/> for.</param>
+    /// <param name="createObject">Function to create an instance of the object.</param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
+    /// </param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="instanceType"/>.</returns>
+    /// <remarks>
+    /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
+    /// Attributed methods must all have different names; overloads are not supported.
+    /// </remarks>
+    public static KernelPlugin CreateFromType(Type instanceType, Func<object> createObject, string? pluginName = null, ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(instanceType);
+
+        pluginName ??= CreatePluginName(instanceType);
+        Verify.ValidPluginName(pluginName);
+
+        MethodInfo[] methods = instanceType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+
+        // Filter out non-KernelFunctions and fail if two functions have the same name (with or without the same casing).
+        var functions = new List<KernelFunction>();
+        KernelFunctionFromMethodOptions options = new();
+        foreach (MethodInfo method in methods)
+        {
+            if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
+            {
+                functions.Add(KernelFunctionFromMethod.Create(method, createObject, options));
+            }
+        }
+        if (functions.Count == 0)
+        {
+            throw new ArgumentException($"The {instanceType} instance doesn't implement any [KernelFunction]-attributed methods.");
+        }
+
+        if (loggerFactory?.CreateLogger(instanceType) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, functions.Count, methods.Length);
+        }
+
+        var description = instanceType.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
