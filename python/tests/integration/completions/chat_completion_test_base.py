@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import platform
 import sys
 from functools import reduce
 from typing import Annotated, Any
@@ -10,7 +11,6 @@ from azure.ai.inference.aio import ChatCompletionsClient
 from azure.identity import DefaultAzureCredential
 from openai import AsyncAzureOpenAI
 
-from semantic_kernel.connectors.ai.anthropic import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -45,51 +45,29 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
-from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
+from tests.integration.completions.test_utils import is_service_setup_for_testing
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-mistral_ai_setup: bool = False
-try:
-    MistralAIChatCompletion()
-    mistral_ai_setup = True
-except ServiceInitializationError:
-    mistral_ai_setup = False
+# This can later also be simplified as map probably
+mistral_ai_setup: bool = is_service_setup_for_testing("MISTRALAI_API_KEY")
+ollama_setup: bool = is_service_setup_for_testing("OLLAMA_MODEL")
+google_ai_setup: bool = is_service_setup_for_testing("GOOGLE_AI_API_KEY")
+vertex_ai_setup: bool = is_service_setup_for_testing("VERTEX_AI_PROJECT_ID")
+anthropic_setup: bool = is_service_setup_for_testing("ANTHROPIC_API_KEY")
+onnx_setup: bool = is_service_setup_for_testing("ONNX_GEN_AI_CHAT_MODEL_FOLDER")
 
-ollama_setup: bool = False
-try:
-    OllamaChatCompletion()
-    ollama_setup = True
-except ServiceInitializationError:
-    ollama_setup = False
-
-google_ai_setup: bool = False
-try:
-    GoogleAIChatCompletion()
-    google_ai_setup = True
-except ServiceInitializationError:
-    google_ai_setup = False
-
-vertex_ai_setup: bool = False
-try:
-    VertexAIChatCompletion()
-    vertex_ai_setup = True
-except ServiceInitializationError:
-    vertex_ai_setup = False
-
-anthropic_setup: bool = False
-try:
-    AnthropicChatCompletion()
-    anthropic_setup = True
-except ServiceInitializationError:
-    anthropic_setup = False
+skip_on_mac_available = platform.system() == "Darwin"
+if not skip_on_mac_available:
+    from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
+    from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
 
 
 # A mock plugin that contains a function that returns a complex object.
@@ -149,6 +127,10 @@ class ChatCompletionTestBase(CompletionTestBase):
             "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
             "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
+            "onnx_gen_ai": (
+                OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3V) if onnx_setup else None,
+                OnnxGenAIPromptExecutionSettings if not skip_on_mac_available else None,
+            ),
         }
 
     def setup(self, kernel: Kernel):

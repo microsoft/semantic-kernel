@@ -30,10 +30,7 @@ public static class FishAndChipsProcess
 
         processBuilder
             .OnInputEvent(ProcessEvents.PrepareFishAndChips)
-            .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish));
-
-        processBuilder
-            .OnInputEvent(ProcessEvents.PrepareFishAndChips)
+            .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish))
             .SendEventTo(makePotatoFriesStep.WhereInputEventIs(PotatoFriesProcess.ProcessEvents.PreparePotatoFries));
 
         makeFriedFishStep

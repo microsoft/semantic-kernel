@@ -57,19 +57,14 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output, 
             .OnEvent(CommonEvents.AssistantResponseGenerated)
             .SendEventTo(new ProcessFunctionTargetBuilder(userInputStep, ScriptedUserInputStep.Functions.GetUserInput));
 
-        // When the newCustomerForm is completed, the information gets passed to the core system record creation step
+        // When the newCustomerForm is completed...
         newCustomerFormStep
             .OnEvent(AccountOpeningEvents.NewCustomerFormCompleted)
-            .SendEventTo(new ProcessFunctionTargetBuilder(customerCreditCheckStep, functionName: CreditScoreCheckStep.Functions.DetermineCreditScore, parameterName: "customerDetails"));
-
-        // When the newCustomerForm is completed, the information gets passed to the fraud detection step for validation
-        newCustomerFormStep
-            .OnEvent(AccountOpeningEvents.NewCustomerFormCompleted)
-            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.Functions.FraudDetectionCheck, parameterName: "customerDetails"));
-
-        // When the newCustomerForm is completed, the information gets passed to the core system record creation step
-        newCustomerFormStep
-            .OnEvent(AccountOpeningEvents.NewCustomerFormCompleted)
+            // The information gets passed to the core system record creation step
+            .SendEventTo(new ProcessFunctionTargetBuilder(customerCreditCheckStep, functionName: CreditScoreCheckStep.Functions.DetermineCreditScore, parameterName: "customerDetails"))
+            // The information gets passed to the fraud detection step for validation
+            .SendEventTo(new ProcessFunctionTargetBuilder(fraudDetectionCheckStep, functionName: FraudDetectionStep.Functions.FraudDetectionCheck, parameterName: "customerDetails"))
+            // The information gets passed to the core system record creation step
             .SendEventTo(new ProcessFunctionTargetBuilder(coreSystemRecordCreationStep, functionName: NewAccountStep.Functions.CreateNewAccount, parameterName: "customerDetails"));
 
         // When the newCustomerForm is completed, the user interaction transcript with the user is passed to the core system record creation step
