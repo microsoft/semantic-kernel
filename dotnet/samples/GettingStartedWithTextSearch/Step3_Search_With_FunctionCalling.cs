@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
@@ -23,6 +25,8 @@ public class Step3_Search_With_FunctionCalling(ITestOutputHelper output) : BaseT
         kernelBuilder.AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
+        kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
+        kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, FunctionInvocationFilter>();
         Kernel kernel = kernelBuilder.Build();
 
         // Create a search service with Bing search
@@ -125,6 +129,18 @@ public class Step3_Search_With_FunctionCalling(ITestOutputHelper output) : BaseT
     }
 
     #region private
+    private sealed class FunctionInvocationFilter(ITestOutputHelper output) : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            if (context.Function.PluginName == "SearchPlugin")
+            {
+                output.WriteLine($"{context.Function.Name}:{JsonSerializer.Serialize(context.Arguments)}\n");
+            }
+            await next(context);
+        }
+    }
+
     private static KernelFunction CreateSearchBySite(BingTextSearch textSearch, TextSearchFilter? filter = null)
     {
         var options = new KernelFunctionFromMethodOptions()
