@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 
-namespace Search;
+namespace GettingStartedWithTextSearch;
 
 /// <summary>
-/// This example shows how to perform function calling with an <see cref="ITextSearch"/>.
+/// This example shows how to use <see cref="ITextSearch"/> for Function Calling.
 /// </summary>
-public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : BaseTest(output)
+public class Step3_Search_With_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="BingTextSearch"/> and use it with
@@ -24,6 +25,8 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         kernelBuilder.AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
+        kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
+        kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, FunctionInvocationFilter>();
         Kernel kernel = kernelBuilder.Build();
 
         // Create a search service with Bing search
@@ -34,7 +37,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         KernelArguments arguments = new(settings);
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel?", arguments));
     }
@@ -61,7 +64,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         KernelArguments arguments = new(settings);
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
     }
@@ -93,7 +96,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         KernelArguments arguments = new(settings);
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
     }
@@ -120,9 +123,22 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         KernelArguments arguments = new(settings);
         Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Only include results from techcommunity.microsoft.com. Include citations to the relevant information where it is referenced in the response.", arguments));
+    }
+
+    #region private
+    private sealed class FunctionInvocationFilter(ITestOutputHelper output) : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            if (context.Function.PluginName == "SearchPlugin")
+            {
+                output.WriteLine($"{context.Function.Name}:{JsonSerializer.Serialize(context.Arguments)}\n");
+            }
+            await next(context);
+        }
     }
 
     private static KernelFunction CreateSearchBySite(BingTextSearch textSearch, TextSearchFilter? filter = null)
@@ -134,13 +150,14 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
             Parameters =
             [
                 new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("top") { Description = "Number of results", IsRequired = false, DefaultValue = 5 },
+                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
                 new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
-                new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false },
+                new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false, DefaultValue = 2 },
             ],
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
         };
 
         return textSearch.CreateSearch(options);
     }
+    #endregion
 }
