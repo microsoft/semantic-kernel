@@ -1,0 +1,142 @@
+[
+    {
+        "name": "Do not set a custom execution policy.",
+        "id": "DS113853",
+        "description": "The Set-ExecutionPolicy cmdlet has been used to dynamically change the permissions available to PowerShell.",
+        "recommendation": "Avoid elevating privileges if possible.",
+        "applies_to": [
+            "powershell"
+        ],
+        "tags": [
+            "ControlFlow.Permission.Evalation"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS113853.md",
+        "patterns": [
+            {
+                "pattern": "Set-ExecutionPolicy",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "Set-ExecutionPolicy RemoteSigned"
+        ]
+    },
+    {
+        "name": "Use of restricted functions.",
+        "id": "DS104456",
+        "description": "Use of restricted functions.",
+        "recommendation": "",
+        "applies_to": [
+            "powershell"
+        ],
+        "tags": [
+            "Implementation.Scripting.PowerShell.DangeousFunction"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS104456.md",
+        "patterns": [
+            {
+                "pattern": "GetDelegateForFunctionPointer",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "System.Runtime.InteropServices.Marshal",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "WriteByte",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "Microsoft.Win32.UnsafeNativeMethods",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "PtrToStructure",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "StructureToPtr",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "(NtCreateThreadEx|CreateRemoteThread)",
+                "type": "RegexWord",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "Invoke-Command",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "Use Start-Process instead whenever possible."
+            },
+            {
+                "pattern": "Invoke-Expression",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "Use Start-Process instead whenever possible."
+            },
+            {
+                "pattern": "VirtualProtect",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "iex",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "&\"",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "& $",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "$IsWow64Process = GetDelegateForFunctionPointer($IsWow64ProcessAddr, $IsWow64ProcessDelegate)"
+        ]
+    }
+]

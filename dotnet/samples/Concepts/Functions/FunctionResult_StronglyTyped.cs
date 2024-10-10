@@ -2,8 +2,8 @@
 
 using System.Diagnostics;
 using System.Text.Json;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
+using OpenAI.Chat;
 
 namespace Functions;
 
@@ -79,12 +79,60 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
 
         private TokenCounts? ParseTokenCounts()
         {
-            CompletionsUsage? usage = FunctionResult.Metadata?["Usage"] as CompletionsUsage;
+            var usage = FunctionResult.Metadata?["Usage"] as ChatTokenUsage;
 
             return new TokenCounts(
-                completionTokens: usage?.CompletionTokens ?? 0,
-                promptTokens: usage?.PromptTokens ?? 0,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+                completionTokens: usage?.OutputTokens ?? 0,
+                promptTokens: usage?.InputTokens ?? 0,
                 totalTokens: usage?.TotalTokens ?? 0);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+                completionTokens: usage?.OutputTokens ?? 0,
+                promptTokens: usage?.InputTokens ?? 0,
+                totalTokens: usage?.TotalTokens ?? 0);
+=======
+                completionTokens: usage?.OutputTokenCount ?? 0,
+                promptTokens: usage?.InputTokenCount ?? 0,
+                totalTokens: usage?.TotalTokenCount ?? 0);
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+                completionTokens: usage?.OutputTokenCount ?? 0,
+                promptTokens: usage?.InputTokenCount ?? 0,
+                totalTokens: usage?.TotalTokenCount ?? 0);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         }
 
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()

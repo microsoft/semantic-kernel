@@ -1,10 +1,10 @@
 ---
-status: accepted
+consulted: null
 contact: SergeyMenshykh
-date: 2023-08-15
+date: 2023-08-15T00:00:00Z
 deciders: shawncal
-consulted:
-informed:
+informed: null
+status: accepted
 ---
 
 # Dynamic payload building for PUT and POST RestAPI operations and parameter namespacing
@@ -36,13 +36,13 @@ Chosen option: "Enable the dynamic creation of payload and/or namespacing based 
 
 In order to enable the dynamic creation of payloads/bodies for PUT and POST RestAPI operations, please set the `EnableDynamicPayload` property of the `OpenApiSkillExecutionParameters` execution parameters to `true` when importing the AI plugin:
 
-```csharp
+```csharp {"id":"01J6KNXAASZXTWRZ23P7BTEYVQ"}
 var plugin = await kernel.ImportPluginFunctionsAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient) { EnableDynamicPayload = true });
 ```
 
 To dynamically construct a payload for a RestAPI operation that requires payload like this:
 
-```json
+```json {"id":"01J6KNXAASZXTWRZ23P8G5WVX9"}
 {
   "value": "secret-value",
   "attributes": {
@@ -53,7 +53,7 @@ To dynamically construct a payload for a RestAPI operation that requires payload
 
 Please register the following arguments in context variables collection:
 
-```csharp
+```csharp {"id":"01J6KNXAASZXTWRZ23PCE50PVR"}
 var contextVariables = new ContextVariables();
 contextVariables.Set("value", "secret-value");
 contextVariables.Set("enabled", true);
@@ -63,13 +63,13 @@ contextVariables.Set("enabled", true);
 
 To enable namespacing, set the `EnablePayloadNamespacing` property of the `OpenApiSkillExecutionParameters` execution parameters to `true` when importing the AI plugin:
 
-```csharp
+```csharp {"id":"01J6KNXAASZXTWRZ23PFY9N4YM"}
 var plugin = await kernel.ImportPluginFunctionsAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient) { EnablePayloadNamespacing = true });
 ```
 
 Remember that the namespacing mechanism depends on prefixing parameter names with their parent parameter name, separated by dots. So, use the 'namespaced' parameter names when adding arguments for them to the context variables. Let's consider this JSON:
 
-```json
+```json {"id":"01J6KNXAASZXTWRZ23PGWRXNWZ"}
 {
   "upn": "<sender upn>",
   "receiver": {
@@ -83,7 +83,7 @@ Remember that the namespacing mechanism depends on prefixing parameter names wit
 
 It contains `upn` properties at different levels. The the argument registration for the parameters(property values) will look like:
 
-```csharp
+```csharp {"id":"01J6KNXAASZXTWRZ23PHYRVYSV"}
 var contextVariables = new ContextVariables();
 contextVariables.Set("upn", "<sender-upn-value>");
 contextVariables.Set("receiver.upn", "<receiver-upn-value>");

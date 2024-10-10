@@ -8,13 +8,13 @@ See the [.net README](https://github.com/microsoft/semantic-kernel/blob/main/dot
 
 1. Run with Docker:
 
-```bash
+```bash {"id":"01J6KPSHNENQ2W92GJKEZP7NQB"}
 docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
 ```
 
 2. To use Redis as a semantic memory store:
 
-```python
+```python {"id":"01J6KPSHNENQ2W92GJKHKXT5VW"}
     import semantic_kernel as sk
     import semantic_kernel.connectors.ai.open_ai as sk_oai
     from semantic_kernel.connectors.memory.redis import RedisMemoryStore

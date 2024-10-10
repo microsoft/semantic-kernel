@@ -4,11 +4,17 @@ import asyncio
 import os
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatPromptExecutionSettings,
+)
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
@@ -61,14 +67,18 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["math", "time"]}),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(
+        filters={"included_plugins": ["math", "time"]}
+    ),
 )
 
 history = ChatHistory()
 
 history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
-history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+history.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
+)
 
 arguments = KernelArguments(settings=execution_settings)
 
@@ -93,13 +103,29 @@ async def auto_function_invocation_filter(context: AutoFunctionInvocationContext
     print(f"Number of function calls: {len(function_calls)}")
     # if we don't call next, it will skip this function, and go to the next one
     await next(context)
+    #############################
+    # Note: to simply return the unaltered function results, uncomment the `context.terminate = True` line and
+    # comment out the lines starting with `result = context.function_result` through `context.terminate = True`.
+    # context.terminate = True
+    #############################
     result = context.function_result
     for fc in function_calls:
         if fc.plugin_name == "math":
             context.function_result = FunctionResult(
-                function=result.function, value="Stop trying to ask me to do math, I don't like it!"
+                function=result.function,
+                value="Stop trying to ask me to do math, I don't like it!",
             )
             context.terminate = True
+<<<<<<< Updated upstream
+=======
+    if context.function.plugin_name == "math":
+        print("Altering the Math plugin")
+        context.function_result = FunctionResult(
+            function=result.function,
+            value="Stop trying to ask me to do math, I don't like it!",
+        )
+        context.terminate = True
+>>>>>>> Stashed changes
 
 
 def print_tool_calls(message: ChatMessageContent) -> None:
@@ -139,16 +165,26 @@ async def chat() -> bool:
 
     result = await kernel.invoke(chat_function, arguments=arguments)
 
-    # If tools are used, and auto invoke tool calls is False, the response will be of type
-    # ChatMessageContent with information about the tool calls, which need to be sent
-    # back to the model to get the final response.
-    if isinstance(result.value[0].items[0], FunctionCallContent):
-        print_tool_calls(result.value[0])
-        return True
-
     history.add_user_message(user_input)
-    history.add_assistant_message(str(result))
-    print(f"Mosscap:> {result}")
+
+    # Check if any result.value is a FunctionResultContent
+    if any(isinstance(item, FunctionResultContent) for item in result.value[0].items):
+        for fr in result.value[0].items:
+            if isinstance(fr, FunctionResultContent):
+                print(f"Mosscap:> {fr.result} for function: {fr.name}")
+                history.add_assistant_message(str(fr.result))
+    elif any(isinstance(item, FunctionCallContent) for item in result.value[0].items):
+        # If tools are used, and auto invoke tool calls is False, the response will be of type
+        # ChatMessageContent with information about the tool calls, which need to be sent
+        # back to the model to get the final response.
+        for fcc in result.value[0].items:
+            if isinstance(fcc, FunctionCallContent):
+                print_tool_calls(fcc)
+        history.add_assistant_message(str(result))
+    else:
+        print(f"Mosscap:> {result}")
+        history.add_assistant_message(str(result))
+
     return True
 
 

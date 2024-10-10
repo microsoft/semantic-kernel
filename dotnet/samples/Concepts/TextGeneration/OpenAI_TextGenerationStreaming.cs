@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -22,11 +23,11 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
     {
         Console.WriteLine("======== Azure OpenAI - Text Generation - Raw Streaming ========");
 
-        var textGeneration = new AzureOpenAITextGenerationService(
-            deploymentName: TestConfiguration.AzureOpenAI.DeploymentName,
+        var textGeneration = new AzureOpenAIChatCompletionService(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
             endpoint: TestConfiguration.AzureOpenAI.Endpoint,
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-            modelId: TestConfiguration.AzureOpenAI.ModelId);
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
         return this.TextGenerationStreamAsync(textGeneration);
     }
@@ -36,7 +37,7 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
     {
         Console.WriteLine("======== Open AI - Text Generation - Raw Streaming ========");
 
-        var textGeneration = new OpenAITextGenerationService("gpt-3.5-turbo-instruct", TestConfiguration.OpenAI.ApiKey);
+        var textGeneration = new OpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         return this.TextGenerationStreamAsync(textGeneration);
     }

@@ -1,15 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.beta.assistants import Assistant
-from openai.types.beta.assistant import ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
+from openai.types.beta.assistant import (
+    ToolResources,
+    ToolResourcesCodeInterpreter,
+    ToolResourcesFileSearch,
+)
 from pydantic import ValidationError
 
-from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.kernel import Kernel
 
 
@@ -51,13 +56,15 @@ def mock_assistant():
         top_p=0.9,
         response_format={"type": "json_object"},
         tool_resources=ToolResources(
-            code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
+            code_interpreter=ToolResourcesCodeInterpreter(code_interpreter_file_ids=["file1", "file2"]),
             file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
         ),
     )
 
 
-def test_initialization(azure_openai_assistant_agent: AzureAssistantAgent, azure_openai_unit_test_env):
+def test_initialization(
+    azure_openai_assistant_agent: AzureAssistantAgent, azure_openai_unit_test_env
+):
     agent = azure_openai_assistant_agent
     assert agent is not None
 
@@ -66,14 +73,16 @@ def test_create_client(azure_openai_assistant_agent, azure_openai_unit_test_env)
     assert isinstance(azure_openai_assistant_agent.client, AsyncAzureOpenAI)
 
 
-def test_create_client_from_configuration(azure_openai_assistant_agent, azure_openai_unit_test_env):
+def test_create_client_from_configuration(
+    azure_openai_assistant_agent, azure_openai_unit_test_env
+):
     assert isinstance(azure_openai_assistant_agent.client, AsyncAzureOpenAI)
     assert azure_openai_assistant_agent.client.api_key == "test_api_key"
 
 
 def test_create_client_from_configuration_missing_api_key():
     with pytest.raises(
-        AgentInitializationError,
+        AgentInitializationException,
         match="Please provide either AzureOpenAI api_key, an ad_token or an ad_token_provider or a client.",
     ):
         AzureAssistantAgent._create_client(None)
@@ -81,7 +90,7 @@ def test_create_client_from_configuration_missing_api_key():
 
 def test_create_client_from_configuration_missing_endpoint():
     with pytest.raises(
-        AgentInitializationError,
+        AgentInitializationException,
         match="Please provide an AzureOpenAI endpoint.",
     ):
         AzureAssistantAgent._create_client(api_key="test")
@@ -89,10 +98,16 @@ def test_create_client_from_configuration_missing_endpoint():
 
 @pytest.mark.asyncio
 async def test_create_agent(kernel: Kernel, azure_openai_unit_test_env):
-    with patch.object(AzureAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant:
+    with patch.object(
+        AzureAssistantAgent, "create_assistant", new_callable=AsyncMock
+    ) as mock_create_assistant:
         mock_create_assistant.return_value = MagicMock(spec=Assistant)
         agent = await AzureAssistantAgent.create(
-            kernel=kernel, service_id="test_service", name="test_name", api_key="test_api_key", api_version="2024-05-01"
+            kernel=kernel,
+            service_id="test_service",
+            name="test_name",
+            api_key="test_api_key",
+            api_version="2024-05-01",
         )
         assert agent.assistant is not None
         mock_create_assistant.assert_called_once()
@@ -100,18 +115,218 @@ async def test_create_agent(kernel: Kernel, azure_openai_unit_test_env):
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+async def test_list_definitions(
+    kernel: Kernel, mock_assistant, azure_openai_unit_test_env
+):
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+async def test_list_definitions(
+    kernel: Kernel, mock_assistant, azure_openai_unit_test_env
+):
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+async def test_list_definitions(
+    kernel: Kernel, mock_assistant, azure_openai_unit_test_env
+):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+async def test_create_agent_with_files(kernel: Kernel, azure_openai_unit_test_env):
+    mock_open_file = mock_open(read_data="file_content")
+    with (
+        patch("builtins.open", mock_open_file),
+        patch(
+            "semantic_kernel.agents.open_ai.open_ai_assistant_base.OpenAIAssistantBase.add_file",
+            return_value="test_file_id",
+        ),
+        patch(
+            "semantic_kernel.agents.open_ai.open_ai_assistant_base.OpenAIAssistantBase.create_vector_store",
+            return_value="vector_store_id",
+        ),
+        patch.object(AzureAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant,
+    ):
+        mock_create_assistant.return_value = MagicMock(spec=Assistant)
+        agent = await AzureAssistantAgent.create(
+            kernel=kernel,
+            service_id="test_service",
+            name="test_name",
+            api_key="test_api_key",
+            api_version="2024-05-01",
+            code_interpreter_filenames=["file1", "file2"],
+            vector_store_filenames=["file3", "file4"],
+            enable_code_interpreter=True,
+            enable_file_search=True,
+        )
+        assert agent.assistant is not None
+        mock_create_assistant.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_create_agent_with_code_files_not_found_raises_exception(kernel: Kernel, azure_openai_unit_test_env):
+    mock_open_file = mock_open(read_data="file_content")
+    with (
+        patch("builtins.open", mock_open_file),
+        patch(
+            "semantic_kernel.agents.open_ai.open_ai_assistant_base.OpenAIAssistantBase.add_file",
+            side_effect=FileNotFoundError("File not found"),
+        ),
+        patch.object(AzureAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant,
+    ):
+        mock_create_assistant.return_value = MagicMock(spec=Assistant)
+        with pytest.raises(AgentInitializationException, match="Failed to upload code interpreter files."):
+            _ = await AzureAssistantAgent.create(
+                kernel=kernel,
+                service_id="test_service",
+                deployment_name="test_deployment_name",
+                name="test_name",
+                api_key="test_api_key",
+                api_version="2024-05-01",
+                code_interpreter_filenames=["file1", "file2"],
+            )
+
+
+@pytest.mark.asyncio
+async def test_create_agent_with_search_files_not_found_raises_exception(kernel: Kernel, azure_openai_unit_test_env):
+    mock_open_file = mock_open(read_data="file_content")
+    with (
+        patch("builtins.open", mock_open_file),
+        patch(
+            "semantic_kernel.agents.open_ai.open_ai_assistant_base.OpenAIAssistantBase.add_file",
+            side_effect=FileNotFoundError("File not found"),
+        ),
+        patch.object(AzureAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant,
+    ):
+        mock_create_assistant.return_value = MagicMock(spec=Assistant)
+        with pytest.raises(AgentInitializationException, match="Failed to upload file search files."):
+            _ = await AzureAssistantAgent.create(
+                kernel=kernel,
+                service_id="test_service",
+                deployment_name="test_deployment_name",
+                name="test_name",
+                api_key="test_api_key",
+                api_version="2024-05-01",
+                vector_store_filenames=["file3", "file4"],
+            )
+
+
+@pytest.mark.asyncio
 async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_unit_test_env):
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> upstream/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     agent = AzureAssistantAgent(
-        kernel=kernel, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
+        kernel=kernel,
+        service_id="test_service",
+        name="test_name",
+        instructions="test_instructions",
+        id="test_id",
     )
 
     with patch.object(
-        AzureAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncAzureOpenAI)
+        AzureAssistantAgent,
+        "_create_client",
+        return_value=MagicMock(spec=AsyncAzureOpenAI),
     ) as mock_create_client:
         mock_client_instance = mock_create_client.return_value
         mock_client_instance.beta = MagicMock()
         mock_client_instance.beta.assistants = MagicMock()
-        mock_client_instance.beta.assistants.list = AsyncMock(return_value=MagicMock(data=[mock_assistant]))
+        mock_client_instance.beta.assistants.list = AsyncMock(
+            return_value=MagicMock(data=[mock_assistant])
+        )
 
         agent.client = mock_client_instance
 
@@ -131,7 +346,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_uni
             "enable_code_interpreter": True,
             "enable_file_search": True,
             "enable_json_response": True,
-            "file_ids": ["file1", "file2"],
+            "code_interpreter_file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
             "vector_store_id": "vector_store1",
@@ -153,41 +368,60 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_uni
 @pytest.mark.asyncio
 async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
     with patch.object(
-        AzureAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncAzureOpenAI)
+        AzureAssistantAgent,
+        "_create_client",
+        return_value=MagicMock(spec=AsyncAzureOpenAI),
     ) as mock_create_client:
         mock_client_instance = mock_create_client.return_value
         mock_client_instance.beta = MagicMock()
         mock_client_instance.beta.assistants = MagicMock()
 
-        mock_assistant = MagicMock()
-        mock_assistant.metadata = {
-            "__run_options": {
-                "max_completion_tokens": 100,
-                "max_prompt_tokens": 50,
-                "parallel_tool_calls_enabled": True,
-                "truncation_message_count": 10,
-            }
-        }
-        mock_assistant.model = "test_model"
-        mock_assistant.description = "test_description"
-        mock_assistant.id = "test_id"
-        mock_assistant.instructions = "test_instructions"
-        mock_assistant.name = "test_name"
-        mock_assistant.tools = ["code_interpreter", "file_search"]
-        mock_assistant.temperature = 0.7
-        mock_assistant.top_p = 0.9
-        mock_assistant.response_format = {"type": "json_object"}
-        mock_assistant.tool_resources = {
-            "code_interpreter": {"file_ids": ["file1", "file2"]},
-            "file_search": {"vector_store_ids": ["vector_store1"]},
-        }
-
-        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=mock_assistant)
-
-        agent = AzureAssistantAgent(
-            kernel=kernel, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
+        mock_client_instance.beta.assistants.retrieve = AsyncMock(
+            return_value=AsyncMock()
         )
-        agent._create_open_ai_assistant_definition = MagicMock(
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
+>>>>>>> main
+>>>>>>> Stashed changes
+
+        OpenAIAssistantBase._create_open_ai_assistant_definition = MagicMock(
             return_value={
                 "ai_model_id": "test_model",
                 "description": "test_description",
@@ -197,7 +431,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
                 "enable_code_interpreter": True,
                 "enable_file_search": True,
                 "enable_json_response": True,
-                "file_ids": ["file1", "file2"],
+                "code_interpreter_file_ids": ["file1", "file2"],
                 "temperature": 0.7,
                 "top_p": 0.9,
                 "vector_store_id": "vector_store1",
@@ -216,7 +450,9 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
             }
         )
 
-        retrieved_agent = await agent.retrieve("test_id", "test_api_key", kernel)
+        retrieved_agent = await AzureAssistantAgent.retrieve(
+            id="test_id", api_key="test_api_key", kernel=kernel
+        )
         assert retrieved_agent.model_dump(
             include={
                 "ai_model_id",
@@ -227,7 +463,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
                 "enable_code_interpreter",
                 "enable_file_search",
                 "enable_json_response",
-                "file_ids",
+                "code_interpreter_file_ids",
                 "temperature",
                 "top_p",
                 "vector_store_id",
@@ -246,7 +482,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
             "enable_code_interpreter": True,
             "enable_file_search": True,
             "enable_json_response": True,
-            "file_ids": ["file1", "file2"],
+            "code_interpreter_file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
             "vector_store_id": "vector_store1",
@@ -264,28 +500,633 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
             "truncation_message_count": 10,
         }
         mock_client_instance.beta.assistants.retrieve.assert_called_once_with("test_id")
-        agent._create_open_ai_assistant_definition.assert_called_once_with(mock_assistant)
+        OpenAIAssistantBase._create_open_ai_assistant_definition.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True
+)
+@pytest.mark.asyncio
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+async def test_retrieve_agent_missing_chat_deployment_name_throws(
+    kernel, azure_openai_unit_test_env
+):
+    with pytest.raises(
+        AgentInitializationError,
+        match="The Azure OpenAI chat_deployment_name is required.",
+    ):
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_openai_unit_test_env):
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_openai_unit_test_env):
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_openai_unit_test_env):
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+        _ = await AzureAssistantAgent.retrieve(
+            id="test_id",
+            api_key="test_api_key",
+            kernel=kernel,
+            env_file_path="test.env",
+        )
+
+
+@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
+@pytest.mark.asyncio
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+async def test_retrieve_agent_missing_api_key_throws(
+    kernel, azure_openai_unit_test_env
+):
+    with pytest.raises(
+        AgentInitializationError,
+        match="Please provide either api_key, ad_token or ad_token_provider.",
+    ):
+        _ = await AzureAssistantAgent.retrieve(
+            id="test_id", kernel=kernel, env_file_path="test.env"
+        )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+async def test_retrieve_agent_missing_api_key_throws(kernel, azure_openai_unit_test_env):
+    with pytest.raises(
+        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+    ):
+        _ = await AzureAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> upstream/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 
 def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
     with patch(
         "semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings.AzureOpenAISettings.create"
     ) as mock_create:
-        mock_create.side_effect = ValidationError.from_exception_data("test", line_errors=[], input_type="python")
+        mock_create.side_effect = ValidationError.from_exception_data(
+            "test", line_errors=[], input_type="python"
+        )
 
-        with pytest.raises(AgentInitializationError, match="Failed to create Azure OpenAI settings."):
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+        with pytest.raises(
+            AgentInitializationError, match="Failed to create Azure OpenAI settings."
+        ):
+            AzureAssistantAgent(
+                service_id="test",
+                api_key="test_api_key",
+                deployment_name="test_deployment_name",
+            )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        with pytest.raises(AgentInitializationException, match="Failed to create Azure OpenAI settings."):
             AzureAssistantAgent(service_id="test", api_key="test_api_key", deployment_name="test_deployment_name")
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        with pytest.raises(AgentInitializationException, match="Failed to create Azure OpenAI settings."):
+            AzureAssistantAgent(service_id="test", api_key="test_api_key", deployment_name="test_deployment_name")
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        with pytest.raises(AgentInitializationException, match="Failed to create Azure OpenAI settings."):
+            AzureAssistantAgent(service_id="test", api_key="test_api_key", deployment_name="test_deployment_name")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True)
+@pytest.mark.parametrize(
+    "exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True
+)
 def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="The Azure OpenAI chat_deployment_name is required."):
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+    with pytest.raises(
+        AgentInitializationError,
+        match="The Azure OpenAI chat_deployment_name is required.",
+    ):
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
+>>>>>>> upstream/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
+>>>>>>> upstream/main
+=======
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         AzureAssistantAgent(
-            service_id="test_service", api_key="test_key", endpoint="https://example.com", env_file_path="test.env"
+            service_id="test_service",
+            api_key="test_key",
+            endpoint="https://example.com",
+            env_file_path="test.env",
         )
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
-    with pytest.raises(AgentInitializationError, match="Please provide either api_key, ad_token or ad_token_provider."):
+    with pytest.raises(
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+<<<<<<< main
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+        AgentInitializationError,
+        match="Please provide either api_key, ad_token or ad_token_provider.",
+    ):
+        AzureAssistantAgent(
+            service_id="test_service",
+            endpoint="https://example.com",
+            env_file_path="test.env",
+        )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+    ):
         AzureAssistantAgent(service_id="test_service", endpoint="https://example.com", env_file_path="test.env")
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+    ):
+        AzureAssistantAgent(service_id="test_service", endpoint="https://example.com", env_file_path="test.env")
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
+    ):
+        AzureAssistantAgent(service_id="test_service", endpoint="https://example.com", env_file_path="test.env")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes

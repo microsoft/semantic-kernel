@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/lookahead/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-lookahead"
+			],
+			"targetId" : "llama-lookahead::@e31662afbce5798c508f",
+			"targetIndex" : 50,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/lookahead",
+		"source" : "examples/lookahead"
+	}
+}

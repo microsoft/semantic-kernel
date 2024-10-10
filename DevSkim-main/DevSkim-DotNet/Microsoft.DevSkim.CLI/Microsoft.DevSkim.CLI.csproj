@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+<PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <AssemblyName>devskim</AssemblyName>
+    <StartupObject>Microsoft.DevSkim.CLI.Program</StartupObject>
+    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+    <Product>Microsoft DevSkim Command Line Interface</Product>
+    <Version>0.0.0</Version>
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft</Company>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright> 
+    <Description>DevSkim is a framework and language analyzer that provides inline security analysis. This is a Dotnet Tool package. For the library package, see Microsoft.CST.DevSkim.</Description>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>devskim</ToolCommandName>
+    <PackageId>Microsoft.CST.DevSkim.CLI</PackageId>
+    <PackageTags>Security Linter</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>devskim-icon-128.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/Microsoft/DevSkim</PackageProjectUrl>
+    <PackageVersion>0.0.0</PackageVersion>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>Enable</Nullable>        
+  </PropertyGroup>
+    <ItemGroup>
+        <None Include="..\Content\LICENSE.txt" Pack="true" PackagePath="" />
+        <None Include="..\Content\devskim-icon-128.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\Microsoft.DevSkim\Microsoft.DevSkim.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommandLineParser" Version="2.9.1" />
+      <PackageReference Include="LibGit2Sharp" Version="0.29.0" />
+      <PackageReference Include="Microsoft.CST.ApplicationInspector.Logging" Version="1.9.19" />
+      <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+      <PackageReference Include="Sarif.Sdk" Version="4.5.3" />
+    </ItemGroup>
+
+</Project>

@@ -3,13 +3,25 @@
 import inspect
 import logging
 from collections.abc import Callable
-from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
+from inspect import (
+    isasyncgen,
+    isasyncgenfunction,
+    isawaitable,
+    iscoroutinefunction,
+    isgenerator,
+    isgeneratorfunction,
+)
 from typing import Any
 
 from pydantic import ValidationError
 
-from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.exceptions import (
+    FunctionExecutionException,
+    FunctionInitializationError,
+)
+from semantic_kernel.filters.functions.function_invocation_context import (
+    FunctionInvocationContext,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -46,7 +58,10 @@ class KernelFunctionFromMethod(KernelFunction):
         if method is None:
             raise FunctionInitializationError("Method cannot be `None`")
 
-        if not hasattr(method, "__kernel_function__") or method.__kernel_function__ is None:
+        if (
+            not hasattr(method, "__kernel_function__")
+            or method.__kernel_function__ is None
+        ):
             raise FunctionInitializationError("Method is not a Kernel function")
 
         # all these fields are created when the kernel function decorator is used,
@@ -72,13 +87,18 @@ class KernelFunctionFromMethod(KernelFunction):
                 parameters=parameters,
                 return_parameter=return_parameter,
                 is_prompt=False,
-                is_asynchronous=isasyncgenfunction(method) or iscoroutinefunction(method),
+                is_asynchronous=isasyncgenfunction(method)
+                or iscoroutinefunction(method),
                 plugin_name=plugin_name,
-                additional_properties=additional_metadata if additional_metadata is not None else {},
+                additional_properties=(
+                    additional_metadata if additional_metadata is not None else {}
+                ),
             )
         except ValidationError as exc:
             # reraise the exception to clarify it comes from KernelFunction init
-            raise FunctionInitializationError("Failed to create KernelFunctionMetadata") from exc
+            raise FunctionInitializationError(
+                "Failed to create KernelFunctionMetadata"
+            ) from exc
 
         args: dict[str, Any] = {
             "metadata": metadata,
@@ -86,9 +106,11 @@ class KernelFunctionFromMethod(KernelFunction):
             "stream_method": (
                 stream_method
                 if stream_method is not None
-                else method
-                if isasyncgenfunction(method) or isgeneratorfunction(method)
-                else None
+                else (
+                    method
+                    if isasyncgenfunction(method) or isgeneratorfunction(method)
+                    else None
+                )
             ),
         }
 
@@ -111,7 +133,10 @@ class KernelFunctionFromMethod(KernelFunction):
             result = FunctionResult(
                 function=self.metadata,
                 value=result,
-                metadata={"arguments": context.arguments, "used_arguments": function_arguments},
+                metadata={
+                    "arguments": context.arguments,
+                    "used_arguments": function_arguments,
+                },
             )
         context.result = result
 
@@ -119,7 +144,9 @@ class KernelFunctionFromMethod(KernelFunction):
         if self.stream_method is None:
             raise NotImplementedError("Stream method not implemented")
         function_arguments = self.gather_function_parameters(context)
-        context.result = FunctionResult(function=self.metadata, value=self.stream_method(**function_arguments))
+        context.result = FunctionResult(
+            function=self.metadata, value=self.stream_method(**function_arguments)
+        )
 
     def _parse_parameter(self, value: Any, param_type: Any) -> Any:
         """Parses the value into the specified param_type, including handling lists of types."""
@@ -134,7 +161,9 @@ class KernelFunctionFromMethod(KernelFunction):
             if isinstance(value, list):
                 item_type = param_type.__args__[0]
                 return [self._parse_parameter(item, item_type) for item in value]
-            raise FunctionExecutionException(f"Expected a list for {param_type}, but got {type(value)}")
+            raise FunctionExecutionException(
+                f"Expected a list for {param_type}, but got {type(value)}"
+            )
         else:
             try:
                 if isinstance(value, dict) and hasattr(param_type, "__init__"):
@@ -145,7 +174,9 @@ class KernelFunctionFromMethod(KernelFunction):
                     f"Parameter is expected to be parsed to {param_type} but is not."
                 ) from exc
 
-    def gather_function_parameters(self, context: FunctionInvocationContext) -> dict[str, Any]:
+    def gather_function_parameters(
+        self, context: FunctionInvocationContext
+    ) -> dict[str, Any]:
         """Gathers the function parameters from the arguments."""
         function_arguments: dict[str, Any] = {}
         for param in self.parameters:
@@ -155,10 +186,14 @@ class KernelFunctionFromMethod(KernelFunction):
                 function_arguments[param.name] = context.kernel
                 continue
             if param.name == "service":
-                function_arguments[param.name] = context.kernel.select_ai_service(self, context.arguments)[0]
+                function_arguments[param.name] = context.kernel.select_ai_service(
+                    self, context.arguments
+                )[0]
                 continue
             if param.name == "execution_settings":
-                function_arguments[param.name] = context.kernel.select_ai_service(self, context.arguments)[1]
+                function_arguments[param.name] = context.kernel.select_ai_service(
+                    self, context.arguments
+                )[1]
                 continue
             if param.name == "arguments":
                 function_arguments[param.name] = context.arguments
@@ -183,5 +218,7 @@ class KernelFunctionFromMethod(KernelFunction):
                 raise FunctionExecutionException(
                     f"Parameter {param.name} is required but not provided in the arguments."
                 )
-            logger.debug(f"Parameter {param.name} is not provided, using default value {param.default_value}")
+            logger.debug(
+                f"Parameter {param.name} is not provided, using default value {param.default_value}"
+            )
         return function_arguments

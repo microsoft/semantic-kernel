@@ -1,0 +1,34 @@
+[
+    {
+        "name": "Possible incorrect datetime format",
+        "id": "DS600100",
+        "description": "The %M format is 'minute' but used like 'month'",
+        "recommendation": "Change the format to %m.",
+        "applies_to": [
+            "python"
+        ],
+        "tags": [
+            "Correctness.DateTime.Format"
+        ],
+        "severity": "moderate",
+        "rule_info": "DS600100.md",
+        "patterns": [
+            {
+                "confidence": "high",
+                "pattern": "(%Y-%M-%d)|(%M-%d-%Y)|(%M/%d/%Y)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "when = [tm.strftime('%M/%d/%Y %I:%M %p') for tm in when]",
+            "return '%s [%s:%s] ' % (time.strftime('%Y-%M-%d %X'),"
+        ],
+        "must-not-match": [
+            "when = tm.strftime('%m/%d/%Y %I:%M %p')",
+            "%Y-%m-%d %H:%M:%S"
+        ]
+    }
+]

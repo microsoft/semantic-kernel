@@ -1,9 +1,50 @@
 # Copyright (c) Microsoft. All rights reserved.
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 
 import logging
 from enum import Enum
 from html import unescape
-from typing import Any, ClassVar, Literal, Union, overload
+from typing import Annotated, Any, ClassVar, Literal, overload
 from xml.etree.ElementTree import Element  # nosec
 
 from defusedxml import ElementTree
@@ -18,6 +59,49 @@ from semantic_kernel.contents.const import (
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
     IMAGE_CONTENT_TAG,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+    STREAMING_ANNOTATION_CONTENT_TAG,
+    STREAMING_FILE_REFERENCE_CONTENT_TAG,
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    STREAMING_ANNOTATION_CONTENT_TAG,
+    STREAMING_FILE_REFERENCE_CONTENT_TAG,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
     TEXT_CONTENT_TAG,
     ContentTypes,
 )
@@ -26,7 +110,49 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -39,17 +165,90 @@ TAG_CONTENT_MAP = {
     FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
     IMAGE_CONTENT_TAG: ImageContent,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 }
 
-ITEM_TYPES = Union[
-    AnnotationContent,
-    ImageContent,
-    TextContent,
-    StreamingTextContent,
-    FunctionResultContent,
-    FunctionCallContent,
-    FileReferenceContent,
-]
+ITEM_TYPES = (
+    AnnotationContent | ImageContent | TextContent | FunctionResultContent | FunctionCallContent | FileReferenceContent
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+    STREAMING_FILE_REFERENCE_CONTENT_TAG: StreamingFileReferenceContent,
+    STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
+}
+
+ITEM_TYPES = (
+    AnnotationContent
+    | ImageContent
+    | TextContent
+    | FunctionResultContent
+    | FunctionCallContent
+    | FileReferenceContent
+    | StreamingAnnotationContent
+    | StreamingFileReferenceContent
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+)
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +257,64 @@ class ChatMessageContent(KernelContent):
     """This is the class for chat message response content.
 
     All Chat Completion Services should return an instance of this class as response.
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+=======
+from typing import Optional
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
+
+from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.kernel_content import KernelContent
+
+
+class ChatMessageContent(KernelContent):
+    """This is the base class for chat message response content.
+
+    All Chat Completion Services should return a instance of this class as response.
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
@@ -74,11 +331,55 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
     content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = CHAT_MESSAGE_CONTENT_TAG
     role: AuthorRole
     name: str | None = None
-    items: list[ITEM_TYPES] = Field(default_factory=list, discriminator=DISCRIMINATOR_FIELD)
+    items: list[ITEM_TYPES] = Field(
+        default_factory=list, discriminator=DISCRIMINATOR_FIELD
+    )
+    items: list[Annotated[ITEM_TYPES, Field(..., discriminator=DISCRIMINATOR_FIELD)]] = Field(default_factory=list)
     encoding: str | None = None
     finish_reason: FinishReason | None = None
 
@@ -218,7 +519,13 @@ class ChatMessageContent(KernelContent):
         """
         root = Element(self.tag)
         for field in self.model_fields_set:
-            if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id"]:
+            if field not in [
+                "role",
+                "name",
+                "encoding",
+                "finish_reason",
+                "ai_model_id",
+            ]:
                 continue
             value = getattr(self, field)
             if isinstance(value, Enum):
@@ -239,16 +546,27 @@ class ChatMessageContent(KernelContent):
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
         if element.tag != cls.tag:
+<<<<<<< main
+            raise ContentInitializationError(
+                f"Element tag is not {cls.tag}"
+            )  # pragma: no cover
+=======
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
             raise ContentInitializationError(f"Element tag is not {cls.tag}")
+>>>>>>> origin/PR
         kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
         if element.text:
             items.append(TextContent(text=unescape(element.text)))
         for child in element:
             if child.tag not in TAG_CONTENT_MAP:
-                logger.warning('Unknown tag "%s" in ChatMessageContent, treating as text', child.tag)
-                text = ElementTree.tostring(child, encoding="unicode", short_empty_elements=False)
+                logger.warning(
+                    'Unknown tag "%s" in ChatMessageContent, treating as text',
+                    child.tag,
+                )
+                text = ElementTree.tostring(
+                    child, encoding="unicode", short_empty_elements=False
+                )
                 items.append(TextContent(text=unescape(text) or ""))
             else:
                 items.append(TAG_CONTENT_MAP[child.tag].from_element(child))  # type: ignore
@@ -268,15 +586,114 @@ class ChatMessageContent(KernelContent):
         return cls(**kwargs)
 
     def to_prompt(self) -> str:
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+=======
+    role: ChatRole
+    content: Optional[str] = None
+    encoding: Optional[str] = None
+
+    def __str__(self) -> str:
+        return self.content or ""
+
+    def to_prompt(self, root_key: str) -> str:
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         """Convert the ChatMessageContent to a prompt.
 
         Returns:
             str - The prompt from the ChatMessageContent.
         """
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
         root = self.to_element()
-        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
+        return ElementTree.tostring(
+            root, encoding=self.encoding or "unicode", short_empty_elements=False
+        )
 
-    def to_dict(self, role_key: str = "role", content_key: str = "content") -> dict[str, Any]:
+    def to_dict(
+        self, role_key: str = "role", content_key: str = "content"
+    ) -> dict[str, Any]:
         """Serialize the ChatMessageContent to a dictionary.
 
         Returns:
@@ -285,8 +702,14 @@ class ChatMessageContent(KernelContent):
         ret: dict[str, Any] = {
             role_key: self.role.value,
         }
-        if self.role == AuthorRole.ASSISTANT and any(isinstance(item, FunctionCallContent) for item in self.items):
-            ret["tool_calls"] = [item.to_dict() for item in self.items if isinstance(item, FunctionCallContent)]
+        if self.role == AuthorRole.ASSISTANT and any(
+            isinstance(item, FunctionCallContent) for item in self.items
+        ):
+            ret["tool_calls"] = [
+                item.to_dict()
+                for item in self.items
+                if isinstance(item, FunctionCallContent)
+            ]
         else:
             ret[content_key] = self._parse_items()
         if self.role == AuthorRole.TOOL:
@@ -307,3 +730,81 @@ class ChatMessageContent(KernelContent):
         if len(self.items) == 1 and isinstance(self.items[0], FunctionResultContent):
             return str(self.items[0].result)
         return [item.to_dict() for item in self.items]
+
+    def __hash__(self) -> int:
+        """Return the hash of the chat message content."""
+        return hash(
+            (
+                self.tag,
+                self.role,
+                self.content,
+                self.encoding,
+                self.finish_reason,
+                *self.items,
+            )
+        )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
+
+        root = Element(root_key)
+        root.set("role", self.role.value)
+        root.text = self.content or ""
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode")
+
+    @classmethod
+    def from_element(cls, element: Element) -> "ChatMessageContent":
+        """Create a new instance of ChatMessageContent from a prompt.
+
+        Args:
+            prompt: str - The prompt to create the ChatMessageContent from.
+
+        Returns:
+            ChatMessageContent - The new instance of ChatMessageContent.
+        """
+        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        return cls(**args)
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes

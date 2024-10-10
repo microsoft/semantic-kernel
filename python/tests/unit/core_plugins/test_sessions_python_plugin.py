@@ -10,8 +10,13 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin im
     SESSIONS_API_VERSION,
     SessionsPythonTool,
 )
-from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import SessionsRemoteFileMetadata
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException, FunctionInitializationError
+from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import (
+    SessionsRemoteFileMetadata,
+)
+from semantic_kernel.exceptions.function_exceptions import (
+    FunctionExecutionException,
+    FunctionInitializationError,
+)
 from semantic_kernel.kernel import Kernel
 
 
@@ -27,7 +32,10 @@ def test_it_can_be_instantiated(aca_python_sessions_unit_test_env):
 def test_validate_endpoint(aca_python_sessions_unit_test_env):
     plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     assert plugin is not None
-    assert str(plugin.pool_management_endpoint) == aca_python_sessions_unit_test_env["ACA_POOL_MANAGEMENT_ENDPOINT"]
+    assert (
+        str(plugin.pool_management_endpoint)
+        == aca_python_sessions_unit_test_env["ACA_POOL_MANAGEMENT_ENDPOINT"]
+    )
 
 
 @pytest.mark.parametrize(
@@ -71,7 +79,9 @@ def test_validate_endpoint(aca_python_sessions_unit_test_env):
         ),
     ],
 )
-def test_build_url_with_version(base_url, endpoint, params, expected_url, aca_python_sessions_unit_test_env):
+def test_build_url_with_version(
+    base_url, endpoint, params, expected_url, aca_python_sessions_unit_test_env
+):
     plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     result = plugin._build_url_with_version(base_url, endpoint, params)
     assert result == expected_url
@@ -102,7 +112,9 @@ def test_validate_endpoint_no_final_slash(aca_python_sessions_unit_test_env):
     assert str(plugin.pool_management_endpoint) == "https://test.endpoint/"
 
 
-@pytest.mark.parametrize("exclude_list", [["ACA_POOL_MANAGEMENT_ENDPOINT"]], indirect=True)
+@pytest.mark.parametrize(
+    "exclude_list", [["ACA_POOL_MANAGEMENT_ENDPOINT"]], indirect=True
+)
 def test_validate_settings_fail(aca_python_sessions_unit_test_env):
     with pytest.raises(FunctionInitializationError):
         SessionsPythonTool(
@@ -115,7 +127,10 @@ def test_it_can_be_imported(kernel: Kernel, aca_python_sessions_unit_test_env):
     plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     assert kernel.add_plugin(plugin=plugin, plugin_name="PythonCodeInterpreter")
     assert kernel.get_plugin(plugin_name="PythonCodeInterpreter") is not None
-    assert kernel.get_plugin(plugin_name="PythonCodeInterpreter").name == "PythonCodeInterpreter"
+    assert (
+        kernel.get_plugin(plugin_name="PythonCodeInterpreter").name
+        == "PythonCodeInterpreter"
+    )
 
 
 @pytest.mark.asyncio
@@ -128,7 +143,9 @@ async def test_call_to_container_succeeds(mock_post, aca_python_sessions_unit_te
         "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
         return_value="test_token",
     ):
-        mock_request = httpx.Request(method="POST", url="https://example.com/code/execute/")
+        mock_request = httpx.Request(
+            method="POST", url="https://example.com/code/execute/"
+        )
 
         mock_response = httpx.Response(
             status_code=200,
@@ -157,7 +174,9 @@ async def test_call_to_container_succeeds(mock_post, aca_python_sessions_unit_te
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_call_to_container_fails_raises_exception(mock_post, aca_python_sessions_unit_test_env):
+async def test_call_to_container_fails_raises_exception(
+    mock_post, aca_python_sessions_unit_test_env
+):
     async def async_return(result):
         return result
 
@@ -165,7 +184,9 @@ async def test_call_to_container_fails_raises_exception(mock_post, aca_python_se
         "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
         return_value="test_token",
     ):
-        mock_request = httpx.Request(method="POST", url="https://example.com/code/execute/")
+        mock_request = httpx.Request(
+            method="POST", url="https://example.com/code/execute/"
+        )
 
         mock_response = httpx.Response(status_code=500, request=mock_request)
 
@@ -178,7 +199,9 @@ async def test_call_to_container_fails_raises_exception(mock_post, aca_python_se
 
 
 @pytest.mark.asyncio
-async def test_empty_call_to_container_fails_raises_exception(aca_python_sessions_unit_test_env):
+async def test_empty_call_to_container_fails_raises_exception(
+    aca_python_sessions_unit_test_env,
+):
     plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     with pytest.raises(FunctionExecutionException):
         await plugin.execute_code(code="")
@@ -186,7 +209,9 @@ async def test_empty_call_to_container_fails_raises_exception(aca_python_session
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_test_env):
+async def test_upload_file_with_local_path(
+    mock_post, aca_python_sessions_unit_test_env
+):
     """Test upload_file when providing a local file path."""
 
     async def async_return(result):
@@ -199,7 +224,9 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
         ),
         patch("builtins.open", mock_open(read_data=b"file data")),
     ):
-        mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
+        mock_request = httpx.Request(
+            method="POST", url="https://example.com/files/upload?identifier=None"
+        )
 
         mock_response = httpx.Response(
             status_code=200,
@@ -242,7 +269,9 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
             env_file_path="test.env",
         )
 
-        result = await plugin.upload_file(local_file_path="hello.py", remote_file_path="hello.py")
+        result = await plugin.upload_file(
+            local_file_path="hello.py", remote_file_path="hello.py"
+        )
         assert result.filename == "hello.py"
         assert result.size_in_bytes == 123
         assert result.full_path == "/mnt/data/hello.py"
@@ -251,7 +280,9 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_sessions_unit_test_env):
+async def test_upload_file_with_local_path_and_no_remote(
+    mock_post, aca_python_sessions_unit_test_env
+):
     """Test upload_file when providing a local file path."""
 
     async def async_return(result):
@@ -264,7 +295,9 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
         ),
         patch("builtins.open", mock_open(read_data=b"file data")),
     ):
-        mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
+        mock_request = httpx.Request(
+            method="POST", url="https://example.com/files/upload?identifier=None"
+        )
 
         mock_response = httpx.Response(
             status_code=200,
@@ -309,13 +342,19 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_test_env):
+async def test_upload_file_throws_exception(
+    mock_post, aca_python_sessions_unit_test_env
+):
     """Test throwing exception during file upload."""
 
     async def async_raise_http_error(*args, **kwargs):
-        mock_request = httpx.Request(method="POST", url="https://example.com/files/upload")
+        mock_request = httpx.Request(
+            method="POST", url="https://example.com/files/upload"
+        )
         mock_response = httpx.Response(status_code=500, request=mock_request)
-        raise HTTPStatusError("Server Error", request=mock_request, response=mock_response)
+        raise HTTPStatusError(
+            "Server Error", request=mock_request, response=mock_response
+        )
 
     with (
         patch(
@@ -332,7 +371,8 @@ async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_
         )
 
         with pytest.raises(
-            FunctionExecutionException, match="Upload failed with status code 500 and error: Internal Server Error"
+            FunctionExecutionException,
+            match="Upload failed with status code 500 and error: Internal Server Error",
         ):
             await plugin.upload_file(local_file_path="hello.py")
         mock_post.assert_awaited_once()
@@ -348,7 +388,11 @@ async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
 async def test_upload_file_with_buffer(
-    mock_post, local_file_path, input_remote_file_path, expected_remote_file_path, aca_python_sessions_unit_test_env
+    mock_post,
+    local_file_path,
+    input_remote_file_path,
+    expected_remote_file_path,
+    aca_python_sessions_unit_test_env,
 ):
     """Test upload_file when providing file data as a BufferedReader."""
 
@@ -362,6 +406,9 @@ async def test_upload_file_with_buffer(
         ),
         patch("builtins.open", mock_open(read_data="print('hello, world~')")),
     ):
+        mock_request = httpx.Request(
+            method="POST", url="https://example.com/files/upload?identifier=None"
+        )
         mock_request = httpx.Request(method="POST", url="https://example.com/files/upload?identifier=None")
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
@@ -403,7 +450,9 @@ async def test_upload_file_with_buffer(
 
         plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
 
-        result = await plugin.upload_file(local_file_path=local_file_path, remote_file_path=input_remote_file_path)
+        result = await plugin.upload_file(
+            local_file_path=local_file_path, remote_file_path=input_remote_file_path
+        )
         assert result.filename == expected_remote_file_path
         assert result.size_in_bytes == 456
         mock_post.assert_awaited_once()
@@ -433,7 +482,9 @@ async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
         "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
         return_value="test_token",
     ):
-        mock_request = httpx.Request(method="GET", url="https://example.com/files?identifier=None")
+        mock_request = httpx.Request(
+            method="GET", url="https://example.com/files?identifier=None"
+        )
 
         mock_response = httpx.Response(
             status_code=200,
@@ -494,9 +545,13 @@ async def test_list_files_throws_exception(mock_get, aca_python_sessions_unit_te
     """Test throwing exception during list files."""
 
     async def async_raise_http_error(*args, **kwargs):
-        mock_request = httpx.Request(method="GET", url="https://example.com/files?identifier=None")
+        mock_request = httpx.Request(
+            method="GET", url="https://example.com/files?identifier=None"
+        )
         mock_response = httpx.Response(status_code=500, request=mock_request)
-        raise HTTPStatusError("Server Error", request=mock_request, response=mock_response)
+        raise HTTPStatusError(
+            "Server Error", request=mock_request, response=mock_response
+        )
 
     with (
         patch(
@@ -512,7 +567,8 @@ async def test_list_files_throws_exception(mock_get, aca_python_sessions_unit_te
         )
 
         with pytest.raises(
-            FunctionExecutionException, match="List files failed with status code 500 and error: Internal Server Error"
+            FunctionExecutionException,
+            match="List files failed with status code 500 and error: Internal Server Error",
         ):
             await plugin.list_files()
         mock_get.assert_awaited_once()
@@ -541,7 +597,9 @@ async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_en
             url="https://example.com/python/files/content/remote_text.txt?identifier=None&filename=remote_test.txt",
         )
 
-        mock_response = httpx.Response(status_code=200, content=b"file data", request=mock_request)
+        mock_response = httpx.Response(
+            status_code=200, content=b"file data", request=mock_request
+        )
         mock_get.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(
@@ -549,7 +607,9 @@ async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_en
             env_file_path="test.env",
         )
 
-        await plugin.download_file(remote_file_name="remote_test.txt", local_file_path="local_test.txt")
+        await plugin.download_file(
+            remote_file_name="remote_test.txt", local_file_path="local_test.txt"
+        )
         mock_get.assert_awaited_once()
         mock_file.assert_called_once_with("local_test.txt", "wb")
         mock_file().write.assert_called_once_with(b"file data")
@@ -575,7 +635,9 @@ async def test_download_file_to_buffer(mock_get, aca_python_sessions_unit_test_e
             url="https://example.com/files/content/remote_test.txt?identifier=None&filename=remote_test.txt",
         )
 
-        mock_response = httpx.Response(status_code=200, content=b"file data", request=mock_request)
+        mock_response = httpx.Response(
+            status_code=200, content=b"file data", request=mock_request
+        )
         mock_get.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(auth_callback=mock_auth_callback)
@@ -588,15 +650,20 @@ async def test_download_file_to_buffer(mock_get, aca_python_sessions_unit_test_e
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
-async def test_download_file_throws_exception(mock_get, aca_python_sessions_unit_test_env):
+async def test_download_file_throws_exception(
+    mock_get, aca_python_sessions_unit_test_env
+):
     """Test throwing exception during download file."""
 
     async def async_raise_http_error(*args, **kwargs):
         mock_request = httpx.Request(
-            method="GET", url="https://example.com/files/content/remote_test.txt?identifier=None"
+            method="GET",
+            url="https://example.com/files/content/remote_test.txt?identifier=None",
         )
         mock_response = httpx.Response(status_code=500, request=mock_request)
-        raise HTTPStatusError("Server Error", request=mock_request, response=mock_response)
+        raise HTTPStatusError(
+            "Server Error", request=mock_request, response=mock_response
+        )
 
     with (
         patch(
@@ -612,7 +679,8 @@ async def test_download_file_throws_exception(mock_get, aca_python_sessions_unit
         )
 
         with pytest.raises(
-            FunctionExecutionException, match="Download failed with status code 500 and error: Internal Server Error"
+            FunctionExecutionException,
+            match="Download failed with status code 500 and error: Internal Server Error",
         ):
             await plugin.download_file(remote_file_name="remote_test.txt")
         mock_get.assert_awaited_once()
@@ -664,7 +732,9 @@ async def test_auth_token_fail(aca_python_sessions_unit_test_env):
 
     plugin = SessionsPythonTool(auth_callback=token_cb)
     with pytest.raises(
-        FunctionExecutionException, match="Failed to retrieve the client auth token with messages: Could not get token."
+        FunctionExecutionException,
+        match="Failed to retrieve the client auth token with messages: Could not get token.",
+        FunctionExecutionException, match="Failed to retrieve the client auth token with message: Could not get token."
     ):
         await plugin._ensure_auth_token()
 

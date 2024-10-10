@@ -8,7 +8,9 @@ import pytest
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.pinecone import PineconeMemoryStore
-from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
+from semantic_kernel.connectors.memory.pinecone.pinecone_settings import (
+    PineconeSettings,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
@@ -19,7 +21,9 @@ try:
 except ImportError:
     pinecone_installed = False
 
-pytestmark = pytest.mark.skipif(not pinecone_installed, reason="pinecone is not installed")
+pytestmark = pytest.mark.skipif(
+    not pinecone_installed, reason="pinecone is not installed"
+)
 
 
 async def retry(func, retries=1):
@@ -100,7 +104,9 @@ async def test_constructor(api_key):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
 async def test_create_and_get_collection(api_key):
     memory = PineconeMemoryStore(api_key, 2)
 
@@ -111,7 +117,9 @@ async def test_create_and_get_collection(api_key):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
 async def test_get_collections(api_key):
     memory = PineconeMemoryStore(api_key, 2)
 
@@ -121,7 +129,9 @@ async def test_get_collections(api_key):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
 async def test_delete_collection(api_key):
     memory = PineconeMemoryStore(api_key, 2)
 
@@ -132,7 +142,9 @@ async def test_delete_collection(api_key):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
 async def test_does_collection_exist(api_key):
     memory = PineconeMemoryStore(api_key, 2)
 
@@ -142,7 +154,9 @@ async def test_does_collection_exist(api_key):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
 async def test_upsert_and_get(api_key, memory_record1):
     memory = PineconeMemoryStore(api_key, 2)
 
@@ -165,12 +179,16 @@ async def test_upsert_and_get(api_key, memory_record1):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
 async def test_upsert_batch_and_get_batch(api_key, memory_record1, memory_record2):
     memory = PineconeMemoryStore(api_key, 2)
 
     await retry(lambda: memory.create_collection("test-collection"))
-    await retry(lambda: memory.upsert_batch("test-collection", [memory_record1, memory_record2]))
+    await retry(
+        lambda: memory.upsert_batch("test-collection", [memory_record1, memory_record2])
+    )
 
     results = await retry(
         lambda: memory.get_batch(
@@ -186,7 +204,9 @@ async def test_upsert_batch_and_get_batch(api_key, memory_record1, memory_record
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
 async def test_remove(api_key, memory_record1):
     memory = PineconeMemoryStore(api_key, 2)
 
@@ -199,13 +219,21 @@ async def test_remove(api_key, memory_record1):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
 async def test_remove_batch(api_key, memory_record1, memory_record2):
     memory = PineconeMemoryStore(api_key, 2)
 
     await retry(lambda: memory.create_collection("test-collection"))
-    await retry(lambda: memory.upsert_batch("test-collection", [memory_record1, memory_record2]))
-    await retry(lambda: memory.remove_batch("test-collection", [memory_record1._id, memory_record2._id]))
+    await retry(
+        lambda: memory.upsert_batch("test-collection", [memory_record1, memory_record2])
+    )
+    await retry(
+        lambda: memory.remove_batch(
+            "test-collection", [memory_record1._id, memory_record2._id]
+        )
+    )
 
     with pytest.raises(ServiceResourceNotFoundError):
         _ = await memory.get("test-collection", memory_record1._id, with_embedding=True)
@@ -215,12 +243,16 @@ async def test_remove_batch(api_key, memory_record1, memory_record2):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
 async def test_get_nearest_match(api_key, memory_record1, memory_record2):
     memory = PineconeMemoryStore(api_key, 2)
 
     await retry(lambda: memory.create_collection("test-collection"))
-    await retry(lambda: memory.upsert_batch("test-collection", [memory_record1, memory_record2]))
+    await retry(
+        lambda: memory.upsert_batch("test-collection", [memory_record1, memory_record2])
+    )
 
     test_embedding = memory_record1.embedding
     test_embedding[0] = test_embedding[0] + 0.01
@@ -239,12 +271,20 @@ async def test_get_nearest_match(api_key, memory_record1, memory_record2):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="Test failed due to known unreliable communications with Pinecone free tier")
-async def test_get_nearest_matches(api_key, memory_record1, memory_record2, memory_record3):
+@pytest.mark.xfail(
+    reason="Test failed due to known unreliable communications with Pinecone free tier"
+)
+async def test_get_nearest_matches(
+    api_key, memory_record1, memory_record2, memory_record3
+):
     memory = PineconeMemoryStore(api_key, 2)
 
     await retry(lambda: memory.create_collection("test-collection"))
-    await retry(lambda: memory.upsert_batch("test-collection", [memory_record1, memory_record2, memory_record3]))
+    await retry(
+        lambda: memory.upsert_batch(
+            "test-collection", [memory_record1, memory_record2, memory_record3]
+        )
+    )
 
     test_embedding = memory_record2.embedding
     test_embedding[0] = test_embedding[0] + 0.025

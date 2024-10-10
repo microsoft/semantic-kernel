@@ -1,10 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -48,7 +51,7 @@ public static class ChatCompletionServiceExtensions
     /// <summary>
     /// Get a single chat message content for the prompt and settings.
     /// </summary>
-    /// <param name="chatCompletionService">The target IChatCompletionSErvice interface to extend.</param>
+    /// <param name="chatCompletionService">The target <see cref="IChatCompletionService"/> interface to extend.</param>
     /// <param name="prompt">The standardized prompt input.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -62,11 +65,22 @@ public static class ChatCompletionServiceExtensions
         CancellationToken cancellationToken = default)
         => (await chatCompletionService.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Single();
+    /// <param name="services">The service provider.</param>
+    /// <param name="serviceId">Optional identifier of the desired service.</param>
+    /// <returns>The completion service id matching the given id or the default.</returns>
+    /// <exception cref="SKException">Thrown when no suitable service is found.</exception>
+    public static IChatCompletion GetChatCompletionService(
+        this IAIServiceProvider services,
+        string? serviceId = null) => services.GetService<IChatCompletion>(serviceId)
+            ?? throw new SKException("Chat completion service not found");
+<<<<<<< main
+=======
+>>>>>>> ms/feature-error-handling-part-4
 
     /// <summary>
     /// Get a single chat message content for the chat history and settings provided.
     /// </summary>
-    /// <param name="chatCompletionService">The target IChatCompletionService interface to extend.</param>
+    /// <param name="chatCompletionService">The target <see cref="IChatCompletionService"/> interface to extend.</param>
     /// <param name="chatHistory">The chat history to complete.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -85,7 +99,7 @@ public static class ChatCompletionServiceExtensions
     /// Get streaming chat message contents for the chat history provided using the specified settings.
     /// </summary>
     /// <exception cref="NotSupportedException">Throws if the specified type is not the same or fail to cast</exception>
-    /// <param name="chatCompletionService">The target IChatCompletionService interface to extend.</param>
+    /// <param name="chatCompletionService">The target <see cref="IChatCompletionService"/> interface to extend.</param>
     /// <param name="prompt">The standardized prompt input.</param>
     /// <param name="executionSettings">The AI execution settings (optional).</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>

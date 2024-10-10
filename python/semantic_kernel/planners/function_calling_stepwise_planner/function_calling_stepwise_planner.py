@@ -8,19 +8,29 @@ from typing import Any
 
 import yaml
 
-from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    kernel_function_metadata_to_function_call_format,
+)
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
+    AzureChatCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
+    OpenAIChatCompletion,
+)
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
+from semantic_kernel.exceptions.planner_exceptions import (
+    PlannerInvalidConfigurationError,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
@@ -53,12 +63,18 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class FunctionCallingStepwisePlanner(KernelBaseModel):
+    """A Function Calling Stepwise Planner."""
+
     service_id: str
     options: FunctionCallingStepwisePlannerOptions
     generate_plan_yaml: str
     step_prompt: str
 
-    def __init__(self, service_id: str, options: FunctionCallingStepwisePlannerOptions | None = None):
+    def __init__(
+        self,
+        service_id: str,
+        options: FunctionCallingStepwisePlannerOptions | None = None,
+    ):
         """Initialize a new instance of the FunctionCallingStepwisePlanner.
 
         The FunctionCallingStepwisePlanner is a planner based on top of an OpenAI Chat Completion service
@@ -124,7 +140,9 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
 
         try:
-            chat_completion: OpenAIChatCompletion | AzureChatCompletion = kernel.get_service(service_id=self.service_id)
+            chat_completion: OpenAIChatCompletion | AzureChatCompletion = (
+                kernel.get_service(service_id=self.service_id)
+            )
         except Exception as exc:
             raise PlannerInvalidConfigurationError(
                 f"The OpenAI service `{self.service_id}` is not available. Please configure the AI service."
@@ -137,7 +155,9 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
 
         prompt_execution_settings: OpenAIChatPromptExecutionSettings = (
             self.options.execution_settings
-            or chat_completion.instantiate_prompt_execution_settings(service_id=self.service_id)
+            or chat_completion.instantiate_prompt_execution_settings(
+                service_id=self.service_id
+            )
         )
         if self.options.max_completion_tokens:
             prompt_execution_settings.max_tokens = self.options.max_completion_tokens
@@ -147,18 +167,29 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         cloned_kernel.add_plugin(UserInteraction(), "UserInteraction")
 
         # Create and invoke a kernel function to generate the initial plan
-        initial_plan = await self._generate_plan(question=question, kernel=cloned_kernel, arguments=arguments)
+        initial_plan = await self._generate_plan(
+            question=question, kernel=cloned_kernel, arguments=arguments
+        )
 
         chat_history_for_steps = await self._build_chat_history_for_step(
-            goal=question, initial_plan=initial_plan, kernel=cloned_kernel, arguments=arguments, service=chat_completion
+            goal=question,
+            initial_plan=initial_plan,
+            kernel=cloned_kernel,
+            arguments=arguments,
+            service=chat_completion,
         )
-        prompt_execution_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
-            auto_invoke=False, filters={"excluded_plugins": list(self.options.excluded_plugins)}
+        prompt_execution_settings.function_choice_behavior = (
+            FunctionChoiceBehavior.Auto(
+                auto_invoke=False,
+                filters={"excluded_plugins": list(self.options.excluded_plugins)},
+            )
         )
         for i in range(self.options.max_iterations):
             # sleep for a bit to avoid rate limiting
             if i > 0:
-                await asyncio.sleep(self.options.min_iteration_time_ms / 1000.0)  # convert ms to sec
+                await asyncio.sleep(
+                    self.options.min_iteration_time_ms / 1000.0
+                )  # convert ms to sec
             # For each step, request another completion to select a function for that step
             chat_history_for_steps.add_user_message(STEPWISE_USER_MESSAGE)
             chat_result = await chat_completion.get_chat_message_contents(
@@ -169,8 +200,12 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             chat_result = chat_result[0]
             chat_history_for_steps.add_message(chat_result)
 
-            if not any(isinstance(item, FunctionCallContent) for item in chat_result.items):
-                chat_history_for_steps.add_user_message("That function call is invalid. Try something else!")
+            if not any(
+                isinstance(item, FunctionCallContent) for item in chat_result.items
+            ):
+                chat_history_for_steps.add_user_message(
+                    "That function call is invalid. Try something else!"
+                )
                 continue
 
             # Try to get the final answer out
@@ -178,7 +213,8 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 (
                     item
                     for item in chat_result.items
-                    if isinstance(item, FunctionCallContent) and item.name == USER_INTERACTION_SEND_FINAL_ANSWER
+                    if isinstance(item, FunctionCallContent)
+                    and item.name == USER_INTERACTION_SEND_FINAL_ANSWER
                 ),
                 None,
             )
@@ -207,16 +243,25 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                     if context is not None:
                         # Only add the function result content to the chat history if the context is present
                         # which means it wasn't added in the _process_function_call method
-                        frc = FunctionResultContent.from_function_call_content_and_result(
-                            function_call_content=item, result=context.function_result
+                        frc = (
+                            FunctionResultContent.from_function_call_content_and_result(
+                                function_call_content=item,
+                                result=context.function_result,
+                            )
                         )
-                        chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                        chat_history_for_steps.add_message(
+                            message=frc.to_chat_message_content()
+                        )
                 except Exception as exc:
                     frc = FunctionResultContent.from_function_call_content_and_result(
                         function_call_content=item,
-                        result=TextContent(text=f"An error occurred during planner invocation: {exc}"),
+                        result=TextContent(
+                            text=f"An error occurred during planner invocation: {exc}"
+                        ),
                     )
-                    chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                    chat_history_for_steps.add_message(
+                        message=frc.to_chat_message_content()
+                    )
                     continue
 
         # We're done, but the model hasn't returned a final answer.
@@ -258,7 +303,9 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         data = yaml.safe_load(self.generate_plan_yaml)
         prompt_template_config = PromptTemplateConfig(**data)
         if DEFAULT_SERVICE_NAME in prompt_template_config.execution_settings:
-            settings = prompt_template_config.execution_settings.pop(DEFAULT_SERVICE_NAME)
+            settings = prompt_template_config.execution_settings.pop(
+                DEFAULT_SERVICE_NAME
+            )
             prompt_template_config.execution_settings[self.service_id] = settings
         return kernel.add_function(
             function_name="create_plan",
@@ -278,7 +325,12 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         functions_manual = [
             kernel_function_metadata_to_function_call_format(f)
             for f in kernel.get_list_of_function_metadata(
-                {"excluded_functions": [f"{self.service_id}", "sequential_planner-create_plan"]}
+                {
+                    "excluded_functions": [
+                        f"{self.service_id}",
+                        "sequential_planner-create_plan",
+                    ]
+                }
             )
         ]
         generated_plan_args = KernelArguments(
@@ -287,5 +339,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             goal=question,
         )
         generated_plan_args.update(arguments)
-        generate_plan_result = await kernel.invoke(generate_plan_function, generated_plan_args)
+        generate_plan_result = await kernel.invoke(
+            generate_plan_function, generated_plan_args
+        )
         return str(generate_plan_result)

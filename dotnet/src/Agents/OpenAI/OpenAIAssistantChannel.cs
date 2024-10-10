@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI.Assistants;
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
+using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-internal sealed class OpenAIAssistantChannel(AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration)
+internal sealed class OpenAIAssistantChannel(AssistantClient client, string threadId)
     : AgentChannel<OpenAIAssistantAgent>
 {
+    private readonly AssistantClient _client = client;
     private const string FunctionDelimiter = "-";
 
     private static readonly HashSet<RunStatus> s_pollingStatuses =
@@ -76,6 +78,9 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         this.Logger.LogInformation("[{MethodName}] Created run: {RunId}", nameof(InvokeAsync), run.Id);
 
         // Evaluate status and process steps and messages, as encountered.
+        int initialCapacity = 100; // Adjust this value based on the approximate number of steps
+        HashSet<string> processedStepIds = new HashSet<string>(initialCapacity);
+        Dictionary<string, FunctionCallContent> functionSteps = [];
         HashSet<string> processedStepIds = new HashSet<string>();
         Dictionary<string, FunctionCallContent> functionSteps = new Dictionary<string, FunctionCallContent>();
 
@@ -100,10 +105,18 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 if (activeFunctionSteps.Length > 0)
                 {
                     // Emit function-call content
-                    yield return GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
+{
+    var functionCallContent = GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
+    await foreach (var content in functionCallContent)
+    {
+        yield return content;
+    }
+}
 
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
+
+                    yield return GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
 
                     // Block for function results
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
@@ -162,7 +175,63 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                         }
         agent.ThrowIfDeleted();
 
-        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, pollingConfiguration, this.Logger, cancellationToken);
+        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(OpenAIAssistantAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
+    {
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+        return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+=======
+>>>>>>> Stashed changes
+        agent.ThrowIfDeleted();
+
+        return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     }
 
     /// <inheritdoc/>
@@ -292,6 +361,12 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
+        private IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
+        {
+            // Implementation here
+        }
+
+        return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
         // Local function to capture kernel function state for further processing (participates in method closure).
         IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
         {
@@ -299,7 +374,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             {
                 foreach (RunStepFunctionToolCall toolCall in callDetails.ToolCalls.OfType<RunStepFunctionToolCall>())
                 {
-                    var nameParts = FunctionName.Parse(toolCall.Name, FunctionDelimiter);
+                    var nameParts = FunctionName.Parse(toolCall.Name, FunctionDelimiter.ToString());
 
                     KernelArguments functionArguments = [];
                     if (!string.IsNullOrWhiteSpace(toolCall.Arguments))
@@ -478,13 +553,71 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         for (int index = 0; index < functionSteps.Length; ++index)
         {
+            functionTasks[index] = ExecuteFunctionStepAsync(functionSteps[index]);
+        }
+
+        return functionTasks;
+        }
+
+        return functionTasks;
+        }
+
+        return functionTasks;
+
+        async Task<FunctionResultContent> ExecuteFunctionStepAsync(FunctionCallContent functionStep)
+        {
+            FunctionResultContent functionResult = await functionStep.InvokeAsync(agent.Kernel, cancellationToken).ConfigureAwait(false);
+
+            return functionResult;
+        }
+    }
+
+    private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
+    {
+        ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];
+
+        for (int index = 0; index < functionResults.Length; ++index)
+        {
+            FunctionResultContent functionResult = functionResults[index];
+
+            object resultValue = functionResult.Result ?? string.Empty;
+
+    private static ChatMessageContent GenerateFunctionCallContent(string agentName, FunctionCallContent[] functionSteps)
+    {
+        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        {
+            AuthorName = agentName
+        };
+
+        functionCallContent.Items.AddRange(functionSteps);
+
+        return functionCallContent;
+    }
+
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionCallContent functionStep, string result)
+    {
+        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        {
+            AuthorName = agentName
+        };
+
+        functionCallContent.Items.Add(
+            new FunctionResultContent(
+                functionStep.FunctionName,
+                functionStep.PluginName,
+                functionStep.Id,
+                result));
+
+        return functionCallContent;
+    }
+
+    private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionSteps, CancellationToken cancellationToken)
+    {
+        Task<FunctionResultContent>[] functionTasks = new Task<FunctionResultContent>[functionSteps.Length];
+
+        for (int index = 0; index < functionSteps.Length; ++index)
+        {
             functionTasks[index] = functionSteps[index].InvokeAsync(agent.Kernel, cancellationToken);
-        }
-
-        return functionTasks;
-        }
-
-        return functionTasks;
         }
 
         return functionTasks;
@@ -498,8 +631,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         {
             FunctionResultContent functionResult = functionResults[index];
 
-            object resultValue = functionResult.Result ?? string.Empty;
-
+            object resultValue = (functionResult.Result as FunctionResult)?.GetValue<object>() ?? string.Empty;
             if (resultValue is not string textResult)
             {
                 textResult = JsonSerializer.Serialize(resultValue);
@@ -630,4 +762,49 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     {
         return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    protected override Task ResetAsync(CancellationToken cancellationToken = default) =>
+        this._client.DeleteThreadAsync(this._threadId, cancellationToken);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+    protected override string Serialize() => this._threadId;
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    protected override string Serialize() => this._threadId;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    protected override string Serialize() => this._threadId;
+>>>>>>> main
+>>>>>>> Stashed changes
 }

@@ -2,7 +2,57 @@
 
 import datetime
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import FunctionExecutionException
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+from semantic_kernel.exceptions import FunctionExecutionException
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+from semantic_kernel.exceptions import FunctionExecutionException
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+from semantic_kernel.exceptions import FunctionExecutionException
+=======
+>>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -176,7 +226,9 @@ class TimePlugin(KernelBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%M")
 
-    @kernel_function(description="Get the date of offset from today by a provided number of days")
+    @kernel_function(
+        description="Get the date of offset from today by a provided number of days"
+    )
     def days_ago(self, days: str) -> str:
         """Get the date a provided number of days in the past.
 
@@ -191,7 +243,9 @@ class TimePlugin(KernelBaseModel):
         d = datetime.date.today() - datetime.timedelta(days=int(days))
         return d.strftime("%A, %d %B, %Y")
 
-    @kernel_function(description="""Get the date of the last day matching the supplied week day name in English.""")
+    @kernel_function(
+        description="""Get the date of the last day matching the supplied week day name in English."""
+    )
     def date_matching_last_day_name(self, day_name: str) -> str:
         """Get the date of the last day matching the supplied day name.
 
@@ -221,7 +275,9 @@ class TimePlugin(KernelBaseModel):
         now = datetime.datetime.now()
         return now.strftime("%S")
 
-    @kernel_function(description="Get the current time zone offset", name="timeZoneOffset")
+    @kernel_function(
+        description="Get the current time zone offset", name="timeZoneOffset"
+    )
     def time_zone_offset(self) -> str:
         """Get the current time zone offset.
 

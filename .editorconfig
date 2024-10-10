@@ -164,6 +164,55 @@ dotnet_diagnostic.CA1508.severity = none # Avoid dead conditional code. Too many
 dotnet_diagnostic.CA1510.severity = none # ArgumentNullException.Throw
 dotnet_diagnostic.CA1512.severity = none # ArgumentOutOfRangeException.Throw
 dotnet_diagnostic.CA1515.severity = none # Making public types from exes internal
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
+dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
+dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates
+dotnet_diagnostic.CA1849.severity = none # Use async equivalent; analyzer is currently noisy
+dotnet_diagnostic.CA1865.severity = none # StartsWith(char)
+dotnet_diagnostic.CA1867.severity = none # EndsWith(char)
+dotnet_diagnostic.CA1508.severity = none # Avoid dead conditional code. Too many false positives.
+dotnet_diagnostic.CA1510.severity = none
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
 dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates
@@ -176,8 +225,54 @@ dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing th
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
 dotnet_diagnostic.CA2263.severity = suggestion # Use generic overload
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
 
 dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+
+dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
+=======
+
+dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
+
+>>>>>>> origin/main
+=======
+
+dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
+>>>>>>> Stashed changes
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
 dotnet_diagnostic.VSTHRD200.severity = none # Use Async suffix for async methods
 dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.
@@ -414,6 +509,51 @@ resharper_arrange_this_qualifier_highlighting = warning # Resharper's "Arrange '
 charset = utf-8
 end_of_line = lf
 indent_size = 4
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+indent_style = space
+insert_final_newline = false
+tab_width = 4
+indent_size = 2
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 indent_style = space
 insert_final_newline = false
 tab_width = 4

@@ -1,9 +1,8 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: proposed
 contact: dmytrostruk
-date: 2023-01-29
+date: 2023-01-29T00:00:00Z
 deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk
+status: proposed
 ---
 
 # Retrieval-Augmented Generation (RAG) in Semantic Kernel
@@ -32,7 +31,7 @@ Each memory connector implements `IMemoryStore` interface with methods like `Cre
 
 By implementing the same interface, each integration is aligned, which makes it possible to use different vector DBs at runtime. At the same time it is disadvantage, because each vector DB can work differently, and it becomes harder to fit all integrations into already existing abstraction. For example, method `CreateCollectionAsync` from `IMemoryStore` is used when application tries to add new record to vector DB to the collection, which doesn't exist, so before insert operation, it creates new collection. In case of [Pinecone](https://www.pinecone.io/) vector DB, this scenario is not supported, because Pinecone index creation is an asynchronous process - API service will return 201 Created HTTP response with following property in response body (index is not ready for usage):
 
-```json
+```json {"id":"01J6KP4N17G0T9YWX9ESR1Z3SX"}
 {
     // Other properties...
     "status": {
@@ -107,7 +106,7 @@ This approach doesn't include any memory connectors in Semantic Kernel out-of-th
 
 String concatenation:
 
-```csharp
+```csharp {"id":"01J6KP4N17G0T9YWX9EX43CEM7"}
 var kernel = Kernel.CreateBuilder()
     .AddOpenAIChatCompletion("model-id", "api-key")
     .Build();
@@ -125,7 +124,7 @@ var result = await kernel.InvokePromptAsync(builder.ToString());
 
 Prompt template and Kernel arguments:
 
-```csharp
+```csharp {"id":"01J6KP4N17G0T9YWX9F00WC0TX"}
 var kernel = Kernel.CreateBuilder()
     .AddOpenAIChatCompletion("model-id", "api-key")
     .Build();
@@ -143,12 +142,54 @@ var result = await kernel.InvokePromptAsync("{{budgetByYear}} What is my budget 
 This approach is similar to Option 1, but data search step is part of prompt rendering process. Following list contains possible plugins to use for data search:
 
 - [ChatGPT Retrieval Plugin](https://github.com/openai/chatgpt-retrieval-plugin) - this plugin should be hosted as a separate service. It has integration with various [vector databases](https://github.com/openai/chatgpt-retrieval-plugin?tab=readme-ov-file#choosing-a-vector-database).
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 - [SemanticKernel.Plugins.Memory.TextMemoryPlugin](https://www.nuget.org/packages/Microsoft.SemanticKernel.Plugins.Memory) - Semantic Kernel solution, which supports various [vector databases](https://learn.microsoft.com/en-us/semantic-kernel/memories/vector-db#available-connectors-to-vector-databases).
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+- [SemanticKernel.Plugins.Memory.TextMemoryPlugin](https://www.nuget.org/packages/Microsoft.SemanticKernel.Plugins.Memory) - Semantic Kernel solution, which supports various [vector databases](https://learn.microsoft.com/en-us/semantic-kernel/memories/vector-db#available-connectors-to-vector-databases).
+=======
+- [SemanticKernel.Plugins.Memory.TextMemoryPlugin](https://www.nuget.org/packages/Microsoft.SemanticKernel.Plugins.Memory) - Semantic Kernel solution, which supports various vector databases.
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+- [SemanticKernel.Plugins.Memory.TextMemoryPlugin](https://www.nuget.org/packages/Microsoft.SemanticKernel.Plugins.Memory) - Semantic Kernel solution, which supports various vector databases.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 - Custom user plugin.
 
 ChatGPT Retrieval Plugin:
 
-```csharp
+```csharp {"id":"01J6KP4N17G0T9YWX9F107XTNX"}
 var kernel = Kernel.CreateBuilder()
     .AddOpenAIChatCompletion("model-id", "api-key")
     .Build();
@@ -174,7 +215,7 @@ var result = await kernel.InvokePromptAsync(Prompt, arguments);
 
 TextMemoryPlugin:
 
-```csharp
+```csharp {"id":"01J6KP4N17G0T9YWX9F4AC1W76"}
 var kernel = Kernel.CreateBuilder()
     .AddOpenAIChatCompletion("model-id", "api-key")
     .Build();
@@ -194,7 +235,7 @@ var result = await kernel.InvokePromptAsync("{{recall 'Company budget by year'}}
 
 Custom user plugin:
 
-```csharp
+```csharp {"id":"01J6KP4N17G0T9YWX9F6H0QETG"}
 public class MyDataPlugin
 {
     [KernelFunction("search")]
@@ -224,7 +265,7 @@ This option is similar to Option 1, but prompt concatenation will happen on Prom
 
 Prompt filter:
 
-```csharp
+```csharp {"id":"01J6KP4N17G0T9YWX9FA0HC641"}
 public sealed class MyPromptFilter : IPromptFilter
 {
     public void OnPromptRendering(PromptRenderingContext context)
@@ -248,7 +289,7 @@ public sealed class MyPromptFilter : IPromptFilter
 
 Usage:
 
-```csharp
+```csharp {"id":"01J6KP4N17G0T9YWX9FBNXF9DM"}
 var kernel = Kernel.CreateBuilder()
     .AddOpenAIChatCompletion("model-id", "api-key")
     .Build();
@@ -268,7 +309,7 @@ This proposal is another possible way how to implement RAG pattern in SK, on top
 
 User code will look like this:
 
-```csharp
+```csharp {"id":"01J6KP4N17G0T9YWX9FCME0V2K"}
 var kernel = Kernel.CreateBuilder()
     .AddOpenAIChatCompletion("model-id", "api-key")
     .Build();

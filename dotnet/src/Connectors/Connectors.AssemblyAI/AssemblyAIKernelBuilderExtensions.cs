@@ -25,9 +25,9 @@ public static class AssemblyAIKernelBuilderExtensions
     public static IKernelBuilder AddAssemblyAIAudioToText(
         this IKernelBuilder builder,
         string apiKey,
-        Uri? endpoint = null,
-        string? serviceId = null,
-        HttpClient? httpClient = null
+        Uri endpoint,
+        string serviceId,
+        HttpClient httpClient
     )
     {
         Verify.NotNull(builder);

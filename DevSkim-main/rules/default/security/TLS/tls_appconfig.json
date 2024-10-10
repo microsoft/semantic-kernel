@@ -1,0 +1,55 @@
+[
+    {
+        "name": ".NET - Hard-coded SSL/TLS Protocol",
+        "id": "DS112838",
+        "description": ".NET - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "applies_to": [
+            ".config"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS112835.md",
+        "patterns": [
+            {
+                "pattern": "Switch.System.Net.DontEnableSchUseStrongCrypto",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocol",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "Switch.System.Net.DontEnableSystemDefaultTlsVersions",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "Switch.System.ServiceModel.DontEnableSystemDefaultTlsVersions",
+                "type": "substring",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "  <AppContextSwitchOverrides value=\"Switch.System.Net.DontEnableSchUseStrongCrypto=true\"/>",
+            "  <AppContextSwitchOverrides value=\"Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols=true\"/>",
+            "  <AppContextSwitchOverrides value=\",Switch.System.Net.DontEnableSystemDefaultTlsVersions=true\"/>",
+            "  <AppContextSwitchOverrides value=\",Switch.System.ServiceModel.DontEnableSystemDefaultTlsVersions=true\"/>"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

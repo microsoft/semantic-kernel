@@ -4,9 +4,14 @@
 
 To run the LLM prompts and semantic functions in the examples below, make sure
 you have an
+<<<<<<< HEAD
+[OpenAI API Key](https://platform.openai.com) or
+[Azure OpenAI Service Key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api).
+=======
 
 - [Azure OpenAI Service Key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api) or
 - [OpenAI API Key](https://platform.openai.com).
+>>>>>>> origin/111
 
 ## Nuget package
 

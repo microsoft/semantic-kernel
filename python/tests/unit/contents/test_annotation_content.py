@@ -11,7 +11,10 @@ test_cases = [
     pytest.param(AnnotationContent(quote="This is a quote."), id="quote"),
     pytest.param(AnnotationContent(start_index=5, end_index=20), id="indices"),
     pytest.param(
-        AnnotationContent(file_id="12345", quote="This is a quote.", start_index=5, end_index=20), id="all_fields"
+        AnnotationContent(
+            file_id="12345", quote="This is a quote.", start_index=5, end_index=20
+        ),
+        id="all_fields",
     ),
 ]
 
@@ -41,7 +44,9 @@ def test_create_indices():
 
 
 def test_create_all_fields():
-    annotation = AnnotationContent(file_id="12345", quote="This is a quote.", start_index=5, end_index=20)
+    annotation = AnnotationContent(
+        file_id="12345", quote="This is a quote.", start_index=5, end_index=20
+    )
     assert annotation.file_id == "12345"
     assert annotation.quote == "This is a quote."
     assert annotation.start_index == 5
@@ -69,12 +74,19 @@ def test_update_indices():
 
 
 def test_to_str():
-    annotation = AnnotationContent(file_id="12345", quote="This is a quote.", start_index=5, end_index=20)
-    assert str(annotation) == "AnnotationContent(file_id=12345, quote=This is a quote., start_index=5, end_index=20)"
+    annotation = AnnotationContent(
+        file_id="12345", quote="This is a quote.", start_index=5, end_index=20
+    )
+    assert (
+        str(annotation)
+        == "AnnotationContent(file_id=12345, quote=This is a quote., start_index=5, end_index=20)"
+    )
 
 
 def test_to_element():
-    annotation = AnnotationContent(file_id="12345", quote="This is a quote.", start_index=5, end_index=20)
+    annotation = AnnotationContent(
+        file_id="12345", quote="This is a quote.", start_index=5, end_index=20
+    )
     element = annotation.to_element()
     assert element.tag == "annotation"
     assert element.get("file_id") == "12345"
@@ -97,12 +109,12 @@ def test_from_element():
 
 
 def test_to_dict():
-    annotation = AnnotationContent(file_id="12345", quote="This is a quote.", start_index=5, end_index=20)
+    annotation = AnnotationContent(
+        file_id="12345", quote="This is a quote.", start_index=5, end_index=20
+    )
     assert annotation.to_dict() == {
-        "file_id": "12345",
-        "quote": "This is a quote.",
-        "start_index": 5,
-        "end_index": 20,
+        "type": "text",
+        "text": f"{annotation.file_id} {annotation.quote} (Start Index={annotation.start_index}->End Index={annotation.end_index})",  # noqa: E501
     }
 
 
@@ -116,9 +128,7 @@ def test_element_roundtrip(annotation):
 @pytest.mark.parametrize("annotation", test_cases)
 def test_to_dict_call(annotation):
     expected_dict = {
-        "file_id": annotation.file_id,
-        "quote": annotation.quote,
-        "start_index": annotation.start_index,
-        "end_index": annotation.end_index,
+        "type": "text",
+        "text": f"{annotation.file_id} {annotation.quote} (Start Index={annotation.start_index}->End Index={annotation.end_index})",  # noqa: E501
     }
     assert annotation.to_dict() == expected_dict

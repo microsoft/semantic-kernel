@@ -4,27 +4,27 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelException
 
 
 class ContentException(KernelException):
-    pass
+    """Base class for all content exceptions."""
 
 
 class ContentInitializationError(ContentException):
-    pass
+    """An error occurred while initializing the content."""
 
 
 class ContentSerializationError(ContentException):
-    pass
+    """An error occurred while serializing the content."""
 
 
 class ContentAdditionException(ContentException):
-    pass
+    """An error occurred while adding content."""
 
 
 class FunctionCallInvalidNameException(ContentException):
-    pass
+    """An error occurred while validating the function name."""
 
 
 class FunctionCallInvalidArgumentsException(ContentException):
-    pass
+    """An error occurred while validating the function arguments."""
 
 
 __all__ = [

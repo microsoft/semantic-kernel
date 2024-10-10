@@ -5,15 +5,26 @@ from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.filters.kernel_filters_extension import _rebuild_function_invocation_context
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
+    OpenAIChatCompletion,
+)
+from semantic_kernel.exceptions import (
+    FunctionExecutionException,
+    FunctionInitializationError,
+)
+from semantic_kernel.filters.functions.function_invocation_context import (
+    FunctionInvocationContext,
+)
+from semantic_kernel.filters.kernel_filters_extension import (
+    _rebuild_function_invocation_context,
+)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_function_from_method import (
+    KernelFunctionFromMethod,
+)
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -53,12 +64,16 @@ def get_custom_type_function_nonpydantic():
 
 def test_init_native_function_with_input_description():
     @kernel_function(description="Mock description", name="mock_function")
-    def mock_function(input: Annotated[str, "input"], arguments: "KernelArguments") -> None:
+    def mock_function(
+        input: Annotated[str, "input"], arguments: "KernelArguments"
+    ) -> None:
         pass
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_method(method=mock_method, plugin_name="MockPlugin")
+    native_function = KernelFunction.from_method(
+        method=mock_method, plugin_name="MockPlugin"
+    )
 
     assert native_function.method == mock_method
     assert native_function.parameters[0].name == "input"
@@ -92,7 +107,9 @@ def test_init_native_function_without_input_description():
 
     mock_method = mock_function
 
-    native_function = KernelFunction.from_method(method=mock_method, plugin_name="MockPlugin")
+    native_function = KernelFunction.from_method(
+        method=mock_method, plugin_name="MockPlugin"
+    )
 
     assert native_function.method == mock_method
     assert native_function.parameters[0].name == "arguments"
@@ -107,14 +124,18 @@ def test_init_native_function_from_kernel_function_decorator():
         description="Test description",
         name="test_function",
     )
-    def decorated_function(input: Annotated[str | None, "Test input description"] = "test_default_value") -> None:
+    def decorated_function(
+        input: Annotated[str | None, "Test input description"] = "test_default_value"
+    ) -> None:
         pass
 
     assert decorated_function.__kernel_function__ is True
     assert decorated_function.__kernel_function_description__ == "Test description"
     assert decorated_function.__kernel_function_name__ == "test_function"
 
-    native_function = KernelFunction.from_method(method=decorated_function, plugin_name="MockPlugin")
+    native_function = KernelFunction.from_method(
+        method=decorated_function, plugin_name="MockPlugin"
+    )
 
     assert native_function.method == decorated_function
     assert native_function.parameters[0].name == "input"
@@ -134,7 +155,9 @@ def test_init_native_function_from_kernel_function_decorator_defaults():
     assert decorated_function.__kernel_function_description__ is None
     assert decorated_function.__kernel_function_name__ == "decorated_function"
 
-    native_function = KernelFunction.from_method(method=decorated_function, plugin_name="MockPlugin")
+    native_function = KernelFunction.from_method(
+        method=decorated_function, plugin_name="MockPlugin"
+    )
 
     assert native_function.method == decorated_function
     assert len(native_function.parameters) == 0
@@ -168,7 +191,9 @@ async def test_invoke_non_async(kernel: Kernel):
     def non_async_function() -> str:
         return ""
 
-    native_function = KernelFunction.from_method(method=non_async_function, plugin_name="MockPlugin")
+    native_function = KernelFunction.from_method(
+        method=non_async_function, plugin_name="MockPlugin"
+    )
 
     result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == ""
@@ -184,7 +209,9 @@ async def test_invoke_async(kernel: Kernel):
     async def async_function() -> str:
         return ""
 
-    native_function = KernelFunction.from_method(method=async_function, plugin_name="MockPlugin")
+    native_function = KernelFunction.from_method(
+        method=async_function, plugin_name="MockPlugin"
+    )
 
     result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == ""
@@ -200,12 +227,16 @@ async def test_invoke_gen(kernel: Kernel):
     def gen_function() -> Iterable[str]:
         yield ""
 
-    native_function = KernelFunction.from_method(method=gen_function, plugin_name="MockPlugin")
+    native_function = KernelFunction.from_method(
+        method=gen_function, plugin_name="MockPlugin"
+    )
 
     result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == [""]
 
-    async for partial_result in native_function.invoke_stream(kernel=kernel, arguments=None):
+    async for partial_result in native_function.invoke_stream(
+        kernel=kernel, arguments=None
+    ):
         assert partial_result == ""
 
 
@@ -215,12 +246,16 @@ async def test_invoke_gen_async(kernel: Kernel):
     async def async_gen_function() -> AsyncGenerator[str, Any]:
         yield ""
 
-    native_function = KernelFunction.from_method(method=async_gen_function, plugin_name="MockPlugin")
+    native_function = KernelFunction.from_method(
+        method=async_gen_function, plugin_name="MockPlugin"
+    )
 
     result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == [""]
 
-    async for partial_result in native_function.invoke_stream(kernel=kernel, arguments=None):
+    async for partial_result in native_function.invoke_stream(
+        kernel=kernel, arguments=None
+    ):
         assert partial_result == ""
 
 
@@ -318,13 +353,17 @@ async def test_service_execution_with_complex_object_from_str_mixed(kernel: Kern
 
     func = KernelFunction.from_method(my_function, "test")
 
-    arguments = KernelArguments(input_obj={"arg1": "test", "arg2": 5}, input_str="test2")
+    arguments = KernelArguments(
+        input_obj={"arg1": "test", "arg2": 5}, input_str="test2"
+    )
     result = await func.invoke(kernel, arguments)
     assert result.value == "test test2 5"
 
 
 @pytest.mark.asyncio
-async def test_service_execution_with_complex_object_from_str_mixed_multi(kernel: Kernel):
+async def test_service_execution_with_complex_object_from_str_mixed_multi(
+    kernel: Kernel,
+):
     @kernel_function(name="function")
     def my_function(input_obj: InputObject, input_str: str | int) -> str:
         assert input_obj is not None
@@ -335,13 +374,17 @@ async def test_service_execution_with_complex_object_from_str_mixed_multi(kernel
 
     func = KernelFunction.from_method(my_function, "test")
 
-    arguments = KernelArguments(input_obj={"arg1": "test", "arg2": 5}, input_str="test2")
+    arguments = KernelArguments(
+        input_obj={"arg1": "test", "arg2": 5}, input_str="test2"
+    )
     result = await func.invoke(kernel, arguments)
     assert result.value == "test test2 5"
 
 
 def test_function_from_lambda():
-    func = KernelFunctionFromMethod(method=kernel_function(lambda x: x**2, name="square"), plugin_name="math")
+    func = KernelFunctionFromMethod(
+        method=kernel_function(lambda x: x**2, name="square"), plugin_name="math"
+    )
     assert func is not None
 
 
@@ -359,7 +402,10 @@ async def test_function_invoke_return_list_type(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_function_invocation_filters(kernel: Kernel):
-    func = KernelFunctionFromMethod(method=kernel_function(lambda input: input**2, name="square"), plugin_name="math")
+    func = KernelFunctionFromMethod(
+        method=kernel_function(lambda input: input**2, name="square"),
+        plugin_name="math",
+    )
     kernel.add_function(plugin_name="math", function=func)
 
     pre_call_count = 0
@@ -373,7 +419,9 @@ async def test_function_invocation_filters(kernel: Kernel):
         post_call_count += 1
 
     kernel.add_filter("function_invocation", custom_filter)
-    result = await kernel.invoke(plugin_name="math", function_name="square", arguments=KernelArguments(input=2))
+    result = await kernel.invoke(
+        plugin_name="math", function_name="square", arguments=KernelArguments(input=2)
+    )
     assert result.value == 4
     assert pre_call_count == 1
     assert post_call_count == 1
@@ -405,7 +453,9 @@ async def test_function_invocation_multiple_filters(kernel: Kernel):
 
     kernel.add_filter("function_invocation", custom_filter1)
     kernel.add_filter("function_invocation", custom_filter2)
-    result = await kernel.invoke(plugin_name="math", function_name="square", arguments=KernelArguments(input=2))
+    result = await kernel.invoke(
+        plugin_name="math", function_name="square", arguments=KernelArguments(input=2)
+    )
     assert result.value == 4
     assert call_stack == [
         "custom_filter1_pre",
@@ -442,7 +492,9 @@ async def test_function_invocation_filters_streaming(kernel: Kernel):
                 yield partial * 2
 
         stream = context.result.value
-        context.result = FunctionResult(function=context.result.function, value=override_stream(stream))
+        context.result = FunctionResult(
+            function=context.result.function, value=override_stream(stream)
+        )
         call_stack.append("custom_filter_post")
 
     kernel.add_filter("function_invocation", custom_filter)
@@ -468,7 +520,9 @@ async def test_default_handling(kernel: Kernel):
     def func_default(input: str = "test"):
         return input
 
-    func = kernel.add_function(plugin_name="test", function_name="func_default", function=func_default)
+    func = kernel.add_function(
+        plugin_name="test", function_name="func_default", function=func_default
+    )
 
     res = await kernel.invoke(func)
     assert str(res) == "test"
@@ -480,7 +534,9 @@ async def test_default_handling_2(kernel: Kernel):
     def func_default(base: str, input: str = "test"):
         return input
 
-    func = kernel.add_function(plugin_name="test", function_name="func_default", function=func_default)
+    func = kernel.add_function(
+        plugin_name="test", function_name="func_default", function=func_default
+    )
 
     res = await kernel.invoke(func, base="base")
     assert str(res) == "test"
@@ -517,14 +573,18 @@ def test_parse_non_list_raises_exception(get_custom_type_function_pydantic):
 def test_parse_invalid_dict_raises_exception(get_custom_type_function_pydantic):
     func = get_custom_type_function_pydantic
     value = {"id": "1"}
-    with pytest.raises(FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"):
+    with pytest.raises(
+        FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"
+    ):
         func._parse_parameter(value, CustomType)
 
 
 def test_parse_invalid_value_raises_exception(get_custom_type_function_pydantic):
     func = get_custom_type_function_pydantic
     value = "invalid_value"
-    with pytest.raises(FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"):
+    with pytest.raises(
+        FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"
+    ):
         func._parse_parameter(value, CustomType)
 
 
@@ -532,7 +592,9 @@ def test_parse_invalid_list_raises_exception(get_custom_type_function_pydantic):
     func = get_custom_type_function_pydantic
     param_type = list[CustomType]
     value = ["invalid_value"]
-    with pytest.raises(FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"):
+    with pytest.raises(
+        FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"
+    ):
         func._parse_parameter(value, param_type)
 
 
@@ -548,15 +610,24 @@ def test_parse_dict_with_init_non_pydantic(get_custom_type_function_nonpydantic)
 def test_parse_invalid_dict_raises_exception_new(get_custom_type_function_nonpydantic):
     func = get_custom_type_function_nonpydantic
     value = {"wrong_key": "3", "name": "Alice"}
-    with pytest.raises(FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"):
+    with pytest.raises(
+        FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"
+    ):
         func._parse_parameter(value, CustomTypeNonPydantic)
 
 
-def test_gather_function_parameters_exception_handling(get_custom_type_function_pydantic):
+def test_gather_function_parameters_exception_handling(
+    get_custom_type_function_pydantic,
+):
     kernel = Mock(spec=Kernel)  # Mock kernel
     func = get_custom_type_function_pydantic
     _rebuild_function_invocation_context()
-    context = FunctionInvocationContext(kernel=kernel, function=func, arguments=KernelArguments(param="test"))
+    context = FunctionInvocationContext(
+        kernel=kernel, function=func, arguments=KernelArguments(param="test")
+    )
 
-    with pytest.raises(FunctionExecutionException, match=r"Parameter param is expected to be parsed to .* but is not."):
+    with pytest.raises(
+        FunctionExecutionException,
+        match=r"Parameter param is expected to be parsed to .* but is not.",
+    ):
         func.gather_function_parameters(context)

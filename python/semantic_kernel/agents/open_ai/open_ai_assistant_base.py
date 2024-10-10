@@ -3,58 +3,274 @@
 import asyncio
 import json
 import logging
-from collections.abc import AsyncIterable
+from collections.abc import AsyncIterable, Iterable
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+from dataclasses import dataclass
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+from dataclasses import dataclass
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+from dataclasses import dataclass
+>>>>>>> main
+>>>>>>> Stashed changes
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from openai import AsyncOpenAI
 from openai.resources.beta.assistants import Assistant
 from openai.resources.beta.threads.messages import Message
 from openai.resources.beta.threads.runs.runs import Run
-from openai.types.beta import AssistantResponseFormat
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
-from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.runs import RunStep
-from openai.types.beta.threads.text_content_block import TextContentBlock
 from pydantic import Field
 
-from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents import Agent
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
+from semantic_kernel.agents.open_ai.assistant_content_generation import (
+    create_chat_message,
+    generate_code_interpreter_content,
+    generate_function_call_content,
+    generate_function_result_content,
+    generate_message_content,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+    generate_streaming_message_content,
+    generate_streaming_tools_content,
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    generate_streaming_message_content,
+    generate_streaming_tools_content,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+    get_function_call_contents,
+    get_message_contents,
+)
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    kernel_function_metadata_to_function_call_format,
+)
 from semantic_kernel.contents.annotation_content import AnnotationContent
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+=======
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+    merge_function_results,
+)
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
-    AgentExecutionError,
+    AgentExecutionException,
     AgentFileNotFoundException,
-    AgentInitializationError,
-    AgentInvokeError,
+    AgentInitializationException,
+    AgentInvokeException,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from openai.types.beta.threads.annotation import Annotation
-    from openai.types.beta.threads.runs.tool_call import ToolCall
-    from openai.types.file_object import FileObject
-
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+@dataclass
+class FunctionActionResult:
+    """Function Action Result."""
+
+    function_call_content: ChatMessageContent | None
+    function_result_content: ChatMessageContent | None
+    tool_outputs: list[dict[str, str]] | None
+
+
+@experimental_class
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 class OpenAIAssistantBase(Agent):
     """OpenAI Assistant Base class.
 
     Manages the interaction with OpenAI Assistants.
     """
 
-    _options_metadata_key: str = "__run_options"
+    _options_metadata_key: ClassVar[str] = "__run_options"
 
     ai_model_id: str
     client: AsyncOpenAI
@@ -63,7 +279,8 @@ class OpenAIAssistantBase(Agent):
     enable_code_interpreter: bool | None = Field(False)
     enable_file_search: bool | None = Field(False)
     enable_json_response: bool | None = Field(False)
-    file_ids: list[str] | None = Field(default_factory=list, max_length=20)
+    code_interpreter_file_ids: list[str] | None = Field(default_factory=list, max_length=20)
+    file_search_file_ids: list[str] | None = Field(default_factory=list, max_length=20)
     temperature: float | None = Field(None)
     top_p: float | None = Field(None)
     vector_store_id: str | None = None
@@ -76,6 +293,8 @@ class OpenAIAssistantBase(Agent):
     allowed_message_roles: ClassVar[list[str]] = [AuthorRole.USER, AuthorRole.ASSISTANT]
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
     error_message_states: ClassVar[list[str]] = ["failed", "canceled", "expired"]
+
+    channel_type: ClassVar[type[AgentChannel]] = OpenAIAssistantChannel
 
     _is_deleted: bool = False
 
@@ -95,7 +314,7 @@ class OpenAIAssistantBase(Agent):
         enable_code_interpreter: bool | None = None,
         enable_file_search: bool | None = None,
         enable_json_response: bool | None = None,
-        file_ids: list[str] | None = [],
+        code_interpreter_file_ids: list[str] | None = [],
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
@@ -109,28 +328,28 @@ class OpenAIAssistantBase(Agent):
         """Initialize an OpenAIAssistant Base.
 
         Args:
-            ai_model_id (str): The AI model id. Defaults to None.
-            client (AsyncOpenAI): The client, either AsyncOpenAI or AsyncAzureOpenAI.
-            service_id (str): The service id.
-            kernel (Kernel): The kernel. (optional)
-            id (str): The id. Defaults to None. (optional)
-            name (str): The name. Defaults to None. (optional)
-            description (str): The description. Defaults to None. (optional)
-            default_headers (dict[str, str]): The default headers. Defaults to None. (optional)
-            instructions (str): The instructions. Defaults to None. (optional)
-            enable_code_interpreter (bool): Enable code interpreter. Defaults to False. (optional)
-            enable_file_search (bool): Enable file search. Defaults to False. (optional)
-            enable_json_response (bool): Enable JSON response. Defaults to False. (optional)
-            file_ids (list[str]): The file ids. Defaults to []. (optional)
-            temperature (float): The temperature. Defaults to None. (optional)
-            top_p (float): The top p. Defaults to None. (optional)
-            vector_store_id (str): The vector store id. Defaults to None. (optional)
-            metadata (dict[str, Any]): The metadata. Defaults to {}. (optional)
-            max_completion_tokens (int): The max completion tokens. Defaults to None. (optional)
-            max_prompt_tokens (int): The max prompt tokens. Defaults to None. (optional)
-            parallel_tool_calls_enabled (bool): Enable parallel tool calls. Defaults to True. (optional)
-            truncation_message_count (int): The truncation message count. Defaults to None. (optional)
-            kwargs (Any): The keyword arguments.
+            ai_model_id: The AI model id. Defaults to None.
+            client: The client, either AsyncOpenAI or AsyncAzureOpenAI.
+            service_id: The service id.
+            kernel: The kernel. (optional)
+            id: The id. Defaults to None. (optional)
+            name: The name. Defaults to None. (optional)
+            description: The description. Defaults to None. (optional)
+            default_headers: The default headers. Defaults to None. (optional)
+            instructions: The instructions. Defaults to None. (optional)
+            enable_code_interpreter: Enable code interpreter. Defaults to False. (optional)
+            enable_file_search: Enable file search. Defaults to False. (optional)
+            enable_json_response: Enable JSON response. Defaults to False. (optional)
+            code_interpreter_file_ids: The file ids. Defaults to []. (optional)
+            temperature: The temperature. Defaults to None. (optional)
+            top_p: The top p. Defaults to None. (optional)
+            vector_store_id: The vector store id. Defaults to None. (optional)
+            metadata: The metadata. Defaults to {}. (optional)
+            max_completion_tokens: The max completion tokens. Defaults to None. (optional)
+            max_prompt_tokens: The max prompt tokens. Defaults to None. (optional)
+            parallel_tool_calls_enabled: Enable parallel tool calls. Defaults to True. (optional)
+            truncation_message_count: The truncation message count. Defaults to None. (optional)
+            kwargs: The keyword arguments.
         """
         args: dict[str, Any] = {}
 
@@ -143,7 +362,7 @@ class OpenAIAssistantBase(Agent):
             "enable_code_interpreter": enable_code_interpreter,
             "enable_file_search": enable_file_search,
             "enable_json_response": enable_json_response,
-            "file_ids": file_ids,
+            "code_interpreter_file_ids": code_interpreter_file_ids,
             "temperature": temperature,
             "top_p": top_p,
             "vector_store_id": vector_store_id,
@@ -172,8 +391,8 @@ class OpenAIAssistantBase(Agent):
         instructions: str | None = None,
         name: str | None = None,
         enable_code_interpreter: bool | None = None,
+        code_interpreter_file_ids: list[str] | None = None,
         enable_file_search: bool | None = None,
-        file_ids: list[str] | None = None,
         vector_store_id: str | None = None,
         metadata: dict[str, str] | None = {},
         **kwargs: Any,
@@ -181,16 +400,16 @@ class OpenAIAssistantBase(Agent):
         """Create the assistant.
 
         Args:
-            ai_model_id (str): The AI model id. Defaults to None. (optional)
-            description (str): The description. Defaults to None. (optional)
-            instructions (str): The instructions. Defaults to None. (optional)
-            name (str): The name. Defaults to None. (optional)
-            enable_code_interpreter (bool): Enable code interpreter. Defaults to None. (optional)
-            enable_file_search (bool): Enable file search. Defaults to None. (optional)
-            file_ids (list[str]): The file ids. Defaults to None. (optional)
-            vector_store_id (str): The vector store id. Defaults to None. (optional)
-            metadata (dict[str, str]): The metadata. Defaults to {}. (optional)
-            kwargs (Any): Extra keyword arguments.
+            ai_model_id: The AI model id. Defaults to None. (optional)
+            description: The description. Defaults to None. (optional)
+            instructions: The instructions. Defaults to None. (optional)
+            name: The name. Defaults to None. (optional)
+            enable_code_interpreter: Enable code interpreter. Defaults to None. (optional)
+            enable_file_search: Enable file search. Defaults to None. (optional)
+            code_interpreter_file_ids: The file ids. Defaults to None. (optional)
+            vector_store_id: The vector store id. Defaults to None. (optional)
+            metadata: The metadata. Defaults to {}. (optional)
+            kwargs: Extra keyword arguments.
 
         Returns:
             Assistant: The assistant
@@ -234,10 +453,10 @@ class OpenAIAssistantBase(Agent):
             create_assistant_kwargs["tools"] = tools
 
         tool_resources = {}
-        if file_ids is not None:
-            tool_resources["code_interpreter"] = {"file_ids": file_ids}
-        elif self.file_ids:
-            tool_resources["code_interpreter"] = {"file_ids": self.file_ids}
+        if code_interpreter_file_ids is not None:
+            tool_resources["code_interpreter"] = {"file_ids": code_interpreter_file_ids}
+        elif self.code_interpreter_file_ids:
+            tool_resources["code_interpreter"] = {"file_ids": self.code_interpreter_file_ids}
 
         if vector_store_id is not None:
             tool_resources["file_search"] = {"vector_store_ids": [vector_store_id]}
@@ -263,17 +482,23 @@ class OpenAIAssistantBase(Agent):
             execution_settings["max_prompt_tokens"] = self.max_prompt_tokens
 
         if self.parallel_tool_calls_enabled:
-            execution_settings["parallel_tool_calls_enabled"] = self.parallel_tool_calls_enabled
+            execution_settings["parallel_tool_calls_enabled"] = (
+                self.parallel_tool_calls_enabled
+            )
 
         if self.truncation_message_count:
-            execution_settings["truncation_message_count"] = self.truncation_message_count
+            execution_settings["truncation_message_count"] = (
+                self.truncation_message_count
+            )
 
         if execution_settings:
             if "metadata" not in create_assistant_kwargs:
                 create_assistant_kwargs["metadata"] = {}
             if self._options_metadata_key not in create_assistant_kwargs["metadata"]:
                 create_assistant_kwargs["metadata"][self._options_metadata_key] = {}
-            create_assistant_kwargs["metadata"][self._options_metadata_key] = json.dumps(execution_settings)
+            create_assistant_kwargs["metadata"][self._options_metadata_key] = (
+                json.dumps(execution_settings)
+            )
 
         self.assistant = await self.client.beta.assistants.create(
             **create_assistant_kwargs,
@@ -284,7 +509,27 @@ class OpenAIAssistantBase(Agent):
 
         return self.assistant
 
-    def _create_open_ai_assistant_definition(self, assistant: "Assistant") -> dict[str, Any]:
+    async def modify_assistant(self, assistant_id: str, **kwargs: Any) -> Assistant:
+        """Modify the assistant.
+
+        Args:
+            assistant_id: The assistant's current ID.
+            kwargs: Extra keyword arguments.
+
+        Returns:
+            Assistant: The modified assistant.
+        """
+        if self.assistant is None:
+            raise AgentInitializationException("The assistant has not been created.")
+
+        modified_assistant = await self.client.beta.assistants.update(assistant_id=assistant_id, **kwargs)
+        self.assistant = modified_assistant
+        return self.assistant
+
+    @classmethod
+    def _create_open_ai_assistant_definition(
+        cls, assistant: "Assistant"
+    ) -> dict[str, Any]:
         """Create an OpenAI Assistant Definition from the provided assistant dictionary.
 
         Args:
@@ -294,11 +539,18 @@ class OpenAIAssistantBase(Agent):
             An OpenAI Assistant Definition.
         """
         execution_settings = {}
-        if isinstance(assistant.metadata, dict) and self._options_metadata_key in assistant.metadata:
-            settings_data = assistant.metadata[self._options_metadata_key]
+        if (
+            isinstance(assistant.metadata, dict)
+            and OpenAIAssistantBase._options_metadata_key in assistant.metadata
+        ):
+            settings_data = assistant.metadata[
+                OpenAIAssistantBase._options_metadata_key
+            ]
             if isinstance(settings_data, str):
                 settings_data = json.loads(settings_data)
-                assistant.metadata[self._options_metadata_key] = settings_data
+                assistant.metadata[OpenAIAssistantBase._options_metadata_key] = (
+                    settings_data
+                )
             execution_settings = {key: value for key, value in settings_data.items()}
 
         file_ids: list[str] = []
@@ -306,22 +558,107 @@ class OpenAIAssistantBase(Agent):
 
         tool_resources = getattr(assistant, "tool_resources", None)
         if tool_resources:
-            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+            if (
+                hasattr(tool_resources, "code_interpreter")
+                and tool_resources.code_interpreter
+            ):
                 file_ids = getattr(tool_resources.code_interpreter, "file_ids", [])
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+                file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
+=======
+            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+                file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+                file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
+            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+                file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+                file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
+            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+                file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
             if hasattr(tool_resources, "file_search") and tool_resources.file_search:
-                vector_store_ids = getattr(tool_resources.file_search, "vector_store_ids", [])
+                vector_store_ids = getattr(
+                    tool_resources.file_search, "vector_store_ids", []
+                )
                 if vector_store_ids:
                     vector_store_id = vector_store_ids[0]
 
         enable_json_response = (
             hasattr(assistant, "response_format")
-            and isinstance(assistant.response_format, AssistantResponseFormat)
-            and assistant.response_format.type == "json_object"
+            and assistant.response_format is not None
+            and getattr(assistant.response_format, "type", "") == "json_object"
         )
 
-        enable_code_interpreter = any(isinstance(tool, CodeInterpreterTool) for tool in assistant.tools)
-        enable_file_search = any(isinstance(tool, FileSearchTool) for tool in assistant.tools)
+        enable_code_interpreter = any(
+            isinstance(tool, CodeInterpreterTool) for tool in assistant.tools
+        )
+        enable_file_search = any(
+            isinstance(tool, FileSearchTool) for tool in assistant.tools
+        )
 
         return {
             "ai_model_id": assistant.model,
@@ -332,7 +669,7 @@ class OpenAIAssistantBase(Agent):
             "enable_code_interpreter": enable_code_interpreter,
             "enable_file_search": enable_file_search,
             "enable_json_response": enable_json_response,
-            "file_ids": file_ids,
+            "code_interpreter_file_ids": file_ids,
             "temperature": assistant.temperature,
             "top_p": assistant.top_p,
             "vector_store_id": vector_store_id if vector_store_id else None,
@@ -352,8 +689,36 @@ class OpenAIAssistantBase(Agent):
             list[dict[str, str]]: The tools.
         """
         if self.assistant is None:
-            raise AgentInitializationError("The assistant has not been created.")
+            raise AgentInitializationException("The assistant has not been created.")
         return self._get_tools()
+
+    # endregion
+
+    # region Agent Channel Methods
+
+    def get_channel_keys(self) -> Iterable[str]:
+        """Get the channel keys.
+
+        Returns:
+            Iterable[str]: The channel keys.
+        """
+        # Distinguish from other channel types.
+        yield f"{OpenAIAssistantBase.__name__}"
+
+        # Distinguish between different agent IDs
+        yield self.id
+
+        # Distinguish between agent names
+        yield self.name
+
+        # Distinguish between different API base URLs
+        yield str(self.client.base_url)
+
+    async def create_channel(self) -> AgentChannel:
+        """Create a channel."""
+        thread_id = await self.create_thread()
+
+        return OpenAIAssistantChannel(client=self.client, thread_id=thread_id)
 
     # endregion
 
@@ -370,10 +735,10 @@ class OpenAIAssistantBase(Agent):
         """Create a thread.
 
         Args:
-            code_interpreter_file_ids (list[str]): The code interpreter file ids. Defaults to []. (optional)
-            messages (list[ChatMessageContent]): The chat messages. Defaults to []. (optional)
-            vector_store_id (str): The vector store id. Defaults to None. (optional)
-            metadata (dict[str, str]): The metadata. Defaults to {}. (optional)
+            code_interpreter_file_ids: The code interpreter file ids. Defaults to an empty list. (optional)
+            messages: The chat messages. Defaults to an empty list. (optional)
+            vector_store_id: The vector store id. Defaults to None. (optional)
+            metadata: The metadata. Defaults to an empty dictionary. (optional)
 
         Returns:
             str: The thread id.
@@ -395,12 +760,14 @@ class OpenAIAssistantBase(Agent):
             messages_to_add = []
             for message in messages:
                 if message.role.value not in self.allowed_message_roles:
-                    raise AgentExecutionError(
+                    raise AgentExecutionException(
                         f"Invalid message role `{message.role.value}`. Allowed roles are {self.allowed_message_roles}."
                     )
-                message_contents = self._get_message_contents(message=message)
+                message_contents = get_message_contents(message=message)
                 for content in message_contents:
-                    messages_to_add.append({"role": message.role.value, "content": content})
+                    messages_to_add.append(
+                        {"role": message.role.value, "content": content}
+                    )
             create_thread_kwargs["messages"] = messages_to_add
 
         if metadata:
@@ -413,7 +780,7 @@ class OpenAIAssistantBase(Agent):
         """Delete a thread.
 
         Args:
-            thread_id (str): The thread id.
+            thread_id: The thread id.
         """
         await self.client.beta.threads.delete(thread_id)
 
@@ -428,7 +795,9 @@ class OpenAIAssistantBase(Agent):
             self._is_deleted = True
         return self._is_deleted
 
-    async def add_file(self, file_path: str, purpose: Literal["assistants", "vision"]) -> str:
+    async def add_file(
+        self, file_path: str, purpose: Literal["assistants", "vision"]
+    ) -> str:
         """Add a file.
 
         Args:
@@ -448,12 +817,84 @@ class OpenAIAssistantBase(Agent):
         except FileNotFoundError as ex:
             raise AgentFileNotFoundException(f"File not found: {file_path}") from ex
 
+    async def add_chat_message(
+        self, thread_id: str, message: ChatMessageContent
+    ) -> "Message":
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+=======
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         """Add a chat message.
 
         Args:
-            thread_id (str): The thread id.
-            message (ChatMessageContent): The chat message.
+            thread_id: The thread id.
+            message: The chat message.
 
         Returns:
             Message: The message.
@@ -467,7 +908,9 @@ class OpenAIAssistantBase(Agent):
         if message.metadata:
             metadata = message.metadata
 
-        message_contents: list[dict[str, Any]] = self._get_message_contents(message=message)
+        message_contents: list[dict[str, Any]] = self._get_message_contents(
+            message=message
+        )
 
         return await self.client.beta.threads.messages.create(
             thread_id=thread_id,
@@ -475,32 +918,249 @@ class OpenAIAssistantBase(Agent):
             content=message_contents,  # type: ignore
             metadata=metadata,
         )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+        return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
+=======
+        return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
+        return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
+        return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
-    async def get_thread_messages(self, thread_id: str) -> AsyncIterable[ChatMessageContent]:
+    async def get_thread_messages(
+        self, thread_id: str
+    ) -> AsyncIterable[ChatMessageContent]:
         """Get the messages for the specified thread.
 
         Args:
-            thread_id (str): The thread id.
+            thread_id: The thread id.
 
         Yields:
             ChatMessageContent: The chat message.
         """
         agent_names: dict[str, Any] = {}
 
-        thread_messages = await self.client.beta.threads.messages.list(thread_id=thread_id, limit=100, order="desc")
+        thread_messages = await self.client.beta.threads.messages.list(
+            thread_id=thread_id, limit=100, order="desc"
+        )
         for message in thread_messages.data:
             assistant_name = None
             if message.assistant_id and message.assistant_id not in agent_names:
                 agent = await self.client.beta.assistants.retrieve(message.assistant_id)
                 if agent.name:
                     agent_names[message.assistant_id] = agent.name
-            assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
+            assistant_name = (
+                agent_names.get(message.assistant_id)
+                if message.assistant_id
+                else message.assistant_id
+            )
             assistant_name = assistant_name or message.assistant_id
 
-            content: ChatMessageContent = self._generate_message_content(str(assistant_name), message)
+            content: ChatMessageContent = self._generate_message_content(
+                str(assistant_name), message
+            )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+=======
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
             if len(content.items) > 0:
                 yield content
+
+    async def add_file(self, file_path: str, purpose: Literal["assistants", "vision"]) -> str:
+        """Add a file for use with the Assistant.
+
+        Args:
+            file_path: The file path.
+            purpose: The purpose. Can be "assistants" or "vision".
+
+        Returns:
+            str: The file id.
+
+        Raises:
+            AgentInitializationError: If the client has not been initialized or the file is not found.
+        """
+        try:
+            with open(file_path, "rb") as file:
+                file = await self.client.files.create(file=file, purpose=purpose)  # type: ignore
+                return file.id  # type: ignore
+        except FileNotFoundError as ex:
+            raise AgentFileNotFoundException(f"File not found: {file_path}") from ex
+
+    async def delete_file(self, file_id: str) -> None:
+        """Delete a file.
+
+        Args:
+            file_id: The file id.
+        """
+        try:
+            await self.client.files.delete(file_id)
+        except Exception as ex:
+            raise AgentExecutionException("Error deleting file.") from ex
+
+    async def create_vector_store(self, file_ids: str | list[str]) -> str:
+        """Create a vector store.
+
+        Args:
+            file_ids: The file ids either as a str of a single file ID or a list of strings of file IDs.
+
+        Returns:
+            The vector store id.
+
+        Raises:
+            AgentExecutionError: If there is an error creating the vector store.
+        """
+        if isinstance(file_ids, str):
+            file_ids = [file_ids]
+        try:
+            vector_store = await self.client.beta.vector_stores.create(file_ids=file_ids)
+            return vector_store.id
+        except Exception as ex:
+            raise AgentExecutionException("Error creating vector store.") from ex
+
+    async def delete_vector_store(self, vector_store_id: str) -> None:
+        """Delete a vector store.
+
+        Args:
+            vector_store_id: The vector store id.
+
+        Raises:
+            AgentExecutionError: If there is an error deleting the vector store.
+        """
+        try:
+            await self.client.beta.vector_stores.delete(vector_store_id)
+        except Exception as ex:
+            raise AgentExecutionException("Error deleting vector store.") from ex
+
+    # endregion
 
     # region Agent Invoke Methods
 
@@ -518,7 +1178,49 @@ class OpenAIAssistantBase(Agent):
         truncation_message_count: int | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
         metadata: dict[str, str] | None = {},
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+        metadata: dict[str, str] | None = {},
+=======
+        metadata: dict[str, str] | None = None,
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        metadata: dict[str, str] | None = None,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat assistant.
@@ -526,19 +1228,19 @@ class OpenAIAssistantBase(Agent):
         The supplied arguments will take precedence over the specified assistant level attributes.
 
         Args:
-            thread_id (str): The thread id.
-            ai_model_id (str): The AI model id. Defaults to None. (optional)
-            enable_code_interpreter (bool): Enable code interpreter. Defaults to False. (optional)
-            enable_file_search (bool): Enable file search. Defaults to False. (optional)
-            enable_json_response (bool): Enable JSON response. Defaults to False. (optional)
-            max_completion_tokens (int): The max completion tokens. Defaults to None. (optional)
-            max_prompt_tokens (int): The max prompt tokens. Defaults to None. (optional)
-            parallel_tool_calls_enabled (bool): Enable parallel tool calls. Defaults to True. (optional)
-            truncation_message_count (int): The truncation message count. Defaults to None. (optional)
-            temperature (float): The temperature. Defaults to None. (optional)
-            top_p (float): The top p. Defaults to None. (optional)
-            metadata (dict[str, str]): The metadata. Defaults to {}. (optional)
-            kwargs (Any): Extra keyword arguments.
+            thread_id: The thread id.
+            ai_model_id: The AI model id. Defaults to None. (optional)
+            enable_code_interpreter: Enable code interpreter. Defaults to False. (optional)
+            enable_file_search: Enable file search. Defaults to False. (optional)
+            enable_json_response: Enable JSON response. Defaults to False. (optional)
+            max_completion_tokens: The max completion tokens. Defaults to None. (optional)
+            max_prompt_tokens: The max prompt tokens. Defaults to None. (optional)
+            parallel_tool_calls_enabled: Enable parallel tool calls. Defaults to True. (optional)
+            truncation_message_count: The truncation message count. Defaults to None. (optional)
+            temperature: The temperature. Defaults to None. (optional)
+            top_p: The top p. Defaults to None. (optional)
+            metadata: The metadata. Defaults to {}. (optional)
+            kwargs: Extra keyword arguments.
 
         Yields:
             ChatMessageContent: The chat message content.
@@ -575,37 +1277,124 @@ class OpenAIAssistantBase(Agent):
         truncation_message_count: int | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
         metadata: dict[str, str] | None = {},
-        kwargs: Any,
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+        metadata: dict[str, str] | None = {},
+=======
+        metadata: dict[str, str] | None = None,
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        metadata: dict[str, str] | None = None,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+        **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Internal invoke method.
 
         The supplied arguments will take precedence over the specified assistant level attributes.
 
         Args:
-            thread_id (str): The thread id.
-            ai_model_id (str): The AI model id. Defaults to None. (optional)
-            enable_code_interpreter (bool): Enable code interpreter. Defaults to False. (optional)
-            enable_file_search (bool): Enable file search. Defaults to False. (optional)
-            enable_json_response (bool): Enable JSON response. Defaults to False. (optional)
-            max_completion_tokens (int): The max completion tokens. Defaults to None. (optional)
-            max_prompt_tokens (int): The max prompt tokens. Defaults to None. (optional)
-            parallel_tool_calls_enabled (bool): Enable parallel tool calls. Defaults to True. (optional)
-            truncation_message_count (int): The truncation message count. Defaults to None. (optional)
-            temperature (float): The temperature. Defaults to None. (optional)
-            top_p (float): The top p. Defaults to None. (optional)
-            metadata (dict[str, str]): The metadata. Defaults to {}. (optional)
-            kwargs (Any): Extra keyword arguments.
+            thread_id: The thread id.
+            ai_model_id: The AI model id. Defaults to None. (optional)
+            enable_code_interpreter: Enable code interpreter. Defaults to False. (optional)
+            enable_file_search: Enable file search. Defaults to False. (optional)
+            enable_json_response: Enable JSON response. Defaults to False. (optional)
+            max_completion_tokens: The max completion tokens. Defaults to None. (optional)
+            max_prompt_tokens: The max prompt tokens. Defaults to None. (optional)
+            parallel_tool_calls_enabled: Enable parallel tool calls. Defaults to True. (optional)
+            truncation_message_count: The truncation message count. Defaults to None. (optional)
+            temperature: The temperature. Defaults to None. (optional)
+            top_p: The top p. Defaults to None. (optional)
+            metadata: The metadata. Defaults to {}. (optional)
+            kwargs: Extra keyword arguments.
 
         Yields:
             tuple[bool, ChatMessageContent]: A tuple of visibility and chat message content.
         """
         if not self.assistant:
-            raise AgentInitializationError("The assistant has not been created.")
+            raise AgentInitializationException("The assistant has not been created.")
 
         if self._is_deleted:
-            raise AgentInitializationError("The assistant has been deleted.")
+            raise AgentInitializationException("The assistant has been deleted.")
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+        if metadata is None:
+            metadata = {}
+
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        if metadata is None:
+            metadata = {}
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         self._check_if_deleted()
         tools = self._get_tools()
 
@@ -642,30 +1431,164 @@ class OpenAIAssistantBase(Agent):
             run = await self._poll_run_status(run=run, thread_id=thread_id)
 
             if run.status in self.error_message_states:
-                raise AgentInvokeError(
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+                raise AgentInvokeException(
                     f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+                raise AgentInvokeException(
+                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                raise AgentInvokeException(
+                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
+=======
+>>>>>>> Stashed changes
+                error_message = ""
+                if run.last_error and run.last_error.message:
+                    error_message = run.last_error.message
+                raise AgentInvokeException(
+                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}` "
+                    f"with error: {error_message}"
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 )
 
             # Check if function calling required
             if run.status == "requires_action":
-                fccs = self._get_function_call_contents(run, function_steps)
+                fccs = get_function_call_contents(run, function_steps)
                 if fccs:
-                    yield False, self._generate_function_call_content(agent_name=self.name, fccs=fccs)
+                    yield False, self._generate_function_call_content(
+                        agent_name=self.name, fccs=fccs
+                    )
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+                    yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+=======
+                    yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+                    yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+                    yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+                    yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+                    yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
                     chat_history = ChatHistory()
-                    _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
+                    _ = await self._invoke_function_calls(
+                        fccs=fccs, chat_history=chat_history
+                    )
 
-                    tool_outputs = self._format_tool_outputs(chat_history)
+                    tool_outputs = self._format_tool_outputs(fccs, chat_history)
                     await self.client.beta.threads.runs.submit_tool_outputs(
                         run_id=run.id,
                         thread_id=thread_id,
                         tool_outputs=tool_outputs,  # type: ignore
                     )
 
-            steps_response = await self.client.beta.threads.runs.steps.list(run_id=run.id, thread_id=thread_id)
+            steps_response = await self.client.beta.threads.runs.steps.list(
+                run_id=run.id, thread_id=thread_id
+            )
             steps: list[RunStep] = steps_response.data
             completed_steps_to_process: list[RunStep] = sorted(
-                [s for s in steps if s.completed_at is not None and s.id not in processed_step_ids],
+                [
+                    s
+                    for s in steps
+                    if s.completed_at is not None and s.id not in processed_step_ids
+                ],
                 key=lambda s: s.created_at,
             )
 
@@ -677,7 +1600,7 @@ class OpenAIAssistantBase(Agent):
                         is_visible = False
                         content: ChatMessageContent | None = None
                         if tool_call.type == "code_interpreter":
-                            content = self._generate_code_interpreter_content(
+                            content = generate_code_interpreter_content(
                                 self.name,
                                 tool_call.code_interpreter.input,  # type: ignore
                             )
@@ -686,7 +1609,85 @@ class OpenAIAssistantBase(Agent):
                             function_step = function_steps.get(tool_call.id)
                             assert function_step is not None  # nosec
                             content = self._generate_function_result_content(
+                                agent_name=self.name,
+                                function_step=function_step,
+                                tool_call=tool_call,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+                            content = generate_function_result_content(
                                 agent_name=self.name, function_step=function_step, tool_call=tool_call
+=======
+                            content = generate_function_result_content(
+                                agent_name=self.name, function_step=function_step, tool_call=tool_call
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+                            content = generate_function_result_content(
+                                agent_name=self.name, function_step=function_step, tool_call=tool_call
+                            content = generate_function_result_content(
+                                agent_name=self.name, function_step=function_step, tool_call=tool_call
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+                            content = generate_function_result_content(
+                                agent_name=self.name, function_step=function_step, tool_call=tool_call
+                            content = generate_function_result_content(
+                                agent_name=self.name, function_step=function_step, tool_call=tool_call
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
                             )
 
                         if content:
@@ -698,17 +1699,287 @@ class OpenAIAssistantBase(Agent):
                         message_id=completed_step.step_details.message_creation.message_id,  # type: ignore
                     )
                     if message:
-                        content = self._generate_message_content(self.name, message)
+                        content = generate_message_content(self.name, message)
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                         if len(content.items) > 0:
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+                        if len(content.items) > 0:
+=======
+                        if content and len(content.items) > 0:
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+                        if content and len(content.items) > 0:
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
                             message_count += 1
                             yield True, content
                 processed_step_ids.add(completed_step.id)
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+    async def invoke_stream(
+        self,
+        thread_id: str,
+        *,
+        messages: list[ChatMessageContent] | None = None,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatMessageContent]:
+        """Invoke the chat assistant with streaming."""
+        async for content in self._invoke_internal_stream(
+            thread_id=thread_id,
+            messages=messages,
+            ai_model_id=ai_model_id,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            **kwargs,
+        ):
+            yield content
+
+    async def _invoke_internal_stream(
+        self,
+        thread_id: str,
+        *,
+        messages: list[ChatMessageContent] | None = None,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatMessageContent]:
+        """Internal invoke method with streaming."""
+        if not self.assistant:
+            raise AgentInitializationException("The assistant has not been created.")
+
+        if self._is_deleted:
+            raise AgentInitializationException("The assistant has been deleted.")
+
+        if metadata is None:
+            metadata = {}
+
+        tools = self._get_tools()
+
+        run_options = self._generate_options(
+            ai_model_id=ai_model_id,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            **kwargs,
+        )
+
+        # Filter out None values to avoid passing them as kwargs
+        run_options = {k: v for k, v in run_options.items() if v is not None}
+
+        stream = self.client.beta.threads.runs.stream(
+            assistant_id=self.assistant.id,
+            thread_id=thread_id,
+            instructions=self.assistant.instructions,
+            tools=tools,  # type: ignore
+            **run_options,
+        )
+
+        function_steps: dict[str, FunctionCallContent] = {}
+        active_messages: dict[str, RunStep] = {}
+
+        while True:
+            async with stream as response_stream:
+                async for event in response_stream:
+                    if event.event == "thread.run.created":
+                        run = event.data
+                        logger.info(f"Assistant run created with ID: {run.id}")
+                    elif event.event == "thread.run.in_progress":
+                        run = event.data
+                        logger.info(f"Assistant run in progress with ID: {run.id}")
+                    elif event.event == "thread.message.delta":
+                        content = generate_streaming_message_content(self.name, event.data)
+                        yield content
+                    elif event.event == "thread.run.step.completed":
+                        logger.info(f"Run step completed with ID: {event.data.id}")
+                        if hasattr(event.data.step_details, "message_creation"):
+                            message_id = event.data.step_details.message_creation.message_id
+                            if message_id not in active_messages:
+                                active_messages[message_id] = event.data
+                        elif hasattr(event.data.step_details, "tool_calls"):
+                            tool_content = generate_streaming_tools_content(self.name, event.data.step_details)
+                            if tool_content:
+                                yield tool_content
+                    elif event.event == "thread.run.requires_action":
+                        run = event.data
+                        function_action_result = await self._handle_streaming_requires_action(run, function_steps)
+                        if function_action_result is None:
+                            raise AgentInvokeException(
+                                f"Function call required but no function steps found for agent `{self.name}` "
+                                f"thread: {thread_id}."
+                            )
+                        if function_action_result.function_result_content and messages is not None:
+                            messages.append(function_action_result.function_result_content)
+                        if function_action_result.function_call_content:
+                            if messages is not None:
+                                messages.append(function_action_result.function_call_content)
+                            stream = self.client.beta.threads.runs.submit_tool_outputs_stream(
+                                run_id=run.id,
+                                thread_id=thread_id,
+                                tool_outputs=function_action_result.tool_outputs,  # type: ignore
+                            )
+                            break
+                    elif event.event == "thread.run.completed":
+                        run = event.data
+                        logger.info(f"Run completed with ID: {run.id}")
+                        if len(active_messages) > 0:
+                            for id in active_messages:
+                                step: RunStep = active_messages[id]
+                                message = await self._retrieve_message(
+                                    thread_id=thread_id,
+                                    message_id=id,  # type: ignore
+                                )
+
+                                if message and message.content:
+                                    content = generate_message_content(self.name, message, step)
+                                    if messages is not None:
+                                        messages.append(content)
+                        return
+                    elif event.event == "thread.run.failed":
+                        run = event.data  # type: ignore
+                        error_message = ""
+                        if run.last_error and run.last_error.message:
+                            error_message = run.last_error.message
+                        raise AgentInvokeException(
+                            f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}` "
+                            f"with error: {error_message}"
+                        )
+                else:
+                    # If the inner loop completes without encountering a 'break', exit the outer loop
+                    break
+
+    async def _handle_streaming_requires_action(
+        self, run: Run, function_steps: dict[str, FunctionCallContent]
+    ) -> FunctionActionResult | None:
+        fccs = get_function_call_contents(run, function_steps)
+        if fccs:
+            function_call_content = generate_function_call_content(agent_name=self.name, fccs=fccs)
+
+            chat_history = ChatHistory()
+            _ = await self._invoke_function_calls(fccs=fccs, chat_history=chat_history)
+
+            function_result_content = merge_function_results(chat_history.messages)[0]
+
+            tool_outputs = self._format_tool_outputs(fccs, chat_history)
+            return FunctionActionResult(function_call_content, function_result_content, tool_outputs)
+        return None
+
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     # endregion
 
     # region Content Generation Methods
 
-    def _generate_function_call_content(self, agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
+    def _generate_function_call_content(
+        self, agent_name: str, fccs: list[FunctionCallContent]
+    ) -> ChatMessageContent:
         """Generate function call content."""
         function_call_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.TOOL, name=agent_name)  # type: ignore
 
@@ -731,15 +2002,20 @@ class OpenAIAssistantBase(Agent):
         )
         return function_call_content
 
-    def _generate_code_interpreter_content(self, agent_name: str, code: str) -> ChatMessageContent:
+    def _generate_code_interpreter_content(
+        self, agent_name: str, code: str
+    ) -> ChatMessageContent:
         """Generate code interpreter content."""
         return ChatMessageContent(
             role=AuthorRole.ASSISTANT,
             content=code,
             name=agent_name,
+            metadata={"code": True},
         )
 
-    def _generate_annotation_content(self, annotation: "Annotation") -> AnnotationContent:
+    def _generate_annotation_content(
+        self, annotation: "Annotation"
+    ) -> AnnotationContent:
         """Generate annotation content."""
         file_id = None
         if hasattr(annotation, "file_path"):
@@ -798,18 +2074,22 @@ class OpenAIAssistantBase(Agent):
             "model": merged_options.get("ai_model_id"),
             "top_p": merged_options.get("top_p"),
             # TODO(evmattso): Support `parallel_tool_calls` when it is ready
-            "response_format": "json" if merged_options.get("enable_json_response") else None,
+            "response_format": (
+                "json" if merged_options.get("enable_json_response") else None
+            ),
             "temperature": merged_options.get("temperature"),
-            "truncation_strategy": truncation_message_count if truncation_message_count else None,
+            "truncation_strategy": (
+                truncation_message_count if truncation_message_count else None
+            ),
             "metadata": merged_options.get("metadata", None),
         }
 
     def _merge_options(
         self,
         ai_model_id: str | None = None,
-        enable_code_interpreter: bool | None = False,
-        enable_file_search: bool | None = False,
-        enable_json_response: bool | None = False,
+        enable_code_interpreter: bool | None = None,
+        enable_file_search: bool | None = None,
+        enable_json_response: bool | None = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
@@ -822,23 +2102,41 @@ class OpenAIAssistantBase(Agent):
         """Merge the run-time options with the agent level attribute options."""
         merged_options = {
             "ai_model_id": ai_model_id if ai_model_id is not None else self.ai_model_id,
-            "enable_code_interpreter": enable_code_interpreter
-            if enable_code_interpreter is not None
-            else self.enable_code_interpreter,
-            "enable_file_search": enable_file_search if enable_file_search is not None else self.enable_file_search,
-            "enable_json_response": enable_json_response
-            if enable_json_response is not None
-            else self.enable_json_response,
-            "max_completion_tokens": max_completion_tokens
-            if max_completion_tokens is not None
-            else self.max_completion_tokens,
-            "max_prompt_tokens": max_prompt_tokens if max_prompt_tokens is not None else self.max_prompt_tokens,
-            "parallel_tool_calls_enabled": parallel_tool_calls_enabled
-            if parallel_tool_calls_enabled is not None
-            else self.parallel_tool_calls_enabled,
-            "truncation_message_count": truncation_message_count
-            if truncation_message_count is not None
-            else self.truncation_message_count,
+            "enable_code_interpreter": (
+                enable_code_interpreter
+                if enable_code_interpreter is not None
+                else self.enable_code_interpreter
+            ),
+            "enable_file_search": (
+                enable_file_search
+                if enable_file_search is not None
+                else self.enable_file_search
+            ),
+            "enable_json_response": (
+                enable_json_response
+                if enable_json_response is not None
+                else self.enable_json_response
+            ),
+            "max_completion_tokens": (
+                max_completion_tokens
+                if max_completion_tokens is not None
+                else self.max_completion_tokens
+            ),
+            "max_prompt_tokens": (
+                max_prompt_tokens
+                if max_prompt_tokens is not None
+                else self.max_prompt_tokens
+            ),
+            "parallel_tool_calls_enabled": (
+                parallel_tool_calls_enabled
+                if parallel_tool_calls_enabled is not None
+                else self.parallel_tool_calls_enabled
+            ),
+            "truncation_message_count": (
+                truncation_message_count
+                if truncation_message_count is not None
+                else self.truncation_message_count
+            ),
             "temperature": temperature if temperature is not None else self.temperature,
             "top_p": top_p if top_p is not None else self.top_p,
             "metadata": metadata if metadata is not None else self.metadata,
@@ -849,20 +2147,34 @@ class OpenAIAssistantBase(Agent):
         return merged_options
 
     async def _poll_run_status(self, run: Run, thread_id: str) -> Run:
-        """Poll the run status."""
+        """Poll the run status.
+
+        Args:
+            run: The run.
+            thread_id: The thread id.
+
+        Returns:
+            The run.
+        """
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
 
         count = 0
 
         while True:
             # Reduce polling frequency after a couple attempts
-            await asyncio.sleep(self.polling_options.get_polling_interval(count).total_seconds())
+            await asyncio.sleep(
+                self.polling_options.get_polling_interval(count).total_seconds()
+            )
             count += 1
 
             try:
-                run = await self.client.beta.threads.runs.retrieve(run.id, thread_id=thread_id)
+                run = await self.client.beta.threads.runs.retrieve(
+                    run.id, thread_id=thread_id
+                )
             except Exception as e:
-                logging.warning(f"Failed to retrieve run for run id: `{run.id}` and thread id: `{thread_id}`: {e}")
+                logging.warning(
+                    f"Failed to retrieve run for run id: `{run.id}` and thread id: `{thread_id}`: {e}"
+                )
                 # Retry anyway
 
             if run.status not in self.polling_status:
@@ -871,30 +2183,136 @@ class OpenAIAssistantBase(Agent):
         logger.info(f"Polled run status: {run.status}, {run.id}, threadId: {thread_id}")
         return run
 
-    async def _retrieve_message(self, thread_id: str, message_id: str) -> Message | None:
+    async def _retrieve_message(
+        self, thread_id: str, message_id: str
+    ) -> Message | None:
         """Retrieve a message from a thread."""
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+    async def _retrieve_message(self, thread_id: str, message_id: str) -> Message | None:
+        """Retrieve a message from a thread.
+
+        Args:
+            thread_id: The thread id.
+            message_id: The message id.
+
+        Returns:
+            The message or None.
+        """
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         message: Message | None = None
         count = 0
         max_retries = 3
 
         while count < max_retries:
             try:
-                message = await self.client.beta.threads.messages.retrieve(message_id, thread_id=thread_id)
+                message = await self.client.beta.threads.messages.retrieve(
+                    message_id, thread_id=thread_id
+                )
                 break
             except Exception as ex:
-                logger.error(f"Failed to retrieve message {message_id} from thread {thread_id}: {ex}")
+                logger.error(
+                    f"Failed to retrieve message {message_id} from thread {thread_id}: {ex}"
+                )
                 count += 1
                 if count >= max_retries:
                     logger.error(
                         f"Max retries reached. Unable to retrieve message {message_id} from thread {thread_id}."
                     )
                     break
-                backoff_time: float = self.polling_options.message_synchronization_delay.total_seconds() * (2**count)
+                backoff_time: (
+                    float
+                ) = self.polling_options.message_synchronization_delay.total_seconds() * (
+                    2**count
+                )
                 await asyncio.sleep(backoff_time)
 
         return message
 
-    def _get_message_contents(self, message: ChatMessageContent) -> list[dict[str, Any]]:
+    def _get_message_contents(
+        self, message: ChatMessageContent
+    ) -> list[dict[str, Any]]:
         """Get the message contents."""
         contents: list[dict[str, Any]] = []
         for content in message.items:
@@ -904,7 +2322,9 @@ class OpenAIAssistantBase(Agent):
                 contents.append(content.to_dict())
         return contents
 
-    def _generate_message_content(self, assistant_name: str, message: Message) -> ChatMessageContent:
+    def _generate_message_content(
+        self, assistant_name: str, message: Message
+    ) -> ChatMessageContent:
         """Generate message content."""
         role = AuthorRole(message.role)
 
@@ -932,17 +2352,17 @@ class OpenAIAssistantBase(Agent):
     def _check_if_deleted(self) -> None:
         """Check if the assistant has been deleted."""
         if self._is_deleted:
-            raise AgentInitializationError("The assistant has been deleted.")
+            raise AgentInitializationException("The assistant has been deleted.")
 
     def _get_tools(self) -> list[dict[str, str]]:
         """Get the list of tools for the assistant.
 
         Returns:
-            list[dict[str, str]]: The list of tools.
+            The list of tools.
         """
         tools = []
         if self.assistant is None:
-            raise AgentInitializationError("The assistant has not been created.")
+            raise AgentInitializationException("The assistant has not been created.")
 
         for tool in self.assistant.tools:
             if isinstance(tool, CodeInterpreterTool):
@@ -951,7 +2371,9 @@ class OpenAIAssistantBase(Agent):
                 tools.append({"type": "file_search"})
 
         funcs = self.kernel.get_full_list_of_function_metadata()
-        tools.extend([kernel_function_metadata_to_function_call_format(f) for f in funcs])
+        tools.extend(
+            [kernel_function_metadata_to_function_call_format(f) for f in funcs]
+        )
 
         return tools
 
@@ -969,7 +2391,9 @@ class OpenAIAssistantBase(Agent):
         """
         function_call_contents: list[FunctionCallContent] = []
         required_action = getattr(run, "required_action", None)
-        if not required_action or not getattr(required_action, "submit_tool_outputs", False):
+        if not required_action or not getattr(
+            required_action, "submit_tool_outputs", False
+        ):
             return function_call_contents
         for tool in required_action.submit_tool_outputs.tool_calls:
             fcc = FunctionCallContent(
@@ -982,40 +2406,117 @@ class OpenAIAssistantBase(Agent):
             function_steps[tool.id] = fcc
         return function_call_contents
 
+    async def _invoke_function_calls(
+        self, fccs: list[FunctionCallContent], chat_history: ChatHistory
+    ) -> list[Any]:
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+=======
+    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         """Invoke function calls and store results in chat history.
 
         Args:
-            fccs (List[FunctionCallContent]): The function call contents.
-            chat_history (ChatHistory): The chat history.
+            fccs: The function call contents.
+            chat_history: The chat history.
 
         Returns:
-            List[Any]: The results.
+            The results as a list.
         """
         tasks = [
-            self.kernel.invoke_function_call(function_call=function_call, chat_history=chat_history)
+            self.kernel.invoke_function_call(
+                function_call=function_call, chat_history=chat_history
+            )
             for function_call in fccs
         ]
         return await asyncio.gather(*tasks)
 
-    def _format_tool_outputs(self, chat_history: ChatHistory) -> list[dict[str, str]]:
+    def _format_tool_outputs(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[dict[str, str]]:
         """Format tool outputs from chat history for submission.
 
         Args:
-            chat_history (ChatHistory): The chat history.
+            fccs: The function call contents.
+            chat_history: The chat history.
 
         Returns:
-            list[dict[str, str]]: The formatted tool outputs
+            The formatted tool outputs as a list of dictionaries.
         """
-        tool_outputs = []
-        for tool_call in chat_history.messages[0].items:
-            if isinstance(tool_call, FunctionResultContent):
-                tool_outputs.append(
-                    {
-                        "tool_call_id": tool_call.id,
-                        "output": tool_call.result,
-                    }
-                )
-        return tool_outputs
+        tool_call_lookup = {
+            tool_call.id: tool_call
+            for message in chat_history.messages
+            for tool_call in message.items
+            if isinstance(tool_call, FunctionResultContent)
+        }
+
+        return [
+            {"tool_call_id": fcc.id, "output": str(tool_call_lookup[fcc.id].result)}
+            for fcc in fccs
+            if fcc.id in tool_call_lookup
+        ]
 
     # endregion

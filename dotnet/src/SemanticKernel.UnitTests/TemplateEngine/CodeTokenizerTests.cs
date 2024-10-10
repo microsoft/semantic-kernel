@@ -1,6 +1,52 @@
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Diagnostics;
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
@@ -218,5 +264,58 @@ public class CodeTokenizerTests
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => this._target.Tokenize(template));
         Assert.Equal("A function named argument must contain a name and value separated by a '=' character.", exception.Message);
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+        Assert.Throws<SKException>(() => this._target.Tokenize(template1));
+        Assert.Throws<SKException>(() => this._target.Tokenize(template2));
+    [Theory]
+    [InlineData(@"call 'f\\'xy'")]
+    [InlineData(@"call 'f\\'x")]
+    public void ItThrowsWhenSeparatorsAreMissing(string template)
+    {
+        // Act & Assert
+        Assert.Throws<SKException>(() => this._target.Tokenize(template));
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
     }
 }

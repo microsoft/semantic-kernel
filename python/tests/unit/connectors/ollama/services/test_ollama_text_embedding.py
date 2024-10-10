@@ -1,3 +1,44 @@
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 # Copyright (c) Microsoft. All rights reserved.
 
 from unittest.mock import patch
@@ -6,8 +47,12 @@ import numpy
 import pytest
 from numpy import array
 
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaEmbeddingPromptExecutionSettings
-from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
+    OllamaEmbeddingPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import (
+    OllamaTextEmbedding,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
@@ -60,7 +105,9 @@ async def test_embedding(mock_embedding_client, model_id, prompt):
     )
 
     assert response.all() == array([0.1, 0.2, 0.3]).all()
-    mock_embedding_client.assert_called_once_with(model=model_id, prompt=prompt, options=settings.options)
+    mock_embedding_client.assert_called_once_with(
+        model=model_id, prompt=prompt, options=settings.options
+    )
 
 
 @pytest.mark.asyncio
@@ -81,7 +128,9 @@ async def test_embedding_list_input(mock_embedding_client, model_id, prompt):
     assert type(responses) is numpy.ndarray
     assert all(type(response) is numpy.ndarray for response in responses)
     assert mock_embedding_client.call_count == 2
-    mock_embedding_client.assert_called_with(model=model_id, prompt=prompt, options=settings.options)
+    mock_embedding_client.assert_called_with(
+        model=model_id, prompt=prompt, options=settings.options
+    )
 
 
 @pytest.mark.asyncio
@@ -99,7 +148,9 @@ async def test_raw_embedding(mock_embedding_client, model_id, prompt):
     )
 
     assert response == [[0.1, 0.2, 0.3]]
-    mock_embedding_client.assert_called_once_with(model=model_id, prompt=prompt, options=settings.options)
+    mock_embedding_client.assert_called_once_with(
+        model=model_id, prompt=prompt, options=settings.options
+    )
 
 
 @pytest.mark.asyncio
@@ -118,4 +169,79 @@ async def test_raw_embedding_list_input(mock_embedding_client, model_id, prompt)
 
     assert responses == [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]
     assert mock_embedding_client.call_count == 2
-    mock_embedding_client.assert_called_with(model=model_id, prompt=prompt, options=settings.options)
+    mock_embedding_client.assert_called_with(
+        model=model_id, prompt=prompt, options=settings.options
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+=======
+from unittest.mock import patch
+
+import pytest
+from numpy import array
+
+from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import (
+    OllamaTextEmbedding,
+)
+from tests.unit.connectors.ollama.utils import MockResponse
+
+
+@pytest.mark.asyncio
+@patch("aiohttp.ClientSession.post")
+async def test_embedding(mock_post):
+    mock_post.return_value = MockResponse(response=[0.1, 0.2, 0.3])
+    ollama = OllamaTextEmbedding(ai_model_id="test_model")
+    response = await ollama.generate_embeddings(
+        ["test_prompt"],
+    )
+    assert response.all() == array([0.1, 0.2, 0.3]).all()
+    mock_post.assert_called_once_with(
+        "http://localhost:11434/api/embeddings",
+        json={
+            "model": "test_model",
+            "texts": ["test_prompt"],
+            "options": {},
+        },
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+    )

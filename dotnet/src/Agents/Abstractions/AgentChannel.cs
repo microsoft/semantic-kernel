@@ -19,6 +19,55 @@ public abstract class AgentChannel
     public ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <summary>
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+    /// Responsible for providing the serialized representation of the channel.
+    /// </summary>
+    protected internal abstract string Serialize();
+
+    /// <summary>
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Receive the conversation messages.  Used when joining a conversation and also during each agent interaction..
     /// </summary>
     /// <param name="history">The chat history at the point the channel is created.</param>
@@ -26,13 +75,38 @@ public abstract class AgentChannel
     protected internal abstract Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Reset any persistent state associated with the channel.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <remarks>
+    /// The channel wont' be reused; rather, it will be discarded and a new one created.
+    /// </remarks>
+    protected internal abstract Task ResetAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Perform a discrete incremental interaction between a single <see cref="Agent"/> and <see cref="AgentChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// In the enumeration returned by this method, a message is considered visible if it is intended to be displayed to the user.
+    /// Example of a non-visible message is function-content for functions that are automatically executed.
+    /// </remarks>
     protected internal abstract IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Perform a discrete incremental interaction between a single <see cref="Agent"/> and <see cref="AgentChat"/> with streaming results.
+    /// </summary>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
+    /// <param name="messages">The receiver for the completed messages generated</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of streaming messages.</returns>
+    protected internal abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        Agent agent,
+        IList<ChatMessageContent> messages,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -59,6 +133,10 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// In the enumeration returned by this method, a message is considered visible if it is intended to be displayed to the user.
+    /// Example of a non-visible message is function-content for functions that are automatically executed.
+    /// </remarks>
     protected internal abstract IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         TAgent agent,
         CancellationToken cancellationToken = default);
@@ -74,5 +152,34 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
         }
 
         return this.InvokeAsync((TAgent)agent, cancellationToken);
+    }
+    /// <summary>
+    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
+    /// </summary>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
+    /// <param name="messages">The receiver for the completed messages generated</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// In the enumeration returned by this method, a message is considered visible if it is intended to be displayed to the user.
+    /// Example of a non-visible message is function-content for functions that are automatically executed.
+    /// </remarks>
+    protected internal abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        TAgent agent,
+        IList<ChatMessageContent> messages,
+        CancellationToken cancellationToken = default);
+
+    /// <inheritdoc/>
+    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        Agent agent,
+        IList<ChatMessageContent> messages,
+        CancellationToken cancellationToken = default)
+    {
+        if (agent.GetType() != typeof(TAgent))
+        {
+            throw new KernelException($"Invalid agent channel: {typeof(TAgent).Name}/{agent.GetType().Name}");
+        }
+
+        return this.InvokeStreamingAsync((TAgent)agent, messages, cancellationToken);
     }
 }

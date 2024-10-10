@@ -1,0 +1,30 @@
+[
+    {
+        "name": "COBOL - Hard-coded SSL/TLS Protocol",
+        "id": "DS112851",
+        "description": "COBOL - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "applies_to": [
+            "cobol"
+        ],
+        "overrides": [
+            "DS440000"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "GSK_PROTOCOL_(SSL|TLS)V[123_]+",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://www.ibm.com/support/knowledgecenter/SSLTBW_2.1.0/com.ibm.zos.v2r1.gska100/sssl2env999503.htm"
+            }
+        ]
+    }
+]

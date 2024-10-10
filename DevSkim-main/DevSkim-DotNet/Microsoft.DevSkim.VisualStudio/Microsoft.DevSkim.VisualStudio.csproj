@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{E7A5F71D-137D-4D65-AB27-2ADD1FA6B26B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.DevSkim.VisualStudio</RootNamespace>
+    <AssemblyName>Microsoft.DevSkim.VisualStudio</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <RuntimeIdentifier>win</RuntimeIdentifier>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+    <StartAction>Program</StartAction>
+    <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix Exp</StartArguments>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="DevSkimFixMessageTarget.cs" />
+    <Compile Include="DevSkimLanguageClient.cs" />
+    <Compile Include="DevSkimSuggestedAction.cs" />
+    <Compile Include="Options\GeneralOptionsPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ProcessTracker\IProcessTracker.cs" />
+    <Compile Include="ProcessTracker\IWindowEventsListener.cs" />
+    <Compile Include="ProcessTracker\JobObjectProcessTracker.cs" />
+    <Compile Include="ProcessTracker\NativeMethods.cs" />
+    <Compile Include="ProcessTracker\SafeObjectHandle.cs" />
+    <Compile Include="ProcessTracker\WindowEventArgs.cs" />
+    <Compile Include="ProcessTracker\WindowEventsListener.cs" />
+    <Compile Include="ProcessTracker\WindowsSystemEvents.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Options\OptionsPackage.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SettingsChangedNotifier.cs" />
+    <Compile Include="StaticData.cs" />
+    <Compile Include="SuggestedActionsSourceProvider.cs" />
+    <Compile Include="SuggestionActionsSource.cs" />
+    <Compile Include="VisualStudioSettingsManager.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Content\readme-gallery.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <VSIXSubPath>Content</VSIXSubPath>
+    </None>
+    <None Include="source.extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    <PackageReference Include="Microsoft.VisualStudio.LanguageServer.Client">
+      <Version>17.9.46</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.LanguageServer.Protocol">
+      <Version>17.2.8</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.9.37000" ExcludeAssets="runtime">
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.9.3168">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DevSkim.LanguageProtoInterop\Microsoft.DevSkim.LanguageProtoInterop.csproj">
+      <Project>{774e78f3-b48a-4d01-b70b-9cfb03a55663}</Project>
+      <Name>Microsoft.DevSkim.LanguageProtoInterop</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\devskim-icon-200.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>Content</VSIXSubPath>
+    </Content>
+    <Content Include="Content\devskim-icon-32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>Content</VSIXSubPath>
+    </Content>
+    <Content Include="Content\devskim.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>Content</VSIXSubPath>
+    </Content>
+    <Content Include="Content\License.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>Content</VSIXSubPath>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <!-- Publish the language server binaries for Release -->
+  <Target Name="BuildLanguageServer" BeforeTargets="IncludeLanguageServer" Condition=" '$(Configuration)' == 'Release' ">
+    <Exec Command="dotnet publish -f net8.0 -c Release ..\Microsoft.DevSkim.LanguageServer -r win-x64 --sc -o generatedLanguageServerBinaries" />
+  </Target>
+  <!-- Publish the language server binaries for Debug -->
+  <Target Name="BuildLanguageServerDebug" BeforeTargets="IncludeLanguageServer" Condition=" '$(Configuration)' == 'Debug' ">
+    <Exec Command="dotnet publish -f net8.0 -c Debug ..\Microsoft.DevSkim.LanguageServer -r win-x64 --sc -o generatedLanguageServerBinaries" />
+  </Target>
+  <!-- Include the published language server binaries -->
+  <Target Name="IncludeLanguageServer" BeforeTargets="GetVsixSourceItems">
+    <ItemGroup>
+      <Content Include="generatedLanguageServerBinaries\*.*" Visible="false">
+        <IncludeInVSIX>true</IncludeInVSIX>
+        <VsixSubPath>Server</VsixSubPath>
+      </Content>
+    </ItemGroup>
+  </Target>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

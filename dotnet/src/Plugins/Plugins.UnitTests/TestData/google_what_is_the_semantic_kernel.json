@@ -1,0 +1,326 @@
+{
+  "kind": "customsearch#search",
+  "url": {
+    "type": "application/json",
+    "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&num={count?}&start={startIndex?}&lr={language?}&safe={safe?}&cx={cx?}&sort={sort?}&filter={filter?}&gl={gl?}&cr={cr?}&googlehost={googleHost?}&c2coff={disableCnTwTranslation?}&hq={hq?}&hl={hl?}&siteSearch={siteSearch?}&siteSearchFilter={siteSearchFilter?}&exactTerms={exactTerms?}&excludeTerms={excludeTerms?}&linkSite={linkSite?}&orTerms={orTerms?}&dateRestrict={dateRestrict?}&lowRange={lowRange?}&highRange={highRange?}&searchType={searchType}&fileType={fileType?}&rights={rights?}&imgSize={imgSize?}&imgType={imgType?}&imgColorType={imgColorType?}&imgDominantColor={imgDominantColor?}&alt=json"
+  },
+  "queries": {
+    "request": [
+      {
+        "title": "Google Custom Search - What is the Semantic Kernel?",
+        "totalResults": "16200000",
+        "searchTerms": "What is the Semantic Kernel?",
+        "count": 4,
+        "startIndex": 1,
+        "inputEncoding": "utf8",
+        "outputEncoding": "utf8",
+        "safe": "off",
+        "cx": "1285518abfd4e4677"
+      }
+    ],
+    "nextPage": [
+      {
+        "title": "Google Custom Search - What is the Semantic Kernel?",
+        "totalResults": "16200000",
+        "searchTerms": "What is the Semantic Kernel?",
+        "count": 4,
+        "startIndex": 5,
+        "inputEncoding": "utf8",
+        "outputEncoding": "utf8",
+        "safe": "off",
+        "cx": "1285518abfd4e4677"
+      }
+    ]
+  },
+  "context": {
+    "title": "Semantic Kernel Search"
+  },
+  "searchInformation": {
+    "searchTime": 0.292308,
+    "formattedSearchTime": "0.29",
+    "totalResults": "16200000",
+    "formattedTotalResults": "16,200,000"
+  },
+  "items": [
+    {
+      "kind": "customsearch#result",
+      "title": "Introduction to Semantic Kernel | Microsoft Learn",
+      "htmlTitle": "Introduction to \u003cb\u003eSemantic Kernel\u003c/b\u003e | Microsoft Learn",
+      "link": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
+      "displayLink": "learn.microsoft.com",
+      "snippet": "Jun 24, 2024 ... In this article ... Semantic Kernel is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI ...",
+      "htmlSnippet": "Jun 24, 2024 \u003cb\u003e...\u003c/b\u003e In this article ... \u003cb\u003eSemantic Kernel\u003c/b\u003e is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI&nbsp;...",
+      "formattedUrl": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
+      "htmlFormattedUrl": "https://learn.microsoft.com/en-us/\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e/overview/",
+      "pagemap": {
+        "cse_thumbnail": [
+          {
+            "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTamiYiZkfXbLeih3vADC8SZH3wbbrq_92KFEfjeYjdTxr8-Z0AtOhIt4cS&s",
+            "width": "310",
+            "height": "163"
+          }
+        ],
+        "organization": [
+          {
+            "url": "Learn"
+          }
+        ],
+        "metatags": [
+          {
+            "schema": "Conceptual",
+            "og:image": "https://learn.microsoft.com/en-us/media/open-graph-image.png",
+            "twitter:card": "summary_large_image",
+            "zone_pivot_group_filename:": "zone_pivot_group.json",
+            "ms.author": "sopand",
+            "ms.topic": "reference",
+            "page_type": "conceptual",
+            "document_id": "ab5a8fa9-e6d2-398a-6c79-414a859867ff",
+            "locale": "en-us",
+            "og:description": "Learn about Semantic Kernel",
+            "ms.date": "07/11/2023",
+            "depot_name": "MSDN.semantic-kernel",
+            "ms.service": "semantic-kernel",
+            "github_feedback_content_git_url": "https://github.com/MicrosoftDocs/semantic-kernel-docs/blob/main/semantic-kernel/overview/index.md",
+            "word_count": "301",
+            "twitter:site": "@MicrosoftLearn",
+            "updated_at": "2024-06-24 10:09 PM",
+            "original_content_git_url": "https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/live/semantic-kernel/overview/index.md",
+            "spproducts": "https://authoring-docs-microsoft.poolparty.biz/devrel/60bfc045-f127-4841-9d00-ea35495a5800",
+            "og:type": "website",
+            "og:image:alt": "Microsoft Learn",
+            "git_commit_id": "b37d41a62f74304fcc9c29dc46a0e8b74aa94128",
+            "persistent_id": "f6af6512-70c1-8ec4-41e0-006337a9192c",
+            "author": "sophialagerkranspandey",
+            "og:title": "Introduction to Semantic Kernel",
+            "color-scheme": "light dark",
+            "feedback_system": "None",
+            "site_name": "Docs",
+            "viewport": "width=device-width, initial-scale=1.0",
+            "breadcrumb_path": "/semantic-kernel/breadcrumb/toc.json",
+            "document_version_independent_id": "ab5a8fa9-e6d2-398a-6c79-414a859867ff",
+            "cmproducts": "https://authoring-docs-microsoft.poolparty.biz/devrel/540ac133-a371-4dbb-8f94-28d6cc77a70b",
+            "og:url": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
+            "uhfheaderid": "MSDocsHeader-SemanticKernel",
+            "toc_rel": "../toc.json",
+            "gitcommit": "https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/b37d41a62f74304fcc9c29dc46a0e8b74aa94128/semantic-kernel/overview/index.md"
+          }
+        ],
+        "cse_image": [
+          {
+            "src": "https://learn.microsoft.com/en-us/media/open-graph-image.png"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "customsearch#result",
+      "title": "microsoft/semantic-kernel: Integrate cutting-edge LLM ... - GitHub",
+      "htmlTitle": "microsoft/semantic-kernel: Integrate cutting-edge LLM ... - GitHub",
+      "link": "https://github.com/microsoft/semantic-kernel",
+      "displayLink": "github.com",
+      "snippet": "Overview ... Semantic Kernel is an SDK that integrates Large Language Models (LLMs) like OpenAI, Azure OpenAI, and Hugging Face with conventional programming ...",
+      "htmlSnippet": "Overview ... \u003cb\u003eSemantic Kernel\u003c/b\u003e is an SDK that integrates Large Language Models (LLMs) like OpenAI, Azure OpenAI, and Hugging Face with conventional programming&nbsp;...",
+      "formattedUrl": "https://github.com/microsoft/semantic-kernel",
+      "htmlFormattedUrl": "https://github.com/microsoft/\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e",
+      "pagemap": {
+        "cse_thumbnail": [
+          {
+            "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSseZtVVmU8k00gMWyPHZoqUAu3Z4bnoh-J1hbbuO5NrIu5PKLsZWFudhE&s",
+            "width": "318",
+            "height": "159"
+          }
+        ],
+        "softwaresourcecode": [
+          {
+            "author": "microsoft",
+            "name": "semantic-kernel",
+            "text": "Semantic Kernel Status Python .NET Java Overview Semantic Kernel is an SDK that integrates Large Language Models (LLMs) like OpenAI, Azure OpenAI, and Hugging Face with conventional programming..."
+          }
+        ],
+        "metatags": [
+          {
+            "octolytics-url": "https://collector.github.com/github/collect",
+            "apple-itunes-app": "app-id=1477376905, app-argument=https://github.com/microsoft/semantic-kernel",
+            "og:image": "https://repository-images.githubusercontent.com/607289185/402ae401-d650-438a-bc04-780afb58b560",
+            "twitter:card": "summary_large_image",
+            "theme-color": "#1e2327",
+            "og:site_name": "GitHub",
+            "hovercard-subject-tag": "repository:607289185",
+            "turbo-body-classes": "logged-out env-production page-responsive",
+            "html-safe-nonce": "b9c0c9ebd999aac1bcf365deecbc5349396f463e59568295954f013e33f1e23c",
+            "expected-hostname": "github.com",
+            "og:description": "Integrate cutting-edge LLM technology quickly and easily into your apps - microsoft/semantic-kernel",
+            "browser-errors-url": "https://api.github.com/_private/browser/errors",
+            "octolytics-dimension-user_login": "microsoft",
+            "hostname": "github.com",
+            "twitter:site": "@github",
+            "browser-stats-url": "https://api.github.com/_private/browser/stats",
+            "route-pattern": "/:user_id/:repository",
+            "visitor-payload": "eyJyZWZlcnJlciI6IiIsInJlcXVlc3RfaWQiOiJENTM3OjMwOTRDRToxOEMxNDA1OjIxMTcxMTE6NjZDRDRGMjIiLCJ2aXNpdG9yX2lkIjoiNjkwMjk2OTQwMzc2NDk4NTYzNCIsInJlZ2lvbl9lZGdlIjoiaWFkIiwicmVnaW9uX3JlbmRlciI6ImlhZCJ9",
+            "github-keyboard-shortcuts": "repository,copilot",
+            "octolytics-dimension-repository_id": "607289185",
+            "octolytics-dimension-repository_network_root_nwo": "microsoft/semantic-kernel",
+            "twitter:title": "GitHub - microsoft/semantic-kernel: Integrate cutting-edge LLM technology quickly and easily into your apps",
+            "og:image:alt": "Integrate cutting-edge LLM technology quickly and easily into your apps - microsoft/semantic-kernel",
+            "og:type": "object",
+            "og:title": "GitHub - microsoft/semantic-kernel: Integrate cutting-edge LLM technology quickly and easily into your apps",
+            "visitor-hmac": "e31b6b995ecefbc258605e272f96fc7a0898823ffcae508921dbee0fc13afe5e",
+            "turbo-cache-control": "no-preview",
+            "route-action": "disambiguate",
+            "request-id": "D537:3094CE:18C1405:2117111:66CD4F22",
+            "analytics-location": "/\u003cuser-name\u003e/\u003crepo-name\u003e",
+            "color-scheme": "light dark",
+            "octolytics-dimension-repository_is_fork": "false",
+            "go-import": "github.com/microsoft/semantic-kernel git https://github.com/microsoft/semantic-kernel.git",
+            "twitter:image:src": "https://repository-images.githubusercontent.com/607289185/402ae401-d650-438a-bc04-780afb58b560",
+            "octolytics-dimension-user_id": "6154722",
+            "octolytics-dimension-repository_public": "true",
+            "fb:app_id": "1401488693436528",
+            "octolytics-dimension-repository_network_root_id": "607289185",
+            "octolytics-dimension-repository_nwo": "microsoft/semantic-kernel",
+            "viewport": "width=device-width",
+            "twitter:description": "Integrate cutting-edge LLM technology quickly and easily into your apps - microsoft/semantic-kernel",
+            "route-controller": "files",
+            "current-catalog-service-hash": "f3abb0cc802f3d7b95fc8762b94bdcb13bf39634c40c357301c4aa1d67a256fb",
+            "og:url": "https://github.com/microsoft/semantic-kernel"
+          }
+        ],
+        "cse_image": [
+          {
+            "src": "https://repository-images.githubusercontent.com/607289185/402ae401-d650-438a-bc04-780afb58b560"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "customsearch#result",
+      "title": "Semantic Kernel documentation | Microsoft Learn",
+      "htmlTitle": "\u003cb\u003eSemantic Kernel\u003c/b\u003e documentation | Microsoft Learn",
+      "link": "https://learn.microsoft.com/en-us/semantic-kernel/",
+      "displayLink": "learn.microsoft.com",
+      "snippet": "Semantic Kernel documentation · Getting Started · Quick Start · Concepts · Integrations · Connect with us. Read the Semantic Kernel blog · Get in touch with the ...",
+      "htmlSnippet": "\u003cb\u003eSemantic Kernel\u003c/b\u003e documentation &middot; Getting Started &middot; Quick Start &middot; Concepts &middot; Integrations &middot; Connect with us. Read the \u003cb\u003eSemantic Kernel\u003c/b\u003e blog &middot; Get in touch with the&nbsp;...",
+      "formattedUrl": "https://learn.microsoft.com/en-us/semantic-kernel/",
+      "htmlFormattedUrl": "https://learn.microsoft.com/en-us/\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e/",
+      "pagemap": {
+        "cse_thumbnail": [
+          {
+            "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTamiYiZkfXbLeih3vADC8SZH3wbbrq_92KFEfjeYjdTxr8-Z0AtOhIt4cS&s",
+            "width": "310",
+            "height": "163"
+          }
+        ],
+        "organization": [
+          {
+            "url": "Learn"
+          }
+        ],
+        "metatags": [
+          {
+            "schema": "Hub",
+            "og:image": "https://learn.microsoft.com/en-us/media/open-graph-image.png",
+            "twitter:card": "summary_large_image",
+            "zone_pivot_group_filename:": "zone_pivot_group.json",
+            "ms.author": "sopand",
+            "ms.topic": "hub-page",
+            "page_type": "hub",
+            "document_id": "660680d7-bb95-6f2f-0ba4-ba6dffa05d64",
+            "locale": "en-us",
+            "og:description": "Semantic Kernel documentation.",
+            "ms.date": "02/22/2023",
+            "depot_name": "MSDN.semantic-kernel",
+            "github_feedback_content_git_url": "https://github.com/MicrosoftDocs/semantic-kernel-docs/blob/main/semantic-kernel/index.yml",
+            "twitter:site": "@MicrosoftLearn",
+            "updated_at": "2024-06-24 10:25 PM",
+            "original_content_git_url": "https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/live/semantic-kernel/index.yml",
+            "spproducts": "https://microsoft-devrel.poolparty.biz/DevRelOfferingOntology/3f56b378-07a9-4fa1-afe8-9889fdc77628",
+            "summary": "Learn to build robust, future-proof AI solutions that evolve with technological advancements.",
+            "og:type": "website",
+            "og:image:alt": "Microsoft Learn",
+            "git_commit_id": "dd52275dfaff557cb032e026dbec20c0083b21b3",
+            "persistent_id": "22989e4f-2b42-0f49-eec0-842aac85aec3",
+            "author": "sophialagerkranspandey",
+            "og:title": "Semantic Kernel documentation",
+            "ms.manager": "sopand",
+            "color-scheme": "light dark",
+            "feedback_system": "None",
+            "site_name": "Docs",
+            "viewport": "width=device-width, initial-scale=1.0",
+            "breadcrumb_path": "/semantic-kernel/breadcrumb/toc.json",
+            "document_version_independent_id": "660680d7-bb95-6f2f-0ba4-ba6dffa05d64",
+            "cmproducts": "https://microsoft-devrel.poolparty.biz/DevRelOfferingOntology/c6f99e62-1cf6-4b71-af9b-649b05f80cce",
+            "og:url": "https://learn.microsoft.com/en-us/semantic-kernel/",
+            "uhfheaderid": "MSDocsHeader-SemanticKernel",
+            "gitcommit": "https://github.com/MicrosoftDocs/semantic-kernel-pr/blob/dd52275dfaff557cb032e026dbec20c0083b21b3/semantic-kernel/index.yml"
+          }
+        ],
+        "cse_image": [
+          {
+            "src": "https://learn.microsoft.com/en-us/media/open-graph-image.png"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "customsearch#result",
+      "title": "Semantic Kernel: The New Way to Create Artificial Intelligence ...",
+      "htmlTitle": "\u003cb\u003eSemantic Kernel\u003c/b\u003e: The New Way to Create Artificial Intelligence ...",
+      "link": "https://medium.com/globant/semantic-kernel-the-new-way-to-create-artificial-intelligence-applications-7959d5fc90ca",
+      "displayLink": "medium.com",
+      "snippet": "Dec 19, 2023 ... In this article, we will explore Semantic Kernel, a new Microsoft SDK that simplifies the integration of AI into conventional applications.",
+      "htmlSnippet": "Dec 19, 2023 \u003cb\u003e...\u003c/b\u003e In this article, we will explore \u003cb\u003eSemantic Kernel\u003c/b\u003e, a new Microsoft SDK that simplifies the integration of AI into conventional applications.",
+      "formattedUrl": "https://medium.com/.../semantic-kernel-the-new-way-to-create-artificial-inte...",
+      "htmlFormattedUrl": "https://medium.com/.../\u003cb\u003esemantic\u003c/b\u003e-\u003cb\u003ekernel\u003c/b\u003e-the-new-way-to-create-artificial-inte...",
+      "pagemap": {
+        "cse_thumbnail": [
+          {
+            "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcTrhkz6MKQqQmX6aOzbEBON1eUmABtULLYB_YcSzXUa7cQYPhwUw7KqU&s",
+            "width": "300",
+            "height": "168"
+          }
+        ],
+        "metatags": [
+          {
+            "og:image": "https://miro.medium.com/v2/resize:fit:1200/1*mIL4LXr1PL--Qimm9eNKGg.jpeg",
+            "twitter:app:url:iphone": "medium://p/7959d5fc90ca",
+            "theme-color": "#000000",
+            "article:published_time": "2023-12-19T13:45:33.495Z",
+            "twitter:card": "summary_large_image",
+            "og:site_name": "Medium",
+            "al:android:package": "com.medium.reader",
+            "twitter:label1": "Reading time",
+            "twitter:app:id:iphone": "828256236",
+            "title": "Semantic Kernel: The New Way to Create Artificial Intelligence Applications | by Adolfo | Globant | Medium",
+            "al:ios:url": "medium://p/7959d5fc90ca",
+            "og:description": "In this article, we will explore Semantic Kernel, a new Microsoft SDK that simplifies the integration of AI into conventional applications.",
+            "twitter:creator": "@FitoMAD",
+            "al:ios:app_store_id": "828256236",
+            "twitter:data1": "8 min read",
+            "twitter:site": "@globant",
+            "og:type": "article",
+            "twitter:title": "Semantic Kernel: The New Way to Create Artificial Intelligence Applications",
+            "al:ios:app_name": "Medium",
+            "author": "Adolfo",
+            "og:title": "Semantic Kernel: The New Way to Create Artificial Intelligence Applications",
+            "al:web:url": "https://medium.com/globant/semantic-kernel-the-new-way-to-create-artificial-intelligence-applications-7959d5fc90ca",
+            "article:author": "https://medium.com/@FitoMAD",
+            "twitter:image:src": "https://miro.medium.com/v2/resize:fit:1200/1*mIL4LXr1PL--Qimm9eNKGg.jpeg",
+            "al:android:url": "medium://p/7959d5fc90ca",
+            "referrer": "unsafe-url",
+            "fb:app_id": "542599432471018",
+            "viewport": "width=device-width,minimum-scale=1,initial-scale=1,maximum-scale=1",
+            "twitter:description": "In this article, we will explore Semantic Kernel, a new Microsoft SDK that simplifies the integration of AI into conventional applications.",
+            "og:url": "https://medium.com/globant/semantic-kernel-the-new-way-to-create-artificial-intelligence-applications-7959d5fc90ca",
+            "twitter:app:name:iphone": "Medium",
+            "al:android:app_name": "Medium"
+          }
+        ],
+        "cse_image": [
+          {
+            "src": "https://miro.medium.com/v2/resize:fit:1200/1*mIL4LXr1PL--Qimm9eNKGg.jpeg"
+          }
+        ]
+      }
+    }
+  ]
+}

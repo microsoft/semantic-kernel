@@ -1,0 +1,91 @@
+{
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "type": "completion",
+  "description": "Write an email from the given bullet points",
+  "completion": {
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> origin/main
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+    "max_tokens": 256,
+    "temperature": 0.0,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "default_backends": [
+    "text-davinci-002"
+  ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+  }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+}

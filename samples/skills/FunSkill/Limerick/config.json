@@ -1,0 +1,91 @@
+{
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "description": "Generate a funny limerick about a person",
+  "type": "completion",
+  "completion": {
+=======
+  "description": "Generate a funny limerick about a person",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Generate a funny limerick about a person",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Generate a funny limerick about a person",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Generate a funny limerick about a person",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Generate a funny limerick about a person",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Generate a funny limerick about a person",
+  "default_settings": {
+>>>>>>> origin/main
+=======
+  "description": "Generate a funny limerick about a person",
+  "default_settings": {
+>>>>>>> Stashed changes
+    "max_tokens": 100,
+    "temperature": 0.7,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "default_backends": [
+    "text-davinci-002"
+  ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+  }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+}

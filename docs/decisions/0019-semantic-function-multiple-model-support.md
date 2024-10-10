@@ -1,11 +1,10 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: approved
-contact: markwallace-microsoft
-date: 2023-10-26
-deciders: markwallace-microsoft, SergeyMenshykh, rogerbarreto
 consulted: matthewbolanos, dmytrostruk
-informed:
+contact: markwallace-microsoft
+date: 2023-10-26T00:00:00Z
+deciders: markwallace-microsoft, SergeyMenshykh, rogerbarreto
+informed: null
+status: approved
 ---
 
 # Multiple Model Support for Semantic Functions
@@ -20,11 +19,14 @@ In scope for Semantic Kernel V1.0 is the ability to select AI Service and Model 
 
 1. By service id.
    - A Service id uniquely identifies a registered AI Service and is typically defined in the scope of an application.
-1. By developer defined strategy.
+
+2. By developer defined strategy.
    - A _developer defined strategy_ is a code first approach where a developer provides the logic.
-1. By model id.
+
+3. By model id.
    - A model id uniquely identifies a Large Language Model. Multiple AI service providers can support the same LLM.
-1. By arbitrary AI service attributes
+
+4. By arbitrary AI service attributes
    - E.g. an AI service can define a provider id which uniquely identifies an AI provider e.g. "Azure OpenAI", "OpenAI", "Hugging Face"
 
 **This ADR focuses on items 1 & 2 in the above list. To implement 3 & 4 we need to provide the ability to store `AIService` metadata.**
@@ -44,7 +46,7 @@ _As a developer using the Semantic Kernel I can configure multiple request setti
 The semantic function template configuration allows multiple model request settings to be configured. In this case the developer configures different settings based on the service id that is used to execute the semantic function.
 In the example below the semantic function is executed with "AzureText" using `max_tokens=60` because "AzureText" is the first service id in the list of models configured for the prompt.
 
-```csharp
+```csharp {"id":"01J6KQ2SEJV8PP770JX72A307R"}
 // Configure a Kernel with multiple LLM's
 IKernel kernel = new KernelBuilder()
     .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -77,7 +79,7 @@ result = await kernel.RunAsync(func);
 This works by using the `IAIServiceSelector` interface as the strategy for selecting the AI service and request settings to user when invoking a semantic function.
 The interface is defined as follows:
 
-```csharp
+```csharp {"id":"01J6KQ2SEJV8PP770JX7XDWH2K"}
 public interface IAIServiceSelector
 {
     (T?, AIRequestSettings?) SelectAIService<T>(
@@ -101,7 +103,7 @@ _As a developer using the Semantic Kernel I can provide an implementation which 
 In this case the developer configures different settings based on the service id and provides an AI Service Selector which determines which AI Service will be used when the semantic function is executed.
 In the example below the semantic function is executed with whatever AI Service and AI Request Settings `MyAIServiceSelector` returns e.g. it will be possible to create an AI Service Selector that computes the token count of the rendered prompt and uses that to determine which service to use.
 
-```csharp
+```csharp {"id":"01J6KQ2SEJV8PP770JXAZCG2YB"}
 // Configure a Kernel with multiple LLM's
 IKernel kernel = new KernelBuilder()
     .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -138,7 +140,7 @@ result = await kernel.RunAsync(func, funcVariables);
 
 The following use case is supported. Developers can create a `Kernel`` instance with multiple named AI services. When invoking a semantic function the service id (and optionally request settings to be used) can be specified. The named AI service will be used to execute the prompt.
 
-```csharp
+```csharp {"id":"01J6KQ2SEJV8PP770JXE5BZRBD"}
 var aoai = TestConfiguration.AzureOpenAI;
 var oai = TestConfiguration.OpenAI;
 

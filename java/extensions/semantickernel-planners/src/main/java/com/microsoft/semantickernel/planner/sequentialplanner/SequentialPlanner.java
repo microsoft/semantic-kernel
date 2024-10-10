@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.planner.sequentialplanner;
 
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -8,9 +13,7 @@ import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
 
 /** A planner that uses semantic function to create a sequential plan. */
@@ -128,14 +131,15 @@ public class SequentialPlanner {
                             })
                     .map(
                             planResult -> {
-                                String planResultString = planResult.getResult().trim();
+                                String planResultString = ((String)planResult.getResult()).trim();
 
                                 LOGGER.debug("Plan result: " + planResultString);
 
-                                Plan plan =
-                                        SequentialPlanParser.toPlanFromXml(
-                                                planResultString, goal, context.getSkills());
-                                return plan;
+                                return SequentialPlanParser.toPlanFromXml(
+                                        planResultString,
+                                        goal,
+                                        context.getSkills(),
+                                        config.getAllowMissingFunctions());
                             });
         } catch (Exception e) {
             throw new PlanningException(

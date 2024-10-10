@@ -1,0 +1,73 @@
+[
+    {
+        "name": ".NET - Hard-coded SSL/TLS Protocol",
+        "id": "DS112839",
+        "description": ".NET - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "applies_to": [
+            "csharp",
+            "powershell",
+            "vb",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "SslStream.AuthenticateAsClient",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslStream.AuthenticateAsClientAsync",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "BeginAuthenticateAsClient",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslStream.AuthenticateAsServer",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SslStream.AuthenticateAsServerAsync",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "BeginAuthenticateAsServer",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "SslStream.AuthenticateAsClient()",
+            "SslStream.AuthenticateAsClientAsync()",
+            "BeginAuthenticateAsClient()",
+            "SslStream.AuthenticateAsServer()",
+            "SslStream.AuthenticateAsServerAsync()",
+            "BeginAuthenticateAsServer()"        ],
+        "must-not-match": [
+        ]
+    }
+]

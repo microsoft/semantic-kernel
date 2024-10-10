@@ -4,9 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
-using Azure.AI.OpenAI;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -94,6 +95,7 @@ public abstract class ToolCallBehavior
     /// Options to control tool call result serialization behavior.
     /// </summary>
     [Obsolete("This property is deprecated in favor of Kernel.SerializerOptions that will be introduced in one of the following releases.")]
+    [ExcludeFromCodeCoverage]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public virtual JsonSerializerOptions? ToolCallResultSerializerOptions { get; set; }
 
@@ -118,10 +120,9 @@ public abstract class ToolCallBehavior
     /// <value>true if it's ok to invoke any kernel function requested by the model if it's found; false if a request needs to be validated against an allow list.</value>
     internal virtual bool AllowAnyRequestedKernelFunction => false;
 
-    /// <summary>Configures the <paramref name="options"/> with any tools this <see cref="ToolCallBehavior"/> provides.</summary>
-    /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to provide into the <paramref name="options"/>.</param>
-    /// <param name="options">The destination <see cref="ChatCompletionsOptions"/> to configure.</param>
-    internal abstract void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options);
+    /// <summary>Returns list of available tools and the way model should use them.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to return.</param>
+    internal abstract (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel);
 
     /// <summary>
     /// Represents a <see cref="ToolCallBehavior"/> that will provide to the model all available functions from a
@@ -133,8 +134,11 @@ public abstract class ToolCallBehavior
 
         public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
 
-        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
+        internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
         {
+            ChatToolChoice? choice = null;
+            List<ChatTool>? tools = null;
+
             // If no kernel is provided, we don't have any tools to provide.
             if (kernel is not null)
             {
@@ -142,13 +146,58 @@ public abstract class ToolCallBehavior
                 IList<KernelFunctionMetadata> functions = kernel.Plugins.GetFunctionsMetadata();
                 if (functions.Count > 0)
                 {
-                    options.ToolChoice = ChatCompletionsToolChoice.Auto;
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+                    choice = ChatToolChoice.Auto;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+                    choice = ChatToolChoice.Auto;
+=======
+                    choice = ChatToolChoice.CreateAutoChoice();
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+                    choice = ChatToolChoice.CreateAutoChoice();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+                    tools = [];
                     for (int i = 0; i < functions.Count; i++)
                     {
-                        options.Tools.Add(new ChatCompletionsFunctionToolDefinition(functions[i].ToOpenAIFunction().ToFunctionDefinition()));
+                        tools.Add(functions[i].ToOpenAIFunction().ToFunctionDefinition());
                     }
                 }
             }
+
+            return (tools, choice);
         }
 
         internal override bool AllowAnyRequestedKernelFunction => true;
@@ -160,26 +209,29 @@ public abstract class ToolCallBehavior
     internal sealed class EnabledFunctions : ToolCallBehavior
     {
         private readonly OpenAIFunction[] _openAIFunctions;
-        private readonly ChatCompletionsFunctionToolDefinition[] _functions;
+        private readonly ChatTool[] _functions;
 
         public EnabledFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke) : base(autoInvoke)
         {
             this._openAIFunctions = functions.ToArray();
 
-            var defs = new ChatCompletionsFunctionToolDefinition[this._openAIFunctions.Length];
+            var defs = new ChatTool[this._openAIFunctions.Length];
             for (int i = 0; i < defs.Length; i++)
             {
-                defs[i] = new ChatCompletionsFunctionToolDefinition(this._openAIFunctions[i].ToFunctionDefinition());
+                defs[i] = this._openAIFunctions[i].ToFunctionDefinition();
             }
             this._functions = defs;
         }
 
-        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._functions.Select(f => f.Name))}";
+        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._functions.Select(f => f.FunctionName))}";
 
-        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
+        internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
         {
+            ChatToolChoice? choice = null;
+            List<ChatTool>? tools = null;
+
             OpenAIFunction[] openAIFunctions = this._openAIFunctions;
-            ChatCompletionsFunctionToolDefinition[] functions = this._functions;
+            ChatTool[] functions = this._functions;
             Debug.Assert(openAIFunctions.Length == functions.Length);
 
             if (openAIFunctions.Length > 0)
@@ -196,7 +248,50 @@ public abstract class ToolCallBehavior
                     throw new KernelException($"Auto-invocation with {nameof(EnabledFunctions)} is not supported when no kernel is provided.");
                 }
 
-                options.ToolChoice = ChatCompletionsToolChoice.Auto;
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+                choice = ChatToolChoice.Auto;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+                choice = ChatToolChoice.Auto;
+=======
+                choice = ChatToolChoice.CreateAutoChoice();
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+                choice = ChatToolChoice.CreateAutoChoice();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+                tools = [];
                 for (int i = 0; i < openAIFunctions.Length; i++)
                 {
                     // Make sure that if auto-invocation is specified, every enabled function can be found in the kernel.
@@ -211,9 +306,11 @@ public abstract class ToolCallBehavior
                     }
 
                     // Add the function.
-                    options.Tools.Add(functions[i]);
+                    tools.Add(functions[i]);
                 }
             }
+
+            return (tools, choice);
         }
     }
 
@@ -221,19 +318,61 @@ public abstract class ToolCallBehavior
     internal sealed class RequiredFunction : ToolCallBehavior
     {
         private readonly OpenAIFunction _function;
-        private readonly ChatCompletionsFunctionToolDefinition _tool;
-        private readonly ChatCompletionsToolChoice _choice;
+        private readonly ChatTool _tool;
+        private readonly ChatToolChoice _choice;
 
         public RequiredFunction(OpenAIFunction function, bool autoInvoke) : base(autoInvoke)
         {
             this._function = function;
-            this._tool = new ChatCompletionsFunctionToolDefinition(function.ToFunctionDefinition());
-            this._choice = new ChatCompletionsToolChoice(this._tool);
+            this._tool = function.ToFunctionDefinition();
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+            this._choice = new ChatToolChoice(this._tool);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+            this._choice = new ChatToolChoice(this._tool);
+=======
+            this._choice = ChatToolChoice.CreateFunctionChoice(this._tool.FunctionName);
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            this._choice = ChatToolChoice.CreateFunctionChoice(this._tool.FunctionName);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         }
 
-        public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.Name}";
+        public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.FunctionName}";
 
-        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
+        internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
         {
             bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
 
@@ -253,8 +392,7 @@ public abstract class ToolCallBehavior
                 throw new KernelException($"The specified {nameof(RequiredFunction)} function {this._function.FullyQualifiedName} is not available in the kernel.");
             }
 
-            options.ToolChoice = this._choice;
-            options.Tools.Add(this._tool);
+            return ([this._tool], this._choice);
         }
 
         /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>

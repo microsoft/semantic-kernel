@@ -7,7 +7,31 @@ import typing_extensions as te
 from pydantic import Field, Json
 
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.core_plugins.conversation_summary_plugin import ConversationSummaryPlugin
+from semantic_kernel.core_plugins.conversation_summary_plugin import (
+    ConversationSummaryPlugin,
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+)
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
@@ -20,6 +44,81 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+)
+from semantic_kernel.core_plugins.http_plugin import HttpPlugin
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
+from semantic_kernel.core_plugins.text_plugin import TextPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
+from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+<<<<<<< Updated upstream
+<<<<<<< main
+=======
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+)
+from semantic_kernel.core_plugins.http_plugin import HttpPlugin
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
+from semantic_kernel.core_plugins.text_plugin import TextPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
+from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEnginePlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+<<<<<<< main
+=======
+from semantic_kernel.functions.kernel_plugin_collection import (
+    KernelPluginCollection,
+)
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -31,6 +130,55 @@ from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+
+# from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
+>>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 
 KernelBaseModelFieldT = t.TypeVar("KernelBaseModelFieldT", bound=KernelBaseModel)
 
@@ -54,18 +202,149 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
     def create_kernel_function() -> KernelFunction:
         """Return an KernelFunction."""
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
         @kernel_function(name="function")
         def my_function(arguments: KernelArguments) -> str:
             return f"F({arguments['input']})"
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
+
+        @kernel_function(name="function")
+        def my_function(arguments: KernelArguments) -> str:
+            return f"F({arguments['input']})"
+
+<<<<<<< main
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
         return KernelFunction.from_method(
             plugin_name="plugin",
             method=my_function,
         )
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
     def create_chat_history() -> ChatHistory:
         return ChatHistory()
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+        return KernelFunction.from_native_method(my_function, "plugin")
+
+    def create_chat_history() -> ChatHistory:
+        return ChatHistory()
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> ms/small_fixes
+
+    def create_chat_history() -> ChatHistory:
+        return ChatHistory()
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 
     cls_obj_map = {
         Block: Block(content="foo"),
@@ -80,6 +359,47 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             name="foo",
             description="bar",
             default_value="baz",
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
             type_="string",
             is_required=True,
             schema_data=KernelParameterMetadata.infer_schema(None, "str", "baz", "bar"),
@@ -94,13 +414,79 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
                     description="bar",
                     default_value="baz",
                     type_="str",
-                    schema_data=KernelParameterMetadata.infer_schema(None, "str", "baz", "bar"),
+                    schema_data=KernelParameterMetadata.infer_schema(
+                        None, "str", "baz", "bar"
+                    ),
                 )
             ],
             is_prompt=True,
             is_asynchronous=False,
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
         ),
         ChatHistory: create_chat_history(),
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+        ),
+        ChatHistory: create_chat_history(),
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+        ),
+        ChatHistory: create_chat_history(),
+=======
+            type="string",
+            required=True,
+        ),
+        KernelFunctionMetadata: KernelFunctionMetadata(
+            name="foo",
+            plugin_name="bar",
+            description="baz",
+            parameters=[KernelParameterMetadata(name="qux", description="bar", default_value="baz")],
+            is_prompt=True,
+            is_asynchronous=False,
+        ),
+        ChatHistory: create_chat_history(),
+        KernelPluginCollection: create_plugin_collection(),
+>>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
     }
@@ -113,14 +499,127 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 
 PROTOCOLS = [
-    pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    pytest.param(
+        ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")
+    ),
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+    pytest.param(
+        ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")
+<<<<<<< main
+    ),
     HttpPlugin,
     MathPlugin,
     TextMemoryPlugin,
     TextPlugin,
     TimePlugin,
     WaitPlugin,
+    pytest.param(
+        WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")
+    ),
+=======
+    ),
+=======
+    pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
+>>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+    pytest.param(
+        ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")
+    ),
+=======
+    pytest.param(ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")),
+>>>>>>> ms/small_fixes
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+    HttpPlugin,
+    MathPlugin,
+    TextMemoryPlugin,
+    TextPlugin,
+    TimePlugin,
+    WaitPlugin,
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    pytest.param(
+        WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")
+    ),
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+    pytest.param(
+        WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")
+    ),
+=======
     pytest.param(WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")),
+>>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 ]
 
 BASE_CLASSES = [
@@ -128,6 +627,54 @@ BASE_CLASSES = [
 ]
 
 STATELESS_CLASSES = [
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+    # PromptTemplateEngine,
+>>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
     NullMemory,
 ]
 
@@ -145,6 +692,54 @@ PYDANTIC_MODELS = [
     NamedArgBlock,
     KernelParameterMetadata,
     KernelFunctionMetadata,
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+    KernelPluginCollection,
+>>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
     ChatHistory,
     pytest.param(
         KernelFunction,
@@ -177,7 +772,9 @@ class TestUsageInPydanticFields:
     @pytest.mark.parametrize("kernel_type", PYDANTIC_MODELS + STATELESS_CLASSES)
     def test_usage_as_required_field(
         self,
-        kernel_factory: t.Callable[[t.Type[KernelBaseModelFieldT]], KernelBaseModelFieldT],
+        kernel_factory: t.Callable[
+            [t.Type[KernelBaseModelFieldT]], KernelBaseModelFieldT
+        ],
         kernel_type: t.Type[KernelBaseModelFieldT],
     ) -> None:
         """Semantic Kernel objects should be valid Pydantic fields.
@@ -188,7 +785,9 @@ class TestUsageInPydanticFields:
         class TestModel(KernelBaseModel):
             """A test model."""
 
-            field: kernel_type = Field(default_factory=lambda: kernel_factory(kernel_type))
+            field: kernel_type = Field(
+                default_factory=lambda: kernel_factory(kernel_type)
+            )
 
         assert_serializable(TestModel(), TestModel)
         assert_serializable(TestModel(field=kernel_factory(kernel_type)), TestModel)

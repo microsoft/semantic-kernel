@@ -5,43 +5,43 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelException
 
 
 class ServiceException(KernelException):
-    pass
+    """Base class for all service exceptions."""
 
 
 class ServiceInitializationError(ServiceException):
-    pass
+    """An error occurred while initializing the service."""
 
 
 class ServiceResponseException(ServiceException):
-    pass
+    """Base class for all service response exceptions."""
 
 
 class ServiceInvalidAuthError(ServiceException):
-    pass
+    """An error occurred while authenticating the service."""
 
 
 class ServiceInvalidTypeError(ServiceResponseException):
-    pass
+    """An error occurred while validating the type of the service request."""
 
 
 class ServiceInvalidRequestError(ServiceResponseException):
-    pass
+    """An error occurred while validating the request to the service."""
 
 
 class ServiceInvalidResponseError(ServiceResponseException):
-    pass
+    """An error occurred while validating the response from the service."""
 
 
 class ServiceInvalidExecutionSettingsError(ServiceResponseException):
-    pass
+    """An error occurred while validating the execution settings of the service."""
 
 
 class ServiceContentFilterException(ServiceResponseException):
-    pass
+    """An error was raised by the content filter of the service."""
 
 
 class ServiceResourceNotFoundError(ServiceException):
-    pass
+    """The request service could not be found."""
 
 
 __all__ = [

@@ -5,7 +5,7 @@
 
 import { Event } from 'vscode';
 import * as legacyTypes from '../azure-account.legacy.api';
-import { OSName } from '../cloudConsole/cloudConsole';
+import { OSName } from '../cloudConsole/OS.4';
 import { AzureAccountExtensionApi } from './AzureAccountExtensionApi';
 
 export class AzureAccountExtensionLegacyApi implements legacyTypes.AzureAccount {

@@ -3,7 +3,10 @@
 import asyncio
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
 from semantic_kernel.functions import KernelArguments
@@ -14,7 +17,9 @@ async def example1(kernel: Kernel, search_plugin_name: str):
     print("======== Bing and Google Search Plugins ========")
 
     question = "What's the largest building in the world?"
-    function = kernel.get_function(plugin_name=search_plugin_name, function_name="search")
+    function = kernel.get_function(
+        plugin_name=search_plugin_name, function_name="search"
+    )
     result = await kernel.invoke(function, query=question)
 
     print(question)
@@ -79,7 +84,9 @@ async def example2(kernel: Kernel, service_id: str):
     result = str(answer)
 
     if "bing.search" in result:
-        prompt_template = KernelPromptTemplate(prompt_template_config=PromptTemplateConfig(template=result))
+        prompt_template = KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(template=result)
+        )
 
         print("--- Fetching information from Bing... ---")
         information = await prompt_template.render(kernel, KernelArguments())
@@ -87,7 +94,9 @@ async def example2(kernel: Kernel, service_id: str):
         print("Information found:\n")
         print(information)
 
-        answer = await kernel.invoke(oracle, question=question, externalInformation=information)
+        answer = await kernel.invoke(
+            oracle, question=question, externalInformation=information
+        )
         print("\n---- Oracle's Answer ----:\n")
         print(answer)
     else:

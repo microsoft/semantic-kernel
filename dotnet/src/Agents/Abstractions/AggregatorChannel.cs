@@ -1,6 +1,78 @@
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,11 +85,13 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 {
     private readonly AgentChat _chat = chat;
 
+    /// <inheritdoc/>
     protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default)
     {
         return this._chat.GetChatMessagesAsync(cancellationToken);
     }
 
+    /// <inheritdoc/>
     protected internal override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(AggregatorAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ChatMessageContent? lastMessage = null;
@@ -47,6 +121,37 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         }
     }
 
+    /// <inheritdoc/>
+    protected internal override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AggregatorAgent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        int messageCount = await this._chat.GetChatMessagesAsync(cancellationToken).CountAsync(cancellationToken).ConfigureAwait(false);
+
+        if (agent.Mode == AggregatorMode.Flat)
+        {
+            await foreach (StreamingChatMessageContent message in this._chat.InvokeStreamingAsync(cancellationToken).ConfigureAwait(false))
+            {
+                yield return message;
+            }
+        }
+
+        ChatMessageContent[] history = await this._chat.GetChatMessagesAsync(cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+        if (history.Length > messageCount)
+        {
+            if (agent.Mode == AggregatorMode.Flat)
+            {
+                for (int index = messageCount; index < messages.Count; ++index)
+                {
+                    messages.Add(history[index]);
+                }
+            }
+            else if (agent.Mode == AggregatorMode.Nested)
+            {
+                messages.Add(history[history.Length - 1]);
+            }
+        }
+    }
+
+    /// <inheritdoc/>
     protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // Always receive the initial history from the owning chat.
@@ -54,4 +159,51 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc/>
+    protected internal override Task ResetAsync(CancellationToken cancellationToken = default) =>
+        this._chat.ResetAsync(cancellationToken);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+    protected internal override string Serialize() =>
+        JsonSerializer.Serialize(this._chat.Serialize());
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    protected internal override string Serialize() =>
+        JsonSerializer.Serialize(this._chat.Serialize());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 }

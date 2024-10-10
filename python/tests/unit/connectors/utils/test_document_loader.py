@@ -17,7 +17,11 @@ def http_client():
 
 @pytest.mark.parametrize(
     ("user_agent", "expected_user_agent"),
-    [(None, HTTP_USER_AGENT), (HTTP_USER_AGENT, HTTP_USER_AGENT), ("Custom-Agent", "Custom-Agent")],
+    [
+        (None, HTTP_USER_AGENT),
+        (HTTP_USER_AGENT, HTTP_USER_AGENT),
+        ("Custom-Agent", "Custom-Agent"),
+    ],
 )
 @pytest.mark.asyncio
 async def test_from_uri_success(http_client, user_agent, expected_user_agent):
@@ -33,7 +37,9 @@ async def test_from_uri_success(http_client, user_agent, expected_user_agent):
 
     result = await DocumentLoader.from_uri(url, http_client, None, user_agent)
     assert result == response_text
-    http_client.get.assert_awaited_once_with(url, headers={"User-Agent": expected_user_agent})
+    http_client.get.assert_awaited_once_with(
+        url, headers={"User-Agent": expected_user_agent}
+    )
 
 
 @pytest.mark.asyncio
@@ -50,7 +56,9 @@ async def test_from_uri_default_user_agent(http_client):
 
     result = await DocumentLoader.from_uri(url, http_client, None)
     assert result == response_text
-    http_client.get.assert_awaited_once_with(url, headers={"User-Agent": HTTP_USER_AGENT})
+    http_client.get.assert_awaited_once_with(
+        url, headers={"User-Agent": HTTP_USER_AGENT}
+    )
 
 
 @pytest.mark.asyncio
@@ -70,7 +78,9 @@ async def test_from_uri_with_auth_callback(http_client):
 
     result = await DocumentLoader.from_uri(url, http_client, auth_callback)
     assert result == response_text
-    http_client.get.assert_awaited_once_with(url, headers={"User-Agent": HTTP_USER_AGENT})
+    http_client.get.assert_awaited_once_with(
+        url, headers={"User-Agent": HTTP_USER_AGENT}
+    )
 
 
 @pytest.mark.asyncio
@@ -81,7 +91,9 @@ async def test_from_uri_request_error(http_client):
 
     with pytest.raises(ServiceInvalidRequestError):
         await DocumentLoader.from_uri(url, http_client, None)
-    http_client.get.assert_awaited_once_with(url, headers={"User-Agent": HTTP_USER_AGENT})
+    http_client.get.assert_awaited_once_with(
+        url, headers={"User-Agent": HTTP_USER_AGENT}
+    )
 
 
 @pytest.mark.asyncio
@@ -89,7 +101,9 @@ async def test_from_uri_request_error(http_client):
 async def test_from_uri_http_status_error(mock_get, http_client):
     url = "https://example.com/document"
 
-    mock_get.side_effect = HTTPStatusError("error", request=AsyncMock(), response=AsyncMock(status_code=500))
+    mock_get.side_effect = HTTPStatusError(
+        "error", request=AsyncMock(), response=AsyncMock(status_code=500)
+    )
 
     with pytest.raises(ServiceInvalidRequestError, match="Failed to get document."):
         await DocumentLoader.from_uri(url, http_client, None)
@@ -103,6 +117,9 @@ async def test_from_uri_general_exception(mock_get, http_client):
 
     mock_get.side_effect = Exception("Unexpected error")
 
-    with pytest.raises(ServiceInvalidRequestError, match="An unexpected error occurred while getting the document."):
+    with pytest.raises(
+        ServiceInvalidRequestError,
+        match="An unexpected error occurred while getting the document.",
+    ):
         await DocumentLoader.from_uri(url, http_client, None)
     mock_get.assert_awaited_once_with(url, headers={"User-Agent": HTTP_USER_AGENT})

@@ -38,8 +38,12 @@ chat_function = kernel.add_function(
 
 chat_history = ChatHistory(system_message=system_message)
 chat_history.add_user_message("Hi there, who are you?")
-chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need")
-chat_history.add_user_message("I want to find a hotel in Seattle with free wifi and a pool.")
+chat_history.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need"
+)
+chat_history.add_user_message(
+    "I want to find a hotel in Seattle with free wifi and a pool."
+)
 
 
 # A filter is a piece of custom code that runs at certain points in the process
@@ -71,7 +75,9 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.invoke(chat_function, KernelArguments(user_input=user_input, chat_history=chat_history))
+    answer = await kernel.invoke(
+        chat_function, KernelArguments(user_input=user_input, chat_history=chat_history)
+    )
     chat_history.add_user_message(user_input)
     chat_history.add_assistant_message(str(answer))
     print(f"Mosscap:> {answer}")

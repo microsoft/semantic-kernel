@@ -4,7 +4,47 @@ using System;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Text;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.Text;
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+using Microsoft.SemanticKernel.Text;
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -60,7 +100,47 @@ internal sealed class AzureAISearchMemoryRecord
     /// Content embedding
     /// </summary>
     [JsonPropertyName(EmbeddingField)]
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     public ReadOnlyMemory<float> Embedding { get; set; }
 
     /// <summary>

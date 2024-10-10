@@ -16,6 +16,48 @@ extend-exclude = [
     "test_code_tokenizer.py",
     "*response.json",
     "test_content.txt",
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    "serializedChatHistoryV1_15_1.json",
+    "MultipleFunctionsVsParameters.cs"
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+    "serializedChatHistoryV1_15_1.json",
+    "MultipleFunctionsVsParameters.cs"
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+    "google_what_is_the_semantic_kernel.json",
+    "what-is-semantic-kernel.json",
+    "serializedChatHistoryV1_15_1.json",
+    "MultipleFunctionsVsParameters.cs"
+    "serializedChatHistoryV1_15_1.json"
+    "MultipleFunctionsVsParameters.cs",
+    "PopulationByCountry.csv",
+    "PopulationByAdmin1.csv",
+<<<<<<< Updated upstream
+<<<<<<< head
+=======
+=======
+>>>>>>> Stashed changes
 ]
 
 [default.extend-words]
@@ -30,6 +72,52 @@ arange = "arange"         # Method in Python numpy package
 prompty = "prompty"       # prompty is a format name.
 ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
+>>>>>>> origin/main
+]
+
+[default.extend-words]
+ACI = "ACI"               # Azure Container Instance
+exercize = "exercize"     # test typos
+gramatical = "gramatical" # test typos
+Guid = "Guid"             # Globally Unique Identifier
+HD = "HD"                 # Test header value
+EOF = "EOF"               # End of File
+ans = "ans"               # Short for answers
+arange = "arange"         # Method in Python numpy package
+prompty = "prompty"       # prompty is a format name.
+ist = "ist"               # German language
+dall = "dall"             # OpenAI model name
+<<<<<<< Updated upstream
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+]
+
+[default.extend-words]
+ACI = "ACI"               # Azure Container Instance
+exercize = "exercize"     # test typos
+gramatical = "gramatical" # test typos
+Guid = "Guid"             # Globally Unique Identifier
+HD = "HD"                 # Test header value
+EOF = "EOF"               # End of File
+ans = "ans"               # Short for answers
+arange = "arange"         # Method in Python numpy package
+prompty = "prompty"       # prompty is a format name.
+ist = "ist"               # German language
+dall = "dall"             # OpenAI model name
+=======
+>>>>>>> Stashed changes
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
@@ -43,3 +131,44 @@ extend-ignore-re = [
 extend-ignore-re = [
     'Version=".*"', # ignore package version numbers
 ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+]
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+]
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes

@@ -30,7 +30,10 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     get_search_index_async_client,
     memory_record_to_search_record,
 )
-from semantic_kernel.exceptions import MemoryConnectorInitializationError, MemoryConnectorResourceNotFound
+from semantic_kernel.exceptions import (
+    MemoryConnectorInitializationError,
+    MemoryConnectorResourceNotFound,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -40,6 +43,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
+    """Azure Cognitive Search Memory Store."""
+
     _search_index_client: SearchIndexClient = None
     _vector_size: int = None
 
@@ -84,12 +89,18 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as exc:
-            raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
+            raise MemoryConnectorInitializationError(
+                "Failed to create Azure Cognitive Search settings."
+            ) from exc
 
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
             search_endpoint=str(acs_memory_settings.endpoint),
-            admin_key=acs_memory_settings.api_key.get_secret_value() if acs_memory_settings.api_key else None,
+            admin_key=(
+                acs_memory_settings.api_key.get_secret_value()
+                if acs_memory_settings.api_key
+                else None
+            ),
             azure_credential=azure_credentials,
             token_credential=token_credentials,
         )
@@ -121,13 +132,17 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         vector_search_profile_name = "az-vector-config"
         if vector_config:
             vector_search_profile = VectorSearchProfile(
-                name=vector_search_profile_name, algorithm_configuration_name=vector_config.name
+                name=vector_search_profile_name,
+                algorithm_configuration_name=vector_config.name,
             )
-            vector_search = VectorSearch(profiles=[vector_search_profile], algorithms=[vector_config])
+            vector_search = VectorSearch(
+                profiles=[vector_search_profile], algorithms=[vector_config]
+            )
         else:
             vector_search_algorithm_name = "az-vector-hnsw-config"
             vector_search_profile = VectorSearchProfile(
-                name=vector_search_profile_name, algorithm_configuration_name=vector_search_algorithm_name
+                name=vector_search_profile_name,
+                algorithm_configuration_name=vector_search_algorithm_name,
             )
             vector_search = VectorSearch(
                 profiles=[vector_search_profile],
@@ -146,12 +161,16 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             )
 
         if not self._search_index_client:
-            raise MemoryConnectorInitializationError("Error: self._search_index_client not set 1.")
+            raise MemoryConnectorInitializationError(
+                "Error: self._search_index_client not set 1."
+            )
 
         # Check to see if collection exists
         collection_index = None
         with contextlib.suppress(ResourceNotFoundError):
-            collection_index = await self._search_index_client.get_index(collection_name.lower())
+            collection_index = await self._search_index_client.get_index(
+                collection_name.lower()
+            )
 
         if not collection_index:
             # Create the search index with the semantic settings
@@ -201,7 +220,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             bool: True if the collection exists; otherwise, False.
         """
         try:
-            collection_result = await self._search_index_client.get_index(name=collection_name.lower())
+            collection_result = await self._search_index_client.get_index(
+                name=collection_name.lower()
+            )
 
             return bool(collection_result)
         except ResourceNotFoundError:
@@ -222,7 +243,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             return result[0]
         return None
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upsert a batch of records.
 
         Args:
@@ -234,7 +257,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """
         # Initialize search client here
         # Look up Search client class to see if exists or create
-        search_client = self._search_index_client.get_search_client(collection_name.lower())
+        search_client = self._search_index_client.get_search_client(
+            collection_name.lower()
+        )
 
         search_records = []
         search_ids = []
@@ -257,7 +282,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             return search_ids
         return None
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool = False
+    ) -> MemoryRecord:
         """Gets a record.
 
         Args:
@@ -269,7 +296,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             MemoryRecord: The record.
         """
         # Look up Search client class to see if exists or create
-        search_client = self._search_index_client.get_search_client(collection_name.lower())
+        search_client = self._search_index_client.get_search_client(
+            collection_name.lower()
+        )
 
         try:
             search_result = await search_client.get_document(
@@ -320,7 +349,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
         for record_id in keys:
-            await self.remove(collection_name=collection_name.lower(), key=encode_id(record_id))
+            await self.remove(
+                collection_name=collection_name.lower(), key=encode_id(record_id)
+            )
 
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
@@ -333,7 +364,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
         # Look up Search client class to see if exists or create
-        search_client = self._search_index_client.get_search_client(collection_name.lower())
+        search_client = self._search_index_client.get_search_client(
+            collection_name.lower()
+        )
         docs_to_delete = {SEARCH_FIELD_ID: encode_id(key)}
 
         await search_client.delete_documents(documents=[docs_to_delete])
@@ -390,9 +423,15 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             List[Tuple[MemoryRecord, float]]: The records and their relevance scores.
         """
         # Look up Search client class to see if exists or create
-        search_client = self._search_index_client.get_search_client(collection_name.lower())
+        search_client = self._search_index_client.get_search_client(
+            collection_name.lower()
+        )
 
-        vector = VectorizedQuery(vector=embedding.flatten(), k_nearest_neighbors=limit, fields=SEARCH_FIELD_EMBEDDING)
+        vector = VectorizedQuery(
+            vector=embedding.flatten(),
+            k_nearest_neighbors=limit,
+            fields=SEARCH_FIELD_EMBEDDING,
+        )
 
         search_results = await search_client.search(
             search_text="*",

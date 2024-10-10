@@ -5,15 +5,15 @@ import logging
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+    FunctionChoiceType,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.service_exceptions import (
-    ServiceInvalidExecutionSettingsError,
-    ServiceInvalidRequestError,
-)
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
@@ -35,7 +35,10 @@ def filter_system_message(chat_history: ChatHistory) -> str | None:
     If there are multiple system messages, raise an error.
     If there are no system messages, return None.
     """
-    if len([message for message in chat_history if message.role == AuthorRole.SYSTEM]) > 1:
+    if (
+        len([message for message in chat_history if message.role == AuthorRole.SYSTEM])
+        > 1
+    ):
         raise ServiceInvalidRequestError(
             "Multiple system messages in chat history. Only one system message is expected."
         )
@@ -86,7 +89,9 @@ FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE = {
 GEMINI_FUNCTION_NAME_SEPARATOR = "_"
 
 
-def format_function_result_content_name_to_gemini_function_name(function_result_content: FunctionResultContent) -> str:
+def format_function_result_content_name_to_gemini_function_name(
+    function_result_content: FunctionResultContent,
+) -> str:
     """Format the function result content name to the Gemini function name."""
     return (
         f"{function_result_content.plugin_name}{GEMINI_FUNCTION_NAME_SEPARATOR}{function_result_content.function_name}"
@@ -95,7 +100,9 @@ def format_function_result_content_name_to_gemini_function_name(function_result_
     )
 
 
-def format_kernel_function_fully_qualified_name_to_gemini_function_name(metadata: KernelFunctionMetadata) -> str:
+def format_kernel_function_fully_qualified_name_to_gemini_function_name(
+    metadata: KernelFunctionMetadata,
+) -> str:
     """Format the kernel function fully qualified name to the Gemini function name."""
     return (
         f"{metadata.plugin_name}{GEMINI_FUNCTION_NAME_SEPARATOR}{metadata.name}"
@@ -104,10 +111,14 @@ def format_kernel_function_fully_qualified_name_to_gemini_function_name(metadata
     )
 
 
-def format_gemini_function_name_to_kernel_function_fully_qualified_name(gemini_function_name: str) -> str:
+def format_gemini_function_name_to_kernel_function_fully_qualified_name(
+    gemini_function_name: str,
+) -> str:
     """Format the Gemini function name to the kernel function fully qualified name."""
     if GEMINI_FUNCTION_NAME_SEPARATOR in gemini_function_name:
-        plugin_name, function_name = gemini_function_name.split(GEMINI_FUNCTION_NAME_SEPARATOR, 1)
+        plugin_name, function_name = gemini_function_name.split(
+            GEMINI_FUNCTION_NAME_SEPARATOR, 1
+        )
         return f"{plugin_name}-{function_name}"
     return gemini_function_name
 
@@ -119,6 +130,15 @@ def configure_function_choice_behavior(
 ):
     """Configure the function choice behavior to include the kernel functions."""
     if not settings.function_choice_behavior:
-        raise ServiceInvalidExecutionSettingsError("Function choice behavior is required for tool calls.")
+        raise ServiceInvalidExecutionSettingsError(
+            "Function choice behavior is required for tool calls."
+        )
+<<<<<<< Updated upstream
+        return
+=======
+        return
+>>>>>>> Stashed changes
 
-    settings.function_choice_behavior.configure(kernel=kernel, update_settings_callback=callback, settings=settings)
+    settings.function_choice_behavior.configure(
+        kernel=kernel, update_settings_callback=callback, settings=settings
+    )

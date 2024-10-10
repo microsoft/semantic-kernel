@@ -32,7 +32,9 @@ class StaticTextPlugin:
 
     @kernel_function(name="append_day", description="Append the day variable")
     def append_day(
-        self, input: Annotated[str, "The input text"], day: Annotated[str, "The day to append"]
+        self,
+        input: Annotated[str, "The input text"],
+        day: Annotated[str, "The day to append"],
     ) -> Annotated[str, "The output is the text with the day appended"]:
         """Append the day variable.
 

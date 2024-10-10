@@ -44,14 +44,18 @@ def test_cmc_full():
 
 
 def test_cmc_items():
-    message = ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello, world!")])
+    message = ChatMessageContent(
+        role=AuthorRole.USER, items=[TextContent(text="Hello, world!")]
+    )
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert len(message.items) == 1
 
 
 def test_cmc_items_and_content():
-    message = ChatMessageContent(role=AuthorRole.USER, content="text", items=[TextContent(text="Hello, world!")])
+    message = ChatMessageContent(
+        role=AuthorRole.USER, content="text", items=[TextContent(text="Hello, world!")]
+    )
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert message.items[0].text == "Hello, world!"
@@ -62,7 +66,14 @@ def test_cmc_items_and_content():
 def test_cmc_multiple_items():
     message = ChatMessageContent(
         role=AuthorRole.SYSTEM,
-        items=[TextContent(text="Hello, world!"), TextContent(text="Hello, world!"), ImageContent(uri="http://test/")],
+        items=[
+            TextContent(text="Hello, world!"),
+            TextContent(text="Hello, world!"),
+            ImageContent(uri="http://test/"),
+            FunctionCallContent(
+                function_name="testFunction", arguments={"arg1": "value1"}
+            ),
+        ],
     )
     assert message.role == AuthorRole.SYSTEM
     assert message.content == "Hello, world!"
@@ -92,7 +103,9 @@ def test_cmc_content_set_empty():
 
 def test_cmc_to_element():
     message = ChatMessageContent(
-        role=AuthorRole.USER, items=[TextContent(text="Hello, world!", encoding="utf8")], name=None
+        role=AuthorRole.USER,
+        items=[TextContent(text="Hello, world!", encoding="utf8")],
+        name=None,
     )
     element = message.to_element()
     assert element.tag == "message"
@@ -121,7 +134,8 @@ def test_cmc_to_element():
             items=[ImageContent(data=b"test_data", mime_type="image/jpeg")],
         ),
         ChatMessageContent(
-            role=AuthorRole.USER, items=[FunctionCallContent(id="test", name="func_name", arguments="args")]
+            role=AuthorRole.USER,
+            items=[FunctionCallContent(id="test", name="func_name", arguments="args")],
         ),
         ChatMessageContent(
             role=AuthorRole.USER,
@@ -152,7 +166,9 @@ def test_cmc_to_prompt():
 
 
 def test_cmc_from_element():
-    element = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!").to_element()
+    element = ChatMessageContent(
+        role=AuthorRole.USER, content="Hello, world!"
+    ).to_element()
     message = ChatMessageContent.from_element(element)
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
@@ -172,7 +188,12 @@ def test_cmc_from_element_content():
     "xml_content, user, text_content, length",
     [
         ('<message role="user">Hello, world!</message>', "user", "Hello, world!", 1),
-        ('<message role="user"><text>Hello, world!</text></message>', "user", "Hello, world!", 1),
+        (
+            '<message role="user"><text>Hello, world!</text></message>',
+            "user",
+            "Hello, world!",
+            1,
+        ),
         (
             '<message role="user"><text>Hello, world!</text><text>Hello, world!</text></message>',
             "user",
@@ -203,8 +224,18 @@ def test_cmc_from_element_content():
             "<random>some random code sample</random>in between texttest",
             1,  # TODO: review this case
         ),
-        ('<message role="user" choice_index="0">Hello, world!</message>', "user", "Hello, world!", 1),
-        ('<message role="user"><image>data:image/jpeg;base64,dGVzdF9kYXRh</image></message>', "user", "", 1),
+        (
+            '<message role="user" choice_index="0">Hello, world!</message>',
+            "user",
+            "Hello, world!",
+            1,
+        ),
+        (
+            '<message role="user"><image>data:image/jpeg;base64,dGVzdF9kYXRh</image></message>',
+            "user",
+            "",
+            1,
+        ),
     ],
     ids=[
         "no_tag",
@@ -252,23 +283,43 @@ def test_cmc_to_dict_keys():
 @pytest.mark.parametrize(
     "input_args, expected_dict",
     [
-        ({"role": "user", "content": "Hello, world!"}, {"role": "user", "content": "Hello, world!"}),
+        (
+            {"role": "user", "content": "Hello, world!"},
+            {"role": "user", "content": "Hello, world!"},
+        ),
         (
             {"role": "user", "content": "Hello, world!", "name": "username"},
             {"role": "user", "content": "Hello, world!", "name": "username"},
         ),
-        ({"role": "user", "items": [TextContent(text="Hello, world!")]}, {"role": "user", "content": "Hello, world!"}),
         (
-            {"role": "assistant", "items": [FunctionCallContent(id="test", name="func_name", arguments="args")]},
+            {"role": "user", "items": [TextContent(text="Hello, world!")]},
+            {"role": "user", "content": "Hello, world!"},
+        ),
+        (
+            {
+                "role": "assistant",
+                "items": [
+                    FunctionCallContent(id="test", name="func_name", arguments="args")
+                ],
+            },
             {
                 "role": "assistant",
                 "tool_calls": [
-                    {"id": "test", "type": "function", "function": {"name": "func_name", "arguments": "args"}}
+                    {
+                        "id": "test",
+                        "type": "function",
+                        "function": {"name": "func_name", "arguments": "args"},
+                    }
                 ],
             },
         ),
         (
-            {"role": "tool", "items": [FunctionResultContent(id="test", name="func_name", result="result")]},
+            {
+                "role": "tool",
+                "items": [
+                    FunctionResultContent(id="test", name="func_name", result="result")
+                ],
+            },
             {"role": "tool", "tool_call_id": "test", "content": "result"},
         ),
         (
@@ -281,11 +332,112 @@ def test_cmc_to_dict_keys():
             },
             {
                 "role": "user",
+                "content": [
+                    {"type": "text", "text": "Hello, "},
+                    {"type": "text", "text": "world!"},
+                ],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "text", "text": "Hello, "},
+                    {"content_type": "text", "text": "world!"},
+                ],
+            },
+            {
+                "role": "user",
                 "content": [{"type": "text", "text": "Hello, "}, {"type": "text", "text": "world!"}],
             },
         ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "annotation", "file_id": "test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": "test None (Start Index=None->End Index=None)"}],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "file_reference", "file_id": "test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [{"file_id": "test"}],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "function_call", "name": "test-test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [{"id": None, "type": "function", "function": {"name": "test-test", "arguments": None}}],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "function_call", "name": "test-test"},
+                    {"content_type": "function_result", "name": "test-test", "result": "test", "id": "test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [
+                    {"id": None, "type": "function", "function": {"name": "test-test", "arguments": None}},
+                    {"tool_call_id": "test", "content": "test"},
+                ],
+            },
+        ),
+        (
+            {
+                "role": "user",
+                "items": [
+                    {"content_type": "image", "uri": "http://test"},
+                ],
+            },
+            {
+                "role": "user",
+                "content": [{"image_url": {"url": "http://test/"}, "type": "image_url"}],
+            },
+        ),
     ],
-    ids=["user_content", "user_with_name", "user_item", "function_call", "function_result", "multiple_items"],
+    ids=[
+        "user_content",
+        "user_with_name",
+        "user_item",
+        "function_call",
+        "function_result",
+        "multiple_items",
+        "multiple_items_serialize",
+        "annotations_serialize",
+        "file_reference_serialize",
+        "function_call_serialize",
+        "function_result_serialize",
+        "image_serialize",
+    ],
+    ids=[
+        "user_content",
+        "user_with_name",
+        "user_item",
+        "function_call",
+        "function_result",
+        "multiple_items",
+    ],
 )
 def test_cmc_to_dict_items(input_args, expected_dict):
     message = ChatMessageContent(**input_args)

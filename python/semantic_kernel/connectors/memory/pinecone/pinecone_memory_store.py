@@ -4,18 +4,35 @@ import logging
 from typing import NamedTuple
 
 from numpy import ndarray
-from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
+<<<<<<< main
+from pinecone import (
+    FetchResponse,
+    IndexDescription,
+    IndexList,
+    Pinecone,
+    ServerlessSpec,
+)
+=======
+from pinecone import FetchResponse, IndexList, IndexModel, Pinecone, ServerlessSpec
+>>>>>>> upstream/main
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
-from semantic_kernel.connectors.memory.pinecone.utils import build_payload, parse_payload
+from semantic_kernel.connectors.memory.pinecone.pinecone_settings import (
+    PineconeSettings,
+)
+from semantic_kernel.connectors.memory.pinecone.utils import (
+    build_payload,
+    parse_payload,
+)
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidRequestError,
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorInitializationError,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -70,7 +87,9 @@ class PineconeMemoryStore(MemoryStoreBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Pinecone settings.", ex) from ex
+            raise MemoryConnectorInitializationError(
+                "Failed to create Pinecone settings.", ex
+            ) from ex
 
         self._default_dimensionality = default_dimensionality
 
@@ -102,16 +121,26 @@ class PineconeMemoryStore(MemoryStoreBase):
             dimension_num = self._default_dimensionality
         if dimension_num > MAX_DIMENSIONALITY:
             raise ServiceInitializationError(
-                f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {dimension_num} exceeds "
+                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
         if not await self.does_collection_exist(collection_name):
             self.pinecone.create_index(
-                name=collection_name, dimension=dimension_num, metric=distance_type, spec=index_spec
+                name=collection_name,
+                dimension=dimension_num,
+                metric=distance_type,
+                spec=index_spec,
             )
             self.collection_names_cache.add(collection_name)
 
-    async def describe_collection(self, collection_name: str) -> IndexDescription | None:
+<<<<<<< main
+    async def describe_collection(
+        self, collection_name: str
+    ) -> IndexDescription | None:
+=======
+    async def describe_collection(self, collection_name: str) -> IndexModel | None:
+>>>>>>> upstream/main
         """Gets the description of the index.
 
         Args:
@@ -175,7 +204,9 @@ class PineconeMemoryStore(MemoryStoreBase):
             str: The unique database key of the record. In Pinecone, this is the record ID.
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         collection = self.pinecone.Index(collection_name)
 
@@ -185,11 +216,15 @@ class PineconeMemoryStore(MemoryStoreBase):
         )
 
         if upsert_response.upserted_count is None:
-            raise ServiceResponseException(f"Error upserting record: {upsert_response.message}")
+            raise ServiceResponseException(
+                f"Error upserting record: {upsert_response.message}"
+            )
 
         return record._id
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upsert a batch of records.
 
         Args:
@@ -200,7 +235,9 @@ class PineconeMemoryStore(MemoryStoreBase):
             List[str]: The unique database keys of the records.
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         collection = self.pinecone.Index(collection_name)
 
@@ -213,13 +250,19 @@ class PineconeMemoryStore(MemoryStoreBase):
             for record in records
         ]
 
-        upsert_response = collection.upsert(vectors, namespace="", batch_size=MAX_UPSERT_BATCH_SIZE)
+        upsert_response = collection.upsert(
+            vectors, namespace="", batch_size=MAX_UPSERT_BATCH_SIZE
+        )
 
         if upsert_response.upserted_count is None:
-            raise ServiceResponseException(f"Error upserting record: {upsert_response.message}")
+            raise ServiceResponseException(
+                f"Error upserting record: {upsert_response.message}"
+            )
         return [record._id for record in records]
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool = False
+    ) -> MemoryRecord:
         """Gets a record.
 
         Args:
@@ -231,13 +274,17 @@ class PineconeMemoryStore(MemoryStoreBase):
             MemoryRecord: The record.
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         collection = self.pinecone.Index(collection_name)
         fetch_response = collection.fetch([key])
 
         if len(fetch_response.vectors) == 0:
-            raise ServiceResourceNotFoundError(f"Record with key '{key}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Record with key '{key}' does not exist"
+            )
 
         return parse_payload(fetch_response.vectors[key], with_embedding)
 
@@ -255,10 +302,15 @@ class PineconeMemoryStore(MemoryStoreBase):
             List[MemoryRecord]: The records.
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         fetch_response = await self.__get_batch(collection_name, keys, with_embeddings)
-        return [parse_payload(fetch_response.vectors[key], with_embeddings) for key in fetch_response.vectors]
+        return [
+            parse_payload(fetch_response.vectors[key], with_embeddings)
+            for key in fetch_response.vectors
+        ]
 
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
@@ -271,7 +323,9 @@ class PineconeMemoryStore(MemoryStoreBase):
             None
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         collection = self.pinecone.Index(collection_name)
         collection.delete([key])
@@ -287,7 +341,9 @@ class PineconeMemoryStore(MemoryStoreBase):
             None
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         collection = self.pinecone.Index(collection_name)
         for i in range(0, len(keys), MAX_DELETE_BATCH_SIZE):
@@ -342,13 +398,16 @@ class PineconeMemoryStore(MemoryStoreBase):
             List[Tuple[MemoryRecord, float]]: The records and their relevance scores.
         """
         if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         collection = self.pinecone.Index(collection_name)
 
         if limit > MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE:
             raise ServiceInvalidRequestError(
-                "Limit must be less than or equal to " + f"{MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE}"
+                "Limit must be less than or equal to "
+                + f"{MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE}"
             )
         if limit > MAX_QUERY_WITH_METADATA_BATCH_SIZE:
             query_response = collection.query(
@@ -358,7 +417,9 @@ class PineconeMemoryStore(MemoryStoreBase):
                 include_metadata=False,
             )
             keys = [match.id for match in query_response.matches]
-            fetch_response = await self.__get_batch(collection_name, keys, with_embeddings)
+            fetch_response = await self.__get_batch(
+                collection_name, keys, with_embeddings
+            )
             vectors = fetch_response.vectors
             for match in query_response.matches:
                 vectors[match.id].update(match)
@@ -392,7 +453,9 @@ class PineconeMemoryStore(MemoryStoreBase):
         if len(keys) > MAX_FETCH_BATCH_SIZE:
             fetch_response = index.fetch(keys[0:MAX_FETCH_BATCH_SIZE])
             for i in range(MAX_FETCH_BATCH_SIZE, len(keys), MAX_FETCH_BATCH_SIZE):
-                fetch_response.vectors.update(index.fetch(keys[i : i + MAX_FETCH_BATCH_SIZE]).vectors)
+                fetch_response.vectors.update(
+                    index.fetch(keys[i : i + MAX_FETCH_BATCH_SIZE]).vectors
+                )
         else:
             fetch_response = index.fetch(keys)
         return fetch_response

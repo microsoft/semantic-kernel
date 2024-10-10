@@ -20,10 +20,24 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestE
 
 def test_finish_reason_from_google_ai_to_semantic_kernel():
     """Test finish_reason_from_google_ai_to_semantic_kernel."""
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.STOP) == FinishReason.STOP
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.MAX_TOKENS) == FinishReason.LENGTH
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.SAFETY) == FinishReason.CONTENT_FILTER
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.OTHER) is None
+    assert (
+        finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.STOP)
+        == FinishReason.STOP
+    )
+    assert (
+        finish_reason_from_google_ai_to_semantic_kernel(
+            Candidate.FinishReason.MAX_TOKENS
+        )
+        == FinishReason.LENGTH
+    )
+    assert (
+        finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.SAFETY)
+        == FinishReason.CONTENT_FILTER
+    )
+    assert (
+        finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.OTHER)
+        is None
+    )
 
 
 def test_format_user_message():

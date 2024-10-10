@@ -17,7 +17,9 @@ except KeyError:
     astradb_installed = False
 
 
-pytestmark = pytest.mark.skipif(not astradb_installed, reason="astradb is not installed")
+pytestmark = pytest.mark.skipif(
+    not astradb_installed, reason="astradb is not installed"
+)
 
 
 async def retry(func, retries=1):
@@ -124,12 +126,16 @@ async def test_upsert_and_get(get_astradb_config, memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_upsert_batch_and_get_batch(get_astradb_config, memory_record1, memory_record2):
+async def test_upsert_batch_and_get_batch(
+    get_astradb_config, memory_record1, memory_record2
+):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
 
     await retry(lambda: memory.create_collection("test_collection"))
-    await retry(lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2]))
+    await retry(
+        lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2])
+    )
 
     results = await retry(
         lambda: memory.get_batch(
@@ -163,8 +169,14 @@ async def test_remove_batch(get_astradb_config, memory_record1, memory_record2):
     memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
 
     await retry(lambda: memory.create_collection("test_collection"))
-    await retry(lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2]))
-    await retry(lambda: memory.remove_batch("test_collection", [memory_record1._id, memory_record2._id]))
+    await retry(
+        lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2])
+    )
+    await retry(
+        lambda: memory.remove_batch(
+            "test_collection", [memory_record1._id, memory_record2._id]
+        )
+    )
 
     with pytest.raises(KeyError):
         _ = await memory.get("test_collection", memory_record1._id, with_embedding=True)
@@ -179,7 +191,9 @@ async def test_get_nearest_match(get_astradb_config, memory_record1, memory_reco
     memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
 
     await retry(lambda: memory.create_collection("test_collection"))
-    await retry(lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2]))
+    await retry(
+        lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2])
+    )
 
     test_embedding = memory_record1.embedding
     test_embedding[0] = test_embedding[0] + 0.01
@@ -198,12 +212,18 @@ async def test_get_nearest_match(get_astradb_config, memory_record1, memory_reco
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_matches(get_astradb_config, memory_record1, memory_record2, memory_record3):
+async def test_get_nearest_matches(
+    get_astradb_config, memory_record1, memory_record2, memory_record3
+):
     app_token, db_id, region, keyspace = get_astradb_config
     memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
 
     await retry(lambda: memory.create_collection("test_collection"))
-    await retry(lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2, memory_record3]))
+    await retry(
+        lambda: memory.upsert_batch(
+            "test_collection", [memory_record1, memory_record2, memory_record3]
+        )
+    )
 
     test_embedding = memory_record2.embedding
     test_embedding[0] = test_embedding[0] + 0.025

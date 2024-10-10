@@ -1,0 +1,40 @@
+# For more details on the format and content:
+# https://github.com/robocorp/rcc/blob/master/docs/recipes.md#what-is-in-robotyaml
+
+tasks:
+  # Task names here are used when executing the bots, so renaming these is recommended.
+  Produce Output:
+    robotTaskName: Produce Output
+  Produce Output With Trace:
+    shell: python -m robot -d output -L TRACE --report NONE --logtitle "Producer log" --task "Produce Output" producer.robot
+  Consume Input:
+    robotTaskName: Consume Input
+  Consume Input With Trace:
+    shell: python -m robot -d output -L TRACE --report NONE --logtitle "Consumer log" --task "Consume Input" consumer.robot
+  Report Result:
+    robotTaskName: Report Result
+  Report Result With Trace:
+    shell: python -m robot -d output -L TRACE --report NONE --logtitle "Reporter log" --task "Report Result" reporter.robot
+
+environmentConfigs:
+  - environment_windows_amd64_freeze.yaml
+  - environment_linux_amd64_freeze.yaml
+  - environment_darwin_amd64_freeze.yaml
+  - conda.yaml
+
+preRunScripts:
+  # Example of running an executable script right before running the robot.
+  # Different languages and platforms are supported, read more under documentation:
+  #  https://github.com/robocorp/rcc/blob/master/docs/recipes.md#what-are-prerunscripts
+  - python bin/generate-workitem-file.py output/random-workitem-file.txt
+
+artifactsDir: output
+
+PATH:
+  - bin
+PYTHONPATH:
+  - resources
+  - libraries
+
+ignoreFiles:
+  - .gitignore

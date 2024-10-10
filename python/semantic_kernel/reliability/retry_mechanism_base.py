@@ -11,8 +11,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class RetryMechanismBase(ABC):
+    """Base class for retry mechanisms."""
+
     @abstractmethod
-    async def execute_with_retry(self, action: Callable[[], Awaitable[T]]) -> Awaitable[T]:
+    async def execute_with_retry(
+        self, action: Callable[[], Awaitable[T]]
+    ) -> Awaitable[T]:
         """Executes the given action with retry logic.
 
         Args:
@@ -21,4 +25,3 @@ class RetryMechanismBase(ABC):
         Returns:
             Awaitable[T]: An awaitable that will return the result of the action.
         """
-        pass

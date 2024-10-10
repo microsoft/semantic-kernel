@@ -1,10 +1,51 @@
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Text;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Files;
 using Resources;
 
 namespace Agents;
@@ -13,38 +54,191 @@ namespace Agents;
 /// Demonstrate <see cref="ChatCompletionAgent"/> agent interacts with
 /// <see cref="OpenAIAssistantAgent"/> when it produces file output.
 /// </summary>
-public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    /// <summary>
-    /// Target OpenAI services.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     private const string SummaryInstructions = "Summarize the entire conversation for the user in natural language.";
 
     [Fact]
     public async Task AnalyzeFileAndGenerateReportAsync()
     {
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+        OpenAIClientProvider provider = this.GetClientProvider();
 
-        OpenAIFileReference uploadFile =
-            await fileService.UploadContentAsync(
-                new BinaryContent(await EmbeddedResource.ReadAllAsync("30-user-context.txt"), mimeType: "text/plain"),
-                new OpenAIFileUploadExecutionSettings("30-user-context.txt", OpenAIFilePurpose.Assistants));
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        FileClient fileClient = provider.Client.GetFileClient();
+
+        OpenAIFileInfo uploadFile =
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+        FileClient fileClient = provider.Client.GetFileClient();
+
+        OpenAIFileInfo uploadFile =
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+
+        OpenAIFile uploadFile =
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+
+        OpenAIFile uploadFile =
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+            await fileClient.UploadFileAsync(
+                new BinaryData(await EmbeddedResource.ReadAllAsync("30-user-context.txt")),
+                "30-user-context.txt",
+                FileUploadPurpose.Assistants);
 
         Console.WriteLine(this.ApiKey);
 
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                new()
+                provider,
+                new(this.Model)
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+                kernel: new(),
+                provider,
+                new(this.Model)
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                kernel: new(),
+                provider,
+                new(this.Model)
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
-                    EnableCodeInterpreter = true, // Enable code-interpreter
-                    ModelId = this.Model,
-                    FileIds = [uploadFile.Id] // Associate uploaded file with assistant
+                    EnableCodeInterpreter = true,
+                    CodeInterpreterFileIds = [uploadFile.Id], // Associate uploaded file with assistant code-interpreter
+                    Metadata = AssistantSampleMetadata,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+                });
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                });
+=======
+>>>>>>> Stashed changes
+                },
+                kernel: new Kernel());
+                });
+                },
+                kernel: new Kernel());
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         ChatCompletionAgent summaryAgent =
             new()
@@ -70,7 +264,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
         finally
         {
             await analystAgent.DeleteAsync();
-            await fileService.DeleteFileAsync(uploadFile.Id);
+            await fileClient.DeleteFileAsync(uploadFile.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -78,21 +272,15 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
         {
             if (!string.IsNullOrWhiteSpace(input))
             {
+                ChatMessageContent message = new(AuthorRole.User, input);
                 chat.AddChatMessage(new(AuthorRole.User, input));
-                Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+                this.WriteAgentChatMessage(message);
             }
 
-            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                Console.WriteLine($"\n# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
-
-                foreach (AnnotationContent annotation in content.Items.OfType<AnnotationContent>())
-                {
-                    Console.WriteLine($"\t* '{annotation.Quote}' => {annotation.FileId}");
-                    BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!);
-                    byte[] byteContent = fileContent.Data?.ToArray() ?? [];
-                    Console.WriteLine($"\n{Encoding.Default.GetString(byteContent)}");
-                }
+                this.WriteAgentChatMessage(response);
+                await this.DownloadResponseContentAsync(fileClient, response);
             }
         }
     }

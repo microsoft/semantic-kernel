@@ -1,7 +1,60 @@
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.TemplateEngine;
+<<<<<<< main
+=======
+<<<<<<< Updated upstream
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.TemplateEngine;
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using Xunit;
 
 namespace SemanticKernel.UnitTests.TemplateEngine;
@@ -86,6 +139,41 @@ public class FunctionIdBlockTests
         var target1 = new FunctionIdBlock("functionName");
         var target2 = new FunctionIdBlock("pluginName.functionName");
         Assert.Throws<KernelException>(() => new FunctionIdBlock("foo.pluginName.functionName"));
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        var target2 = new FunctionIdBlock("skillName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+>>>>>>> Stashed changes
+=======
+        var target2 = new FunctionIdBlock("skillName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+>>>>>>> Stashed changes
+=======
+        var target2 = new FunctionIdBlock("skillName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+>>>>>>> Stashed changes
+=======
+        var target2 = new FunctionIdBlock("skillName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+>>>>>>> Stashed changes
+=======
+        var target2 = new FunctionIdBlock("skillName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+>>>>>>> Stashed changes
+=======
+        var target2 = new FunctionIdBlock("skillName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+>>>>>>> origin/main
+=======
+        var target2 = new FunctionIdBlock("skillName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+>>>>>>> Stashed changes
 
         // Act + Assert
         Assert.True(target1.IsValid(out _));

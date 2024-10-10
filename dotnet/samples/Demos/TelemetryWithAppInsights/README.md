@@ -1,6 +1,6 @@
-﻿# Semantic Kernel Telemetry with AppInsights
+# Semantic Kernel Telemetry with AppInsights
 
-This example project shows how an application can be configured to send Semantic Kernel telemetry to Application Insights.
+This sample project shows how a .Net application can be configured to send Semantic Kernel telemetry to Application Insights.
 
 > Note that it is also possible to use other Application Performance Management (APM) vendors. An example is [Prometheus](https://prometheus.io/docs/introduction/overview/). Please refer to this [link](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/metrics-collection#configure-the-example-app-to-use-opentelemetrys-prometheus-exporter) on how to do it.
 
@@ -16,7 +16,7 @@ For more information, please refer to the following articles:
 
 ## What to expect
 
-The Semantic Kernel SDK is designed to efficiently generate comprehensive logs, traces, and metrics throughout the flow of function execution and model invocation. This allows you to effectively monitor your AI application's performance and accurately track token consumption.
+The Semantic Kernel .Net SDK is designed to efficiently generate comprehensive logs, traces, and metrics throughout the flow of function execution and model invocation. This allows you to effectively monitor your AI application's performance and accurately track token consumption.
 
 > `ActivitySource.StartActivity` internally determines if there are any listeners recording the Activity. If there are no registered listeners or there are listeners that are not interested, StartActivity() will return null and avoid creating the Activity object. Read more [here](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing-instrumentation-walkthroughs).
 
@@ -54,7 +54,7 @@ You can also use environment variables if you prefer.
 
 To set your secrets with Secret Manager:
 
-```
+```sh {"id":"01J6KPT0BF2EXHQE744JMA4KJQ"}
 cd dotnet/samples/TelemetryExample
 
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "..."
@@ -74,7 +74,7 @@ dotnet user-secrets set "MistralAI:ApiKey" "..."
 dotnet user-secrets set "ApplicationInsights:ConnectionString" "..."
 ```
 
-## Running the example
+## Running the sample
 
 Simply run `dotnet run` under this directory if the command line interface is preferred. Otherwise, this example can also be run in Visual Studio.
 
@@ -100,7 +100,7 @@ It is also possible to use Log Analytics to query the telemetry items sent by th
 
 For example, to create a pie chart to summarize the Handlebars planner status:
 
-```kql
+```kql {"id":"01J6KPT0BF2EXHQE744MJME719"}
 dependencies
 | where name == "Microsoft.SemanticKernel.Planning.Handlebars.HandlebarsPlanner"
 | extend status = iff(success == True, "Success", "Failure")
@@ -110,7 +110,7 @@ dependencies
 
 Or to create a bar chart to summarize the Handlebars planner status by date:
 
-```kql
+```kql {"id":"01J6KPT0BGM073FVWV2SMAJMD2"}
 dependencies
 | where name == "Microsoft.SemanticKernel.Planning.Handlebars.HandlebarsPlanner"
 | extend status = iff(success == True, "Success", "Failure"), day = bin(timestamp, 1d)
@@ -125,7 +125,7 @@ dependencies
 
 Or to see status and performance of each planner run:
 
-```kql
+```kql {"id":"01J6KPT0BGM073FVWV2TFKSA42"}
 dependencies
 | where name == "Microsoft.SemanticKernel.Planning.Handlebars.HandlebarsPlanner"
 | extend status = iff(success == True, "Success", "Failure")
@@ -135,7 +135,7 @@ dependencies
 
 It is also possible to summarize the total token usage:
 
-```kql
+```kql {"id":"01J6KPT0BGM073FVWV2W9VX6GB"}
 customMetrics
 | where name == "semantic_kernel.connectors.openai.tokens.total"
 | project value
@@ -145,7 +145,7 @@ customMetrics
 
 Or track token usage by functions:
 
-```kql
+```kql {"id":"01J6KPT0BGM073FVWV2XQ77J8Y"}
 customMetrics
 | where name == "semantic_kernel.function.invocation.token_usage.prompt" and customDimensions has "semantic_kernel.function.name"
 | project customDimensions, value
@@ -166,18 +166,20 @@ You can also use the [Aspire dashboard](https://learn.microsoft.com/en-us/dotnet
 ### Steps
 
 - Follow this [code sample](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/overview) to start an Aspire dashboard in a docker container.
+
 - Add the package to the project: **`OpenTelemetry.Exporter.OpenTelemetryProtocol`**
+
 - Replace all occurrences of
 
-  ```c#
-  .AddAzureMonitorLogExporter(...)
-  ```
+```c# {"id":"01J6KPT0BGM073FVWV301D1HY4"}
+.AddAzureMonitorLogExporter(...)
+```
 
-  with
+with
 
-  ```c#
-  .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"))
-  ```
+```c# {"id":"01J6KPT0BGM073FVWV309EXP7V"}
+.AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"))
+```
 
 - Run the app and you can visual the traces in the Aspire dashboard.
 

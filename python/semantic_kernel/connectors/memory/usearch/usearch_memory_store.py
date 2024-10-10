@@ -12,7 +12,14 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from numpy import ndarray
-from usearch.index import BatchMatches, CompiledMetric, Index, Matches, MetricKind, ScalarKind
+from usearch.index import (
+    BatchMatches,
+    CompiledMetric,
+    Index,
+    Matches,
+    MetricKind,
+    ScalarKind,
+)
 
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
@@ -92,12 +99,15 @@ _collection_file_extensions: dict[_CollectionFileType, str] = {
 def memoryrecords_to_pyarrow_table(records: list[MemoryRecord]) -> pa.Table:
     """Convert a list of `MemoryRecord` to a PyArrow Table."""
     records_pylist = [
-        {attr: getattr(record, "_" + attr) for attr in _embeddings_data_schema.names} for record in records
+        {attr: getattr(record, "_" + attr) for attr in _embeddings_data_schema.names}
+        for record in records
     ]
     return pa.Table.from_pylist(records_pylist, schema=_embeddings_data_schema)
 
 
-def pyarrow_table_to_memoryrecords(table: pa.Table, vectors: ndarray | None = None) -> list[MemoryRecord]:
+def pyarrow_table_to_memoryrecords(
+    table: pa.Table, vectors: ndarray | None = None
+) -> list[MemoryRecord]:
     """Convert a PyArrow Table to a list of MemoryRecords.
 
     Args:
@@ -109,13 +119,17 @@ def pyarrow_table_to_memoryrecords(table: pa.Table, vectors: ndarray | None = No
         List[MemoryRecord]: List of MemoryRecords constructed from the table.
     """
     return [
-        MemoryRecord(**row.to_dict(), embedding=vectors[index] if vectors is not None else None)
+        MemoryRecord(
+            **row.to_dict(), embedding=vectors[index] if vectors is not None else None
+        )
         for index, row in table.to_pandas().iterrows()
     ]
 
 
 @experimental_class
 class USearchMemoryStore(MemoryStoreBase):
+    """Memory store for searching embeddings with USearch."""
+
     def __init__(
         self,
         persist_directory: os.PathLike | None = None,
@@ -134,13 +148,17 @@ class USearchMemoryStore(MemoryStoreBase):
             persist_directory (Optional[os.PathLike], default=None): Directory for loading and saving collections.
             If None, collections are not loaded nor saved.
         """
-        self._persist_directory = Path(persist_directory) if persist_directory is not None else None
+        self._persist_directory = (
+            Path(persist_directory) if persist_directory is not None else None
+        )
 
         self._collections: dict[str, _USearchCollection] = {}
         if self._persist_directory:
             self._collections = self._read_collections_from_dir()
 
-    def _get_collection_path(self, collection_name: str, *, file_type: _CollectionFileType) -> Path:
+    def _get_collection_path(
+        self, collection_name: str, *, file_type: _CollectionFileType
+    ) -> Path:
         """Get the path for the given collection name and file type.
 
         Args:
@@ -157,7 +175,9 @@ class USearchMemoryStore(MemoryStoreBase):
         if self._persist_directory is None:
             raise ServiceInitializationError("Path of persist directory is not set")
 
-        return self._persist_directory / (collection_name + _collection_file_extensions[file_type])
+        return self._persist_directory / (
+            collection_name + _collection_file_extensions[file_type]
+        )
 
     async def create_collection(
         self,
@@ -191,10 +211,14 @@ class USearchMemoryStore(MemoryStoreBase):
         if not collection_name:
             raise ServiceInvalidRequestError("Collection name can not be empty.")
         if collection_name in self._collections:
-            raise ServiceInvalidRequestError(f"Collection with name {collection_name} already exists.")
+            raise ServiceInvalidRequestError(
+                f"Collection with name {collection_name} already exists."
+            )
 
         embeddings_index_path = (
-            self._get_collection_path(collection_name, file_type=_CollectionFileType.USEARCH)
+            self._get_collection_path(
+                collection_name, file_type=_CollectionFileType.USEARCH
+            )
             if self._persist_directory
             else None
         )
@@ -210,11 +234,15 @@ class USearchMemoryStore(MemoryStoreBase):
             view=view,
         )
 
-        self._collections[collection_name] = _USearchCollection.create_default(embeddings_index)
+        self._collections[collection_name] = _USearchCollection.create_default(
+            embeddings_index
+        )
 
         return
 
-    def _read_embeddings_table(self, path: os.PathLike) -> tuple[pa.Table, dict[str, int]]:
+    def _read_embeddings_table(
+        self, path: os.PathLike
+    ) -> tuple[pa.Table, dict[str, int]]:
         """Read embeddings from the provided path and generate an ID to label mapping.
 
         Args:
@@ -225,7 +253,8 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         embeddings_table = pq.read_table(path, schema=_embeddings_data_schema)
         embeddings_id_to_label: dict[str, int] = {
-            record_id: idx for idx, record_id in enumerate(embeddings_table.column("id").to_pylist())
+            record_id: idx
+            for idx, record_id in enumerate(embeddings_table.column("id").to_pylist())
         }
         return embeddings_table, embeddings_id_to_label
 
@@ -253,10 +282,15 @@ class USearchMemoryStore(MemoryStoreBase):
                     f"Expected {expected_storage_files} files for collection {collection_name}"
                 )
             parquet_file, usearch_file = collection_files
-            if parquet_file.suffix == _collection_file_extensions[_CollectionFileType.USEARCH]:
+            if (
+                parquet_file.suffix
+                == _collection_file_extensions[_CollectionFileType.USEARCH]
+            ):
                 parquet_file, usearch_file = usearch_file, parquet_file
 
-            embeddings_table, embeddings_id_to_label = self._read_embeddings_table(parquet_file)
+            embeddings_table, embeddings_id_to_label = self._read_embeddings_table(
+                parquet_file
+            )
             embeddings_index = self._read_embeddings_index(usearch_file)
 
             collections[collection_name] = _USearchCollection(
@@ -324,16 +358,22 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
-            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot insert.")
+            raise ServiceResourceNotFoundError(
+                f"Collection {collection_name} does not exist, cannot insert."
+            )
 
         ucollection = self._collections[collection_name]
         all_records_id = [record._id for record in records]
 
         # Remove vectors from index
         remove_labels = [
-            ucollection.embeddings_id_to_label[id] for id in all_records_id if id in ucollection.embeddings_id_to_label
+            ucollection.embeddings_id_to_label[id]
+            for id in all_records_id
+            if id in ucollection.embeddings_id_to_label
         ]
-        ucollection.embeddings_index.remove(remove_labels, compact=compact, threads=threads)
+        ucollection.embeddings_index.remove(
+            remove_labels, compact=compact, threads=threads
+        )
 
         # Determine label insertion points
         table_num_rows = ucollection.embeddings_data_table.num_rows
@@ -350,7 +390,10 @@ class USearchMemoryStore(MemoryStoreBase):
 
         # Update embeddings_table
         ucollection.embeddings_data_table = pa.concat_tables(
-            [ucollection.embeddings_data_table, memoryrecords_to_pyarrow_table(records)]
+            [
+                ucollection.embeddings_data_table,
+                memoryrecords_to_pyarrow_table(records),
+            ]
         )
 
         # Update embeddings_id_to_label
@@ -375,7 +418,9 @@ class USearchMemoryStore(MemoryStoreBase):
             dtype=dtype,
         )
         if not result:
-            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(
+                f"Key '{key}' not found in collection '{collection_name}'"
+            )
         return result[0]
 
     async def get_batch(
@@ -388,15 +433,25 @@ class USearchMemoryStore(MemoryStoreBase):
         """Retrieve a batch of MemoryRecords using their keys."""
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
-            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection {collection_name} does not exist"
+            )
 
         ucollection = self._collections[collection_name]
-        labels = [ucollection.embeddings_id_to_label[key] for key in keys if key in ucollection.embeddings_id_to_label]
+        labels = [
+            ucollection.embeddings_id_to_label[key]
+            for key in keys
+            if key in ucollection.embeddings_id_to_label
+        ]
         if not labels:
             return []
-        vectors = ucollection.embeddings_index.get(labels, dtype) if with_embeddings else None
+        vectors = (
+            ucollection.embeddings_index.get(labels, dtype) if with_embeddings else None
+        )
 
-        return pyarrow_table_to_memoryrecords(ucollection.embeddings_data_table.take(pa.array(labels)), vectors)
+        return pyarrow_table_to_memoryrecords(
+            ucollection.embeddings_data_table.take(pa.array(labels)), vectors
+        )
 
     async def remove(self, collection_name: str, key: str) -> None:
         """Remove a single MemoryRecord using its key."""
@@ -408,7 +463,9 @@ class USearchMemoryStore(MemoryStoreBase):
         """Remove a batch of MemoryRecords using their keys."""
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
-            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot insert.")
+            raise ServiceResourceNotFoundError(
+                f"Collection {collection_name} does not exist, cannot insert."
+            )
 
         ucollection = self._collections[collection_name]
 
@@ -505,7 +562,9 @@ class USearchMemoryStore(MemoryStoreBase):
             log=log,
         )
         relevance_score = 1 / (result.distances + 1)
-        filtered_labels = result.keys[np.where(relevance_score >= min_relevance_score)[0]]
+        filtered_labels = result.keys[
+            np.where(relevance_score >= min_relevance_score)[0]
+        ]
 
         filtered_vectors: np.ndarray | None = None
         if with_embeddings:
@@ -549,16 +608,22 @@ class USearchMemoryStore(MemoryStoreBase):
 
     def _dump_collections(self) -> None:
         collection_storage_files = self._get_all_storage_files()
-        for file_path in itertools.chain.from_iterable(collection_storage_files.values()):
+        for file_path in itertools.chain.from_iterable(
+            collection_storage_files.values()
+        ):
             file_path.unlink()
 
         for collection_name, ucollection in self._collections.items():
             ucollection.embeddings_index.save(
-                self._get_collection_path(collection_name, file_type=_CollectionFileType.USEARCH)
+                self._get_collection_path(
+                    collection_name, file_type=_CollectionFileType.USEARCH
+                )
             )
             pq.write_table(
                 ucollection.embeddings_data_table,
-                self._get_collection_path(collection_name, file_type=_CollectionFileType.PARQUET),
+                self._get_collection_path(
+                    collection_name, file_type=_CollectionFileType.PARQUET
+                ),
             )
 
         return

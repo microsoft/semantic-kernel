@@ -8,6 +8,54 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ["main", "feature*"]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+    paths:
+      - "dotnet/**"
+      - "samples/dotnet/**"
+      - "**.cs"
+      - "**.csproj"
+      - "**.editorconfig"
+    branches: [ "main", "feature*" ]
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     paths:
       - "dotnet/**"
       - "samples/dotnet/**"
@@ -26,6 +74,51 @@ jobs:
       matrix:
         include:
           - { dotnet: "8.0", configuration: Release, os: ubuntu-latest }
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+        #- { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
+        #- { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
+        - { dotnet: '8.0', configuration: Release, os: ubuntu-latest }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        #- { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
+        #- { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
+        - { dotnet: '8.0', configuration: Release, os: ubuntu-latest }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
     runs-on: ${{ matrix.os }}
     env:
@@ -55,6 +148,47 @@ jobs:
         run: |
           csproj_files=()
           exclude_files=("Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+          exclude_files=("Planners.Core.csproj" "Planners.Core.UnitTests.csproj" "Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")  
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+          exclude_files=("Planners.Core.csproj" "Planners.Core.UnitTests.csproj" "Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")  
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
           if [[ ${{ steps.changed-files.outcome }} == 'success' ]]; then
             for file in ${{ steps.changed-files.outputs.added_modified }}; do
               echo "$file was changed"
@@ -64,6 +198,49 @@ jobs:
                   csproj_path="$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)"
                   if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then
                     csproj_files+=("$csproj_path")
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+                  if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then  
+                    csproj_files+=("$csproj_path")  
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+                  if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then  
+                    csproj_files+=("$csproj_path")  
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
                   fi
                   break
                 fi

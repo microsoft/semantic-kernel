@@ -15,6 +15,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class VolatileMemoryStore(MemoryStoreBase):
+    """A volatile memory store that stores data in memory."""
+
     _store: dict[str, dict[str, MemoryRecord]]
 
     def __init__(self) -> None:
@@ -79,13 +81,17 @@ class VolatileMemoryStore(MemoryStoreBase):
             str: The unique database key of the record.
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         record._key = record._id
         self._store[collection_name][record._key] = record
         return record._key
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upserts a batch of records.
 
         Args:
@@ -96,14 +102,18 @@ class VolatileMemoryStore(MemoryStoreBase):
             List[str]: The unique database keys of the records.
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         for record in records:
             record._key = record._id
             self._store[collection_name][record._key] = record
         return [record._key for record in records]
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool = False
+    ) -> MemoryRecord:
         """Gets a record.
 
         Args:
@@ -115,10 +125,14 @@ class VolatileMemoryStore(MemoryStoreBase):
             MemoryRecord: The record.
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         if key not in self._store[collection_name]:
-            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(
+                f"Key '{key}' not found in collection '{collection_name}'"
+            )
 
         result = self._store[collection_name][key]
 
@@ -142,9 +156,15 @@ class VolatileMemoryStore(MemoryStoreBase):
             List[MemoryRecord]: The records.
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
-        results = [self._store[collection_name][key] for key in keys if key in self._store[collection_name]]
+        results = [
+            self._store[collection_name][key]
+            for key in keys
+            if key in self._store[collection_name]
+        ]
 
         if not with_embeddings:
             # create copy of results without embeddings
@@ -164,10 +184,14 @@ class VolatileMemoryStore(MemoryStoreBase):
             None
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         if key not in self._store[collection_name]:
-            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(
+                f"Key '{key}' not found in collection '{collection_name}'"
+            )
 
         del self._store[collection_name][key]
 
@@ -182,7 +206,9 @@ class VolatileMemoryStore(MemoryStoreBase):
             None
         """
         if collection_name not in self._store:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         for key in keys:
             if key in self._store[collection_name]:
@@ -262,6 +288,46 @@ class VolatileMemoryStore(MemoryStoreBase):
         # Then, sort the results by the similarity score
         sorted_results = sorted(
             zip(memory_records, similarity_scores),
+from typing import List, Tuple
+
+from numpy import array, linalg, ndarray
+
+from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.memory.storage.volatile_data_store import VolatileDataStore
+
+
+class VolatileMemoryStore(VolatileDataStore, MemoryStoreBase):
+    def __init__(self) -> None:
+        super().__init__()
+
+    async def get_nearest_matches_async(
+        self,
+        collection: str,
+        embedding: ndarray,
+        limit: int = 1,
+        min_relevance_score: float = 0.7,
+    ) -> List[Tuple[MemoryRecord, float]]:
+        if collection not in self._store:
+            return []
+
+        embedding_collection = list([x.value for x in self._store[collection].values()])
+        # Convert the collection of embeddings into a numpy array (stacked)
+        embedding_array = array(
+            [x.embedding for x in embedding_collection], dtype=float
+        )
+        embedding_array = embedding_array.reshape(embedding_array.shape[0], -1)
+
+        # Use numpy to get the cosine similarity between the query
+        # embedding and all the embeddings in the collection
+        similarity_scores = (
+            embedding.dot(embedding_array.T)
+            / (linalg.norm(embedding) * linalg.norm(embedding_array, axis=1))
+        )[0]
+
+        # Then, sort the results by the similarity score
+        sorted_results = sorted(
+            zip(embedding_collection, similarity_scores),
             key=lambda x: x[1],
             reverse=True,
         )
@@ -279,7 +345,9 @@ class VolatileMemoryStore(MemoryStoreBase):
                 result[0]._embedding = None
         return top_results
 
-    def compute_similarity_scores(self, embedding: ndarray, embedding_array: ndarray) -> ndarray:
+    def compute_similarity_scores(
+        self, embedding: ndarray, embedding_array: ndarray
+    ) -> ndarray:
         """Computes the cosine similarity scores between a query embedding and a group of embeddings.
 
         Args:
@@ -300,9 +368,9 @@ class VolatileMemoryStore(MemoryStoreBase):
         similarity_scores = array([-1.0] * embedding_array.shape[0])
 
         if valid_indices.any():
-            similarity_scores[valid_indices] = embedding.dot(embedding_array[valid_indices].T) / (
-                query_norm * collection_norm[valid_indices]
-            )
+            similarity_scores[valid_indices] = embedding.dot(
+                embedding_array[valid_indices].T
+            ) / (query_norm * collection_norm[valid_indices])
             if not valid_indices.all():
                 logger.warning(
                     "Some vectors in the embedding collection are zero vectors."
@@ -315,3 +383,4 @@ class VolatileMemoryStore(MemoryStoreBase):
                 f"{embedding_array} or {embedding}"
             )
         return similarity_scores
+        return top_results

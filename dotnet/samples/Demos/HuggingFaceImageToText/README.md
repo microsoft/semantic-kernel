@@ -13,7 +13,7 @@ Required packages to use ImageToText HuggingFace Service:
 
 The following code snippet below shows the most important pieces of code on how to use the ImageToText Service (Hugging Face implementation) to retrieve the descriptive text of an image:
 
-```csharp
+```csharp {"id":"01J6KPBKGF5YFP417DR486WEP7"}
 // Initializes the Kernel
 var kernel = Kernel.CreateBuilder()
 	.AddHuggingFaceImageToText("Salesforce/blip-image-captioning-base")
@@ -25,7 +25,7 @@ var service = this._kernel.GetRequiredService<IImageToTextService>();
 
 Once one of the images is selected, the binary data of the image is retrieved and sent to the ImageToText Service. The service then returns the descriptive text of the image. The following code snippet demonstrates how to use the ImageToText Service to retrieve the descriptive text of an image:
 
-```csharp
+```csharp {"id":"01J6KPBKGF5YFP417DR5FBZGGS"}
 // Get the binary content of a JPEG image:
 var imageBinary = File.ReadAllBytes("path/to/file.jpg");
 

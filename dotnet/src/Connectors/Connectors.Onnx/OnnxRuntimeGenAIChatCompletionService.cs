@@ -93,6 +93,47 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
         using var generator = new Generator(this.GetModel(), generatorParams);
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+        bool removeNextTokenStartingWithSpace = true;
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        bool removeNextTokenStartingWithSpace = true;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        bool removeNextTokenStartingWithSpace = true;
+>>>>>>> main
+>>>>>>> Stashed changes
         while (!generator.IsDone())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -104,7 +145,61 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
                 var outputTokens = generator.GetSequence(0);
                 var newToken = outputTokens.Slice(outputTokens.Length - 1, 1);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 var output = this.GetTokenizer().Decode(newToken);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+                var output = this.GetTokenizer().Decode(newToken);
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                var output = this.GetTokenizer().Decode(newToken);
+=======
+>>>>>>> Stashed changes
+                string output = this.GetTokenizer().Decode(newToken);
+
+                if (removeNextTokenStartingWithSpace && output[0] == ' ')
+                {
+                    removeNextTokenStartingWithSpace = false;
+                    output = output.TrimStart();
+                }
+
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 return output;
             }, cancellationToken).ConfigureAwait(false);
         }

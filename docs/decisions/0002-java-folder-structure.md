@@ -1,11 +1,11 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: accepted
-date: 2013-06-19
+consulted: null
+date: 2013-06-19T00:00:00Z
 deciders: shawncal,johnoliver
-consulted: 
-informed:
+informed: null
+status: accepted
 ---
+
 # Java Folder Structure
 
 ## Context and Problem Statement
@@ -25,7 +25,7 @@ The purpose of this ADR is to document the folder structure that will be used by
 
 Below is a comparison of .Net and Java Folder structures
 
-```bash
+```bash {"id":"01J6KQ19XJR75T08FBDM3QJ5QK"}
 dotnet/src
            Connectors
            Extensions
@@ -55,7 +55,7 @@ Some observations:
 * The `src` folder is at the very start of the folder structure, which reduces flexibility
 * The use of the `Skills` term is due to change
 
-```bash
+```bash {"id":"01J6KQ19XJR75T08FBDPPXKATB"}
 java
      api-test
      samples

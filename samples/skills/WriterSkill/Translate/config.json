@@ -1,0 +1,111 @@
+{
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "type": "completion",
+  "description": "Translate the input into a language of your choice",
+  "completion": {
+    "max_tokens": 256,
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+  "description": "Translate the input into a language of your choice",
+  "completion": {
+    "max_tokens": 256,
+<<<<<<< main
+=======
+<<<<<<< Updated upstream
+=======
+  "description": "Translate the input into a language of your choice",
+  "completion": {
+    "max_tokens": 256,
+>>>>>>> origin/main
+  "default_settings": {
+    "max_tokens": 2000,
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+  "default_settings": {
+    "max_tokens": 2000,
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+    "temperature": 0.7,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "stop_sequences": [
+      "[done]"
+    ]
+  },
+  "default_backends": [
+    "text-davinci-002"
+  ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+    "stop_sequences": ["[done]"]
+  }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    "stop_sequences": ["[done]"]
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+}

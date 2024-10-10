@@ -14,7 +14,10 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 
 
 def add_service(
-    kernel: Kernel, use_chat: bool = True, env_file_path: str | None = None, env_file_encoding: str | None = None
+    kernel: Kernel,
+    use_chat: bool = True,
+    env_file_path: str | None = None,
+    env_file_encoding: str | None = None,
 ) -> Kernel:
     """
     Configure the AI service for the kernel
@@ -34,7 +37,9 @@ def add_service(
             env_file_encoding=env_file_encoding,
         )
     except ValidationError as ex:
-        raise ServiceInitializationError("Unable to configure learn resources settings.", ex) from ex
+        raise ServiceInitializationError(
+            "Unable to configure learn resources settings.", ex
+        ) from ex
 
     if not settings.global_llm_service:
         print("GLOBAL_LLM_SERVICE not set, trying to use Azure OpenAI.")

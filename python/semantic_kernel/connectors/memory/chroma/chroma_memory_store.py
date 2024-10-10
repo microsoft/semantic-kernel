@@ -11,8 +11,14 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.connectors.memory.chroma.utils import chroma_compute_similarity_scores, query_results_to_records
-from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError
+from semantic_kernel.connectors.memory.chroma.utils import (
+    chroma_compute_similarity_scores,
+    query_results_to_records,
+)
+from semantic_kernel.exceptions import (
+    ServiceInitializationError,
+    ServiceResourceNotFoundError,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -27,6 +33,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class ChromaMemoryStore(MemoryStoreBase):
+    """ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB."""
+
     _client: "chromadb.Client"
 
     def __init__(
@@ -145,7 +153,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         collection = await self.get_collection(collection_name)
         if collection is None:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
         record._key = record._id
         metadata = {
@@ -166,7 +176,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         )
         return record._key
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upsert a batch of records.
 
         Args:
@@ -179,7 +191,97 @@ class ChromaMemoryStore(MemoryStoreBase):
         # upsert is checking collection existence
         return [await self.upsert(collection_name, record) for record in records]
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+<<<<<<< main
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
+=======
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         """Gets a record.
 
         Args:
@@ -198,7 +300,118 @@ class ChromaMemoryStore(MemoryStoreBase):
                 f"Record with key '{key}' does not exist in collection '{collection_name}'"
             ) from exc
 
-    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
+    async def get_batch(
+<<<<<<< main
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        self, collection_name: str, keys: list[str], with_embeddings: bool
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+        self, collection_name: str, keys: list[str], with_embeddings: bool
+=======
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+        self, collection_name: str, keys: list[str], with_embeddings: bool
+=======
+=======
+>>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+        self, 
+        collection_name: str, 
+        keys: list[str], 
+        with_embeddings: bool = False
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> upstream/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Args:
@@ -211,9 +424,15 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         collection = await self.get_collection(collection_name)
         if collection is None:
-            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(
+                f"Collection '{collection_name}' does not exist"
+            )
 
-        query_includes = ["embeddings", "metadatas", "documents"] if with_embeddings else ["metadatas", "documents"]
+        query_includes = (
+            ["embeddings", "metadatas", "documents"]
+            if with_embeddings
+            else ["metadatas", "documents"]
+        )
 
         value = collection.get(ids=keys, include=query_includes)
         return query_results_to_records(value, with_embeddings)

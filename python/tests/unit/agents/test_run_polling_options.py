@@ -39,7 +39,8 @@ def test_get_polling_interval_custom_threshold():
 
 def test_get_polling_interval_custom_intervals():
     options = RunPollingOptions(
-        run_polling_interval=timedelta(milliseconds=500), run_polling_backoff=timedelta(seconds=2)
+        run_polling_interval=timedelta(milliseconds=500),
+        run_polling_backoff=timedelta(seconds=2),
     )
     iteration_count = 1
     expected_interval = timedelta(milliseconds=500)

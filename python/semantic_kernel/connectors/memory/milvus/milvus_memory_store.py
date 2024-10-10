@@ -5,12 +5,25 @@ from datetime import datetime
 from typing import Any
 
 from numpy import array, expand_dims, ndarray
-from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
+from pymilvus import (
+    Collection,
+    CollectionSchema,
+    DataType,
+    FieldSchema,
+    connections,
+    utility,
+)
 
-from semantic_kernel.exceptions import ServiceResourceNotFoundError, ServiceResponseException
+from semantic_kernel.exceptions import (
+    ServiceResourceNotFoundError,
+    ServiceResponseException,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.experimental_decorator import experimental_class, experimental_function
+from semantic_kernel.utils.experimental_decorator import (
+    experimental_class,
+    experimental_function,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -146,6 +159,8 @@ def create_fields(dimensions: int) -> list[FieldSchema]:
 
 @experimental_class
 class MilvusMemoryStore(MemoryStoreBase):
+    """Memory store based on Milvus."""
+
     def __init__(
         self,
         uri: str = "http://localhost:19530",
@@ -191,9 +206,15 @@ class MilvusMemoryStore(MemoryStoreBase):
                 Strong, Session, Bounded, Eventually. Defaults to "Session".
         """
         schema = CollectionSchema(
-            create_fields(dimension_num), "Semantic Kernel Milvus Collection", enable_dynamic_field=True
+            create_fields(dimension_num),
+            "Semantic Kernel Milvus Collection",
+            enable_dynamic_field=True,
         )
-        index_param = {"index_type": _INDEX_TYPE, "params": {"nlist": _NLIST}, "metric_type": distance_type}
+        index_param = {
+            "index_type": _INDEX_TYPE,
+            "params": {"nlist": _NLIST},
+            "metric_type": distance_type,
+        }
         if utility.has_collection(collection_name) and overwrite:
             utility.drop_collection(collection_name=collection_name)
         self.collections[collection_name] = Collection(
@@ -201,7 +222,9 @@ class MilvusMemoryStore(MemoryStoreBase):
             schema=schema,
             consistency_level=consistency,
         )
-        self.collections[collection_name].create_index(SEARCH_FIELD_EMBEDDING, index_param)
+        self.collections[collection_name].create_index(
+            SEARCH_FIELD_EMBEDDING, index_param
+        )
 
     async def get_collections(
         self,
@@ -213,7 +236,9 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         return utility.list_collections()
 
-    async def delete_collection(self, collection_name: str | None = None, all: bool = False) -> None:
+    async def delete_collection(
+        self, collection_name: str | None = None, all: bool = False
+    ) -> None:
         """Delete the specified collection.
 
         If all is True, all collections in the cluster will be removed.
@@ -260,7 +285,9 @@ class MilvusMemoryStore(MemoryStoreBase):
         )
         return res[0]
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord], batch_size=100) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord], batch_size=100
+    ) -> list[str]:
         """_summary_.
 
         Args:
@@ -279,18 +306,24 @@ class MilvusMemoryStore(MemoryStoreBase):
         # Check if the collection exists.
         if collection_name not in utility.list_collections():
             logger.debug(f"Collection {collection_name} does not exist, cannot insert.")
-            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot insert.")
+            raise ServiceResourceNotFoundError(
+                f"Collection {collection_name} does not exist, cannot insert."
+            )
         # Convert the records to dicts
         insert_list = [memoryrecord_to_milvus_dict(record) for record in records]
         try:
-            ids = self.collections[collection_name].upsert(data=insert_list).primary_keys
+            ids = (
+                self.collections[collection_name].upsert(data=insert_list).primary_keys
+            )
             self.collections[collection_name].flush()
             return ids
         except Exception as e:
             logger.debug(f"Upsert failed due to: {e}")
             raise ServiceResponseException(f"Upsert failed due to: {e}") from e
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
         """Get the MemoryRecord corresponding to the key.
 
         Args:
@@ -301,10 +334,14 @@ class MilvusMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord: The MemoryRecord for the key.
         """
-        res = await self.get_batch(collection_name=collection_name, keys=[key], with_embeddings=with_embedding)
+        res = await self.get_batch(
+            collection_name=collection_name, keys=[key], with_embeddings=with_embedding
+        )
         return res[0]
 
-    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
+    async def get_batch(
+        self, collection_name: str, keys: list[str], with_embeddings: bool
+    ) -> list[MemoryRecord]:
         """Get the MemoryRecords corresponding to the keys.
 
         Args:
@@ -322,13 +359,19 @@ class MilvusMemoryStore(MemoryStoreBase):
         # Check if the collection exists
         if not utility.has_collection(collection_name):
             logger.debug(f"Collection {collection_name} does not exist, cannot get.")
-            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot get.")
+            raise ServiceResourceNotFoundError(
+                f"Collection {collection_name} does not exist, cannot get."
+            )
 
         try:
             self.collections[collection_name].load()
             gets = self.collections[collection_name].query(
                 expr=f"{SEARCH_FIELD_ID} in {keys}",
-                output_fields=OUTPUT_FIELDS_W_EMBEDDING if with_embeddings else OUTPUT_FIELDS_WO_EMBEDDING,
+                output_fields=(
+                    OUTPUT_FIELDS_W_EMBEDDING
+                    if with_embeddings
+                    else OUTPUT_FIELDS_WO_EMBEDDING
+                ),
             )
         except Exception as e:
             logger.debug(f"Get failed due to: {e}")
@@ -357,7 +400,9 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         if collection_name not in utility.list_collections():
             logger.debug(f"Collection {collection_name} does not exist, cannot remove.")
-            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot remove.")
+            raise ServiceResourceNotFoundError(
+                f"Collection {collection_name} does not exist, cannot remove."
+            )
         try:
             self.collections[collection_name].load()
             result = self.collections[collection_name].delete(
@@ -368,7 +413,9 @@ class MilvusMemoryStore(MemoryStoreBase):
             logger.debug(f"Remove failed due to: {e}")
             raise ServiceResponseException(f"Remove failed due to: {e}") from e
         if result.delete_count != len(keys):
-            logger.debug(f"Failed to remove all keys, {result.delete_count} removed out of {len(keys)}")
+            logger.debug(
+                f"Failed to remove all keys, {result.delete_count} removed out of {len(keys)}"
+            )
             raise ServiceResponseException(
                 f"Failed to remove all keys, {result.delete_count} removed out of {len(keys)}"
             )
@@ -400,20 +447,30 @@ class MilvusMemoryStore(MemoryStoreBase):
         # Check if collection exists
         if collection_name not in utility.list_collections():
             logger.debug(f"Collection {collection_name} does not exist, cannot search.")
-            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot search.")
+            raise ServiceResourceNotFoundError(
+                f"Collection {collection_name} does not exist, cannot search."
+            )
         # Search requests takes a list of requests.
         if len(embedding.shape) == 1:
             embedding = expand_dims(embedding, axis=0)
 
         try:
             self.collections[collection_name].load()
-            metric = self.collections[collection_name].index(index_name=SEARCH_FIELD_EMBEDDING).params["metric_type"]
+            metric = (
+                self.collections[collection_name]
+                .index(index_name=SEARCH_FIELD_EMBEDDING)
+                .params["metric_type"]
+            )
             # Try with passed in metric
             results = self.collections[collection_name].search(
                 data=embedding,
                 anns_field=SEARCH_FIELD_EMBEDDING,
                 limit=limit,
-                output_fields=OUTPUT_FIELDS_W_EMBEDDING if with_embeddings else OUTPUT_FIELDS_WO_EMBEDDING,
+                output_fields=(
+                    OUTPUT_FIELDS_W_EMBEDDING
+                    if with_embeddings
+                    else OUTPUT_FIELDS_WO_EMBEDDING
+                ),
                 param={"metric_type": metric},
             )[0]
         except Exception as e:

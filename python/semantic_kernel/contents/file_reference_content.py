@@ -17,6 +17,8 @@ _T = TypeVar("_T", bound="FileReferenceContent")
 
 @experimental_class
 class FileReferenceContent(KernelContent):
+    """File reference content."""
+
     content_type: Literal[ContentTypes.FILE_REFERENCE_CONTENT] = Field(FILE_REFERENCE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = FILE_REFERENCE_CONTENT_TAG
     file_id: str | None = None

@@ -1,0 +1,1 @@
+git add requirements.txt app.py Dockerfile && git commit -m 'Add application file' && git push

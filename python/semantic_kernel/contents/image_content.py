@@ -56,7 +56,9 @@ class ImageContent(BinaryContent):
         """Create an instance from an image file."""
         mime_type = mimetypes.guess_type(image_path)[0]
         with open(image_path, "rb") as image_file:
-            return cls(data=image_file.read(), data_format="base64", mime_type=mime_type)
+            return cls(
+                data=image_file.read(), data_format="base64", mime_type=mime_type
+            )
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""

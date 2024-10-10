@@ -30,5 +30,7 @@ class WeaviateSettings(KernelBaseSettings):
     def validate_settings(cls, data: dict[str, Any]) -> dict[str, Any]:
         """Validate Weaviate settings."""
         if not data.get("use_embed") and not data.get("url"):
-            raise ValidationError("Weaviate config must have either url or use_embed set")
+            raise ValidationError(
+                "Weaviate config must have either url or use_embed set"
+            )
         return data

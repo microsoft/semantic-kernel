@@ -6,7 +6,6 @@ from semantic_kernel.utils.experimental_decorator import experimental_function
 @experimental_function
 def my_function() -> None:
     """This is a sample function docstring."""
-    pass
 
 
 @experimental_function
@@ -24,6 +23,9 @@ def test_function_experimental_decorator() -> None:
 
 
 def test_function_experimental_decorator_with_no_doc_string() -> None:
-    assert my_function_no_doc_string.__doc__ == "Note: This function is experimental and may change in the future."
+    assert (
+        my_function_no_doc_string.__doc__
+        == "Note: This function is experimental and may change in the future."
+    )
     assert hasattr(my_function_no_doc_string, "is_experimental")
     assert my_function_no_doc_string.is_experimental is True

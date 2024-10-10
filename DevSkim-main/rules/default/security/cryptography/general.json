@@ -1,0 +1,78 @@
+[
+    {
+        "name": "Disabled certificate validation",
+        "id": "DS101155",
+        "description": "Extend default certificate validation, but do not disable or override default rules.",
+        "recommendation": "Always use a valid certificate, even during testing.",
+        "tags": [
+            "Cryptography.Certificate.Validation"
+        ],
+        "confidence": "high",
+        "severity": "critical",
+        "rule_info": "DS181865.md",
+        "patterns": [
+            {
+                "pattern": "encrypt\\s*=\\s*false",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "encryption\\s*=\\s*false",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "unencrypted.*password",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "TODO.*crypt",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "encrypt=false"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "Initializing Security Context",
+        "id": "DS101159",
+        "description": "SecurityContext initialization, look here for cryptography functions.",
+        "recommendation": "",
+        "applies_to": [
+            "cpp"
+        ],
+        "tags": [
+            "Cryptography.SecurityContext.Initialization"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS101159.md",
+        "patterns": [
+            {
+                "pattern": "InitializeSecurityContext",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "InitializeSecurityContext"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

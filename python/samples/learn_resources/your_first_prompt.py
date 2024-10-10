@@ -23,7 +23,9 @@ async def main(delay: int = 0):
         "Tasks and Documents, make sure to include that in your request."
     )
     request = input("Your request: ")
-    arguments = KernelArguments(request=request, settings=PromptExecutionSettings(max_tokens=100))
+    arguments = KernelArguments(
+        request=request, settings=PromptExecutionSettings(max_tokens=100)
+    )
     # <InitialPrompt> 0.0 Initial prompt
     prompt = "What is the intent of this request? {{$request}}"
     # </InitialPrompt>
@@ -31,7 +33,10 @@ async def main(delay: int = 0):
     print("0.0 Initial prompt")
     print("-------------------------")
     result = await kernel.invoke_prompt(
-        function_name="sample_zero", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
+        function_name="sample_zero",
+        plugin_name="sample_plugin",
+        prompt=prompt,
+        arguments=arguments,
     )
     print(result)
     await asyncio.sleep(delay)
@@ -45,7 +50,10 @@ async def main(delay: int = 0):
     print("1.0 Make the prompt more specific")
     print("-------------------------")
     result = await kernel.invoke_prompt(
-        function_name="sample_one", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
+        function_name="sample_one",
+        plugin_name="sample_plugin",
+        prompt=prompt,
+        arguments=arguments,
     )
     print(result)
     await asyncio.sleep(delay)
@@ -60,7 +68,10 @@ async def main(delay: int = 0):
     print("2.0 Add structure to the output with formatting")
     print("-------------------------")
     result = await kernel.invoke_prompt(
-        function_name="sample_two", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
+        function_name="sample_two",
+        plugin_name="sample_plugin",
+        prompt=prompt,
+        arguments=arguments,
     )
     print(result)
     await asyncio.sleep(delay)
@@ -94,7 +105,10 @@ async def main(delay: int = 0):
     print("2.1 Add structure to the output with formatting (using Markdown and JSON)")
     print("-------------------------")
     result = await kernel.invoke_prompt(
-        function_name="sample_two_one", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
+        function_name="sample_two_one",
+        plugin_name="sample_plugin",
+        prompt=prompt,
+        arguments=arguments,
     )
     print(result)
     await asyncio.sleep(delay)
@@ -116,7 +130,10 @@ async def main(delay: int = 0):
     print("3.0 Provide examples with few-shot prompting")
     print("-------------------------")
     result = await kernel.invoke_prompt(
-        function_name="sample_three", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
+        function_name="sample_three",
+        plugin_name="sample_plugin",
+        prompt=prompt,
+        arguments=arguments,
     )
     print(result)
     await asyncio.sleep(delay)
@@ -139,7 +156,10 @@ async def main(delay: int = 0):
     print("4.0 Tell the AI what to do to avoid doing something wrong")
     print("-------------------------")
     result = await kernel.invoke_prompt(
-        function_name="sample_four", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
+        function_name="sample_four",
+        plugin_name="sample_plugin",
+        prompt=prompt,
+        arguments=arguments,
     )
     print(result)
     await asyncio.sleep(delay)
@@ -168,7 +188,10 @@ async def main(delay: int = 0):
     print("-------------------------")
     arguments["history"] = history
     result = await kernel.invoke_prompt(
-        function_name="sample_five", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
+        function_name="sample_five",
+        plugin_name="sample_plugin",
+        prompt=prompt,
+        arguments=arguments,
     )
     print(result)
     await asyncio.sleep(delay)
@@ -207,7 +230,9 @@ async def main(delay: int = 0):
         prompt=prompt,
         arguments=arguments,
         prompt_template_config=PromptTemplateConfig(
-            input_variables=[InputVariable(name="history", allow_dangerously_set_content=True)]
+            input_variables=[
+                InputVariable(name="history", allow_dangerously_set_content=True)
+            ]
         ),
     )
     print(result)
@@ -248,7 +273,9 @@ async def main(delay: int = 0):
         prompt=prompt,
         arguments=arguments,
         prompt_template_config=PromptTemplateConfig(
-            input_variables=[InputVariable(name="history", allow_dangerously_set_content=True)]
+            input_variables=[
+                InputVariable(name="history", allow_dangerously_set_content=True)
+            ]
         ),
     )
     print(result)

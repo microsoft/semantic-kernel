@@ -3,14 +3,63 @@
 import logging
 from collections.abc import Mapping
 from typing import Any, TypeVar
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+from typing import Dict, Mapping, Optional, overload
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+from typing import Dict, Mapping, Optional, overload
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
-from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
+    OpenAIConfigBase,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIModelTypes,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
+    OpenAITextEmbeddingBase,
+)
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import (
+    OpenAISettings,
+)
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -33,6 +82,47 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+        ai_model_id: str,
+        async_client: AsyncOpenAI,
+        service_id: Optional[str] = None,
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        ai_model_id: str,
+        async_client: AsyncOpenAI,
+        service_id: Optional[str] = None,
     ) -> None:
         """Initializes a new instance of the OpenAITextCompletion class.
 
@@ -45,6 +135,101 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             org_id (str | None): The optional org ID to use. If provided will override,
                 the env vars or .env file value.
             default_headers (Mapping[str,str] | None): The default headers mapping of string keys to
+            async_client {AsyncOpenAI} -- An existing client to use.
+        """
+
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        org_id: Optional[str] = None,
+        service_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        async_client: Optional[AsyncOpenAI] = None,
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+    ) -> None:
+        """Initializes a new instance of the OpenAITextCompletion class.
+
+        Args:
+            ai_model_id (str): OpenAI model name, see
+                https://platform.openai.com/docs/models
+            service_id (str | None): Service ID tied to the execution settings.
+            api_key (str | None): The optional API key to use. If provided will override,
+                the env vars or .env file value.
+            org_id (str | None): The optional org ID to use. If provided will override,
+                the env vars or .env file value.
+            default_headers (Mapping[str,str] | None): The default headers mapping of string keys to
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+            async_client {AsyncOpenAI} -- An existing client to use.
+        """
+
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: Optional[str] = None,
+        org_id: Optional[str] = None,
+        service_id: Optional[str] = None,
+        default_headers: Optional[Mapping[str, str]] = None,
+        async_client: Optional[AsyncOpenAI] = None,
+>>>>>>> origin/main
+    ) -> None:
+        """Initializes a new instance of the OpenAITextCompletion class.
+
+        Args:
+            ai_model_id (str): OpenAI model name, see
+                https://platform.openai.com/docs/models
+<<<<<<< main
+            service_id (str | None): Service ID tied to the execution settings.
+            api_key (str | None): The optional API key to use. If provided will override,
+                the env vars or .env file value.
+            org_id (str | None): The optional org ID to use. If provided will override,
+                the env vars or .env file value.
+            default_headers (Mapping[str,str] | None): The default headers mapping of string keys to
+=======
+            api_key {str} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys
+            org_id {Optional[str]} -- OpenAI organization ID.
+                This is usually optional unless your
+                account belongs to multiple organizations.
+            default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
                 string values for HTTP requests. (Optional)
             async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as
@@ -60,14 +245,63 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
+            raise ServiceInitializationError(
+                "Failed to create OpenAI settings.", ex
+            ) from ex
         if not openai_settings.embedding_model_id:
-            raise ServiceInitializationError("The OpenAI embedding model ID is required.")
+            raise ServiceInitializationError(
+                "The OpenAI embedding model ID is required."
+            )
         super().__init__(
             ai_model_id=openai_settings.embedding_model_id,
-            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            api_key=(
+                openai_settings.api_key.get_secret_value()
+                if openai_settings.api_key
+                else None
+            ),
             ai_model_type=OpenAIModelTypes.EMBEDDING,
             org_id=openai_settings.org_id,
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+            org_id=org_id,
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            org_id=org_id,
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
             service_id=service_id,
             default_headers=default_headers,
             client=async_client,
@@ -87,4 +321,45 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers", {}),
             env_file_path=settings.get("env_file_path"),
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+            default_headers=settings.get("default_headers"),
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            default_headers=settings.get("default_headers"),
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         )

@@ -1,0 +1,46 @@
+[
+    {
+        "name": "Go - Hard-coded SSL/TLS Protocol",
+        "id": "DS112852",
+        "description": "Go - Hard-coded SSL/TLS Protocol",
+        "recommendation": "Review to ensure that a TLS protocol agility is maintained.",
+        "applies_to": [
+            "go"
+        ],
+        "overrides": [
+            "DS440000"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS.Hard-Coded"
+        ],
+        "confidence": "high",
+        "severity": "ManualReview",
+        "rule_info": "DS440000.md",
+        "patterns": [
+            {
+                "pattern": "tls13|VersionSSL30|VersionTLS1[0123]",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://golang.org/src/crypto/tls/common.go"
+            },
+            {
+                "pattern": "tls\\.Curve(P256|P384|P521)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://golang.org/src/crypto/tls/common.go"
+            },
+            {
+                "pattern": "X25519",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ],
+                "_comment": "https://golang.org/src/crypto/tls/common.go"
+            }           
+        ]
+    }
+]

@@ -11,17 +11,31 @@ from urllib.parse import urlparse, urlunparse
 import httpx
 from openapi_core import Spec
 
-from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import (
+    RestApiOperation,
+)
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_expected_response import (
     RestApiOperationExpectedResponse,
 )
+<<<<<<< main
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload import (
+    RestApiOperationPayload,
+)
+from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_run_options import (
+    RestApiOperationRunOptions,
+)
+=======
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload import RestApiOperationPayload
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_run_options import RestApiOperationRunOptions
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
+>>>>>>> origin/PR
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.utils.telemetry.user_agent import (
+    APP_INFO,
+    prepend_semantic_kernel_to_user_agent,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -36,7 +50,9 @@ class OpenApiRunner:
     def __init__(
         self,
         parsed_openapi_document: Mapping[str, str],
-        auth_callback: Callable[..., dict[str, str] | Awaitable[dict[str, str]]] | None = None,
+        auth_callback: (
+            Callable[..., dict[str, str] | Awaitable[dict[str, str]]] | None
+        ) = None,
         http_client: httpx.AsyncClient | None = None,
         enable_dynamic_payload: bool = True,
         enable_payload_namespacing: bool = False,
@@ -55,10 +71,16 @@ class OpenApiRunner:
         return urlunparse(url_parts)
 
     def build_operation_url(
-        self, operation: RestApiOperation, arguments: KernelArguments, server_url_override=None, api_host_url=None
+        self,
+        operation: RestApiOperation,
+        arguments: KernelArguments,
+        server_url_override=None,
+        api_host_url=None,
     ):
         """Build the operation URL."""
-        url = operation.build_operation_url(arguments, server_url_override, api_host_url)
+        url = operation.build_operation_url(
+            arguments, server_url_override, api_host_url
+        )
         return self.build_full_url(url, operation.build_query_string(arguments))
 
     def build_json_payload(
@@ -77,7 +99,9 @@ class OpenApiRunner:
 
         argument = arguments.get(self.payload_argument_name)
         if not isinstance(argument, str):
-            raise FunctionExecutionException(f"No payload is provided by the argument '{self.payload_argument_name}'.")
+            raise FunctionExecutionException(
+                f"No payload is provided by the argument '{self.payload_argument_name}'."
+            )
 
         return argument, argument
 
@@ -86,9 +110,13 @@ class OpenApiRunner:
         result = {}
 
         for property_metadata in properties:
-            argument_name = self.get_argument_name_for_payload(property_metadata.name, property_namespace)
+            argument_name = self.get_argument_name_for_payload(
+                property_metadata.name, property_namespace
+            )
             if property_metadata.type == "object":
-                node = self.build_json_object(property_metadata.properties, arguments, argument_name)
+                node = self.build_json_object(
+                    property_metadata.properties, arguments, argument_name
+                )
                 result[property_metadata.name] = node
                 continue
             property_value = arguments.get(argument_name)
@@ -105,7 +133,10 @@ class OpenApiRunner:
         self, operation: RestApiOperation, arguments: KernelArguments
     ) -> tuple[str, str] | tuple[None, None]:
         """Build the operation payload."""
-        if operation.request_body is None and self.payload_argument_name not in arguments:
+        if (
+            operation.request_body is None
+            and self.payload_argument_name not in arguments
+        ):
             return None, None
 
         if operation.request_body is not None:
@@ -117,14 +148,22 @@ class OpenApiRunner:
         """Get argument name for the payload."""
         if not self.enable_payload_namespacing:
             return property_name
-        return f"{property_namespace}.{property_name}" if property_namespace else property_name
+        return (
+            f"{property_namespace}.{property_name}"
+            if property_namespace
+            else property_name
+        )
 
     def _get_first_response_media_type(
         self, responses: OrderedDict[str, RestApiOperationExpectedResponse] | None
     ) -> str:
         if responses:
             first_response = next(iter(responses.values()))
-            return first_response.media_type if first_response.media_type else self.media_type_application_json
+            return (
+                first_response.media_type
+                if first_response.media_type
+                else self.media_type_application_json
+            )
         return self.media_type_application_json
 
     async def run_operation(
@@ -144,7 +183,9 @@ class OpenApiRunner:
             api_host_url=options.api_host_url if options else None,
         )
         headers = operation.build_headers(arguments=arguments)
-        payload, _ = self.build_operation_payload(operation=operation, arguments=arguments)
+        payload, _ = self.build_operation_payload(
+            operation=operation, arguments=arguments
+        )
 
         if self.auth_callback:
             headers_update = self.auth_callback(**headers)

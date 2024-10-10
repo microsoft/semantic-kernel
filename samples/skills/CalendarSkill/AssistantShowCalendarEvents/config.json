@@ -1,0 +1,96 @@
+{
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "description": "",
+  "type": "completion",
+  "completion": {
+=======
+  "description": "",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "",
+  "default_settings": {
+>>>>>>> origin/main
+=======
+  "description": "",
+  "default_settings": {
+>>>>>>> Stashed changes
+    "max_tokens": 100,
+    "temperature": 0.2,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "stop_sequences": [
+      "\n"
+    ]
+  },
+  "default_backends": [
+    "text-davinci-003"
+  ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+    "stop_sequences": ["\n"]
+  }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    "stop_sequences": ["\n"]
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+}

@@ -1,0 +1,96 @@
+{
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "type": "completion",
+  "completion": {
+=======
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "default_settings": {
+>>>>>>> origin/main
+=======
+  "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
+  "default_settings": {
+>>>>>>> Stashed changes
+    "max_tokens": 256,
+    "temperature": 0.0,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "stop_sequences": [
+      "# Done"
+    ]
+  },
+  "default_backends": [
+    "code-davinci-002"
+  ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+    "stop_sequences": ["# Done"]
+  }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    "stop_sequences": ["# Done"]
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+}

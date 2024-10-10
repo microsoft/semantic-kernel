@@ -1,11 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any, Literal
 
-from pydantic import Field, model_validator
+if sys.version_info >= (3, 11):
+    pass  # pragma: no cover
+else:
+    pass  # pragma: no cover
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from pydantic import Field
+
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +36,27 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
     random_seed: int | None = None
+<<<<<<< main
 
     @model_validator(mode="after")
     def check_function_call_behavior(self) -> "MistralAIChatPromptExecutionSettings":
         """Check if the user is requesting function call behavior."""
         if self.function_choice_behavior is not None:
-            raise NotImplementedError("MistralAI does not support function call behavior.")
-            
+            raise NotImplementedError(
+                "MistralAI does not support function call behavior."
+            )
+
         return self
+=======
+    tools: list[dict[str, Any]] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    tool_choice: str | None = Field(
+        None,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    
+    
+>>>>>>> upstream/main

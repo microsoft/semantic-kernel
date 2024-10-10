@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
-using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -9,10 +8,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace Agents;
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
-/// eliciting its response to three explicit user messages.
+/// Demonstrate consuming "streaming" message for <see cref="ChatCompletionAgent"/>.
 /// </summary>
-public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(output)
+public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string ParrotName = "Parrot";
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
@@ -35,6 +33,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(outpu
         await InvokeAgentAsync(agent, chat, "Fortune favors the bold.");
         await InvokeAgentAsync(agent, chat, "I came, I saw, I conquered.");
         await InvokeAgentAsync(agent, chat, "Practice makes perfect.");
+
+        // Output the entire chat history
+        DisplayChatHistory(chat);
     }
 
     [Fact]
@@ -49,7 +50,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(outpu
                 Name = "Host",
                 Instructions = MenuInstructions,
                 Kernel = this.CreateKernelWithChatCompletion(),
-                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
@@ -61,37 +62,312 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(outpu
         // Respond to user input
         await InvokeAgentAsync(agent, chat, "What is the special soup?");
         await InvokeAgentAsync(agent, chat, "What is the special drink?");
+
+        // Output the entire chat history
+        DisplayChatHistory(chat);
     }
 
     // Local function to invoke agent and display the conversation messages.
     private async Task InvokeAgentAsync(ChatCompletionAgent agent, ChatHistory chat, string input)
     {
-        chat.Add(new ChatMessageContent(AuthorRole.User, input));
-
-        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+        ChatMessageContent message = new(AuthorRole.User, input);
+        chat.Add(message);
+        this.WriteAgentChatMessage(message);
+<<<<<<< main
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 
         StringBuilder builder = new();
-        await foreach (StreamingChatMessageContent message in agent.InvokeStreamingAsync(chat))
+=======
+
+        int historyCount = chat.Count;
+
+        bool isFirst = false;
+>>>>>>> upstream/main
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+=======
+
+        StringBuilder builder = new();
+>>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
         {
-            if (string.IsNullOrEmpty(message.Content))
+            if (string.IsNullOrEmpty(response.Content))
             {
                 continue;
             }
 
-            if (builder.Length == 0)
+            if (!isFirst)
             {
-                Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}:");
+<<<<<<< main
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+                Console.WriteLine($"# {response.Role} - {response.AuthorName ?? "*"}:");
             }
 
-            Console.WriteLine($"\t > streamed: '{message.Content}'");
-            builder.Append(message.Content);
+            Console.WriteLine($"\t > streamed: '{response.Content}'");
+            builder.Append(response.Content);
+=======
+                Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
+                isFirst = true;
+            }
+
+            Console.WriteLine($"\t > streamed: '{response.Content}'");
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+=======
+                Console.WriteLine($"# {response.Role} - {response.AuthorName ?? "*"}:");
+            }
+
+            Console.WriteLine($"\t > streamed: '{response.Content}'");
+            builder.Append(response.Content);
+>>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         }
 
-        if (builder.Length > 0)
+        if (historyCount <= chat.Count)
         {
+            for (int index = historyCount; index < chat.Count; index++)
+            {
+                this.WriteAgentChatMessage(chat[index]);
+            }
+>>>>>>> upstream/main
+        }
+    }
+
+    private void DisplayChatHistory(ChatHistory history)
+    {
+        // Display the chat history.
+        Console.WriteLine("================================");
+        Console.WriteLine("CHAT HISTORY");
+        Console.WriteLine("================================");
+
+        foreach (ChatMessageContent message in history)
+        {
+<<<<<<< main
             // Display full response and capture in chat history
-            Console.WriteLine($"\t > complete: '{builder}'");
-            chat.Add(new ChatMessageContent(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name });
+            ChatMessageContent response = new(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name };
+            chat.Add(response);
+            this.WriteAgentChatMessage(response);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+            this.WriteAgentChatMessage(message);
+>>>>>>> upstream/main
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+            this.WriteAgentChatMessage(message);
+>>>>>>> upstream/main
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+            this.WriteAgentChatMessage(message);
+>>>>>>> upstream/main
+=======
+>>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
         }
     }
 

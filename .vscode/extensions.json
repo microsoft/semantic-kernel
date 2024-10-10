@@ -4,10 +4,23 @@
     "ms-dotnettools.csharp",
     "vscjava.vscode-gradle",
     "github.copilot-chat",
-    "github.copilot",
     "franneck94.c-cpp-runner",
     "ms-azuretools.vscode-azureresourcegroups",
+<<<<<<< main
+    "quarto.quarto",
+    "stateful.runme"
+    "sourcery.sourcery",
+    "ms-toolsai.jupyter",
+    "geequlim.godot-tools",
+    "ms-vscode.powershell"
+=======
     "ms-python.debugpy",
     "atariq11700.debugpy-old"
+<<<<<<< main
+>>>>>>> origin/PR
+=======
+    "ms-dotnettools.dotnet-interactive-vscode",
+    "ms-vscode-remote.remote-containers"
+>>>>>>> origin/Bryan-Roe/issue389
   ]
 }

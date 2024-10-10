@@ -4,10 +4,14 @@ from typing import Any
 
 from transformers import GenerationConfig
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 
 
 class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
+    """Hugging Face prompt execution settings."""
+
     do_sample: bool = True
     max_new_tokens: int = 256
     num_return_sequences: int = 1
@@ -21,7 +25,13 @@ class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
         """Get the generation config."""
         return GenerationConfig(
             **self.model_dump(
-                include={"max_new_tokens", "pad_token_id", "eos_token_id", "temperature", "top_p"},
+                include={
+                    "max_new_tokens",
+                    "pad_token_id",
+                    "eos_token_id",
+                    "temperature",
+                    "top_p",
+                },
                 exclude_unset=False,
                 exclude_none=True,
                 by_alias=True,

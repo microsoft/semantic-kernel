@@ -6,17 +6,20 @@ Please follow the [Azure Container Apps Documentation](https://learn.microsoft.c
 
 ## Configuring the Python Plugin
 
-To successfully use the Python Plugin in Semantic Kernel, you must install the Poetry `azure` extras by running `poetry install -E azure`.
+To successfully use the Python Plugin in Semantic Kernel, you must install the `azure` extras by running `uv sync --extra azure` or `pip install semantic-kernel[azure]`.
 
 Next, as an environment variable or in the .env file, add the `poolManagementEndpoint` value from above to the variable `ACA_POOL_MANAGEMENT_ENDPOINT`. The `poolManagementEndpoint` should look something like:
 
-```html
+```html {"id":"01J6KPQPB3JXBW56YBJ6P489J4"}
 https://eastus.acasessions.io/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroup}}/sessionPools/{{sessionPool}}/python/execute
 ```
 
-It is possible to add the code interpreter plugin as follows:
+You can also provide the the `ACA_TOKEN_ENDPOINT` if you want to override the default value of `https://acasessions.io/.default`. If this token endpoint doesn't need to be overridden, then it is
+not necessary to include this as an environment variable, in the .env file, or via the plugin's constructor. Please follow the [Azure Container Apps Documentation](https://learn.microsoft.com/en-us/azure/container-apps/sessions-code-interpreter) to review the proper role required to authenticate with the `DefaultAzureCredential`.
 
-```python
+Next, let's move on to implementing the plugin in code. It is possible to add the code interpreter plugin as follows:
+
+```python {"id":"01J6KPQPB3JXBW56YBJ9JYMTVB"}
 kernel = Kernel()
 
 service_id = "azure_oai"
@@ -41,7 +44,7 @@ Instead of hard-coding a well-formatted Python code string, you may use automati
 
 The authentication callback must return a valid token for the session pool. One possible way of doing this with a `DefaultAzureCredential` is as follows:
 
-```python
+```python {"id":"01J6KPQPB3JXBW56YBJDHT7FXV"}
 async def auth_callback() -> str:
     """Auth callback for the SessionsPythonTool.
     This is a sample auth callback that shows how to use Azure's DefaultAzureCredential

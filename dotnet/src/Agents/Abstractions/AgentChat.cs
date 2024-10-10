@@ -2,12 +2,99 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+using System.Text.Json;
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+using System.Text.Json;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.Text.Json;
+>>>>>>> main
+>>>>>>> Stashed changes
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Agents.Internal;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+using Microsoft.SemanticKernel.Agents.Internal;
+=======
+using Microsoft.SemanticKernel.Agents.Filters;
+using Microsoft.SemanticKernel.Agents.Internal;
+using Microsoft.SemanticKernel.Agents.Serialization;
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.Agents.Filters;
+using Microsoft.SemanticKernel.Agents.Internal;
+using Microsoft.SemanticKernel.Agents.Serialization;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -26,9 +113,67 @@ public abstract class AgentChat
     private readonly Dictionary<Agent, string> _channelMap; // Map agent to its channel-hash: one entry per agent.
 
     private int _isActive;
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private ILogger? _logger;
 
     /// <summary>
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+    private ILogger? _logger;
+
+    /// <summary>
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+    private List<IAgentChatFilter>? _filters;
+    private ILogger? _logger;
+
+    /// <summary>
+    /// The agents participating in the chat.
+    /// </summary>
+    public abstract IReadOnlyList<Agent> Agents { get; }
+
+    /// <summary>
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Indicates if a chat operation is active.  Activity is defined as
     /// any the execution of any public method.
     /// </summary>
@@ -45,6 +190,55 @@ public abstract class AgentChat
     protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
 
     /// <summary>
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+    /// %%%
+    /// </summary>
+    public IList<IAgentChatFilter> Filters => this._filters ??= [];
+
+    /// <summary>
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// Exposes the internal history to subclasses.
     /// </summary>
     protected ChatHistory History { get; }
@@ -55,6 +249,13 @@ public abstract class AgentChat
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Process a series of interactions between the agents participating in this chat.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieve the chat history.
@@ -211,9 +412,54 @@ public abstract class AgentChat
 
         try
         {
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+            // %%%
+            this.OnAgentInvokingFilter(agent, this.History);
+
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            // %%%
+            this.OnAgentInvokingFilter(agent, this.History);
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             // Get or create the required channel and block until channel is synchronized.
             // Will throw exception when propagating a processing failure.
-            AgentChannel channel = await GetOrCreateChannelAsync().ConfigureAwait(false);
+            AgentChannel channel = await this.GetOrCreateChannelAsync(agent, cancellationToken).ConfigureAwait(false);
 
             // Invoke agent & process response
             List<ChatMessageContent> messages = [];
@@ -226,14 +472,115 @@ public abstract class AgentChat
 
                 // Add to primary history
                 this.History.Add(message);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+                // Invoke filter
+                AgentChatFilterInvokedContext? context = this.OnAgentInvokedFilter(agent, this.History, message);
+
+                // Capture potential message replacement
+                ChatMessageContent effectiveMessage = context?.Message ?? message;
+
+                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType(), message);
+
+                // Add to primary history
+                this.History.Add(effectiveMessage);
+                messages.Add(effectiveMessage);
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
                 if (isVisible)
+                // Don't expose internal messages to caller.
                 // Don't expose function-call and function-result messages to caller.
                 if (message.Items.All(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
                     // Yield message to caller
                     yield return message;
                 }
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+
+                // Yield message to caller
+                yield return effectiveMessage;
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+
+                // Yield message to caller
+                yield return effectiveMessage;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
             }
 
             // Broadcast message to other channels (in parallel)
@@ -250,32 +597,181 @@ public abstract class AgentChat
         {
             this.ClearActivitySignal(); // Signal activity hash completed
         }
+    }
 
-        async Task<AgentChannel> GetOrCreateChannelAsync()
+    /// <summary>
+    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
+    /// </summary>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    /// will throw exception if concurrent activity is attempted.
+    /// </remarks>
+    protected async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAgentAsync(
+        Agent agent,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        this.SetActivityOrThrow(); // Disallow concurrent access to chat history
+
+        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+
+        try
         {
-            string channelKey = this.GetAgentHash(agent);
-            AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
-            if (channel is null)
+            // Get or create the required channel and block until channel is synchronized.
+            // Will throw exception when propagating a processing failure.
+            AgentChannel channel = await this.GetOrCreateChannelAsync(agent, cancellationToken).ConfigureAwait(false);
+
+            // Invoke agent & process response
+            ChatHistory messages = [];
+
+            await foreach (StreamingChatMessageContent streamingContent in channel.InvokeStreamingAsync(agent, messages, cancellationToken).ConfigureAwait(false))
             {
-                this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
-
-                channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
-
-                this._agentChannels.Add(channelKey, channel);
-
-                if (this.History.Count > 0)
-                {
-                    // Sync channel with existing history
-                    await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
-                }
-
-                this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+                yield return streamingContent;
             }
 
-            return channel;
+            this.History.AddRange(messages);
+
+            this.Logger.LogAgentChatInvokedStreamingAgentMessages(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, messages);
+
+            // Broadcast message to other channels (in parallel)
+            // Note: Able to queue messages without synchronizing channels.
+            var channelRefs =
+                this._agentChannels
+                    .Where(kvp => kvp.Value != channel)
+                    .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
+            this._broadcastQueue.Enqueue(channelRefs, messages);
+
+            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        }
+        finally
+        {
+            this.ClearActivitySignal(); // Signal activity hash completed
         }
     }
 
+    /// <summary>
+    /// Reset the chat, clearing all history and persisted state.
+    /// All agents will remain present.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public async Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        this.SetActivityOrThrow(); // Disallow concurrent access to chat
+
+        try
+        {
+            Task[] resetTasks = this._agentChannels.Values.Select(c => c.ResetAsync(cancellationToken)).ToArray();
+            await Task.WhenAll(resetTasks).ConfigureAwait(false);
+            this._agentChannels.Clear();
+            this._channelMap.Clear();
+            this.History.Clear();
+        }
+        finally
+        {
+            this.ClearActivitySignal();
+        }
+    }
+
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+    internal async Task DeserializeAsync(AgentChatState state)
+    {
+        if (this._agentChannels.Count > 0 || this.History.Count > 0)
+        {
+            throw new KernelException($"Unable to restore chat to instance of {this.GetType().Name}: Already in use.");
+        }
+
+        try
+        {
+            Dictionary<string, AgentChannelState> channelStateMap = state.Channels.ToDictionary(c => c.ChannelKey);
+            foreach (Agent agent in this.Agents)
+            {
+                string channelKey = this.GetAgentHash(agent);
+
+                if (this._agentChannels.ContainsKey(channelKey))
+                {
+                    continue;
+                }
+
+                AgentChannel channel = await agent.RestoreChannelAsync(channelStateMap[channelKey].ChannelState, CancellationToken.None).ConfigureAwait(false);
+                this._agentChannels.Add(channelKey, channel);
+                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
+            }
+
+            IEnumerable<ChatMessageContent>? history = JsonSerializer.Deserialize<IEnumerable<ChatMessageContent>>(state.History);
+            if (history != null)
+            {
+                this.History.AddRange(history);
+            }
+        }
+        catch
+        {
+            this._agentChannels.Clear();
+            this.History.Clear();
+            throw;
+        }
+    }
+
+    internal AgentChatState Serialize() =>
+        new()
+        {
+            Participants = this.Agents.Select(a => new AgentParticipant(a)),
+            History = JsonSerializer.Serialize(ChatMessageReference.Prepare(this.History)),
+            Channels =
+                this._agentChannels.Select(
+                    kvp =>
+                        new AgentChannelState
+                        {
+                            ChannelKey = kvp.Key,
+                            ChannelType = kvp.Value.GetType().FullName!,
+                            ChannelState = kvp.Value.Serialize()
+                        })
+        };
+
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>
     /// Clear activity signal to indicate that activity has ceased.
     /// </summary>
@@ -295,7 +791,7 @@ public abstract class AgentChat
     /// The activity signal is used to manage ability and visibility for taking actions based
     /// on conversation history.
     /// </remarks>
-    private void SetActivityOrThrow()
+    protected void SetActivityOrThrow()
     {
         // Note: Interlocked is the absolute lightest synchronization mechanism available in dotnet.
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
@@ -318,6 +814,30 @@ public abstract class AgentChat
         return hash;
     }
 
+    private async Task<AgentChannel> GetOrCreateChannelAsync(Agent agent, CancellationToken cancellationToken)
+    {
+        string channelKey = this.GetAgentHash(agent);
+        AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
+        if (channel is null)
+        {
+            this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+
+            channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
+
+            this._agentChannels.Add(channelKey, channel);
+
+            if (this.History.Count > 0)
+            {
+                // Sync channel with existing history
+                await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
+            }
+
+            this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        }
+
+        return channel;
+    }
+
     private async Task<AgentChannel?> SynchronizeChannelAsync(string channelKey, CancellationToken cancellationToken)
     {
         if (this._agentChannels.TryGetValue(channelKey, out AgentChannel? channel))
@@ -329,6 +849,84 @@ public abstract class AgentChat
         return channel;
     }
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+    private AgentChatFilterInvokingContext? OnAgentInvokingFilter(Agent agent, IReadOnlyList<ChatMessageContent> history)
+    {
+        AgentChatFilterInvokingContext? context = null;
+
+        if (this._filters is { Count: > 0 })
+        {
+            context = new(agent, history);
+
+            for (int i = 0; i < this._filters.Count; i++)
+            {
+                this._filters[i].OnAgentInvoking(context);
+            }
+        }
+
+        return context;
+    }
+
+    private AgentChatFilterInvokedContext? OnAgentInvokedFilter(Agent agent, IReadOnlyList<ChatMessageContent> history, ChatMessageContent message)
+    {
+        AgentChatFilterInvokedContext? context = null;
+
+        if (this._filters is { Count: > 0 })
+        {
+            context = new(agent, history, message);
+
+            for (int i = 0; i < this._filters.Count; i++)
+            {
+                this._filters[i].OnAgentInvoked(context);
+            }
+        }
+
+        return context;
+    }
+
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentChat"/> class.
     /// </summary>

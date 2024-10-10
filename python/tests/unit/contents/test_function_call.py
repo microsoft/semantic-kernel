@@ -13,7 +13,9 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 def test_init_from_names():
     # Test initializing function call from names
-    fc = FunctionCallContent(function_name="Function", plugin_name="Test", arguments="""{"input": "world"}""")
+    fc = FunctionCallContent(
+        function_name="Function", plugin_name="Test", arguments="""{"input": "world"}"""
+    )
     assert fc.name == "Test-Function"
     assert fc.function_name == "Function"
     assert fc.plugin_name == "Test"
@@ -23,7 +25,9 @@ def test_init_from_names():
 
 def test_init_dict_args():
     # Test initializing function call with the args already as a dictionary
-    fc = FunctionCallContent(function_name="Function", plugin_name="Test", arguments={"input": "world"})
+    fc = FunctionCallContent(
+        function_name="Function", plugin_name="Test", arguments={"input": "world"}
+    )
     assert fc.name == "Test-Function"
     assert fc.function_name == "Function"
     assert fc.plugin_name == "Test"
@@ -33,7 +37,9 @@ def test_init_dict_args():
 
 def test_init_with_metadata():
     # Test initializing function call from names
-    fc = FunctionCallContent(function_name="Function", plugin_name="Test", metadata={"test": "test"})
+    fc = FunctionCallContent(
+        function_name="Function", plugin_name="Test", metadata={"test": "test"}
+    )
     assert fc.name == "Test-Function"
     assert fc.function_name == "Function"
     assert fc.plugin_name == "Test"
@@ -49,7 +55,9 @@ def test_function_call(function_call: FunctionCallContent):
 
 def test_add(function_call: FunctionCallContent):
     # Test adding two function calls
-    fc2 = FunctionCallContent(id="test", name="Test-Function", arguments="""{"input2": "world2"}""")
+    fc2 = FunctionCallContent(
+        id="test", name="Test-Function", arguments="""{"input2": "world2"}"""
+    )
     fc3 = function_call + fc2
     assert fc3.name == "Test-Function"
     assert fc3.arguments == """{"input": "world"}{"input2": "world2"}"""
@@ -62,13 +70,17 @@ def test_add_empty():
     fc3 = fc1 + fc2
     assert fc3.name == "Test-Function"
     assert fc3.arguments == "{}"
-    fc1 = FunctionCallContent(id="test1", name="Test-Function", arguments="""{"input2": "world2"}""")
+    fc1 = FunctionCallContent(
+        id="test1", name="Test-Function", arguments="""{"input2": "world2"}"""
+    )
     fc2 = FunctionCallContent(id="test1", name="Test-Function", arguments="")
     fc3 = fc1 + fc2
     assert fc3.name == "Test-Function"
     assert fc3.arguments == """{"input2": "world2"}"""
     fc1 = FunctionCallContent(id="test1", name="Test-Function", arguments="{}")
-    fc2 = FunctionCallContent(id="test1", name="Test-Function", arguments="""{"input2": "world2"}""")
+    fc2 = FunctionCallContent(
+        id="test1", name="Test-Function", arguments="""{"input2": "world2"}"""
+    )
     fc3 = fc1 + fc2
     assert fc3.name == "Test-Function"
     assert fc3.arguments == """{"input2": "world2"}"""
@@ -84,8 +96,12 @@ def test_add_none(function_call: FunctionCallContent):
 
 def test_add_dict_args():
     # Test adding two function calls
-    fc1 = FunctionCallContent(id="test1", name="Test-Function", arguments={"input1": "world"})
-    fc2 = FunctionCallContent(id="test1", name="Test-Function", arguments={"input2": "world2"})
+    fc1 = FunctionCallContent(
+        id="test1", name="Test-Function", arguments={"input1": "world"}
+    )
+    fc2 = FunctionCallContent(
+        id="test1", name="Test-Function", arguments={"input2": "world2"}
+    )
     fc3 = fc1 + fc2
     assert fc3.name == "Test-Function"
     assert fc3.arguments == {"input1": "world", "input2": "world2"}
@@ -93,24 +109,36 @@ def test_add_dict_args():
 
 def test_add_one_dict_args_fail():
     # Test adding two function calls
-    fc1 = FunctionCallContent(id="test1", name="Test-Function", arguments="""{"input1": "world"}""")
-    fc2 = FunctionCallContent(id="test1", name="Test-Function", arguments={"input2": "world2"})
+    fc1 = FunctionCallContent(
+        id="test1", name="Test-Function", arguments="""{"input1": "world"}"""
+    )
+    fc2 = FunctionCallContent(
+        id="test1", name="Test-Function", arguments={"input2": "world2"}
+    )
     with pytest.raises(ContentAdditionException):
         fc1 + fc2
 
 
 def test_add_fail_id():
     # Test adding two function calls
-    fc1 = FunctionCallContent(id="test1", name="Test-Function", arguments="""{"input2": "world2"}""")
-    fc2 = FunctionCallContent(id="test2", name="Test-Function", arguments="""{"input2": "world2"}""")
+    fc1 = FunctionCallContent(
+        id="test1", name="Test-Function", arguments="""{"input2": "world2"}"""
+    )
+    fc2 = FunctionCallContent(
+        id="test2", name="Test-Function", arguments="""{"input2": "world2"}"""
+    )
     with pytest.raises(ContentAdditionException):
         fc1 + fc2
 
 
 def test_add_fail_index():
     # Test adding two function calls
-    fc1 = FunctionCallContent(id="test", index=0, name="Test-Function", arguments="""{"input2": "world2"}""")
-    fc2 = FunctionCallContent(id="test", index=1, name="Test-Function", arguments="""{"input2": "world2"}""")
+    fc1 = FunctionCallContent(
+        id="test", index=0, name="Test-Function", arguments="""{"input2": "world2"}"""
+    )
+    fc2 = FunctionCallContent(
+        id="test", index=1, name="Test-Function", arguments="""{"input2": "world2"}"""
+    )
     with pytest.raises(ContentAdditionException):
         fc1 + fc2
 
@@ -122,7 +150,9 @@ def test_parse_arguments(function_call: FunctionCallContent):
 
 def test_parse_arguments_dict():
     # Test parsing arguments to dictionary
-    fc = FunctionCallContent(id="test", name="Test-Function", arguments={"input": "world"})
+    fc = FunctionCallContent(
+        id="test", name="Test-Function", arguments={"input": "world"}
+    )
     assert fc.parse_arguments() == {"input": "world"}
 
 
@@ -134,7 +164,9 @@ def test_parse_arguments_none():
 
 def test_parse_arguments_fail():
     # Test parsing arguments to dictionary
-    fc = FunctionCallContent(id=None, name="Test-Function", arguments="""{"input": "world}""")
+    fc = FunctionCallContent(
+        id=None, name="Test-Function", arguments="""{"input": "world}"""
+    )
     with pytest.raises(FunctionCallInvalidArgumentsException):
         fc.parse_arguments()
 
@@ -166,7 +198,10 @@ def test_split_name_name_only():
 
 def test_split_name_dict(function_call: FunctionCallContent):
     # Test splitting the name into plugin and function name
-    assert function_call.split_name_dict() == {"plugin_name": "Test", "function_name": "Function"}
+    assert function_call.split_name_dict() == {
+        "plugin_name": "Test",
+        "function_name": "Function",
+    }
 
 
 def test_split_name_none():

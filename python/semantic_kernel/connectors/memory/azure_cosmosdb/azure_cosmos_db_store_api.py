@@ -11,6 +11,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 # Abstract class similar to the original data store that allows API level abstraction
 @experimental_class
 class AzureCosmosDBStoreApi(ABC):
+    """AzureCosmosDBStoreApi."""
+
     @abstractmethod
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in the data store.
@@ -68,7 +70,9 @@ class AzureCosmosDBStoreApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upserts a group of memory records into the data store.
 
         Does not guarantee that the collection exists.
@@ -85,7 +89,9 @@ class AzureCosmosDBStoreApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
         Args:
@@ -99,7 +105,9 @@ class AzureCosmosDBStoreApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
+    async def get_batch(
+        self, collection_name: str, keys: list[str], with_embeddings: bool
+    ) -> list[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Args:

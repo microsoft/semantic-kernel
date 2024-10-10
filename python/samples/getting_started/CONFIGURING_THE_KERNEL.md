@@ -8,18 +8,19 @@ If interested, as you learn more about Semantic Kernel, there are a few other wa
 
 Set the keys/secrets/endpoints as environment variables in your system. In Semantic Kernel, we leverage Pydantic Settings. If using Environment Variables, it isn't required to pass in explicit arguments to class constructors.
 
-**NOTE: Please make sure to include `GLOBAL_LLM_SERVICE` set to either OpenAI, AzureOpenAI, or HuggingFace in your .env file or environment variables. If this setting is not included, the Service will default to AzureOpenAI.**
+__NOTE: Please make sure to include `GLOBAL_LLM_SERVICE` set to either OpenAI, AzureOpenAI, or HuggingFace in your .env file or environment variables. If this setting is not included, the Service will default to AzureOpenAI.__
 
-####  Option 1: using OpenAI
+#### Option 1: using OpenAI
 
 Add your [OpenAI Key](https://platform.openai.com/docs/overview) key to either your environment variables or to the `.env` file in the same folder (org Id only if you have multiple orgs):
 
-```
+```sh {"id":"01J6KPA2P4A8AP2JBFJ0M0D1EZ"}
 GLOBAL_LLM_SERVICE="OpenAI"
 OPENAI_API_KEY="sk-..."
 OPENAI_ORG_ID=""
 OPENAI_CHAT_MODEL_ID=""
 ```
+
 The environment variables names should match the names used in the `.env` file, as shown above.
 
 Use "keyword arguments" to instantiate an OpenAI Chat Completion service and add it to the kernel:
@@ -28,7 +29,7 @@ Use "keyword arguments" to instantiate an OpenAI Chat Completion service and add
 
 Add your [Azure Open AI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=programming-language-studio) settings to either your system's environment variables or to the `.env` file in the same folder:
 
-```
+```ini {"id":"01J6KPA2P4A8AP2JBFJ20M5NBN"}
 GLOBAL_LLM_SERVICE="AzureOpenAI"
 AZURE_OPENAI_API_KEY="..."
 AZURE_OPENAI_ENDPOINT="https://..."
@@ -37,6 +38,7 @@ AZURE_OPENAI_TEXT_DEPLOYMENT_NAME="..."
 AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME="..."
 AZURE_OPENAI_API_VERSION="..."
 ```
+
 The environment variables names should match the names used in the `.env` file, as shown above.
 
 Use "keyword arguments" to instantiate an Azure OpenAI Chat Completion service and add it to the kernel:
@@ -47,13 +49,13 @@ It is possible to configure the constructor with an absolute or relative file pa
 
 For OpenAI:
 
-```
+```sh {"id":"01J6KPA2P4A8AP2JBFJ3A4EJ0D"}
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path='/path/to/file')
 ```
 
 For AzureOpenAI:
 
-```
+```ini {"id":"01J6KPA2P4A8AP2JBFJ3XJ10TM"}
 chat_completion = AzureChatCompletion(service_id="test", env_file_path=env_file_path='/path/to/file')
 ```
 
@@ -61,3 +63,50 @@ chat_completion = AzureChatCompletion(service_id="test", env_file_path=env_file_
 
 - Manually configure the `api_key` or required parameters on either the `OpenAIChatCompletion` or `AzureChatCompletion` constructor with keyword arguments.
 - This requires the user to manage their own keys/secrets as they aren't relying on the underlying environment variables or `.env` file.
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+
+### 4. Microsoft Entra Authentication
+
+To learn how to use a Microsoft Entra Authentication token to authenticate to your Azure OpenAI resource, please navigate to the following [guide](../concepts/README.md#microsoft-entra-token-authentication).
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+
+### 4. Microsoft Entra Authentication
+
+To learn how to use a Microsoft Entra Authentication token to authenticate to your Azure OpenAI resource, please navigate to the following [guide](../concepts/README.md#microsoft-entra-token-authentication).
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes

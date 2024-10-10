@@ -10,7 +10,9 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.connectors.ai.prompt_execution_settings import (
+        PromptExecutionSettings,
+    )
     from semantic_kernel.kernel import Kernel
 
 DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS = 5
@@ -24,7 +26,10 @@ class FunctionCallConfiguration:
     required_functions: list["KernelFunctionMetadata"] | None = None
 
 
-@deprecated("The `FunctionCallBehavior` class is deprecated; use `FunctionChoiceBehavior` instead.", category=None)
+@deprecated(
+    "The `FunctionCallBehavior` class is deprecated; use `FunctionChoiceBehavior` instead.",
+    category=None,
+)
 class FunctionCallBehavior(KernelBaseModel):
     """Class that controls function calling behavior.
 
@@ -100,7 +105,9 @@ class FunctionCallBehavior(KernelBaseModel):
     @deprecated("Use the `FunctionChoiceBehavior` `Auto` class instead.")
     def AutoInvokeKernelFunctions(cls) -> "KernelFunctions":
         """Returns KernelFunctions class with auto_invoke enabled."""
-        return KernelFunctions(max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS)
+        return KernelFunctions(
+            max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
+        )
 
     @classmethod
     @deprecated("Use the `FunctionChoiceBehavior` `Auto` class method instead.")
@@ -117,14 +124,25 @@ class FunctionCallBehavior(KernelBaseModel):
         cls,
         auto_invoke: bool = False,
         *,
-        filters: dict[
-            Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
-        ]
-        | None = {},
+        filters: (
+            dict[
+                Literal[
+                    "excluded_plugins",
+                    "included_plugins",
+                    "excluded_functions",
+                    "included_functions",
+                ],
+                list[str],
+            ]
+            | None
+        ) = {},
     ) -> "EnabledFunctions":
         """Set the enable kernel functions flag."""
         return EnabledFunctions(
-            filters=filters, max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if auto_invoke else 0
+            filters=filters,
+            max_auto_invoke_attempts=(
+                DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if auto_invoke else 0
+            ),
         )
 
     @classmethod
@@ -155,7 +173,10 @@ class KernelFunctions(FunctionCallBehavior):
         """Set the options for the tool call behavior in the settings."""
         if self.enable_kernel_functions:
             update_settings_callback(
-                FunctionCallConfiguration(available_functions=kernel.get_full_list_of_function_metadata()), settings
+                FunctionCallConfiguration(
+                    available_functions=kernel.get_full_list_of_function_metadata()
+                ),
+                settings,
             )
 
 
@@ -164,7 +185,13 @@ class EnabledFunctions(FunctionCallBehavior):
     """Function call behavior for making a filtered set of functions available for tool calls."""
 
     filters: dict[
-        Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
+        Literal[
+            "excluded_plugins",
+            "included_plugins",
+            "excluded_functions",
+            "included_functions",
+        ],
+        list[str],
     ]
 
     def configure(
@@ -176,7 +203,11 @@ class EnabledFunctions(FunctionCallBehavior):
         """Set the options for the tool call behavior in the settings."""
         if self.enable_kernel_functions:
             update_settings_callback(
-                FunctionCallConfiguration(available_functions=kernel.get_list_of_function_metadata(self.filters)),
+                FunctionCallConfiguration(
+                    available_functions=kernel.get_list_of_function_metadata(
+                        self.filters
+                    )
+                ),
                 settings,
             )
 

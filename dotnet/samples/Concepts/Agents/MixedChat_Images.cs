@@ -1,9 +1,51 @@
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+﻿// Copyright (c) Microsoft. All rights reserved.
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Files;
 
 namespace Agents;
 
@@ -11,13 +53,8 @@ namespace Agents;
 /// Demonstrate <see cref="ChatCompletionAgent"/> agent interacts with
 /// <see cref="OpenAIAssistantAgent"/> when it produces image output.
 /// </summary>
-public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    /// <summary>
-    /// Target OpenAI services.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     private const string AnalystName = "Analyst";
     private const string AnalystInstructions = "Create charts as requested without explanation.";
 
@@ -27,20 +64,171 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task AnalyzeDataAndGenerateChartAsync()
     {
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+        OpenAIClientProvider provider = this.GetClientProvider();
+
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        FileClient fileClient = provider.Client.GetFileClient();
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+        FileClient fileClient = provider.Client.GetFileClient();
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                new()
+                provider,
+                new(this.Model)
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+                kernel: new(),
+                provider,
+                new(this.Model)
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                kernel: new(),
+                provider,
+                new(this.Model)
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     Instructions = AnalystInstructions,
                     Name = AnalystName,
                     EnableCodeInterpreter = true,
-                    ModelId = this.Model,
+                    Metadata = AssistantSampleMetadata,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+                });
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                });
+=======
+>>>>>>> Stashed changes
+                },
+                kernel: new Kernel());
+                });
+                },
+                kernel: new Kernel());
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         ChatCompletionAgent summaryAgent =
             new()
@@ -86,26 +274,15 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
         {
             if (!string.IsNullOrWhiteSpace(input))
             {
-                chat.AddChatMessage(new(AuthorRole.User, input));
-                Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+                ChatMessageContent message = new(AuthorRole.User, input);
+                chat.AddChatMessage(message);
+                this.WriteAgentChatMessage(message);
             }
 
-            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                if (!string.IsNullOrWhiteSpace(message.Content))
-                {
-                    Console.WriteLine($"\n# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-                }
-
-                foreach (FileReferenceContent fileReference in message.Items.OfType<FileReferenceContent>())
-                {
-                    Console.WriteLine($"\t* Generated image - @{fileReference.FileId}");
-                    BinaryContent fileContent = await fileService.GetFileContentAsync(fileReference.FileId!);
-                    byte[] byteContent = fileContent.Data?.ToArray() ?? [];
-                    string filePath = Path.ChangeExtension(Path.GetTempFileName(), ".png");
-                    await File.WriteAllBytesAsync($"{filePath}.png", byteContent);
-                    Console.WriteLine($"\t* Local path - {filePath}");
-                }
+                this.WriteAgentChatMessage(response);
+                await this.DownloadResponseImageAsync(fileClient, response);
             }
         }
     }

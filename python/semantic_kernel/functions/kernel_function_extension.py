@@ -7,12 +7,20 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field, field_validator
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+from semantic_kernel.exceptions import (
+    KernelFunctionNotFoundError,
+    KernelPluginNotFoundError,
+)
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
+from semantic_kernel.prompt_template.const import (
+    KERNEL_TEMPLATE_FORMAT_NAME,
+    TEMPLATE_FORMAT_TYPES,
+)
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -31,12 +39,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelFunctionExtension(KernelBaseModel, ABC):
+    """Kernel function extension."""
+
     plugins: dict[str, KernelPlugin] = Field(default_factory=dict)
 
     @field_validator("plugins", mode="before")
     @classmethod
     def rewrite_plugins(
-        cls, plugins: KernelPlugin | list[KernelPlugin] | dict[str, KernelPlugin] | None = None
+        cls,
+        plugins: (
+            KernelPlugin | list[KernelPlugin] | dict[str, KernelPlugin] | None
+        ) = None,
     ) -> dict[str, KernelPlugin]:
         """Rewrite plugins to a dictionary."""
         if not plugins:
@@ -85,7 +98,9 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             self.plugins[plugin.name] = plugin
             return self.plugins[plugin.name]
         if not plugin_name:
-            raise ValueError("plugin_name must be provided if a plugin is not supplied.")
+            raise ValueError(
+                "plugin_name must be provided if a plugin is not supplied."
+            )
         if plugin:
             self.plugins[plugin_name] = KernelPlugin.from_object(
                 plugin_name=plugin_name, plugin_instance=plugin, description=description
@@ -101,7 +116,9 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             return self.plugins[plugin_name]
         raise ValueError("plugin or parent_directory must be provided.")
 
-    def add_plugins(self, plugins: list[KernelPlugin] | dict[str, KernelPlugin | object]) -> None:
+    def add_plugins(
+        self, plugins: list[KernelPlugin] | dict[str, KernelPlugin | object]
+    ) -> None:
         """Adds a list of plugins to the kernel's collection of plugins.
 
         Args:
@@ -123,7 +140,10 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         prompt: str | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
         prompt_execution_settings: (
-            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None
+            PromptExecutionSettings
+            | list[PromptExecutionSettings]
+            | dict[str, PromptExecutionSettings]
+            | None
         ) = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: PromptTemplateBase | None = None,
@@ -153,14 +173,19 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         from semantic_kernel.functions.kernel_function import KernelFunction
 
         if function is None:
-            if not function_name or (not prompt and not prompt_template_config and not prompt_template):
+            if not function_name or (
+                not prompt and not prompt_template_config and not prompt_template
+            ):
                 raise ValueError(
                     "function_name and prompt, prompt_template_config or prompt_template must be provided if a function is not supplied."  # noqa: E501
                 )
             if prompt_execution_settings is None and (
-                prompt_template_config is None or prompt_template_config.execution_settings is None
+                prompt_template_config is None
+                or prompt_template_config.execution_settings is None
             ):
-                prompt_execution_settings = PromptExecutionSettings(extension_data=kwargs)
+                prompt_execution_settings = PromptExecutionSettings(
+                    extension_data=kwargs
+                )
 
             function = KernelFunction.from_prompt(
                 function_name=function_name,
@@ -173,13 +198,19 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
                 prompt_execution_settings=prompt_execution_settings,
             )
         elif not isinstance(function, KernelFunction):
-            function = KernelFunction.from_method(plugin_name=plugin_name, method=function)
+            function = KernelFunction.from_method(
+                plugin_name=plugin_name, method=function
+            )
         if plugin_name not in self.plugins:
             plugin = KernelPlugin(name=plugin_name, functions=function)
             self.add_plugin(plugin)
             return plugin if return_plugin else plugin[function.name]
         self.plugins[plugin_name][function.name] = function
-        return self.plugins[plugin_name] if return_plugin else self.plugins[plugin_name][function.name]
+        return (
+            self.plugins[plugin_name]
+            if return_plugin
+            else self.plugins[plugin_name][function.name]
+        )
 
     def add_functions(
         self,
@@ -281,7 +312,9 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             raise KernelPluginNotFoundError(f"Plugin '{plugin_name}' not found")
         return self.plugins[plugin_name]
 
-    def get_function(self, plugin_name: str | None, function_name: str) -> "KernelFunction":
+    def get_function(
+        self, plugin_name: str | None, function_name: str
+    ) -> "KernelFunction":
         """Get a function by plugin_name and function_name.
 
         Args:
@@ -300,14 +333,20 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             for plugin in self.plugins.values():
                 if function_name in plugin:
                     return plugin[function_name]
-            raise KernelFunctionNotFoundError(f"Function '{function_name}' not found in any plugin.")
+            raise KernelFunctionNotFoundError(
+                f"Function '{function_name}' not found in any plugin."
+            )
         if plugin_name not in self.plugins:
             raise KernelPluginNotFoundError(f"Plugin '{plugin_name}' not found")
         if function_name not in self.plugins[plugin_name]:
-            raise KernelFunctionNotFoundError(f"Function '{function_name}' not found in plugin '{plugin_name}'")
+            raise KernelFunctionNotFoundError(
+                f"Function '{function_name}' not found in plugin '{plugin_name}'"
+            )
         return self.plugins[plugin_name][function_name]
 
-    def get_function_from_fully_qualified_function_name(self, fully_qualified_function_name: str) -> "KernelFunction":
+    def get_function_from_fully_qualified_function_name(
+        self, fully_qualified_function_name: str
+    ) -> "KernelFunction":
         """Get a function by its fully qualified name (<plugin_name>-<function_name>).
 
         Args:
@@ -338,9 +377,13 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         return [func.metadata for plugin in self.plugins.values() for func in plugin]
 
     @singledispatchmethod
-    def get_list_of_function_metadata(self, *args: Any, **kwargs: Any) -> list["KernelFunctionMetadata"]:
+    def get_list_of_function_metadata(
+        self, *args: Any, **kwargs: Any
+    ) -> list["KernelFunctionMetadata"]:
         """Get a list of all function metadata in the plugin collection."""
-        raise NotImplementedError("This method is not implemented for the provided arguments.")
+        raise NotImplementedError(
+            "This method is not implemented for the provided arguments."
+        )
 
     @get_list_of_function_metadata.register(bool)
     def get_list_of_function_metadata_bool(
@@ -361,14 +404,21 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             func.metadata
             for plugin in self.plugins.values()
             for func in plugin.functions.values()
-            if (include_prompt and func.is_prompt) or (include_native and not func.is_prompt)
+            if (include_prompt and func.is_prompt)
+            or (include_native and not func.is_prompt)
         ]
 
     @get_list_of_function_metadata.register(dict)
     def get_list_of_function_metadata_filters(
         self,
         filters: dict[
-            Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
+            Literal[
+                "excluded_plugins",
+                "included_plugins",
+                "excluded_functions",
+                "included_functions",
+            ],
+            list[str],
         ],
     ) -> list["KernelFunctionMetadata"]:
         """Get a list of Kernel Function Metadata based on filters.
@@ -393,17 +443,24 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         included_functions = filters.get("included_functions")
         excluded_functions = filters.get("excluded_functions", [])
         if included_plugins and excluded_plugins:
-            raise ValueError("Cannot use both included_plugins and excluded_plugins at the same time.")
+            raise ValueError(
+                "Cannot use both included_plugins and excluded_plugins at the same time."
+            )
         if included_functions and excluded_functions:
-            raise ValueError("Cannot use both included_functions and excluded_functions at the same time.")
+            raise ValueError(
+                "Cannot use both included_functions and excluded_functions at the same time."
+            )
 
         result: list["KernelFunctionMetadata"] = []
         for plugin_name, plugin in self.plugins.items():
-            if plugin_name in excluded_plugins or (included_plugins and plugin_name not in included_plugins):
+            if plugin_name in excluded_plugins or (
+                included_plugins and plugin_name not in included_plugins
+            ):
                 continue
             for function in plugin:
                 if function.fully_qualified_name in excluded_functions or (
-                    included_functions and function.fully_qualified_name not in included_functions
+                    included_functions
+                    and function.fully_qualified_name not in included_functions
                 ):
                     continue
                 result.append(function.metadata)

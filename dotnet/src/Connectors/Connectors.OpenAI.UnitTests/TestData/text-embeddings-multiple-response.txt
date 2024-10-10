@@ -1,0 +1,20 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": "zcyMP83MDEAzM1NAzcyMQA=="
+    },
+    {
+      "object": "embedding",
+      "index": 1,
+      "embedding": "zcyMP83MDEAzM1NAzcyMQA=="
+    }
+  ],
+  "model": "text-embedding-ada-002",
+  "usage": {
+    "prompt_tokens": 7,
+    "total_tokens": 7
+  }
+}

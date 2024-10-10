@@ -1,0 +1,68 @@
+[
+    {
+        "name": "All Controllers Should Derive From Controller.",
+        "id": "DS184626",
+        "description": "All Controllers Should Derive From Controller.",
+        "recommendation": "Ensure this class derives from Controller.",
+        "applies_to": [
+            "csharp"
+        ],
+        "tags": [
+            "Implementation.Web.ASPNET.ControllerWithoutExtendingController"
+        ],
+        "confidence": "medium",
+        "severity": "moderate",
+        "rule_info": "DS184626.md",
+        "patterns": [
+            {
+                "pattern": "class [^\\s]+Controller\\s*:\\s*(?!.*?(Controller)).*",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "class [^\\s]+Controller[\\s{]*$",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "conditions" : [
+            {
+                "pattern" : 
+                {
+                    "pattern": "using System.Web",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": "We only want to mark web controllers."
+                },
+                "negate_finding": false,
+                "search_in": "only-before"
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to inherit from Controller",
+                "type": "RegexReplace",
+
+                "replacement": "$1 : Controller",
+                "pattern": {
+                    "pattern": "(class [^\\s]+Controller)(([\\s{]*$)|(\\s*:\\s*(?!.*?(Controller)).*))",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ]
+                }
+            }
+        ],
+        "must-match": [
+            "using System.Web;\n class UserController : CustomObject"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

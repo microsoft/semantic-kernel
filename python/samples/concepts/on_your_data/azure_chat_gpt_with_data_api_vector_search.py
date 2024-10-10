@@ -9,7 +9,9 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import (
+    AzureAISearchSettings,
+)
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -60,7 +62,12 @@ prompt_template_config = PromptTemplateConfig(
     name="chat",
     template_format="semantic-kernel",
     input_variables=[
-        InputVariable(name="chat_history", description="The history of the conversation", is_required=True, default=""),
+        InputVariable(
+            name="chat_history",
+            description="The history of the conversation",
+            is_required=True,
+            default="",
+        ),
         InputVariable(name="request", description="The user input", is_required=True),
     ],
     execution_settings=req_settings,
@@ -69,10 +76,14 @@ prompt_template_config = PromptTemplateConfig(
 chat_history = ChatHistory()
 
 chat_history.add_user_message("Hi there, who are you?")
-chat_history.add_assistant_message("I am an AI assistant here to answer your questions.")
+chat_history.add_assistant_message(
+    "I am an AI assistant here to answer your questions."
+)
 
 chat_function = kernel.add_function(
-    plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
+    plugin_name="ChatBot",
+    function_name="Chat",
+    prompt_template_config=prompt_template_config,
 )
 
 
@@ -93,7 +104,11 @@ async def chat() -> bool:
     # Non streaming
     # answer = await kernel.invoke(chat_function, input_vars=context_vars)
     # print(f"Assistant:> {answer}")
-    arguments = KernelArguments(chat_history=chat_history, user_input=user_input, execution_settings=req_settings)
+    arguments = KernelArguments(
+        chat_history=chat_history,
+        user_input=user_input,
+        execution_settings=req_settings,
+    )
 
     full_message = None
     print("Assistant:> ", end="")

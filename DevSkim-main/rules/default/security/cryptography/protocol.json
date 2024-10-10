@@ -1,0 +1,477 @@
+[
+    {
+        "name": "Do not use outdated SSL/TLS protocols",
+        "id": "DS144436",
+        "description": "It's usually better to rely on the operating system configuration, rather than hardcoding a specific SecurityProtocolType.",
+        "recommendation": "Either leave off or set to SecurityProtocolType.Tls12;",
+        "applies_to": [
+            "csharp",
+            "fsharp"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS169126.md",
+        "patterns": [
+            {
+                "pattern": "SecurityProtocolType\\.(Ssl3|Tls|Tls11)",
+                "type": "RegexWord",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "fix_its": [
+            {
+                "name": "Change to SecurityProtocolType.Tls12",
+                "type": "RegexReplace",
+                "replacement": "SecurityProtocolType.Tls12",
+                "pattern": {
+                    "pattern": "\\bSecurityProtocolType\\.(Ssl3|Tls|Tls11)\\b",
+                    "type": "regex",
+                    "scopes": [
+                        "code"
+                    ],
+                    "_comment": ""
+                }
+            }
+        ],
+        "must-match": [
+            "ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;"
+        ]
+    },
+    {
+        "name": "Hardcoding TLS protocol version",
+        "id": "DS127101",
+        "description": "It's usually better to rely on the operating system configuration, rather than hardcoding a specific list of protocols.",
+        "recommendation": "",
+        "applies_to": [
+            "cpp"
+        ],
+        "tags": [
+            "Cryptography.Protocol.TLS"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS112835.md",
+        "patterns": [
+            {
+                "pattern": "SecPkgCred_SupportedProtocols",
+                "type": "RegexWord",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "returns SecPkgCred_SupportedProtocols"
+        ]
+    },
+    {
+        "name": "Do not use outdated SSL/TLS protocols",
+        "id": "DS169125",
+        "description": "An outdated SSL/TLS protocol version is specified.",
+        "recommendation": "Use TLS 1.2",
+        "tags": [
+            "Cryptography.Protocol.TLS"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS169126.md",
+        "patterns": [
+            {
+                "pattern": "(SSLv?2|SSLv?3|TLSv?1|TLSv?10)",
+                "type": "RegexWord",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "SSLv3",
+            "TLSv1",
+            "TLSv10"
+        ]
+    },
+    {
+        "name": "An Outdated or Banned SSL/TLS Protocol is Used",
+        "id": "DS169126",
+        "description": "An Outdated or Banned SSL/TLS Protocol is Used",
+        "recommendation": "Use TLS 1.2",
+        "tags": [
+            "Cryptography.Protocol.Banned"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS169126.md",
+        "patterns": [
+            {
+                "pattern": "(SSL|TLS)v(2|23|3|1)_(client|server)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SSLv2",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SSLv3",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "TLSv1(?!_[2-9])",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "TLSv1(0|_0)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "TLSv1_1",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "SSLv3",
+            "TLSv1",
+            "TLSv10",
+            "SSLv2_client"
+        ],
+        "must-not-match":[
+            "TLSv1_2",
+            "TLSv1_3"
+        ]
+    },
+    {
+        "name": "An Outdated or Banned SSL/TLS Protocol is Used",
+        "id": "DS169127",
+        "description": "An Outdated or Banned SSL/TLS Protocol is Used",
+        "recommendation": "Use TLS 1.2",
+        "applies_to": [
+            "cpp",
+            "objective-c"
+        ],
+        "tags": [
+            "Cryptography.Protocol.Banned"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS169126.md",
+        "patterns": [
+            {
+                "pattern": "SECURITY_FLAG_40BIT",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_56BIT",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_NORMALBITNESS",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_PCT",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_PCT4",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_SSL",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_SSL3",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_STRENGTH_MEDIUM",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_STRENGTH_WEAK",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_UNKNOWNBIT",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "WINHTTP_FLAG_SECURE_PROTOCOL_SSL2",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "WINHTTP_FLAG_SECURE_PROTOCOL_SSL3",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "WINHTTP_FLAG_SECURE_PROTOCOL_TLS1",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "WINHTTP_FLAG_SECURE_PROTOCOL_ALL",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_STRENGTH_MEDIUM",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SECURITY_FLAG_STRENGTH_WEAK",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "SP_PROT_(PCT1|SSL2|SSL3|TLS1|TLS1_0)_(CLIENT|SERVER)",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "NSStreamSocketSecurityLevelNone",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "NSStreamSocketSecurityLevelSSLv2",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "NSStreamSocketSecurityLevelSSLv3",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "NSStreamSocketSecurityLevelTLSv1",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kCFStreamSocketSecurityLevelNone",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kCFStreamSocketSecurityLevelSSLv2",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kCFStreamSocketSecurityLevelSSLv3",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kCFStreamSocketSecurityLevelTLSv1",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kSSLProtocolUnknown ",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kSSLProtocol3",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kTLSProtocol1",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kDTLSProtocol1",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kSSLProtocol2",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kSSLProtocol3Only",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kTLSProtocol1Only",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "kSSLProtocolAll",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "SP_PROT_PCT1_CLIENT",
+            "SP_PROT_PCT1_SERVER",
+            "SP_PROT_SSL2_CLIENT",
+            "SP_PROT_SSL2_SERVER",
+            "SP_PROT_SSL3_CLIENT",
+            "SP_PROT_SSL3_SERVER",
+            "SP_PROT_TLS1_CLIENT",
+            "SP_PROT_TLS1_SERVER",
+            "SP_PROT_TLS1_0_CLIENT",
+            "SP_PROT_TLS1_0_SERVER"
+        ],
+        "must-not-match": [
+        ]
+    },
+    {
+        "name": "An Outdated or Banned SSL/TLS Protocol is Used",
+        "id": "DS169128",
+        "description": "An Outdated or Banned SSL/TLS Protocol is Used",
+        "recommendation": "Use TLS 1.2",
+        "applies_to": [
+            "python"
+        ],
+        "tags": [
+            "Cryptography.Protocol.Banned"
+        ],
+        "confidence": "high",
+        "severity": "important",
+        "rule_info": "DS169126.md",
+        "patterns": [
+            {
+                "pattern": "PROTOCOL_SSLv2",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "PROTOCOL_SSLv23",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "PROTOCOL_SSLv3",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "PROTOCOL_TLSv1",
+                "type": "string",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "protocol = ssl.PROTOCOL_SSLv2"
+        ],
+        "must-not-match": [
+        ]
+    }
+]

@@ -9,12 +9,10 @@ internal sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
 {
     /// <summary>The collection of services to be available through the <see cref="Kernel"/>.</summary>
     private IServiceCollection? _services;
+    private readonly global::System.Boolean allowBuild;
 
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
-    public KernelBuilder()
-    {
-        this.AllowBuild = true;
-    }
+    public KernelBuilder() => this.SetAllowBuild(true);
 
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
     /// <param name="services">
@@ -29,7 +27,7 @@ internal sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
 
     /// <summary>Whether to allow a call to Build.</summary>
     /// <remarks>As a minor aid to help avoid misuse, we try to prevent Build from being called on instances returned from AddKernel.</remarks>
-    internal bool AllowBuild { get; }
+    internal global::System.Boolean AllowBuild => allowBuild;
 
     /// <summary>Gets the collection of services to be built into the <see cref="Kernel"/>.</summary>
     public IServiceCollection Services => this._services ??= new ServiceCollection();

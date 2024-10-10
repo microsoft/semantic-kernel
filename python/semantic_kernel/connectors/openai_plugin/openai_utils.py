@@ -18,7 +18,9 @@ class OpenAIUtils:
         try:
             api_type = plugin_json["api"]["type"]
         except KeyError as ex:
-            raise PluginInitializationError("OpenAI manifest is missing the API type.") from ex
+            raise PluginInitializationError(
+                "OpenAI manifest is missing the API type."
+            ) from ex
 
         if api_type != "openapi":
             raise PluginInitializationError("OpenAI manifest is not of type OpenAPI.")
@@ -26,4 +28,6 @@ class OpenAIUtils:
         try:
             return plugin_json["api"]["url"]
         except KeyError as ex:
-            raise PluginInitializationError("OpenAI manifest is missing the OpenAPI Spec URL.") from ex
+            raise PluginInitializationError(
+                "OpenAI manifest is missing the OpenAPI Spec URL."
+            ) from ex

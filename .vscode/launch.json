@@ -2,46 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "C#: Concept Samples",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build (Concepts)",
-      "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
-      "args": [],
-      "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
-      "console": "internalConsole",
-      "stopAtEntry": false
-    },
-    {
-      "name": ".NET Core Attach",
-      "type": "coreclr",
-      "request": "attach"
-    },
-    {
-      "cwd": "${workspaceFolder}/python",
-      "name": "Python: Test Module",
-      "type": "python",
-      "request": "launch",
-      "module": "pytest",
-      "args": [
-        "${file}"
-      ]
-    },
-    {
-      "name": "C#: HuggingFaceImageToText Demo",
-      "type": "dotnet",
-      "request": "launch",
-      "projectPath": "${workspaceFolder}\\dotnet\\samples\\Demos\\HuggingFaceImageToText.csproj",
-      "launchConfigurationId": "TargetFramework=;HuggingFaceImageToText"
-    },
-    {
-      "name": "C#: GettingStarted Samples",
-      "type": "dotnet",
-      "request": "launch",
-      "projectPath": "${workspaceFolder}\\dotnet\\samples\\GettingStarted\\GettingStarted.csproj",
-      "launchConfigurationId": "TargetFramework=;GettingStarted"
-    },
-    {
       "name": "Attach to .NET Functions",
       "type": "coreclr",
       "request": "attach",

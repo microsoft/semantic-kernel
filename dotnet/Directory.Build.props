@@ -1,4 +1,32 @@
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿<Project>
+=======
+<Project>
+>>>>>>> Stashed changes
+=======
+<Project>
+>>>>>>> Stashed changes
+=======
+<Project>
+>>>>>>> Stashed changes
+=======
+<Project>
+>>>>>>> Stashed changes
+=======
+<Project>
+>>>>>>> Stashed changes
+=======
+<Project>
+>>>>>>> origin/main
+=======
+<Project>
+>>>>>>> Stashed changes
   <PropertyGroup>
     <!-- Default properties inherited by all projects. Projects can override. -->
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
@@ -11,6 +39,52 @@
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- In "main" branch this flag should be always "false". -->
+    <IsReleaseCandidate>false</IsReleaseCandidate>
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+    <IsReleaseCandidate>true</IsReleaseCandidate>
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    <IsReleaseCandidate>true</IsReleaseCandidate>
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+  </PropertyGroup>
+  
   <PropertyGroup>
     <!-- Disable NuGet packaging by default. Projects can override. -->
     <IsPackable>disable</IsPackable>

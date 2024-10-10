@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel.Primitives;
 using Azure;
 using Azure.AI.OpenAI;
-using Azure.Core.Pipeline;
 using Microsoft.SemanticKernel;
 
 namespace ChatCompletion;
@@ -28,12 +28,12 @@ public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : B
         var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("My-Custom-Header", "My Custom Value");
 
-        // Configure OpenAIClient to use the customized HttpClient
-        var clientOptions = new OpenAIClientOptions
+        // Configure AzureOpenAIClient to use the customized HttpClient
+        var clientOptions = new AzureOpenAIClientOptions
         {
-            Transport = new HttpClientTransport(httpClient),
+            Transport = new HttpClientPipelineTransport(httpClient),
         };
-        var openAIClient = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), clientOptions);
+        var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), clientOptions);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.AddAzureOpenAIChatCompletion(deploymentName, openAIClient);

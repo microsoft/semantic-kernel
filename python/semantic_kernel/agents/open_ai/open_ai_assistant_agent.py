@@ -9,11 +9,16 @@ from openai import AsyncOpenAI
 from pydantic import ValidationError
 
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
-from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import (
+    OpenAISettings,
+)
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.utils.telemetry.user_agent import (
+    APP_INFO,
+    prepend_semantic_kernel_to_user_agent,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
@@ -50,7 +55,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         enable_code_interpreter: bool | None = None,
         enable_file_search: bool | None = None,
         enable_json_response: bool | None = None,
-        file_ids: list[str] | None = [],
+        code_interpreter_file_ids: list[str] | None = [],
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
@@ -80,7 +85,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             enable_code_interpreter: Enable code interpreter. (optional)
             enable_file_search: Enable file search. (optional)
             enable_json_response: Enable JSON response. (optional)
-            file_ids: The file IDs. (optional)
+            code_interpreter_file_ids: The file IDs. (optional)
             temperature: The temperature. (optional)
             top_p: The top p. (optional)
             vector_store_id: The vector store ID. (optional)
@@ -94,25 +99,101 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         Raises:
             AgentInitializationError: If the api_key is not provided in the configuration.
         """
-        try:
-            openai_settings = OpenAISettings.create(
-                api_key=api_key,
-                org_id=org_id,
-                chat_model_id=ai_model_id,
-                env_file_path=env_file_path,
-                env_file_encoding=env_file_encoding,
-            )
-        except ValidationError as ex:
-            raise AgentInitializationError("Failed to create OpenAI settings.", ex) from ex
+        openai_settings = OpenAIAssistantAgent._create_open_ai_settings(
+            api_key=api_key,
+            org_id=org_id,
+            ai_model_id=ai_model_id,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
 
         if not client and not openai_settings.api_key:
-            raise AgentInitializationError("The OpenAI API key is required, if a client is not provided.")
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
+=======
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
         if not openai_settings.chat_model_id:
-            raise AgentInitializationError("The OpenAI model ID is required.")
+            raise AgentInitializationException("The OpenAI chat model ID is required.")
 
         if not client:
             client = self._create_client(
-                api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+                api_key=(
+                    openai_settings.api_key.get_secret_value()
+                    if openai_settings.api_key
+                    else None
+                ),
                 org_id=openai_settings.org_id,
                 default_headers=default_headers,
             )
@@ -128,7 +209,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             "enable_code_interpreter": enable_code_interpreter,
             "enable_file_search": enable_file_search,
             "enable_json_response": enable_json_response,
-            "file_ids": file_ids,
+            "code_interpreter_file_ids": code_interpreter_file_ids,
             "temperature": temperature,
             "top_p": top_p,
             "vector_store_id": vector_store_id,
@@ -167,9 +248,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         instructions: str | None = None,
         name: str | None = None,
         enable_code_interpreter: bool | None = None,
+        code_interpreter_filenames: list[str] | None = None,
         enable_file_search: bool | None = None,
+        vector_store_filenames: list[str] | None = None,
         enable_json_response: bool | None = None,
-        file_ids: list[str] | None = [],
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
@@ -178,6 +260,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
+        **kwargs: Any,
     ) -> "OpenAIAssistantAgent":
         """Asynchronous class method used to create the OpenAI Assistant Agent.
 
@@ -196,9 +279,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             instructions: The assistant instructions. (optional)
             name: The assistant name. (optional)
             enable_code_interpreter: Enable code interpreter. (optional)
+            code_interpreter_filenames: The filenames/paths for files to use with file search. (optional)
             enable_file_search: Enable file search. (optional)
+            vector_store_filenames: The list of file paths to upload and attach to the file search. (optional)
             enable_json_response: Enable JSON response. (optional)
-            file_ids: The file IDs. (optional)
             temperature: The temperature. (optional)
             top_p: The top p. (optional)
             vector_store_id: The vector store ID. (optional)
@@ -207,6 +291,7 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             max_prompt_tokens: The max prompt tokens. (optional)
             parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
             truncation_message_count: The truncation message count. (optional)
+            kwargs: Additional keyword arguments.
 
         Returns:
             An OpenAIAssistantAgent instance.
@@ -228,7 +313,6 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             enable_code_interpreter=enable_code_interpreter,
             enable_file_search=enable_file_search,
             enable_json_response=enable_json_response,
-            file_ids=file_ids,
             temperature=temperature,
             top_p=top_p,
             vector_store_id=vector_store_id,
@@ -237,13 +321,49 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             max_prompt_tokens=max_prompt_tokens,
             parallel_tool_calls_enabled=parallel_tool_calls_enabled,
             truncation_message_count=truncation_message_count,
+            **kwargs,
         )
-        agent.assistant = await agent.create_assistant()
+
+        assistant_create_kwargs: dict[str, Any] = {}
+
+        if code_interpreter_filenames is not None:
+            code_interpreter_file_ids: list[str] = []
+            for file_path in code_interpreter_filenames:
+                try:
+                    file_id = await agent.add_file(file_path=file_path, purpose="assistants")
+                    code_interpreter_file_ids.append(file_id)
+                except FileNotFoundError as ex:
+                    logger.error(
+                        f"Failed to upload code interpreter file with path: `{file_path}` with exception: {ex}"
+                    )
+                    raise AgentInitializationException("Failed to upload code interpreter files.", ex) from ex
+            agent.code_interpreter_file_ids = code_interpreter_file_ids
+            assistant_create_kwargs["code_interpreter_file_ids"] = code_interpreter_file_ids
+
+        if vector_store_filenames is not None:
+            file_search_file_ids: list[str] = []
+            for file_path in vector_store_filenames:
+                try:
+                    file_id = await agent.add_file(file_path=file_path, purpose="assistants")
+                    file_search_file_ids.append(file_id)
+                except FileNotFoundError as ex:
+                    logger.error(f"Failed to upload file search file with path: `{file_path}` with exception: {ex}")
+                    raise AgentInitializationException("Failed to upload file search files.", ex) from ex
+
+            if enable_file_search or agent.enable_file_search:
+                vector_store_id = await agent.create_vector_store(file_ids=file_search_file_ids)
+                agent.file_search_file_ids = file_search_file_ids
+                agent.vector_store_id = vector_store_id
+                assistant_create_kwargs["vector_store_id"] = vector_store_id
+
+        agent.assistant = await agent.create_assistant(**assistant_create_kwargs)
         return agent
 
     @staticmethod
     def _create_client(
-        api_key: str | None = None, org_id: str | None = None, default_headers: dict[str, str] | None = None
+        api_key: str | None = None,
+        org_id: str | None = None,
+        default_headers: dict[str, str] | None = None,
     ) -> AsyncOpenAI:
         """An internal method to create the OpenAI client from the provided arguments.
 
@@ -263,13 +383,122 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
         if not api_key:
-            raise AgentInitializationError("Please provide an OpenAI api_key")
+            raise AgentInitializationException("Please provide an OpenAI api_key")
 
         return AsyncOpenAI(
             api_key=api_key,
             organization=org_id,
             default_headers=merged_headers,
         )
+
+    @staticmethod
+    def _create_open_ai_settings(
+        api_key: str | None = None,
+        org_id: str | None = None,
+        ai_model_id: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ) -> OpenAISettings:
+        """An internal method to create the OpenAI settings from the provided arguments.
+
+        Args:
+            api_key: The OpenAI API key.
+            org_id: The OpenAI organization ID. (optional)
+            ai_model_id: The AI model ID. (optional)
+            env_file_path: The environment file path. (optional)
+            env_file_encoding: The environment file encoding. (optional)
+
+        Returns:
+            An OpenAI settings instance.
+        """
+        try:
+            openai_settings = OpenAISettings.create(
+                api_key=api_key,
+                org_id=org_id,
+                chat_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+            raise AgentInitializationError(
+                "Failed to create OpenAI settings.", ex
+            ) from ex
+=======
+            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+            raise AgentInitializationError(
+                "Failed to create OpenAI settings.", ex
+            ) from ex
+            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+
+        return openai_settings
 
     async def list_definitions(self) -> AsyncIterable[dict[str, Any]]:
         """List the assistant definitions.
@@ -279,32 +508,224 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         """
         assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
             yield self._create_open_ai_assistant_definition(assistant)
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+            yield self._create_open_ai_assistant_definition(assistant)
+=======
+            yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
+    @classmethod
     async def retrieve(
-        self,
+        cls,
+        *,
         id: str,
-        api_key: str,
         kernel: "Kernel | None" = None,
+        api_key: str | None = None,
         org_id: str | None = None,
+        ai_model_id: str | None = None,
+        client: AsyncOpenAI | None = None,
         default_headers: dict[str, str] | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> "OpenAIAssistantAgent":
         """Retrieve an assistant by ID.
 
         Args:
             id: The assistant ID.
-            api_key: The OpenAI API
             kernel: The Kernel instance. (optional)
+            api_key: The OpenAI API key. (optional)
             org_id: The OpenAI organization ID. (optional)
+            ai_model_id: The AI model ID. (optional)
+            client: The OpenAI client. (optional)
             default_headers: The default headers. (optional)
-
+            env_file_path: The environment file path. (optional)
+            env_file_encoding: The environment file encoding. (optional
 
         Returns:
             An OpenAIAssistantAgent instance.
         """
-        client = self._create_client(api_key=api_key, org_id=org_id, default_headers=default_headers)
+        openai_settings = OpenAIAssistantAgent._create_open_ai_settings(
+            api_key=api_key,
+            org_id=org_id,
+            ai_model_id=ai_model_id,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
+        if not client and not openai_settings.api_key:
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
+=======
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+        if not openai_settings.chat_model_id:
+            raise AgentInitializationException("The OpenAI chat model ID is required.")
+        if not client:
+            client = OpenAIAssistantAgent._create_client(
+                api_key=(
+                    openai_settings.api_key.get_secret_value()
+                    if openai_settings.api_key
+                    else None
+                ),
+                org_id=openai_settings.org_id,
+                default_headers=default_headers,
+            )
         assistant = await client.beta.assistants.retrieve(id)
-        assistant_definition = self._create_open_ai_assistant_definition(assistant)
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(
+            assistant
+        )
         return OpenAIAssistantAgent(kernel=kernel, **assistant_definition)
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+        return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
+        return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 
     # endregion

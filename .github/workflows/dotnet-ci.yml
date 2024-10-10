@@ -20,6 +20,50 @@ jobs:
         matrix:
           include:
           - { os: ubuntu-latest, dotnet: '8.0', configuration: Debug }
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+          - { os: ubuntu-latest, dotnet: '6.0', configuration: Debug }
+          - { os: ubuntu-latest, dotnet: '6.0', configuration: Release }
+          - { os: ubuntu-latest, dotnet: '7.0', configuration: Release }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
           - { os: ubuntu-latest, dotnet: '8.0', configuration: Release }
 
     runs-on: ${{ matrix.os }}
@@ -67,6 +111,47 @@ jobs:
           os: [windows-latest]
           configuration: [Release, Debug]
           dotnet-version: ['8.0.x']
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+=======
+>>>>>>> origin/main
+          dotnet-version: ['7.0.x']
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+          dotnet-version: ['7.0.x']
+>>>>>>> origin/main
+>>>>>>> Stashed changes
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
@@ -119,9 +204,8 @@ jobs:
           dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
         done
 
-    - name: Upload dotnet test results
-      uses: actions/upload-artifact@v4
+    - name: Archive artifacts ${{ matrix.os }}-${{ matrix.configuration }}
+      uses: actions/upload-artifact@v3
       with:
-        name: dotnet-testresults-${{ matrix.configuration }}
-        path: ./TestResults
-      if: ${{ always() }}
+        name: drop-${{ matrix.os }}-dotnet${{matrix.dotnet}}-${{ matrix.configuration }}
+        path: ./out

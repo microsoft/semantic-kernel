@@ -1,0 +1,195 @@
+[
+    {
+        "name": "Vulnerable NuGet Library",
+        "id": "DS300001",
+        "description": "Vulnerabilities in .NET Core, ASP.NET Core Could Allow Elevation of Privilege",
+        "recommendation": "Upgrade this package to a later, unaffected version.",
+        "applies_to": [
+            "packages.config"
+        ],
+        "tags": [
+            "Vulerable-Dependency.Library.NuGet"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS300001.md",
+        "patterns": [
+            {
+                "pattern": "<package id=\"System.Text.Encodings.Web\" version=\"(4\\.0\\.0|4\\.3\\.0)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"System.Net.Http\" version=\"(4\\.1\\.1|4\\.3\\.1)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"System.Net.Http.WinHttpHandler\" version=\"(4\\.0\\.1|4\\.3\\.0)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"System.Net.Security\" version=\"(4\\.0\\.0|4\\.3\\.0)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"System.Net.WebSockets.Client\" version=\"(4\\.0\\.0|4\\.3\\.0)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.Core\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.Abstractions\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.ApiExplorer\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.Cors\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.DataAnnotations\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.Formatters.Json\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.Formatters.Xml\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.Localization\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.Razor.Host\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.Razor\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.TagHelpers\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.ViewFeatures\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            },
+            {
+                "pattern": "<package id=\"Microsoft.AspNetCore.Mvc.WebApiCompatShim\" version=\"(1\\.0\\.0|1\\.0\\.1|1\\.0\\.2|1\\.0\\.3|1\\.1\\.0|1\\.1\\.1|1\\.1\\.2)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "  <package id=\"System.Net.Http\" version=\"4.1.1\" targetFramework=\"net452\" />\n"
+        ],
+        "must-not-match": [
+            "  <package id=\"Microsoft.Azure.ServiceBus.EventProcessorHost\" version=\"2.2.6\" targetFramework=\"net462\" />",
+            "  <package id=\"Microsoft.Data.Edm\" version=\"5.8.0-beta\" targetFramework=\"net462\" />",
+            "  <package id=\"Microsoft.Data.OData\" version=\"5.8.0-beta\" targetFramework=\"net462\" />",
+            "  <package id=\"Microsoft.Data.Services.Client\" version=\"5.8.0-beta\" targetFramework=\"net462\" />"
+        ]
+    },
+    {
+        "name": "Vulnerable NuGet Library",
+        "id": "DS300005",
+        "description": " Vulnerabilities in Identity Model Extensions Token Signing Verification Could Allow Elevation of Privilege",
+        "recommendation": "Upgrade this package to a later, unaffected version.",
+        "applies_to": [
+            "packages.config"
+        ],
+        "tags": [
+            "Vulerable-Dependency.Library.NuGet"
+        ],
+        "confidence": "high",
+        "severity": "moderate",
+        "rule_info": "DS300005.md",
+        "patterns": [
+            {
+                "pattern": "<package id=\"Microsoft.IdentityModel.Tokens\" version=\"(5\\.1\\.0)\"",
+                "type": "regex",
+                "scopes": [
+                    "code"
+                ]
+            }
+        ],
+        "must-match": [
+            "  <package id=\"Microsoft.IdentityModel.Tokens\" version=\"5.1.0\" targetFramework=\"net452\" />\n"
+        ],
+        "must-not-match": [
+            "  <package id=\"Microsoft.Azure.KeyVault.Core\" version=\"1.0.0\" targetFramework=\"net452\" />\n",
+            "  <package id=\"Microsoft.Azure.ServiceBus.EventProcessorHost\" version=\"2.2.6\" targetFramework=\"net462\" />\n",
+            "  <package id=\"Microsoft.Data.Edm\" version=\"5.8.0-beta\" targetFramework=\"net462\" />\n",
+            "  <package id=\"Microsoft.Data.OData\" version=\"5.8.0-beta\" targetFramework=\"net462\" />\n",
+            "  <package id=\"Microsoft.Data.Services.Client\" version=\"5.8.0-beta\" targetFramework=\"net462\" />"
+        ]
+    }
+]

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -11,7 +12,7 @@ namespace Agents;
 /// Demonstrate usage of <see cref="IAutoFunctionInvocationFilter"/> for both direction invocation
 /// of <see cref="ChatCompletionAgent"/> and via <see cref="AgentChat"/>.
 /// </summary>
-public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : BaseTest(output)
+public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
     public async Task UseAutoFunctionInvocationFilterWithAgentInvocationAsync()
@@ -21,8 +22,8 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithChatCompletion(),
-                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                Kernel = CreateKernelWithFilter(),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -37,31 +38,86 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         await InvokeAgentAsync("What is the special drink?");
         await InvokeAgentAsync("Thank you");
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        // Display the entire chat history.
+        WriteChatHistory(chat);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+        // Display the entire chat history.
+        WriteChatHistory(chat);
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        // Display the entire chat history.
+        WriteChatHistory(chat);
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+        // Display the entire chat history.
+        WriteChatHistory(chat);
+=======
         // Display the chat history.
         Console.WriteLine("================================");
         Console.WriteLine("CHAT HISTORY");
         Console.WriteLine("================================");
         foreach (ChatMessageContent message in chat)
         {
-            this.WriteContent(message);
+            this.WriteAgentChatMessage(message);
         }
+>>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            ChatMessageContent userContent = new(AuthorRole.User, input);
-            chat.Add(userContent);
-            this.WriteContent(userContent);
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.Add(message);
+            this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(chat))
             {
                 // Do not add a message implicitly added to the history.
-                if (!content.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+                if (!response.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
-                    chat.Add(content);
+                    chat.Add(response);
                 }
 
-                this.WriteContent(content);
+                this.WriteAgentChatMessage(response);
             }
         }
     }
@@ -74,8 +130,8 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithChatCompletion(),
-                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                Kernel = CreateKernelWithFilter(),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -90,33 +146,434 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         await InvokeAgentAsync("What is the special drink?");
         await InvokeAgentAsync("Thank you");
 
-        // Display the chat history.
-        Console.WriteLine("================================");
-        Console.WriteLine("CHAT HISTORY");
-        Console.WriteLine("================================");
-        ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
-        for (int index = history.Length; index > 0; --index)
-        {
-            this.WriteContent(history[index - 1]);
-        }
+        // Display the entire chat history.
+        WriteChatHistory(await chat.GetChatMessagesAsync().ToArrayAsync());
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            ChatMessageContent userContent = new(AuthorRole.User, input);
-            chat.AddChatMessage(userContent);
-            this.WriteContent(userContent);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(message);
+            this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                this.WriteContent(content);
+                this.WriteAgentChatMessage(response);
+            }
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+=======
+            this.WriteAgentChatMessage(history[index - 1]);
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+            this.WriteAgentChatMessage(history[index - 1]);
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+        }
+    }
+
+    [Fact]
+    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocationAsync()
+    {
+        // Define the agent
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "Answer questions about the menu.",
+                Kernel = CreateKernelWithFilter(),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+            };
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
+
+        /// Create the chat history to capture the agent interaction.
+        ChatHistory chat = [];
+
+        // Respond to user input, invoking functions where appropriate.
+        await InvokeAgentAsync("Hello");
+        await InvokeAgentAsync("What is the special soup?");
+        await InvokeAgentAsync("What is the special drink?");
+        await InvokeAgentAsync("Thank you");
+
+        // Display the entire chat history.
+        WriteChatHistory(chat);
+
+        // Local function to invoke agent and display the conversation messages.
+        async Task InvokeAgentAsync(string input)
+        {
+            ChatMessageContent message = new(AuthorRole.User, input);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+            chat.Add(message);
+            this.WriteAgentChatMessage(message);
+
+            int historyCount = chat.Count;
+
+            bool isFirst = false;
+            await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
+            {
+                if (string.IsNullOrEmpty(response.Content))
+                {
+                    continue;
+                }
+
+                if (!isFirst)
+                {
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
+                    isFirst = true;
+                }
+
+                Console.WriteLine($"\t > streamed: '{response.Content}'");
+            }
+
+            if (historyCount <= chat.Count)
+            {
+                for (int index = historyCount; index < chat.Count; index++)
+                {
+                    this.WriteAgentChatMessage(chat[index]);
+                }
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+=======
+            chat.AddChatMessage(message);
+            this.WriteAgentChatMessage(message);
+
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
+            {
+                this.WriteAgentChatMessage(response);
+>>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
             }
         }
     }
 
-    private void WriteContent(ChatMessageContent content)
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< main
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+    [Fact]
+    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentChatAsync()
     {
-        Console.WriteLine($"[{content.Items.LastOrDefault()?.GetType().Name ?? "(empty)"}] {content.Role} : '{content.Content}'");
+        // Define the agent
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "Answer questions about the menu.",
+                Kernel = CreateKernelWithFilter(),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+            };
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
+
+        // Create a chat for agent interaction.
+        AgentGroupChat chat = new();
+
+        // Respond to user input, invoking functions where appropriate.
+        await InvokeAgentAsync("Hello");
+        await InvokeAgentAsync("What is the special soup?");
+        await InvokeAgentAsync("What is the special drink?");
+        await InvokeAgentAsync("Thank you");
+
+        // Display the entire chat history.
+        WriteChatHistory(await chat.GetChatMessagesAsync().ToArrayAsync());
+
+        // Local function to invoke agent and display the conversation messages.
+        async Task InvokeAgentAsync(string input)
+        {
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(message);
+            this.WriteAgentChatMessage(message);
+
+            bool isFirst = false;
+            await foreach (StreamingChatMessageContent response in chat.InvokeStreamingAsync(agent))
+            {
+                if (string.IsNullOrEmpty(response.Content))
+                {
+                    continue;
+                }
+
+                if (!isFirst)
+                {
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
+                    isFirst = true;
+                }
+
+                Console.WriteLine($"\t > streamed: '{response.Content}'");
+            }
+        }
+    }
+
+    private void WriteChatHistory(IEnumerable<ChatMessageContent> chat)
+    {
+        Console.WriteLine("================================");
+        Console.WriteLine("CHAT HISTORY");
+        Console.WriteLine("================================");
+        foreach (ChatMessageContent message in chat)
+        {
+            this.WriteAgentChatMessage(message);
+        }
+    }
+
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> ms/features/bugbash-prep
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+    private Kernel CreateKernelWithFilter()
+    {
+        IKernelBuilder builder = Kernel.CreateBuilder();
+
+        if (this.UseOpenAIConfig)
+        {
+            builder.AddOpenAIChatCompletion(
+                TestConfiguration.OpenAI.ChatModelId,
+                TestConfiguration.OpenAI.ApiKey);
+        }
+        else
+        {
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
+        }
+
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter());
+
+        return builder.Build();
     }
 
     private sealed class MenuPlugin
@@ -125,11 +582,12 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
         public string GetSpecials()
         {
-            return @"
-Special Soup: Clam Chowder
-Special Salad: Cobb Salad
-Special Drink: Chai Tea
-";
+            return
+                """
+                Special Soup: Clam Chowder
+                Special Salad: Cobb Salad
+                Special Drink: Chai Tea
+                """;
         }
 
         [KernelFunction, Description("Provides the price of the requested menu item.")]

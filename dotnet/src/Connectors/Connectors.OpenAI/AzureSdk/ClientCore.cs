@@ -342,7 +342,15 @@ internal abstract class ClientCore
         Verify.NotNull(content.Data);
         if (content.Data == null)
         {
+<<<<<<< main
+            throw new ArgumentNullException(nameof(content.Data));
+        }
+        if (content.Data == null)
+        {
+            throw new ArgumentNullException(nameof(content.Data));
+=======
             throw new ArgumentNullException(nameof(content.Data), "Content data cannot be null");
+>>>>>>> origin/PR
         }
         var audioData = content.Data.Value;
         if (audioData.IsEmpty)

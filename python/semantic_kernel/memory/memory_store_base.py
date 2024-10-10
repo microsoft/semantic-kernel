@@ -10,6 +10,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class MemoryStoreBase(ABC):
+    """Base class for memory store."""
+
     async def __aenter__(self):
         """Enter the context manager."""
         return self
@@ -20,7 +22,6 @@ class MemoryStoreBase(ABC):
 
     async def close(self):
         """Close the connection."""
-        pass
 
     @abstractmethod
     async def create_collection(self, collection_name: str) -> None:
@@ -29,7 +30,6 @@ class MemoryStoreBase(ABC):
         Args:
             collection_name (str): The name associated with a collection of embeddings.
         """
-        pass
 
     @abstractmethod
     async def get_collections(
@@ -40,7 +40,6 @@ class MemoryStoreBase(ABC):
         Returns:
             List[str]: A group of collection names.
         """
-        pass
 
     @abstractmethod
     async def delete_collection(self, collection_name: str) -> None:
@@ -49,7 +48,6 @@ class MemoryStoreBase(ABC):
         Args:
             collection_name (str): The name associated with a collection of embeddings.
         """
-        pass
 
     @abstractmethod
     async def does_collection_exist(self, collection_name: str) -> bool:
@@ -61,7 +59,6 @@ class MemoryStoreBase(ABC):
         Returns:
             bool: True if given collection exists, False if not.
         """
-        pass
 
     @abstractmethod
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
@@ -78,10 +75,11 @@ class MemoryStoreBase(ABC):
         Returns:
             str: The unique identifier for the memory record.
         """
-        pass
 
     @abstractmethod
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upserts a group of memory records into the data store.
 
         Does not guarantee that the collection exists.
@@ -95,10 +93,11 @@ class MemoryStoreBase(ABC):
         Returns:
             List[str]: The unique identifiers for the memory records.
         """
-        pass
 
     @abstractmethod
-    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
         Args:
@@ -109,7 +108,6 @@ class MemoryStoreBase(ABC):
         Returns:
             MemoryRecord: The memory record if found
         """
-        pass
 
     @abstractmethod
     async def get_batch(
@@ -128,7 +126,6 @@ class MemoryStoreBase(ABC):
         Returns:
             List[MemoryRecord]: The memory records associated with the unique keys provided.
         """
-        pass
 
     @abstractmethod
     async def remove(self, collection_name: str, key: str) -> None:
@@ -138,7 +135,6 @@ class MemoryStoreBase(ABC):
             collection_name (str): The name associated with a collection of embeddings.
             key (str): The unique id associated with the memory record to remove.
         """
-        pass
 
     @abstractmethod
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
@@ -148,7 +144,6 @@ class MemoryStoreBase(ABC):
             collection_name (str): The name associated with a collection of embeddings.
             keys (List[str]): The unique ids associated with the memory records to remove.
         """
-        pass
 
     @abstractmethod
     async def get_nearest_matches(
@@ -172,7 +167,6 @@ class MemoryStoreBase(ABC):
             List[Tuple[MemoryRecord, float]]: A list of tuples where item1 is a MemoryRecord and item2
                 is its similarity score as a float.
         """
-        pass
 
     @abstractmethod
     async def get_nearest_match(
@@ -193,4 +187,11 @@ class MemoryStoreBase(ABC):
         Returns:
             Tuple[MemoryRecord, float]: A tuple consisting of the MemoryRecord and the similarity score as a float.
         """
-        pass
+from abc import ABC
+
+from semantic_kernel.ai.embeddings.embedding_index_base import EmbeddingIndexBase
+from semantic_kernel.memory.storage.data_store_base import DataStoreBase
+
+
+class MemoryStoreBase(DataStoreBase, EmbeddingIndexBase, ABC):
+    pass

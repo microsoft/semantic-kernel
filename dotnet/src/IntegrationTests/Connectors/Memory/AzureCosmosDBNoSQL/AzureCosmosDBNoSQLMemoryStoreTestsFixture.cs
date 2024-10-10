@@ -47,7 +47,7 @@ public class AzureCosmosDBNoSQLMemoryStoreTestsFixture : IAsyncLifetime
 
     private static string GetSetting(IConfigurationRoot configuration, string settingName)
     {
-        var settingValue = configuration[$"AzureCosmosDB:{settingName}"];
+        var settingValue = configuration[$"AzureCosmosDBNoSQL:{settingName}"];
         if (string.IsNullOrWhiteSpace(settingValue))
         {
             throw new ArgumentNullException($"{settingValue} string is not configured");

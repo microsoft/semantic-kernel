@@ -5,27 +5,27 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelException
 
 
 class PlannerException(KernelException):
-    pass
+    """Base class for all planner exceptions."""
 
 
 class PlannerExecutionException(PlannerException):
-    pass
+    """Base class for all planner execution exceptions."""
 
 
 class PlannerInvalidGoalError(PlannerException):
-    pass
+    """An error occurred while validating the goal."""
 
 
 class PlannerInvalidPlanError(PlannerException):
-    pass
+    """An error occurred while validating the plan."""
 
 
 class PlannerInvalidConfigurationError(PlannerException):
-    pass
+    """An error occurred while validating the configuration."""
 
 
 class PlannerCreatePlanError(PlannerException):
-    pass
+    """An error occurred while creating the plan."""
 
 
 __all__ = [

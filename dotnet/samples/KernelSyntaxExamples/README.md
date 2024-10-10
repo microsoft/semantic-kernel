@@ -19,7 +19,58 @@ You can also use environment variables if you prefer.
 
 To set your secrets with Secret Manager:
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
 ```
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 cd dotnet/samples/KernelSyntaxExamples
 
 dotnet user-secrets init
@@ -87,7 +138,58 @@ dotnet user-secrets set "Kusto:ConnectionString" "..."
 
 To set your secrets with environment variables, use these names:
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
 ```
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 # OpenAI
 OpenAI__ModelId
 OpenAI__ChatModelId
@@ -161,7 +263,58 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 
 `AuthenticateRequestAsyncCallback` is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenAPI plugin.
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
 ```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);
 ```
 
@@ -180,7 +333,58 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the credentia
 
 The following code demonstrates how to use this provider:
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
 ```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 var basicAuthProvider = new BasicAuthenticationProvider(() =>
 {
     // JIRA API expects credentials in the format "email:apikey"
@@ -198,7 +402,58 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the token and
 
 The following code demonstrates how to use this provider:
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
 ```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 var bearerAuthProvider = new BearerAuthenticationProvider(() =>
 {
     return Task.FromResult(Env.Var("AZURE_KEYVAULT_TOKEN"));
@@ -221,7 +476,58 @@ To construct this provider, the caller must specify:
 - _Scopes_ - permissions being requested
 - _Redirect URI_ - for redirecting the user back to the application. (When running locally, this is typically http://localhost.)
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
 ```csharp
+>>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 var msalAuthProvider = new InteractiveMsalAuthenticationProvider(
     Env.Var("AZURE_KEYVAULT_CLIENTID"), // clientId
     Env.Var("AZURE_KEYVAULT_TENANTID"), // tenantId

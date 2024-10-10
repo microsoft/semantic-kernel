@@ -36,7 +36,13 @@ _T = TypeVar("_T", bound="FunctionResultContent")
 class FunctionResultContent(KernelContent):
     """This class represents function result content."""
 
-    content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(FUNCTION_RESULT_CONTENT_TAG, init=False)  # type: ignore
+from pydantic import Field, validator
+
+@validator('content_type', pre=True, always=True)
+def set_content_type(cls, v):
+    return FUNCTION_RESULT_CONTENT_TAG
+
+content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(init=False)
     tag: ClassVar[str] = FUNCTION_RESULT_CONTENT_TAG
     id: str
     result: Any
@@ -185,3 +191,7 @@ class FunctionResultContent(KernelContent):
     def serialize_result(self, value: Any) -> str:
         """Serialize the result."""
         return str(value)
+
+    def __hash__(self) -> int:
+        """Return the hash of the function result content."""
+        return hash((self.tag, self.id, self.result, self.name, self.function_name, self.plugin_name, self.encoding))

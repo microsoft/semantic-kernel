@@ -45,14 +45,12 @@ public class PromptWithComplexObjectsTest
         JsonNode? obtainedObject = JsonNode.Parse(requestContent);
         Assert.NotNull(obtainedObject);
 
-        string expected = await File.ReadAllTextAsync("./CrossLanguage/Data/PromptWithComplexObjectsTest.json");
+        string expected = await File.ReadAllTextAsync(isStreaming
+            ? "./CrossLanguage/Data/PromptWithComplexObjectsStreamingTest.json"
+            : "./CrossLanguage/Data/PromptWithComplexObjectsTest.json");
+
         JsonNode? expectedObject = JsonNode.Parse(expected);
         Assert.NotNull(expectedObject);
-
-        if (isStreaming)
-        {
-            expectedObject["stream"] = true;
-        }
 
         Assert.True(JsonNode.DeepEquals(obtainedObject, expectedObject));
     }

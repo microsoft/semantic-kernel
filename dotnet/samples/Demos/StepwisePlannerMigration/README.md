@@ -8,7 +8,7 @@ The new approach produces the results more reliably and uses fewer tokens compar
 1. [OpenAI](https://platform.openai.com/docs/introduction) subscription.
 2. Update `appsettings.Development.json` file with your configuration for `OpenAI` section or use .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) (recommended approach):
 
-```powershell
+```powershell {"id":"01J6KPP8817MRGF0PJPNK0EJYV"}
 # OpenAI
 # Make sure to use the model which supports function calling capability.
 # Supported models: https://platform.openai.com/docs/guides/function-calling/supported-models
@@ -29,7 +29,7 @@ It's possible to send [HTTP requests](https://learn.microsoft.com/en-us/aspnet/c
 
 Old approach:
 
-```csharp
+```csharp {"id":"01J6KPP8817MRGF0PJPNZBEMRQ"}
 Kernel kernel = Kernel
     .CreateBuilder()
     .AddOpenAIChatCompletion("gpt-4", Environment.GetEnvironmentVariable("OpenAI__ApiKey"))
@@ -44,7 +44,7 @@ ChatHistory generatedPlan = result.ChatHistory;
 
 New approach:
 
-```csharp
+```csharp {"id":"01J6KPP8817MRGF0PJPP5B628G"}
 Kernel kernel = Kernel
     .CreateBuilder()
     .AddOpenAIChatCompletion("gpt-4", Environment.GetEnvironmentVariable("OpenAI__ApiKey"))
@@ -66,7 +66,7 @@ ChatHistory generatedPlan = chatHistory;
 
 Old approach:
 
-```csharp
+```csharp {"id":"01J6KPP8817MRGF0PJPRF33C92"}
 Kernel kernel = Kernel
     .CreateBuilder()
     .AddOpenAIChatCompletion("gpt-4", Environment.GetEnvironmentVariable("OpenAI__ApiKey"))
@@ -81,7 +81,7 @@ string planResult = result.FinalAnswer;
 
 New approach:
 
-```csharp
+```csharp {"id":"01J6KPP8817MRGF0PJPSDD8X8X"}
 Kernel kernel = Kernel
     .CreateBuilder()
     .AddOpenAIChatCompletion("gpt-4", Environment.GetEnvironmentVariable("OpenAI__ApiKey"))
@@ -98,7 +98,7 @@ string planResult = result.ToString();
 
 Old approach:
 
-```csharp
+```csharp {"id":"01J6KPP8817MRGF0PJPWK0KXNV"}
 Kernel kernel = Kernel
     .CreateBuilder()
     .AddOpenAIChatCompletion("gpt-4", Environment.GetEnvironmentVariable("OpenAI__ApiKey"))
@@ -114,7 +114,7 @@ string planResult = result.FinalAnswer;
 
 New approach:
 
-```csharp
+```csharp {"id":"01J6KPP8817MRGF0PJPYSS8F42"}
 Kernel kernel = Kernel
     .CreateBuilder()
     .AddOpenAIChatCompletion("gpt-4", Environment.GetEnvironmentVariable("OpenAI__ApiKey"))

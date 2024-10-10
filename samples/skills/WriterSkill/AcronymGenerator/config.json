@@ -1,0 +1,96 @@
+{
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "type": "completion",
+  "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
+  "completion": {
+=======
+  "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
+  "default_settings": {
+>>>>>>> origin/main
+=======
+  "description": "Given a request to generate an acronym from a string, generate an acronym and provide the acronym explanation.",
+  "default_settings": {
+>>>>>>> Stashed changes
+    "max_tokens": 256,
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "stop_sequences": [
+      "#"
+    ]
+  },
+  "default_backends": [
+    "text-davinci-003"
+  ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+    "stop_sequences": ["#"]
+  }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    "stop_sequences": ["#"]
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+}

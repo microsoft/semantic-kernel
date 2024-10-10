@@ -75,7 +75,10 @@ def _create_sync_template_helper_from_function(
     allow_dangerously_set_content: bool = False,
 ) -> Callable[..., Any]:
     """Create a helper function for both the Handlebars and Jinja2 templating engines from a kernel function."""
-    if template_format not in [JINJA2_TEMPLATE_FORMAT_NAME, HANDLEBARS_TEMPLATE_FORMAT_NAME]:
+    if template_format not in [
+        JINJA2_TEMPLATE_FORMAT_NAME,
+        HANDLEBARS_TEMPLATE_FORMAT_NAME,
+    ]:
         raise ValueError(f"Invalid template format: {template_format}")
 
     if not getattr(asyncio, "_nest_patched", False):
@@ -84,7 +87,9 @@ def _create_sync_template_helper_from_function(
     def func(*args, **kwargs):
         arguments = KernelArguments()
         if base_arguments and base_arguments.execution_settings:
-            arguments.execution_settings = base_arguments.execution_settings  # pragma: no cover
+            arguments.execution_settings = (
+                base_arguments.execution_settings
+            )  # pragma: no cover
         arguments.update(base_arguments)
         arguments.update(kwargs)
 
@@ -127,7 +132,9 @@ def _create_async_template_helper_from_function(
     async def func(*args, **kwargs):
         arguments = KernelArguments()
         if base_arguments and base_arguments.execution_settings:
-            arguments.execution_settings = base_arguments.execution_settings  # pragma: no cover
+            arguments.execution_settings = (
+                base_arguments.execution_settings
+            )  # pragma: no cover
         arguments.update(base_arguments)
         arguments.update(kwargs)
         logger.debug(

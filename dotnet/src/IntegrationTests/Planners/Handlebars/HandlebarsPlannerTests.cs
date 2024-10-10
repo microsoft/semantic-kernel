@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -16,13 +17,54 @@ namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 
 public sealed class HandlebarsPlannerTests
 {
+    [Theory(Skip = "This test is for manual verification.")]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
     [Theory]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
-    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string goal, string expectedFunction, string expectedPlugin)
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    [Theory]
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+    [InlineData("Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
+    public async Task CreatePlanFunctionFlowAsync(string goal, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
-        var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        var kernel = this.InitializeKernel(useEmbeddings);
         kernel.ImportPluginFromType<EmailPluginFake>(expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
@@ -37,7 +79,7 @@ public sealed class HandlebarsPlannerTests
         );
     }
 
-    [RetryTheory]
+    [RetryTheory(Skip = "This test is for manual verification.")]
     [InlineData("Write a novel about software development that is 3 chapters long.", "NovelChapter", "WriterPlugin")]
     public async Task CreatePlanWithDefaultsAsync(string goal, string expectedFunction, string expectedPlugin)
     {
@@ -56,8 +98,49 @@ public sealed class HandlebarsPlannerTests
         );
     }
 
+    [Theory(Skip = "This test is for manual verification.")]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
     [Theory]
-    [InlineData(true, "List each property of the default Qux object.", "## Complex types", """
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    [Theory]
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+    [InlineData("List each property of the default Qux object.", "## Complex types", """
         ### Qux:
         {
           "type": "Object",
@@ -71,11 +154,11 @@ public sealed class HandlebarsPlannerTests
           }
         }
         """, "GetDefaultQux", "Foo")]
-    public async Task CreatePlanWithComplexTypesDefinitionsAsync(bool useChatModel, string goal, string expectedSectionHeader, string expectedTypeHeader, string expectedFunction, string expectedPlugin)
+    public async Task CreatePlanWithComplexTypesDefinitionsAsync(string goal, string expectedSectionHeader, string expectedTypeHeader, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
-        var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        var kernel = this.InitializeKernel(useEmbeddings);
         kernel.ImportPluginFromObject(new Foo());
 
         // Act
@@ -103,7 +186,7 @@ public sealed class HandlebarsPlannerTests
         );
     }
 
-    private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = true)
+    private Kernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -113,22 +196,12 @@ public sealed class HandlebarsPlannerTests
 
         IKernelBuilder builder = Kernel.CreateBuilder();
 
-        if (useChatModel)
-        {
-            builder.Services.AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                modelId: azureOpenAIConfiguration.ChatModelId,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.Services.AddAzureOpenAITextGeneration(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                modelId: azureOpenAIConfiguration.ModelId,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
+        builder.Services.AddAzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+            modelId: azureOpenAIConfiguration.ChatModelId,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: azureOpenAIConfiguration.ApiKey);
+            credentials: new AzureCliCredential());
 
         if (useEmbeddings)
         {
@@ -136,7 +209,7 @@ public sealed class HandlebarsPlannerTests
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                 modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                credential: new AzureCliCredential());
         }
 
         return builder.Build();

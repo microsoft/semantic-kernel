@@ -1,0 +1,96 @@
+{
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "description": "A friendly chat where AI helps, avoiding bad topics",
+  "type": "completion",
+  "completion": {
+=======
+  "description": "A friendly chat where AI helps, avoiding bad topics",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A friendly chat where AI helps, avoiding bad topics",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A friendly chat where AI helps, avoiding bad topics",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A friendly chat where AI helps, avoiding bad topics",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A friendly chat where AI helps, avoiding bad topics",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "A friendly chat where AI helps, avoiding bad topics",
+  "default_settings": {
+>>>>>>> origin/main
+=======
+  "description": "A friendly chat where AI helps, avoiding bad topics",
+  "default_settings": {
+>>>>>>> Stashed changes
+    "max_tokens": 1000,
+    "temperature": 0.4,
+    "top_p": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "stop_sequences": [
+      "</message>"
+    ]
+  },
+  "default_backends": [
+    "text-davinci-003"
+  ]
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+    "stop_sequences": ["</message>"]
+  }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    "stop_sequences": ["</message>"]
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+}

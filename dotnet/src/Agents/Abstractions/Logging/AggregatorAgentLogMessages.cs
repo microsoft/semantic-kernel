@@ -42,4 +42,72 @@ internal static partial class AggregatorAgentLogMessages
         string channelType,
         AggregatorMode channelMode,
         Type agentChatType);
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+
+    /// <summary>
+    /// Logs <see cref="AggregatorAgent"/> restoring serialized channel (started).
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Debug,
+        Message = "[{MethodName}] Restoring assistant channel for {ChannelType}.")]
+    public static partial void LogOpenAIAssistantAgentRestoringChannel(
+        this ILogger logger,
+        string methodName,
+        string channelType);
+
+    /// <summary>
+    /// Logs <see cref="AggregatorAgent"/> restored serialized channel (complete).
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Information,
+        Message = "[{MethodName}] Restored assistant channel for {ChannelType}.")]
+    public static partial void LogOpenAIAssistantAgentRestoredChannel(
+        this ILogger logger,
+        string methodName,
+        string channelType);
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 }

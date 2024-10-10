@@ -11,11 +11,17 @@ from semantic_kernel.utils.telemetry.user_agent import APP_INFO
 
 ASTRA_CALLER_IDENTITY: str
 SEMANTIC_KERNEL_VERSION = APP_INFO.get("Semantic-Kernel-Version")
-ASTRA_CALLER_IDENTITY = f"semantic-kernel/{SEMANTIC_KERNEL_VERSION}" if SEMANTIC_KERNEL_VERSION else "semantic-kernel"
+ASTRA_CALLER_IDENTITY = (
+    f"semantic-kernel/{SEMANTIC_KERNEL_VERSION}"
+    if SEMANTIC_KERNEL_VERSION
+    else "semantic-kernel"
+)
 
 
 @experimental_class
 class AstraClient:
+    """AstraClient."""
+
     def __init__(
         self,
         astra_id: str,
@@ -34,9 +40,7 @@ class AstraClient:
         self.embedding_dim = embedding_dim
         self.similarity_function = similarity_function
 
-        self.request_base_url = (
-            f"https://{self.astra_id}-{self.astra_region}.apps.astra.datastax.com/api/json/v1/{self.keyspace_name}"
-        )
+        self.request_base_url = f"https://{self.astra_id}-{self.astra_region}.apps.astra.datastax.com/api/json/v1/{self.keyspace_name}"
         self.request_header = {
             "x-cassandra-token": self.astra_application_token,
             "Content-Type": "application/json",
@@ -47,14 +51,20 @@ class AstraClient:
     async def _run_query(self, request_url: str, query: dict):
         async with (
             AsyncSession(self._session) as session,
-            session.post(request_url, data=json.dumps(query), headers=self.request_header) as response,
+            session.post(
+                request_url, data=json.dumps(query), headers=self.request_header
+            ) as response,
         ):
             if response.status == 200:
                 response_dict = await response.json()
                 if "errors" in response_dict:
-                    raise ServiceResponseException(f"Astra DB request error - {response_dict['errors']}")
+                    raise ServiceResponseException(
+                        f"Astra DB request error - {response_dict['errors']}"
+                    )
                 return response_dict
-            raise ServiceResponseException(f"Astra DB not available. Status : {response}")
+            raise ServiceResponseException(
+                f"Astra DB not available. Status : {response}"
+            )
 
     async def find_collections(self, include_detail: bool = True):
         """Finds all collections in the keyspace."""
@@ -84,8 +94,16 @@ class AstraClient:
                 "name": collection_name,
                 "options": {
                     "vector": {
-                        "dimension": embedding_dim if embedding_dim is not None else self.embedding_dim,
-                        "metric": similarity_function if similarity_function is not None else self.similarity_function,
+                        "dimension": (
+                            embedding_dim
+                            if embedding_dim is not None
+                            else self.embedding_dim
+                        ),
+                        "metric": (
+                            similarity_function
+                            if similarity_function is not None
+                            else self.similarity_function
+                        ),
                     }
                 },
             }
@@ -135,22 +153,32 @@ class AstraClient:
                 find_query["options"] = {"includeSimilarity": int(include_similarity)}
 
         query = {"find": find_query}
-        result = await self._run_query(self._build_request_collection_url(collection_name), query)
+        result = await self._run_query(
+            self._build_request_collection_url(collection_name), query
+        )
         return result["data"]["documents"]
 
     async def insert_document(self, collection_name: str, document: dict) -> str:
         """Inserts a document into the collection."""
         query = {"insertOne": {"document": document}}
-        result = await self._run_query(self._build_request_collection_url(collection_name), query)
+        result = await self._run_query(
+            self._build_request_collection_url(collection_name), query
+        )
         return result["status"]["insertedIds"][0]
 
-    async def insert_documents(self, collection_name: str, documents: list[dict]) -> list[str]:
+    async def insert_documents(
+        self, collection_name: str, documents: list[dict]
+    ) -> list[str]:
         """Inserts multiple documents into the collection."""
         query = {"insertMany": {"documents": documents}}
-        result = await self._run_query(self._build_request_collection_url(collection_name), query)
+        result = await self._run_query(
+            self._build_request_collection_url(collection_name), query
+        )
         return result["status"]["insertedIds"]
 
-    async def update_document(self, collection_name: str, filter: dict, update: dict, upsert: bool = True) -> dict:
+    async def update_document(
+        self, collection_name: str, filter: dict, update: dict, upsert: bool = True
+    ) -> dict:
         """Updates a document in the collection."""
         query = {
             "findOneAndUpdate": {
@@ -159,7 +187,9 @@ class AstraClient:
                 "options": {"returnDocument": "after", "upsert": upsert},
             }
         }
-        result = await self._run_query(self._build_request_collection_url(collection_name), query)
+        result = await self._run_query(
+            self._build_request_collection_url(collection_name), query
+        )
         return result["status"]
 
     async def update_documents(self, collection_name: str, filter: dict, update: dict):
@@ -170,11 +200,15 @@ class AstraClient:
                 "update": update,
             }
         }
-        result = await self._run_query(self._build_request_collection_url(collection_name), query)
+        result = await self._run_query(
+            self._build_request_collection_url(collection_name), query
+        )
         return result["status"]
 
     async def delete_documents(self, collection_name: str, filter: dict) -> int:
         """Deletes documents from the collection."""
         query = {"deleteMany": {"filter": filter}}
-        result = await self._run_query(self._build_request_collection_url(collection_name), query)
+        result = await self._run_query(
+            self._build_request_collection_url(collection_name), query
+        )
         return result["status"]["deletedCount"]

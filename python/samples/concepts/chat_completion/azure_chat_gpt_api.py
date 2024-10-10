@@ -4,7 +4,9 @@ import asyncio
 import logging
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
 
@@ -40,11 +42,15 @@ kernel.add_service(chat_service)
 
 ## The second method is useful when you are using a single service, and you want to have type checking on the request settings or when you are using multiple instances of the same type of service, for instance gpt-35-turbo and gpt-4, both in openai and both for chat.  # noqa: E501 E266
 ## 3. create the request settings from the kernel based on the registered service class: # noqa: E266
-req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+req_settings = kernel.get_prompt_execution_settings_from_service_id(
+    service_id=service_id
+)
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
-req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": []})
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
+    filters={"excluded_plugins": []}
+)
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
 
@@ -57,7 +63,9 @@ chat_function = kernel.add_function(
 
 history = ChatHistory()
 history.add_user_message("Hi there, who are you?")
-history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+history.add_assistant_message(
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
+)
 
 
 async def chat() -> bool:

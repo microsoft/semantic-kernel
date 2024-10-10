@@ -1,0 +1,69 @@
+# Azure Pipelines
+# https://aka.ms/yaml
+
+name: DevSkim_VSCode_PR_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+trigger: none
+pr:
+  branches:
+    include:
+    - main
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: SecurityEngineering/OSS-Tools-Pipeline-Templates
+      ref: refs/tags/v2.0.0
+    - repository: 1esPipelines
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  parameters:
+    pool:
+      name: MSSecurity-1ES-Build-Agents-Pool
+      image: MSSecurity-1ES-Windows-2022
+      os: windows
+    stages:
+    - stage: Build
+      dependsOn: []
+      jobs:
+      - job: build_vscode_plugin
+        displayName: Build VS Code Plugin
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            targetPath: $(Build.StagingDirectory)/packages
+            artifactName: 'Unsigned_Plugin'
+        steps:
+        - task: UseDotNet@2
+          displayName: Install Dotnet SDK
+          inputs:
+            packageType: 'sdk'
+            version: '8.0.x'
+        - task: Npm@1
+          displayName: Build VS Code Plugin
+          inputs:
+            command: 'custom'
+            workingDir: 'DevSkim-VSCode-Plugin/'     
+            customCommand: 'run build'
+        - template: nbgv-set-version-steps.yml@templates
+        - task: PowerShell@2
+          displayName: Mkdir for Manifests and Packages
+          inputs:
+            targetType: 'inline'
+            script: mkdir sbom/vscode/ ; mkdir sbom/langserver/ ; mkdir packages
+            workingDirectory: '$(Build.StagingDirectory)'
+        - task: Npm@1
+          displayName: Package VS Code Plugin
+          inputs:
+            command: 'custom'
+            workingDir: 'DevSkim-VSCode-Plugin/'
+            customCommand: 'run pack-ext'
+        - task: PowerShell@2
+          displayName: Move Plugin File
+          inputs:
+            targetType: 'inline'
+            script: 'mv DevSkim-VSCode-Plugin/*.vsix $env:BUILD_STAGINGDIRECTORY/packages/'

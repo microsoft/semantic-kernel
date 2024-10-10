@@ -8,7 +8,7 @@ namespace Memory;
 
 public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
 {
-    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4");
+    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
 
     [Fact]
     public void RunExample()

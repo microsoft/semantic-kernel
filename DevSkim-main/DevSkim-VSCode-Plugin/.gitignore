@@ -1,0 +1,5 @@
+.vscode-test
+devskimBinaries
+**/node_modules
+**/client/out
+**/*.tsbuildinfo

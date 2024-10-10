@@ -12,8 +12,12 @@ async def main():
     kernel = Kernel()
 
     service_id = "gpt-3.5"
-    kernel.add_service(OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo"))
-    kernel.add_plugins({"math": MathPlugin(), "time": TimePlugin(), "text": TextPlugin()})
+    kernel.add_service(
+        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo")
+    )
+    kernel.add_plugins(
+        {"math": MathPlugin(), "time": TimePlugin(), "text": TextPlugin()}
+    )
 
     # create an instance of sequential planner.
     planner = SequentialPlanner(service_id=service_id, kernel=kernel)

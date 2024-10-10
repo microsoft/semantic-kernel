@@ -1,6 +1,57 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.ChatCompletion;
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+using Microsoft.SemanticKernel.ChatCompletion;
+=======
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+using Microsoft.SemanticKernel.ChatCompletion;
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+using Microsoft.SemanticKernel.ChatCompletion;
+=======
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Xunit;
 

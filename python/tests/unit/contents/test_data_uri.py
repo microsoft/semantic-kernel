@@ -20,7 +20,15 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
             "base64",
             id="basic_image",
         ),
-        pytest.param("data:text/plain;,test_data", None, "test_data", "text/plain", {}, None, id="basic_text"),
+        pytest.param(
+            "data:text/plain;,test_data",
+            None,
+            "test_data",
+            "text/plain",
+            {},
+            None,
+            id="basic_text",
+        ),
         pytest.param(
             "data:application/octet-stream;base64,AQIDBA==",
             b"\x01\x02\x03\x04",
@@ -72,15 +80,39 @@ def test_data_uri_from_data_uri_str(
         pytest.param("", ContentInitializationError, id="empty"),
         pytest.param("data", ContentInitializationError, id="missing_colon"),
         pytest.param("data:", ContentInitializationError, id="missing_comma"),
-        pytest.param("data:something,", ContentInitializationError, id="mime_type_without_subtype"),
-        pytest.param("data:something;else,data", ContentInitializationError, id="mime_type_without_subtype2"),
         pytest.param(
-            "data:type/subtype;parameterwithoutvalue;else,", ContentInitializationError, id="param_without_value"
+            "data:something,",
+            ContentInitializationError,
+            id="mime_type_without_subtype",
         ),
-        pytest.param("data:type/subtype;parameter=va=lue;else,", ContentInitializationError, id="param_multiple_eq"),
-        pytest.param("data:type/subtype;=value;else,", ContentInitializationError, id="param_without_name"),
-        pytest.param("data:image/jpeg;base64,dGVzdF9kYXRh;foo=bar", ContentInitializationError, id="wrong_order"),
-        pytest.param("data:text/plain;test_data", ContentInitializationError, id="missing_comma"),
+        pytest.param(
+            "data:something;else,data",
+            ContentInitializationError,
+            id="mime_type_without_subtype2",
+        ),
+        pytest.param(
+            "data:type/subtype;parameterwithoutvalue;else,",
+            ContentInitializationError,
+            id="param_without_value",
+        ),
+        pytest.param(
+            "data:type/subtype;parameter=va=lue;else,",
+            ContentInitializationError,
+            id="param_multiple_eq",
+        ),
+        pytest.param(
+            "data:type/subtype;=value;else,",
+            ContentInitializationError,
+            id="param_without_name",
+        ),
+        pytest.param(
+            "data:image/jpeg;base64,dGVzdF9kYXRh;foo=bar",
+            ContentInitializationError,
+            id="wrong_order",
+        ),
+        pytest.param(
+            "data:text/plain;test_data", ContentInitializationError, id="missing_comma"
+        ),
         pytest.param(
             "data:text/plain;base64,something!",
             ContentInitializationError,
@@ -100,11 +132,16 @@ def test_data_uri_from_data_uri_fail(uri: str, exception: type[Exception]):
 
 def test_data_uri_to_string_with_extra_metadata():
     uri = DataUri.from_data_uri("data:image/jpeg;base64,dGVzdF9kYXRh")
-    assert uri.to_string(metadata={"foo": "bar"}) == "data:image/jpeg;foo=bar;base64,dGVzdF9kYXRh"
+    assert (
+        uri.to_string(metadata={"foo": "bar"})
+        == "data:image/jpeg;foo=bar;base64,dGVzdF9kYXRh"
+    )
 
 
 def test_default_mime_type():
-    uri = DataUri.from_data_uri("data:;base64,dGVzdF9kYXRh", default_mime_type="image/jpeg")
+    uri = DataUri.from_data_uri(
+        "data:;base64,dGVzdF9kYXRh", default_mime_type="image/jpeg"
+    )
     assert uri.mime_type == "image/jpeg"
 
 
@@ -121,7 +158,9 @@ def test_default_mime_type():
             id="basic_image",
         ),
         pytest.param(
-            {"data_str": "test_data", "mime_type": "text/plain"}, "data:text/plain;,test_data", id="basic_text"
+            {"data_str": "test_data", "mime_type": "text/plain"},
+            "data:text/plain;,test_data",
+            id="basic_text",
         ),
         pytest.param(
             {

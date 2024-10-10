@@ -11,13 +11,17 @@ from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
+from semantic_kernel.connectors.memory.postgres.postgres_settings import (
+    PostgresSettings,
+)
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorInitializationError,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -67,13 +71,17 @@ class PostgresMemoryStore(MemoryStoreBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
-            raise MemoryConnectorInitializationError("Failed to create Postgres settings.", ex) from ex
+            raise MemoryConnectorInitializationError(
+                "Failed to create Postgres settings.", ex
+            ) from ex
 
         self._check_dimensionality(default_dimensionality)
 
         self._default_dimensionality = default_dimensionality
         self._connection_pool = ConnectionPool(
-            postgres_settings.connection_string.get_secret_value(), min_size=min_pool, max_size=max_pool
+            postgres_settings.connection_string.get_secret_value(),
+            min_size=min_pool,
+            max_size=max_pool,
         )
         self._schema = schema
         atexit.register(self._connection_pool.close)
@@ -165,7 +173,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn, conn.cursor() as cur:
             if not await self.__does_collection_exist(cur, collection_name):
-                raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+                raise ServiceResourceNotFoundError(
+                    f"Collection '{collection_name}' does not exist"
+                )
             cur.execute(
                 SQL(
                     """
@@ -193,7 +203,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                 raise ServiceResponseException("Upsert failed")
             return result[0]
 
-    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+    async def upsert_batch(
+        self, collection_name: str, records: list[MemoryRecord]
+    ) -> list[str]:
         """Upserts a batch of records.
 
         Args:
@@ -205,7 +217,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn, conn.cursor() as cur:
             if not await self.__does_collection_exist(cur, collection_name):
-                raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+                raise ServiceResourceNotFoundError(
+                    f"Collection '{collection_name}' does not exist"
+                )
             cur.nextset()
             cur.executemany(
                 SQL(
@@ -242,7 +256,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                 raise ServiceResponseException("Upsert failed")
             return [result[0] for result in results if result is not None]
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
+    async def get(
+        self, collection_name: str, key: str, with_embedding: bool = False
+    ) -> MemoryRecord:
         """Gets a record.
 
         Args:
@@ -255,7 +271,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn, conn.cursor() as cur:
             if not await self.__does_collection_exist(cur, collection_name):
-                raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+                raise ServiceResourceNotFoundError(
+                    f"Collection '{collection_name}' does not exist"
+                )
             cur.execute(
                 SQL(
                     """
@@ -275,7 +293,9 @@ class PostgresMemoryStore(MemoryStoreBase):
             return MemoryRecord.local_record(
                 id=result[0],
                 embedding=(
-                    np.fromstring(result[1].strip("[]"), dtype=float, sep=",") if with_embedding else np.array([])
+                    np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
+                    if with_embedding
+                    else np.array([])
                 ),
                 text=result[2]["text"],
                 description=result[2]["description"],
@@ -298,7 +318,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn, conn.cursor() as cur:
             if not await self.__does_collection_exist(cur, collection_name):
-                raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+                raise ServiceResourceNotFoundError(
+                    f"Collection '{collection_name}' does not exist"
+                )
             cur.execute(
                 SQL(
                     """
@@ -341,7 +363,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn, conn.cursor() as cur:
             if not await self.__does_collection_exist(cur, collection_name):
-                raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+                raise ServiceResourceNotFoundError(
+                    f"Collection '{collection_name}' does not exist"
+                )
             cur.execute(
                 SQL(
                     """
@@ -364,7 +388,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn, conn.cursor() as cur:
             if not await self.__does_collection_exist(cur, collection_name):
-                raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+                raise ServiceResourceNotFoundError(
+                    f"Collection '{collection_name}' does not exist"
+                )
             cur.execute(
                 SQL(
                     """
@@ -397,7 +423,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         with self._connection_pool.connection() as conn, conn.cursor() as cur:
             if not await self.__does_collection_exist(cur, collection_name):
-                raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
+                raise ServiceResourceNotFoundError(
+                    f"Collection '{collection_name}' does not exist"
+                )
             cur.execute(
                 SQL(
                     """
@@ -491,10 +519,13 @@ class PostgresMemoryStore(MemoryStoreBase):
     def _check_dimensionality(self, dimension_num):
         if dimension_num > MAX_DIMENSIONALITY:
             raise ServiceInitializationError(
-                f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {dimension_num} exceeds "
+                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         if dimension_num <= 0:
-            raise ServiceInitializationError("Dimensionality must be a positive integer. ")
+            raise ServiceInitializationError(
+                "Dimensionality must be a positive integer. "
+            )
 
     def __serialize_metadata(self, record: MemoryRecord) -> str:
         return json.dumps(

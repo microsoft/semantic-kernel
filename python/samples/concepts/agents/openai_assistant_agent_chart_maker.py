@@ -18,7 +18,10 @@ use_azure_openai = False
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) -> None:
     """Invoke the agent with the user input."""
-    await agent.add_chat_message(thread_id=thread_id, message=ChatMessageContent(role=AuthorRole.USER, content=input))
+    await agent.add_chat_message(
+        thread_id=thread_id,
+        message=ChatMessageContent(role=AuthorRole.USER, content=input),
+    )
 
     print(f"# {AuthorRole.USER}: '{input}'")
 

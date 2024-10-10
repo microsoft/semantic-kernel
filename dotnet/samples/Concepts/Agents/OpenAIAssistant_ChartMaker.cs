@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Files;
 
 namespace Agents;
 
@@ -10,31 +11,179 @@ namespace Agents;
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
 /// </summary>
-public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(output)
+public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    /// <summary>
-    /// Target Open AI services.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     private const string AgentName = "ChartMaker";
     private const string AgentInstructions = "Create charts as requested without explanation.";
 
     [Fact]
     public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
+        OpenAIClientProvider provider = this.GetClientProvider();
+
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        FileClient fileClient = provider.Client.GetFileClient();
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+        FileClient fileClient = provider.Client.GetFileClient();
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                new()
+                provider,
+                new(this.Model)
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+                kernel: new(),
+                provider,
+                new(this.Model)
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+                kernel: new(),
+                provider,
+                new(this.Model)
+                provider,
+                definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 {
                     Instructions = AgentInstructions,
                     Name = AgentName,
                     EnableCodeInterpreter = true,
-                    ModelId = this.Model,
+                    Metadata = AssistantSampleMetadata,
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+                });
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                });
+=======
+>>>>>>> Stashed changes
+                },
+                kernel: new());
+                });
+                },
+                kernel: new());
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
@@ -55,6 +204,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                 """);
 
             await InvokeAgentAsync("Can you regenerate this same chart using the category names as the bar colors?");
+            await InvokeAgentAsync("Perfect, can you regenerate this as a line chart?");
         }
         finally
         {
@@ -64,21 +214,87 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+=======
+>>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
-            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
+            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            chat.Add(new ChatMessageContent(AuthorRole.User, input));
+
+            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(new(AuthorRole.User, input));
+            this.WriteAgentChatMessage(message);
+
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                if (!string.IsNullOrWhiteSpace(message.Content))
-                {
-                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-                }
-
-                foreach (FileReferenceContent fileReference in message.Items.OfType<FileReferenceContent>())
-                {
-                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: @{fileReference.FileId}");
-                }
+                this.WriteAgentChatMessage(response);
+                await this.DownloadResponseImageAsync(fileClient, response);
             }
         }
     }
