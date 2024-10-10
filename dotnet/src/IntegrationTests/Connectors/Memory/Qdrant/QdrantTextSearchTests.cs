@@ -2,7 +2,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Data;
 using SemanticKernel.IntegrationTests.Data;
