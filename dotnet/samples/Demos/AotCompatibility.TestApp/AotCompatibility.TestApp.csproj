@@ -12,8 +12,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
     <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Abstractions" />
     <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Core" />
+    <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Connectors.Onnx" />
   </ItemGroup>
 
 </Project>

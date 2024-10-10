@@ -94,4 +94,37 @@ public class OnnxRuntimeGenAIPromptExecutionSettingsTests
         Assert.False(onnxExecutionSettings.EarlyStopping);
         Assert.True(onnxExecutionSettings.DoSample);
     }
+
+    [Fact]
+    public void ItShouldCreateOnnxPromptExecutionSettingsFromCustomPromptExecutionSettings()
+    {
+        // Arrange
+        var customExecutionSettings = new CustomPromptExecutionSettings() { ServiceId = "service-id", Temperature = 36.6f };
+
+        // Act
+        var onnxExecutionSettings = OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(customExecutionSettings);
+
+        // Assert
+        Assert.Equal("service-id", onnxExecutionSettings.ServiceId);
+        Assert.Equal(36.6f, onnxExecutionSettings.Temperature);
+    }
+
+    [Fact]
+    public void ItShouldCreateOnnxPromptExecutionSettingsFromCustomPromptExecutionSettingsUsingJSOs()
+    {
+        // Arrange
+        var jsos = new JsonSerializerOptions
+        {
+            TypeInfoResolver = CustomPromptExecutionSettingsJsonSerializerContext.Default
+        };
+
+        var customExecutionSettings = new CustomPromptExecutionSettings() { ServiceId = "service-id", Temperature = 36.6f };
+
+        // Act
+        var onnxExecutionSettings = OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(customExecutionSettings, jsos);
+
+        // Assert
+        Assert.Equal("service-id", onnxExecutionSettings.ServiceId);
+        Assert.Equal(36.6f, onnxExecutionSettings.Temperature);
+    }
 }
