@@ -30,7 +30,7 @@ public interface IVectorStore
     /// <seealso cref="VectorStoreRecordKeyAttribute"/>
     /// <seealso cref="VectorStoreRecordDataAttribute"/>
     /// <seealso cref="VectorStoreRecordVectorAttribute"/>
-    IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : class;
 

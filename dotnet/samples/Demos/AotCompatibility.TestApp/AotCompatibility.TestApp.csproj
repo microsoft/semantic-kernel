@@ -11,7 +11,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Abstractions" />
+    <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Core" />
   </ItemGroup>
 
 </Project>
