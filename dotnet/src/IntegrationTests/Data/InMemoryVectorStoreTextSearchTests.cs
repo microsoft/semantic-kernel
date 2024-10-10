@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -11,9 +12,9 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Data;
 
 /// <summary>
-/// Integration tests for using <see cref="VolatileVectorStore"/> with <see cref="ITextSearch"/>.
+/// Integration tests for using <see cref="InMemoryVectorStore"/> with <see cref="ITextSearch"/>.
 /// </summary>
-public class VolatileVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
+public class InMemoryVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
 {
     // If null, all tests will be enabled
     private const string SkipReason = "Failing in integration test pipeline so disabling while investigating a fix (issue 9168)";
@@ -85,7 +86,7 @@ public class VolatileVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
                 };
             }
 
-            this.VectorStore = new VolatileVectorStore();
+            this.VectorStore = new InMemoryVectorStore();
             await AddRecordsAsync<Guid, DataModel>(this.VectorStore, "records", this.EmbeddingGenerator, CreateRecord);
         }
 

@@ -1,17 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Data;
+namespace SemanticKernel.Connectors.InMemory.UnitTests;
 
-/// <summary>
-/// Contains tests for the ServiceCollectionExtensions class.
-/// </summary>
 public class ServiceCollectionExtensionsTests
 {
     private readonly IServiceCollection _serviceCollection;
@@ -21,17 +17,16 @@ public class ServiceCollectionExtensionsTests
         this._serviceCollection = new ServiceCollection();
     }
 
-    [Obsolete("The VolatileVectorStore is obsolete so this test is as well.")]
     [Fact]
     public void AddVectorStoreRegistersClass()
     {
         // Act.
-        this._serviceCollection.AddVolatileVectorStore();
+        this._serviceCollection.AddInMemoryVectorStore();
 
         // Assert.
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
         var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
         Assert.NotNull(vectorStore);
-        Assert.IsType<VolatileVectorStore>(vectorStore);
+        Assert.IsType<InMemoryVectorStore>(vectorStore);
     }
 }

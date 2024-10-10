@@ -4,12 +4,12 @@ using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 
 namespace Memory;
 
 /// <summary>
-/// An example showing how to use common code, that can work with any vector database, with the Volatile (in-memory) vector store.
+/// An example showing how to use common code, that can work with any vector database, with the InMemory vector store.
 /// The common code is in the <see cref="VectorStore_VectorSearch_MultiStore_Common"/> class.
 /// The common code ingests data into the vector store and then searches over that data.
 /// This example is part of a set of examples each showing a different vector database.
@@ -19,7 +19,7 @@ namespace Memory;
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Qdrant"/></para>
 /// </summary>
-public class VectorStore_VectorSearch_MultiStore_Volatile(ITestOutputHelper output) : BaseTest(output)
+public class VectorStore_VectorSearch_MultiStore_InMemory(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task ExampleWitDIAsync()
@@ -34,8 +34,8 @@ public class VectorStore_VectorSearch_MultiStore_Volatile(ITestOutputHelper outp
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             credential: new AzureCliCredential());
 
-        // Register the Volatile VectorStore.
-        kernelBuilder.AddVolatileVectorStore();
+        // Register the InMemory VectorStore.
+        kernelBuilder.AddInMemoryVectorStore();
 
         // Register the test output helper common processor with the DI container.
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
@@ -49,7 +49,7 @@ public class VectorStore_VectorSearch_MultiStore_Volatile(ITestOutputHelper outp
 
         // Run the process and pass a key generator function to it, to generate unique record keys.
         // The key generator function is required, since different vector stores may require different key types.
-        // E.g. Volatile supports any comparible type, but others may only support string or Guid or ulong, etc.
+        // E.g. InMemory supports any comparible type, but others may only support string or Guid or ulong, etc.
         // For this example we'll use int.
         var uniqueId = 0;
         await processor.IngestDataAndSearchAsync("skglossaryWithDI", () => uniqueId++);
@@ -64,15 +64,15 @@ public class VectorStore_VectorSearch_MultiStore_Volatile(ITestOutputHelper outp
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
 
-        // Construct the Volatile VectorStore.
-        var vectorStore = new VolatileVectorStore();
+        // Construct the InMemory VectorStore.
+        var vectorStore = new InMemoryVectorStore();
 
         // Create the common processor that works for any vector store.
         var processor = new VectorStore_VectorSearch_MultiStore_Common(vectorStore, textEmbeddingGenerationService, this.Output);
 
         // Run the process and pass a key generator function to it, to generate unique record keys.
         // The key generator function is required, since different vector stores may require different key types.
-        // E.g. Volatile supports any comparible type, but others may only support string or Guid or ulong, etc.
+        // E.g. InMemory supports any comparible type, but others may only support string or Guid or ulong, etc.
         // For this example we'll use int.
         var uniqueId = 0;
         await processor.IngestDataAndSearchAsync("skglossaryWithoutDI", () => uniqueId++);

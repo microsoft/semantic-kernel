@@ -34,5 +34,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj"/>
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
@@ -20,6 +21,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [Obsolete("This has been replaced by the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
     public static IServiceCollection AddVolatileVectorStore(this IServiceCollection services, string? serviceId = default)
     {
         services.AddKeyedSingleton<VolatileVectorStore, VolatileVectorStore>(serviceId);
@@ -36,6 +38,7 @@ public static class ServiceCollectionExtensions
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
+    [Obsolete("This has been replaced by the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
     public static IServiceCollection AddVolatileVectorStoreTextSearch<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,

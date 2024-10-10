@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
 
@@ -12,7 +13,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     public void CanCreateVectorStoreTextSearchWithIVectorizedSearch()
     {
         // Arrange.
-        var vectorStore = new VolatileVectorStore();
+        var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
@@ -28,7 +29,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     public void CanCreateVectorStoreTextSearchWithIVectorizableTextSearch()
     {
         // Arrange.
-        var vectorStore = new VolatileVectorStore();
+        var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
         var stringMapper = new DataModelTextSearchStringMapper();

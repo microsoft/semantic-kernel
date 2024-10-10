@@ -7,16 +7,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Data;
+namespace SemanticKernel.Connectors.InMemory.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
+/// Contains tests for the <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> class.
 /// </summary>
-[Obsolete("The VolatileVectorStoreRecordCollection is obsolete so these tests are as well.")]
-public class VolatileVectorStoreRecordCollectionTests
+public class InMemoryVectorStoreRecordCollectionTests
 {
     private const string TestCollectionName = "testcollection";
     private const string TestRecordKey1 = "testid1";
@@ -29,7 +28,7 @@ public class VolatileVectorStoreRecordCollectionTests
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _collectionStore;
     private readonly ConcurrentDictionary<string, Type> _collectionStoreTypes;
 
-    public VolatileVectorStoreRecordCollectionTests()
+    public InMemoryVectorStoreRecordCollectionTests()
     {
         this._collectionStore = new();
         this._collectionStoreTypes = new();
@@ -44,7 +43,7 @@ public class VolatileVectorStoreRecordCollectionTests
         var collection = new ConcurrentDictionary<object, object>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = new VolatileVectorStoreRecordCollection<string, SinglePropsModel<string>>(
+        var sut = new InMemoryVectorStoreRecordCollection<string, SinglePropsModel<string>>(
             this._collectionStore,
             this._collectionStoreTypes,
             collectionName);
@@ -378,7 +377,7 @@ public class VolatileVectorStoreRecordCollectionTests
             ]
         };
 
-        var sut = new VolatileVectorStoreRecordCollection<string, SinglePropsModel<string>>(
+        var sut = new InMemoryVectorStoreRecordCollection<string, SinglePropsModel<string>>(
             this._collectionStore,
             this._collectionStoreTypes,
             TestCollectionName,
@@ -495,7 +494,7 @@ public class VolatileVectorStoreRecordCollectionTests
 
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = new VolatileVectorStoreRecordCollection<TKey, VectorStoreGenericDataModel<TKey>>(
+        var sut = new InMemoryVectorStoreRecordCollection<TKey, VectorStoreGenericDataModel<TKey>>(
             this._collectionStore,
             this._collectionStoreTypes,
             TestCollectionName,
@@ -534,10 +533,10 @@ public class VolatileVectorStoreRecordCollectionTests
         };
     }
 
-    private VolatileVectorStoreRecordCollection<TKey, SinglePropsModel<TKey>> CreateRecordCollection<TKey>(bool useDefinition)
+    private InMemoryVectorStoreRecordCollection<TKey, SinglePropsModel<TKey>> CreateRecordCollection<TKey>(bool useDefinition)
         where TKey : notnull
     {
-        return new VolatileVectorStoreRecordCollection<TKey, SinglePropsModel<TKey>>(
+        return new InMemoryVectorStoreRecordCollection<TKey, SinglePropsModel<TKey>>(
             this._collectionStore,
             this._collectionStoreTypes,
             TestCollectionName,

@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.VectorData;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
 /// <summary>
-/// Options when creating a <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/>.
+/// Options when creating a <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/>.
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key of the collection that this options will be used with.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data on the collection that this options will be used with.</typeparam>
-[Obsolete("This has been replaced by InMemoryVectorStoreRecordCollectionOptions in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
-public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
+public sealed class InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
 {
@@ -33,7 +31,7 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     /// using reflection. This delegate can be used to provide a custom implementation if
     /// the vector properties are located somewhere else on the record.
     /// </remarks>
-    public VolatileVectorStoreVectorResolver<TRecord>? VectorResolver { get; init; } = null;
+    public InMemoryVectorStoreVectorResolver<TRecord>? VectorResolver { get; init; } = null;
 
     /// <summary>
     /// An optional function that can be used to look up record keys.
@@ -43,5 +41,5 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     /// using reflection. This delegate can be used to provide a custom implementation if
     /// the key property is located somewhere else on the record.
     /// </remarks>
-    public VolatileVectorStoreKeyResolver<TKey, TRecord>? KeyResolver { get; init; } = null;
+    public InMemoryVectorStoreKeyResolver<TKey, TRecord>? KeyResolver { get; init; } = null;
 }

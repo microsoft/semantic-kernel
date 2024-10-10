@@ -9,16 +9,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
 /// <summary>
 /// Service for storing and retrieving vector records, that uses an in memory dictionary as the underlying storage.
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
-[Obsolete("This has been replaced by InMemoryVectorStoreRecordCollection in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : class
@@ -40,9 +39,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly VolatileVectorStoreRecordCollectionOptions<TKey, TRecord> _options;
+    private readonly InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord> _options;
 
-    /// <summary>The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</summary>
+    /// <summary>The name of the collection that this <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
@@ -52,17 +51,17 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly Dictionary<string, VectorStoreRecordVectorProperty> _vectorProperties;
 
     /// <summary>An function to look up vectors from the records.</summary>
-    private readonly VolatileVectorStoreVectorResolver<TRecord> _vectorResolver;
+    private readonly InMemoryVectorStoreVectorResolver<TRecord> _vectorResolver;
 
     /// <summary>An function to look up keys from the records.</summary>
-    private readonly VolatileVectorStoreKeyResolver<TKey, TRecord> _keyResolver;
+    private readonly InMemoryVectorStoreKeyResolver<TKey, TRecord> _keyResolver;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> class.
     /// </summary>
-    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public VolatileVectorStoreRecordCollection(string collectionName, VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
+    public InMemoryVectorStoreRecordCollection(string collectionName, InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
     {
         // Verify.
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -72,7 +71,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._collectionName = collectionName;
         this._internalCollections = new();
         this._internalCollectionTypes = new();
-        this._options = options ?? new VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>();
+        this._options = options ?? new InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>();
         this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new() { RequiresAtLeastOneVector = false, SupportsMultipleKeys = false, SupportsMultipleVectors = true });
 
         // Validate property types.
@@ -85,17 +84,17 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> class.
     /// </summary>
     /// <param name="internalCollection">Internal storage for the record collection.</param>
     /// <param name="internalCollectionTypes">The data type of each collection, to enforce a single type per collection.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    internal VolatileVectorStoreRecordCollection(
+    internal InMemoryVectorStoreRecordCollection(
         ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection,
         ConcurrentDictionary<string, Type> internalCollectionTypes,
         string collectionName,
-        VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
+        InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
         : this(collectionName, options)
     {
         this._internalCollections = internalCollection;
@@ -222,7 +221,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Volatile Vector Store.");
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the InMemory Vector Store.");
         }
 
         // Resolve options and get requested vector property or first as default.
@@ -235,7 +234,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         // Filter records using the provided filter before doing the vector comparison.
-        var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
+        var filteredRecords = InMemoryVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
 
         // Compare each vector in the filtered results with the provided vector.
         var results = filteredRecords.Select<object, (object record, float score)?>((record) =>
@@ -246,8 +245,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
                 return null;
             }
 
-            var score = VolatileVectorStoreCollectionSearchMapping.CompareVectors(floatVector.Span, dbVector.Span, vectorProperty.DistanceFunction);
-            var convertedscore = VolatileVectorStoreCollectionSearchMapping.ConvertScore(score, vectorProperty.DistanceFunction);
+            var score = InMemoryVectorStoreCollectionSearchMapping.CompareVectors(floatVector.Span, dbVector.Span, vectorProperty.DistanceFunction);
+            var convertedscore = InMemoryVectorStoreCollectionSearchMapping.ConvertScore(score, vectorProperty.DistanceFunction);
             return (record, convertedscore);
         });
 
@@ -262,7 +261,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         // Sort the results appropriately for the selected distance function and get the right page of results .
-        var sortedScoredResults = VolatileVectorStoreCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
+        var sortedScoredResults = InMemoryVectorStoreCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
             nonNullResults.OrderByDescending(x => x.score) :
             nonNullResults.OrderBy(x => x.score);
         var resultsPage = sortedScoredResults.Skip(internalOptions.Skip).Take(internalOptions.Top);
@@ -294,8 +293,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// </summary>
     /// <param name="overrideVectorResolver">The override vector resolver if one was provided.</param>
     /// <param name="vectorProperties">A dictionary of vector properties from the record definition.</param>
-    /// <returns>The <see cref="VolatileVectorStoreVectorResolver{TRecord}"/>.</returns>
-    private static VolatileVectorStoreVectorResolver<TRecord> CreateVectorResolver(VolatileVectorStoreVectorResolver<TRecord>? overrideVectorResolver, Dictionary<string, VectorStoreRecordVectorProperty> vectorProperties)
+    /// <returns>The <see cref="InMemoryVectorStoreVectorResolver{TRecord}"/>.</returns>
+    private static InMemoryVectorStoreVectorResolver<TRecord> CreateVectorResolver(InMemoryVectorStoreVectorResolver<TRecord>? overrideVectorResolver, Dictionary<string, VectorStoreRecordVectorProperty> vectorProperties)
     {
         // Custom resolver.
         if (overrideVectorResolver is not null)
@@ -344,8 +343,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// </summary>
     /// <param name="overrideKeyResolver">The override key resolver if one was provided.</param>
     /// <param name="keyProperty">They key property from the record definition.</param>
-    /// <returns>The <see cref="VolatileVectorStoreKeyResolver{TKey, TRecord}"/>.</returns>
-    private static VolatileVectorStoreKeyResolver<TKey, TRecord> CreateKeyResolver(VolatileVectorStoreKeyResolver<TKey, TRecord>? overrideKeyResolver, VectorStoreRecordKeyProperty keyProperty)
+    /// <returns>The <see cref="InMemoryVectorStoreKeyResolver{TKey, TRecord}"/>.</returns>
+    private static InMemoryVectorStoreKeyResolver<TKey, TRecord> CreateKeyResolver(InMemoryVectorStoreKeyResolver<TKey, TRecord>? overrideKeyResolver, VectorStoreRecordKeyProperty keyProperty)
     {
         // Custom resolver.
         if (overrideKeyResolver is not null)
