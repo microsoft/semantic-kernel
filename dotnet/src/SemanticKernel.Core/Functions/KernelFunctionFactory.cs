@@ -169,6 +169,37 @@ public static class KernelFunctionFactory
         ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptTemplate, promptConfig, loggerFactory);
     #endregion
 
+    #region Metadata
+    /// <summary>
+    /// Returns a list of <see cref="KernelFunctionMetadata"/> instances for the specified type.
+    /// </summary>
+    /// <param name="instanceType">Specifies the type of the object to extract <see cref="KernelFunctionMetadata"/> for.</param>
+    public static List<KernelFunctionMetadata> GetMetadataForType(Type instanceType)
+    {
+        Verify.NotNull(instanceType);
+
+        MethodInfo[] methods = instanceType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+
+        // Filter out non-KernelFunctions and fail if two functions have the same name (with or without the same casing).
+        var functionMetadata = new List<KernelFunctionMetadata>();
+        KernelFunctionFromMethodOptions options = new();
+        foreach (MethodInfo method in methods)
+        {
+            if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
+            {
+                functionMetadata.Add(KernelFunctionFromMethod.Create(method, null, options).Metadata);
+            }
+        }
+        if (functionMetadata.Count == 0)
+        {
+            throw new ArgumentException($"The {instanceType} instance doesn't implement any [KernelFunction]-attributed methods.");
+        }
+
+        return functionMetadata;
+    }
+
+    #endregion
+
     /// <summary>
     /// Wraps the specified settings into a dictionary with the default service ID as the key.
     /// </summary>

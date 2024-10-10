@@ -36,6 +36,28 @@ public static partial class KernelPluginFactory
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
 
+    /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
+    /// <param name="instanceType">
+    /// Specifies the type of the object to wrap.
+    /// </param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
+    /// </param>
+    /// <param name="serviceProvider">
+    /// The <see cref="IServiceProvider"/> to use for resolving any required services, such as an <see cref="ILoggerFactory"/>
+    /// and any services required to satisfy a constructor on <typeparamref name="T"/>.
+    /// </param>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
+    /// <remarks>
+    /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
+    /// Attributed methods must all have different names; overloads are not supported.
+    /// </remarks>
+    public static KernelPlugin CreateFromType(Type instanceType, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    {
+        serviceProvider ??= EmptyServiceProvider.Instance;
+        return CreateFromObject(ActivatorUtilities.CreateInstance(serviceProvider, instanceType)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+    }
+
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
