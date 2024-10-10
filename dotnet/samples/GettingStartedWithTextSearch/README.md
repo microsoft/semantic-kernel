@@ -19,19 +19,18 @@ cd dotnet/samples/Concepts
 
 dotnet user-secrets init
 
-dotnet user-secrets set "OpenAI:ModelId" "..."
-dotnet user-secrets set "OpenAI:ChatModelId" "..."
-dotnet user-secrets set "OpenAI:EmbeddingModelId" "..."
-dotnet user-secrets set "OpenAI:ApiKey" "..."
+dotnet user-secrets set "AzureOpenAIEmbeddings:DeploymentName" "..."
+dotnet user-secrets set "AzureOpenAIEmbeddings:Endpoint" "..."
+dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "..."
+dotnet user-secrets set "AzureOpenAI:Endpoint" "..."
 
 ```
 
 To set your secrets with environment variables, use these names:
 
 ```
-# OpenAI
-OpenAI__ModelId
-OpenAI__ChatModelId
-OpenAI__EmbeddingModelId
-OpenAI__ApiKey
+AzureOpenAIEmbeddings__DeploymentName
+AzureOpenAIEmbeddings__Endpoint
+AzureOpenAI__ChatDeploymentName
+AzureOpenAI__Endpoint
 ```

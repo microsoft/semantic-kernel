@@ -68,16 +68,31 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
 
         var query = "What is the Semantic Kernel?";
 
-        // Search and return results as BingWebPage items
-        KernelSearchResults<object> webPages = await textSearch.GetSearchResultsAsync(query, new() { Top = 4 });
-        Console.WriteLine("\n--- Bing Web Page Results ---\n");
-        await foreach (BingWebPage webPage in webPages.Results)
+        // Search and return results using the implementation specific data model
+        KernelSearchResults<object> objectResults = await textSearch.GetSearchResultsAsync(query, new() { Top = 4 });
+        if (this.UseBingSearch)
         {
-            Console.WriteLine($"Name:            {webPage.Name}");
-            Console.WriteLine($"Snippet:         {webPage.Snippet}");
-            Console.WriteLine($"Url:             {webPage.Url}");
-            Console.WriteLine($"DisplayUrl:      {webPage.DisplayUrl}");
-            Console.WriteLine($"DateLastCrawled: {webPage.DateLastCrawled}");
+            Console.WriteLine("\n--- Bing Web Page Results ---\n");
+            await foreach (BingWebPage webPage in objectResults.Results)
+            {
+                Console.WriteLine($"Name:            {webPage.Name}");
+                Console.WriteLine($"Snippet:         {webPage.Snippet}");
+                Console.WriteLine($"Url:             {webPage.Url}");
+                Console.WriteLine($"DisplayUrl:      {webPage.DisplayUrl}");
+                Console.WriteLine($"DateLastCrawled: {webPage.DateLastCrawled}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("\n——— Google Web Page Results ———\n");
+            await foreach (Google.Apis.CustomSearchAPI.v1.Data.Result result in objectResults.Results)
+            {
+                Console.WriteLine($"Title:       {result.Title}");
+                Console.WriteLine($"Snippet:     {result.Snippet}");
+                Console.WriteLine($"Link:        {result.Link}");
+                Console.WriteLine($"DisplayLink: {result.DisplayLink}");
+                Console.WriteLine($"Kind:        {result.Kind}");
+            }
         }
     }
 
