@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Tests;
+namespace Microsoft.SemanticKernel.Process.UnitTests;
 
 /// <summary>
 /// Unit tests for the <see cref="ProcessStepBuilder"/> class.
