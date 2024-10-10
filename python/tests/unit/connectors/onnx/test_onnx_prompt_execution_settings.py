@@ -14,7 +14,7 @@ if not skip_on_mac_available:
 
 
 @pytest.mark.skipif(skip_on_mac_available, reason="OnnxRuntime is not available on macOS")
-class TestOnnxChatCompletion:
+class TestOnnxPromptExecutionSettings:
     def test_default_onnx_chat_prompt_execution_settings(self):
         settings = OnnxGenAIPromptExecutionSettings()
         assert settings.temperature is None

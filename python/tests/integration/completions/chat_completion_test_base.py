@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import platform
 import sys
 from functools import reduce
 from typing import Annotated, Any
@@ -31,8 +32,6 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
-from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
-from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
@@ -64,6 +63,11 @@ google_ai_setup: bool = is_service_setup_for_testing("GOOGLE_AI_API_KEY")
 vertex_ai_setup: bool = is_service_setup_for_testing("VERTEX_AI_PROJECT_ID")
 anthropic_setup: bool = is_service_setup_for_testing("ANTHROPIC_API_KEY")
 onnx_setup: bool = is_service_setup_for_testing("ONNX_GEN_AI_CHAT_MODEL_FOLDER")
+
+skip_on_mac_available = platform.system() == "Darwin"
+if not skip_on_mac_available:
+    from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
+    from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
 
 
 # A mock plugin that contains a function that returns a complex object.
@@ -125,7 +129,7 @@ class ChatCompletionTestBase(CompletionTestBase):
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
             "onnx_gen_ai": (
                 OnnxGenAIChatCompletion(template=ONNXTemplate.PHI3V) if onnx_setup else None,
-                OnnxGenAIPromptExecutionSettings,
+                OnnxGenAIPromptExecutionSettings if not skip_on_mac_available else None,
             ),
         }
 

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import platform
 import sys
 from functools import partial, reduce
 from typing import Any
@@ -19,7 +20,6 @@ from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings imp
 from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import OllamaTextCompletion
-from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
 )
@@ -44,6 +44,10 @@ ollama_setup: bool = is_service_setup_for_testing("OLLAMA_MODEL")
 google_ai_setup: bool = is_service_setup_for_testing("GOOGLE_AI_API_KEY")
 vertex_ai_setup: bool = is_service_setup_for_testing("VERTEX_AI_PROJECT_ID")
 onnx_setup: bool = is_service_setup_for_testing("ONNX_GEN_AI_TEXT_MODEL_FOLDER")
+
+skip_on_mac_available = platform.system() == "Darwin"
+if not skip_on_mac_available:
+    from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion
 
 
 pytestmark = pytest.mark.parametrize(
@@ -181,7 +185,10 @@ class TestTextCompletion(CompletionTestBase):
                 ),
                 HuggingFacePromptExecutionSettings,
             ),
-            "onnx_gen_ai": (OnnxGenAITextCompletion() if onnx_setup else None, OnnxGenAIPromptExecutionSettings),
+            "onnx_gen_ai": (
+                OnnxGenAITextCompletion() if onnx_setup else None,
+                OnnxGenAIPromptExecutionSettings if not skip_on_mac_available else None,
+            ),
         }
 
     async def get_text_completion_response(
