@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -21,6 +23,47 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionService
 {
     /// <summary>
+    /// Gets the metadata key for the tool id.
+    /// </summary>
+    public static string ToolIdProperty => "ChatCompletionsToolCall.Id";
+
+    /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
+    /// <remarks>This separator was previously <c>_</c>, but has been changed to <c>-</c> to better align to the behavior elsewhere in SK and in response
+    /// to developers who want to use underscores in their function or plugin names. We plan to make this setting configurable in the future.</remarks>
+    public static string FunctionNameSeparator { get; set; } = "-";
+
+    /// <summary>
+    /// Gets the metadata key for the list of <see cref="ChatToolCall"/>.
+    /// </summary>
+    internal static string FunctionToolCallsProperty => "ChatResponseMessage.FunctionToolCalls";
+
+    private enum ChatToolChoice
+    {
+        Auto, // Keeping private as Ollama currently only supports auto choice.
+              // See: https://github.com/ollama/ollama/blob/main/docs/openai.md#supported-request-fields
+    }
+
+    private record ToolCallingConfig(IList<Tool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
+
+    /// <summary>
+    /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
+    /// asynchronous chain of execution.
+    /// </summary>
+    /// <remarks>
+    /// This is a fail-safe mechanism. If someone accidentally manages to set up execution settings in such a way that
+    /// auto-invocation is invoked recursively, and in particular where a prompt function is able to auto-invoke itself,
+    /// we could end up in an infinite loop. This const is a backstop against that happening. We should never come close
+    /// to this limit, but if we do, auto-invoke will be disabled for the current flow in order to prevent runaway execution.
+    /// With the current setup, the way this could possibly happen is if a prompt function is configured with built-in
+    /// execution settings that opt-in to auto-invocation of everything in the kernel, in which case the invocation of that
+    /// prompt function could advertize itself as a candidate for auto-invocation. We don't want to outright block that,
+    /// if that's something a developer has asked to do (e.g. it might be invoked with different arguments than its parent
+    /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
+    /// configurable should need arise.
+    /// </remarks>
+    protected const int MaxInflightAutoInvokes = 128;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OllamaChatCompletionService"/> class.
     /// </summary>
     /// <param name="modelId">The hosted model.</param>
@@ -30,7 +73,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         string modelId,
         Uri endpoint,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, endpoint, null, loggerFactory)
+        : base(modelId, endpoint, null, loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService)))
     {
         Verify.NotNull(endpoint);
     }
@@ -45,7 +88,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         string modelId,
         HttpClient httpClient,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, null, httpClient, loggerFactory)
+        : base(modelId, null, httpClient, loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService)))
     {
         Verify.NotNull(httpClient);
         Verify.NotNull(httpClient.BaseAddress);
@@ -61,7 +104,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         string modelId,
         OllamaApiClient ollamaClient,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, ollamaClient, loggerFactory)
+        : base(modelId, ollamaClient, loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService)))
     {
     }
 
@@ -75,41 +118,208 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        var request = CreateChatRequest(chatHistory, settings, this._client.SelectedModel);
-        var chatMessageContent = new ChatMessageContent();
-        var fullContent = new StringBuilder();
-        string? modelId = null;
-        AuthorRole? authorRole = null;
-        List<ChatResponseStream> innerContent = [];
+        // Ollama accepts empty chat history to trigger Model Loading https://github.com/ollama/ollama/blob/main/docs/api.md#load-a-model-1
+        chatHistory ??= [];
 
-        await foreach (var responseStreamChunk in this._client.Chat(request, cancellationToken).ConfigureAwait(false))
+        if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
-            if (responseStreamChunk is null)
-            {
-                continue;
-            }
-
-            innerContent.Add(responseStreamChunk);
-
-            if (responseStreamChunk.Message.Content is not null)
-            {
-                fullContent.Append(responseStreamChunk.Message.Content);
-            }
-
-            if (responseStreamChunk.Message.Role is not null)
-            {
-                authorRole = GetAuthorRole(responseStreamChunk.Message.Role)!.Value;
-            }
-
-            modelId ??= responseStreamChunk.Model;
+            this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
+                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(executionSettings));
         }
+
+        var chatExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        for (int requestIndex = 0; ; requestIndex++)
+        {
+            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
+
+            var request = CreateChatRequest(chatHistory, chatExecutionSettings, this._client.SelectedModel);
+            var chatMessageContent = new ChatMessageContent();
+            var fullContent = new StringBuilder();
+            string? modelId = null;
+            AuthorRole? authorRole = null;
+            List<ChatResponseStream> innerContent = [];
+
+            await foreach (var responseStreamChunk in this._client.Chat(request, cancellationToken).ConfigureAwait(false))
+            {
+                if (responseStreamChunk is null)
+                {
+                    continue;
+                }
+
+                innerContent.Add(responseStreamChunk);
+
+                if (responseStreamChunk.Message.Content is not null)
+                {
+                    fullContent.Append(responseStreamChunk.Message.Content);
+                }
+
+                if (responseStreamChunk.Message.Role is not null)
+                {
+                    authorRole = GetAuthorRole(responseStreamChunk.Message.Role)!.Value;
+                }
+
+                modelId ??= responseStreamChunk.Model;
+            }
+        }
+
 
         return [new ChatMessageContent(
             role: authorRole ?? new(),
             content: fullContent.ToString(),
             modelId: modelId,
             innerContent: innerContent)];
+    }
+
+    private static List<Message> CreateChatCompletionMessages(OllamaPromptExecutionSettings executionSettings, ChatHistory chatHistory)
+    {
+        List<Message> messages = [];
+
+        foreach (var message in chatHistory)
+        {
+            messages.AddRange(CreateRequestMessages(message));
+        }
+
+        return messages;
+    }
+
+    private static List<Message> CreateRequestMessages(ChatMessageContent message)
+    {
+        if (message.Role == AuthorRole.System)
+        {
+            return [new Message(ChatRole.System, message.Content ?? string.Empty)];
+        }
+
+        if (message.Role == AuthorRole.Tool)
+        {
+            // Handling function results represented by the TextContent type.
+            // Example: new ChatMessageContent(AuthorRole.Tool, content, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } })
+            if (message.Metadata?.TryGetValue(OllamaChatCompletionService.ToolIdProperty, out object? toolId) is true &&
+                toolId?.ToString() is string toolIdString)
+            {
+                return [new Message(ChatRole.Tool, message.Content ?? string.Empty)];
+            }
+
+            // Handling function results represented by the FunctionResultContent type.
+            // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
+            List<Message>? toolMessages = null;
+            foreach (var item in message.Items)
+            {
+                if (item is not FunctionResultContent resultContent)
+                {
+                    continue;
+                }
+
+                toolMessages ??= [];
+
+                if (resultContent.Result is Exception ex)
+                {
+                    toolMessages.Add(new Message(ChatRole.Tool,
+                        // resultContent.CallId, (No support for tool identifier ATM see: https://github.com/awaescher/OllamaSharp/issues/97)
+                        $"Error: Exception while invoking function. {ex.Message}"));
+                    continue;
+                }
+
+                var stringResult = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
+
+                toolMessages.Add(new Message(ChatRole.Tool,
+                    // resultContent.CallId , (No support for tool identifier see: https://github.com/awaescher/OllamaSharp/issues/97)
+                    stringResult ?? string.Empty));
+            }
+
+            if (toolMessages is not null)
+            {
+                return toolMessages;
+            }
+
+            throw new NotSupportedException("No function result provided in the tool message.");
+        }
+
+        if (message.Role == AuthorRole.User)
+        {
+            if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
+            {
+                return [new Message(ChatRole.User, textContent.Text ?? string.Empty)];
+            }
+
+            var messageResult = new Message() { Role = ChatRole.User };
+            List<string> imageItems = [];
+
+            foreach (var item in message.Items)
+            {
+                if (item is TextContent itemTextContent)
+                {
+                    messageResult.Content += itemTextContent.Text;
+                    continue;
+                }
+
+                if (item is ImageContent itemImageContent)
+                {
+                    if (!itemImageContent.CanRead)
+                    {
+                        throw new NotSupportedException("Uri reference images is not supported, use images with binary image content.");
+                    }
+
+                    imageItems.Add(Convert.ToBase64String(itemImageContent.Data!.Value.ToArray()));
+                }
+            }
+
+            if (imageItems.Count > 0)
+            {
+                messageResult.Images = imageItems.ToArray();
+            }
+
+            return [messageResult];
+        }
+
+        if (message.Role == AuthorRole.Assistant)
+        {
+            var toolCalls = new List<Message.ToolCall>();
+
+            // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallContent type.
+            HashSet<string>? functionCallIds = null;
+            foreach (var item in message.Items)
+            {
+                if (item is not FunctionCallContent callRequest)
+                {
+                    continue;
+                }
+
+                functionCallIds ??= new HashSet<string>(toolCalls.Select(t => t.Id));
+
+                if (callRequest.Id is null || functionCallIds.Contains(callRequest.Id))
+                {
+                    continue;
+                }
+
+                var argument = JsonSerializer.Serialize(callRequest.Arguments);
+
+                toolCalls.Add(
+                    new Message.ToolCall
+                    {
+                        Function = new Message.Function
+                        {
+                            Name = FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OllamaChatCompletionService.FunctionNameSeparator)
+                        },
+                    });
+
+            // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.
+            // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'  
+            if (toolCalls.Count == 0)
+            {
+                return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
+            }
+
+            var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
+
+            // If message content is null, adding it as empty string,
+            // because chat message content must be string.
+            assistantMessage.Content.Add(message.Content ?? string.Empty);
+
+            return [assistantMessage];
+        }
+
+        throw new NotSupportedException($"Role {message.Role} is not supported.");
     }
 
     /// <inheritdoc />

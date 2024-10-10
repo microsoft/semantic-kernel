@@ -30,7 +30,7 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
         string modelId,
         Uri endpoint,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, endpoint, null, loggerFactory)
+        : base(modelId, endpoint, null, loggerFactory?.CreateLogger(typeof(OllamaTextEmbeddingGenerationService)))
     {
         Verify.NotNull(endpoint);
     }
@@ -45,7 +45,7 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
         string modelId,
         HttpClient httpClient,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, null, httpClient, loggerFactory)
+        : base(modelId, null, httpClient, loggerFactory?.CreateLogger(typeof(OllamaTextEmbeddingGenerationService)))
     {
         Verify.NotNull(httpClient);
         Verify.NotNull(httpClient.BaseAddress);
@@ -61,7 +61,7 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
         string modelId,
         OllamaApiClient ollamaClient,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, ollamaClient, loggerFactory)
+        : base(modelId, ollamaClient, loggerFactory?.CreateLogger(typeof(OllamaTextEmbeddingGenerationService)))
     {
     }
 
