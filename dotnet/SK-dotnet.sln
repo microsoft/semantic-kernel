@@ -359,7 +359,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.LocalRuntime", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.UnitTests", "src\Experimental\Process.UnitTests\Process.UnitTests.csproj", "{21A32285-8443-4A75-B2E8-27E6090EC562}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GettingStartedWithProcesses", "samples\GettingStartedWithProcesses\GettingStartedWithProcesses.csproj", "{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStartedWithProcesses", "samples\GettingStartedWithProcesses\GettingStartedWithProcesses.csproj", "{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Sqlite.UnitTests", "src\Connectors\Connectors.Sqlite.UnitTests\Connectors.Sqlite.UnitTests.csproj", "{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -926,6 +928,12 @@ Global
 		{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1054,6 +1062,7 @@ Global
 		{27AF60D6-86F5-4591-A700-4F8C93F41B11} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{21A32285-8443-4A75-B2E8-27E6090EC562} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7} = {FA3720F1-C99A-49B2-9577-A940257098BF}
+		{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
