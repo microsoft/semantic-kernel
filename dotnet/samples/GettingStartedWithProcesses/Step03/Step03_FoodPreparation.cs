@@ -13,6 +13,9 @@ namespace Step03;
 /// </summary>
 public class Step03_FoodPreparation(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
+    // Target Open AI Services
+    protected override bool ForceOpenAI => true;
+
     [Fact]
     public async Task UsePrepareFriedFishProcessAsync()
     {
@@ -50,7 +53,7 @@ public class Step03_FoodPreparation(ITestOutputHelper output) : BaseTest(output,
         KernelProcess kernelProcess = processBuilder.Build();
 
         // Assert
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
+        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
         {
             Id = externalTriggerEvent, Data = new List<string>()
         });
@@ -85,20 +88,10 @@ public class Step03_FoodPreparation(ITestOutputHelper output) : BaseTest(output,
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = SingleFoodItemProcess.CreateProcess().Build();
 
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
+        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
         {
             Id = SingleFoodItemProcess.ProcessEvents.SingleOrderReceived,
             Data = foodItem
         });
-    }
-
-    protected new Kernel CreateKernelWithChatCompletion()
-    {
-        var builder = Kernel.CreateBuilder();
-        builder.AddOpenAIChatCompletion(
-            TestConfiguration.OpenAI.ChatModelId,
-            TestConfiguration.OpenAI.ApiKey);
-
-        return builder.Build();
     }
 }

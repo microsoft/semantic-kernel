@@ -22,12 +22,13 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     /// <summary>
     /// The state object for the user input step. This object holds the user inputs and the current input index.
     /// </summary>
-    protected UserInputState? _state;
+    private UserInputState? _state;
 
     /// <summary>
     /// Method to be overridden by the user to populate with custom user messages
     /// </summary>
-    public virtual void PopulateUserInputs()
+    /// <param name="state">The initialized state object for the step.</param>
+    public virtual void PopulateUserInputs(UserInputState state)
     {
         return;
     }
@@ -43,7 +44,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
         state.State ??= new();
         _state = state.State;
 
-        PopulateUserInputs();
+        PopulateUserInputs(_state);
 
         return ValueTask.CompletedTask;
     }
