@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
+import platform
 import sys
 from functools import partial, reduce
 from typing import Any
@@ -40,14 +40,16 @@ else:
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.completions.test_utils import retry
+from tests.integration.completions.test_utils import is_service_setup_for_testing, retry
 
-ollama_setup: bool = False
-try:
-    if os.environ["OLLAMA_MODEL"]:
-        ollama_setup = True
-except KeyError:
-    ollama_setup = False
+ollama_setup: bool = is_service_setup_for_testing("OLLAMA_MODEL")
+google_ai_setup: bool = is_service_setup_for_testing("GOOGLE_AI_API_KEY")
+vertex_ai_setup: bool = is_service_setup_for_testing("VERTEX_AI_PROJECT_ID")
+onnx_setup: bool = is_service_setup_for_testing("ONNX_GEN_AI_TEXT_MODEL_FOLDER")
+
+skip_on_mac_available = platform.system() == "Darwin"
+if not skip_on_mac_available:
+    from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion
 
 
 pytestmark = pytest.mark.parametrize(
@@ -117,7 +119,16 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {},
+            marks=pytest.mark.skipif(not vertex_ai_setup, reason="Need VertexAI setup"),
             id="vertex_ai_text_completion",
+        ),
+        pytest.param(
+            "onnx_gen_ai",
+            {},
+            ["<|user|>Repeat the word Hello<|end|><|assistant|>"],
+            {},
+            marks=pytest.mark.skipif(not onnx_setup, reason="Need local Onnx setup"),
+            id="onnx_gen_ai_text_completion",
         ),
         pytest.param(
             "bedrock_amazon_titan",
@@ -192,8 +203,8 @@ class TestTextCompletion(CompletionTestBase):
             "azure": (AzureTextCompletion(), OpenAITextPromptExecutionSettings),
             "azure_custom_client": (azure_custom_client, OpenAITextPromptExecutionSettings),
             "ollama": (OllamaTextCompletion() if ollama_setup else None, OllamaTextPromptExecutionSettings),
-            "google_ai": (GoogleAITextCompletion(), GoogleAITextPromptExecutionSettings),
-            "vertex_ai": (VertexAITextCompletion(), VertexAITextPromptExecutionSettings),
+            "google_ai": (GoogleAITextCompletion() if google_ai_setup else None, GoogleAITextPromptExecutionSettings),
+            "vertex_ai": (VertexAITextCompletion() if vertex_ai_setup else None, VertexAITextPromptExecutionSettings),
             "hf_t2t": (
                 HuggingFaceTextCompletion(
                     service_id="patrickvonplaten/t5-tiny-random",
@@ -217,6 +228,10 @@ class TestTextCompletion(CompletionTestBase):
                     task="text-generation",
                 ),
                 HuggingFacePromptExecutionSettings,
+            ),
+            "onnx_gen_ai": (
+                OnnxGenAITextCompletion() if onnx_setup else None,
+                OnnxGenAIPromptExecutionSettings if not skip_on_mac_available else None,
             ),
             # Amazon Bedrock supports models from multiple providers but requests to and responses from the models are
             # inconsistent. So we need to test each model separately.
