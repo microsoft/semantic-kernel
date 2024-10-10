@@ -23,7 +23,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
     /// </summary>
     [JsonConstructor]
-    public AutoFunctionChoiceBehavior()
+    internal AutoFunctionChoiceBehavior()
     {
     }
 
@@ -38,7 +38,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
     /// <param name="options">The behavior options.</param>
-    public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, FunctionChoiceBehaviorOptions? options = null) : base(functions)
+    internal AutoFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
         this._autoInvoke = autoInvoke;

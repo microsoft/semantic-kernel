@@ -23,7 +23,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
     /// </summary>
     [JsonConstructor]
-    public RequiredFunctionChoiceBehavior()
+    internal RequiredFunctionChoiceBehavior()
     {
     }
 
@@ -38,7 +38,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
     /// <param name="options">The behavior options.</param>
-    public RequiredFunctionChoiceBehavior(
+    internal RequiredFunctionChoiceBehavior(
         IEnumerable<KernelFunction>? functions = null,
         bool autoInvoke = true,
         FunctionChoiceBehaviorOptions? options = null) : base(functions)

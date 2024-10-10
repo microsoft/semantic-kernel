@@ -19,7 +19,7 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Initializes a new instance of the <see cref="NoneFunctionChoiceBehavior"/> class.
     /// </summary>
     [JsonConstructor]
-    public NoneFunctionChoiceBehavior()
+    internal NoneFunctionChoiceBehavior()
     {
     }
 
@@ -31,7 +31,7 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     /// If empty, no functions are provided to the model.
     /// </param>
     /// <param name="options">The behavior options.</param>
-    public NoneFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, FunctionChoiceBehaviorOptions? options = null) : base(functions)
+    internal NoneFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
         this.Options = options;
