@@ -67,11 +67,11 @@ public class KernelPluginFactoryTests
         // Arrange
         var kernel = new Kernel();
         var args = new KernelArguments { { "param1", "value1" } };
-        var target = new MyKernelFunctions();
+        var instanceType = typeof(MyKernelFunctions);
         static object createObject() => new MyKernelFunctions();
 
         // Act
-        var plugin = KernelPluginFactory.CreateFromType(target.GetType(), createObject);
+        var plugin = KernelPluginFactory.CreateFromType(instanceType, createObject);
         FunctionResult result = await plugin["Function1"].InvokeAsync(kernel, args);
 
         // Assert
