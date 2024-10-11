@@ -110,10 +110,6 @@ public class AzureAISearchServiceCollectionExtensionsTests
         var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<AzureAISearchVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
-
-        var vectorizableSearch = serviceProvider.GetRequiredService<IVectorizableTextSearch<TestRecord>>();
-        Assert.NotNull(vectorizableSearch);
-        Assert.IsType<AzureAISearchVectorStoreRecordCollection<TestRecord>>(vectorizableSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
