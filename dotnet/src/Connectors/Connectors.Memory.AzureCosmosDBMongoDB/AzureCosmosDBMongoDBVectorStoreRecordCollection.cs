@@ -280,7 +280,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // to perform skip logic locally, since skip option is not part of API. 
         var itemsAmount = searchOptions.Skip + searchOptions.Top;
 
-        var searchQuery = vectorProperty.IndexKind switch
+        var vectorPropertyIndexKind = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetVectorPropertyIndexKind(vectorProperty.IndexKind);
+
+        var searchQuery = vectorPropertyIndexKind switch
         {
             IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(
                 vectorArray,
