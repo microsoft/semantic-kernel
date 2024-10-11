@@ -535,6 +535,8 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         if (this._vectorPropertiesExist)
         {
+            // Deleting vector records first since current version of vector search extension
+            // doesn't support Upsert operation, only Delete/Insert.
             using var vectorDeleteCommand = this._commandBuilder.BuildDeleteCommand(
                 this._vectorTableName,
                 [condition]);
