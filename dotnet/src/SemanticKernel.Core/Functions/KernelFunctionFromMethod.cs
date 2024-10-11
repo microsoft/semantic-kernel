@@ -273,7 +273,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             if (target is Func<object> createTarget)
             {
                 var dynamicTarget = createTarget();
-                result = Invoke(method, target, args);
+                result = Invoke(method, dynamicTarget, args);
             }
             else
             {

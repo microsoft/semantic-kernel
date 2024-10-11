@@ -13,7 +13,8 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
+using VectorData = Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -66,7 +67,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     ];
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly Data.VectorSearchOptions s_defaultVectorSearchOptions = new();
+    private static readonly VectorData.VectorSearchOptions s_defaultVectorSearchOptions = new();
 
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
@@ -314,7 +315,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, Data.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorData.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
 
@@ -359,7 +360,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, Data.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorData.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchText);
 

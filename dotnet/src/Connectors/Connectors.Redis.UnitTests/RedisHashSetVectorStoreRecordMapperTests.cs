@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
-using Microsoft.SemanticKernel.Data;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Redis.UnitTests;

@@ -2,7 +2,7 @@
 
 using System;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 

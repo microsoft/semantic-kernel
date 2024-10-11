@@ -36,18 +36,18 @@ public static partial class KernelPluginFactory
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
 
-    /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
+    /// <summary>Creates a plugin that wraps a new instance of the specified type <paramref name="instanceType"/>.</summary>
     /// <param name="instanceType">
     /// Specifies the type of the object to wrap.
     /// </param>
     /// <param name="pluginName">
-    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the <paramref name="instanceType"/>.
     /// </param>
     /// <param name="serviceProvider">
     /// The <see cref="IServiceProvider"/> to use for resolving any required services, such as an <see cref="ILoggerFactory"/>
-    /// and any services required to satisfy a constructor on <typeparamref name="T"/>.
+    /// and any services required to satisfy a constructor on <paramref name="instanceType"/>.
     /// </param>
-    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
+    /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="instanceType"/>.</returns>
     /// <remarks>
     /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
@@ -109,7 +109,7 @@ public static partial class KernelPluginFactory
     /// <param name="instanceType">Specifies the type of the object to extract <see cref="KernelFunctionMetadata"/> for.</param>
     /// <param name="createObject">Function to create an instance of the object.</param>
     /// <param name="pluginName">
-    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the <paramref name="instanceType"/>.
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="instanceType"/>.</returns>
