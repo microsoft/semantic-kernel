@@ -29,7 +29,7 @@ namespace Memory;
 public class VectorStore_VectorSearch_MultiStore_AzureAISearch(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task ExampleWitDIAsync()
+    public async Task ExampleWithDIAsync()
     {
         // Use the kernel for DI purposes.
         var kernelBuilder = Kernel
