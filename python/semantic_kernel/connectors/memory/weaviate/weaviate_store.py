@@ -55,22 +55,22 @@ class WeaviateStore(VectorStore):
             env_file_path: The path to the environment file.
             env_file_encoding: The encoding of the environment file.
         """
-        weaviate_settings = WeaviateSettings.create(
-            url=url,
-            api_key=api_key,
-            local_host=local_host,
-            local_port=local_port,
-            local_grpc_port=local_grpc_port,
-            use_embed=use_embed,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
-
         if not async_client:
+            weaviate_settings = WeaviateSettings.create(
+                url=url,
+                api_key=api_key,
+                local_host=local_host,
+                local_port=local_port,
+                local_grpc_port=local_grpc_port,
+                use_embed=use_embed,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+
             try:
                 if weaviate_settings.url:
                     async_client = weaviate.use_async_with_weaviate_cloud(
-                        cluster_url=weaviate_settings.url,
+                        cluster_url=str(weaviate_settings.url),
                         auth_credentials=Auth.api_key(weaviate_settings.api_key.get_secret_value()),
                     )
                 elif weaviate_settings.local_host:
