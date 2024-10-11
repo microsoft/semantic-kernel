@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
@@ -10,6 +11,12 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// </summary>
 internal static class AzureCosmosDBMongoDBConstants
 {
+    /// <summary>Default index kind for vector search.</summary>
+    internal const string DefaultIndexKind = IndexKind.IvfFlat;
+
+    /// <summary>Default distance function for vector search.</summary>
+    internal const string DefaultDistanceFunction = DistanceFunction.CosineDistance;
+
     /// <summary>Reserved key property name in Azure CosmosDB MongoDB.</summary>
     internal const string MongoReservedKeyPropertyName = "_id";
 
