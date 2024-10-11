@@ -26,7 +26,7 @@ namespace Memory;
 public class VectorStore_VectorSearch_MultiStore_Qdrant(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
 {
     [Fact]
-    public async Task ExampleWitDIAsync()
+    public async Task ExampleWithDIAsync()
     {
         // Use the kernel for DI purposes.
         var kernelBuilder = Kernel

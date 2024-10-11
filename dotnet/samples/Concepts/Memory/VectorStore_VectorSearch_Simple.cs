@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.Identity;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
@@ -25,7 +26,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+                new AzureCliCredential());
 
         // Construct an InMemory vector store.
         var vectorStore = new InMemoryVectorStore();
