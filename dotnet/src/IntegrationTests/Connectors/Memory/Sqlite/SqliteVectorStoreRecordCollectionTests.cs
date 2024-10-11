@@ -261,8 +261,10 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.Equal(record.DescriptionEmbedding!.Value.ToArray(), getResult.DescriptionEmbedding.Value.ToArray());
     }
 
-    [Fact(Skip = SkipReason)]
-    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync(bool includeVectors)
     {
         // Arrange
         var hotel1 = CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
@@ -277,7 +279,11 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]));
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        {
+            IncludeVectors = includeVectors
+        });
+
         var results = await searchResults.Results.ToListAsync();
 
         // Assert

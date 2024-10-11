@@ -81,7 +81,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         // Verify.
         Verify.NotNull(connection);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), customMapperSupplied: false, SqliteConstants.SupportedKeyTypes);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.DictionaryCustomMapper is not null, SqliteConstants.SupportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
@@ -192,7 +192,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         var conditions = new List<SqliteWhereCondition>()
         {
-            new SqliteWhereMatchCondition(this._propertyReader.StoragePropertyNamesMap[vectorProperty.DataModelPropertyName], mappedArray),
+            new SqliteWhereMatchCondition(this._propertyReader.GetStoragePropertyName(vectorProperty.DataModelPropertyName), mappedArray),
             new SqliteWhereEqualsCondition(LimitPropertyName, limit)
         };
 
@@ -220,12 +220,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        await foreach (var record in this.InternalGetBatchAsync(keys, options, cancellationToken).ConfigureAwait(false))
-        {
-            yield return record;
-        }
+        return this.InternalGetBatchAsync(keys, options, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -235,15 +232,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        await foreach (var key in this.InternalUpsertBatchAsync<ulong?>(records, options, cancellationToken).ConfigureAwait(false))
-        {
-            if (key.HasValue)
-            {
-                yield return key.Value;
-            }
-        }
+        return this.InternalUpsertBatchAsync<ulong>(records, options, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -269,12 +260,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        await foreach (var record in this.InternalGetBatchAsync(keys, options, cancellationToken).ConfigureAwait(false))
-        {
-            yield return record;
-        }
+        return this.InternalGetBatchAsync(keys, options, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -284,15 +272,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    async IAsyncEnumerable<string> IVectorStoreRecordCollection<string, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+    IAsyncEnumerable<string> IVectorStoreRecordCollection<string, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options, CancellationToken cancellationToken)
     {
-        await foreach (var key in this.InternalUpsertBatchAsync<string>(records, options, cancellationToken).ConfigureAwait(false))
-        {
-            if (key is not null)
-            {
-                yield return key;
-            }
-        }
+        return this.InternalUpsertBatchAsync<string>(records, options, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -319,21 +301,24 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "VectorizedSearch";
         const string DistancePropertyName = "distance";
 
+        var leftTableProperties = new List<string> { DistancePropertyName };
+
+        List<VectorStoreRecordProperty> properties = [this._propertyReader.KeyProperty, .. this._propertyReader.DataProperties];
+
+        if (searchOptions.IncludeVectors)
+        {
+            leftTableProperties.AddRange(this._propertyReader.VectorPropertyStoragePropertyNames);
+            properties.AddRange(this._propertyReader.VectorProperties);
+        }
+
         using var command = this._commandBuilder.BuildSelectLeftJoinCommand(
             this._vectorTableName,
             this._dataTableName,
             this._propertyReader.KeyPropertyStoragePropertyName,
-            this._propertyReader.VectorPropertyStoragePropertyNames.Concat([DistancePropertyName]).ToList(),
+            leftTableProperties,
             this._dataTableStoragePropertyNames.Value,
             conditions,
             DistancePropertyName);
-
-        List<VectorStoreRecordProperty> properties =
-        [
-            this._propertyReader.KeyProperty,
-            .. this._propertyReader.DataProperties,
-            .. this._propertyReader.VectorProperties
-        ];
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
@@ -421,30 +406,27 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     {
         Verify.NotNull(key);
 
-        var condition = new SqliteWhereEqualsCondition(
-            this._propertyReader.KeyPropertyStoragePropertyName,
-            key,
-            this._dataTableName);
+        var condition = new SqliteWhereEqualsCondition(this._propertyReader.KeyPropertyStoragePropertyName, key)
+        {
+            TableName = this._dataTableName
+        };
 
         return await this.InternalGetBatchAsync([key], condition, options, cancellationToken)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
 
-    private async IAsyncEnumerable<TRecord> InternalGetBatchAsync<TKey>(
+    private IAsyncEnumerable<TRecord> InternalGetBatchAsync<TKey>(
         IEnumerable<TKey> keys,
         GetRecordOptions? options,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
-        var condition = new SqliteWhereInCondition(
-            this._propertyReader.KeyPropertyStoragePropertyName,
-            keys.Cast<object>().ToList(),
-            this._dataTableName);
-
-        await foreach (var record in this.InternalGetBatchAsync(keys, condition, options, cancellationToken).ConfigureAwait(false))
+        var condition = new SqliteWhereInCondition(this._propertyReader.KeyPropertyStoragePropertyName, keys.Cast<object>().ToList())
         {
-            yield return record;
-        }
+            TableName = this._dataTableName
+        };
+
+        return this.InternalGetBatchAsync(keys, condition, options, cancellationToken);
     }
 
     private async IAsyncEnumerable<TRecord> InternalGetBatchAsync<TKey>(
@@ -523,10 +505,10 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         return upsertedRecordKey ?? throw new VectorStoreOperationException("Error occurred during upsert operation.");
     }
 
-    private async IAsyncEnumerable<TKey?> InternalUpsertBatchAsync<TKey>(
+    private IAsyncEnumerable<TKey> InternalUpsertBatchAsync<TKey>(
         IEnumerable<TRecord> records,
         UpsertRecordOptions? options,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
         const string OperationName = "UpsertBatch";
 
@@ -540,16 +522,10 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         var condition = new SqliteWhereInCondition(this._propertyReader.KeyPropertyStoragePropertyName, keys);
 
-        await foreach (var key in this.InternalUpsertBatchAsync<TKey>(storageModels, condition, options, cancellationToken).ConfigureAwait(false))
-        {
-            if (key is not null)
-            {
-                yield return key;
-            }
-        }
+        return this.InternalUpsertBatchAsync<TKey>(storageModels, condition, options, cancellationToken);
     }
 
-    private async IAsyncEnumerable<TKey?> InternalUpsertBatchAsync<TKey>(
+    private async IAsyncEnumerable<TKey> InternalUpsertBatchAsync<TKey>(
         IReadOnlyList<Dictionary<string, object?>> storageModels,
         SqliteWhereCondition condition,
         UpsertRecordOptions? options,
@@ -659,7 +635,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         foreach (var property in properties)
         {
-            var propertyName = this._propertyReader.StoragePropertyNamesMap[property.DataModelPropertyName];
+            var propertyName = this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName);
             var propertyType = property.PropertyType;
             var propertyValue = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue(reader, propertyName, propertyType);
 
@@ -727,10 +703,10 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
                     throw new InvalidOperationException($"Property name '{equalToFilterClause.FieldName}' provided as part of the filter clause is not a valid property name.");
                 }
 
-                conditions.Add(new SqliteWhereEqualsCondition(
-                    storagePropertyName,
-                    equalToFilterClause.Value,
-                    tableName));
+                conditions.Add(new SqliteWhereEqualsCondition(storagePropertyName, equalToFilterClause.Value)
+                {
+                    TableName = tableName
+                });
             }
             else
             {

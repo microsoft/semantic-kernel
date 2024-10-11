@@ -28,7 +28,7 @@ public sealed class SqliteConditionsTests
     public void SqliteWhereEqualsConditionBuildsValidQuery(string? tableName, string expectedQuery)
     {
         // Arrange
-        var condition = new SqliteWhereEqualsCondition("Name", "Value", tableName);
+        var condition = new SqliteWhereEqualsCondition("Name", "Value") { TableName = tableName };
 
         // Act
         var query = condition.BuildQuery(["@Name0"]);
@@ -54,7 +54,7 @@ public sealed class SqliteConditionsTests
     public void SqliteWhereInConditionBuildsValidQuery(string? tableName, string expectedQuery)
     {
         // Arrange
-        var condition = new SqliteWhereInCondition("Name", ["Value1", "Value2"], tableName);
+        var condition = new SqliteWhereInCondition("Name", ["Value1", "Value2"]) { TableName = tableName };
 
         // Act
         var query = condition.BuildQuery(["@Name0", "@Name1"]);
@@ -80,7 +80,7 @@ public sealed class SqliteConditionsTests
     public void SqliteWhereMatchConditionBuildsValidQuery(string? tableName, string expectedQuery)
     {
         // Arrange
-        var condition = new SqliteWhereMatchCondition("Name", "Value", tableName);
+        var condition = new SqliteWhereMatchCondition("Name", "Value") { TableName = tableName };
 
         // Act
         var query = condition.BuildQuery(["@Name0"]);

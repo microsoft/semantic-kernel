@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -26,6 +25,8 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         Verify.NotNull(propertyReader);
 
         this._propertyReader = propertyReader;
+
+        this._propertyReader.VerifyHasParameterlessConstructor();
     }
 
     public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
@@ -39,7 +40,7 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         // Add data properties
         foreach (var property in this._propertyReader.DataPropertiesInfo)
         {
-            properties.Add(this._propertyReader.StoragePropertyNamesMap[property.Name], property.GetValue(dataModel));
+            properties.Add(this._propertyReader.GetStoragePropertyName(property.Name), property.GetValue(dataModel));
         }
 
         // Add vector properties
@@ -54,7 +55,7 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
                 result = SqliteVectorStoreRecordPropertyMapping.MapVector(vector);
             }
 
-            properties.Add(this._propertyReader.StoragePropertyNamesMap[property.Name], result);
+            properties.Add(this._propertyReader.GetStoragePropertyName(property.Name), result);
         }
 
         return properties;
@@ -69,11 +70,7 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
             storageModel[this._propertyReader.KeyPropertyStoragePropertyName],
             this._propertyReader.KeyProperty.PropertyType);
 
-        var keyPropertyInfoWithValue = new KeyValuePair<PropertyInfo, object?>(
-            this._propertyReader.KeyPropertyInfo,
-            keyPropertyValue);
-
-        VectorStoreRecordMapping.SetPropertiesOnRecord(record, [keyPropertyInfoWithValue]);
+        this._propertyReader.KeyPropertyInfo.SetValue(record, keyPropertyValue);
 
         // Process data properties.
         var dataPropertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(

@@ -73,7 +73,7 @@ internal sealed class SqliteGenericDataModelMapper :
             {
                 if (dataModel.Data.TryGetValue(property.DataModelPropertyName, out var dataValue))
                 {
-                    properties.Add(this._propertyReader.StoragePropertyNamesMap[property.DataModelPropertyName], dataValue);
+                    properties.Add(this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName), dataValue);
                 }
             }
         }
@@ -93,7 +93,7 @@ internal sealed class SqliteGenericDataModelMapper :
                         result = SqliteVectorStoreRecordPropertyMapping.MapVector(vector);
                     }
 
-                    properties.Add(this._propertyReader.StoragePropertyNamesMap[property.DataModelPropertyName], result);
+                    properties.Add(this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName), result);
                 }
             }
         }
@@ -121,7 +121,7 @@ internal sealed class SqliteGenericDataModelMapper :
         // Process data properties.
         foreach (var property in this._propertyReader.DataProperties)
         {
-            if (storageModel.TryGetValue(this._propertyReader.StoragePropertyNamesMap[property.DataModelPropertyName], out var dataValue))
+            if (storageModel.TryGetValue(this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName), out var dataValue))
             {
                 dataProperties.Add(property.DataModelPropertyName, dataValue);
             }
@@ -132,7 +132,7 @@ internal sealed class SqliteGenericDataModelMapper :
         {
             foreach (var property in this._propertyReader.VectorProperties)
             {
-                if (storageModel.TryGetValue(this._propertyReader.StoragePropertyNamesMap[property.DataModelPropertyName], out var vectorValue))
+                if (storageModel.TryGetValue(this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName), out var vectorValue))
                 {
                     vectorProperties.Add(property.DataModelPropertyName, vectorValue);
                 }

@@ -20,7 +20,7 @@ internal static class SqliteVectorStoreRecordPropertyMapping
             return $"[{string.Join(", ", memoryFloat.ToArray())}]";
         }
 
-        throw new NotSupportedException($"Mapping for type {typeof(TVector).FullName} is not supported.");
+        throw new NotSupportedException($"Mapping for type {typeof(TVector).FullName} to a vector is not supported.");
     }
 
     public static List<SqliteColumn> GetColumns(
@@ -163,16 +163,7 @@ internal static class SqliteVectorStoreRecordPropertyMapping
 
     private static string GetStorageVectorPropertyType(VectorStoreRecordVectorProperty vectorProperty)
     {
-        var propertyType = vectorProperty.PropertyType;
-
-        if (!SqliteConstants.SupportedVectorTypes.Contains(propertyType))
-        {
-            throw new NotSupportedException($"Property {vectorProperty.DataModelPropertyName} has type {propertyType.FullName}, which is not supported by SQLite connector.");
-        }
-
-        var storagePropertyType = $"FLOAT[{vectorProperty.Dimensions}]";
-
-        return storagePropertyType;
+        return $"FLOAT[{vectorProperty.Dimensions}]";
     }
 
     #endregion

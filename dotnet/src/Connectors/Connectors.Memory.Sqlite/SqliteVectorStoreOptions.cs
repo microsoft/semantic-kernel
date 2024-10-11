@@ -14,6 +14,8 @@ public sealed class SqliteVectorStoreOptions
 
     /// <summary>
     /// SQLite extension name for vector search operations.
+    /// If not specified, the default "vec0" extension name will be used.
+    /// More information here: <see href="https://github.com/asg017/sqlite-vec"/>.
     /// </summary>
     public string? VectorSearchExtensionName { get; set; } = null;
 
@@ -21,7 +23,7 @@ public sealed class SqliteVectorStoreOptions
     /// Custom virtual table name to store vectors.
     /// </summary>
     /// <remarks>
-    /// If not provided, collection name with prefix will be used as virtual table name.
+    /// If not provided, collection name with prefix "vec_" will be used as virtual table name.
     /// </remarks>
     public string? VectorVirtualTableName { get; set; } = null;
 }
