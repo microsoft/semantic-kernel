@@ -8,13 +8,12 @@ using System.Numerics.Tensors;
 using System.Reflection;
 using Microsoft.Extensions.VectorData;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
 /// <summary>
-/// Contains mapping helpers to use when searching for documents using the Volatile store.
+/// Contains mapping helpers to use when searching for documents using the InMemory store.
 /// </summary>
-[Obsolete("This has been replaced by InMemoryVectorStoreCollectionSearchMapping in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
-internal static class VolatileVectorStoreCollectionSearchMapping
+internal static class InMemoryVectorStoreCollectionSearchMapping
 {
     /// <summary>
     /// Compare the two vectors using the specified distance function.
@@ -37,7 +36,7 @@ internal static class VolatileVectorStoreCollectionSearchMapping
             case DistanceFunction.EuclideanDistance:
                 return TensorPrimitives.Distance(x, y);
             default:
-                throw new NotSupportedException($"The distance function '{distanceFunction}' is not supported by the Volatile connector.");
+                throw new NotSupportedException($"The distance function '{distanceFunction}' is not supported by the InMemory connector.");
         }
     }
 
@@ -59,7 +58,7 @@ internal static class VolatileVectorStoreCollectionSearchMapping
             case DistanceFunction.EuclideanDistance:
                 return false;
             default:
-                throw new NotSupportedException($"The distance function '{distanceFunction}' is not supported by the Volatile connector.");
+                throw new NotSupportedException($"The distance function '{distanceFunction}' is not supported by the InMemory connector.");
         }
     }
 
@@ -85,7 +84,7 @@ internal static class VolatileVectorStoreCollectionSearchMapping
             case DistanceFunction.EuclideanDistance:
                 return score;
             default:
-                throw new NotSupportedException($"The distance function '{distanceFunction}' is not supported by the Volatile connector.");
+                throw new NotSupportedException($"The distance function '{distanceFunction}' is not supported by the InMemory connector.");
         }
     }
 

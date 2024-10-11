@@ -17,7 +17,7 @@ using static Microsoft.SemanticKernel.Data.VectorStoreExtensions;
 namespace SemanticKernel.IntegrationTests.Data;
 
 /// <summary>
-/// Base class for integration tests for using <see cref="VolatileVectorStore"/> with <see cref="ITextSearch"/>.
+/// Base class for integration tests for using various vector stores with <see cref="ITextSearch"/>.
 /// </summary>
 public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 {
