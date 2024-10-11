@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Runtime.InteropServices;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 

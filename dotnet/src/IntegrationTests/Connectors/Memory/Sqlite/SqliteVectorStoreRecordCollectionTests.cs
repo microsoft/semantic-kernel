@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;

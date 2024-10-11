@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 

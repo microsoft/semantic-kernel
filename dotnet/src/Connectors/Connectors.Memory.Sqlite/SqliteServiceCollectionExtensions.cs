@@ -2,8 +2,8 @@
 
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 

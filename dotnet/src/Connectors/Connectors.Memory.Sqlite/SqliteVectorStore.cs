@@ -6,7 +6,7 @@ using System.Data.Common;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Data.Sqlite;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 

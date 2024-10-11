@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Sqlite.UnitTests;
