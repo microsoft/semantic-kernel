@@ -1,8 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
@@ -22,9 +26,9 @@ public class AggregatorAgentTests
     public async Task VerifyAggregatorAgentUsageAsync(AggregatorMode mode, int modeOffset)
     {
         // Arrange
-        Agent agent1 = CreateMockAgent();
-        Agent agent2 = CreateMockAgent();
-        Agent agent3 = CreateMockAgent();
+        Agent agent1 = CreateMockAgent("First");
+        Agent agent2 = CreateMockAgent("Second");
+        Agent agent3 = CreateMockAgent("Third");
 
         AgentGroupChat groupChat =
             new(agent1, agent2, agent3)
@@ -99,5 +103,90 @@ public class AggregatorAgentTests
         Assert.Equal(5, messages.Length); // Total messages on inner chat once synchronized (agent equivalent)
     }
 
-    private static MockAgent CreateMockAgent() => new() { Response = [new(AuthorRole.Assistant, "test")] };
+    /// <summary>
+    /// Ensure multiple <see cref="AggregatorAgent"/> instances do not share a channel.
+    /// </summary>
+    [Fact]
+    public async Task VerifyMultipleAggregatorAgentAsync()
+    {
+        const string UserInput = "User Input";
+
+        // Arrange
+        Agent agent1Exec = CreateMockAgent("agent1 exec");
+        Agent agent1Review = CreateMockAgent("agent1 [OK]");
+        Agent agent2Exec = CreateMockAgent("agent2 exec");
+        Agent agent2Review = CreateMockAgent("agent2 [OK]");
+
+        AgentGroupChat agent1Chat =
+            new(agent1Exec, agent1Review)
+            {
+                ExecutionSettings =
+                    new()
+                    {
+                        TerminationStrategy = new ApprovalTerminationStrategy()
+                        {
+                            Agents = [agent1Review],
+                            MaximumIterations = 3,
+                            AutomaticReset = true,
+                        }
+                    }
+            };
+        AgentGroupChat agent2Chat =
+            new(agent2Exec, agent2Review)
+            {
+                ExecutionSettings =
+                    new()
+                    {
+                        TerminationStrategy = new ApprovalTerminationStrategy()
+                        {
+                            Agents = [agent2Review],
+                            MaximumIterations = 4,
+                            AutomaticReset = false,
+                        }
+                    }
+            };
+
+        AggregatorAgent agent1 = new(() => agent1Chat) { Mode = AggregatorMode.Flat, Name = "agent1" };
+        AggregatorAgent agent2 = new(() => agent2Chat) { Mode = AggregatorMode.Flat, Name = "agent2" };
+        AgentGroupChat userChat = new(agent1, agent2)
+        {
+            ExecutionSettings =
+                new()
+                {
+                    TerminationStrategy = new AgentTerminationStrategy(agent2)
+                    {
+                        MaximumIterations = 8,
+                        AutomaticReset = true
+                    }
+                }
+        };
+
+        userChat.AddChatMessage(new ChatMessageContent(AuthorRole.User, UserInput));
+
+        // Act
+        ChatMessageContent[] messages = await userChat.InvokeAsync().ToArrayAsync();
+
+        // Assert
+        Assert.Equal(4, messages.Length);
+        Assert.Equal(agent1Exec.Name, messages[0].AuthorName);
+        Assert.Equal(agent1Review.Name, messages[1].AuthorName);
+        Assert.Equal(agent2Exec.Name, messages[2].AuthorName);
+        Assert.Equal(agent2Review.Name, messages[3].AuthorName);
+    }
+
+    private static MockAgent CreateMockAgent(string agentName) => new() { Name = agentName, Response = [new(AuthorRole.Assistant, $"{agentName} -> test") { AuthorName = agentName }] };
+
+    private sealed class ApprovalTerminationStrategy : TerminationStrategy
+    {
+        protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
+            => Task.FromResult(history[history.Count - 1].Content?.Contains("[OK]", StringComparison.OrdinalIgnoreCase) ?? false);
+    }
+
+    private sealed class AgentTerminationStrategy(Agent lastAgent) : TerminationStrategy
+    {
+        protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(agent == lastAgent);
+        }
+    }
 }
