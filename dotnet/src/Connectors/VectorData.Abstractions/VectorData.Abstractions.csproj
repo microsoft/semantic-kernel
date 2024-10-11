@@ -4,11 +4,8 @@
     <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
-    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
-<!--
-  TO BE ENABLED AFTER THE PACKAGE IS READY FOR PUBLISHING
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
@@ -26,7 +23,6 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
     <Description>$(PackageDescription)</Description>
     <PackageProjectUrl>https://dot.net/</PackageProjectUrl>
   </PropertyGroup>
--->
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
