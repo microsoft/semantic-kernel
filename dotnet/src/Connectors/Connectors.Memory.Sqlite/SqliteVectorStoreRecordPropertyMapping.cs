@@ -13,11 +13,17 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 internal static class SqliteVectorStoreRecordPropertyMapping
 {
-    public static string MapVector<TVector>(TVector vector)
+    public static byte[] MapVector<TVector>(TVector vector)
     {
         if (vector is ReadOnlyMemory<float> memoryFloat)
         {
-            return $"[{string.Join(", ", memoryFloat.ToArray())}]";
+            ReadOnlySpan<float> floatSpan = memoryFloat.Span;
+
+            byte[] byteArray = new byte[floatSpan.Length * sizeof(float)];
+
+            MemoryMarshal.Cast<float, byte>(floatSpan).CopyTo(byteArray);
+
+            return byteArray;
         }
 
         throw new NotSupportedException($"Mapping for type {typeof(TVector).FullName} to a vector is not supported.");

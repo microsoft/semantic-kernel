@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Sqlite.UnitTests;

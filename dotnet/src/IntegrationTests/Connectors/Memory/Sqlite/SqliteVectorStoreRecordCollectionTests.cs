@@ -17,7 +17,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 {
     private const string? SkipReason = "SQLite vector search extension is required";
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task CollectionExistsReturnsCollectionStateAsync(bool createCollection)
@@ -296,6 +296,8 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.DoesNotContain("key4", ids);
 
         Assert.Equal(0, results.First(l => l.Record.HotelId == "key1").Score);
+
+        Assert.Equal(includeVectors, results.All(result => result.Record.DescriptionEmbedding is not null));
     }
 
     [Fact(Skip = SkipReason)]
