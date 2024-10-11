@@ -17,6 +17,8 @@
 Commonly Used Types:
 Microsoft.Extensions.VectorData.IVectorStore
 Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt;</PackageDescription>
+    <PackageIcon>neticon.png</PackageIcon>
+    <PackageIconUrl>neticon.png</PackageIconUrl>
     <PackageReadmeFile>PACKAGE.md</PackageReadmeFile>
     <Product></Product>
     <PackageTags>Vector, Database, SDK</PackageTags>
@@ -26,6 +28,12 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Include neticon.png and PACKAGE.md in the project. -->
+    <None Include="neticon.png" Pack="true" PackagePath="." />
+    <None Include="PACKAGE.md" Pack="true" PackagePath="." />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
