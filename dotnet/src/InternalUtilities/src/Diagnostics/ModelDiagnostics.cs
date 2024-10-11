@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 [ExcludeFromCodeCoverage]
 internal static class ModelDiagnostics
 {
-    private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace!;
+    internal static readonly string s_namespace = typeof(ModelDiagnostics).Namespace!;
     private static readonly ActivitySource s_activitySource = new(s_namespace);
 
     private const string EnableDiagnosticsSwitch = "Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnostics";
@@ -32,8 +32,8 @@ internal static class ModelDiagnostics
     private const string EnableDiagnosticsEnvVar = "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS";
     private const string EnableSensitiveEventsEnvVar = "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE";
 
-    private static readonly bool s_enableDiagnostics = AppContextSwitchHelper.GetConfigValue(EnableDiagnosticsSwitch, EnableDiagnosticsEnvVar);
-    private static readonly bool s_enableSensitiveEvents = AppContextSwitchHelper.GetConfigValue(EnableSensitiveEventsSwitch, EnableSensitiveEventsEnvVar);
+    internal static readonly bool s_enableDiagnostics = AppContextSwitchHelper.GetConfigValue(EnableDiagnosticsSwitch, EnableDiagnosticsEnvVar);
+    internal static readonly bool s_enableSensitiveEvents = AppContextSwitchHelper.GetConfigValue(EnableSensitiveEventsSwitch, EnableSensitiveEventsEnvVar);
 
     /// <summary>
     /// Start a text completion activity for a given model.
