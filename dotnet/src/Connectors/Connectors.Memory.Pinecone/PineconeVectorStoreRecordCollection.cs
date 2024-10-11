@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Pinecone.Grpc;
 using Sdk = Pinecone;
 
@@ -233,6 +233,12 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         {
             yield return vector.Id;
         }
+    }
+
+    /// <inheritdoc />
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)

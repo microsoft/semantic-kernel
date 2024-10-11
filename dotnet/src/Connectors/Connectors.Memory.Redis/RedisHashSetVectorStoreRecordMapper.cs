@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -27,7 +27,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         VectorStoreRecordPropertyReader propertyReader)
     {
         Verify.NotNull(propertyReader);
+
         propertyReader.VerifyHasParameterlessConstructor();
+
         this._propertyReader = propertyReader;
     }
 
