@@ -528,6 +528,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// </summary>
     private static VectorIndexType GetIndexKind(string? indexKind, string vectorPropertyName)
     {
+        if (string.IsNullOrWhiteSpace(indexKind))
+        {
+            // Use default index kind.
+            return VectorIndexType.DiskANN;
+        }
+
         return indexKind switch
         {
             IndexKind.Flat => VectorIndexType.Flat,
@@ -542,6 +548,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// </summary>
     private static DistanceFunction GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
     {
+        if (string.IsNullOrWhiteSpace(distanceFunction))
+        {
+            // Use default distance function.
+            return DistanceFunction.Cosine;
+        }
+
         return distanceFunction switch
         {
             SKDistanceFunction.CosineSimilarity => DistanceFunction.Cosine,
