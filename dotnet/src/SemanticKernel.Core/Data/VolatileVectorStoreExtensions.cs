@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// 1. Serializing an instance of <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}"/> to a stream.
 /// 2. Deserializing an instance of <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}"/> from a stream.
 /// </summary>
+[Obsolete("This has been replaced by InMemoryVectorStoreExtensions in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 public static class VolatileVectorStoreExtensions
 {
     /// <summary>

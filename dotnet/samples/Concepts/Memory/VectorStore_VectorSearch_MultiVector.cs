@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.Identity;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace Memory;
@@ -12,7 +13,7 @@ namespace Memory;
 /// stored in each record and you want to specify which vector to search on.
 ///
 /// The example shows the following steps:
-/// 1. Create a Volatile Vector Store.
+/// 1. Create an InMemory Vector Store.
 /// 2. Generate and add some test data entries.
 /// 3. Search for records based on a specified vector.
 /// </summary>
@@ -27,8 +28,8 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
 
-        // Construct a volatile vector store.
-        var vectorStore = new VolatileVectorStore();
+        // Construct an InMemory vector store.
+        var vectorStore = new InMemoryVectorStore();
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<int, Product>("skproducts");

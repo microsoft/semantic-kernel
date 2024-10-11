@@ -3,11 +3,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
-[Experimental("SKEXP0001")]
+[Obsolete("This has been replaced by InMemoryVectorStoreRecordCollection in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
