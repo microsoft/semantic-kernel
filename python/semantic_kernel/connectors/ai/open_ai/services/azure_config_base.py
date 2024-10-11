@@ -2,6 +2,7 @@
 
 import logging
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,13 +22,18 @@ from copy import copy
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 from collections.abc import Awaitable, Callable, Mapping
 from copy import copy
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -37,6 +43,7 @@ from copy import copy
 from typing import Awaitable, Callable, Dict, Mapping, Optional, Union
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -53,6 +60,8 @@ from typing import Awaitable, Callable, Dict, Mapping, Optional, Union
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -93,6 +102,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         base_url: HttpsUrl | None = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +118,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -116,6 +128,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -131,6 +144,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
         service_id: str | None = None,
         api_key: str | None = None,
         ad_token: str | None = None,
@@ -138,6 +153,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         default_headers: Mapping[str, str] | None = None,
         client: AsyncAzureOpenAI | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -158,14 +174,19 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
 
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     ) -> None:
@@ -196,6 +217,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -212,6 +234,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -244,12 +268,16 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 raise ServiceInitializationError(
                     "Please provide either api_key, ad_token or ad_token_provider or a client."
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -282,6 +310,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 )
 =======
 =======
@@ -298,6 +327,11 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 =======
                 )
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> origin/main
+                )
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> origin/main
@@ -312,6 +346,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                     f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}"
                 )
 <<<<<<< main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -329,6 +364,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             client = AsyncAzureOpenAI(
@@ -343,6 +380,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "ai_model_id": deployment_name,
             "client": client,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -363,6 +401,11 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -373,6 +416,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "client": async_client,
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -389,6 +433,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -399,6 +445,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         super().__init__(**args)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -418,13 +465,18 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     def to_dict(self) -> dict[str, str]:
         """Convert the configuration to a dictionary."""
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -434,6 +486,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
     def to_dict(self) -> Dict[str, str]:
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -450,6 +503,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

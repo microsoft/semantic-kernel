@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 [Experimental("SKEXP0001")]
 public sealed class VolatileVectorStoreRecordCollectionOptions
 =======
@@ -36,12 +37,18 @@ public sealed class VolatileVectorStoreRecordCollectionOptions
 public sealed class VolatileVectorStoreRecordCollectionOptions
 =======
 >>>>>>> Stashed changes
+=======
+[Experimental("SKEXP0001")]
+public sealed class VolatileVectorStoreRecordCollectionOptions
+=======
+>>>>>>> Stashed changes
 /// <typeparam name="TKey">The data type of the record key of the collection that this options will be used with.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data on the collection that this options will be used with.</typeparam>
 [Experimental("SKEXP0001")]
 public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -60,6 +67,9 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -80,6 +90,7 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -93,6 +104,9 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -117,6 +131,7 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     /// </remarks>
     public VolatileVectorStoreKeyResolver<TKey, TRecord>? KeyResolver { get; init; } = null;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -134,6 +149,9 @@ public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

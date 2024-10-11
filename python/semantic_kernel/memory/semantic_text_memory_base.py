@@ -82,6 +82,7 @@ class SemanticTextMemoryBase(ABC):
         collection: str,
         key: str,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +104,11 @@ class SemanticTextMemoryBase(ABC):
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    ) -> "MemoryQueryResult | None":
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     ) -> "MemoryQueryResult | None":
@@ -115,6 +121,7 @@ class SemanticTextMemoryBase(ABC):
     ) -> Optional[MemoryQueryResult]:
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -131,6 +138,8 @@ class SemanticTextMemoryBase(ABC):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

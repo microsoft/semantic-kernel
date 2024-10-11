@@ -6,6 +6,7 @@ from typing import Any
 
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -16,6 +17,8 @@ from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -43,6 +46,7 @@ from semantic_kernel.connectors.ai.ai_exception import AIException
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -60,6 +64,8 @@ from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
@@ -67,6 +73,7 @@ from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exceptio
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,6 +81,8 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -93,6 +102,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -105,6 +115,8 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 =======
     OpenAIChatPromptExecutionSettings,
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     OpenAIEmbeddingPromptExecutionSettings,
@@ -114,6 +126,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +136,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -138,8 +153,11 @@ from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
@@ -148,6 +166,7 @@ from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -168,15 +187,21 @@ from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBu
 logger: logging.Logger = logging.getLogger(__name__)
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 
 =======
 >>>>>>> origin/main
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
@@ -201,6 +226,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
         """Execute the appropriate call to OpenAI models."""
         try:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -208,6 +234,8 @@ class OpenAIHandler(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -227,6 +255,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -239,6 +268,8 @@ class OpenAIHandler(KernelBaseModel, ABC):
 =======
             settings = request_settings.prepare_settings_dict()
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             if self.ai_model_type == OpenAIModelTypes.CHAT:
@@ -250,6 +281,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
                     **request_settings.prepare_settings_dict()
                 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -269,6 +301,10 @@ class OpenAIHandler(KernelBaseModel, ABC):
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -279,6 +315,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
             else:
                 response = await self.client.completions.create(**settings)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -295,6 +332,8 @@ class OpenAIHandler(KernelBaseModel, ABC):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -332,6 +371,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
             ) from ex
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -351,6 +391,10 @@ class OpenAIHandler(KernelBaseModel, ABC):
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -375,6 +419,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
                 settings["response_format"] = response_format
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -391,6 +436,8 @@ class OpenAIHandler(KernelBaseModel, ABC):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

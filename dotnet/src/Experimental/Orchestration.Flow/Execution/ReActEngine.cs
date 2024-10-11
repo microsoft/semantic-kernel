@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -17,6 +18,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Extensions;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -32,8 +35,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Extensions;
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -45,6 +51,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -62,6 +69,8 @@ using Microsoft.SemanticKernel.TemplateEngine.Basic;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -82,6 +91,7 @@ internal sealed class ReActEngine
     /// Re-Act function for flow execution
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -120,12 +130,17 @@ internal sealed class ReActEngine
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     private readonly KernelFunction _reActFunction;
 =======
     private readonly ISKFunction _reActFunction;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -185,6 +200,7 @@ internal sealed class ReActEngine
         new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -203,6 +219,8 @@ internal sealed class ReActEngine
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -211,6 +229,7 @@ internal sealed class ReActEngine
     internal ReActEngine(IKernel systemKernel, ILogger logger, FlowOrchestratorConfig config)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -227,6 +246,8 @@ internal sealed class ReActEngine
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     {
@@ -240,6 +261,7 @@ internal sealed class ReActEngine
         if (promptConfig is null)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -247,6 +269,8 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -266,6 +290,7 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -278,6 +303,8 @@ internal sealed class ReActEngine
             string promptConfigString = EmbeddedResource.Read("Plugins.ReActEngine.yaml")!;
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             string promptConfigString = EmbeddedResource.Read("Plugins.ReActEngine.yaml")!;
@@ -330,6 +357,7 @@ internal sealed class ReActEngine
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, KernelArguments arguments, string question, List<ReActStep> previousSteps)
     {
         arguments["question"] = question;
@@ -377,6 +405,8 @@ internal sealed class ReActEngine
 <<<<<<< head
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, KernelArguments arguments, string question, List<ReActStep> previousSteps)
     {
@@ -398,6 +428,7 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -417,6 +448,8 @@ internal sealed class ReActEngine
         var availableFunctions = this.GetAvailableFunctions(context).ToArray();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         if (availableFunctions.Length == 1)
@@ -426,6 +459,7 @@ internal sealed class ReActEngine
             {
                 var action = $"{firstActionFunction.PluginName}.{firstActionFunction.Name}";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -433,6 +467,8 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -452,6 +488,7 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -464,6 +501,8 @@ internal sealed class ReActEngine
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -473,6 +512,7 @@ internal sealed class ReActEngine
                 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -480,6 +520,8 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -501,6 +543,7 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -515,6 +558,8 @@ internal sealed class ReActEngine
                 this._logger?.LogDebug($"Auto selecting {Action} as it is the only function available and it has no parameters.", action);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 return new ReActStep
@@ -526,6 +571,7 @@ internal sealed class ReActEngine
 
         var functionDesc = this.GetFunctionDescriptions(availableFunctions);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -533,6 +579,8 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -552,6 +600,7 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -564,6 +613,8 @@ internal sealed class ReActEngine
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         arguments["functionDescriptions"] = functionDesc;
@@ -579,6 +630,7 @@ internal sealed class ReActEngine
 
         string llmResponseText = llmResponse.GetValue<string>()!.Trim();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 =======
@@ -597,6 +649,9 @@ internal sealed class ReActEngine
 >>>>>>> origin/main
 
 <<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         if (this._logger?.IsEnabled(LogLevel.Debug) ?? false)
         {
             this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
@@ -610,7 +665,10 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -623,6 +681,9 @@ internal sealed class ReActEngine
         context.Variables.Set("functionDescriptions", functionDesc);
 >>>>>>> origin/main
 
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         if (this._logger.IsEnabled(LogLevel.Information))
@@ -633,7 +694,10 @@ internal sealed class ReActEngine
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -642,9 +706,12 @@ internal sealed class ReActEngine
         var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
         var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -663,6 +730,7 @@ internal sealed class ReActEngine
         if (!string.IsNullOrEmpty(actionStep.Action) || previousSteps.Count == 0)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -681,11 +749,14 @@ internal sealed class ReActEngine
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         {
             return actionStep;
         }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -708,6 +779,11 @@ internal sealed class ReActEngine
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        actionStep.Thought = llmResponseText;
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         actionStep.Thought = llmResponseText;
@@ -718,6 +794,7 @@ internal sealed class ReActEngine
 =======
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -734,6 +811,8 @@ internal sealed class ReActEngine
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -744,6 +823,7 @@ internal sealed class ReActEngine
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -751,6 +831,8 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -770,6 +852,7 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -782,6 +865,8 @@ internal sealed class ReActEngine
     internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, KernelArguments contextVariables)
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, KernelArguments contextVariables)
@@ -818,6 +903,7 @@ internal sealed class ReActEngine
         variables[Constants.ActionVariableNames.ChatHistory] = ChatHistorySerializer.Serialize(chatHistory);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if (this._logger.IsEnabled(LogLevel.Information))
         {
             this._logger?.LogInformation("Action: {Action}({ActionVariables})", actionStep.Action, JsonSerializer.Serialize(variables));
@@ -864,6 +950,11 @@ internal sealed class ReActEngine
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        if (this._logger.IsEnabled(LogLevel.Information))
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         if (this._logger.IsEnabled(LogLevel.Information))
@@ -878,7 +969,10 @@ internal sealed class ReActEngine
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -893,16 +987,20 @@ internal sealed class ReActEngine
         var functionView = function.Describe();
 >>>>>>> origin/main
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
         var function = kernel.Functions.GetFunction(targetFunction.PluginName, targetFunction.Name);
         var functionView = function.Describe();
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
         var actionContext = this.CreateActionContext(variables, kernel, context);
         foreach (var parameter in functionView.Parameters)
         {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 =======
@@ -1019,6 +1117,31 @@ internal sealed class ReActEngine
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+            if (!actionContextVariables.ContainsName(parameter.Name))
+            {
+                actionContextVariables[parameter.Name] = parameter.DefaultValue ?? string.Empty;
+=======
+            if (!actionContext.Variables.ContainsKey(parameter.Name))
+            {
+                actionContext.Variables.Set(parameter.Name, parameter.DefaultValue ?? string.Empty);
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> origin/main
+            }
+        }
+
+        try
+        {
+<<<<<<< HEAD
+            var result = await function.InvokeAsync(kernel, actionContextVariables).ConfigureAwait(false);
+
+            foreach (var variable in actionContextVariables)
+            {
+                contextVariables[variable.Key] = variable.Value;
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
             }
 
             if (this._logger?.IsEnabled(LogLevel.Debug) ?? false)
@@ -1041,6 +1164,9 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1067,8 +1193,11 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         catch (Exception e) when (!e.IsNonRetryable())
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1085,6 +1214,7 @@ internal sealed class ReActEngine
         catch (Exception e) when (!e.IsCriticalException())
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1101,6 +1231,8 @@ internal sealed class ReActEngine
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1111,6 +1243,7 @@ internal sealed class ReActEngine
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1118,6 +1251,8 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1137,6 +1272,7 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1149,6 +1285,8 @@ internal sealed class ReActEngine
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     private KernelArguments CreateActionKernelArguments(Dictionary<string, string> actionVariables, KernelArguments context)
@@ -1159,6 +1297,7 @@ internal sealed class ReActEngine
         {
             actionContext[kvp.Key] = kvp.Value;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1179,6 +1318,11 @@ internal sealed class ReActEngine
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1192,6 +1336,7 @@ internal sealed class ReActEngine
             actionContext.Variables.Set(kvp.Key, kvp.Value);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1210,12 +1355,15 @@ internal sealed class ReActEngine
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
         }
 
         return actionContext;
     }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1236,6 +1384,10 @@ internal sealed class ReActEngine
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1252,6 +1404,7 @@ internal sealed class ReActEngine
 
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1268,6 +1421,8 @@ internal sealed class ReActEngine
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1294,6 +1449,7 @@ internal sealed class ReActEngine
             if (scratchPadLines.Count / 4.0 > (this._config.MaxTokens * 0.75))
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1301,6 +1457,8 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1320,6 +1478,7 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1332,6 +1491,8 @@ internal sealed class ReActEngine
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 if (this._logger.IsEnabled(LogLevel.Debug))
@@ -1340,6 +1501,7 @@ internal sealed class ReActEngine
                 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1347,6 +1509,8 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1368,6 +1532,7 @@ internal sealed class ReActEngine
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1382,6 +1547,8 @@ internal sealed class ReActEngine
                 this._logger.LogDebug("Scratchpad is too long, truncating. Skipping {CountSkipped} steps.", i + 1);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 break;
@@ -1399,6 +1566,7 @@ internal sealed class ReActEngine
                 // ignore the built-in context variables
                 var variablesToPrint = s.ActionVariables?.Where(v => !Constants.ActionVariableNames.All.Contains(v.Key)).ToDictionary(_ => _.Key, _ => _.Value);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1420,6 +1588,11 @@ internal sealed class ReActEngine
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+                scratchPadLines.Insert(insertPoint, $$"""{{Action}} {"action": "{{s.Action}}","action_variables": {{JsonSerializer.Serialize(variablesToPrint)}}}""");
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
                 scratchPadLines.Insert(insertPoint, $$"""{{Action}} {"action": "{{s.Action}}","action_variables": {{JsonSerializer.Serialize(variablesToPrint)}}}""");
@@ -1431,6 +1604,7 @@ internal sealed class ReActEngine
                 scratchPadLines.Insert(insertPoint, $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(variablesToPrint)}}}");
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1447,6 +1621,8 @@ internal sealed class ReActEngine
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1537,6 +1713,7 @@ internal sealed class ReActEngine
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1555,6 +1732,8 @@ internal sealed class ReActEngine
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -1563,6 +1742,7 @@ internal sealed class ReActEngine
     private string GetFunctionDescriptions(FunctionView[] functions)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1579,6 +1759,8 @@ internal sealed class ReActEngine
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     {
@@ -1586,6 +1768,7 @@ internal sealed class ReActEngine
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1610,6 +1793,9 @@ internal sealed class ReActEngine
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1620,6 +1806,7 @@ internal sealed class ReActEngine
         var excludedPlugins = this._config.ExcludedPlugins ?? [];
         var excludedFunctions = this._config.ExcludedFunctions ?? [];
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1648,6 +1835,10 @@ internal sealed class ReActEngine
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1657,6 +1848,7 @@ internal sealed class ReActEngine
             functionViews
                 .Where(s => !excludedPlugins.Contains(s.PluginName!) && !excludedFunctions.Contains(s.Name))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1674,6 +1866,8 @@ internal sealed class ReActEngine
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1690,6 +1884,7 @@ internal sealed class ReActEngine
                 .Where(s => !excludedPlugins.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1706,6 +1901,8 @@ internal sealed class ReActEngine
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 .OrderBy(x => x.PluginName)
@@ -1717,6 +1914,7 @@ internal sealed class ReActEngine
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1741,6 +1939,9 @@ internal sealed class ReActEngine
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1767,6 +1968,7 @@ internal sealed class ReActEngine
         {
             var defaultValueString = parameter.DefaultValue is not string value || string.IsNullOrEmpty(value) ? string.Empty : $"(default='{parameter.DefaultValue}')";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1787,6 +1989,11 @@ internal sealed class ReActEngine
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1814,6 +2021,7 @@ internal sealed class ReActEngine
             var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $"(default='{parameter.DefaultValue}')";
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1830,6 +2038,8 @@ internal sealed class ReActEngine
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1847,6 +2057,7 @@ internal sealed class ReActEngine
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1865,6 +2076,8 @@ internal sealed class ReActEngine
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -1873,6 +2086,7 @@ internal sealed class ReActEngine
     private static string ToFullyQualifiedName(FunctionView function)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1889,6 +2103,8 @@ internal sealed class ReActEngine
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     {

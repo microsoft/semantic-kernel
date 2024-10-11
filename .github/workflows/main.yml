@@ -1,4 +1,4 @@
-            - name: Download a Build Artifact
+            - name: download-artifact@v4.1.7
   uses: actions/download-artifact@v4.1.7
   with:
     # Name of the artifact to download. If unspecified, all artifacts for the run are downloaded.

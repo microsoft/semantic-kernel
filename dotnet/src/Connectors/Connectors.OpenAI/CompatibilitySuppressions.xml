@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿<?xml version="1.0" encoding="utf-8"?>
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿<?xml version="1.0" encoding="utf-8"?>
 =======
 <?xml version="1.0" encoding="utf-8"?>
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 <?xml version="1.0" encoding="utf-8"?>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
@@ -53,6 +59,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -82,6 +89,11 @@
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
@@ -199,6 +211,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -228,6 +241,11 @@
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>

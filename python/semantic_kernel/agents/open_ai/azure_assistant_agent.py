@@ -74,6 +74,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -103,6 +104,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
         token_endpoint: str | None = None,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        token_endpoint: str | None = None,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         token_endpoint: str | None = None,
@@ -148,6 +154,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -177,6 +184,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
             token_endpoint: The Azure AD token endpoint. (optional)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+            token_endpoint: The Azure AD token endpoint. (optional)
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
             token_endpoint: The Azure AD token endpoint. (optional)
@@ -201,6 +213,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -230,6 +243,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
             token_endpoint=token_endpoint,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+            token_endpoint=token_endpoint,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
             token_endpoint=token_endpoint,
@@ -253,6 +271,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -272,11 +291,14 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
 
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
 >>>>>>> Stashed changes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -295,6 +317,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -314,6 +339,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         if not client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -331,6 +357,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -354,6 +383,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -370,6 +400,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         if not client:
             client = self._create_client(
                 api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
@@ -379,6 +412,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
                 ad_token_provider=ad_token_provider,
                 default_headers=default_headers,
             )
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -397,6 +431,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -627,6 +664,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -656,6 +694,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
         token_endpoint: str | None = None,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        token_endpoint: str | None = None,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         token_endpoint: str | None = None,
@@ -678,6 +721,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -707,6 +751,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
             token_endpoint: The Azure AD token endpoint.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+            token_endpoint: The Azure AD token endpoint.
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
             token_endpoint: The Azure AD token endpoint.
@@ -731,6 +780,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -760,6 +810,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
                 token_endpoint=token_endpoint,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                token_endpoint=token_endpoint,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                 token_endpoint=token_endpoint,
@@ -777,6 +832,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -793,6 +849,8 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             raise AgentInitializationException("Failed to create Azure OpenAI settings.", ex) from ex
@@ -805,7 +863,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -825,6 +886,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -838,6 +900,8 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             raise AgentInitializationException("Failed to create Azure OpenAI settings.", ex) from ex
             raise AgentInitializationException("Failed to create Azure OpenAI settings.", ex) from ex
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -858,6 +922,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             yield self._create_open_ai_assistant_definition(assistant)
 =======
 =======
@@ -871,10 +936,13 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             yield self._create_open_ai_assistant_definition(assistant)
 =======
             yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -892,6 +960,8 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
             yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -952,6 +1022,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -970,6 +1041,8 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
@@ -978,6 +1051,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
 >>>>>>> Stashed changes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -999,12 +1073,16 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
             raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1023,6 +1101,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1048,6 +1129,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1061,9 +1143,12 @@ class AzureAssistantAgent(OpenAIAssistantBase):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
         return AzureAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1082,6 +1167,8 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
         return AzureAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

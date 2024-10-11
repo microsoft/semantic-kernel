@@ -2,6 +2,7 @@
 
 from logging import Logger
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,10 @@ class NullLogger(Logger):
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -39,6 +44,7 @@ from typing import Any, Callable
 logger: Logger = getLogger(__name__)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 # TODO: delete
 =======
@@ -48,6 +54,10 @@ logger: Logger = getLogger(__name__)
 
 >>>>>>> origin/main
 
+=======
+# TODO: delete
+
+>>>>>>> Stashed changes
 =======
 # TODO: delete
 
@@ -80,6 +90,9 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -104,6 +117,7 @@ class NullLogger(Logger, metaclass=_NullerMeta):
     def info(self, _: str) -> None:
         pass
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +137,10 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -142,6 +160,7 @@ class NullLogger(Logger, metaclass=_NullerMeta):
             )
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -158,6 +177,8 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

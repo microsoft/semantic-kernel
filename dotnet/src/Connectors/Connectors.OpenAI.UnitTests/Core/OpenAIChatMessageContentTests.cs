@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Collections;
 using System.Collections.Generic;
 =======
@@ -29,10 +30,16 @@ using System.Collections;
 using System.Collections.Generic;
 =======
 >>>>>>> Stashed changes
+=======
+using System.Collections;
+using System.Collections.Generic;
+=======
+>>>>>>> Stashed changes
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -51,6 +58,9 @@ using System.Text.Json;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -77,6 +87,7 @@ public sealed class OpenAIChatMessageContentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         List<ChatToolCall> toolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", "args")];
 =======
 =======
@@ -90,10 +101,13 @@ public sealed class OpenAIChatMessageContentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         List<ChatToolCall> toolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", "args")];
 =======
         List<ChatToolCall> toolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,6 +125,8 @@ public sealed class OpenAIChatMessageContentTests
 =======
         List<ChatToolCall> toolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -134,6 +150,7 @@ public sealed class OpenAIChatMessageContentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         List<ChatToolCall> toolCalls = [
             ChatToolCall.CreateFunctionToolCall("id1", "name", string.Empty),
             ChatToolCall.CreateFunctionToolCall("id2", "name", string.Empty)];
@@ -149,13 +166,18 @@ public sealed class OpenAIChatMessageContentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         List<ChatToolCall> toolCalls = [
             ChatToolCall.CreateFunctionToolCall("id1", "name", string.Empty),
             ChatToolCall.CreateFunctionToolCall("id2", "name", string.Empty)];
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
@@ -163,6 +185,7 @@ public sealed class OpenAIChatMessageContentTests
         List<ChatToolCall> toolCalls = [
             ChatToolCall.CreateFunctionToolCall("id1", "name", BinaryData.FromString(args)),
             ChatToolCall.CreateFunctionToolCall("id2", "name", BinaryData.FromString(args))];
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -181,6 +204,9 @@ public sealed class OpenAIChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -213,6 +239,7 @@ public sealed class OpenAIChatMessageContentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -226,9 +253,12 @@ public sealed class OpenAIChatMessageContentTests
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -247,6 +277,8 @@ public sealed class OpenAIChatMessageContentTests
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         IReadOnlyDictionary<string, object?> metadata = readOnlyMetadata ?
@@ -261,6 +293,7 @@ public sealed class OpenAIChatMessageContentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             ChatToolCall.CreateFunctionToolCall("id1", "name", string.Empty),
             ChatToolCall.CreateFunctionToolCall("id2", "name", string.Empty)];
 =======
@@ -275,12 +308,15 @@ public sealed class OpenAIChatMessageContentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             ChatToolCall.CreateFunctionToolCall("id1", "name", string.Empty),
             ChatToolCall.CreateFunctionToolCall("id2", "name", string.Empty)];
 =======
             ChatToolCall.CreateFunctionToolCall("id1", "name", BinaryData.FromString(args)),
             ChatToolCall.CreateFunctionToolCall("id2", "name", BinaryData.FromString(args))];
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -299,6 +335,8 @@ public sealed class OpenAIChatMessageContentTests
             ChatToolCall.CreateFunctionToolCall("id1", "name", BinaryData.FromString(args)),
             ChatToolCall.CreateFunctionToolCall("id2", "name", BinaryData.FromString(args))];
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

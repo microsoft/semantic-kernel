@@ -1,5 +1,6 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +39,10 @@
   "description": "Given a scientific white paper abstract, rewrite it to make it more readable",
   "default_settings": {
 >>>>>>> Stashed changes
+=======
+  "description": "Given a scientific white paper abstract, rewrite it to make it more readable",
+  "default_settings": {
+>>>>>>> Stashed changes
     "max_tokens": 4000,
     "temperature": 0.0,
     "top_p": 1.0,
@@ -48,6 +53,7 @@
     "text-davinci-003"
   ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,6 +61,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -74,6 +82,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -86,6 +95,8 @@
 =======
   }
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 }

@@ -31,6 +31,7 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         string? arguments = functionToolCall.FunctionArguments;
 =======
 =======
@@ -44,10 +45,13 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         string? arguments = functionToolCall.FunctionArguments;
 =======
         string? arguments = functionToolCall.FunctionArguments?.ToString();
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -65,6 +69,8 @@ public sealed class OpenAIFunctionToolCall
 =======
         string? arguments = functionToolCall.FunctionArguments?.ToString();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         string? pluginName = null;
@@ -158,6 +164,7 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             if (update.Id is string id)
 =======
 =======
@@ -171,10 +178,13 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             if (update.Id is string id)
 =======
             if (update.ToolCallId is string id)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -192,6 +202,8 @@ public sealed class OpenAIFunctionToolCall
 =======
             if (update.ToolCallId is string id)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             {
@@ -212,6 +224,7 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             if (update.FunctionArgumentsUpdate is string argumentsUpdate)
 =======
 =======
@@ -225,10 +238,13 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             if (update.FunctionArgumentsUpdate is string argumentsUpdate)
 =======
             if (update.FunctionArgumentsUpdate is not null)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -246,6 +262,8 @@ public sealed class OpenAIFunctionToolCall
 =======
             if (update.FunctionArgumentsUpdate is not null)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             {
@@ -261,6 +279,7 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 arguments.Append(argumentsUpdate);
 =======
 =======
@@ -274,10 +293,13 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 arguments.Append(argumentsUpdate);
 =======
                 arguments.Append(update.FunctionArgumentsUpdate.ToString());
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -295,6 +317,8 @@ public sealed class OpenAIFunctionToolCall
 =======
                 arguments.Append(update.FunctionArgumentsUpdate.ToString());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }
@@ -333,6 +357,7 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 toolCalls[i] = ChatToolCall.CreateFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, functionArguments?.ToString() ?? string.Empty);
 =======
 =======
@@ -346,10 +371,13 @@ public sealed class OpenAIFunctionToolCall
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 toolCalls[i] = ChatToolCall.CreateFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, functionArguments?.ToString() ?? string.Empty);
 =======
                 toolCalls[i] = ChatToolCall.CreateFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, BinaryData.FromString(functionArguments?.ToString() ?? string.Empty));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -367,6 +395,8 @@ public sealed class OpenAIFunctionToolCall
 =======
                 toolCalls[i] = ChatToolCall.CreateFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, BinaryData.FromString(functionArguments?.ToString() ?? string.Empty));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 i++;

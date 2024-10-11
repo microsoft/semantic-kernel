@@ -10,6 +10,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,6 +63,9 @@ from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterM
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 )
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
@@ -76,6 +80,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 from semantic_kernel.functions.kernel_plugin_collection import (
@@ -87,6 +92,8 @@ from semantic_kernel.functions.kernel_plugin_collection import (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -131,6 +138,7 @@ from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -150,6 +158,10 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -160,6 +172,7 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 # from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -176,6 +189,8 @@ from semantic_kernel.template_engine.blocks.var_block import VarBlock
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -203,12 +218,16 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     def create_kernel_function() -> KernelFunction:
         """Return an KernelFunction."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -238,6 +257,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -253,12 +273,16 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 
         @kernel_function(name="function")
         def my_function(arguments: KernelArguments) -> str:
             return f"F({arguments['input']})"
 
 <<<<<<< main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -276,6 +300,8 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -284,6 +310,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             method=my_function,
         )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -304,6 +331,8 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -312,11 +341,16 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     def create_chat_history() -> ChatHistory:
         return ChatHistory()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -326,6 +360,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     def create_chat_history() -> ChatHistory:
         return ChatHistory()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -342,6 +377,8 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -360,6 +397,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             description="bar",
             default_value="baz",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -377,6 +415,8 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -386,6 +426,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -398,6 +439,8 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             type_="string",
@@ -422,6 +465,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             is_prompt=True,
             is_asynchronous=False,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -441,13 +485,18 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         ),
         ChatHistory: create_chat_history(),
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         ),
@@ -468,6 +517,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         KernelPluginCollection: create_plugin_collection(),
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -484,6 +534,8 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -500,6 +552,7 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
 
 PROTOCOLS = [
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -510,6 +563,8 @@ PROTOCOLS = [
         ConversationSummaryPlugin, marks=pytest.mark.xfail(reason="Contains data")
     ),
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -544,6 +599,7 @@ PROTOCOLS = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -564,12 +620,15 @@ PROTOCOLS = [
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     HttpPlugin,
     MathPlugin,
     TextMemoryPlugin,
     TextPlugin,
     TimePlugin,
     WaitPlugin,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -591,6 +650,8 @@ PROTOCOLS = [
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -601,6 +662,7 @@ PROTOCOLS = [
     pytest.param(WebSearchEnginePlugin, marks=pytest.mark.xfail(reason="Contains data")),
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -617,6 +679,8 @@ PROTOCOLS = [
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -628,6 +692,7 @@ BASE_CLASSES = [
 
 STATELESS_CLASSES = [
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -647,6 +712,10 @@ STATELESS_CLASSES = [
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -656,6 +725,7 @@ STATELESS_CLASSES = [
     # PromptTemplateEngine,
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -672,6 +742,8 @@ STATELESS_CLASSES = [
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -693,6 +765,7 @@ PYDANTIC_MODELS = [
     KernelParameterMetadata,
     KernelFunctionMetadata,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -712,6 +785,10 @@ PYDANTIC_MODELS = [
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -721,6 +798,7 @@ PYDANTIC_MODELS = [
     KernelPluginCollection,
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -737,6 +815,8 @@ PYDANTIC_MODELS = [
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

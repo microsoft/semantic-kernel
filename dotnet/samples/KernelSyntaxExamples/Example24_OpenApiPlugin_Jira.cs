@@ -22,6 +22,7 @@ public static class Example24_OpenApiPlugin_Jira
 {
     public static async Task RunAsync()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,14 +43,19 @@ public static class Example24_OpenApiPlugin_Jira
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
         var contextVariables = new ContextVariables();
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     {
@@ -109,6 +115,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     {
         Kernel kernel = new();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -125,6 +132,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -134,6 +143,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         contextVariables.Set("server-url", serverUrl);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -142,6 +152,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 <<<<<<< Updated upstream
         IDictionary<string, ISKFunction> jiraFunctions;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -162,6 +174,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -174,6 +187,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
         KernelPlugin jiraFunctions;
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var tokenProvider = new BasicAuthenticationProvider(() =>
@@ -191,6 +206,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             var apiPluginFile = "./../../../Plugins/JiraPlugin/openapi.json";
             jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginFile, new OpenApiFunctionExecutionParameters(authCallbackProvider: (_) => tokenProvider.AuthenticateRequestAsync));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -210,6 +226,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -228,6 +248,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -244,6 +267,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         {
             var apiPluginRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
             jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginRawFileURL, new OpenApiFunctionExecutionParameters(authCallbackProvider: (_) => tokenProvider.AuthenticateRequestAsync));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -264,6 +288,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -311,6 +339,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -333,12 +364,16 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             var result = await kernel.RunAsync(contextVariables, jiraFunctions["GetIssue"]);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -367,6 +402,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -382,10 +418,14 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         WriteLine("\n\n\n");
         var formattedContent = JsonSerializer.Serialize(
             result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         WriteLine($"GetIssue jiraPlugin response: \n{formattedContent}");
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -403,6 +443,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -419,6 +461,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -439,10 +482,15 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 
 <<<<<<< head
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             // Run operation via the semantic kernel
             var result = await kernel.RunAsync(contextVariables, jiraFunctions["AddComment"]);
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
@@ -454,6 +502,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -469,11 +518,15 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         WriteLine("\n\n\n");
 
         formattedContent = JsonSerializer.Serialize(result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
         WriteLine($"AddComment jiraPlugin response: \n{formattedContent}");
     }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 =======
@@ -521,6 +574,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 
     #region Example of authentication providers
 
@@ -562,7 +617,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     {
         private readonly Func<Task<string>> _bearerToken;
 
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         /// <summary>
@@ -621,6 +679,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             AuthenticationResult result;
             try
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
             {
                 result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
@@ -631,6 +690,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             {
                 result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
                     .ExecuteAsync().ConfigureAwait(false);
@@ -638,7 +699,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             catch (MsalUiRequiredException)
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 // A MsalUiRequiredException happened on AcquireTokenSilent.
@@ -687,6 +751,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     public Example24_OpenApiPlugin_Jira(ITestOutputHelper output) : base(output)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -703,6 +768,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

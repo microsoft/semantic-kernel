@@ -7,6 +7,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -60,6 +66,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -73,6 +80,9 @@ if TYPE_CHECKING:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -93,6 +103,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -110,6 +121,9 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -124,6 +138,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Has an ai_model_id and service_id, any other fields have to be defined by the subclasses.
 =======
 =======
@@ -143,11 +158,16 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     Has an ai_model_id and service_id, any other fields have to be defined by the subclasses.
 =======
 >>>>>>> Stashed changes
+=======
+    Has an ai_model_id and service_id, any other fields have to be defined by the subclasses.
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     Has an ai_model_id and service_id, any other fields have to be defined by the subclasses.
 =======
     Has a ai_model_id and service_id, any other fields have to be defined by the subclasses.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -166,6 +186,9 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -186,6 +209,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def model_post_init(self, __context: object | None = None):
 =======
 =======
@@ -205,11 +229,16 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     def model_post_init(self, __context: object | None = None):
 =======
 >>>>>>> Stashed changes
+=======
+    def model_post_init(self, __context: object | None = None):
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     def model_post_init(self, __context: object | None = None):
 =======
     def model_post_init(self, __context: Optional[object] = None):
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -228,6 +257,9 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -242,6 +274,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -271,6 +304,11 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -303,6 +341,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -321,12 +360,17 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Get the request settings class."""
         return PromptExecutionSettings  # pragma: no cover
 
     def instantiate_prompt_execution_settings(self, **kwargs) -> "PromptExecutionSettings":
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -345,6 +389,9 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -361,6 +408,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -390,6 +438,11 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -411,6 +464,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -428,10 +482,15 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     def get_prompt_execution_settings_from_settings(self, settings: PromptExecutionSettings) -> PromptExecutionSettings:
         """Get the request settings from a settings object."""
         return self.get_prompt_execution_settings_class().from_prompt_execution_settings(settings)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -450,6 +509,9 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

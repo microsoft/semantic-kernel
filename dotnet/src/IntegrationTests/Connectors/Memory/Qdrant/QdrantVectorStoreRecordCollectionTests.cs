@@ -8,6 +8,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Collections.Generic;
 =======
 =======
@@ -27,10 +28,15 @@ using System.Collections.Generic;
 using System.Collections.Generic;
 =======
 >>>>>>> Stashed changes
+=======
+using System.Collections.Generic;
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 using System.Collections.Generic;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -49,6 +55,9 @@ using System.Collections.Generic;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -99,6 +108,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
 =======
 =======
@@ -118,11 +128,16 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
 =======
 >>>>>>> Stashed changes
+=======
+    public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     public async Task ItCanCreateACollectionUpsertGetAndSearchAsync(bool hasNamedVectors, bool useRecordDefinition)
 =======
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -141,6 +156,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -170,6 +188,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -186,12 +205,16 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         var searchResult = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
             new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30) }).ToListAsync();
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -210,6 +233,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -235,6 +261,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -251,6 +278,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         Assert.Single(searchResult);
         var searchResultRecord = searchResult.First().Record;
@@ -264,6 +294,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -282,6 +313,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -567,6 +601,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -580,6 +615,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -628,6 +666,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -645,6 +684,9 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -711,6 +753,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -724,9 +767,12 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -745,6 +791,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     private HotelInfo CreateTestHotel(uint hotelId)

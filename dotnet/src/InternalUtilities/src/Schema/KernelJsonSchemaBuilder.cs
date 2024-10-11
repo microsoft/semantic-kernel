@@ -28,6 +28,7 @@ internal static class KernelJsonSchemaBuilder
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private static readonly JsonSerializerOptions s_options = CreateDefaultOptions();
 =======
 =======
@@ -41,10 +42,13 @@ internal static class KernelJsonSchemaBuilder
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private static readonly JsonSerializerOptions s_options = CreateDefaultOptions();
 =======
     private static JsonSerializerOptions? s_options;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -64,6 +68,8 @@ internal static class KernelJsonSchemaBuilder
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private static readonly JsonSchemaMapperConfiguration s_config = new()
     {
         IncludeSchemaVersion = false,
@@ -78,6 +84,7 @@ internal static class KernelJsonSchemaBuilder
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -92,6 +99,8 @@ internal static class KernelJsonSchemaBuilder
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -111,6 +120,7 @@ internal static class KernelJsonSchemaBuilder
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -123,6 +133,9 @@ internal static class KernelJsonSchemaBuilder
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -143,6 +156,7 @@ internal static class KernelJsonSchemaBuilder
 
         JsonNode jsonSchema = options.GetJsonSchema(type, mapperConfiguration);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -160,6 +174,9 @@ internal static class KernelJsonSchemaBuilder
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -185,6 +202,7 @@ internal static class KernelJsonSchemaBuilder
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -199,6 +217,8 @@ internal static class KernelJsonSchemaBuilder
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -220,6 +240,7 @@ internal static class KernelJsonSchemaBuilder
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -232,6 +253,9 @@ internal static class KernelJsonSchemaBuilder
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -255,6 +279,7 @@ internal static class KernelJsonSchemaBuilder
 
         return s_options;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -272,6 +297,9 @@ internal static class KernelJsonSchemaBuilder
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

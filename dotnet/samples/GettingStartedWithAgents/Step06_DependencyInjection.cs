@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.Extensions.DependencyInjection;
@@ -107,6 +113,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     Kernel = sp.GetRequiredService<Kernel>(),
 =======
 =======
@@ -120,12 +127,15 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                     Kernel = sp.GetRequiredService<Kernel>(),
 =======
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
                     Kernel = sp.GetRequiredService<Kernel>(),
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,6 +155,8 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                     Kernel = sp.GetRequiredService<Kernel>(),
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 });
@@ -165,6 +177,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -179,6 +192,8 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -186,6 +201,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 =======
         await WriteAgentResponse("The sunset is nice.");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -204,6 +220,9 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -212,6 +231,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
         await WriteAgentResponse("The sunset is very colorful.");
  6d73513a859ab2d05e01db3bc1d405827799e34b
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -229,6 +249,9 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

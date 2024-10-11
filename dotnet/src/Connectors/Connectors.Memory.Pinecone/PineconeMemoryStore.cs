@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,6 +29,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -42,6 +47,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> ms/feature-error-handling-part3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -58,6 +64,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -117,6 +125,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         if (!await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -140,12 +149,17 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 <<<<<<< main
             throw new KernelException("Index creation is not supported within memory store. " +
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             throw new SKException("Index creation is not supported within memory store. " +
@@ -154,6 +168,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             throw new SKException("Index creation is not supported within memory store. " +
 >>>>>>> ms/feature-error-handling-part3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -170,6 +185,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}. " +
@@ -229,6 +246,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -256,12 +274,16 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
         try
         {
             await request.ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -283,6 +305,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -296,6 +320,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         await request.ConfigureAwait(false);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -312,6 +337,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -387,6 +414,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         PineconeDocument[] vectorData = [.. upsertDocuments, .. updateDocuments];
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -414,12 +442,16 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
         try
         {
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -441,6 +473,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -454,6 +488,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         await Task.WhenAll(tasks).ConfigureAwait(false);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -470,6 +505,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -502,6 +539,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         CancellationToken cancellationToken = default)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -532,10 +570,14 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
         await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(
 >>>>>>> Stashed changes
+=======
+        await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(
+>>>>>>> Stashed changes
                                indexName,
                                [key],
                                indexNamespace,
                                withEmbedding,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -568,6 +610,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -583,6 +628,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         catch (HttpOperationException ex)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -602,6 +648,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -616,6 +664,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             throw new SKException($"Failed to get vector data from Pinecone: {ex.Message}", ex);
 >>>>>>> ms/feature-error-handling-part3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -632,6 +681,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -686,6 +737,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -704,6 +756,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -716,6 +770,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <exception cref="SKException"></exception>
 >>>>>>> ms/feature-error-handling-part3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -732,6 +787,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdAsync(string indexName,
@@ -786,6 +843,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<PineconeDocument?> vectorDataList;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -829,12 +887,17 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
         Query query = Query.Create(limit)
                 .InNamespace(indexNamespace)
                 .WithFilter(filter);
 
 <<<<<<< main
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             vectorDataList = await this._pineconeClient
@@ -850,6 +913,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             throw;
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -867,6 +931,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -878,6 +944,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             .ConfigureAwait(false);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -894,6 +961,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -916,6 +985,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     public async Task RemoveFromNamespaceAsync(string indexName, string indexNamespace, string key, CancellationToken cancellationToken = default)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -940,6 +1010,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -955,6 +1028,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         catch (HttpOperationException ex)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -982,6 +1056,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
             throw;
@@ -991,8 +1067,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         await this._pineconeClient.DeleteAsync(
@@ -1002,6 +1081,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             cancellationToken: cancellationToken).ConfigureAwait(false);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1018,6 +1098,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -1056,6 +1138,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         CancellationToken cancellationToken = default)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1086,11 +1169,15 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
         await this._pineconeClient.DeleteAsync(
 >>>>>>> Stashed changes
+=======
+        await this._pineconeClient.DeleteAsync(
+>>>>>>> Stashed changes
                 indexName,
                 default,
                 indexNamespace,
                 filter,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1115,6 +1202,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -1131,6 +1220,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1147,6 +1237,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -1160,6 +1252,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1170,6 +1263,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 <<<<<<< main
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+<<<<<<< main
+>>>>>>> Stashed changes
     /// <exception cref="KernelException"></exception>
 =======
     /// <exception cref="SKException"></exception>
@@ -1186,6 +1283,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             new Dictionary<string, object>()
             {
                 { "document_Id", documentId }
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 =======
@@ -1235,12 +1333,16 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 <<<<<<< main
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
             }, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1250,6 +1352,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
             this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
             throw;
 =======
@@ -1257,6 +1362,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> ms/feature-error-handling-part3
         }
 =======
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 >>>>>>> Stashed changes
@@ -1299,6 +1405,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> ms/feature-error-handling
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+            },
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+>>>>>>> ms/feature-error-handling
 >>>>>>> Stashed changes
     }
 
@@ -1311,6 +1422,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1329,6 +1441,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -1341,6 +1455,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <exception cref="SKException"></exception>
 >>>>>>> ms/feature-error-handling-part3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1359,12 +1474,15 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public async Task RemoveWithDocumentIdBatchAsync(
         string indexName,
         IEnumerable<string> documentIds,
         string indexNamespace,
         CancellationToken cancellationToken = default)
     {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1389,11 +1507,14 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         IEnumerable<Task> tasks = documentIds.Select(async id
                 => await this.RemoveWithDocumentIdAsync(indexName, id, indexNamespace, cancellationToken)
                     .ConfigureAwait(false));
 
 <<<<<<< main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1417,10 +1538,13 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1442,6 +1566,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -1455,6 +1581,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         await Task.WhenAll(tasks).ConfigureAwait(false);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1471,6 +1598,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,10 @@
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 import asyncio
 import logging
 import sys
@@ -38,6 +43,9 @@ The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving da
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -65,6 +73,7 @@ else:
 
 from semantic_kernel.exceptions import ServiceResponseException
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -84,6 +93,10 @@ from semantic_kernel.exceptions import ServiceResponseException
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -101,6 +114,7 @@ class QdrantMemoryStore(MemoryStoreBase):
 
     _qdrantclient: QdrantClient
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -117,6 +131,8 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -141,6 +157,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         local: bool | None = False,
         **kwargs,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -164,6 +181,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
     ) -> None:
         """Initializes a new instance of the QdrantMemoryStore class."""
         url: Optional[str] = None,
@@ -176,6 +197,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -198,6 +222,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             self._qdrantclient = QdrantClient(url=url, port=port)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +245,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         self._default_vector_size = vector_size
 
     @override
@@ -231,6 +260,7 @@ class QdrantMemoryStore(MemoryStoreBase):
     @override
     async def create_collection(self, collection_name: str) -> None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         self._logger = logger or NullLogger()
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -250,6 +280,8 @@ class QdrantMemoryStore(MemoryStoreBase):
 
     @override
     async def create_collection(self, collection_name: str) -> None:
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         self._qdrantclient.recreate_collection(
@@ -262,6 +294,7 @@ class QdrantMemoryStore(MemoryStoreBase):
     @override
     async def get_collections(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -295,6 +328,10 @@ class QdrantMemoryStore(MemoryStoreBase):
         """Gets the collection based upon collection name.
     async def get_collections_async(
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         self,
     ) -> list[str]:
         collection_info = self._qdrantclient.get_collections()
@@ -304,6 +341,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         self, collection_name: str
     ) -> qdrant_models.CollectionInfo:
         """Gets the collection based upon collection name.
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     async def get_collections_async(
 >>>>>>> origin/main
@@ -320,6 +358,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+    async def get_collections_async(
+>>>>>>> origin/main
+>>>>>>> Stashed changes
         self,
     ) -> list[str]:
         collection_info = self._qdrantclient.get_collections()
@@ -329,6 +371,9 @@ class QdrantMemoryStore(MemoryStoreBase):
         self, collection_name: str
     ) -> qdrant_models.CollectionInfo:
         """Gets the collection based upon collection name.
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -337,6 +382,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         """
         return self._qdrantclient.get_collection(collection_name=collection_name)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -356,6 +402,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -392,6 +442,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -428,6 +481,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             return data_to_upsert.id
         raise ServiceResponseException("Upsert failed")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -451,6 +505,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 
     @override
     async def upsert_batch(
@@ -468,6 +526,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -504,6 +565,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             return [data.id for data in data_to_upsert]
         raise ServiceResponseException("Batch upsert failed")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -525,12 +587,16 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 
     @override
     async def get(
         self, collection_name: str, key: str, with_embedding: bool = False
     ) -> MemoryRecord | None:
         result = await self._get_existing_record_by_payload_id(
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 =======
@@ -550,12 +616,16 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 
     @override
     async def get(
         self, collection_name: str, key: str, with_embedding: bool = False
     ) -> MemoryRecord | None:
         result = await self._get_existing_record_by_payload_id(
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -573,6 +643,8 @@ class QdrantMemoryStore(MemoryStoreBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         else:
@@ -588,6 +660,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -618,6 +693,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             )
         return None
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -625,6 +701,8 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -650,6 +728,7 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -661,6 +740,8 @@ class QdrantMemoryStore(MemoryStoreBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -675,6 +756,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         for key in keys:
             tasks.append(
                 self.get(
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -695,6 +777,8 @@ class QdrantMemoryStore(MemoryStoreBase):
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         else:
             return None
 
@@ -711,6 +795,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -733,6 +820,7 @@ class QdrantMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         existing_record = await self._get_existing_record_by_payload_id(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -769,11 +857,16 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     async def remove_async(self, collection_name: str, key: str) -> None:
         existing_record = await self._get_existing_record_by_payload_id_async(
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             collection_name=collection_name,
             payload_id=key,
@@ -788,6 +881,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
                 raise ServiceResponseException("Delete failed")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -807,6 +901,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -825,6 +923,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -859,6 +960,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
                 raise ServiceResponseException("Delete failed")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -882,6 +984,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 
     @override
     async def get_nearest_matches(
@@ -892,6 +998,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -914,6 +1023,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         with_embeddings: bool = False,
     ) -> list[tuple[MemoryRecord, float]]:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -950,11 +1060,16 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
         with_embeddings: bool,
     ) -> List[Tuple[MemoryRecord, float]]:
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         match_results = self._qdrantclient.search(
             collection_name=collection_name,
@@ -985,6 +1100,7 @@ class QdrantMemoryStore(MemoryStoreBase):
     @override
     async def get_nearest_match(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1018,6 +1134,12 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+    async def get_nearest_match_async(
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -1033,6 +1155,7 @@ class QdrantMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         result = await self.get_nearest_matches(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1056,6 +1179,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
         with_embedding: bool,
     ) -> Tuple[MemoryRecord, float]:
         result = await self.get_nearest_matches_async(
@@ -1065,6 +1192,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1086,6 +1216,7 @@ class QdrantMemoryStore(MemoryStoreBase):
 
     async def _get_existing_record_by_payload_id(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1121,10 +1252,15 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     async def _get_existing_record_by_payload_id_async(
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self,
         collection_name: str,
@@ -1132,6 +1268,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         with_embedding: bool = False,
     ) -> qdrant_models.ScoredPoint | None:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1151,6 +1288,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -1171,6 +1312,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1214,6 +1358,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             return existing_record[0]
         return None
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1237,6 +1382,10 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 
     async def _convert_from_memory_record(
         else:
@@ -1247,6 +1396,9 @@ class QdrantMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1268,6 +1420,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             existing_record = await self._get_existing_record_by_payload_id(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1301,6 +1454,12 @@ class QdrantMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+            existing_record = await self._get_existing_record_by_payload_id_async(
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -1320,6 +1479,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         return qdrant_models.PointStruct(
             id=pointId, vector=embedding.tolist(), payload=payload
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1337,6 +1497,8 @@ class QdrantMemoryStore(MemoryStoreBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             if existing_record:
@@ -1350,6 +1512,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             payload=record.__dict__,
             default=str,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1366,6 +1529,8 @@ class QdrantMemoryStore(MemoryStoreBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         )

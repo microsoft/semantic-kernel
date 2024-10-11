@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -31,6 +32,8 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -46,6 +49,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -61,12 +65,16 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using hash sets.
 /// </summary>
 internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, HashEntry[] HashEntries)>
 {
     /// <summary>All the properties from the record definition.</summary>
     private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -85,6 +93,9 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -99,6 +110,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -113,6 +125,8 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -128,6 +142,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -143,11 +158,15 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// <param name="properties">All the properties from the record definition.</param>
     public RedisHashSetGenericDataModelMapper(IReadOnlyList<VectorStoreRecordProperty> properties)
     {
         Verify.NotNull(properties);
         this._properties = properties;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -166,6 +185,9 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -183,6 +205,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
 =======
@@ -196,10 +219,13 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
         foreach (var property in this._properties)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -217,6 +243,8 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
         foreach (var property in this._properties)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {
@@ -274,6 +302,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
 =======
@@ -287,10 +316,13 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
         foreach (var property in this._properties)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -308,6 +340,8 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
         foreach (var property in this._properties)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {
@@ -342,6 +376,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -371,6 +406,11 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 

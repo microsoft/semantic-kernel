@@ -15,6 +15,7 @@ import pytest_asyncio
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -44,6 +45,11 @@ import pytest_asyncio
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -76,6 +82,7 @@ from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -93,6 +100,9 @@ from semantic_kernel.kernel import Kernel
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSources,
@@ -102,6 +112,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -120,6 +131,9 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -143,12 +157,16 @@ except ImportError:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
     "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
 ):
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
@@ -167,6 +185,8 @@ if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
     "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
@@ -174,6 +194,7 @@ if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get(
 =======
 if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get("AZURE_COGNITIVE_SEARCH_ADMIN_KEY"):
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -192,6 +213,9 @@ if os.environ.get("AZURE_COGNITIVE_SEARCH_ENDPOINT") and os.environ.get("AZURE_C
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -266,6 +290,7 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -295,6 +320,11 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -335,6 +365,7 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -349,6 +380,10 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -380,6 +415,7 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
 
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -397,6 +433,9 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -430,6 +469,7 @@ async def test_azure_e2e_chat_completion_with_extensions(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     try:
         result: StreamingChatMessageContent = None
 =======
@@ -447,6 +487,11 @@ async def test_azure_e2e_chat_completion_with_extensions(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    try:
+        result: StreamingChatMessageContent = None
+=======
+>>>>>>> Stashed changes
 =======
     try:
         result: StreamingChatMessageContent = None
@@ -464,6 +509,7 @@ async def test_azure_e2e_chat_completion_with_extensions(
         result = None
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -481,6 +527,9 @@ async def test_azure_e2e_chat_completion_with_extensions(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -497,6 +546,7 @@ async def test_azure_e2e_chat_completion_with_extensions(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -526,6 +576,11 @@ async def test_azure_e2e_chat_completion_with_extensions(
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -542,6 +597,7 @@ async def test_azure_e2e_chat_completion_with_extensions(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -560,11 +616,16 @@ async def test_azure_e2e_chat_completion_with_extensions(
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
             print(f"Tool message: {result.tool_message}")
             assert result.tool_message is not None
             assert "two passionate scientists" in result.tool_message
             assert len(result.content) > 1
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -583,6 +644,9 @@ async def test_azure_e2e_chat_completion_with_extensions(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

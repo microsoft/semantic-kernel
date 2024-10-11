@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -56,6 +62,7 @@ using Azure;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -85,6 +92,11 @@ using Azure.Identity;
 =======
 using Azure.Identity;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using Azure.Identity;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using Azure.Identity;
@@ -102,6 +114,7 @@ using Microsoft.Extensions.Configuration;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Data;
 =======
 =======
@@ -121,10 +134,15 @@ using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Data;
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.SemanticKernel.Data;
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using SemanticKernel.IntegrationTests.TestSettings;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -143,6 +161,9 @@ using SemanticKernel.IntegrationTests.TestSettings;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -173,6 +194,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -189,11 +211,15 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     private static readonly IConfigurationRoot s_configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
         .AddUserSecrets<AzureAISearchVectorStoreFixture>()
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -212,6 +238,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -234,6 +263,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -263,6 +293,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
         var config = s_configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        var config = s_configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         var config = s_configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
@@ -286,6 +321,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
 =======
 =======
@@ -299,10 +335,13 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
 =======
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 1536 },
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -320,6 +359,8 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 1536 },
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsFilterable = true },
@@ -333,6 +374,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             }
         };
 =======
@@ -350,6 +392,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+            }
+        };
+=======
+>>>>>>> Stashed changes
 =======
             }
         };
@@ -371,6 +418,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
             endpoint: embeddingsConfig.Endpoint,
             credential: new AzureCliCredential());
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -388,6 +436,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -421,6 +472,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -437,11 +489,15 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// Gets the embedding generator to use for generating embeddings for text.
     /// </summary>
     public ITextEmbeddingGenerationService EmbeddingGenerator { get; private set; }
 
     /// <summary>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -460,6 +516,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -477,6 +536,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         AzureAISearchVectorStoreFixture.UploadDocuments(this.SearchIndexClient.GetSearchClient(this._testIndexName));
 =======
 =======
@@ -490,12 +550,15 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         AzureAISearchVectorStoreFixture.UploadDocuments(this.SearchIndexClient.GetSearchClient(this._testIndexName));
 =======
         await AzureAISearchVectorStoreFixture.UploadDocumentsAsync(this.SearchIndexClient.GetSearchClient(this._testIndexName));
         AzureAISearchVectorStoreFixture.UploadDocuments(this.SearchIndexClient.GetSearchClient(this._testIndexName));
         await AzureAISearchVectorStoreFixture.UploadDocumentsAsync(this.SearchIndexClient.GetSearchClient(this._testIndexName), this.EmbeddingGenerator);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -515,6 +578,8 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         AzureAISearchVectorStoreFixture.UploadDocuments(this.SearchIndexClient.GetSearchClient(this._testIndexName));
         await AzureAISearchVectorStoreFixture.UploadDocumentsAsync(this.SearchIndexClient.GetSearchClient(this._testIndexName), this.EmbeddingGenerator);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -557,6 +622,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -573,10 +639,14 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         AzureOpenAIConfiguration openAIConfiguration = s_configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>()!;
 
         // Build the list of fields from the model, and then replace the DescriptionEmbedding field with a vector field, to work around
         // issue where the field is not recognized as an array on parsing on the server side when apply the VectorSearchFieldAttribute.
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -595,6 +665,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -609,6 +682,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -622,6 +696,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -643,6 +720,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         definition.VectorSearch.Algorithms.Add(new HnswAlgorithmConfiguration("my-hnsw-vector-config-1") { Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine } });
         definition.VectorSearch.Profiles.Add(new VectorSearchProfile("my-vector-profile", "my-hnsw-vector-config-1") { VectorizerName = "text-embedding-vectorizer" });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -660,6 +738,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -687,6 +768,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -703,12 +785,16 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     public static async Task UploadDocumentsAsync(SearchClient searchClient)
     /// <param name="embeddingGenerator">An instance of <see cref="ITextEmbeddingGenerationService"/> to generate embeddings.</param>
     public static async Task UploadDocumentsAsync(SearchClient searchClient, ITextEmbeddingGenerationService embeddingGenerator)
     {
         var embedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -727,6 +813,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -746,6 +835,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -775,6 +865,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
                     DescriptionEmbedding = embedding,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                    DescriptionEmbedding = embedding,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                     DescriptionEmbedding = embedding,
@@ -799,6 +894,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -828,6 +924,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
                     DescriptionEmbedding = embedding,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                    DescriptionEmbedding = embedding,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                     DescriptionEmbedding = embedding,
@@ -852,6 +953,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -881,6 +983,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
                     DescriptionEmbedding = embedding,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                    DescriptionEmbedding = embedding,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                     DescriptionEmbedding = embedding,
@@ -905,6 +1012,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -934,6 +1042,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
                     DescriptionEmbedding = embedding,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                    DescriptionEmbedding = embedding,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                     DescriptionEmbedding = embedding,
@@ -954,6 +1067,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -970,6 +1084,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         await searchClient.IndexDocumentsAsync(batch);
 
         // Add some delay to allow time for the documents to get indexed and show up in search.
@@ -983,6 +1100,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     public static float[] CreateTestEmbedding()
     {
         return Enumerable.Range(1, 1536).Select(x => (float)x).ToArray();
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1001,6 +1119,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1021,6 +1142,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1050,6 +1172,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
         [SearchableField(IsFilterable = true, IsSortable = true)]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        [SearchableField(IsFilterable = true, IsSortable = true)]
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         [SearchableField(IsFilterable = true, IsSortable = true)]
@@ -1070,6 +1197,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1099,6 +1227,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 =======
         [VectorStoreRecordVector(1536)]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        [VectorStoreRecordVector(1536)]
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         [VectorStoreRecordVector(1536)]

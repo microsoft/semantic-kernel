@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from unittest.mock import AsyncMock, MagicMock
 =======
 =======
@@ -19,11 +20,14 @@ from unittest.mock import AsyncMock, MagicMock
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 from unittest.mock import AsyncMock, MagicMock
 =======
 from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,6 +46,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -55,6 +61,7 @@ from anthropic.lib.streaming import TextEvent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from anthropic.types import (
     ContentBlockStopEvent,
 =======
@@ -77,10 +84,16 @@ from anthropic.types import (
     ContentBlockStopEvent,
 =======
 >>>>>>> Stashed changes
+=======
+from anthropic.types import (
+    ContentBlockStopEvent,
+=======
+>>>>>>> Stashed changes
 from anthropic.lib.streaming._types import InputJsonEvent
 from anthropic.types import (
     ContentBlockStopEvent,
     InputJSONDelta,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -99,6 +112,9 @@ from anthropic.types import (
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -118,6 +134,7 @@ from anthropic.types import (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -147,6 +164,11 @@ from anthropic.types import (
 =======
     ToolUseBlock,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    ToolUseBlock,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     ToolUseBlock,
@@ -168,6 +190,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -197,6 +220,11 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 =======
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -215,6 +243,7 @@ from semantic_kernel.exceptions import ServiceInitializationError, ServiceRespon
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 =======
 =======
@@ -230,6 +259,10 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+=======
+>>>>>>> Stashed changes
 =======
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 =======
@@ -255,6 +288,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -272,6 +306,9 @@ from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterM
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -286,6 +323,7 @@ from semantic_kernel.kernel import Kernel
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -299,6 +337,9 @@ from semantic_kernel.kernel import Kernel
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -561,6 +602,7 @@ def mock_streaming_chat_message_content() -> StreamingChatMessageContent:
 
 @pytest.fixture
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -581,6 +623,9 @@ def mock_streaming_chat_message_content() -> StreamingChatMessageContent:
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 def mock_settings() -> AnthropicChatPromptExecutionSettings:
     return AnthropicChatPromptExecutionSettings()
 
@@ -593,6 +638,7 @@ def mock_settings() -> AnthropicChatPromptExecutionSettings:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -607,6 +653,8 @@ def mock_settings() -> AnthropicChatPromptExecutionSettings:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -717,6 +765,7 @@ def mock_anthropic_client_completion_stream() -> AsyncAnthropic:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -729,6 +778,9 @@ def mock_anthropic_client_completion_stream() -> AsyncAnthropic:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -815,6 +867,7 @@ def mock_streaming_message_response() -> AsyncGenerator:
         raw_message_delta_event,
         message_stop_event,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -832,6 +885,9 @@ def mock_streaming_message_response() -> AsyncGenerator:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -852,6 +908,7 @@ def mock_streaming_message_response() -> AsyncGenerator:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -866,6 +923,8 @@ def mock_streaming_message_response() -> AsyncGenerator:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -874,6 +933,7 @@ def mock_streaming_message_response() -> AsyncGenerator:
 
     client.messages = messages_mock
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -892,6 +952,9 @@ def mock_streaming_message_response() -> AsyncGenerator:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -914,6 +977,7 @@ def mock_anthropic_client_completion_stream(mock_streaming_message_response: Asy
     messages_mock.stream.return_value = mock_streaming_message_response
     client.messages = messages_mock
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -934,6 +998,9 @@ def mock_anthropic_client_completion_stream(mock_streaming_message_response: Asy
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     return client
 
 
@@ -948,6 +1015,7 @@ async def test_complete_chat_contents(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -962,6 +1030,8 @@ async def test_complete_chat_contents(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -980,6 +1050,7 @@ async def test_complete_chat_contents(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -992,6 +1063,9 @@ async def test_complete_chat_contents(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1009,6 +1083,7 @@ async def test_complete_chat_contents(
     chat_completion_base = AnthropicChatCompletion(
         ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1029,6 +1104,9 @@ async def test_complete_chat_contents(
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     )
 
     content: list[ChatMessageContent] = await chat_completion_base.get_chat_message_contents(
@@ -1042,6 +1120,7 @@ async def test_complete_chat_contents(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1056,6 +1135,8 @@ async def test_complete_chat_contents(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1075,6 +1156,7 @@ async def test_complete_chat_stream_contents(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1087,6 +1169,9 @@ async def test_complete_chat_stream_contents(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1186,6 +1271,7 @@ async def test_complete_chat_stream_contents(
     chat_history.add_user_message("test_user_message")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1203,6 +1289,9 @@ async def test_complete_chat_stream_contents(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1219,6 +1308,7 @@ async def test_complete_chat_stream_contents(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         async_client=mock_anthropic_client_completion_stream,
 =======
 =======
@@ -1232,10 +1322,13 @@ async def test_complete_chat_stream_contents(
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         async_client=mock_anthropic_client_completion_stream,
 =======
         async_client=client,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1253,6 +1346,8 @@ async def test_complete_chat_stream_contents(
 =======
         async_client=client,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     )
@@ -1270,6 +1365,7 @@ async def test_complete_chat_stream_contents(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1284,6 +1380,8 @@ async def test_complete_chat_stream_contents(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1306,6 +1404,7 @@ async def test_anthropic_sdk_exception(kernel: Kernel, mock_settings: AnthropicC
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1318,6 +1417,9 @@ async def test_anthropic_sdk_exception(kernel: Kernel, mock_settings: AnthropicC
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1396,6 +1498,7 @@ async def test_anthropic_sdk_exception(kernel: Kernel, mock_settings: AnthropicC
     arguments = KernelArguments()
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1413,6 +1516,9 @@ async def test_anthropic_sdk_exception(kernel: Kernel, mock_settings: AnthropicC
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1435,6 +1541,7 @@ async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1449,6 +1556,8 @@ async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: 
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1468,6 +1577,7 @@ async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1483,6 +1593,9 @@ async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: 
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     client = MagicMock(spec=AsyncAnthropic)
     messages_mock = MagicMock()
     messages_mock.stream.side_effect = Exception("Test Exception")
@@ -1491,6 +1604,7 @@ async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: 
     chat_history = MagicMock()
     arguments = KernelArguments()
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1509,6 +1623,9 @@ async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1596,6 +1713,7 @@ async def test_with_different_execution_settings_stream(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         continue
     assert mock_anthropic_client_completion_stream.messages.stream.call_args.kwargs["temperature"] == 0.2
 =======
@@ -1613,6 +1731,11 @@ async def test_with_different_execution_settings_stream(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        continue
+    assert mock_anthropic_client_completion_stream.messages.stream.call_args.kwargs["temperature"] == 0.2
+=======
+>>>>>>> Stashed changes
 =======
         continue
     assert mock_anthropic_client_completion_stream.messages.stream.call_args.kwargs["temperature"] == 0.2
@@ -1760,6 +1883,7 @@ def test_chat_completion_reset_settings(
     assert settings.tools is None
     assert settings.tool_choice is None
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1777,6 +1901,9 @@ def test_chat_completion_reset_settings(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -89,6 +89,7 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 completionTokens: usage?.OutputTokens ?? 0,
                 promptTokens: usage?.InputTokens ?? 0,
                 totalTokens: usage?.TotalTokens ?? 0);
@@ -104,6 +105,8 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 completionTokens: usage?.OutputTokens ?? 0,
                 promptTokens: usage?.InputTokens ?? 0,
                 totalTokens: usage?.TotalTokens ?? 0);
@@ -112,6 +115,7 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
                 promptTokens: usage?.InputTokenCount ?? 0,
                 totalTokens: usage?.TotalTokenCount ?? 0);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -131,6 +135,8 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
                 promptTokens: usage?.InputTokenCount ?? 0,
                 totalTokens: usage?.TotalTokenCount ?? 0);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }

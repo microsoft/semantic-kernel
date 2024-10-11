@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 =======
@@ -44,10 +45,13 @@ if TYPE_CHECKING:
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -64,6 +68,8 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -86,6 +92,7 @@ class ChatHistoryAgentProtocol(Protocol):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["StreamingChatMessageContent"]:
 =======
 =======
@@ -99,10 +106,13 @@ class ChatHistoryAgentProtocol(Protocol):
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["StreamingChatMessageContent"]:
 =======
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -120,6 +130,8 @@ class ChatHistoryAgentProtocol(Protocol):
 =======
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         """Invoke the chat history agent protocol in streaming mode."""
@@ -190,6 +202,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -203,6 +216,9 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -237,6 +253,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             messages.append(self.messages[message_index])
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -254,6 +271,9 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

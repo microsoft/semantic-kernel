@@ -11,6 +11,7 @@ using System.Linq;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Text.Json.Nodes;
 =======
 =======
@@ -40,6 +41,11 @@ using System.Text.Json.Nodes;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+using System.Text.Json.Nodes;
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 using System.Text.Json.Nodes;
 =======
@@ -93,12 +99,16 @@ internal static class QdrantVectorStoreRecordFieldMapping
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <returns>The converted native value.</returns>
     /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
     public static JsonNode? ConvertFromGrpcFieldValueToJsonNode(Value payloadValue)
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
@@ -117,10 +127,13 @@ internal static class QdrantVectorStoreRecordFieldMapping
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <param name="targetType">The target type to convert the value to.</param>
     /// <returns>The converted native value.</returns>
     /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
     public static object? ConvertFromGrpcFieldValueToNativeType(Value payloadValue, Type targetType)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -140,6 +153,9 @@ internal static class QdrantVectorStoreRecordFieldMapping
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
     {
         return payloadValue.KindCase switch
         {
@@ -150,6 +166,10 @@ internal static class QdrantVectorStoreRecordFieldMapping
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -186,8 +206,11 @@ internal static class QdrantVectorStoreRecordFieldMapping
     /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
     public static object? ConvertFromGrpcFieldValue(Value payloadValue)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     {
@@ -195,7 +218,10 @@ internal static class QdrantVectorStoreRecordFieldMapping
         {
             Value.KindOneofCase.NullValue => null,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             Value.KindOneofCase.IntegerValue => payloadValue.IntegerValue,
@@ -210,6 +236,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -222,6 +249,9 @@ internal static class QdrantVectorStoreRecordFieldMapping
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -240,6 +270,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
                     x => ConvertFromGrpcFieldValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))),
                 targetType),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -257,6 +288,9 @@ internal static class QdrantVectorStoreRecordFieldMapping
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

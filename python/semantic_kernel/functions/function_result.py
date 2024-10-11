@@ -8,6 +8,7 @@ import logging
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from typing import Any
 =======
 =======
@@ -27,11 +28,16 @@ from typing import Any
 from typing import Any
 =======
 >>>>>>> Stashed changes
+=======
+from typing import Any
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from typing import Any
 =======
 from typing import Any, Mapping, Optional
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -50,6 +56,9 @@ from typing import Any, Mapping, Optional
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -64,6 +73,7 @@ from semantic_kernel.contents.kernel_content import KernelContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.exceptions import FunctionResultError
 =======
 =======
@@ -83,10 +93,15 @@ from semantic_kernel.exceptions import FunctionResultError
 from semantic_kernel.exceptions import FunctionResultError
 =======
 >>>>>>> Stashed changes
+=======
+from semantic_kernel.exceptions import FunctionResultError
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from semantic_kernel.exceptions import FunctionResultError
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -105,6 +120,9 @@ from semantic_kernel.exceptions import FunctionResultError
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -124,6 +142,7 @@ class FunctionResult(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Args:
 =======
 =======
@@ -143,11 +162,16 @@ class FunctionResult(KernelBaseModel):
     Args:
 =======
 >>>>>>> Stashed changes
+=======
+    Args:
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     Args:
 =======
     Arguments:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -166,6 +190,9 @@ class FunctionResult(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -190,6 +217,7 @@ class FunctionResult(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     metadata: dict[str, Any] = Field(default_factory=dict)
 =======
 =======
@@ -209,11 +237,16 @@ class FunctionResult(KernelBaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 =======
 >>>>>>> Stashed changes
+=======
+    metadata: dict[str, Any] = Field(default_factory=dict)
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     metadata: dict[str, Any] = Field(default_factory=dict)
 =======
     metadata: Mapping[str, Any] = Field(default_factory=dict)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -232,6 +265,9 @@ class FunctionResult(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -248,6 +284,7 @@ class FunctionResult(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -277,6 +314,11 @@ class FunctionResult(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -296,6 +338,7 @@ class FunctionResult(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -314,10 +357,15 @@ class FunctionResult(KernelBaseModel):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
                     return str(self.value[0])
                 elif isinstance(self.value, dict):
                     # TODO: remove this once function result doesn't include input args
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -336,6 +384,9 @@ class FunctionResult(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -350,6 +401,7 @@ class FunctionResult(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -379,6 +431,11 @@ class FunctionResult(KernelBaseModel):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -407,6 +464,7 @@ class FunctionResult(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -421,6 +479,10 @@ class FunctionResult(KernelBaseModel):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -441,6 +503,7 @@ class FunctionResult(KernelBaseModel):
                 return self.value[index].inner_content
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -458,6 +521,9 @@ class FunctionResult(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

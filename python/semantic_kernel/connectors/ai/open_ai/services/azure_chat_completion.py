@@ -7,6 +7,7 @@ from typing import Any, TypeVar
 from uuid import uuid4
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,6 +29,11 @@ from openai import AsyncAzureOpenAI
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+from openai import AsyncAzureOpenAI
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 from openai import AsyncAzureOpenAI
@@ -48,6 +54,7 @@ else:
 
 from openai import AsyncAzureOpenAI, AsyncStream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -64,6 +71,8 @@ from openai import AsyncAzureOpenAI, AsyncStream
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -95,6 +104,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -114,6 +124,10 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -129,6 +143,7 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -145,6 +160,8 @@ from semantic_kernel.contents.chat_history import ChatHistory
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -158,6 +175,7 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,6 +195,10 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -188,6 +210,7 @@ from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_streaming_chat_completion
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -204,6 +227,8 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_s
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -236,6 +261,7 @@ class AzureChatCompletion(
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -243,6 +269,8 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -291,6 +319,7 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -423,6 +452,8 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< head
 =======
+=======
+>>>>>>> Stashed changes
     ) -> None:
         """Initialize an AzureChatCompletion service.
 
@@ -516,7 +547,10 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     ) -> None:
@@ -561,6 +595,7 @@ class AzureChatCompletion(
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
         """
@@ -604,6 +639,8 @@ class AzureChatCompletion(
             When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
             The default value is False.
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         """
@@ -672,6 +709,9 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -701,6 +741,10 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -736,7 +780,10 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -811,6 +858,9 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -830,6 +880,7 @@ class AzureChatCompletion(
         )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -847,6 +898,8 @@ class AzureChatCompletion(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
     @classmethod
     def from_dict(cls, settings: dict[str, Any]) -> "AzureChatCompletion":
@@ -854,8 +907,11 @@ class AzureChatCompletion(
 
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     @override
@@ -895,6 +951,7 @@ class AzureChatCompletion(
             ]
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -911,6 +968,8 @@ class AzureChatCompletion(
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     @classmethod
@@ -918,6 +977,7 @@ class AzureChatCompletion(
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -940,6 +1000,8 @@ class AzureChatCompletion(
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -956,6 +1018,7 @@ class AzureChatCompletion(
             base_url=settings.get("base_url"),
             api_version=settings.get("api_version"),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -979,6 +1042,10 @@ class AzureChatCompletion(
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
             api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key"),
@@ -988,6 +1055,9 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1004,7 +1074,10 @@ class AzureChatCompletion(
             default_headers=settings.get("default_headers"),
             env_file_path=settings.get("env_file_path"),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         )
@@ -1028,7 +1101,10 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1059,6 +1135,7 @@ class AzureChatCompletion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1117,6 +1194,8 @@ class AzureChatCompletion(
         """Create an Azure chat message content object from a choice."""
         content = super()._create_chat_message_content(
             response, choice, response_metadata
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         )

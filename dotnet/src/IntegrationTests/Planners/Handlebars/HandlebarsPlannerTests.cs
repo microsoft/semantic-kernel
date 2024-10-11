@@ -19,6 +19,7 @@ public sealed class HandlebarsPlannerTests
 {
     [Theory(Skip = "This test is for manual verification.")]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -26,6 +27,8 @@ public sealed class HandlebarsPlannerTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -45,6 +48,7 @@ public sealed class HandlebarsPlannerTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -57,6 +61,8 @@ public sealed class HandlebarsPlannerTests
 =======
     [Theory]
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     [InlineData("Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
@@ -100,6 +106,7 @@ public sealed class HandlebarsPlannerTests
 
     [Theory(Skip = "This test is for manual verification.")]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,6 +114,8 @@ public sealed class HandlebarsPlannerTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -126,6 +135,7 @@ public sealed class HandlebarsPlannerTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -138,6 +148,8 @@ public sealed class HandlebarsPlannerTests
 =======
     [Theory]
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     [InlineData("List each property of the default Qux object.", "## Complex types", """

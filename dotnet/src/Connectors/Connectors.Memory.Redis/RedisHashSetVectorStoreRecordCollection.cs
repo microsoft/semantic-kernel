@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -110,6 +116,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -123,10 +130,13 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,6 +156,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>The Redis database to read/write records from.</summary>
@@ -164,6 +176,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
     /// <summary>A definition of the current storage model.</summary>
@@ -180,12 +193,17 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
@@ -199,6 +217,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 
     /// <summary>An array of the names of all the properties that are part of the Redis payload, i.e. all properties except the key property.</summary>
     private readonly string[] _dataAndVectorStoragePropertyNames;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -217,6 +236,9 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -233,6 +255,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -246,10 +269,13 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     /// <summary>The name of the first vector field for the collections that this class is used with.</summary>
     private readonly string? _firstVectorPropertyName = null;
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -269,6 +295,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     private readonly string? _firstVectorPropertyName = null;
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
@@ -293,6 +321,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -306,9 +335,12 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.HashEntriesCustomMapper is not null, s_supportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -329,6 +361,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
         // Assign.
         this._database = database;
@@ -341,6 +375,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -355,6 +390,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -377,6 +414,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -389,6 +427,9 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -428,6 +469,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         this._dataStoragePropertyNames = this._propertyReader
             .DataPropertyStoragePropertyNames
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -445,6 +487,9 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -467,6 +512,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)>)new RedisHashSetGenericDataModelMapper(this._vectorStoreRecordDefinition);
 =======
 =======
@@ -480,10 +526,13 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)>)new RedisHashSetGenericDataModelMapper(this._vectorStoreRecordDefinition);
 =======
             this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)>)new RedisHashSetGenericDataModelMapper(this._propertyReader.Properties);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -501,6 +550,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
             this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)>)new RedisHashSetGenericDataModelMapper(this._propertyReader.Properties);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -514,6 +565,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
 =======
 =======
@@ -533,12 +585,17 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
             this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
 =======
 >>>>>>> Stashed changes
+=======
+            this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
+=======
+>>>>>>> Stashed changes
             this._mapper = this._options.HashEntriesCustomMapper;
         }
         else
         {
             this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
             this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._propertyReader);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -557,6 +614,9 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -601,6 +661,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -617,12 +678,16 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties, this._storagePropertyNames);
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._propertyReader.Properties, this._propertyReader.StoragePropertyNamesMap, useDollarPrefix: false);
 =======
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._propertyReader.Properties, this._propertyReader.StoragePropertyNamesMap, useDollarPrefix: false);
 >>>>>>> upstream/feature-vector-search
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -641,6 +706,9 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -697,6 +765,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -726,6 +795,11 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
             var fieldKeys = this._dataStoragePropertyNameRedisValues;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+            var fieldKeys = this._dataStoragePropertyNameRedisValues;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
             var fieldKeys = this._dataStoragePropertyNameRedisValues;
@@ -845,6 +919,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -858,6 +933,9 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -906,6 +984,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -923,6 +1002,9 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -949,6 +1031,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -962,6 +1045,9 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -983,6 +1069,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1000,6 +1087,9 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

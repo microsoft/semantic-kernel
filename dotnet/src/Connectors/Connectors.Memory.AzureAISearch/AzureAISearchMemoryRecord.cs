@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Memory;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Text;
 =======
 =======
@@ -40,6 +41,11 @@ using Microsoft.SemanticKernel.Text;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+using Microsoft.SemanticKernel.Text;
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 using Microsoft.SemanticKernel.Text;
 =======
@@ -107,6 +113,7 @@ internal sealed class AzureAISearchMemoryRecord
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     [JsonConverter(typeof(ReadOnlyMemoryConverter))]
 =======
 =======
@@ -136,6 +143,11 @@ internal sealed class AzureAISearchMemoryRecord
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
     [JsonConverter(typeof(ReadOnlyMemoryConverter))]
 =======

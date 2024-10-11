@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # Copyright (c) Microsoft. All rights reserved.
 
 =======
@@ -27,11 +28,17 @@
 
 =======
 >>>>>>> Stashed changes
+=======
+# Copyright (c) Microsoft. All rights reserved.
+
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 # Copyright (c) Microsoft. All rights reserved.
 
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -50,6 +57,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -66,6 +76,7 @@ from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings impor
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     OllamaTextPromptExecutionSettings,
 =======
 =======
@@ -85,10 +96,15 @@ from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings impor
     OllamaTextPromptExecutionSettings,
 =======
 >>>>>>> Stashed changes
+=======
+    OllamaTextPromptExecutionSettings,
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     OllamaTextPromptExecutionSettings,
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -107,6 +123,9 @@ from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings impor
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -121,6 +140,7 @@ from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -150,6 +170,11 @@ from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -175,6 +200,7 @@ def test_settings(model_id):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -192,6 +218,9 @@ def test_settings(model_id):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
 from semantic_kernel.contents.chat_history import ChatHistory
 from tests.unit.connectors.ollama.utils import MockResponse
 
@@ -199,6 +228,7 @@ from tests.unit.connectors.ollama.utils import MockResponse
 def test_settings():
     ollama = OllamaChatCompletion(ai_model_id="test_model")
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -217,6 +247,9 @@ def test_settings():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -231,6 +264,7 @@ def test_settings():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -260,6 +294,11 @@ def test_settings():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -278,6 +317,7 @@ def test_init_empty_service_id(model_id):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -292,6 +332,8 @@ def test_init_empty_service_id(model_id):
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -301,6 +343,7 @@ def test_init_empty_ai_model_id():
         _ = OllamaChatCompletion()
 
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -329,6 +372,10 @@ def test_init_empty_ai_model_id():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
@@ -353,6 +400,7 @@ def test_custom_client(model_id, custom_client):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def test_init_empty_model_id(ollama_unit_test_env):
 =======
 =======
@@ -366,10 +414,13 @@ def test_init_empty_model_id(ollama_unit_test_env):
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 def test_init_empty_model_id(ollama_unit_test_env):
 =======
 def test_init_empty_model_id_in_env(ollama_unit_test_env):
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -387,6 +438,8 @@ def test_init_empty_model_id_in_env(ollama_unit_test_env):
 =======
 def test_init_empty_model_id_in_env(ollama_unit_test_env):
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     """Test that the service initializes incorrectly with an empty model id."""
@@ -510,6 +563,7 @@ async def test_chat_completion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -523,6 +577,9 @@ async def test_chat_completion(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -549,6 +606,7 @@ async def test_complete_chat(mock_post):
         },
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -566,6 +624,9 @@ async def test_complete_chat(mock_post):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -580,6 +641,7 @@ async def test_complete_chat(mock_post):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -609,6 +671,11 @@ async def test_complete_chat(mock_post):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -728,6 +795,7 @@ async def test_streaming_chat_completion(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -740,6 +808,8 @@ async def test_streaming_chat_completion(
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     )
 
 
@@ -747,8 +817,11 @@ async def test_streaming_chat_completion(
 =======
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 @patch("aiohttp.ClientSession.post")
@@ -786,6 +859,7 @@ async def test_complete_chat_stream(mock_post):
         },
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -802,6 +876,8 @@ async def test_complete_chat_stream(mock_post):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     )
@@ -815,6 +891,7 @@ async def test_complete_chat_stream(mock_post):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> main
@@ -838,6 +915,9 @@ async def test_complete_chat_stream(mock_post):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -931,6 +1011,7 @@ async def test_streaming_text_completion_wrong_return_type(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -944,6 +1025,9 @@ async def test_streaming_text_completion_wrong_return_type(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -970,6 +1054,7 @@ async def test_complete_stream(mock_post):
     )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -987,6 +1072,9 @@ async def test_complete_stream(mock_post):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -5,12 +5,16 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
@@ -29,6 +33,8 @@ using System;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
 // Copyright (c) Microsoft. All rights reserved.
 
@@ -36,6 +42,7 @@ using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -54,6 +61,9 @@ using System;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -98,6 +108,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -111,9 +122,12 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
             chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
             null,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -132,6 +146,8 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
             null,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             null,
@@ -173,6 +189,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -189,11 +206,15 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
         this.FinishReason = chatUpdate.FinishReason;
         this.Items = CreateContentItems(chatUpdate.ContentUpdate);
             // TODO: Remove this try-catch block once the bug is fixed.
         }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -212,6 +233,9 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

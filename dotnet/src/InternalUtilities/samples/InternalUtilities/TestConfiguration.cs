@@ -162,6 +162,7 @@ public sealed class TestConfiguration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -191,6 +192,11 @@ public sealed class TestConfiguration
 =======
         public string Endpoint { get; set; } = "https://api.bing.microsoft.com/v7.0/search";
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        public string Endpoint { get; set; } = "https://api.bing.microsoft.com/v7.0/search";
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         public string Endpoint { get; set; } = "https://api.bing.microsoft.com/v7.0/search";

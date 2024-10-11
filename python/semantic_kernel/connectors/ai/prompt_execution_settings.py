@@ -35,6 +35,7 @@ class PromptExecutionSettings(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -51,11 +52,15 @@ class PromptExecutionSettings(KernelBaseModel):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     Parameters:
         service_id (str): The service ID to use for the request.
         extension_data (Dict[str, Any], optional): Any additional data to send with the request. Defaults to None.
         kwargs (Any): Additional keyword arguments,
             these are attempted to parse into the keys of the specific prompt execution settings.
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -74,6 +79,9 @@ class PromptExecutionSettings(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -156,6 +164,7 @@ class PromptExecutionSettings(KernelBaseModel):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -185,6 +194,11 @@ class PromptExecutionSettings(KernelBaseModel):
 =======
                 "structured_json_response",
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                "structured_json_response",
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                 "structured_json_response",

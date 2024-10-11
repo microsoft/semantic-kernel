@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +25,10 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -43,6 +48,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -59,6 +65,8 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -71,6 +79,7 @@ public sealed class FlowOrchestratorConfig
     /// A list of plugins to exclude from the plan creation request.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -92,6 +101,11 @@ public sealed class FlowOrchestratorConfig
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    public HashSet<string> ExcludedPlugins { get; } = [];
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     public HashSet<string> ExcludedPlugins { get; } = [];
@@ -103,6 +117,7 @@ public sealed class FlowOrchestratorConfig
     public HashSet<string> ExcludedPlugins { get; } = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -121,11 +136,14 @@ public sealed class FlowOrchestratorConfig
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
     /// <summary>
     /// A list of functions to exclude from the plan creation request.
     /// </summary>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -148,6 +166,11 @@ public sealed class FlowOrchestratorConfig
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    public HashSet<string> ExcludedFunctions { get; } = [];
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     public HashSet<string> ExcludedFunctions { get; } = [];
@@ -159,6 +182,7 @@ public sealed class FlowOrchestratorConfig
     public HashSet<string> ExcludedFunctions { get; } = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -175,6 +199,8 @@ public sealed class FlowOrchestratorConfig
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -192,6 +218,7 @@ public sealed class FlowOrchestratorConfig
     /// However when the variable is too long, it will either be truncated or decrease the robustness of value passing.
     /// To mitigate that, the <see cref="ReActEngine"/> will avoid rendering the variables exceeding MaxVariableLength in the prompt.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -230,12 +257,17 @@ public sealed class FlowOrchestratorConfig
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     /// And the variables should be accessed implicitly from ContextVariables instead of function parameters by the plugins.
 =======
     /// And the variables should be accessed implicitly from SKContext instead of function parameters by the plugins.
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// </remarks>
@@ -253,6 +285,7 @@ public sealed class FlowOrchestratorConfig
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -272,6 +305,10 @@ public sealed class FlowOrchestratorConfig
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -285,6 +322,7 @@ public sealed class FlowOrchestratorConfig
     /// <summary>
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -301,6 +339,8 @@ public sealed class FlowOrchestratorConfig
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -315,6 +355,7 @@ public sealed class FlowOrchestratorConfig
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -322,6 +363,8 @@ public sealed class FlowOrchestratorConfig
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -341,6 +384,7 @@ public sealed class FlowOrchestratorConfig
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -353,6 +397,8 @@ public sealed class FlowOrchestratorConfig
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// Optional. The allowed AI service id for the React engine.
@@ -368,6 +414,7 @@ public sealed class FlowOrchestratorConfig
     /// </remarks>
     public PromptExecutionSettings? AIRequestSettings { get; set; } = null;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -385,6 +432,8 @@ public sealed class FlowOrchestratorConfig
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -397,6 +446,7 @@ public sealed class FlowOrchestratorConfig
     public AIRequestSettings? AIRequestSettings { get; set; } = null;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -413,6 +463,8 @@ public sealed class FlowOrchestratorConfig
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 }

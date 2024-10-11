@@ -8,6 +8,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -22,6 +23,8 @@ using System;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -35,7 +38,10 @@ using System.Text.Json;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -55,6 +61,7 @@ using System.Linq;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -68,6 +75,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Linq;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
@@ -83,6 +92,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -97,6 +107,8 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -106,6 +118,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 {
     /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,12 +140,16 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Qdrant.
 /// </summary>
 internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, PointStruct>, IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>
 {
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -151,6 +168,9 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -168,6 +188,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -182,6 +203,8 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -206,6 +229,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -218,6 +242,9 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -236,6 +263,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
         // Assign.
         this._propertyReader = propertyReader;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -253,6 +281,9 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -279,6 +310,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this._vectorStoreRecordDefinition.Properties,
 =======
 =======
@@ -292,10 +324,13 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             this._vectorStoreRecordDefinition.Properties,
 =======
             this._propertyReader.Properties,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -313,6 +348,8 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 =======
             this._propertyReader.Properties,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             dataModel.Data,
@@ -334,6 +371,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
 =======
 =======
@@ -347,10 +385,13 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
 =======
         MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -368,6 +409,8 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 =======
         MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         return dataModel;
@@ -393,6 +436,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this._vectorStoreRecordDefinition.Properties,
 =======
 =======
@@ -406,10 +450,13 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             this._vectorStoreRecordDefinition.Properties,
 =======
             this._propertyReader.Properties,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -427,6 +474,8 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 =======
             this._propertyReader.Properties,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             dataModel.Data,
@@ -448,6 +497,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
 =======
 =======
@@ -461,10 +511,13 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
 =======
         MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -482,6 +535,8 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 =======
         MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         return dataModel;
@@ -581,6 +636,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -595,6 +651,8 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -632,7 +690,10 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -653,6 +714,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -667,6 +729,8 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
                 {
                     var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType(propertyValue, dataProperty.PropertyType);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                     dataProperties[dataProperty.DataModelPropertyName] = convertedValue;

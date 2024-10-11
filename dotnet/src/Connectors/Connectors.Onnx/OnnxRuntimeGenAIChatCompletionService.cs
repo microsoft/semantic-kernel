@@ -100,6 +100,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -129,6 +130,11 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 =======
         bool removeNextTokenStartingWithSpace = true;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        bool removeNextTokenStartingWithSpace = true;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         bool removeNextTokenStartingWithSpace = true;
@@ -152,6 +158,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 var output = this.GetTokenizer().Decode(newToken);
 =======
 =======
@@ -171,6 +178,10 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
                 var output = this.GetTokenizer().Decode(newToken);
 =======
 >>>>>>> Stashed changes
+=======
+                var output = this.GetTokenizer().Decode(newToken);
+=======
+>>>>>>> Stashed changes
                 string output = this.GetTokenizer().Decode(newToken);
 
                 if (removeNextTokenStartingWithSpace && output[0] == ' ')
@@ -179,6 +190,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
                     output = output.TrimStart();
                 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -197,6 +209,9 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

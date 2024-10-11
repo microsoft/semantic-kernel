@@ -7,12 +7,16 @@ import google.generativeai as palm
 from numpy import array, ndarray
 from pydantic import StringConstraints, ValidationError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -42,6 +46,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -57,6 +62,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -81,6 +89,7 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -95,6 +104,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -114,6 +126,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         """Initializes a new instance of the GooglePalmTextEmbedding class.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> ms/small_fixes
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
@@ -131,6 +144,8 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Args:
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
@@ -144,6 +159,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
             ServiceInitializationError: When the Google Palm settings cannot be read.
 
         """
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -163,6 +179,8 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 >>>>>>> ms/small_fixes
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -190,7 +208,10 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
 
         """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
         try:
             google_palm_settings = GooglePalmSettings.create(
                 api_key=api_key,
@@ -211,6 +232,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """Generates embeddings for the given list of texts."""
 >>>>>>> origin/main
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
         try:
@@ -238,6 +260,8 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

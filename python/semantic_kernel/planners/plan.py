@@ -10,12 +10,16 @@ import threading
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 from collections.abc import Callable
 from copy import copy
 from typing import Any, ClassVar, Optional
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
@@ -34,6 +38,8 @@ from typing import Any, ClassVar, Optional
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 from collections.abc import Callable
 from copy import copy
@@ -42,6 +48,7 @@ from typing import Any, ClassVar, Optional
 from copy import copy
 from typing import Any, Callable, ClassVar, List, Optional, Union
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -60,6 +67,9 @@ from typing import Any, Callable, ClassVar, List, Optional, Union
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -75,6 +85,7 @@ from semantic_kernel.connectors.ai import PromptExecutionSettings
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -104,6 +115,11 @@ from semantic_kernel.connectors.ai import PromptExecutionSettings
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -120,6 +136,7 @@ from semantic_kernel.exceptions import (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -156,11 +173,16 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 =======
+>>>>>>> Stashed changes
+=======
 =======
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 )
 from semantic_kernel.functions.function_result import FunctionResult
@@ -174,6 +196,7 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -190,10 +213,14 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
 from semantic_kernel.kernel_exception import KernelException
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -212,6 +239,9 @@ from semantic_kernel.kernel_exception import KernelException
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -228,6 +258,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -257,6 +288,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -276,6 +312,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -293,12 +330,17 @@ class Plan:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     _state: KernelArguments = PrivateAttr()
     _steps: List["Plan"] = PrivateAttr()
     _function: KernelFunction = PrivateAttr()
     _parameters: KernelArguments = PrivateAttr()
     _outputs: List[str] = PrivateAttr()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -317,6 +359,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -338,6 +383,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the name for the plan."""
 =======
 =======
@@ -357,10 +403,15 @@ class Plan:
         """Get the name for the plan."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Get the name for the plan."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the name for the plan."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -379,6 +430,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -393,6 +447,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -422,6 +477,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -440,6 +500,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -457,11 +518,16 @@ class Plan:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
         return self._state
 
     @property
     def steps(self) -> List["Plan"]:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -480,6 +546,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -494,6 +563,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the plugin name for the plan."""
 =======
 =======
@@ -513,10 +583,15 @@ class Plan:
         """Get the plugin name for the plan."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Get the plugin name for the plan."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the plugin name for the plan."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -535,6 +610,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -549,6 +627,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the description for the plan."""
 =======
 =======
@@ -568,10 +647,15 @@ class Plan:
         """Get the description for the plan."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Get the description for the plan."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the description for the plan."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -590,6 +674,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -604,6 +691,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the function for the plan."""
 =======
 =======
@@ -623,10 +711,15 @@ class Plan:
         """Get the function for the plan."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Get the function for the plan."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the function for the plan."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -645,6 +738,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -659,6 +755,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Get the parameters for the plan."""
 =======
 =======
@@ -678,10 +775,15 @@ class Plan:
         """Get the parameters for the plan."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Get the parameters for the plan."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the parameters for the plan."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -700,6 +802,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -714,6 +819,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Check if the plan is a prompt."""
 =======
 =======
@@ -733,10 +839,15 @@ class Plan:
         """Check if the plan is a prompt."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Check if the plan is a prompt."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Check if the plan is a prompt."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -755,6 +866,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -769,6 +883,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -798,6 +913,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -818,6 +938,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -835,6 +956,10 @@ class Plan:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
         if self._is_prompt is None:
             return None
         else:
@@ -843,6 +968,7 @@ class Plan:
     @property
     def prompt_execution_settings(self) -> PromptExecutionSettings:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -861,6 +987,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -875,6 +1004,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Check if the plan has a next step."""
 =======
 =======
@@ -894,10 +1024,15 @@ class Plan:
         """Check if the plan has a next step."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Check if the plan has a next step."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Check if the plan has a next step."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -949,10 +1084,21 @@ class Plan:
         """Get the next step index."""
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+        return self._next_step_index < len(self._steps)
+
+    @property
+    def next_step_index(self) -> int:
+<<<<<<< HEAD
+        """Get the next step index."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Get the next step index."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -971,6 +1117,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -985,6 +1134,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1014,6 +1164,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1041,6 +1196,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1055,6 +1211,10 @@ class Plan:
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -1073,6 +1233,7 @@ class Plan:
         self._plugin_name = f"p_{generate_random_ascii_name()}" if plugin_name is None else plugin_name
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1090,6 +1251,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1116,6 +1280,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Create a plan from a goal."""
 =======
 =======
@@ -1135,10 +1300,15 @@ class Plan:
         """Create a plan from a goal."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Create a plan from a goal."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Create a plan from a goal."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1157,6 +1327,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1171,6 +1344,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Create a plan from a function."""
 =======
 =======
@@ -1190,10 +1364,15 @@ class Plan:
         """Create a plan from a function."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Create a plan from a function."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Create a plan from a function."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1212,6 +1391,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1229,6 +1411,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1258,6 +1441,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1280,6 +1468,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1297,6 +1486,10 @@ class Plan:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
         arguments: Optional[KernelArguments] = None,
         # TODO: cancellation_token: CancellationToken,
     ) -> FunctionResult:
@@ -1312,6 +1505,7 @@ class Plan:
 
         Returns:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
             KernelContext: The updated context.
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
@@ -1328,6 +1522,11 @@ class Plan:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+            KernelContext: The updated context.
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
 >>>>>>> Stashed changes
 =======
             KernelContext: The updated context.
@@ -1348,10 +1547,13 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     f"Something went wrong in plan step {self._plugin_name}.{self._name}:'{exc}'"
                 )
                 raise KernelInvokeException(
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1367,6 +1569,7 @@ class Plan:
                 )
                 raise KernelInvokeException(
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
             KernelContext: The updated context.
@@ -1380,6 +1583,8 @@ class Plan:
             except Exception as exc:
                 logger.error(
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -1393,6 +1598,7 @@ class Plan:
                     KernelException.ErrorCodes.FunctionInvokeError,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1450,6 +1656,8 @@ class Plan:
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> main
                     "Error occurred while running plan step: " + str(exc),
                     exc,
@@ -1459,6 +1667,9 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # loop through steps until completion
         partial_results = []
@@ -1492,6 +1703,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1506,6 +1718,10 @@ class Plan:
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -1534,6 +1750,7 @@ class Plan:
             return FunctionResult(function=self.metadata, value=result_string, metadata={"results": partial_results})
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1551,6 +1768,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1566,6 +1786,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1595,6 +1816,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1613,6 +1839,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1630,6 +1857,9 @@ class Plan:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
         if self._function is not None:
             self._function.set_ai_configuration(settings)
 
@@ -1640,6 +1870,7 @@ class Plan:
     @property
     def metadata(self) -> KernelFunctionMetadata:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1658,6 +1889,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1678,6 +1912,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1707,6 +1942,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -1731,6 +1971,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1749,6 +1990,10 @@ class Plan:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
     def set_available_functions(self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments") -> "Plan":
         if len(plan.steps) == 0:
             if kernel.plugins is None:
@@ -1760,6 +2005,7 @@ class Plan:
                 pluginFunction = kernel.plugins[plan.plugin_name][plan.name]
                 plan.set_function(pluginFunction)
             except Exception:
+<<<<<<< Updated upstream
                 pass
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
 <<<<<<< Updated upstream
@@ -1783,6 +2029,11 @@ class Plan:
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+                pass
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> main
+>>>>>>> Stashed changes
         else:
             for step in plan.steps:
                 step = self.set_available_functions(step, kernel, arguments)
@@ -1790,6 +2041,7 @@ class Plan:
         return plan
 
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1818,12 +2070,18 @@ class Plan:
         """Add steps to the plan."""
 =======
 >>>>>>> Stashed changes
+=======
+    def add_steps(self, steps: list["Plan"] | list[KernelFunction]) -> None:
+        """Add steps to the plan."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
     def add_steps(self, steps: list["Plan"] | list[KernelFunction]) -> None:
         """Add steps to the plan."""
 =======
     def add_steps(self, steps: Union[List["Plan"], List[KernelFunction]]) -> None:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1842,6 +2100,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1870,6 +2131,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Set the function for the plan."""
 =======
 =======
@@ -1889,10 +2151,15 @@ class Plan:
         """Set the function for the plan."""
 =======
 >>>>>>> Stashed changes
+=======
+        """Set the function for the plan."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         """Set the function for the plan."""
 =======
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1911,6 +2178,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1926,6 +2196,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if hasattr(function, "prompt_execution_settings"):
             self._prompt_execution_settings = function.prompt_execution_settings
 =======
@@ -1948,12 +2219,18 @@ class Plan:
             self._prompt_execution_settings = function.prompt_execution_settings
 =======
 >>>>>>> Stashed changes
+=======
+        if hasattr(function, "prompt_execution_settings"):
+            self._prompt_execution_settings = function.prompt_execution_settings
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
         if hasattr(function, "prompt_execution_settings"):
             self._prompt_execution_settings = function.prompt_execution_settings
 =======
         self._prompt_execution_settings = function.prompt_execution_settings
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1972,6 +2249,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1988,6 +2268,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2017,6 +2298,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -2036,6 +2322,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2053,10 +2340,14 @@ class Plan:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
         return await self.invoke_next_step(kernel, arguments)
 
     async def invoke_next_step(self, kernel: Kernel, arguments: KernelArguments) -> Optional["FunctionResult"]:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2075,6 +2366,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2095,6 +2389,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             raise KernelInvokeException(
 =======
 =======
@@ -2114,12 +2409,17 @@ class Plan:
             raise KernelInvokeException(
 =======
 >>>>>>> Stashed changes
+=======
+            raise KernelInvokeException(
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
             raise KernelInvokeException(
 =======
             raise KernelException(
                 KernelException.ErrorCodes.FunctionInvokeError,
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2138,6 +2438,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2160,6 +2463,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + str(
                 result
             )
@@ -2175,13 +2479,18 @@ class Plan:
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + str(
                 result
             )
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -2191,6 +2500,7 @@ class Plan:
 =======
             self._state[Plan.DEFAULT_RESULT_KEY] = current_plan_result.strip() + str(result)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2209,6 +2519,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2224,6 +2537,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2253,6 +2567,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -2277,6 +2596,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2295,6 +2615,10 @@ class Plan:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
     def add_variables_to_state(self, state: KernelArguments, variables: KernelArguments) -> None:
         for key in variables.keys():
             if key not in state.keys():
@@ -2302,6 +2626,7 @@ class Plan:
 
     def update_arguments_with_outputs(self, arguments: KernelArguments) -> KernelArguments:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2320,6 +2645,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2338,6 +2666,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2367,6 +2696,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -2386,6 +2720,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2403,6 +2738,9 @@ class Plan:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
             if item in self._state:
                 arguments[item] = self._state[item]
             else:
@@ -2411,6 +2749,7 @@ class Plan:
 
     def get_next_step_arguments(self, arguments: KernelArguments, step: "Plan") -> KernelArguments:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2429,6 +2768,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2474,6 +2816,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     self._state[param.name] is not None
                     and self._state[param.name] != ""
 =======
@@ -2496,12 +2839,18 @@ class Plan:
                     and self._state[param.name] != ""
 =======
 >>>>>>> Stashed changes
+=======
+                    self._state[param.name] is not None
+                    and self._state[param.name] != ""
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
                     self._state[param.name] is not None
                     and self._state[param.name] != ""
 =======
                     self._state[param.name] is not None and self._state[param.name] != ""
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2520,6 +2869,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2554,6 +2906,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2583,6 +2936,11 @@ class Plan:
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -2605,6 +2963,7 @@ class Plan:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2622,12 +2981,16 @@ class Plan:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
     def expand_from_arguments(self, arguments: KernelArguments, input_from_step: Any) -> str:
         result = input_from_step
         variables_regex = r"\$(?P<var>\w+)"
         matches = [m for m in re.finditer(variables_regex, str(input_from_step))]
         ordered_matches = sorted(matches, key=lambda m: len(m.group("var")), reverse=True)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2646,6 +3009,9 @@ class Plan:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

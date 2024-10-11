@@ -8,6 +8,7 @@ from semantic_kernel.kernel import Kernel
 
 async def aggregate_chunked_results(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +48,12 @@ async def aggregate_chunked_results(
 <<<<<<< main
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
 >>>>>>> Stashed changes
     func: KernelFunction,
     chunked_results: list[str],
@@ -55,6 +62,7 @@ async def aggregate_chunked_results(
 ) -> str:
     """Aggregate the results from the chunked results."""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,6 +83,11 @@ async def aggregate_chunked_results(
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -87,6 +100,7 @@ async def aggregate_chunked_results(
     """
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -103,6 +117,8 @@ async def aggregate_chunked_results(
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

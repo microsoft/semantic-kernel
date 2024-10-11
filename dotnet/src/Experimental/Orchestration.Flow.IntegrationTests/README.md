@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,6 +21,11 @@
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+# Experimental Flow Orchestrator Integration Tests
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 # Experimental Flow Orchestrator Integration Tests
@@ -31,6 +37,7 @@
 ﻿# Experimental Flow Orchestrator Integration Tests
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -47,6 +54,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -56,6 +65,7 @@
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
 <<<<<<< HEAD
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -63,6 +73,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -86,6 +98,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -100,11 +113,14 @@
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
 =======
    and deploy an instance of Azure OpenAI, deploy a model like "gpt-35-turbo-instruct" find your Endpoint and API key.
 >>>>>>> origin/111
 2. **OpenAI**: go to [OpenAI](https://platform.openai.com) to register and procure your API key.
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -123,6 +139,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -130,6 +148,7 @@
 2. **OpenAI**: go to [OpenAI](https://openai.com/product/) to register and procure your API key.
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -146,6 +165,8 @@
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -158,6 +179,7 @@
 
 Integration tests will require secrets and credentials, to access OpenAI, Azure OpenAI,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -179,6 +201,11 @@ Bing and other resources.
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+Bing and other resources.
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 Bing and other resources.
@@ -190,6 +217,7 @@ Bing and other resources.
 Bing and other resources. 
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -206,6 +234,8 @@ Bing and other resources.
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -217,6 +247,7 @@ You can also use environment variables if you prefer.
 To set your secrets with Secret Manager:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -224,6 +255,8 @@ To set your secrets with Secret Manager:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -243,6 +276,7 @@ To set your secrets with Secret Manager:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -255,6 +289,8 @@ To set your secrets with Secret Manager:
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 ```sh {"id":"01J6KPR1FAFBFPM4TCN6WEPFNE"}
@@ -269,6 +305,7 @@ dotnet user-secrets set "OpenAI:ApiKey" "..."
 dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -286,6 +323,8 @@ dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -307,6 +346,7 @@ dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-text-davinci-003"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -323,6 +363,8 @@ dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -340,6 +382,7 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 
 ### Option 2: Use Configuration File
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -347,6 +390,8 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -366,6 +411,7 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -378,6 +424,8 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -394,6 +442,7 @@ For example:
   "OpenAI": {
     "ServiceId": "gpt-3.5-turbo-instruct",
     "ModelId": "gpt-3.5-turbo-instruct",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -413,6 +462,8 @@ For example:
 =======
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -436,6 +487,7 @@ For example:
     "ModelId": "text-davinci-003",
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -454,11 +506,14 @@ For example:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
     "ChatModelId": "gpt-4",
     "ApiKey": "sk-...."
   },
   "AzureOpenAI": {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -469,6 +524,8 @@ For example:
     "ServiceId": "gpt-35-turbo-instruct",
     "DeploymentName": "gpt-35-turbo-instruct",
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -484,8 +541,11 @@ For example:
     "DeploymentName": "gpt-35-turbo-instruct",
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
@@ -495,6 +555,7 @@ For example:
     "ServiceId": "azure-text-davinci-003",
     "DeploymentName": "text-davinci-003",
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -512,6 +573,8 @@ For example:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -538,6 +601,7 @@ For example:
 
 ### Option 3: Use Environment Variables
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -559,6 +623,11 @@ For example:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 
@@ -569,6 +638,7 @@ For example:
 =======
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -585,6 +655,8 @@ For example:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -595,6 +667,7 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
 - bash:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -602,6 +675,8 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -621,6 +696,7 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -633,6 +709,8 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
 =======
 <<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 ```bash {"id":"01J6KPR1FBXXPNFHK1MXCK9QN7"}
@@ -645,12 +723,16 @@ export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
 export Bing__ApiKey="...."
 ```
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -687,6 +769,7 @@ $env:Bing__ApiKey = "...."
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -699,6 +782,9 @@ $env:Bing__ApiKey = "...."
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -738,6 +824,7 @@ $env:Bing__ApiKey = "...."
   ```
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -754,6 +841,8 @@ $env:Bing__ApiKey = "...."
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

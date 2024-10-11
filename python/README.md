@@ -62,6 +62,7 @@ kernel = Kernel()
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -90,6 +91,11 @@ api_key, org_id = sk.openai_settings_from_dot_env()
 =======
 >>>>>>> Stashed changes
 =======
+=======
+<<<<<<< main
+=======
+api_key, org_id = sk.openai_settings_from_dot_env()
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -101,6 +107,7 @@ kernel.add_service(
     OpenAIChatCompletion(
         service_id=service_id,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +115,8 @@ kernel.add_service(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -129,6 +138,7 @@ kernel.add_service(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -143,6 +153,8 @@ kernel.add_service(
         api_key=api_key,
         org_id=org_id
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     )
@@ -153,6 +165,7 @@ kernel.add_service(
 #   AzureChatCompletion(
 #       service_id=service_id,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -172,6 +185,10 @@ kernel.add_service(
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -184,6 +201,7 @@ kernel.add_service(
 #       base_url=endpoint,
 #       api_key=api_key
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -200,6 +218,8 @@ kernel.add_service(
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -209,6 +229,7 @@ kernel.add_service(
 # Define the request settings
 req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -216,6 +237,8 @@ req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -235,6 +258,7 @@ req_settings = kernel.get_service(service_id).get_prompt_execution_settings_clas
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -247,6 +271,8 @@ req_settings = kernel.get_service(service_id).get_prompt_execution_settings_clas
 =======
 req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 req_settings.max_tokens = 2000
@@ -267,6 +293,7 @@ Give me the TLDR in exactly 5 words."""
 
 prompt_template_config = PromptTemplateConfig(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -274,6 +301,8 @@ prompt_template_config = PromptTemplateConfig(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -293,6 +322,7 @@ prompt_template_config = sk.PromptTemplateConfig(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -305,6 +335,8 @@ prompt_template_config = sk.PromptTemplateConfig(
 =======
 prompt_template_config = sk.PromptTemplateConfig(
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     template=prompt,
@@ -317,6 +349,7 @@ function = kernel.add_function(
     function_name="tldr_function",
     plugin_name="tldr_plugin",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -324,6 +357,8 @@ function = kernel.add_function(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -343,6 +378,7 @@ function = kernel.create_function_from_prompt(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -355,6 +391,8 @@ function = kernel.create_function_from_prompt(
 =======
 function = kernel.create_function_from_prompt(
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     prompt_template_config=prompt_template_config,
@@ -382,6 +420,7 @@ summarize = kernel.add_function(
     prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
     prompt_template_settings=req_settings,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -389,6 +428,8 @@ summarize = kernel.add_function(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -410,6 +451,7 @@ summarize = kernel.create_function_from_prompt(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -424,6 +466,8 @@ summarize = kernel.create_function_from_prompt(
     template="{{$input}}\n\nOne line TLDR with the fewest words."
     execution_settings=req_settings,
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 )
@@ -471,6 +515,7 @@ Python notebooks:
 - [Returning multiple results per prompt](./samples/getting_started/10-multiple-results-per-prompt.ipynb)
 - [Streaming completions with Semantic Kernel](./samples/getting_started/11-streaming-completions.ipynb)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -494,6 +539,10 @@ Python notebooks:
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 - [Getting started with Semantic Kernel](./notebooks/00-getting-started.ipynb)
 - [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
 - [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
@@ -512,6 +561,9 @@ Python notebooks:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

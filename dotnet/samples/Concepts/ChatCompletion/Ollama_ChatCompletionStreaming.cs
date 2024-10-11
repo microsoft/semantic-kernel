@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Connectors.Ollama;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -40,6 +41,11 @@ using OllamaSharp.Models.Chat;
 =======
 using OllamaSharp.Models.Chat;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using OllamaSharp.Models.Chat;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using OllamaSharp.Models.Chat;
@@ -77,6 +83,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -90,6 +97,9 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -132,6 +142,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// Demonstrates how you can template a chat history call while using the kernel for invocation.
     /// </summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -149,6 +160,9 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -186,6 +200,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -199,6 +214,9 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -238,6 +256,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
     /// <summary>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -255,6 +274,9 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -367,6 +389,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -380,6 +403,9 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -414,6 +440,7 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         Console.WriteLine("------------------------");
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -431,6 +458,9 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

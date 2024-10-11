@@ -46,6 +46,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
 =======
 =======
@@ -59,10 +60,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
 =======
             ClientResult<OpenAIEmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,6 +84,8 @@ internal partial class ClientCore
 =======
             ClientResult<OpenAIEmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             var embeddings = response.Value;
@@ -98,6 +104,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 result.Add(embeddings[i].Vector);
 =======
 =======
@@ -111,10 +118,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 result.Add(embeddings[i].Vector);
 =======
                 result.Add(embeddings[i].ToFloats());
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -132,6 +142,8 @@ internal partial class ClientCore
 =======
                 result.Add(embeddings[i].ToFloats());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }

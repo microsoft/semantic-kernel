@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // Copyright (c) Microsoft. All rights reserved.
 
 =======
@@ -19,12 +20,15 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 =======
 
 ﻿// Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,6 +47,8 @@
 
 ﻿// Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using System;
@@ -92,6 +98,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -105,10 +112,13 @@ internal partial class ClientCore
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -128,6 +138,8 @@ internal partial class ClientCore
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -159,6 +171,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -172,10 +185,13 @@ internal partial class ClientCore
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     protected static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -195,6 +211,8 @@ internal partial class ClientCore
     protected static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <summary>
@@ -256,6 +274,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -270,6 +289,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -277,6 +298,7 @@ internal partial class ClientCore
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
             { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -298,11 +320,15 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             { nameof(completionUpdate.CompletionId), completionUpdate.CompletionId },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
             { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
             { nameof(completionUpdate.Usage), completionUpdate.Usage },
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -321,6 +347,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -342,6 +371,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -371,6 +401,11 @@ internal partial class ClientCore
 =======
     /// <param name="chat">Chat history</param>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    /// <param name="chat">Chat history</param>
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     /// <param name="chat">Chat history</param>
@@ -390,6 +425,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -419,6 +455,11 @@ internal partial class ClientCore
 =======
         ChatHistory chat,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        ChatHistory chat,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         ChatHistory chat,
@@ -436,6 +477,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 =======
 =======
@@ -449,10 +491,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
 =======
         Verify.NotNull(chat);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -470,6 +515,8 @@ internal partial class ClientCore
 =======
         Verify.NotNull(chat);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         if (this.Logger!.IsEnabled(LogLevel.Trace))
@@ -483,6 +530,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -512,6 +560,11 @@ internal partial class ClientCore
 =======
                 JsonSerializer.Serialize(chat),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                JsonSerializer.Serialize(chat),
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                 JsonSerializer.Serialize(chat),
@@ -539,6 +592,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -555,11 +609,15 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
 
             var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -578,6 +636,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -593,6 +654,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -622,6 +684,11 @@ internal partial class ClientCore
 =======
             using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+            using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
             using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
@@ -649,6 +716,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                             .SetPromptTokenUsage(chatCompletion.Usage.InputTokens)
                             .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokens);
                     }
@@ -664,19 +732,25 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                             .SetPromptTokenUsage(chatCompletion.Usage.InputTokens)
                             .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokens);
                     }
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                             .SetPromptTokenUsage(chatCompletion.Usage.InputTokenCount)
                             .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokenCount);
                     }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -695,6 +769,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -709,6 +786,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokens, chatCompletion.Usage.OutputTokens);
 =======
 =======
@@ -722,10 +800,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokens, chatCompletion.Usage.OutputTokens);
 =======
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -743,6 +824,8 @@ internal partial class ClientCore
 =======
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }
@@ -756,6 +839,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -769,6 +853,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -785,6 +872,7 @@ internal partial class ClientCore
             // is specified.
             if (chatCompletion.ToolCalls.Count == 0)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -802,6 +890,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -833,6 +924,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -846,6 +938,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -963,6 +1058,7 @@ internal partial class ClientCore
                 }
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1076,12 +1172,35 @@ internal partial class ClientCore
         Verify.NotNull(chat);
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+        }
+    }
+
+    internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        string targetModel,
+        ChatHistory chatHistory,
+<<<<<<< HEAD
+=======
+        ChatHistory chat,
+>>>>>>> main
+        PromptExecutionSettings? executionSettings,
+        Kernel? kernel,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chatHistory);
+<<<<<<< HEAD
+=======
+        Verify.NotNull(chat);
+>>>>>>> main
+>>>>>>> Stashed changes
 
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
                 JsonSerializer.Serialize(chatHistory),
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1117,6 +1236,11 @@ internal partial class ClientCore
 =======
                 JsonSerializer.Serialize(chat),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                JsonSerializer.Serialize(chat),
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                 JsonSerializer.Serialize(chat),
@@ -1148,6 +1272,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1164,11 +1289,15 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
 
             var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1187,6 +1316,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1213,6 +1345,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1242,6 +1375,11 @@ internal partial class ClientCore
 =======
             using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+            using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
             using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
@@ -1330,6 +1468,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1343,6 +1482,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1368,6 +1510,7 @@ internal partial class ClientCore
                                 // Using the code below to distinguish and skip non - function call related updates.
                                 // The Kind property of updates can't be reliably used because it's only initialized for the first update.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1385,6 +1528,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1409,6 +1555,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1438,6 +1585,11 @@ internal partial class ClientCore
 =======
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 
@@ -1501,6 +1653,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1514,6 +1667,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1634,6 +1790,7 @@ internal partial class ClientCore
                 }
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1651,6 +1808,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1718,6 +1878,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             MaxTokens = executionSettings.MaxTokens,
 =======
 =======
@@ -1731,10 +1892,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             MaxTokens = executionSettings.MaxTokens,
 =======
             MaxOutputTokenCount = executionSettings.MaxTokens,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1752,6 +1916,8 @@ internal partial class ClientCore
 =======
             MaxOutputTokenCount = executionSettings.MaxTokens,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             Temperature = (float?)executionSettings.Temperature,
@@ -1782,6 +1948,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1795,6 +1962,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1816,6 +1986,7 @@ internal partial class ClientCore
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1833,6 +2004,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1884,6 +2058,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1898,6 +2073,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1912,6 +2089,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1927,12 +2105,16 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
                         return ChatResponseFormat.CreateJsonObjectFormat();
 
                     case "text":
                         return ChatResponseFormat.CreateTextFormat();
                 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1954,6 +2136,9 @@ internal partial class ClientCore
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
                 break;
 
             case JsonElement formatElement:
@@ -1963,6 +2148,7 @@ internal partial class ClientCore
                 {
                     string formatString = formatElement.GetString() ?? "";
                     switch (formatString)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                     {
                         case "json_object":
@@ -1985,6 +2171,11 @@ internal partial class ClientCore
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 =======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+                    {
+                        case "json_object":
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 =======
@@ -2004,6 +2195,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2019,6 +2211,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
                             return ChatResponseFormat.CreateJsonObjectFormat();
 
                         case "text":
@@ -2026,6 +2221,7 @@ internal partial class ClientCore
                     }
                 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2044,6 +2240,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2067,6 +2266,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -2081,6 +2281,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2092,6 +2294,7 @@ internal partial class ClientCore
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
         return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, strictSchemaEnabled: true);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2113,12 +2316,16 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
         var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
         return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2137,6 +2344,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2156,6 +2366,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2172,6 +2383,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
     private static bool IsRequestableTool(ChatCompletionOptions options, OpenAIFunctionToolCall ftc)
     {
@@ -2180,6 +2394,7 @@ internal partial class ClientCore
         {
             if (tools[i].Kind == ChatToolKind.Function &&
                 string.Equals(tools[i].FunctionName, ftc.FullyQualifiedName, StringComparison.OrdinalIgnoreCase))
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2198,6 +2413,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2243,6 +2461,7 @@ internal partial class ClientCore
         if (!string.IsNullOrWhiteSpace(executionSettings.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
         {
             messages.Add(new SystemChatMessage(executionSettings.ChatSystemPrompt));
+<<<<<<< Updated upstream
         }
 
         foreach (var message in chatHistory)
@@ -2264,10 +2483,18 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+        }
+
+        foreach (var message in chatHistory)
+        {
+            messages.AddRange(CreateRequestMessages(message));
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
             messages.AddRange(CreateRequestMessages(message, executionSettings.ToolCallBehavior));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2288,6 +2515,8 @@ internal partial class ClientCore
 =======
             messages.AddRange(CreateRequestMessages(message, executionSettings.ToolCallBehavior));
 >>>>>>> main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -2302,6 +2531,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2331,6 +2561,11 @@ internal partial class ClientCore
 =======
     private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
@@ -2378,6 +2613,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2407,6 +2643,11 @@ internal partial class ClientCore
 =======
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
@@ -2438,6 +2679,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -2452,6 +2694,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2462,6 +2706,7 @@ internal partial class ClientCore
                 _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
             })))
             { ParticipantName = message.AuthorName }];
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2483,6 +2728,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
             return
             [
                 new UserChatMessage(message.Items.Select(static (KernelContent item) => item switch
@@ -2493,6 +2741,7 @@ internal partial class ClientCore
                     }))
                 { ParticipantName = message.AuthorName }
             ];
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2511,6 +2760,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2548,6 +2800,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                             ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
 =======
 =======
@@ -2561,10 +2814,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                             ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
 =======
                             ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, BinaryData.FromString(arguments.GetString()!)));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2582,6 +2838,8 @@ internal partial class ClientCore
 =======
                             ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, BinaryData.FromString(arguments.GetString()!)));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                         }
@@ -2620,6 +2878,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
 =======
 =======
@@ -2633,10 +2892,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
 =======
                 toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), BinaryData.FromString(argument ?? string.Empty)));
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2654,6 +2916,8 @@ internal partial class ClientCore
 =======
                 toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), BinaryData.FromString(argument ?? string.Empty)));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }
@@ -2672,6 +2936,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return [new AssistantChatMessage(toolCalls, message.Content) { ParticipantName = message.AuthorName }];
 =======
 =======
@@ -2691,6 +2956,10 @@ internal partial class ClientCore
             return [new AssistantChatMessage(toolCalls, message.Content) { ParticipantName = message.AuthorName }];
 =======
 >>>>>>> Stashed changes
+=======
+            return [new AssistantChatMessage(toolCalls, message.Content) { ParticipantName = message.AuthorName }];
+=======
+>>>>>>> Stashed changes
             var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
             if (message.Content is { } content)
             {
@@ -2698,6 +2967,7 @@ internal partial class ClientCore
             }
 
             return [assistantMessage];
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2716,6 +2986,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2735,6 +3008,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return ChatMessageContentPart.CreateImageMessageContentPart(BinaryData.FromBytes(data), imageContent.MimeType);
 =======
 =======
@@ -2748,10 +3022,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             return ChatMessageContentPart.CreateImageMessageContentPart(BinaryData.FromBytes(data), imageContent.MimeType);
 =======
             return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2769,6 +3046,8 @@ internal partial class ClientCore
 =======
             return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -2782,6 +3061,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return ChatMessageContentPart.CreateImageMessageContentPart(imageContent.Uri);
 =======
 =======
@@ -2795,10 +3075,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             return ChatMessageContentPart.CreateImageMessageContentPart(imageContent.Uri);
 =======
             return ChatMessageContentPart.CreateImagePart(imageContent.Uri);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2816,6 +3099,8 @@ internal partial class ClientCore
 =======
             return ChatMessageContentPart.CreateImagePart(imageContent.Uri);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -2908,6 +3193,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2921,6 +3207,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -2950,6 +3239,7 @@ internal partial class ClientCore
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -2967,6 +3257,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -3000,6 +3293,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -3014,6 +3308,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -3024,6 +3320,7 @@ internal partial class ClientCore
         s_promptTokensCounter.Add(usage.InputTokens);
         s_completionTokensCounter.Add(usage.OutputTokens);
         s_totalTokensCounter.Add(usage.TotalTokens);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3045,6 +3342,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
                 "Prompt tokens: {InputTokenCount}. Completion tokens: {OutputTokenCount}. Total tokens: {TotalTokenCount}.",
                 usage.InputTokenCount, usage.OutputTokenCount, usage.TotalTokenCount);
         }
@@ -3052,6 +3352,7 @@ internal partial class ClientCore
         s_promptTokensCounter.Add(usage.InputTokenCount);
         s_completionTokensCounter.Add(usage.OutputTokenCount);
         s_totalTokensCounter.Add(usage.TotalTokenCount);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -3070,6 +3371,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -3130,6 +3434,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             Choice: choice ?? ChatToolChoice.None,
 =======
 =======
@@ -3143,10 +3448,13 @@ internal partial class ClientCore
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             Choice: choice ?? ChatToolChoice.None,
 =======
             Choice: choice ?? ChatToolChoice.CreateNoneChoice(),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3164,6 +3472,8 @@ internal partial class ClientCore
 =======
             Choice: choice ?? ChatToolChoice.CreateNoneChoice(),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             AutoInvoke: autoInvoke,
@@ -3214,6 +3524,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -3228,6 +3539,8 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -3246,6 +3559,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -3261,6 +3575,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
                 toolChoice = ChatToolChoice.CreateAutoChoice();
             }
             else if (config.Choice == FunctionChoice.Required)
@@ -3270,6 +3587,7 @@ internal partial class ClientCore
             else if (config.Choice == FunctionChoice.None)
             {
                 toolChoice = ChatToolChoice.CreateNoneChoice();
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -3288,6 +3606,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -3338,6 +3659,7 @@ internal partial class ClientCore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -3351,6 +3673,9 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -3460,6 +3785,7 @@ internal partial class ClientCore
             Choice: choice ?? ChatToolChoice.None,
             AutoInvoke: autoInvoke);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -3477,6 +3803,9 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

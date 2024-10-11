@@ -7,6 +7,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -36,6 +37,11 @@ using System.ClientModel;
 =======
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 using System.ClientModel;
@@ -87,6 +93,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
             openAISettings.ChatModelId!,
 =======
@@ -101,6 +108,8 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
             openAISettings.ChatModelId!,
 =======
@@ -108,6 +117,7 @@ public sealed class OpenAIAssistantAgentTests
             openAISettings.ChatModelId!,
             openAISettings.ModelId,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,6 +137,8 @@ public sealed class OpenAIAssistantAgentTests
             openAISettings.ChatModelId!,
             openAISettings.ModelId,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             input,
@@ -145,6 +157,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -174,6 +187,11 @@ public sealed class OpenAIAssistantAgentTests
 =======
     [Theory/*(Skip = "No supported endpoint configured.")*/]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    [Theory/*(Skip = "No supported endpoint configured.")*/]
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     [Theory/*(Skip = "No supported endpoint configured.")*/]
@@ -193,6 +211,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 =======
@@ -208,12 +227,15 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 =======
 =======
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -231,6 +253,8 @@ public sealed class OpenAIAssistantAgentTests
 =======
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
@@ -258,6 +282,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
 =======
 =======
@@ -271,10 +296,13 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
 =======
             OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -292,6 +320,8 @@ public sealed class OpenAIAssistantAgentTests
 =======
             OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             openAISettings.ModelId,
@@ -319,6 +349,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
 =======
 =======
@@ -332,10 +363,13 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> upstream/main
 =======
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -353,6 +387,8 @@ public sealed class OpenAIAssistantAgentTests
 =======
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             azureOpenAIConfiguration.ChatDeploymentName!,
@@ -375,6 +411,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -389,10 +426,13 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -409,6 +449,8 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -424,6 +466,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel,
 =======
 =======
@@ -453,6 +496,11 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                kernel,
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
                 kernel,
 =======
@@ -469,6 +517,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 });
 =======
 =======
@@ -482,11 +531,14 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 });
 =======
                 },
                 kernel);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -505,6 +557,8 @@ public sealed class OpenAIAssistantAgentTests
                 },
                 kernel);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -544,6 +598,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
 =======
 =======
@@ -573,6 +628,11 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
 =======
@@ -591,6 +651,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 kernel,
 =======
 =======
@@ -620,6 +681,11 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+                kernel,
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
                 kernel,
 =======
@@ -636,6 +702,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -649,9 +716,12 @@ public sealed class OpenAIAssistantAgentTests
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
                 },
                 kernel);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -670,6 +740,8 @@ public sealed class OpenAIAssistantAgentTests
                 },
                 kernel);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 });
@@ -686,6 +758,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -700,6 +773,8 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -715,7 +790,10 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -736,6 +814,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -750,6 +829,8 @@ public sealed class OpenAIAssistantAgentTests
         try
         await foreach (var message in chat.InvokeStreamingAsync(agent))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {
@@ -777,6 +858,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 =======
 =======
@@ -791,10 +873,13 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -811,6 +896,8 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -825,6 +912,7 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
 =======
 =======
@@ -854,6 +942,11 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> upstream/main
 =======

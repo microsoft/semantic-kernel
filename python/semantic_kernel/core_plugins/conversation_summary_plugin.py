@@ -6,6 +6,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -35,6 +36,11 @@
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -55,6 +61,7 @@ from semantic_kernel.functions.kernel_function_from_prompt import (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -69,6 +76,10 @@ from semantic_kernel.functions.kernel_function_from_prompt import (
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -83,6 +94,7 @@ else:
     from typing_extensions import Annotated
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -100,6 +112,9 @@ else:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -114,6 +129,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
     from semantic_kernel.prompt_template.prompt_template_config import (
@@ -130,12 +146,17 @@ if TYPE_CHECKING:
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     from semantic_kernel.prompt_template.prompt_template_config import (
         PromptTemplateConfig,
     )
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -145,6 +166,7 @@ if TYPE_CHECKING:
 =======
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -163,6 +185,9 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -177,6 +202,7 @@ logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 class ConversationSummaryPlugin:
     """Semantic plugin that enables conversations summarization."""
 =======
@@ -199,12 +225,18 @@ class ConversationSummaryPlugin:
     """Semantic plugin that enables conversations summarization."""
 =======
 >>>>>>> Stashed changes
+=======
+class ConversationSummaryPlugin:
+    """Semantic plugin that enables conversations summarization."""
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 class ConversationSummaryPlugin:
     """Semantic plugin that enables conversations summarization."""
 =======
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -223,6 +255,9 @@ class ConversationSummaryPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -239,6 +274,7 @@ class ConversationSummaryPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         "$input"
         "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
 =======
@@ -261,6 +297,11 @@ class ConversationSummaryPlugin:
         "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
 =======
 >>>>>>> Stashed changes
+=======
+        "$input"
+        "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         "$input"
         "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
@@ -268,6 +309,7 @@ class ConversationSummaryPlugin:
         + "$input"
         + "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -286,6 +328,9 @@ class ConversationSummaryPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -303,6 +348,7 @@ class ConversationSummaryPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -332,6 +378,11 @@ class ConversationSummaryPlugin:
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -372,6 +423,7 @@ class ConversationSummaryPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -389,6 +441,10 @@ class ConversationSummaryPlugin:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
         self, kernel: "Kernel", prompt_template_config: "PromptTemplateConfig", return_key: str = "summary"
     ) -> None:
         """
@@ -402,6 +458,7 @@ class ConversationSummaryPlugin:
         self._summarizeConversationFunction = kernel.create_function_from_prompt(
             ConversationSummaryPlugin._summarize_conversation_prompt_template,
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -420,6 +477,9 @@ class ConversationSummaryPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -445,6 +505,7 @@ class ConversationSummaryPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -474,6 +535,11 @@ class ConversationSummaryPlugin:
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -498,6 +564,7 @@ class ConversationSummaryPlugin:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -516,6 +583,10 @@ class ConversationSummaryPlugin:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
         "KernelArguments", "KernelArguments with the summarized conversation result in key self.return_key."
     ]:
         """
@@ -526,6 +597,7 @@ class ConversationSummaryPlugin:
         :param arguments: Arguments used by the kernel.
         :return: KernelArguments with the summarized conversation result in key self.return_key.
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -544,6 +616,9 @@ class ConversationSummaryPlugin:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

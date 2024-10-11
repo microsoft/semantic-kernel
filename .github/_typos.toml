@@ -17,6 +17,7 @@ extend-exclude = [
     "*response.json",
     "test_content.txt",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -26,6 +27,8 @@ extend-exclude = [
     "serializedChatHistoryV1_15_1.json",
     "MultipleFunctionsVsParameters.cs"
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -41,8 +44,11 @@ extend-exclude = [
     "MultipleFunctionsVsParameters.cs"
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     "google_what_is_the_semantic_kernel.json",
@@ -54,10 +60,13 @@ extend-exclude = [
     "PopulationByCountry.csv",
     "PopulationByAdmin1.csv",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ]
 
 [default.extend-words]
@@ -88,6 +97,7 @@ prompty = "prompty"       # prompty is a format name.
 ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -116,6 +126,8 @@ arange = "arange"         # Method in Python numpy package
 prompty = "prompty"       # prompty is a format name.
 ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -132,6 +144,7 @@ extend-ignore-re = [
     'Version=".*"', # ignore package version numbers
 ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,6 +152,8 @@ extend-ignore-re = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -158,6 +173,7 @@ extend-ignore-re = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -170,5 +186,7 @@ extend-ignore-re = [
 =======
 ]
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

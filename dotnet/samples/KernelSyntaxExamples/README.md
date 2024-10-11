@@ -20,6 +20,7 @@ You can also use environment variables if you prefer.
 To set your secrets with Secret Manager:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +42,11 @@ To set your secrets with Secret Manager:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 ```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
@@ -52,6 +58,7 @@ To set your secrets with Secret Manager:
 ```
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -68,6 +75,8 @@ To set your secrets with Secret Manager:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -139,6 +148,7 @@ dotnet user-secrets set "Kusto:ConnectionString" "..."
 To set your secrets with environment variables, use these names:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -160,6 +170,11 @@ To set your secrets with environment variables, use these names:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 ```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
@@ -171,6 +186,7 @@ To set your secrets with environment variables, use these names:
 ```
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -187,6 +203,8 @@ To set your secrets with environment variables, use these names:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -264,6 +282,7 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 `AuthenticateRequestAsyncCallback` is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenAPI plugin.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -285,6 +304,11 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 ```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
@@ -296,6 +320,7 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -312,6 +337,8 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -334,6 +361,7 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the credentia
 The following code demonstrates how to use this provider:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -355,6 +383,11 @@ The following code demonstrates how to use this provider:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 ```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
@@ -366,6 +399,7 @@ The following code demonstrates how to use this provider:
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -382,6 +416,8 @@ The following code demonstrates how to use this provider:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -403,6 +439,7 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the token and
 The following code demonstrates how to use this provider:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -424,6 +461,11 @@ The following code demonstrates how to use this provider:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 ```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
@@ -435,6 +477,7 @@ The following code demonstrates how to use this provider:
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -451,6 +494,8 @@ The following code demonstrates how to use this provider:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -477,6 +522,7 @@ To construct this provider, the caller must specify:
 - _Redirect URI_ - for redirecting the user back to the application. (When running locally, this is typically http://localhost.)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -498,6 +544,11 @@ To construct this provider, the caller must specify:
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 ```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
@@ -509,6 +560,7 @@ To construct this provider, the caller must specify:
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -525,6 +577,8 @@ To construct this provider, the caller must specify:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

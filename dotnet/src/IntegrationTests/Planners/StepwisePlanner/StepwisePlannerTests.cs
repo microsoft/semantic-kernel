@@ -151,6 +151,7 @@ public sealed class StepwisePlannerTests : IDisposable
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -159,6 +160,8 @@ public sealed class StepwisePlannerTests : IDisposable
 <<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -179,6 +182,7 @@ public sealed class StepwisePlannerTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -191,6 +195,8 @@ public sealed class StepwisePlannerTests : IDisposable
 =======
                 credentials: new AzureCliCredential());
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -200,6 +206,7 @@ public sealed class StepwisePlannerTests : IDisposable
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -208,6 +215,8 @@ public sealed class StepwisePlannerTests : IDisposable
 <<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -228,6 +237,7 @@ public sealed class StepwisePlannerTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -240,6 +250,8 @@ public sealed class StepwisePlannerTests : IDisposable
 =======
                 credentials: new AzureCliCredential());
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }

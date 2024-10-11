@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -18,6 +19,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -27,6 +30,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -39,6 +43,8 @@
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 from collections.abc import Callable
@@ -67,6 +73,7 @@ def kernel() -> "Kernel":
 def service() -> "AIServiceClientBase":
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -87,6 +94,11 @@ def service() -> "AIServiceClientBase":
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -144,6 +156,7 @@ def enable_debug_mode():
         return
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -160,6 +173,8 @@ def enable_debug_mode():
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -168,6 +183,7 @@ def enable_debug_mode():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -185,6 +201,8 @@ def enable_debug_mode():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -194,6 +212,7 @@ def enable_debug_mode():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -206,6 +225,8 @@ def enable_debug_mode():
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 @fixture(scope="session")
@@ -227,12 +248,16 @@ def kernel_with_default_service(
 ) -> "Kernel":
     kernel.add_service(default_service)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -266,6 +291,7 @@ def not_decorated_native_function() -> Callable:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -278,6 +304,9 @@ def not_decorated_native_function() -> Callable:
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -311,6 +340,7 @@ def get_aoai_config():
         deployment_name = "text-embedding-ada-002"
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -329,6 +359,8 @@ def get_aoai_config():
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/main
 
 
@@ -336,6 +368,7 @@ def get_aoai_config():
 def decorated_native_function() -> Callable:
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -347,6 +380,8 @@ def decorated_native_function() -> Callable:
     def decorated_native_function(arg1: str) -> str:
         return "test"
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -363,8 +398,11 @@ def decorated_native_function() -> Callable:
         return "test"
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -382,6 +420,7 @@ def get_oai_config():
         api_key, org_id = openai_settings_from_dot_env()
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -398,6 +437,8 @@ def get_oai_config():
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -406,6 +447,7 @@ def get_oai_config():
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -445,6 +487,12 @@ def get_oai_config():
 <<<<<<< main
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 @fixture(scope="session")
 def custom_plugin_class():
@@ -700,6 +748,7 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         override_env_param_dict = {}
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -717,6 +766,8 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 <<<<<<< main
@@ -726,6 +777,7 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -740,6 +792,8 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 <<<<<<< main
 <<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
@@ -749,6 +803,7 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "ANTHROPIC_API_KEY": "test_api_key"
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -756,6 +811,8 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -777,6 +834,7 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -791,6 +849,8 @@ def anthropic_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     env_vars = {"ANTHROPIC_CHAT_MODEL_ID": "test_chat_model_id", "ANTHROPIC_API_KEY": "test_api_key"}
 >>>>>>> ms/features/bugbash-prep
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -947,6 +1007,7 @@ def redis_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         else:
             monkeypatch.delenv(key, raising=False)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -967,6 +1028,11 @@ def redis_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -981,6 +1047,7 @@ def get_gp_config():
         api_key = google_palm_settings_from_dot_env()
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -997,6 +1064,8 @@ def get_gp_config():
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

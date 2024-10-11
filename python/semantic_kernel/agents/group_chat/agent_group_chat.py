@@ -23,6 +23,7 @@ from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -52,6 +53,11 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 =======
 from semantic_kernel.utils.experimental_decorator import experimental_class
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+from semantic_kernel.utils.experimental_decorator import experimental_class
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -68,6 +74,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -97,6 +104,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 @experimental_class
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+@experimental_class
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 @experimental_class
@@ -174,6 +186,7 @@ class AgentGroupChat(AgentChat):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -187,6 +200,9 @@ class AgentGroupChat(AgentChat):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -205,6 +221,7 @@ class AgentGroupChat(AgentChat):
         self.is_complete = await self.termination_strategy.should_terminate(agent, self.history.messages)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -222,6 +239,9 @@ class AgentGroupChat(AgentChat):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -256,6 +276,7 @@ class AgentGroupChat(AgentChat):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if self.agents is None:
 =======
 =======
@@ -269,10 +290,13 @@ class AgentGroupChat(AgentChat):
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         if self.agents is None:
 =======
         if not self.agents:
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -290,6 +314,8 @@ class AgentGroupChat(AgentChat):
 =======
         if not self.agents:
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             raise AgentChatException("No agents are available")
@@ -322,6 +348,7 @@ class AgentGroupChat(AgentChat):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -335,6 +362,9 @@ class AgentGroupChat(AgentChat):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -389,6 +419,7 @@ class AgentGroupChat(AgentChat):
             if self.is_complete:
                 break
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -406,6 +437,9 @@ class AgentGroupChat(AgentChat):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

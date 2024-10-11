@@ -21,6 +21,7 @@ async def test_can_call_to_plan_from_xml():
         sk_oai.AzureChatCompletion(
             service_id="text_completion",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,6 +41,10 @@ async def test_can_call_to_plan_from_xml():
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -51,6 +56,7 @@ async def test_can_call_to_plan_from_xml():
             api_key=api_key,
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -67,6 +73,8 @@ async def test_can_call_to_plan_from_xml():
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -87,6 +95,7 @@ async def test_can_call_to_plan_from_xml():
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +117,11 @@ async def test_can_call_to_plan_from_xml():
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+    plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
     plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
@@ -123,6 +137,7 @@ async def test_can_call_to_plan_from_xml():
     )
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -139,6 +154,8 @@ async def test_can_call_to_plan_from_xml():
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,6 +41,12 @@
 <<<<<<< main
 >>>>>>> origin/main
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 PLUGIN_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 FUNCTION_NAME_REGEX = r"^[0-9A-Za-z_]+$"
@@ -48,6 +55,7 @@ FULLY_QUALIFIED_FUNCTION_NAME = (
 )
 FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -68,6 +76,11 @@ FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 =======
 >>>>>>> origin/main
 =======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -148,6 +161,7 @@ def validate_function_param_name(value: Optional[str]) -> None:
         )
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -164,6 +178,8 @@ def validate_function_param_name(value: Optional[str]) -> None:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

@@ -55,6 +55,7 @@ internal static class AssistantMessageFactory
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -69,6 +70,8 @@ internal static class AssistantMessageFactory
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -77,6 +80,7 @@ internal static class AssistantMessageFactory
                 else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
                 {
                     yield return MessageContent.FromImageUrl(new(imageContent.DataUri!));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,11 +102,15 @@ internal static class AssistantMessageFactory
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
                     yield return MessageContent.FromImageUri(imageContent.Uri);
                 }
                 else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
                 {
                     yield return MessageContent.FromImageUri(new(imageContent.DataUri!));
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -121,6 +129,9 @@ internal static class AssistantMessageFactory
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

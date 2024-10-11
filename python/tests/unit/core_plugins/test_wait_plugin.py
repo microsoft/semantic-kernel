@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # Copyright (c) Microsoft. All rights reserved.
 
 =======
@@ -27,11 +28,17 @@
 
 =======
 >>>>>>> Stashed changes
+=======
+# Copyright (c) Microsoft. All rights reserved.
+
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 # Copyright (c) Microsoft. All rights reserved.
 
 =======
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -50,6 +57,9 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -108,6 +118,7 @@ async def test_wait_valid_params(wait_time):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
 =======
@@ -127,11 +138,16 @@ async def test_wait_valid_params(wait_time):
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
 >>>>>>> Stashed changes
+=======
+        patched_sleep.assert_called_once_with(abs(float(wait_time)))
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
         assert patched_sleep.called_once_with(abs(float(wait_time)))
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -150,6 +166,9 @@ async def test_wait_valid_params(wait_time):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

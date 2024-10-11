@@ -68,6 +68,7 @@ public class VolatileVectorStoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public sealed class SinglePropsModel<TKey>
 =======
 =======
@@ -83,6 +84,10 @@ public class VolatileVectorStoreTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+    public sealed class SinglePropsModel<TKey>
+=======
+>>>>>>> Stashed changes
 =======
     public sealed class SinglePropsModel<TKey>
 =======
@@ -107,6 +112,7 @@ public class VolatileVectorStoreTests
     public sealed class SinglePropsModel<TKey>
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -124,6 +130,9 @@ public class VolatileVectorStoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -146,6 +155,7 @@ public class VolatileVectorStoreTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -162,6 +172,9 @@ public class VolatileVectorStoreTests
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 <<<<<<< HEAD
 
     private sealed class SecondModel
@@ -175,6 +188,7 @@ public class VolatileVectorStoreTests
 #pragma warning restore CA1812
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -193,6 +207,9 @@ public class VolatileVectorStoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

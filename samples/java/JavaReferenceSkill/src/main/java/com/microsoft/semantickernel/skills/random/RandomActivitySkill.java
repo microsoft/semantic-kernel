@@ -6,6 +6,7 @@ import reference_skill.ActivityOuterClass.GetRandomActivityRequest;
 
 import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +40,12 @@ import reference_skill.ActivityOuterClass;
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+import reference_skill.ActivityOuterClass;
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -84,6 +91,7 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
     // Removed duplicate getRandomActivity method
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +111,10 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -114,6 +126,7 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -130,6 +143,8 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -150,6 +165,7 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
     @Override
     public void getRandomActivity(GetRandomActivityRequest request, StreamObserver<GetRandomActivityResponse> responseObserver) {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -185,10 +201,15 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     public void getRandomActivity(ActivityOuterClass.GetRandomActivityRequest request, StreamObserver<ActivityOuterClass.GetRandomActivityResponse> responseObserver) {
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         Logger logger =  java.util.logging.Logger.getLogger(this.getClass().getName());
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -200,6 +221,7 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
             logger.info("Response: " + response.get().body());
             responseObserver.onNext(GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -235,10 +257,15 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
             responseObserver.onNext(ActivityOuterClass.GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             responseObserver.onCompleted();
         } catch (Exception e) {

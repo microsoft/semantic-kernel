@@ -25,6 +25,7 @@ from tests.integration.completions.chat_completion_test_base import (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -54,6 +55,11 @@ from tests.integration.completions.chat_completion_test_base import (
 =======
     anthropic_setup,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    anthropic_setup,
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     anthropic_setup,
@@ -441,6 +447,7 @@ pytestmark = pytest.mark.parametrize(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -454,6 +461,9 @@ pytestmark = pytest.mark.parametrize(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -526,6 +536,7 @@ pytestmark = pytest.mark.parametrize(
         ),
         pytest.param(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -543,6 +554,9 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

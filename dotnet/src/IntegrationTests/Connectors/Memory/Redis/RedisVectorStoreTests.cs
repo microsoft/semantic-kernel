@@ -23,6 +23,7 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -52,6 +53,11 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
@@ -68,6 +74,7 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -81,10 +88,13 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,6 +114,8 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task ItCanGetAListOfExistingCollectionNamesAsync()

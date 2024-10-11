@@ -9,12 +9,16 @@ using Xunit.Abstractions;
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -43,6 +47,7 @@ public sealed class RedirectOutput(ITestOutputHelper output) : TextWriter, ILogg
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -55,6 +60,9 @@ public sealed class RedirectOutput(ITestOutputHelper output) : TextWriter, ILogg
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -76,6 +84,7 @@ public sealed class RedirectOutput : TextWriter, ILogger, ILoggerFactory
     }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -92,6 +101,8 @@ public sealed class RedirectOutput : TextWriter, ILogger, ILoggerFactory
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

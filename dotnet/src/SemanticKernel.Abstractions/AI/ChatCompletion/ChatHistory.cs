@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,6 +28,9 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
 
 using System;
 using System.Collections;
@@ -52,6 +56,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     public ChatHistory()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -61,6 +66,8 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         this._messages = [];
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -97,6 +104,7 @@ public class ChatHistory : List<ChatMessageBase>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -127,6 +135,8 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -139,6 +149,7 @@ public class ChatHistory : List<ChatMessageBase>
 
         this._messages = [];
         this.AddSystemMessage(systemMessage);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -157,6 +168,8 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     [Obsolete("This class is deprecated, using instances of this class will not be supported")]
@@ -177,6 +190,7 @@ public class ChatHistory : List<ChatMessageBase>
             this.AuthorRole = authorRole;
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,6 +207,8 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -282,6 +298,7 @@ public class ChatHistory : List<ChatMessageBase>
         Verify.NotNull(item);
         this._messages.Insert(index, item);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -299,6 +316,8 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public List<ChatMessageBase> Messages => this;
@@ -313,6 +332,7 @@ public class ChatHistory : List<ChatMessageBase>
     {
         this.Add(new Message(authorRole, content));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -329,6 +349,8 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -370,6 +392,7 @@ public class ChatHistory : List<ChatMessageBase>
         Verify.NotNull(item);
         return this._messages.Contains(item);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -387,6 +410,8 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <param name="authorRole">Role of the message author</param>
@@ -422,6 +447,7 @@ public class ChatHistory : List<ChatMessageBase>
     {
         this.AddMessage(AuthorRole.System, content);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -438,6 +464,8 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }

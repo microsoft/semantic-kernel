@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,6 +28,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+using Microsoft.SemanticKernel.ChatCompletion;
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -38,6 +44,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -54,6 +61,8 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -62,6 +71,7 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Microsoft.SemanticKernel.Memory;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -86,6 +96,11 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< HEAD
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
@@ -96,6 +111,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -112,6 +128,8 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -229,6 +247,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
             try
             {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -250,6 +269,11 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+                return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
@@ -261,6 +285,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? new List<ReActStep>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -277,6 +302,8 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -289,6 +316,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -310,6 +338,11 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+        return [];
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
         return [];
@@ -321,6 +354,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         return new List<ReActStep>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -337,6 +371,8 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -19,6 +20,8 @@
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -33,7 +36,10 @@ using System.Collections.Concurrent;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -54,6 +60,7 @@ using System;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -68,6 +75,8 @@ using System;
 
 using System;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using System.Collections.Generic;
@@ -90,6 +99,7 @@ namespace Microsoft.SemanticKernel.Data;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -104,6 +114,8 @@ namespace Microsoft.SemanticKernel.Data;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -114,6 +126,7 @@ internal static class VectorStoreRecordPropertyReader
 
     /// <summary>Cache of property enumerations so that we don't incur reflection costs with each invocation.</summary>
     private static readonly ConcurrentDictionary<Type, (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties)> s_multipleVectorsPropertiesCache = new();
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -132,6 +145,9 @@ internal static class VectorStoreRecordPropertyReader
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -478,6 +494,7 @@ internal sealed class VectorStoreRecordPropertyReader
         this._vectorPropertiesInfo = propertiesInfo.VectorProperties;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -495,6 +512,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -511,6 +531,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -540,6 +561,11 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
     /// <param name="supportsMultipleKeys">A value indicating whether multiple key properties are supported.</param>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+    /// <param name="supportsMultipleKeys">A value indicating whether multiple key properties are supported.</param>
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
     /// <param name="supportsMultipleKeys">A value indicating whether multiple key properties are supported.</param>
@@ -556,6 +582,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public static (VectorStoreRecordKeyProperty KeyProperty, List<VectorStoreRecordDataProperty> DataProperties, List<VectorStoreRecordVectorProperty> VectorProperties) SplitDefinitionAndVerify(
         string typeName,
         VectorStoreRecordDefinition definition,
@@ -571,19 +598,25 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public static (VectorStoreRecordKeyProperty KeyProperty, List<VectorStoreRecordDataProperty> DataProperties, List<VectorStoreRecordVectorProperty> VectorProperties) SplitDefinitionAndVerify(
         string typeName,
         VectorStoreRecordDefinition definition,
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     private static (List<VectorStoreRecordKeyProperty> KeyProperties, List<VectorStoreRecordDataProperty> DataProperties, List<VectorStoreRecordVectorProperty> VectorProperties) SplitDefinitionAndVerify(
         string typeName,
         VectorStoreRecordDefinition definition,
         bool supportsMultipleKeys,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -602,6 +635,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -616,6 +652,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         if (keyProperties.Count > 1)
 =======
@@ -638,10 +675,16 @@ internal sealed class VectorStoreRecordPropertyReader
         if (keyProperties.Count > 1)
 =======
 >>>>>>> Stashed changes
+=======
+
+        if (keyProperties.Count > 1)
+=======
+>>>>>>> Stashed changes
         var dataProperties = definition.Properties.OfType<VectorStoreRecordDataProperty>().ToList();
         var vectorProperties = definition.Properties.OfType<VectorStoreRecordVectorProperty>().ToList();
 
         if (keyProperties.Count > 1 && !supportsMultipleKeys)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -660,6 +703,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -674,6 +720,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -688,6 +735,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -696,6 +745,7 @@ internal sealed class VectorStoreRecordPropertyReader
         var vectorProperties = definition.Properties.OfType<VectorStoreRecordVectorProperty>().ToList();
 
         if (keyProperty is null)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -730,6 +780,11 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
         if (keyProperties.Count == 0)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        if (keyProperties.Count == 0)
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         if (keyProperties.Count == 0)
@@ -748,6 +803,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             throw new ArgumentException($"No vector property found on type {typeName} or the provided {nameof(VectorStoreRecordDefinition)}.");
 =======
 =======
@@ -761,10 +817,13 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             throw new ArgumentException($"No vector property found on type {typeName} or the provided {nameof(VectorStoreRecordDefinition)}.");
 =======
             throw new ArgumentException($"No vector property found on type {typeName} or the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -782,6 +841,8 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
             throw new ArgumentException($"No vector property found on type {typeName} or the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }
@@ -798,6 +859,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         return (keyProperty, dataProperties, vectorProperties);
 =======
 =======
@@ -811,10 +873,13 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         return (keyProperty, dataProperties, vectorProperties);
 =======
         return (keyProperties, dataProperties, vectorProperties);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -832,6 +897,8 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
         return (keyProperties, dataProperties, vectorProperties);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -849,6 +916,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -863,6 +931,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -888,6 +958,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -903,12 +974,16 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// <returns>The categorized properties.</returns>
     private static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo(Type type)
     {
         List<PropertyInfo> keyProperties = new();
         List<PropertyInfo> dataProperties = new();
         List<PropertyInfo> vectorProperties = new();
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -927,6 +1002,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -943,6 +1021,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -957,6 +1036,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -966,6 +1047,7 @@ internal sealed class VectorStoreRecordPropertyReader
                 }
 
                 keyProperty = property;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1000,6 +1082,11 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
                 keyProperties.Add(property);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                keyProperties.Add(property);
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                 keyProperties.Add(property);
@@ -1023,6 +1110,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1037,6 +1125,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1080,6 +1170,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1095,11 +1186,15 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
                 vectorProperties.Add(property);
             }
         }
 
         return (keyProperties, dataProperties, vectorProperties);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1118,6 +1213,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1132,6 +1230,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// that they exist and that we have the expected numbers of each type.
 =======
 =======
@@ -1145,10 +1244,13 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// that they exist and that we have the expected numbers of each type.
 =======
     /// that they exist.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1168,6 +1270,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// Return those properties in separate categories.
     /// </summary>
     /// <param name="type">The data model to find the properties on.</param>
@@ -1179,6 +1283,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1193,6 +1298,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1210,6 +1317,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1225,12 +1333,16 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     /// <returns>The categorized properties.</returns>
     public static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo(Type type, VectorStoreRecordDefinition vectorStoreRecordDefinition)
     {
         List<PropertyInfo> keyProperties = new();
         List<PropertyInfo> dataProperties = new();
         List<PropertyInfo> vectorProperties = new();
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1249,6 +1361,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1265,6 +1380,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1279,6 +1395,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1288,6 +1406,7 @@ internal sealed class VectorStoreRecordPropertyReader
                 }
 
                 keyProperty = type.GetProperty(keyPropertyInfo.DataModelPropertyName);
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1322,6 +1441,11 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
                 var keyProperty = type.GetProperty(keyPropertyInfo.DataModelPropertyName);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+                var keyProperty = type.GetProperty(keyPropertyInfo.DataModelPropertyName);
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
                 var keyProperty = type.GetProperty(keyPropertyInfo.DataModelPropertyName);
@@ -1338,6 +1462,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1351,9 +1476,12 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 
                 keyProperties.Add(keyProperty);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1372,6 +1500,8 @@ internal sealed class VectorStoreRecordPropertyReader
 
                 keyProperties.Add(keyProperty);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             }
@@ -1402,6 +1532,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1416,6 +1547,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1434,6 +1567,7 @@ internal sealed class VectorStoreRecordPropertyReader
                 {
                     throw new ArgumentException($"Multiple vector properties configured for type {type.FullName} while only one is supported.");
                 }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1473,6 +1607,11 @@ internal sealed class VectorStoreRecordPropertyReader
                 vectorProperties.Add(vectorProperty);
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+                vectorProperties.Add(vectorProperty);
+>>>>>>> main
+>>>>>>> Stashed changes
             }
             else
             {
@@ -1487,6 +1626,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1501,6 +1641,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1542,6 +1684,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1554,6 +1697,9 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1585,6 +1731,7 @@ internal sealed class VectorStoreRecordPropertyReader
         // Data properties.
         foreach (var dataProperty in propertiesInfo.DataProperties)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1602,6 +1749,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1626,6 +1776,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         foreach (var vectorProperty in properties.VectorProperties)
 =======
 =======
@@ -1639,10 +1790,13 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         foreach (var vectorProperty in properties.VectorProperties)
 =======
         foreach (var vectorProperty in propertiesInfo.VectorProperties)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1660,6 +1814,8 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
         foreach (var vectorProperty in propertiesInfo.VectorProperties)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         {
@@ -1687,6 +1843,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -1701,6 +1858,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1875,6 +2034,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1887,6 +2047,9 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1919,6 +2082,7 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <summary>
     /// Build a map of property names to the names that they would have if serialized to JSON.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1936,6 +2100,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1950,6 +2117,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /// <returns>The map from property names to the names under which they should be saved in storage if using JSON serialization.</returns>
     public static Dictionary<string, string> BuildPropertyNameToJsonPropertyNameMap(
         (VectorStoreRecordKeyProperty keyProperty, List<VectorStoreRecordDataProperty> dataProperties, List<VectorStoreRecordVectorProperty> vectorProperties) properties,
@@ -1965,6 +2133,8 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// <returns>The map from property names to the names under which they should be saved in storage if using JSON serialization.</returns>
     public static Dictionary<string, string> BuildPropertyNameToJsonPropertyNameMap(
         (VectorStoreRecordKeyProperty keyProperty, List<VectorStoreRecordDataProperty> dataProperties, List<VectorStoreRecordVectorProperty> vectorProperties) properties,
@@ -1973,6 +2143,7 @@ internal sealed class VectorStoreRecordPropertyReader
     private static Dictionary<string, string> BuildPropertyNameToJsonPropertyNameMap(
         (List<VectorStoreRecordKeyProperty> keyProperties, List<VectorStoreRecordDataProperty> dataProperties, List<VectorStoreRecordVectorProperty> vectorProperties) properties,
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1992,6 +2163,8 @@ internal sealed class VectorStoreRecordPropertyReader
     private static Dictionary<string, string> BuildPropertyNameToJsonPropertyNameMap(
         (List<VectorStoreRecordKeyProperty> keyProperties, List<VectorStoreRecordDataProperty> dataProperties, List<VectorStoreRecordVectorProperty> vectorProperties) properties,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         Type dataModel,
@@ -2005,6 +2178,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         jsonPropertyNameMap.Add(properties.keyProperty.DataModelPropertyName, GetJsonPropertyName(properties.keyProperty, dataModel, options));
 =======
 =======
@@ -2024,11 +2198,16 @@ internal sealed class VectorStoreRecordPropertyReader
         jsonPropertyNameMap.Add(properties.keyProperty.DataModelPropertyName, GetJsonPropertyName(properties.keyProperty, dataModel, options));
 =======
 >>>>>>> Stashed changes
+=======
+        jsonPropertyNameMap.Add(properties.keyProperty.DataModelPropertyName, GetJsonPropertyName(properties.keyProperty, dataModel, options));
+=======
+>>>>>>> Stashed changes
 
         foreach (var keyProperty in properties.keyProperties)
         {
             jsonPropertyNameMap.Add(keyProperty.DataModelPropertyName, GetJsonPropertyName(keyProperty, dataModel, options));
         }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2047,6 +2226,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -2072,6 +2254,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -2086,6 +2269,8 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2143,6 +2328,7 @@ internal sealed class VectorStoreRecordPropertyReader
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2155,6 +2341,9 @@ internal sealed class VectorStoreRecordPropertyReader
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -2187,6 +2376,7 @@ internal sealed class VectorStoreRecordPropertyReader
 
         return property.DataModelPropertyName;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -2204,6 +2394,9 @@ internal sealed class VectorStoreRecordPropertyReader
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

@@ -12,6 +12,7 @@ status: proposed
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -28,6 +29,9 @@ status: proposed
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 # These are optional elements. Feel free to remove any of them.
 status: proposed
 contact: westey-m
@@ -35,6 +39,7 @@ date: 2024-06-05
 deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey-m, matthewbolanos, eavanvalkenburg
 consulted: stephentoub, dluc, ajcvickers, roji
 informed: 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -53,6 +58,9 @@ informed:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -78,6 +86,7 @@ The current abstractions are experimental and the purpose of this ADR is to prog
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -107,6 +116,11 @@ The current abstractions are experimental and the purpose of this ADR is to prog
 =======
 2. The `IMemoryStore` implementations are opinionated around key encoding / decoding and collection name sanitization, which limits its usability by customers with existing data sets.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+2. The `IMemoryStore` implementations are opinionated around key encoding / decoding and collection name sanitization, which limits its usability by customers with existing data sets.
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 2. The `IMemoryStore` implementations are opinionated around key encoding / decoding and collection name sanitization, which limits its usability by customers with existing data sets.
@@ -132,6 +146,7 @@ Responsibilities:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -145,10 +160,13 @@ Responsibilities:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 
 ### Memory Store Today
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -168,6 +186,8 @@ Responsibilities:
 ### Memory Store Today
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 interface IMemoryStore
@@ -224,6 +244,7 @@ interface IMemoryStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -240,11 +261,15 @@ interface IMemoryStore
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     1. The AzureAISearch connector encodes keys before storing and decodes them after retrieval since keys in Azure AI Search supports a limited set of characters.
     2. The AzureAISearch connector sanitizes collection names before using them, since Azure AI Search supports a limited set of characters.
     3. The Redis connector prepends the collection name on to the front of keys before storing records and also registers the collection name as a prefix for records to be indexed by the index.
 
 ### Non-functional requirements for new connectors
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -263,6 +288,9 @@ interface IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -282,6 +310,7 @@ The separation between collection/index management and record management.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -311,6 +340,11 @@ The separation between collection/index management and record management.
 =======
 ```mermaid
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```mermaid
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```mermaid
@@ -389,6 +423,7 @@ How to use your own schema with core sk functionality.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -418,6 +453,11 @@ How to use your own schema with core sk functionality.
 =======
 ```mermaid
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```mermaid
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```mermaid
@@ -535,6 +575,7 @@ A comparison of the different ways in which stores implement storage capabilitie
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -551,10 +592,14 @@ A comparison of the different ways in which stores implement storage capabilitie
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 |Keys of upserted records|Y|Y|N<sup>3</sup>|N<sup>3</sup>||N<sup>3</sup>||||Y|
 |Keys of removed records|Y||N<sup>3</sup>|N||N||||N<sup>3</sup>|
 |Retrieval field selection for gets|Y||Y<sup>4<sup>|P<sup>2</sup>||N||Y|Y|Y|
 |Include/Exclude Embeddings for gets|P<sup>1</sup>|Y|Y<sup>4,1<sup>|Y||N||P<sup>1</sup>|Y|N|
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -573,6 +618,9 @@ A comparison of the different ways in which stores implement storage capabilitie
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -595,6 +643,7 @@ Footnotes:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -611,11 +660,15 @@ Footnotes:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 - P = Partial Support
 - <sup>1</sup> Only if you have the schema, to select the appropriate fields.
 - <sup>2</sup> Supports broad categories of fields only.
 - <sup>3</sup> Id is required in request, so can be returned if needed.
 - <sup>4</sup> No strong typed support when specifying field list.
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -634,6 +687,9 @@ Footnotes:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -659,6 +715,7 @@ Footnotes:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -672,10 +729,13 @@ Footnotes:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 |Supported index types|[Exhaustive KNN (FLAT) / HNSW](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#algorithms-used-in-vector-search)|[HNSW / Flat / Dynamic](https://weaviate.io/developers/weaviate/config-refs/schema/vector-index)|[HNSW / FLAT](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/#create-a-vector-field)|[HNSW not configurable](https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index)||[PGA](https://www.pinecone.io/blog/hnsw-not-enough/)||[HNSW / IVFFlat](https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing)|[HNSW for dense](https://qdrant.tech/documentation/concepts/indexing/#vector-index)|<p>[In Memory: FLAT / IVF_FLAT / IVF_SQ8 / IVF_PQ / HNSW / SCANN](https://milvus.io/docs/index.md)</p><p>[On Disk: DiskANN](https://milvus.io/docs/disk_index.md)</p><p>[GPU: GPU_CAGRA / GPU_IVF_FLAT / GPU_IVF_PQ / GPU_BRUTE_FORCE](https://milvus.io/docs/gpu_index.md)</p>|
 
 Footnotes:
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -695,6 +755,8 @@ Footnotes:
 
 Footnotes:
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 - HNSW = Hierarchical Navigable Small World (HNSW performs an [approximate nearest neighbor (ANN)](https://learn.microsoft.com/en-us/azure/search/vector-search-overview#approximate-nearest-neighbors) search)
@@ -754,6 +816,7 @@ Here is what the attributes would look like, plus a sample use case.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -783,6 +846,11 @@ Here is what the attributes would look like, plus a sample use case.
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -817,6 +885,7 @@ Here is what the configuration objects would look like.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -846,6 +915,11 @@ Here is what the configuration objects would look like.
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -904,6 +978,7 @@ From GitHub Issue:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -917,10 +992,13 @@ From GitHub Issue:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 - API surface must be easy to use and intuitive
 - Alignment with other patterns in the SK
 - - Design must allow Memory Plugins to be easily instantiated with any connector
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -940,6 +1018,8 @@ From GitHub Issue:
 - Alignment with other patterns in the SK
 - - Design must allow Memory Plugins to be easily instantiated with any connector
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 - Design must support all Kernel content types
@@ -972,6 +1052,7 @@ From GitHub Issue:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1001,6 +1082,11 @@ From GitHub Issue:
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1044,6 +1130,7 @@ class RedisVectorRecordStore<TRecord>(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1073,6 +1160,11 @@ class RedisVectorRecordStore<TRecord>(
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1121,6 +1213,7 @@ Vector store same as option 2 so not repeated for brevity.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1150,6 +1243,11 @@ Vector store same as option 2 so not repeated for brevity.
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1196,6 +1294,7 @@ Variation on option 3.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1209,10 +1308,13 @@ Variation on option 3.
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 Variation on option 3. 
 
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1232,6 +1334,8 @@ Variation on option 3.
 
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -1285,6 +1389,7 @@ Same as option 3 / 4, plus:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1314,6 +1419,11 @@ Same as option 3 / 4, plus:
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1343,6 +1453,7 @@ internal class VectorStore<TRecord>(IVectorCollectionCreate create, IVectorColle
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1356,9 +1467,12 @@ internal class VectorStore<TRecord>(IVectorCollectionCreate create, IVectorColle
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 
 ```cs
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1377,6 +1491,8 @@ internal class VectorStore<TRecord>(IVectorCollectionCreate create, IVectorColle
 
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 public interface IVectorStore
@@ -1412,6 +1528,7 @@ public interface IVectorStoreCollection<TKey, TRecord>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1441,6 +1558,11 @@ public interface IVectorStoreCollection<TKey, TRecord>
 =======
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 
@@ -1476,6 +1598,7 @@ Chosen option: 6
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1505,6 +1628,11 @@ Chosen option: 6
 =======
 ###  Question 2: Collection name and key value normalization in store, decorator or via injection.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+###  Question 2: Collection name and key value normalization in store, decorator or via injection.
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ###  Question 2: Collection name and key value normalization in store, decorator or via injection.
@@ -1524,6 +1652,7 @@ Chosen option: 6
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1553,6 +1682,11 @@ Chosen option: 6
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1592,6 +1726,7 @@ Chosen option: 6
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1621,6 +1756,11 @@ Chosen option: 6
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1646,6 +1786,7 @@ Chosen option: 6
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1675,6 +1816,11 @@ Chosen option: 6
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1719,6 +1865,7 @@ provide their own encoding / decoding behavior.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1735,11 +1882,15 @@ provide their own encoding / decoding behavior.
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 ###  Question 3: Collection name as method param or via constructor or either
 
 #### Option 1 - Collection name as method param
 
 ```cs
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1758,6 +1909,9 @@ provide their own encoding / decoding behavior.
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -1777,6 +1931,7 @@ public class MyVectorStoreCollection()
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1806,6 +1961,11 @@ public class MyVectorStoreCollection()
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1827,6 +1987,7 @@ public class MyVectorStoreCollection(string defaultCollectionName)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1856,6 +2017,11 @@ public class MyVectorStoreCollection(string defaultCollectionName)
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1888,6 +2054,7 @@ Chosen option 2. None of the other options work with the decision outcome of Que
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1917,6 +2084,11 @@ Chosen option 2. None of the other options work with the decision outcome of Que
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -1947,6 +2119,7 @@ public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = def
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1976,6 +2149,11 @@ public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = def
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -2012,6 +2190,7 @@ public async Task<TRecord?> GetAsync(object key, GetRecordOptions? options = def
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2041,6 +2220,11 @@ public async Task<TRecord?> GetAsync(object key, GetRecordOptions? options = def
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -2088,6 +2272,7 @@ public async Task<TRecord?> GetAsync(GUID key, GetRecordOptions? options = defau
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2117,6 +2302,11 @@ public async Task<TRecord?> GetAsync(GUID key, GetRecordOptions? options = defau
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -2158,6 +2348,7 @@ each implementation to hardcode allowed key types if the vector db only supports
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2187,6 +2378,11 @@ each implementation to hardcode allowed key types if the vector db only supports
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -2207,6 +2403,7 @@ interface IVectorDBCollectionCreateService {}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2236,6 +2433,11 @@ interface IVectorDBCollectionCreateService {}
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -2256,6 +2458,7 @@ interface IMemoryCollectionCreateService {}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2285,6 +2488,11 @@ interface IMemoryCollectionCreateService {}
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -2307,6 +2515,7 @@ interface IVectorStore<TRecord> {}: IVectorCollectionStore, IVectorRecordStore<T
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2336,6 +2545,11 @@ interface IVectorStore<TRecord> {}: IVectorCollectionStore, IVectorRecordStore<T
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -2370,6 +2584,7 @@ Option 4 also matches our design as chosen in question 1.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2399,6 +2614,11 @@ Option 4 also matches our design as chosen in question 1.
 =======
 ```cs
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+```cs
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 ```cs
@@ -2476,6 +2696,7 @@ builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2505,6 +2726,11 @@ builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>
 =======
 11. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specfics TBD.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+11. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specfics TBD.
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 11. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specfics TBD.
@@ -2541,6 +2767,7 @@ Need the following for all features:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -2557,6 +2784,9 @@ Need the following for all features:
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
   - Usage scenario for collection and record management using custom model and configured collection creation.
   - A simple consumption example like semantic caching, specfics TBD.
   - Adding your own collection creation implementation.
@@ -2568,6 +2798,7 @@ Need the following for all features:
   - How to implement your own collection create implementation for break glass scenario.
   - How to implement your own mapper.
   - How to upgrade from the current storage system to the new one.
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -2586,6 +2817,9 @@ Need the following for all features:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

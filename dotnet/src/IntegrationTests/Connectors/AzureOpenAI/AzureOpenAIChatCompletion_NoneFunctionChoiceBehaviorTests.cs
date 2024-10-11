@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -27,6 +28,8 @@ using System.Threading.Tasks;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -38,6 +41,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -59,6 +63,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -67,6 +74,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -85,6 +93,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -246,6 +257,7 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
 =======
 =======
@@ -275,6 +287,11 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
 =======
@@ -295,6 +312,7 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
 =======
@@ -308,10 +326,13 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
             credentials: new AzureCliCredential());
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -329,6 +350,8 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 =======
             credentials: new AzureCliCredential());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 

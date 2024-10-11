@@ -62,6 +62,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -91,6 +92,11 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(invokedFunctions);
 =======
@@ -138,6 +144,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -167,6 +174,11 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(invokedFunctions);
 =======
@@ -211,6 +223,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
 =======
@@ -224,10 +237,13 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -245,6 +261,8 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -290,6 +308,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -319,6 +338,11 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(invokedFunctions);
 =======
@@ -371,6 +395,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(invokedFunctions);
 =======
 =======
@@ -400,6 +425,11 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(invokedFunctions);
 =======
@@ -446,6 +476,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
 =======
@@ -475,6 +506,11 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(functionsForManualInvocation);
 =======
@@ -521,6 +557,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionCalls);
 =======
 =======
@@ -534,10 +571,13 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -555,6 +595,8 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -601,6 +643,7 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         Assert.Single(functionsForManualInvocation);
 =======
 =======
@@ -630,6 +673,11 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
         Assert.Single(functionsForManualInvocation);
 =======

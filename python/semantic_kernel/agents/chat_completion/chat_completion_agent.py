@@ -181,6 +181,7 @@ class ChatCompletionAgent(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
         async for message_list in messages:
@@ -197,12 +198,17 @@ class ChatCompletionAgent(Agent):
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         async for message_list in messages:
             for message in message_list:
                 message.name = self.name
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         role = None
@@ -212,6 +218,7 @@ class ChatCompletionAgent(Agent):
                 role = message.role
                 message.name = self.name
                 message_builder.append(message.content)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -230,6 +237,9 @@ class ChatCompletionAgent(Agent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -248,6 +258,7 @@ class ChatCompletionAgent(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -264,6 +275,9 @@ class ChatCompletionAgent(Agent):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         if role != AuthorRole.TOOL:
             history.add_message(
                 ChatMessageContent(
@@ -271,6 +285,7 @@ class ChatCompletionAgent(Agent):
                 )
             )
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -289,6 +304,9 @@ class ChatCompletionAgent(Agent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

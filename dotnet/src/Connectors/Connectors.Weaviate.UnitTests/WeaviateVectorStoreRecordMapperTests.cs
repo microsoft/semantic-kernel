@@ -27,6 +27,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 =======
 =======
@@ -46,12 +47,17 @@ public sealed class WeaviateVectorStoreRecordMapperTests
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 =======
 >>>>>>> Stashed changes
+=======
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+=======
+>>>>>>> Stashed changes
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Converters =
         {
             new WeaviateDateTimeOffsetConverter(),
             new WeaviateNullableDateTimeOffsetConverter()
         }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -70,6 +76,9 @@ public sealed class WeaviateVectorStoreRecordMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

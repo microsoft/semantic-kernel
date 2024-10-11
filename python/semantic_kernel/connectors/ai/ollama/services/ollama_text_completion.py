@@ -31,6 +31,7 @@ from semantic_kernel.contents.text_content import TextContent
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -60,6 +61,11 @@ from semantic_kernel.contents.text_content import TextContent
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -79,6 +85,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_t
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> upstream/main
 =======
 =======
@@ -98,10 +105,15 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_t
 >>>>>>> upstream/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> upstream/main
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -120,6 +132,9 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_t
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -135,6 +150,7 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -148,9 +164,12 @@ if TYPE_CHECKING:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 =======
 >>>>>>> ms/small_fixes
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -169,6 +188,8 @@ if TYPE_CHECKING:
 =======
 >>>>>>> ms/small_fixes
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -182,6 +203,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     """Initializes a new instance of the OllamaTextCompletion class.
 =======
@@ -199,6 +221,11 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
+    """Initializes a new instance of the OllamaTextCompletion class.
+=======
+>>>>>>> Stashed changes
 =======
 class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     """Initializes a new instance of the OllamaTextCompletion class.
@@ -213,6 +240,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
     Initializes a new instance of the OllamaTextCompletion class.
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -230,6 +258,9 @@ class OllamaTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -246,6 +277,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -275,6 +307,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -304,6 +341,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -321,10 +359,14 @@ class OllamaTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
+=======
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
     ) -> List[TextContent]:
 >>>>>>> ms/small_fixes
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -343,6 +385,9 @@ class OllamaTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -372,6 +417,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -401,6 +447,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
@@ -423,6 +474,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
         self,
@@ -438,12 +490,17 @@ class OllamaTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         self,
         prompt: str,
 =======
 =======
+<<<<<<< Updated upstream
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     @override
@@ -453,6 +510,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
 <<<<<<< main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -471,6 +529,9 @@ class OllamaTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -542,6 +603,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -556,6 +618,10 @@ class OllamaTextCompletion(TextCompletionClientBase):
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+=======
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 =======
@@ -596,6 +662,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         return OllamaTextPromptExecutionSettings
 >>>>>>> ms/small_fixes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -613,6 +680,9 @@ class OllamaTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

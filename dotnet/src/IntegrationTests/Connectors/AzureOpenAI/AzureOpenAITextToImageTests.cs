@@ -9,6 +9,7 @@ using Azure.Identity;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 =======
@@ -31,12 +32,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 =======
 >>>>>>> Stashed changes
+=======
+using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel;
+=======
+>>>>>>> Stashed changes
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -55,6 +62,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -69,6 +79,7 @@ using Xunit;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -82,9 +93,12 @@ using Xunit;
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
 #pragma warning disable CS0618 // Type or member is obsolete
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +117,8 @@ using Xunit;
 #pragma warning disable CS0618 // Type or member is obsolete
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
@@ -147,6 +163,7 @@ public sealed class AzureOpenAITextToImageTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -160,6 +177,9 @@ public sealed class AzureOpenAITextToImageTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -190,6 +210,7 @@ public sealed class AzureOpenAITextToImageTests
         Assert.StartsWith("https://", result[0].Uri!.ToString());
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -207,6 +228,9 @@ public sealed class AzureOpenAITextToImageTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

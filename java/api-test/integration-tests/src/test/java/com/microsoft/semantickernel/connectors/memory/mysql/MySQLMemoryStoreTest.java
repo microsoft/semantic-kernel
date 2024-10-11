@@ -27,6 +27,7 @@ import reactor.util.function.Tuple2;
 public class MySQLMemoryStoreTest {
     @Container private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,10 +63,15 @@ public class MySQLMemoryStoreTest {
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
     @Container private static final MySQLContainer CONTAINER = new MySQLContainer();
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private static final String MYSQL_USER = "test";
     private static final String MYSQL_PASSWORD = "test";

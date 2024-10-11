@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
@@ -20,6 +21,8 @@ using System;
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
@@ -27,6 +30,7 @@ using System;
 // Copyright (c) Microsoft. All rights reserved.
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -45,6 +49,8 @@ using System;
 // Copyright (c) Microsoft. All rights reserved.
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using System.Collections.Concurrent;
@@ -77,6 +83,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -90,6 +97,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -109,6 +119,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <summary>The data type of each collection, to enforce a single type per collection.</summary>
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -126,6 +137,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -140,6 +154,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private readonly VolatileVectorStoreRecordCollectionOptions _options;
 =======
 =======
@@ -153,10 +168,13 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private readonly VolatileVectorStoreRecordCollectionOptions _options;
 =======
     private readonly VolatileVectorStoreRecordCollectionOptions<TKey, TRecord> _options;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -174,6 +192,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
     private readonly VolatileVectorStoreRecordCollectionOptions<TKey, TRecord> _options;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -187,6 +207,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -200,6 +221,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -216,6 +240,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly VolatileVectorStoreKeyResolver<TKey, TRecord> _keyResolver;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -233,6 +258,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -251,6 +279,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -265,6 +294,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -284,6 +315,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -296,6 +328,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -324,6 +359,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._options = options ?? new VolatileVectorStoreRecordCollectionOptions();
         var vectorStorePropertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new() { RequiresAtLeastOneVector = false, SupportsMultipleKeys = false, SupportsMultipleVectors = true });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -341,6 +377,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -360,6 +399,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -373,6 +413,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -388,6 +431,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._vectorResolver = CreateVectorResolver(this._options.VectorResolver, this._vectorProperties);
         this._keyResolver = CreateKeyResolver(this._options.KeyResolver, this._propertyReader.KeyProperty);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -405,6 +449,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -420,6 +467,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -433,6 +481,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -450,6 +501,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._internalCollections = internalCollection;
         this._internalCollectionTypes = internalCollectionTypes;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -467,6 +519,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -492,6 +547,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -521,6 +577,11 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
         return this._internalCollections.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+        return this._internalCollections.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 =======
         return this._internalCollections.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
@@ -539,6 +600,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -555,12 +617,16 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
         if (!this._internalCollections.ContainsKey(this._collectionName))
         {
             this._internalCollections.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>());
             this._internalCollectionTypes.TryAdd(this._collectionName, typeof(TRecord));
         }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -579,6 +645,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -605,6 +674,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         this._internalCollection.TryRemove(this._collectionName, out _);
 =======
 =======
@@ -618,11 +688,14 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         this._internalCollection.TryRemove(this._collectionName, out _);
 =======
         this._internalCollections.TryRemove(this._collectionName, out _);
         this._internalCollection.TryRemove(this._collectionName, out _)
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -641,6 +714,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._internalCollections.TryRemove(this._collectionName, out _);
         this._internalCollection.TryRemove(this._collectionName, out _)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         return Task.CompletedTask;
@@ -707,6 +782,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         var key = (TKey)this._keyPropertyInfo.GetValue(record)!;
 =======
 =======
@@ -720,10 +796,13 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var key = (TKey)this._keyPropertyInfo.GetValue(record)!;
 =======
         var key = (TKey)this._keyResolver(record)!;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -741,6 +820,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
         var key = (TKey)this._keyResolver(record)!;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         collectionDictionary.AddOrUpdate(key!, record, (key, currentValue) => record);
@@ -764,6 +845,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -777,6 +859,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -836,6 +921,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -853,6 +939,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -867,6 +956,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -880,10 +970,13 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
     internal ConcurrentDictionary<object, object> GetCollectionDictionary()
     {
         if (!this._internalCollections.TryGetValue(this._collectionName, out var collectionDictionary))
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -903,6 +996,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         if (!this._internalCollections.TryGetValue(this._collectionName, out var collectionDictionary))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     private ConcurrentDictionary<object, object> GetCollectionDictionary()
@@ -921,6 +1016,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -934,6 +1030,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1020,6 +1119,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         return (record) => (TKey)keyPropertyInfo.GetValue(record)!;
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1037,6 +1137,9 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

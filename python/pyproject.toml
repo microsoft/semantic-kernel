@@ -35,6 +35,7 @@ aiofiles = "^23.1.0"
 python-dotenv = "1.0.1"
 regex = ">=2023.6.3,<2025.0.0"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,14 +56,19 @@ openapi_core = ">=0.18,<0.20"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
 # openapi and swagger
 openapi_core = ">=0.18,<0.20"
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -75,6 +81,7 @@ openapi_core = ">=0.18,<0.20"
     "azure-identity ~= 1.13",
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -91,6 +98,8 @@ openapi_core = ">=0.18,<0.20"
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -105,6 +114,7 @@ openapi_core = ">=0.18,<0.20"
     "prance ~= 23.6.21.0",
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,6 +134,10 @@ openapi_core = ">=0.18,<0.20"
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -144,6 +158,7 @@ openapi_core = ">=0.18,<0.20"
     "prance ~= 23.6.21.0",
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -160,6 +175,8 @@ openapi_core = ">=0.18,<0.20"
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -186,6 +203,7 @@ google-generativeai = { version = ">=0.1", markers = "python_version >= '3.9'", 
 transformers = { version = "^4.28.1", extras=['torch'], optional = true}
 sentence-transformers = { version = "^2.2.2", optional = true}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -212,10 +230,15 @@ sentence-transformers = { version = "^2.2.2", optional = true}
 <<<<<<< main
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+<<<<<<< main
+>>>>>>> Stashed changes
 torch = { version = "^2.2.2", optional = true}
 =======
 torch = { version = "^2.2.0", optional = true}
 >>>>>>> origin/PR
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -239,6 +262,8 @@ torch = { version = "^2.2.0", optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -274,6 +299,7 @@ ollama = { version = "^0.2.1", optional = true}
 anthropic = { version = "^0.32.0", optional = true }
 # pinecone
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -296,10 +322,15 @@ anthropic = { version = "^0.32.0", optional = true }
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+<<<<<<< main
+>>>>>>> Stashed changes
 pinecone-client = { version = "^5.0.0", optional = true}
 # postgres
 psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
 =======
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -338,6 +369,8 @@ psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
 pinecone-client = { version = "^5.0.0", optional = true}
 # postgres
 psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -353,6 +386,7 @@ pinecone-client = { version = ">=3.0.0", optional = true}
 # postgres
 psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -361,6 +395,8 @@ psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
 <<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -380,6 +416,7 @@ psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -391,6 +428,8 @@ psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 redis = { version = ">=4.6,<6.0", optional = true}
@@ -409,6 +448,7 @@ pyarrow = { version = ">=12.0.1,<18.0.0", optional = true}
 weaviate-client = { version = ">=3.18,<5.0", optional = true}
 pandas = {version = "^2.2.2", optional = true}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -428,6 +468,10 @@ pandas = {version = "^2.2.2", optional = true}
 =======
 =======
 >>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -438,6 +482,7 @@ ruff = "0.5.2"
 ruff = "0.5.1"
 >>>>>>> origin/pr/Bryan-Roe/278
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -454,6 +499,8 @@ ruff = "0.5.1"
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -471,7 +518,10 @@ mypy = ">=1.10.0"
 types-PyYAML = "^6.0.12.20240311"
 ruff = ">=0.5.2,<0.7.0"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -496,6 +546,12 @@ google-generativeai = "^0.7.2"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 =======
@@ -540,6 +596,10 @@ pandas = {version = "^2.2.2"}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -572,6 +632,7 @@ optional = true
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -607,6 +668,9 @@ qdrant-client = '^1.9'
 redis = { version = "^5.0.7", extras=['hiredis']}
 pandas = {version = "^2.2.2"}
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -631,6 +695,9 @@ chromadb = "^0.4.0"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -664,6 +731,7 @@ redis = "^4.6.0"
 [tool.poetry.group.azure_cognitive_search.dependencies]
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -671,6 +739,8 @@ azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -690,6 +760,7 @@ azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -702,6 +773,8 @@ azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
 =======
 azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 azure-core = "^1.28.0"
@@ -710,6 +783,7 @@ azure-identity = "^1.13.0"
 [tool.poetry.group.tests.dependencies]
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -717,6 +791,8 @@ azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -736,6 +812,7 @@ azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -748,6 +825,8 @@ azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
 =======
 azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 azure-core = "^1.28.0"
@@ -756,6 +835,7 @@ azure-core = "^1.28.0"
 usearch = "1.1.1"
 pyarrow = ">=12.0.1,<16.0.0"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -778,6 +858,9 @@ pyarrow = ">=12.0.1,<16.0.0"
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 <<<<<<< main
 
 =======
@@ -790,6 +873,7 @@ pyarrow = ">=12.0.1,<16.0.0"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -802,6 +886,8 @@ pyarrow = ">=12.0.1,<16.0.0"
 =======
 
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 [tool.poetry.group.tests.dependencies]
@@ -820,6 +906,7 @@ google-generativeai = "^0.7.2"
 google-generativeai = { version = ">=0.1,<0.4" }
 # hugging face
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -855,10 +942,15 @@ google-generativeai = { version = ">=0.1,<0.4" }
 =======
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 <<<<<<< main
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 # milvus
 pymilvus = ">=2.3,<2.4.6"
@@ -876,6 +968,7 @@ pinecone-client = "^5.0.0"
 # postgres
 psycopg = { version="^3.1.9", extras=["binary","pool"]}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -884,6 +977,8 @@ psycopg = { version="^3.1.9", extras=["binary","pool"]}
 <<<<<<< Updated upstream
 =======
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -903,6 +998,7 @@ psycopg = { version="^3.1.9", extras=["binary","pool"]}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -914,6 +1010,8 @@ psycopg = { version="^3.1.9", extras=["binary","pool"]}
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 transformers = { version = "^4.28.1", extras=["torch"]}
@@ -938,6 +1036,7 @@ ollama = "^0.2.1"
 # mongodb
 motor = "^3.3.2"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -946,6 +1045,8 @@ motor = "^3.3.2"
 <<<<<<< Updated upstream
 >>>>>>> origin/PR
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -965,6 +1066,7 @@ motor = "^3.3.2"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -976,6 +1078,8 @@ motor = "^3.3.2"
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 redis = ">=4.6,<6.0"
@@ -1007,6 +1111,7 @@ milvus = ["pymilvus", "milvus"]
 mistralai = ["mistralai"]
 ollama = ["ollama"]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -1028,6 +1133,9 @@ anthropic = ["anthropic"]
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 <<<<<<< main
 anthropic = ["anthropic"]
 =======
@@ -1039,6 +1147,7 @@ anthropic = ["anthropic"]
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1053,6 +1162,8 @@ anthropic = ["anthropic"]
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 all = ["google-generativeai", "transformers", "sentence-transformers", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
 
 azure = ["azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
@@ -1074,6 +1185,7 @@ chromadb = ["chromadb"]
 google = ["google-generativeai"]
 hugging_face = ["transformers", "sentence-transformers"]
 milvus = ["pymilvus", "milvus"]
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1093,6 +1205,8 @@ milvus = ["pymilvus", "milvus"]
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> origin/PR
 =======
@@ -1102,6 +1216,7 @@ milvus = ["pymilvus", "milvus"]
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1113,6 +1228,8 @@ milvus = ["pymilvus", "milvus"]
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 mongo = ["motor"]
@@ -1130,6 +1247,7 @@ all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transfo
 [tool.pytest.ini_options]
 addopts = "-ra -q -r fEX -n logical --dist loadfile --dist worksteal"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< main
 <<<<<<< Updated upstream
@@ -1165,10 +1283,15 @@ addopts = "-ra -q -r fEX -n logical --dist loadfile --dist worksteal"
 =======
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 <<<<<<< main
 =======
 >>>>>>> origin/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 [project.optional-dependencies]
 azure = [
@@ -1188,12 +1311,16 @@ hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers ~= 2.2",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -1222,6 +1349,7 @@ mongo = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1234,6 +1362,9 @@ mongo = [
 =======
 =======
 >>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -1244,6 +1375,7 @@ mongo = [
 mongo = [
     "motor >= 3.3.2,< 3.7.0"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1260,6 +1392,8 @@ mongo = [
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1269,12 +1403,16 @@ notebooks = [
 ]
 milvus = [
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -1304,6 +1442,7 @@ mistralai = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -1319,11 +1458,15 @@ mistralai = [
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     "pymilvus >= 2.3,< 2.5",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
     "mistralai >= 0.4,< 2.0"
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
@@ -1341,6 +1484,8 @@ mistralai = [
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -1375,6 +1520,7 @@ pandas = [
     "pandas ~= 2.2"
 ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1382,6 +1528,8 @@ pandas = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1401,6 +1549,7 @@ bing = []
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1413,6 +1562,8 @@ bing = []
 =======
 bing = []
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -1440,6 +1591,7 @@ environments = [
 [tool.pytest.ini_options]
 addopts = "-ra -q -r fEX"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1449,6 +1601,8 @@ addopts = "-ra -q -r fEX"
 =======
 >>>>>>> origin/PR
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1469,6 +1623,7 @@ addopts = "-ra -q -r fEX"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1480,6 +1635,8 @@ addopts = "-ra -q -r fEX"
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -1570,6 +1727,7 @@ profile = "black"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1587,6 +1745,8 @@ build-backend = "poetry.core.masonry.api"
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -1595,6 +1755,7 @@ requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1611,5 +1772,7 @@ build-backend = "flit_core.buildapi"
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

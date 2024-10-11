@@ -9,6 +9,7 @@ using System.Collections.Generic;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using System.Reflection;
 =======
 =======
@@ -22,12 +23,15 @@ using System.Reflection;
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using System.Reflection;
 =======
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Nodes;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +51,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json.Nodes;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using System.Threading;
@@ -67,6 +73,7 @@ using Microsoft.SemanticKernel.Orchestration;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.SemanticFunctions;
 =======
 =======
@@ -80,12 +87,15 @@ using Microsoft.SemanticKernel.SemanticFunctions;
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.SemanticFunctions;
 =======
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -105,6 +115,8 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -210,6 +222,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             f.Value.SetDefaultSkillCollection(this.Skills);
 =======
 =======
@@ -223,10 +236,13 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             f.Value.SetDefaultSkillCollection(this.Skills);
 =======
             //f.Value.SetDefaultSkillCollection(this.Skills);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -244,6 +260,8 @@ public sealed class Kernel : IKernel, IDisposable
 =======
             //f.Value.SetDefaultSkillCollection(this.Skills);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             this._skillCollection.AddFunction(f.Value);
@@ -266,6 +284,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         customFunction.SetDefaultSkillCollection(this.Skills);
 =======
 =======
@@ -279,10 +298,13 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         customFunction.SetDefaultSkillCollection(this.Skills);
 =======
         //customFunction.SetDefaultSkillCollection(this.Skills);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -300,6 +322,8 @@ public sealed class Kernel : IKernel, IDisposable
 =======
         //customFunction.SetDefaultSkillCollection(this.Skills);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         this._skillCollection.AddFunction(customFunction);
@@ -321,6 +345,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -335,6 +360,8 @@ public sealed class Kernel : IKernel, IDisposable
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -365,6 +392,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -377,6 +405,9 @@ public sealed class Kernel : IKernel, IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -403,6 +434,7 @@ public sealed class Kernel : IKernel, IDisposable
     public Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     public async Task<SKContext> RunAsync(ContextVariables variables, string? model = null, CancellationToken cancellationToken = default, params ISKFunction[] pipeline)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -420,6 +452,9 @@ public sealed class Kernel : IKernel, IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -439,6 +474,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -452,9 +488,12 @@ public sealed class Kernel : IKernel, IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         var aiService = this._aiServiceProvider.GetService<ITextCompletion>(model);
 
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -473,6 +512,8 @@ public sealed class Kernel : IKernel, IDisposable
         var aiService = this._aiServiceProvider.GetService<ITextCompletion>(model);
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         int pipelineStepCount = -1;
@@ -498,6 +539,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 context = await f.InvokeAsync(context).ConfigureAwait(false);
 =======
 =======
@@ -511,10 +553,13 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 context = await f.InvokeAsync(context).ConfigureAwait(false);
 =======
                 context = await f.InvokeAsync(context, aiService).ConfigureAwait(false);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -532,6 +577,8 @@ public sealed class Kernel : IKernel, IDisposable
 =======
                 context = await f.InvokeAsync(context, aiService).ConfigureAwait(false);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -559,6 +606,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -572,9 +620,12 @@ public sealed class Kernel : IKernel, IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         Plan plan = new Plan(pipeline);
         return plan.InvokeAsync(context);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -593,6 +644,8 @@ public sealed class Kernel : IKernel, IDisposable
         Plan plan = new Plan(pipeline);
         return plan.InvokeAsync(context);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -619,6 +672,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -632,10 +686,13 @@ public sealed class Kernel : IKernel, IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
             memory: this._memory,
             logger: this.Log,
             cancellationToken: cancellationToken);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -655,6 +712,8 @@ public sealed class Kernel : IKernel, IDisposable
             logger: this.Log,
             cancellationToken: cancellationToken);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -725,6 +784,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -738,9 +798,12 @@ public sealed class Kernel : IKernel, IDisposable
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -759,6 +822,8 @@ public sealed class Kernel : IKernel, IDisposable
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -797,6 +862,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -811,6 +877,8 @@ public sealed class Kernel : IKernel, IDisposable
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -835,6 +903,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -847,6 +916,9 @@ public sealed class Kernel : IKernel, IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -871,6 +943,7 @@ public sealed class Kernel : IKernel, IDisposable
         //func.SetAIService(() => this.GetService<ITextCompletion>());
         func.SetAIService(() => this.GetService<ITextCompletion>(serviceId));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -888,6 +961,9 @@ public sealed class Kernel : IKernel, IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -923,6 +999,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     throw new KernelException(
                         KernelException.ErrorCodes.FunctionOverloadNotSupported,
                         "Function overloads are not supported, please differentiate function names");
@@ -938,12 +1015,15 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                     throw new KernelException(
                         KernelException.ErrorCodes.FunctionOverloadNotSupported,
                         "Function overloads are not supported, please differentiate function names");
 =======
                     throw new SKException("Function overloads are not supported, please differentiate function names");
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -961,6 +1041,8 @@ public sealed class Kernel : IKernel, IDisposable
 =======
                     throw new SKException("Function overloads are not supported, please differentiate function names");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 }
@@ -981,6 +1063,7 @@ public sealed class Kernel : IKernel, IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -997,6 +1080,9 @@ public sealed class Kernel : IKernel, IDisposable
 =======
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
     private PromptTemplateConfig.ServiceConfig GetRecommendedService(PromptTemplateConfig config)
     {
         return config.Services
@@ -1004,6 +1090,7 @@ public sealed class Kernel : IKernel, IDisposable
             .FirstOrDefault(s => !string.IsNullOrEmpty(s.ModelId) && this.Config.TextCompletionServices.ContainsKey(s.ModelId));
     }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
@@ -1022,6 +1109,9 @@ public sealed class Kernel : IKernel, IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes

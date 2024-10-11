@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,6 +29,9 @@ using System.Net;
 =======
 using System.Net;
 >>>>>>> origin/main
+=======
+using System.Net;
+>>>>>>> Stashed changes
 =======
 using System.Net;
 >>>>>>> Stashed changes
@@ -37,6 +41,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,17 +60,22 @@ using Microsoft.Extensions.Logging.Abstractions;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 using Microsoft.Extensions.Logging.Abstractions;
 <<<<<<< main
 =======
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< main
 using Microsoft.Extensions.Logging.Abstractions;
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -75,6 +85,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> ms/feature-error-handling-part3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -91,6 +102,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -181,6 +194,7 @@ public class QdrantMemoryStore : IMemoryStore
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -213,13 +227,18 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
         var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException("Failed to convert memory record to Qdrant vector record");
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -234,9 +253,12 @@ public class QdrantMemoryStore : IMemoryStore
         }
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
@@ -259,6 +281,7 @@ public class QdrantMemoryStore : IMemoryStore
 =======
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -277,6 +300,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
         return vectorData.PointId;
     }
@@ -288,6 +313,7 @@ public class QdrantMemoryStore : IMemoryStore
         var tasks = Task.WhenAll(records.Select(async r => await this.ConvertFromMemoryRecordAsync(collectionName, r, cancellationToken).ConfigureAwait(false)));
         var vectorData = await tasks.ConfigureAwait(false);
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -327,6 +353,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         await this._qdrantClient.UpsertVectorsAsync(
                 collectionName,
                 vectorData,
@@ -350,6 +378,7 @@ public class QdrantMemoryStore : IMemoryStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -365,6 +394,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         foreach (var v in vectorData)
         {
             yield return v.PointId;
@@ -374,6 +405,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -399,6 +431,9 @@ public class QdrantMemoryStore : IMemoryStore
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -415,6 +450,7 @@ public class QdrantMemoryStore : IMemoryStore
         catch (HttpOperationException ex)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -442,6 +478,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             this._logger.LogError(ex, "Failed to get vector data: {Message}", ex.Message);
             throw;
@@ -451,8 +489,11 @@ public class QdrantMemoryStore : IMemoryStore
         }
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
@@ -464,6 +505,7 @@ public class QdrantMemoryStore : IMemoryStore
             key: vectorData.PointId);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -480,6 +522,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -507,6 +551,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memory record</returns>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -546,13 +591,18 @@ public class QdrantMemoryStore : IMemoryStore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 <<<<<<< main
     /// <exception cref="KernelException"></exception>
 =======
     /// <exception cref="SKException"></exception>
 >>>>>>> ms/feature-error-handling-part3
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false,
@@ -563,6 +613,7 @@ public class QdrantMemoryStore : IMemoryStore
             var vectorDataList = this._qdrantClient
                 .GetVectorsByIdAsync(collectionName, [pointId], withEmbedding, cancellationToken);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -594,6 +645,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
@@ -617,6 +670,7 @@ public class QdrantMemoryStore : IMemoryStore
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -629,6 +683,8 @@ public class QdrantMemoryStore : IMemoryStore
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             if (vectorData is null) { return null; }
@@ -636,6 +692,7 @@ public class QdrantMemoryStore : IMemoryStore
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -660,6 +717,9 @@ public class QdrantMemoryStore : IMemoryStore
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -670,6 +730,7 @@ public class QdrantMemoryStore : IMemoryStore
             this._logger.LogError(ex, "Failed to get vector data: {Message}", ex.Message);
             throw;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -699,6 +760,8 @@ public class QdrantMemoryStore : IMemoryStore
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
                 embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true));
         }
         catch (HttpRequestException ex)
@@ -708,7 +771,10 @@ public class QdrantMemoryStore : IMemoryStore
         }
 =======
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         if (vectorData == null) { return null; }
@@ -718,6 +784,7 @@ public class QdrantMemoryStore : IMemoryStore
             embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true));
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -734,6 +801,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -768,6 +837,7 @@ public class QdrantMemoryStore : IMemoryStore
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -792,6 +862,9 @@ public class QdrantMemoryStore : IMemoryStore
 =======
 <<<<<<< main
 >>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -802,6 +875,7 @@ public class QdrantMemoryStore : IMemoryStore
         catch (HttpOperationException ex)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -831,6 +905,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             this._logger.LogError(ex, "Failed to remove vector data: {Message}", ex.Message);
             throw;
@@ -841,6 +917,7 @@ public class QdrantMemoryStore : IMemoryStore
 =======
         await this._qdrantClient.DeleteVectorByPayloadIdAsync(collectionName, key, cancellationToken).ConfigureAwait(false);
 >>>>>>> ms/feature-error-handling
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -861,6 +938,8 @@ public class QdrantMemoryStore : IMemoryStore
 =======
         await this._qdrantClient.DeleteVectorByPayloadIdAsync(collectionName, key, cancellationToken).ConfigureAwait(false);
 >>>>>>> ms/feature-error-handling
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -877,6 +956,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -895,6 +975,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -904,6 +986,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <exception cref="SKException"></exception>
 >>>>>>> ms/feature-error-handling-part3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -920,6 +1003,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancellationToken = default)
@@ -931,6 +1016,7 @@ public class QdrantMemoryStore : IMemoryStore
         catch (HttpOperationException ex)
         {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -960,6 +1046,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             this._logger.LogError(ex, "Failed to remove vector data: {Message}", ex.Message);
             throw;
@@ -968,8 +1056,11 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> ms/feature-error-handling-part3
         }
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     /// <exception cref="SKException"></exception>
@@ -978,6 +1069,7 @@ public class QdrantMemoryStore : IMemoryStore
         await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, new[] { pointId }, cancellationToken).ConfigureAwait(false);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -994,6 +1086,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -1005,6 +1099,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="pointIds">The unique indexed IDs associated with the Qdrant vector records to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1023,6 +1118,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -1032,6 +1129,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <exception cref="SKException"></exception>
 >>>>>>> ms/feature-error-handling-part3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1048,6 +1146,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancellationToken = default)
@@ -1058,6 +1158,7 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpOperationException ex)
         {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
@@ -1079,6 +1180,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -1095,6 +1198,7 @@ public class QdrantMemoryStore : IMemoryStore
         await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, pointIds, cancellationToken).ConfigureAwait(false);
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1111,6 +1215,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
@@ -1152,6 +1258,7 @@ public class QdrantMemoryStore : IMemoryStore
                 }
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1170,6 +1277,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 <<<<<<< main
@@ -1178,6 +1287,7 @@ public class QdrantMemoryStore : IMemoryStore
             catch (HttpOperationException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1194,6 +1304,8 @@ public class QdrantMemoryStore : IMemoryStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             {
@@ -1278,6 +1390,7 @@ public class QdrantMemoryStore : IMemoryStore
         return QdrantVectorRecord.FromJsonMetadata(
             pointId: pointId,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1312,6 +1425,15 @@ public class QdrantMemoryStore : IMemoryStore
 <<<<<<< Updated upstream
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+            embedding: record.Embedding,
+            json: record.GetSerializedMetadata()) ??
+            throw new KernelException("Failed to convert memory record to Qdrant vector record");
+<<<<<<< main
+=======
 =======
 >>>>>>> Stashed changes
             embedding: record.Embedding.Vector,
@@ -1325,6 +1447,7 @@ public class QdrantMemoryStore : IMemoryStore
         return vectorData;
 >>>>>>> ms/feature-error-handling
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -1341,6 +1464,8 @@ public class QdrantMemoryStore : IMemoryStore
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main

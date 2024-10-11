@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 =======
@@ -18,10 +19,13 @@
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,8 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 using Microsoft.SemanticKernel;
@@ -72,6 +78,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -86,6 +93,8 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -95,6 +104,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
                 {
                     Metadata = AssistantSampleMetadata,
                 });
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -113,6 +123,9 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
@@ -132,6 +145,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
                 },
                 kernel: new Kernel());
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -149,6 +163,9 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
@@ -180,6 +197,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             await provider.Client.GetFileClient().DeleteFileAsync(fileId);
 =======
 =======
@@ -193,10 +211,13 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 <<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             await provider.Client.GetFileClient().DeleteFileAsync(fileId);
 =======
             await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
 >>>>>>> main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -214,6 +235,8 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 =======
             await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         }

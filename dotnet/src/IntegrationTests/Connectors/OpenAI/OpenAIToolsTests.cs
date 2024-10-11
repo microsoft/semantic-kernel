@@ -591,6 +591,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
@@ -605,6 +606,8 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -621,7 +624,10 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -643,6 +649,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -658,6 +665,8 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
     // Re-enable this test once the issue is resolved.
     [Fact(Skip = "The test is temporarily disabled until a more stable solution is found.")]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanPassFunctionExceptionToConnectorForStreamingAsync()

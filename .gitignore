@@ -7,7 +7,7 @@ temp/
 */.ipynb_checkpoints/*
 .virtual_documents/
 */.virtual_documents/*
-.vscode
+
 .DS_Store
 *.pyc
 *.zip
@@ -677,6 +677,7 @@ swa-cli.config.json
 # python devcontainer
 /python/.devcontainer/*
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -688,6 +689,8 @@ swa-cli.config.json
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 <<<<<<< main
 =======
@@ -695,6 +698,7 @@ swa-cli.config.json
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -702,6 +706,8 @@ swa-cli.config.json
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -710,6 +716,7 @@ swa-cli.config.json
 !.env.project
 !.env.vault
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -717,6 +724,8 @@ swa-cli.config.json
 .jython_cache/
 /SK.AI/**
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -731,6 +740,9 @@ swa-cli.config.json
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -744,6 +756,7 @@ swa-cli.config.json
 
 !/dotnet/.SK-dotnet.sln.icloud
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -763,6 +776,8 @@ swa-cli.config.json
 =======
 =======
 >>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
