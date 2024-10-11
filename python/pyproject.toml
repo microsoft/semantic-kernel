@@ -118,6 +118,9 @@ weaviate = [
 pandas = [
     "pandas ~= 2.2"
 ]
+aws = [
+    "boto3>=1.28.57",
+]
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"

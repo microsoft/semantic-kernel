@@ -55,22 +55,25 @@ async def chat() -> bool:
 
     stream = True
     if stream:
-        answer = kernel.invoke_stream(
+        chunks = kernel.invoke_stream(
             chat_function,
             user_input=user_input,
             chat_history=chat_history,
         )
         print("Mosscap:> ", end="")
-        async for message in answer:
+        answer = ""
+        async for message in chunks:
             print(str(message[0]), end="", flush=True)
+            answer += str(message[0])
         print("\n")
-        return True
-    answer = await kernel.invoke(
-        chat_function,
-        user_input=user_input,
-        chat_history=chat_history,
-    )
-    print(f"Mosscap:> {answer}")
+    else:
+        answer = await kernel.invoke(
+            chat_function,
+            user_input=user_input,
+            chat_history=chat_history,
+        )
+        print(f"Mosscap:> {answer}")
+
     chat_history.add_user_message(user_input)
     chat_history.add_assistant_message(str(answer))
     return True

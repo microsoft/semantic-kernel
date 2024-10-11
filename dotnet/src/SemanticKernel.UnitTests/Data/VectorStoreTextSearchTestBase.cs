@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 
@@ -22,7 +24,7 @@ public class VectorStoreTextSearchTestBase
     /// </summary>
     public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchFromVectorizedSearchAsync()
     {
-        var vectorStore = new VolatileVectorStore();
+        var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
@@ -37,7 +39,7 @@ public class VectorStoreTextSearchTestBase
     /// </summary>
     public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchFromVectorizableTextSearchAsync()
     {
-        var vectorStore = new VolatileVectorStore();
+        var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();

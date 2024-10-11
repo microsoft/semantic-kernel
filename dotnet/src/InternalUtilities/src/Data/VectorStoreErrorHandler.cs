@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Contains helpers for reading vector store model properties and their attributes.

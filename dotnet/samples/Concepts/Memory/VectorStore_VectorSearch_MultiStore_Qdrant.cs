@@ -19,7 +19,7 @@ namespace Memory;
 /// For other databases, see the following classes:
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_AzureAISearch"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
-/// <para><see cref="VectorStore_VectorSearch_MultiStore_Volatile"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_InMemory"/></para>
 ///
 /// To run this sample, you need a local instance of Docker running, since the associated fixture will try and start a Qdrant container in the local docker instance.
 /// </summary>

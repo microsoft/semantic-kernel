@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;

@@ -3,8 +3,8 @@
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
