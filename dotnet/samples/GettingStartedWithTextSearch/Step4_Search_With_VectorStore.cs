@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using static GettingStartedWithTextSearch.VolatileVectorStoreFixture;
+using static GettingStartedWithTextSearch.InMemoryVectorStoreFixture;
 
 namespace GettingStartedWithTextSearch;
 
@@ -12,20 +13,20 @@ namespace GettingStartedWithTextSearch;
 /// This example shows how to create a <see cref="ITextSearch"/> from a
 /// <see cref="IVectorStore"/>.
 /// </summary>
-[Collection("VolatileVectorStoreCollection")]
-public class Step4_Search_With_VectorStore(ITestOutputHelper output, VolatileVectorStoreFixture fixture) : BaseTest(output)
+[Collection("InMemoryVectorStoreCollection")]
+public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVectorStoreFixture fixture) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="VectorStoreTextSearch{TRecord}"/> and use it to perform a search.
     /// </summary>
     [Fact]
-    public async Task UsingVolatileVectorStoreRecordTextSearchAsync()
+    public async Task UsingInMemoryVectorStoreRecordTextSearchAsync()
     {
         // Use embedding generation service and record collection for the fixture.
         var textEmbeddingGeneration = fixture.TextEmbeddingGenerationService;
         var vectorizedSearch = fixture.VectorStoreRecordCollection;
 
-        // Create a text search instance using the volatile vector store.
+        // Create a text search instance using the InMemory vector store.
         var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
 
         // Search and return results as TextSearchResult items
@@ -45,7 +46,7 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, VolatileVec
     /// add grounding context to a Handlebars prompt.
     /// </summary>
     [Fact]
-    public async Task RagWithVolatileVectorStoreTextSearchAsync()
+    public async Task RagWithInMemoryVectorStoreTextSearchAsync()
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -58,7 +59,7 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, VolatileVec
         var textEmbeddingGeneration = fixture.TextEmbeddingGenerationService;
         var vectorizedSearch = fixture.VectorStoreRecordCollection;
 
-        // Create a text search instance using the volatile vector store.
+        // Create a text search instance using the InMemory vector store.
         var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
 
         // Build a text search plugin with vector store search and add to the kernel
@@ -96,7 +97,7 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, VolatileVec
     /// function calling to have the LLM include grounding context in it's response.
     /// </summary>
     [Fact]
-    public async Task FunctionCallingWithVolatileVectorStoreTextSearchAsync()
+    public async Task FunctionCallingWithInMemoryVectorStoreTextSearchAsync()
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -109,7 +110,7 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, VolatileVec
         var textEmbeddingGeneration = fixture.TextEmbeddingGenerationService;
         var vectorizedSearch = fixture.VectorStoreRecordCollection;
 
-        // Create a text search instance using the volatile vector store.
+        // Create a text search instance using the InMemory vector store.
         var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
 
         // Build a text search plugin with vector store search and add to the kernel

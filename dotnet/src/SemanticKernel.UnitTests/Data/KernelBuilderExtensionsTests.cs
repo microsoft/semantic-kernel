@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
@@ -9,7 +10,7 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Data;
 
 /// <summary>
-/// Contains tests for <see cref="KernelBuilderExtensions"/>.
+/// Contains tests for KernelBuilderExtensions".
 /// </summary>
 public class KernelBuilderExtensionsTests
 {
@@ -20,6 +21,7 @@ public class KernelBuilderExtensionsTests
         this._kernelBuilder = Kernel.CreateBuilder();
     }
 
+    [Obsolete("The VolatileVectorStore is obsolete so this test is as well.")]
     [Fact]
     public void AddVectorStoreRegistersClass()
     {
@@ -33,6 +35,7 @@ public class KernelBuilderExtensionsTests
         Assert.IsType<VolatileVectorStore>(vectorStore);
     }
 
+    [Obsolete("The VolatileVectorStore is obsolete so this test is as well.")]
     [Fact]
     public void AddVolatileVectorStoreTextSearchRegistersClass()
     {
@@ -53,6 +56,7 @@ public class KernelBuilderExtensionsTests
         Assert.IsType<VectorStoreTextSearch<DataModel>>(vectorStoreTextSearch);
     }
 
+    [Obsolete("The VolatileVectorStore is obsolete so this test is as well.")]
     [Fact]
     public void AddVolatileVectorStoreTextSearchWithDelegatesRegistersClass()
     {

@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -16,7 +17,7 @@ using static Microsoft.SemanticKernel.Data.VectorStoreExtensions;
 namespace SemanticKernel.IntegrationTests.Data;
 
 /// <summary>
-/// Base class for integration tests for using <see cref="VolatileVectorStore"/> with <see cref="ITextSearch"/>.
+/// Base class for integration tests for using various vector stores with <see cref="ITextSearch"/>.
 /// </summary>
 public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 {

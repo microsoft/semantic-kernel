@@ -19,7 +19,7 @@ namespace Memory;
 /// For other databases, see the following classes:
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Qdrant"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
-/// <para><see cref="VectorStore_VectorSearch_MultiStore_Volatile"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_InMemory"/></para>
 ///
 /// To run this sample, you need an already existing Azure AI Search instance.
 /// To set your secrets use:
@@ -29,7 +29,7 @@ namespace Memory;
 public class VectorStore_VectorSearch_MultiStore_AzureAISearch(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task ExampleWitDIAsync()
+    public async Task ExampleWithDIAsync()
     {
         // Use the kernel for DI purposes.
         var kernelBuilder = Kernel

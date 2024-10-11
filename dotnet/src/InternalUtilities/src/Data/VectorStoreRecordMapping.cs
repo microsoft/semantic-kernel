@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Contains helper methods to map between storage and data models.
