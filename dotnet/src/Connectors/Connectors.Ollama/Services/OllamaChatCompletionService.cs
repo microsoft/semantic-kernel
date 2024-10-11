@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using OllamaSharp;
 using OllamaSharp.Models.Chat;
@@ -37,13 +38,21 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     /// </summary>
     internal static string FunctionToolCallsProperty => "ChatResponseMessage.FunctionToolCalls";
 
+    // Keeping private as Ollama currently only supports auto choice.
+    // See: https://github.com/ollama/ollama/blob/main/docs/openai.md#supported-request-fields
     private enum ChatToolChoice
     {
-        Auto, // Keeping private as Ollama currently only supports auto choice.
-              // See: https://github.com/ollama/ollama/blob/main/docs/openai.md#supported-request-fields
+        Auto
     }
 
+    private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("""{"type":"string"}""");
+
     private record ToolCallingConfig(IList<Tool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
+
+    /// <summary>
+    /// The function calls processor.
+    /// </summary>
+    private FunctionCallsProcessor _functionCallsProcessor;
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -61,7 +70,16 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
     /// </remarks>
-    protected const int MaxInflightAutoInvokes = 128;
+    private const int MaxInflightAutoInvokes = 128;
+
+    /// <summary>
+    /// Cached JSON for a function with no parameters.
+    /// </summary>
+    /// <remarks>
+    /// This is an optimization to avoid serializing the same JSON Schema over and over again
+    /// for this relatively common case.
+    /// </remarks>
+    private readonly static Parameters s_zeroFunctionParametersSchema = new() { Properties = [], Required = [] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaChatCompletionService"/> class.
@@ -133,6 +151,9 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
+            var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
+
+
             var request = CreateChatRequest(chatHistory, chatExecutionSettings, this._client.SelectedModel);
             var chatMessageContent = new ChatMessageContent();
             var fullContent = new StringBuilder();
@@ -171,6 +192,121 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             innerContent: innerContent)];
     }
 
+    private ToolCallingConfig GetFunctionCallingConfiguration(Kernel? kernel, OllamaPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
+    {
+        // If neither behavior is specified, we just return default configuration with no tool and no choice
+        if (executionSettings.FunctionChoiceBehavior is null)
+        {
+            return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false, AllowAnyRequestedKernelFunction: false, Options: null);
+        }
+
+        IList<Tool>? tools = null;
+        ChatToolChoice? choice = null;
+        bool autoInvoke = false;
+        bool allowAnyRequestedKernelFunction = false;
+        FunctionChoiceBehaviorOptions? options = null;
+
+        // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
+        if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
+        {
+            (tools, choice, autoInvoke, options) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior, chatHistory);
+        }
+
+        return new ToolCallingConfig(
+            Tools: tools, // Ollama may be happy with null here
+            Choice: choice ?? ChatToolChoice.Auto,
+            AutoInvoke: autoInvoke,
+            AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction,
+            Options: options);
+    }
+
+    private (IList<Tool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, FunctionChoiceBehaviorOptions? Options) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior, ChatHistory chatHistory)
+    {
+        FunctionChoiceBehaviorConfiguration? config = this._functionCallsProcessor.GetConfiguration(functionChoiceBehavior, chatHistory, requestIndex, kernel);
+
+        IList<Tool>? tools = null;
+        ChatToolChoice? toolChoice = null;
+        bool autoInvoke = config?.AutoInvoke ?? false;
+
+        if (config?.Functions is { Count: > 0 } functions)
+        {
+            if (config.Choice == FunctionChoice.Auto)
+            {
+                toolChoice = ChatToolChoice.Auto;
+            }
+            else
+            {
+                throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
+            }
+
+            tools = [];
+
+            foreach (var function in functions)
+            {
+                tools.Add(FromFunctionMetadata(function.Metadata));
+            }
+        }
+
+        return new(tools, toolChoice, autoInvoke, config?.Options);
+    }
+
+    private static Tool FromFunctionMetadata(KernelFunctionMetadata functionMetadata)
+    {
+        IReadOnlyList<KernelParameterMetadata> metadataParams = functionMetadata.Parameters;
+        Parameters resultParameters = s_zeroFunctionParametersSchema;
+
+        var tool = new Tool()
+        {
+            Function = new Function
+            {
+                Name = FunctionName.ToFullyQualifiedName(functionMetadata.Name, functionMetadata.PluginName, OllamaChatCompletionService.FunctionNameSeparator),
+                Description = functionMetadata.Description,
+            }
+        };
+
+        if (metadataParams is { Count: > 0 })
+        {
+            var properties = new Dictionary<string, KernelJsonSchema>();
+            var required = new List<string>();
+
+            for (int i = 0; i < metadataParams.Count; i++)
+            {
+                var parameter = metadataParams[i];
+                properties.Add(parameter.Name, parameter.Schema ?? GetDefaultSchemaForTypelessParameter(parameter.Description));
+                if (parameter.IsRequired)
+                {
+                    required.Add(parameter.Name);
+                }
+            }
+
+            string serializedParametersSchema = JsonSerializer.Serialize(new
+            {
+                type = "object",
+                required,
+                properties,
+            });
+
+            resultParameters = JsonSerializer.Deserialize<Parameters>(serializedParametersSchema)!;
+        }
+
+        tool.Function.Parameters = resultParameters;
+
+        return tool;
+    }
+
+    /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>
+    private static KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description)
+    {
+        // If there's a description, incorporate it.
+        if (!string.IsNullOrWhiteSpace(description))
+        {
+            return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
+        }
+
+        // Otherwise, we can use a cached schema for a string with no description.
+        return s_stringNoDescriptionSchema;
+    }
+
     private static List<Message> CreateChatCompletionMessages(OllamaPromptExecutionSettings executionSettings, ChatHistory chatHistory)
     {
         List<Message> messages = [];
@@ -185,6 +321,12 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
 
     private static List<Message> CreateRequestMessages(ChatMessageContent message)
     {
+        // If the abstraction message preserves the original Ollama message, use it as is.
+        if (message.InnerContent is Message ollamaMessage)
+        {
+            return [ollamaMessage];
+        }
+
         if (message.Role == AuthorRole.System)
         {
             return [new Message(ChatRole.System, message.Content ?? string.Empty)];
@@ -274,10 +416,8 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
 
         if (message.Role == AuthorRole.Assistant)
         {
-            var toolCalls = new List<Message.ToolCall>();
+            List<Message.ToolCall>? toolCallRequests = null;
 
-            // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallContent type.
-            HashSet<string>? functionCallIds = null;
             foreach (var item in message.Items)
             {
                 if (item is not FunctionCallContent callRequest)
@@ -285,36 +425,33 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                     continue;
                 }
 
-                functionCallIds ??= new HashSet<string>(toolCalls.Select(t => t.Id));
 
-                if (callRequest.Id is null || functionCallIds.Contains(callRequest.Id))
+                var toolCallRequest = new Message.ToolCall
                 {
-                    continue;
+                    Function = new Message.Function
+                    {
+                        Name = FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OllamaChatCompletionService.FunctionNameSeparator),
+                        Arguments = new Dictionary<string, string>(),
+                    },
+                };
+
+                if (callRequest.Arguments is not null)
+                {
+                    foreach (var callArgument in callRequest.Arguments)
+                    {
+                        toolCallRequest.Function.Arguments.Add(callArgument.Key, callArgument.Value?.ToString() ?? string.Empty);
+                    }
                 }
 
-                var argument = JsonSerializer.Serialize(callRequest.Arguments);
-
-                toolCalls.Add(
-                    new Message.ToolCall
-                    {
-                        Function = new Message.Function
-                        {
-                            Name = FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OllamaChatCompletionService.FunctionNameSeparator)
-                        },
-                    });
-
-            // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.
-            // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'  
-            if (toolCalls.Count == 0)
-            {
-                return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
+                (toolCallRequests ??= []).Add(toolCallRequest);
             }
 
-            var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
-
-            // If message content is null, adding it as empty string,
-            // because chat message content must be string.
-            assistantMessage.Content.Add(message.Content ?? string.Empty);
+            var assistantMessage = new Message()
+            {
+                Role = ChatRole.Assistant,
+                ToolCalls = toolCallRequests,
+                Content = message.Content ?? string.Empty
+            };
 
             return [assistantMessage];
         }
