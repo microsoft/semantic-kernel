@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -52,6 +53,7 @@ public static partial class KernelPluginFactory
     /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
+    [Experimental("SKEXP0001")]
     public static KernelPlugin CreateFromType(Type instanceType, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= EmptyServiceProvider.Instance;
@@ -117,6 +119,7 @@ public static partial class KernelPluginFactory
     /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
+    [Experimental("SKEXP0001")]
     public static KernelPlugin CreateFromType(Type instanceType, Func<object> createObject, string? pluginName = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(instanceType);

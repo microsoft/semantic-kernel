@@ -81,7 +81,7 @@ public class KernelPluginFactoryTests
     }
 
     #region private
-    private class MyKernelFunctions
+    private sealed class MyKernelFunctions
     {
         [KernelFunction("Function1")]
         [Description("Description for function 1.")]
