@@ -2,6 +2,8 @@
 
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -9,22 +11,22 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace GettingStartedWithTextSearch;
 
 /// <summary>
-/// Helper class for setting up and tearing down a <see cref="VolatileVectorStore"/> for testing purposes.
+/// Helper class for setting up and tearing down a <see cref="InMemoryVectorStore"/> for testing purposes.
 /// </summary>
-public class VolatileVectorStoreFixture : IAsyncLifetime
+public class InMemoryVectorStoreFixture : IAsyncLifetime
 {
     public ITextEmbeddingGenerationService TextEmbeddingGenerationService { get; private set; }
 
-    public VolatileVectorStore VolatileVectorStore { get; private set; }
+    public InMemoryVectorStore InMemoryVectorStore { get; private set; }
 
     public IVectorStoreRecordCollection<Guid, DataModel> VectorStoreRecordCollection { get; private set; }
 
     public string CollectionName => "records";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VolatileVectorStoreFixture"/> class.
+    /// Initializes a new instance of the <see cref="InMemoryVectorStoreFixture"/> class.
     /// </summary>
-    public VolatileVectorStoreFixture()
+    public InMemoryVectorStoreFixture()
     {
         IConfigurationRoot configRoot = new ConfigurationBuilder()
             .AddJsonFile("appsettings.Development.json", true)
@@ -33,8 +35,8 @@ public class VolatileVectorStoreFixture : IAsyncLifetime
             .Build();
         TestConfiguration.Initialize(configRoot);
 
-        // Create a volatile vector store.
-        this.VolatileVectorStore = new VolatileVectorStore();
+        // Create an InMemory vector store.
+        this.InMemoryVectorStore = new InMemoryVectorStore();
 
         // Create an embedding generation service.
         this.TextEmbeddingGenerationService = new OpenAITextEmbeddingGenerationService(
@@ -100,7 +102,7 @@ public class VolatileVectorStoreFixture : IAsyncLifetime
 
     /// <summary>
     /// Create a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings by:
-    /// 1. Creating an instance of <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}"/>
+    /// 1. Creating an instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>
     /// 2. Generating embeddings for each string.
     /// 3. Creating a record with a valid key for each string and it's embedding.
     /// 4. Insert the records into the collection.
@@ -114,7 +116,7 @@ public class VolatileVectorStoreFixture : IAsyncLifetime
         where TRecord : class
     {
         // Get and create collection if it doesn't exist.
-        var collection = this.VolatileVectorStore.GetCollection<TKey, TRecord>(this.CollectionName);
+        var collection = this.InMemoryVectorStore.GetCollection<TKey, TRecord>(this.CollectionName);
         await collection.CreateCollectionIfNotExistsAsync().ConfigureAwait(false);
 
         // Create records and generate embeddings for them.
