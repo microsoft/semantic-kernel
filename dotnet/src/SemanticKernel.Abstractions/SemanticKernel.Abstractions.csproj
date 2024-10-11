@@ -22,6 +22,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Connectors\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />

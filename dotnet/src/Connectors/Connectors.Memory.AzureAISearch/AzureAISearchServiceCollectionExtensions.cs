@@ -8,8 +8,8 @@ using Azure.Core.Serialization;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;

@@ -2,7 +2,7 @@
 
 using System;
 using System.Reflection;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
