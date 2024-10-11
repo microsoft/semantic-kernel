@@ -9,10 +9,10 @@
     url = <URL_HERE>
 [submodule "semantic-kernel"]
 	path = semantic-kernel
-	url = git@github.com:Bryan-Roe/semantic-kernel.git
+	url = https://github.com/Bryan-Roe/semantic-kernel.git
 [submodule "SK.AI"]
 	path = SK.AI
-	url = https://Bryan-Roe@github.com/Bryan-Roe/SK.AI
+	url = https://github.com/Bryan-Roe/SK.AI.git
 [submodule "tree-sitter-python"]
     path = tree-sitter-python
     url = <URL_HERE>

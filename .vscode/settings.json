@@ -103,4 +103,6 @@
   "azureFunctions.projectRuntime": "~4",
   "debug.internalConsoleOptions": "neverOpen",
   "azureFunctions.preDeployTask": "publish (functions)"
+  "azureFunctions.preDeployTask": "publish (functions)",
+  "cmake.sourceDirectory": "/home/broe/Documents/GitHub/semantic-kernel/build"
 }
