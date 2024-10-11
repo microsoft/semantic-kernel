@@ -31,7 +31,7 @@ public class VectorStore_VectorSearch_MultiStore_Redis(ITestOutputHelper output,
     [Theory]
     [InlineData(RedisStorageType.Json)]
     [InlineData(RedisStorageType.HashSet)]
-    public async Task ExampleWitDIAsync(RedisStorageType redisStorageType)
+    public async Task ExampleWithDIAsync(RedisStorageType redisStorageType)
     {
         // Use the kernel for DI purposes.
         var kernelBuilder = Kernel
