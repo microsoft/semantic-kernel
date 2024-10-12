@@ -39,7 +39,7 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// A prompt-template based on the agent instructions.
     /// </summary>
-    protected IPromptTemplate? Template { get; set; }
+    public IPromptTemplate? Template { get; protected set; }
 
     /// <summary>
     /// Format the system instructions for the agent.
