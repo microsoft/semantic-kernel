@@ -1,0 +1,135 @@
+{
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "type": "completion",
+  "description": "Write an email from the given bullet points",
+  "completion": {
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+<<<<<<< Updated upstream
+<<<<<<< div
+>>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Write an email from the given bullet points",
+  "default_settings": {
+>>>>>>> Stashed changes
+>>>>>>> head
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+    "max_tokens": 256,
+    "temperature": 0.0,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "default_backends": [
+    "text-davinci-002"
+  ]
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+  }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+  }
+>>>>>>> main
+=======
+>>>>>>> head
+}

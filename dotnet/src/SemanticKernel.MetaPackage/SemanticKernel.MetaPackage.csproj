@@ -1,0 +1,116 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Microsoft.SemanticKernel</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
+    <VersionSuffix>rc</VersionSuffix>
+  </PropertyGroup>
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel</Title>
+    <Description>Semantic Kernel common package collection, including SK Core, OpenAI, Azure OpenAI, DALL-E 2.
+Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+    <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+<<<<<<< main
+=======
+<<<<<<< div
+=======
+<<<<<<< main
+    <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+>>>>>>> main
+=======
+>>>>>>> head
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< main
+    <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+    <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
+    <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Skills\Skills.Core\Skills.Core.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" PrivateAssets="none" />
+>>>>>>> ms/feature/memory-plugin
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
+  </ItemGroup>
+</Project>

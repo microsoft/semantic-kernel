@@ -1,0 +1,199 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Core</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
+    <VersionSuffix>rc</VersionSuffix>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel Core</Title>
+    <Description>
+      Semantic Kernel core orchestration, runtime and functions.
+      This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.
+      Install this package manually only if you are selecting individual Semantic Kernel components.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+<<<<<<< main
+<<<<<<< main
+=======
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> div
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+<<<<<<< div
+>>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
+>>>>>>> upstream/main
+=======
+>>>>>>> head
+>>>>>>> div
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Experimental.Assistants" />
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+  </ItemGroup>
+
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+=======
+>>>>>>> origin/main
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/VectorStoreRecordPropertyReader.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/VectorStoreRecordPropertyReaderOptions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/VectorStoreRecordPropertyVerification.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/JsonOptionsCache.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
+</Project>

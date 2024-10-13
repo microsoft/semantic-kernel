@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.microsoft.semantic-kernel</groupId>
+    <artifactId>semantickernel-bom</artifactId>
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+<<<<<<< AI
+=======
+    <version>1.1.6-SNAPSHOT</version>
+>>>>>>> main
+    <version>0.2.10-alpha-SNAPSHOT</version>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+=======
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+=======
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+=======
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+=======
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+=======
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+=======
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+<<<<<<< div
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
+>>>>>>> head
+    <packaging>pom</packaging>
+
+    <name>Semantic Kernel Java BOM</name>
+    <description>Bill of Materials for all Semantic Kernel (Java) modules</description>
+    <url>https://www.github.com/microsoft/semantic-kernel</url>
+
+    <properties>
+        <com.fasterxml.jackson.core.version>2.16.1</com.fasterxml.jackson.core.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.9.3</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-gpt3-tokenizer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-memory-jdbc</artifactId>
+                <artifactId>semantickernel-plugin-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-memory-sqlite</artifactId>
+                <artifactId>aiservices-azureopenai</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+<<<<<<< AI
+=======
+                <artifactId>semantickernel-aiservices-huggingface</artifactId>
+>>>>>>> main
+                <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
+                <artifactId>aiservices-huggingface</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-aiservices-openai</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-aiservices-google</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+                <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+<<<<<<< AI
+                <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+>>>>>>> main
+
+=======
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>aiservices-azureopenai</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>aiservices-huggingface</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>aiservices-ollama</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>aiservices-openai</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>aiservices-azureopenai</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>aiservices-huggingface</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>aiservices-ollama</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>aiservices-openai</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+<<<<<<< div
+>>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-ai-openai</artifactId>
+                <version>1.0.0-beta.5</version>
+<<<<<<< AI
+=======
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-ai-openai</artifactId>
+                <version>1.0.0-beta.8</version>
+>>>>>>> main
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-identity</artifactId>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+                <version>1.12.1</version>
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+                <version>1.12.1</version>
+=======
+                <version>1.10.4</version>
+            </dependency>
+            <dependency>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+                <groupId>com.azure</groupId>
+                <artifactId>azure-identity</artifactId>
+                <version>1.10.4</version>
+            </dependency>
+            <dependency>
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.7</version>
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-core</artifactId>
+                <version>1.49.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${com.fasterxml.jackson.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${com.fasterxml.jackson.core.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${com.fasterxml.jackson.core.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-core</artifactId>
+                <version>3.5.8</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-core-http-netty</artifactId>
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+                <version>1.13.8</version>
+=======
+                <version>1.13.10</version>
+>>>>>>> Stashed changes
+=======
+                <version>1.13.10</version>
+>>>>>>> Stashed changes
+=======
+                <version>1.13.10</version>
+>>>>>>> Stashed changes
+=======
+                <version>1.13.10</version>
+>>>>>>> Stashed changes
+=======
+                <version>1.13.10</version>
+>>>>>>> Stashed changes
+=======
+                <version>1.13.10</version>
+<<<<<<< Updated upstream
+<<<<<<< div
+>>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+                <version>1.13.10</version>
+>>>>>>> Stashed changes
+=======
+                <version>1.13.10</version>
+>>>>>>> Stashed changes
+>>>>>>> head
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-search-documents</artifactId>
+                <version>11.6.0-beta.9</version>
+<<<<<<< AI
+=======
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${com.fasterxml.jackson.core.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.jknack</groupId>
+                <artifactId>handlebars</artifactId>
+                <version>4.3.1</version>
+>>>>>>> main
+            </dependency>
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>2.0.1.MR</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.12</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
+            </dependency>
+
+            <!-- Required for Android -->
+            <dependency>
+                <groupId>javax.xml.stream</groupId>
+                <artifactId>stax-api</artifactId>
+                <version>1.0-2</version>
+                <scope>provided</scope>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-annotations</artifactId>
+                <version>4.8.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.6.1</version>
+            </dependency>
+<<<<<<< AI
+=======
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>1.11.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>google-cloud-vertexai</artifactId>
+                <version>1.1.0</version>
+            </dependency>
+>>>>>>> main
+        </dependencies>
+    </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+
+            <distributionManagement>
+                <repository>
+                    <id>${releaseRepoId}</id>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <url>${releaseRepoUrl}</url>
+                    <name>${releaseRepoName}</name>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+
+    <developers>
+        <developer>
+            <id>microsoft</id>
+            <name>Microsoft</name>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/microsoft/semantic-kernel</url>
+        <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
+        <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        <tag>java-0.2.9-alpha</tag>
+=======
+        <tag>java-0.2.11-alpha</tag>
+>>>>>>> Stashed changes
+=======
+        <tag>java-0.2.11-alpha</tag>
+>>>>>>> Stashed changes
+=======
+        <tag>java-0.2.11-alpha</tag>
+>>>>>>> Stashed changes
+=======
+        <tag>java-0.2.11-alpha</tag>
+>>>>>>> Stashed changes
+=======
+        <tag>java-0.2.11-alpha</tag>
+>>>>>>> Stashed changes
+=======
+        <tag>java-0.2.11-alpha</tag>
+<<<<<<< Updated upstream
+<<<<<<< div
+>>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+        <tag>java-0.2.11-alpha</tag>
+>>>>>>> Stashed changes
+=======
+        <tag>java-0.2.11-alpha</tag>
+>>>>>>> Stashed changes
+>>>>>>> head
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+    </scm>
+</project>

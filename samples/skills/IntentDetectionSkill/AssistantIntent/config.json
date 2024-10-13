@@ -1,0 +1,135 @@
+{
+<<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  "schema": 1,
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "type": "completion",
+  "completion": {
+=======
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+<<<<<<< Updated upstream
+<<<<<<< div
+>>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Given a query and a list of possible intents, detect which intent the input matches",
+  "default_settings": {
+>>>>>>> Stashed changes
+>>>>>>> head
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+    "max_tokens": 100,
+    "temperature": 0.1,
+    "top_p": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "default_backends": [
+    "text-davinci-003"
+  ]
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+  }
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+  }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+  }
+>>>>>>> main
+=======
+>>>>>>> head
+}

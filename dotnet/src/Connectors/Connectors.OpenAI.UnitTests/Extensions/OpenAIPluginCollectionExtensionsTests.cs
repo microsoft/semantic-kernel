@@ -1,0 +1,495 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+<<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Chat;
+using Xunit;
+
+namespace SemanticKernel.Connectors.OpenAI.UnitTests.Core;
+
+/// <summary>
+/// Unit tests for <see cref="OpenAIPluginCollectionExtensions"/> class.
+/// </summary>
+public sealed class OpenAIPluginCollectionExtensionsTests
+{
+    [Fact]
+    public void TryGetFunctionAndArgumentsWithNonExistingFunctionReturnsFalse()
+    {
+        // Arrange
+<<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin");
+        var plugins = new KernelPluginCollection([plugin]);
+
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", string.Empty);
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin");
+        var plugins = new KernelPluginCollection([plugin]);
+
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", BinaryData.FromString(args));
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
+
+        // Act
+        var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(actualFunction);
+        Assert.Null(actualArguments);
+    }
+
+    [Fact]
+    public void TryGetFunctionAndArgumentsWithoutArgumentsReturnsTrue()
+    {
+        // Arrange
+<<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result", "MyFunction");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
+
+        var plugins = new KernelPluginCollection([plugin]);
+<<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", string.Empty);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", string.Empty);
+=======
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", BinaryData.FromString(args));
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", BinaryData.FromString(args));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", BinaryData.FromString(args));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
+
+        // Act
+        var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
+
+        // Assert
+        Assert.True(result);
+        Assert.Equal(function.Name, actualFunction?.Name);
+<<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        Assert.Null(actualArguments);
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+        Assert.Null(actualArguments);
+=======
+        Assert.Empty(actualArguments!);
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        Assert.Empty(actualArguments!);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        Assert.Empty(actualArguments!);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
+    }
+
+    [Fact]
+    public void TryGetFunctionAndArgumentsWithArgumentsReturnsTrue()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result", "MyFunction");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
+
+        var plugins = new KernelPluginCollection([plugin]);
+<<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}");
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}");
+=======
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", BinaryData.FromString("{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}"));
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", BinaryData.FromString("{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}"));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
+
+        // Act
+        var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
+
+        // Assert
+        Assert.True(result);
+        Assert.Equal(function.Name, actualFunction?.Name);
+
+        Assert.NotNull(actualArguments);
+
+        Assert.Equal("San Diego", actualArguments["location"]);
+        Assert.Equal("300", actualArguments["max_price"]);
+
+        Assert.Null(actualArguments["null_argument"]);
+    }
+}
