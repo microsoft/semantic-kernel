@@ -2,15 +2,26 @@
 
 using System.Diagnostics.CodeAnalysis;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 =======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -26,6 +37,13 @@ namespace Microsoft.SemanticKernel;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Data;
 
@@ -34,6 +52,11 @@ namespace Microsoft.SemanticKernel;
 
 namespace Microsoft.SemanticKernel.Data;
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -51,6 +74,15 @@ namespace Microsoft.SemanticKernel.Data;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 /// <summary>
 /// Extension methods to register Data services on the <see cref="IKernelBuilder"/>.
@@ -70,6 +102,11 @@ public static class KernelBuilderExtensions
         return builder;
     }
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -88,6 +125,15 @@ public static class KernelBuilderExtensions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
     /// <summary>
     /// Register a <see cref="VectorStoreTextSearch{TRecord}"/> instance with the specified service ID.
@@ -139,6 +185,11 @@ public static class KernelBuilderExtensions
             serviceId);
         return builder;
     }
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -156,4 +207,13 @@ public static class KernelBuilderExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 }

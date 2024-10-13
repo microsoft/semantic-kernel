@@ -1,4 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -33,6 +38,19 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
@@ -44,6 +62,11 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,6 +85,15 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
 from unittest.mock import Mock
 
@@ -74,6 +106,11 @@ from semantic_kernel.functions.kernel_plugin_collection import (
     KernelPluginCollection,
 )
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -91,11 +128,25 @@ from semantic_kernel.functions.kernel_plugin_collection import (
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -130,6 +181,19 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 
@@ -152,6 +216,11 @@ def test_init():
             name="test", description="test", template="{{$input}}"
         )
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -170,6 +239,15 @@ def test_init():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
@@ -190,6 +268,11 @@ def test_init():
     template = KernelPromptTemplate(
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template="{{$input}}")
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -207,12 +290,26 @@ def test_init():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     )
     assert template._blocks == [VarBlock(content="$input", name="input")]
     assert len(template._blocks) == 1
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -247,6 +344,19 @@ def test_init():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 def test_init_validate_template_format_fail():
     with pytest.raises(ValueError):
         KernelPromptTemplate(
@@ -264,6 +374,11 @@ def test_input_variables():
         name="test", description="test", template="{{plug.func input=$input}}"
     )
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -282,10 +397,24 @@ def test_input_variables():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
 def test_input_variables():
     config = PromptTemplateConfig(name="test", description="test", template="{{plug.func input=$input}}")
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -303,6 +432,15 @@ def test_input_variables():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     assert config.input_variables == []
     KernelPromptTemplate(prompt_template_config=config)
     assert config.input_variables[0] == InputVariable(name="input")
@@ -323,6 +461,11 @@ def test_extract_from_empty():
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -345,6 +488,19 @@ async def test_it_renders_code_using_input(kernel: Kernel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+@pytest.mark.asyncio
+async def test_it_renders_code_using_input(kernel: Kernel):
+=======
+>>>>>>> Stashed changes
+=======
+@pytest.mark.asyncio
+async def test_it_renders_code_using_input(kernel: Kernel):
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 @pytest.mark.asyncio
 async def test_it_renders_code_using_input(kernel: Kernel):
@@ -465,6 +621,11 @@ async def test_it_renders_code():
 async def test_it_renders_code_using_input():
     kernel = Kernel()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -482,6 +643,15 @@ async def test_it_renders_code_using_input():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     arguments = KernelArguments()
 
     @kernel_function(name="function")
@@ -489,6 +659,11 @@ async def test_it_renders_code_using_input():
         return f"F({arguments.get('input')})"
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -523,6 +698,19 @@ async def test_it_renders_code_using_input():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     func = KernelFunction.from_method(my_function, "test")
     assert func is not None
     kernel.add_function("test", func)
@@ -531,6 +719,11 @@ async def test_it_renders_code_using_input():
     template = "foo-{{test.function}}-baz"
     target = create_kernel_prompt_template(template, allow_dangerously_set_content=True)
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -547,9 +740,21 @@ async def test_it_renders_code_using_input():
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+<<<<<<< div
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+>>>>>>> head
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
     func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
     kernel.plugins.add_plugin_from_functions("test", [func])
@@ -558,6 +763,11 @@ async def test_it_renders_code_using_input():
     template = "foo-{{test.function}}-baz"
     target = create_kernel_prompt_template(template)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -575,12 +785,26 @@ async def test_it_renders_code_using_input():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     result = await target.render(kernel, arguments)
 
     assert result == "foo-F(INPUT-BAR)-baz"
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -603,6 +827,19 @@ async def test_it_renders_code_using_variables(kernel: Kernel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+@pytest.mark.asyncio
+async def test_it_renders_code_using_variables(kernel: Kernel):
+=======
+>>>>>>> Stashed changes
+=======
+@pytest.mark.asyncio
+async def test_it_renders_code_using_variables(kernel: Kernel):
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 @pytest.mark.asyncio
 async def test_it_renders_code_using_variables(kernel: Kernel):
@@ -611,6 +848,11 @@ async def test_it_renders_code_using_variables(kernel: Kernel):
 async def test_it_renders_code_using_variables():
     kernel = Kernel()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -628,6 +870,15 @@ async def test_it_renders_code_using_variables():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     arguments = KernelArguments()
 
     @kernel_function(name="function")
@@ -635,6 +886,11 @@ async def test_it_renders_code_using_variables():
         return f"F({myVar})"
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -669,6 +925,19 @@ async def test_it_renders_code_using_variables():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     func = KernelFunction.from_method(my_function, "test")
     assert func is not None
     kernel.add_function("test", func)
@@ -677,6 +946,11 @@ async def test_it_renders_code_using_variables():
     template = "foo-{{test.function $myVar}}-baz"
     target = create_kernel_prompt_template(template, allow_dangerously_set_content=True)
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -693,9 +967,22 @@ async def test_it_renders_code_using_variables():
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+<<<<<<< div
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+>>>>>>> head
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
     func = KernelFunction.from_native_method(my_function, "test")
     assert func is not None
     kernel.plugins.add_plugin_from_functions("test", [func])
@@ -704,6 +991,11 @@ async def test_it_renders_code_using_variables():
     template = "foo-{{test.function $myVar}}-baz"
     target = create_kernel_prompt_template(template)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -721,12 +1013,26 @@ async def test_it_renders_code_using_variables():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     result = await target.render(kernel, arguments)
 
     assert result == "foo-F(BAR)-baz"
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -749,6 +1055,19 @@ async def test_it_renders_code_using_variables_async(kernel: Kernel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+@pytest.mark.asyncio
+async def test_it_renders_code_using_variables_async(kernel: Kernel):
+=======
+>>>>>>> Stashed changes
+=======
+@pytest.mark.asyncio
+async def test_it_renders_code_using_variables_async(kernel: Kernel):
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 @pytest.mark.asyncio
 async def test_it_renders_code_using_variables_async(kernel: Kernel):
@@ -757,6 +1076,11 @@ async def test_it_renders_code_using_variables_async(kernel: Kernel):
 async def test_it_renders_code_using_variables_async():
     kernel = Kernel()
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -774,6 +1098,15 @@ async def test_it_renders_code_using_variables_async():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     arguments = KernelArguments()
 
     @kernel_function(name="function")
@@ -781,15 +1114,23 @@ async def test_it_renders_code_using_variables_async():
         return myVar
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     func = KernelFunction.from_method(my_function, "test")
     assert func is not None
     kernel.add_function("test", func)
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -799,12 +1140,24 @@ async def test_it_renders_code_using_variables_async():
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     func = KernelFunction.from_method(my_function, "test")
     assert func is not None
     kernel.add_function("test", func)
 =======
+<<<<<<< div
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     func = KernelFunction.from_method(my_function, "test")
     assert func is not None
@@ -814,6 +1167,11 @@ async def test_it_renders_code_using_variables_async():
     assert func is not None
     kernel.plugins.add_plugin_from_functions("test", [func])
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -831,12 +1189,26 @@ async def test_it_renders_code_using_variables_async():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
     arguments["myVar"] = "BAR"
 
     template = "foo-{{test.function $myVar}}-baz"
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -871,6 +1243,19 @@ async def test_it_renders_code_using_variables_async():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     target = create_kernel_prompt_template(template, allow_dangerously_set_content=True)
     result = await target.render(kernel, arguments)
 
@@ -895,6 +1280,11 @@ async def test_it_renders_code_error(kernel: Kernel):
     with pytest.raises(TemplateRenderException):
         await target.render(kernel, arguments)
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -911,14 +1301,32 @@ async def test_it_renders_code_error(kernel: Kernel):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+<<<<<<< div
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+>>>>>>> head
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
     target = create_kernel_prompt_template(template)
     result = await target.render(kernel, arguments)
 
     assert result == "foo-BAR-baz"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -936,3 +1344,12 @@ async def test_it_renders_code_error(kernel: Kernel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head

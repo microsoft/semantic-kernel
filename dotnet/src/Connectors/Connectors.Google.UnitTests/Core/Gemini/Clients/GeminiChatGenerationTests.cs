@@ -35,6 +35,11 @@ public sealed class GeminiChatGenerationTests : IDisposable
 
     [Fact]
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,6 +58,15 @@ public sealed class GeminiChatGenerationTests : IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task ShouldReturnEmptyMessageContentAndNullMetadataIfEmptyJsonInResponseAsync()
     {
         // Arrange
@@ -71,6 +85,11 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -88,6 +107,15 @@ public sealed class GeminiChatGenerationTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task ShouldReturnEmptyMessageContentIfNoContentInResponseAsync()
     {
         // Arrange
@@ -472,6 +500,11 @@ public sealed class GeminiChatGenerationTests : IDisposable
 
         var client = new GeminiChatCompletionClient(
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -491,6 +524,10 @@ public sealed class GeminiChatGenerationTests : IDisposable
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 httpClient: httpClient,
                 modelId: "fake-model",
@@ -498,6 +535,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
                 bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
                 location: "fake-location",
                 projectId: "fake-project-id");
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -515,12 +554,26 @@ public sealed class GeminiChatGenerationTests : IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
             httpClient: httpClient,
             modelId: "fake-model",
             apiVersion: VertexAIVersion.V1,
             bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
             location: "fake-location",
             projectId: "fake-project-id");
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -538,6 +591,15 @@ public sealed class GeminiChatGenerationTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
         var chatHistory = CreateSampleChatHistory();
 

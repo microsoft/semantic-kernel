@@ -3,6 +3,12 @@
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -20,7 +26,19 @@ using Microsoft.SemanticKernel;
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 <<<<<<< main
 =======
@@ -31,6 +49,12 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -46,7 +70,15 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 using RepoUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -81,6 +113,12 @@ public class Example43_GetModelResult : BaseTest
     }
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,6 +127,10 @@ public class Example43_GetModelResult : BaseTest
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
     {
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -101,8 +143,19 @@ public class Example43_GetModelResult : BaseTest
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
     {
 =======
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 <<<<<<< main
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
@@ -123,6 +176,12 @@ public class Example43_GetModelResult : BaseTest
     {
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -138,6 +197,14 @@ public class Example43_GetModelResult : BaseTest
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     }
 }

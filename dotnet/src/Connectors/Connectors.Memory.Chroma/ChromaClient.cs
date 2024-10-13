@@ -1,4 +1,10 @@
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,7 +28,17 @@
 >>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> Stashed changes
+>>>>>>> head
 
 using System;
 using System.Collections.Generic;
@@ -36,12 +52,22 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -60,6 +86,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -73,7 +101,19 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
 using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
+using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
+using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> main
+=======
+>>>>>>> head
 
 namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
@@ -112,6 +152,12 @@ public class ChromaClient : IChromaClient
         {
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -126,8 +172,17 @@ public class ChromaClient : IChromaClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+>>>>>>> head
     /// <param name="logger">Optional logger instance.</param>
     /// <exception cref="SKException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
     public ChromaClient(HttpClient httpClient, string? endpoint = null, ILogger? logger = null)
@@ -136,6 +191,12 @@ public class ChromaClient : IChromaClient
         {
             throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,8 +210,17 @@ public class ChromaClient : IChromaClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+>>>>>>> head
         }
 
         this._httpClient = httpClient;
@@ -291,6 +361,12 @@ public class ChromaClient : IChromaClient
             this._logger.LogError(e, "{Method} {Path} operation failed: {Message}, {Response}", request.Method.Method, operationName, e.Message, e.ResponseContent);
             throw;
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -307,12 +383,26 @@ public class ChromaClient : IChromaClient
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
             this._logger.LogError(e, "{0} {1} operation failed: {2}, {3}", request.Method.Method, operationName, e.Message, responseContent);
             throw new SKException($"{request.Method.Method} {operationName} operation failed: {e.Message}, {responseContent}", e);
         }
         response.EnsureSuccess(responseContent, this._logger);
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -326,8 +416,17 @@ public class ChromaClient : IChromaClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+>>>>>>> head
 
         return (response, responseContent);
     }

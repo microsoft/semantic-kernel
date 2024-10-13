@@ -4,6 +4,12 @@
 from pytest import mark, raises
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -13,6 +19,10 @@ from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -26,8 +36,19 @@ from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 =======
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -38,6 +59,12 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockSyntaxError
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,7 +80,15 @@ from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockS
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 

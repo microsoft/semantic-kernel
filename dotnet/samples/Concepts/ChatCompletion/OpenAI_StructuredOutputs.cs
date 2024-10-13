@@ -42,6 +42,11 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         // Initialize ChatResponseFormat object with JSON schema of desired response format.
         ChatResponseFormat chatResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -58,10 +63,16 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             name: "movie_result",
 =======
             jsonSchemaFormatName: "movie_result",
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -78,6 +89,16 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 =======
             jsonSchemaFormatName: "movie_result",
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            jsonSchemaFormatName: "movie_result",
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
             jsonSchema: BinaryData.FromString("""
                 {
                     "type": "object",
@@ -104,6 +125,11 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
                 }
                 """),
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -120,10 +146,16 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             strictSchemaEnabled: true);
 =======
             jsonSchemaIsStrict: true);
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -140,6 +172,16 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
 =======
             jsonSchemaIsStrict: true);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            jsonSchemaIsStrict: true);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         // Specify response format by setting ChatResponseFormat object in prompt execution settings.
         var executionSettings = new OpenAIPromptExecutionSettings

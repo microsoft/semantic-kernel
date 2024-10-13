@@ -9,6 +9,12 @@ from semantic_kernel.exceptions import PlannerException
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import SequentialPlanner
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -26,12 +32,30 @@ from semantic_kernel.planners import SequentialPlanner
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
 from semantic_kernel.planners.planning_exception import PlanningException
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,7 +71,15 @@ from semantic_kernel.planners.planning_exception import PlanningException
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
     SequentialPlannerConfig,
 )
@@ -77,6 +109,12 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
             sk_oai.AzureChatCompletion(
                 service_id="chat_completion",
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,7 +132,19 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
                 deployment_name="gpt-35-turbo-0613",
@@ -102,6 +152,12 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
                 api_key=api_key,
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,7 +173,15 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
             ),
         )
     else:
@@ -125,6 +189,12 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
             sk_oai.AzureTextCompletion(
                 service_id="text_completion",
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -142,7 +212,20 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
 <<<<<<< main
 =======
 =======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< div
+=======
 >>>>>>> main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
                 deployment_name="gpt-35-turbo-instruct",
@@ -150,6 +233,12 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
                 api_key=api_key,
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,7 +254,15 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
             ),
         )
 
@@ -174,6 +271,12 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
             sk_oai.AzureTextEmbedding(
                 service_id="text_embedding",
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -191,7 +294,19 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
                 deployment_name="text-embedding-ada-002",
@@ -199,6 +314,12 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
                 api_key=api_key,
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -214,7 +335,15 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
             ),
         )
     return kernel
@@ -248,11 +377,23 @@ async def test_create_plan_function_flow(
     # Arrange
     service_id = "chat_completion" if use_chat_model else "text_completion"
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -278,6 +419,8 @@ async def test_create_plan_function_flow(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -289,7 +432,17 @@ async def test_create_plan_function_flow(
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 <<<<<<< main
     kernel = initialize_kernel(False, use_chat_model)
@@ -302,6 +455,12 @@ async def test_create_plan_function_flow(
 >>>>>>> ms/small_fixes
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -317,7 +476,15 @@ async def test_create_plan_function_flow(
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     planner = SequentialPlanner(kernel, service_id=service_id)
 
     # Act
@@ -344,6 +511,12 @@ async def test_create_plan_function_flow(
 @pytest.mark.asyncio
 @pytest.mark.xfail(
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -363,13 +536,33 @@ async def test_create_plan_function_flow(
     raises=PlannerException,
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+    raises=PlannerException,
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+    raises=PlannerException,
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     raises=PlannerException,
 =======
     raises=PlanningException,
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -385,7 +578,15 @@ async def test_create_plan_function_flow(
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     reason="Test is known to occasionally produce unexpected results.",
 )
 async def test_create_plan_with_defaults(
@@ -423,6 +624,12 @@ async def test_create_plan_with_defaults(
 @pytest.mark.asyncio
 @pytest.mark.xfail(
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -442,13 +649,33 @@ async def test_create_plan_with_defaults(
     raises=PlannerException,
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+    raises=PlannerException,
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+    raises=PlannerException,
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     raises=PlannerException,
 =======
     raises=PlanningException,
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -464,7 +691,15 @@ async def test_create_plan_with_defaults(
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     reason="Test is known to occasionally produce unexpected results.",
 )
 async def test_create_plan_goal_relevant(prompt, expected_function, expected_plugin):
@@ -478,6 +713,12 @@ async def test_create_plan_goal_relevant(prompt, expected_function, expected_plu
         kernel,
         service_id="text_completion",
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -487,6 +728,10 @@ async def test_create_plan_goal_relevant(prompt, expected_function, expected_plu
             relevancy_threshold=0.65, max_relevant_functions=30
         ),
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -500,8 +745,19 @@ async def test_create_plan_goal_relevant(prompt, expected_function, expected_plu
             relevancy_threshold=0.65, max_relevant_functions=30
         ),
 =======
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         config=SequentialPlannerConfig(
             relevancy_threshold=0.65, max_relevant_functions=30
@@ -510,6 +766,12 @@ async def test_create_plan_goal_relevant(prompt, expected_function, expected_plu
         config=SequentialPlannerConfig(relevancy_threshold=0.65, max_relevant_functions=30),
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -525,7 +787,15 @@ async def test_create_plan_goal_relevant(prompt, expected_function, expected_plu
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     )
 
     # Act

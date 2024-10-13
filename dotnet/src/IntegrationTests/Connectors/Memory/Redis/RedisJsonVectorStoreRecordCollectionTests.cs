@@ -23,6 +23,11 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper output, RedisVectorStoreFixture fixture)
 {
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -57,6 +62,19 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     // If null, all tests will be enabled
     private const string SkipReason = "Requires Redis docker container up and running";
 
@@ -64,6 +82,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 
     [Theory(Skip = SkipReason)]
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,13 +103,31 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+<<<<<<< div
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
+>>>>>>> head
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> Stashed changes
     private const string TestCollectionName = "jsonhotels";
 
     [Theory]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -104,6 +145,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     [InlineData(TestCollectionName, true)]
     [InlineData("nonexistentcollection", false)]
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
@@ -119,15 +169,26 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
 =======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -143,6 +204,13 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
@@ -155,6 +223,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -172,11 +245,25 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool useRecordDefinition)
     {
         // Arrange
         var record = CreateTestHotel("Upsert-1", 1);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -211,6 +298,19 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         var collectionNamePostfix = useRecordDefinition ? "WithDefinition" : "WithType";
         var testCollectionName = $"jsoncreatetest{collectionNamePostfix}";
 
@@ -225,6 +325,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -245,6 +350,17 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        var getResult = await sut.GetAsync("Upsert-1", new GetRecordOptions { IncludeVectors = true });
+=======
+>>>>>>> Stashed changes
+=======
+        var getResult = await sut.GetAsync("Upsert-1", new GetRecordOptions { IncludeVectors = true });
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
         var getResult = await sut.GetAsync("Upsert-10", new GetRecordOptions { IncludeVectors = true });
         var searchResult = await sut.VectorizedSearchAsync(
@@ -253,6 +369,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
         var getResult = await sut.GetAsync("Upsert-1", new GetRecordOptions { IncludeVectors = true });
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -270,6 +391,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -277,6 +407,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         await sut.DeleteCollectionAsync();
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -297,11 +432,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        Assert.Equal("Upsert-1", upsertResult);
+=======
+>>>>>>> Stashed changes
+=======
+        Assert.Equal("Upsert-1", upsertResult);
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
         Assert.Equal("Upsert-10", upsertResult);
 =======
         Assert.Equal("Upsert-1", upsertResult);
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -319,6 +470,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -333,6 +493,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal(record.DescriptionEmbedding?.ToArray(), getResult?.DescriptionEmbedding?.ToArray());
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -351,6 +516,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
         Assert.Single(searchResult);
         var searchResultRecord = searchResult.First().Record;
@@ -369,6 +543,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -386,6 +565,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         // Output
         output.WriteLine(collectionExistResult.ToString());
         output.WriteLine(upsertResult);
@@ -393,6 +581,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -413,11 +606,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Fact(Skip = SkipReason)]
 =======
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -435,6 +644,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -455,6 +673,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -475,11 +698,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Theory(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Theory(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Theory(Skip = SkipReason)]
 =======
     [Theory]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -497,6 +736,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition)
@@ -535,6 +783,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -555,11 +808,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Theory(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Theory(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Theory(Skip = SkipReason)]
 =======
     [Theory]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -577,6 +846,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanUpsertManyDocumentsToVectorStoreAsync(bool useRecordDefinition)
@@ -614,6 +892,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -634,11 +917,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Theory(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Theory(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Theory(Skip = SkipReason)]
 =======
     [Theory]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -656,6 +955,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     [InlineData(true, true)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -698,6 +1006,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -718,11 +1031,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Fact(Skip = SkipReason)]
 =======
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -740,6 +1069,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
@@ -763,6 +1101,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -783,11 +1126,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Fact(Skip = SkipReason)]
 =======
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -805,6 +1164,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task ItFailsToGetDocumentsWithInvalidSchemaAsync()
     {
         // Arrange.
@@ -816,6 +1184,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -836,11 +1209,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Theory(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Theory(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Theory(Skip = SkipReason)]
 =======
     [Theory]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -858,6 +1247,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition)
@@ -891,6 +1289,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -911,11 +1314,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Fact(Skip = SkipReason)]
 =======
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -933,6 +1352,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
@@ -953,6 +1381,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -973,6 +1406,17 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Theory(Skip = SkipReason)]
     [InlineData("equality")]
@@ -1075,6 +1519,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1092,6 +1541,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
@@ -1103,6 +1561,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1123,11 +1586,27 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+=======
+    [Fact(Skip = SkipReason)]
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Fact(Skip = SkipReason)]
 =======
     [Fact]
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1145,6 +1624,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task ItThrowsMappingExceptionForFailedMapperAsync()
     {
         // Arrange
@@ -1160,6 +1648,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1194,6 +1687,19 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
     {
@@ -1260,6 +1766,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1275,6 +1786,10 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
@@ -1283,6 +1798,8 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1296,6 +1813,17 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+=======
+>>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     private static Hotel CreateTestHotel(string hotelId, int hotelCode)
     {
         var address = new HotelAddress { City = "Seattle", Country = "USA" };
@@ -1304,15 +1832,23 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             HotelId = hotelId,
             HotelName = $"My Hotel {hotelCode}",
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
             HotelCode = 1,
             Tags = ["pool", "air conditioning", "concierge"],
             FTSTags = ["pool", "air conditioning", "concierge"],
 =======
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -1322,12 +1858,24 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             HotelCode = 1,
             Tags = ["pool", "air conditioning", "concierge"],
             FTSTags = ["pool", "air conditioning", "concierge"],
 =======
+<<<<<<< div
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
             HotelCode = hotelCode,
             Tags = ["air conditioning", "concierge"],
@@ -1337,6 +1885,11 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             Tags = ["pool", "air conditioning", "concierge"],
             FTSTags = ["pool", "air conditioning", "concierge"],
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1354,6 +1907,15 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
             ParkingIncluded = true,
             LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
             Rating = 3.6,

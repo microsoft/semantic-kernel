@@ -3,12 +3,22 @@
 import logging
 from copy import copy
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -25,6 +35,12 @@ from copy import copy
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -49,8 +65,14 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -76,6 +98,12 @@ from semantic_kernel.template_engine.blocks.block_errors import CodeBlockRenderE
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -97,7 +125,13 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -114,6 +148,12 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -239,6 +279,14 @@ these will be ignored."
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -297,6 +345,11 @@ from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 =======
 <<<<<<< main
 from typing import TYPE_CHECKING, Any, ClassVar
@@ -307,7 +360,11 @@ from semantic_kernel.exceptions import CodeBlockRenderException, CodeBlockTokenE
 from semantic_kernel.exceptions.kernel_exceptions import (
     KernelFunctionNotFoundError,
     KernelPluginNotFoundError,
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
 )
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 =======
@@ -322,13 +379,21 @@ from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import CodeBlockRenderError, CodeBlockTokenError
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< head
+>>>>>>> head
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.template_exception import TemplateException
 =======
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
 from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -342,6 +407,10 @@ VALID_ARG_TYPES = [BlockTypes.VALUE, BlockTypes.VARIABLE, BlockTypes.NAMED_ARG]
 
 class CodeBlock(Block):
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< head
+>>>>>>> head
     _validated: bool = False
 
 <<<<<<< Updated upstream
@@ -463,7 +532,37 @@ these will be ignored."
             error_msg = f"Function `{function_block.content}` not found"
             logger.error(error_msg)
             raise CodeBlockRenderException(error_msg) from exc
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+)
+from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
+from semantic_kernel.template_engine.template_exception import TemplateException
+
+
+class CodeBlock(Block):
+    _validated: bool = False
+
+=======
+>>>>>>> Stashed changes
+=======
+)
+from semantic_kernel.template_engine.blocks.block import Block
+from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
+from semantic_kernel.template_engine.template_exception import TemplateException
+
+
+class CodeBlock(Block):
+    _validated: bool = False
+
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
         arguments_clone = copy(arguments)
         if len(self.tokens) > 1:
@@ -497,6 +596,12 @@ these will be ignored."
                 continue
             arguments[token.name] = rendered_value  # type: ignore
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 
         return arguments
 from logging import Logger
@@ -533,6 +638,13 @@ class CodeBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
         return arguments
 from logging import Logger
@@ -554,7 +666,11 @@ from semantic_kernel.template_engine.template_exception import TemplateException
 class CodeBlock(Block):
     _validated: bool = False
 
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
     def __init__(self, content: str, log: Logger) -> None:
         super().__init__(BlockTypes.Code, content, log)
 
@@ -569,6 +685,16 @@ class CodeBlock(Block):
         elif self._content.strip() == "":
             error = "This code block's content is empty"
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
         if error != "":
             self._log.error(error)
@@ -578,7 +704,17 @@ class CodeBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
 =======
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
 >>>>>>> Stashed changes
 =======
@@ -625,6 +761,11 @@ class CodeBlock(Block):
             self._log.error(error)
             return False, error
 
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 =======
 
         if error != "":
@@ -667,7 +808,15 @@ class CodeBlock(Block):
             self._log.error(error)
             return False, error
 
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         self._validated = True
         return True, ""
 
@@ -703,6 +852,16 @@ class CodeBlock(Block):
             self._log.error("Context variables are not set")
             return ""
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
         variables_clone = context.variables.clone()
         if len(parts) > 1:
@@ -725,6 +884,15 @@ class CodeBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> head
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -827,6 +995,11 @@ class CodeBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 =======
 
         variables_clone = context.variables.clone()
@@ -983,16 +1156,31 @@ these will be ignored."
                 continue
             arguments[token.name] = rendered_value
 >>>>>>> ms/small_fixes
+<<<<<<< div
 >>>>>>> main
 
         return arguments
 
 <<<<<<< div
 =======
+>>>>>>> origin/main
+
+        return arguments
+
+<<<<<<< head
+>>>>>>> head
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
 >>>>>>> Stashed changes
 =======
@@ -1144,6 +1332,8 @@ these will be ignored."
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1155,7 +1345,15 @@ these will be ignored."
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     def _get_function_from_skill_collection(
         self, skills: ReadOnlySkillCollectionBase, function_name: str
     ) -> Tuple[bool, Optional[SKFunctionBase]]:
@@ -1177,12 +1375,22 @@ these will be ignored."
             if skills.has_native_function(skill_name, function_name):
                 return True, skills.get_native_function(skill_name, function_name)
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1202,6 +1410,8 @@ these will be ignored."
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1212,13 +1422,27 @@ these will be ignored."
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
             if skills.has_semantic_function(skill_name, function_name):
                 return True, skills.get_semantic_function(skill_name, function_name)
 
         return False, None
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1234,7 +1458,15 @@ these will be ignored."
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
     def _get_function_from_plugin_collection(
         self, plugins: KernelPluginCollection, function_block: FunctionIdBlock
@@ -1260,6 +1492,12 @@ these will be ignored."
         return None
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1275,4 +1513,12 @@ these will be ignored."
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head

@@ -165,6 +165,12 @@ dotnet_diagnostic.CA1510.severity = none # ArgumentNullException.Throw
 dotnet_diagnostic.CA1512.severity = none # ArgumentOutOfRangeException.Throw
 dotnet_diagnostic.CA1515.severity = none # Making public types from exes internal
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -182,7 +188,19 @@ dotnet_diagnostic.CA1515.severity = none # Making public types from exes interna
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
 dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates
@@ -196,6 +214,12 @@ dotnet_diagnostic.CA1510.severity = none
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -218,12 +242,22 @@ dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging mes
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
 dotnet_diagnostic.CA2263.severity = suggestion # Use generic overload
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -241,6 +275,8 @@ dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -252,11 +288,27 @@ dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is 
 >>>>>>> Stashed changes
 
 dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
+=======
+
+dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
+
+>>>>>>> origin/main
+=======
+
+dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
+>>>>>>> Stashed changes
+=======
+
+dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
+<<<<<<< div
 =======
 
 dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
 
 >>>>>>> main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
 dotnet_diagnostic.VSTHRD200.severity = none # Use Async suffix for async methods
 dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.
@@ -494,6 +546,12 @@ charset = utf-8
 end_of_line = lf
 indent_size = 4
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -511,7 +569,20 @@ indent_size = 4
 <<<<<<< main
 =======
 =======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< div
+=======
 >>>>>>> main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 indent_style = space
 insert_final_newline = false
 tab_width = 4
@@ -521,6 +592,12 @@ indent_size = 2
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

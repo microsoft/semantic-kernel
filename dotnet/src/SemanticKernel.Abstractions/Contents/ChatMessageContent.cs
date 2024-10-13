@@ -55,6 +55,11 @@ public class ChatMessageContent : KernelContent
                 this.Items.Add(new TextContent(
                     text: value,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,6 +79,10 @@ public class ChatMessageContent : KernelContent
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     modelId: this.ModelId,
                     innerContent: this.InnerContent,
@@ -81,6 +90,8 @@ public class ChatMessageContent : KernelContent
                     metadata: this.Metadata
                 )
                 { MimeType = this.MimeType });
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,12 +109,26 @@ public class ChatMessageContent : KernelContent
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
                 ////modelId: this.ModelId, // %%% REDUNDANT
                 ////innerContent: this.InnerContent, // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION / MUTATION RISK (IGNORED FOR SERIALIZATION)
                     encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (IGNORED FOR SERIALIZATION)
                 ////metadata: this.Metadata, // %%% CARDINALITY MISMATCH / MUTATION RISK
                 )
                 { MimeType = this.MimeType }); // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -121,6 +146,15 @@ public class ChatMessageContent : KernelContent
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
             }
         }
     }
@@ -168,6 +202,11 @@ public class ChatMessageContent : KernelContent
     /// <remarks>
     /// The source is corresponds to the entity that generated this message.
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -184,10 +223,16 @@ public class ChatMessageContent : KernelContent
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     /// The property is intended to be used by agents to associate themselves with the messages they generate.
 =======
     /// The property is intended to be used by agents to associate themselves with the messages they generate or by a user who created it.
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -204,6 +249,16 @@ public class ChatMessageContent : KernelContent
 =======
     /// The property is intended to be used by agents to associate themselves with the messages they generate or by a user who created it.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+    /// The property is intended to be used by agents to associate themselves with the messages they generate or by a user who created it.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     /// </remarks>
     [Experimental("SKEXP0101")]
     [JsonIgnore]

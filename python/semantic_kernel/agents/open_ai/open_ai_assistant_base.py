@@ -5,6 +5,11 @@ import json
 import logging
 from collections.abc import AsyncIterable, Iterable
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +44,19 @@ from dataclasses import dataclass
 =======
 from dataclasses import dataclass
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+from dataclasses import dataclass
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+from dataclasses import dataclass
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from openai import AsyncOpenAI
@@ -59,6 +77,11 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_function_result_content,
     generate_message_content,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,9 +98,15 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
     generate_streaming_message_content,
     generate_streaming_tools_content,
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -95,6 +124,13 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_streaming_message_content,
     generate_streaming_tools_content,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     get_function_call_contents,
     get_message_contents,
 )
@@ -104,6 +140,11 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
 )
 from semantic_kernel.contents.annotation_content import AnnotationContent
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,10 +166,16 @@ from semantic_kernel.contents.annotation_content import AnnotationContent
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 =======
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 >>>>>>> Stashed changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,10 +193,25 @@ from semantic_kernel.connectors.ai.function_calling_utils import kernel_function
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
     merge_function_results,
 )
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -167,6 +229,15 @@ from semantic_kernel.connectors.ai.function_calling_utils import kernel_function
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -188,6 +259,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -206,6 +282,15 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 @dataclass
 class FunctionActionResult:
     """Function Action Result."""
@@ -216,6 +301,11 @@ class FunctionActionResult:
 
 
 @experimental_class
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -233,6 +323,15 @@ class FunctionActionResult:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 class OpenAIAssistantBase(Agent):
     """OpenAI Assistant Base class.
 
@@ -533,6 +632,11 @@ class OpenAIAssistantBase(Agent):
             ):
                 file_ids = getattr(tool_resources.code_interpreter, "file_ids", [])
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -554,6 +658,10 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
                 file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
 =======
@@ -565,7 +673,13 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -580,6 +694,8 @@ class OpenAIAssistantBase(Agent):
             if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
                 file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -599,6 +715,13 @@ class OpenAIAssistantBase(Agent):
             if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
                 file_ids = getattr(tool_resources.code_interpreter, "code_interpreter_file_ids", [])
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
             if hasattr(tool_resources, "file_search") and tool_resources.file_search:
                 vector_store_ids = getattr(
@@ -781,6 +904,11 @@ class OpenAIAssistantBase(Agent):
         self, thread_id: str, message: ChatMessageContent
     ) -> "Message":
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -802,6 +930,8 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
 =======
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
@@ -811,6 +941,7 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -819,11 +950,20 @@ class OpenAIAssistantBase(Agent):
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+=======
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+=======
+    async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
 =======
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -841,6 +981,13 @@ class OpenAIAssistantBase(Agent):
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
     async def add_chat_message(self, thread_id: str, message: ChatMessageContent) -> "Message":
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         """Add a chat message.
 
         Args:
@@ -870,6 +1017,11 @@ class OpenAIAssistantBase(Agent):
             metadata=metadata,
         )
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -891,6 +1043,10 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
 =======
         return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
@@ -900,7 +1056,13 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -913,6 +1075,8 @@ class OpenAIAssistantBase(Agent):
         return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
         return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -930,6 +1094,13 @@ class OpenAIAssistantBase(Agent):
         return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
         return await create_chat_message(self.client, thread_id, message, self.allowed_message_roles)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
     async def get_thread_messages(
         self, thread_id: str
@@ -964,6 +1135,11 @@ class OpenAIAssistantBase(Agent):
                 str(assistant_name), message
             )
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -985,6 +1161,10 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             content: ChatMessageContent = generate_message_content(str(assistant_name), message)
 =======
             content: ChatMessageContent = generate_message_content(str(assistant_name), message)
@@ -994,7 +1174,13 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1007,6 +1193,8 @@ class OpenAIAssistantBase(Agent):
             content: ChatMessageContent = generate_message_content(str(assistant_name), message)
             content: ChatMessageContent = generate_message_content(str(assistant_name), message)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1024,6 +1212,17 @@ class OpenAIAssistantBase(Agent):
             content: ChatMessageContent = generate_message_content(str(assistant_name), message)
             content: ChatMessageContent = generate_message_content(str(assistant_name), message)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
             if len(content.items) > 0:
                 yield content
@@ -1112,6 +1311,11 @@ class OpenAIAssistantBase(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1128,10 +1332,16 @@ class OpenAIAssistantBase(Agent):
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         metadata: dict[str, str] | None = {},
 =======
         metadata: dict[str, str] | None = None,
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1148,6 +1358,13 @@ class OpenAIAssistantBase(Agent):
 =======
         metadata: dict[str, str] | None = None,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat assistant.
@@ -1205,6 +1422,11 @@ class OpenAIAssistantBase(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1221,10 +1443,16 @@ class OpenAIAssistantBase(Agent):
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         metadata: dict[str, str] | None = {},
 =======
         metadata: dict[str, str] | None = None,
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1241,6 +1469,13 @@ class OpenAIAssistantBase(Agent):
 =======
         metadata: dict[str, str] | None = None,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Internal invoke method.
@@ -1272,6 +1507,11 @@ class OpenAIAssistantBase(Agent):
             raise AgentInitializationException("The assistant has been deleted.")
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1288,10 +1528,16 @@ class OpenAIAssistantBase(Agent):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
         if metadata is None:
             metadata = {}
 
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1310,6 +1556,13 @@ class OpenAIAssistantBase(Agent):
             metadata = {}
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         self._check_if_deleted()
         tools = self._get_tools()
 
@@ -1347,6 +1600,11 @@ class OpenAIAssistantBase(Agent):
 
             if run.status in self.error_message_states:
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1369,12 +1627,30 @@ class OpenAIAssistantBase(Agent):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+                raise AgentInvokeException(
+                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
+=======
+>>>>>>> Stashed changes
+=======
+                raise AgentInvokeException(
+                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
                 error_message = ""
                 if run.last_error and run.last_error.message:
                     error_message = run.last_error.message
                 raise AgentInvokeException(
                     f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}` "
                     f"with error: {error_message}"
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1392,6 +1668,15 @@ class OpenAIAssistantBase(Agent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
                 )
 
             # Check if function calling required
@@ -1402,6 +1687,11 @@ class OpenAIAssistantBase(Agent):
                         agent_name=self.name, fccs=fccs
                     )
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1423,6 +1713,10 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
 =======
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
@@ -1432,7 +1726,13 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1445,6 +1745,8 @@ class OpenAIAssistantBase(Agent):
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1462,6 +1764,13 @@ class OpenAIAssistantBase(Agent):
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
                     yield False, generate_function_call_content(agent_name=self.name, fccs=fccs)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
                     chat_history = ChatHistory()
                     _ = await self._invoke_function_calls(
@@ -1501,6 +1810,43 @@ class OpenAIAssistantBase(Agent):
                                 tool_call.code_interpreter.input,  # type: ignore
                             )
                             is_visible = True
+<<<<<<< Updated upstream
+                        elif tool_call.type == "function":
+                            function_step = function_steps.get(tool_call.id)
+                            assert function_step is not None  # nosec
+                            content = self._generate_function_result_content(
+                                agent_name=self.name,
+                                function_step=function_step,
+                                tool_call=tool_call,
+<<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
                         elif tool_call.type == "function":
                             function_step = function_steps.get(tool_call.id)
                             assert function_step is not None  # nosec
@@ -1510,26 +1856,7 @@ class OpenAIAssistantBase(Agent):
                                 tool_call=tool_call,
 <<<<<<< HEAD
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 >>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
                             content = generate_function_result_content(
                                 agent_name=self.name, function_step=function_step, tool_call=tool_call
 =======
@@ -1541,7 +1868,13 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1556,6 +1889,8 @@ class OpenAIAssistantBase(Agent):
                             content = generate_function_result_content(
                                 agent_name=self.name, function_step=function_step, tool_call=tool_call
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1575,6 +1910,13 @@ class OpenAIAssistantBase(Agent):
                             content = generate_function_result_content(
                                 agent_name=self.name, function_step=function_step, tool_call=tool_call
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
                             )
 
                         if content:
@@ -1588,6 +1930,11 @@ class OpenAIAssistantBase(Agent):
                     if message:
                         content = generate_message_content(self.name, message)
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1604,6 +1951,10 @@ class OpenAIAssistantBase(Agent):
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                         if len(content.items) > 0:
 =======
                         if content and len(content.items) > 0:
@@ -1612,6 +1963,8 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1624,11 +1977,23 @@ class OpenAIAssistantBase(Agent):
 =======
                         if content and len(content.items) > 0:
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
                             message_count += 1
                             yield True, content
                 processed_step_ids.add(completed_step.id)
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1647,6 +2012,15 @@ class OpenAIAssistantBase(Agent):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     async def invoke_stream(
         self,
         thread_id: str,
@@ -1829,6 +2203,11 @@ class OpenAIAssistantBase(Agent):
             return FunctionActionResult(function_call_content, function_result_content, tool_outputs)
         return None
 
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1846,6 +2225,15 @@ class OpenAIAssistantBase(Agent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     # endregion
 
     # region Content Generation Methods
@@ -2061,6 +2449,11 @@ class OpenAIAssistantBase(Agent):
     ) -> Message | None:
         """Retrieve a message from a thread."""
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2097,6 +2490,19 @@ class OpenAIAssistantBase(Agent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     async def _retrieve_message(self, thread_id: str, message_id: str) -> Message | None:
         """Retrieve a message from a thread.
 
@@ -2108,6 +2514,11 @@ class OpenAIAssistantBase(Agent):
             The message or None.
         """
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2142,6 +2553,19 @@ class OpenAIAssistantBase(Agent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         message: Message | None = None
         count = 0
         max_retries = 3
@@ -2271,6 +2695,11 @@ class OpenAIAssistantBase(Agent):
         self, fccs: list[FunctionCallContent], chat_history: ChatHistory
     ) -> list[Any]:
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2292,6 +2721,10 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< HEAD
 >>>>>>> Stashed changes
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
 =======
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
@@ -2301,7 +2734,13 @@ class OpenAIAssistantBase(Agent):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -2314,6 +2753,8 @@ class OpenAIAssistantBase(Agent):
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2331,6 +2772,17 @@ class OpenAIAssistantBase(Agent):
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
     async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+    async def _invoke_function_calls(self, fccs: list[FunctionCallContent], chat_history: ChatHistory) -> list[Any]:
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         """Invoke function calls and store results in chat history.
 
         Args:

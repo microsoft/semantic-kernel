@@ -1,5 +1,11 @@
 {
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,7 +38,19 @@
 =======
   "description": "Turns your intent into a SAFE DOS batch script",
   "default_settings": {
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+  "description": "Turns your intent into a SAFE DOS batch script",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Turns your intent into a SAFE DOS batch script",
+  "default_settings": {
+>>>>>>> Stashed changes
+>>>>>>> head
     "max_tokens": 1000,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -48,12 +66,22 @@
     "text-davinci-003"
   ]
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -71,6 +99,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -83,5 +113,13 @@
 =======
     "stop_sequences": ["exit /b %ERRORLEVEL%", "exit /b 1", "exit /b 0"]
   }
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 }

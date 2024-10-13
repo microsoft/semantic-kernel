@@ -7,6 +7,12 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 from pydantic import model_validator
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15,6 +21,10 @@ from pydantic import model_validator
 from semantic_kernel.exceptions import VarBlockRenderError, VarBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -37,6 +47,8 @@ from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxEr
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -53,13 +65,22 @@ from semantic_kernel.exceptions import VarBlockRenderError, VarBlockSyntaxError
 >>>>>>> ms/small_fixes
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
+<<<<<<< div
 <<<<<<< div
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -68,6 +89,21 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 =======
 =======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -83,6 +119,13 @@ if TYPE_CHECKING:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> head
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -179,8 +222,16 @@ class VarBlock(Block):
     def __init__(self, content: str, log: Logger) -> None:
         super().__init__(BlockTypes.Variable, content, log)
 
+<<<<<<< div
 =======
 <<<<<<< main
+=======
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -268,7 +319,16 @@ class VarBlock(Block):
     def __init__(self, content: str, log: Logger) -> None:
         super().__init__(BlockTypes.Variable, content, log)
 
+<<<<<<< div
 >>>>>>> main
+=======
+<<<<<<< Updated upstream
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     def is_valid(self) -> Tuple[bool, str]:
         error = ""
 
@@ -297,6 +357,16 @@ class VarBlock(Block):
         if self.name is not None and self.name.strip() != "":
             exists, value = variables.get(self.name)
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
             if not exists:
                 self._log.warning(f"Variable {VarBlock.PREFIX}{self.name} not found")
@@ -320,6 +390,11 @@ class VarBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 =======
 =======
 >>>>>>> Stashed changes
@@ -350,8 +425,21 @@ class VarBlock(Block):
             return ""
 
         return self._content[1:]
+<<<<<<< div
 
 >>>>>>> main
+=======
+
+>>>>>>> origin/main
+=======
+<<<<<<< main
+
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+
+>>>>>>> Stashed changes
+>>>>>>> head
     @staticmethod
     def has_var_prefix(text: str) -> bool:
         return text is not None and text.strip() != "" and text[0] == VarBlock.PREFIX
@@ -365,10 +453,20 @@ class VarBlock(Block):
         return "$"
 =======
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -395,6 +493,8 @@ class VarBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -406,7 +506,17 @@ class VarBlock(Block):
 >>>>>>> Stashed changes
 =======
 =======
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -470,6 +580,12 @@ class VarBlock(Block):
         return str(value) if value else ""
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -485,4 +601,12 @@ class VarBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head

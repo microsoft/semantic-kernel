@@ -24,6 +24,11 @@ if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
     from semantic_kernel.contents.chat_history import ChatHistory
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,10 +46,16 @@ if TYPE_CHECKING:
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -60,6 +71,15 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
 
 @experimental_class
@@ -74,6 +94,11 @@ class ChatHistoryAgentProtocol(Protocol):
 
     @abstractmethod
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,10 +115,16 @@ class ChatHistoryAgentProtocol(Protocol):
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["StreamingChatMessageContent"]:
 =======
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -110,6 +141,16 @@ class ChatHistoryAgentProtocol(Protocol):
 =======
     def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+    def invoke_stream(self, history: "ChatHistory") -> AsyncIterable["ChatMessageContent"]:
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         """Invoke the chat history agent protocol in streaming mode."""
         ...
 
@@ -172,6 +213,11 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             )
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -190,6 +236,15 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     @override
     async def invoke_stream(
         self,
@@ -220,6 +275,11 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         for message_index in range(message_count, len(self.messages)):
             messages.append(self.messages[message_index])
 
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -237,6 +297,15 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     def _is_message_visible(self, message: ChatMessageContent, message_queue_count: int) -> bool:
         """Determine if a message is visible to the user."""
         return (

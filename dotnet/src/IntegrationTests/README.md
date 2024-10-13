@@ -5,6 +5,12 @@
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -13,6 +19,10 @@
 =======
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -30,6 +40,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -39,8 +51,17 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+>>>>>>> head
    and deploy an instance of Azure OpenAI, deploy a model like "gpt-35-turbo-instruct" find your Endpoint and API key.
 2. **OpenAI**: go to [OpenAI](https://platform.openai.com) to register and procure your API key.
 3. **HuggingFace API key**: see https://huggingface.co/docs/huggingface_hub/guides/inference for details.
@@ -49,11 +70,28 @@
 5. **Postgres**: start a postgres with the [pgvector](https://github.com/pgvector/pgvector) extension installed. You can easily do it using the docker image [ankane/pgvector](https://hub.docker.com/r/ankane/pgvector).
 6. **Weaviate**: go to `IntegrationTests/Connectors/Weaviate` where `docker-compose.yml` is located and run `docker-compose up --build`. 
 <<<<<<< div
+<<<<<<< div
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -86,6 +124,11 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 
 ## Setup
 
@@ -99,6 +142,13 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> head
 5. **Oobabooga Text generation web UI**: Follow the [installation instructions](https://github.com/oobabooga/text-generation-webui#installation) to get a local Oobabooga instance running. Follow the [download instructions](https://github.com/oobabooga/text-generation-webui#downloading-models) to install a test model e.g. `python download-model.py gpt2`. Follow the [starting instructions](https://github.com/oobabooga/text-generation-webui#starting-the-web-ui) to start your local instance, enabling API, e.g. `python server.py --model gpt2 --listen --api --api-blocking-port "5000" --api-streaming-port "5005"`. Note that `--model` parameter is optional and models can be downloaded and hot swapped using exclusively the web UI, making it easy to test various models.
 6. **Postgres**: start a postgres with the [pgvector](https://github.com/pgvector/pgvector) extension installed. You can easily do it using the docker image [ankane/pgvector](https://hub.docker.com/r/ankane/pgvector).
 7. **Weaviate**: go to `IntegrationTests/Connectors/Weaviate` where `docker-compose.yml` is located and run `docker-compose up --build`.
@@ -172,6 +222,11 @@
 
 ## Setup
 
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 =======
 5. **Oobabooga Text generation web UI**: Follow the [installation instructions](https://github.com/oobabooga/text-generation-webui#installation) to get a local Oobabooga instance running. Follow the [download instructions](https://github.com/oobabooga/text-generation-webui#downloading-models) to install a test model e.g. `python download-model.py gpt2`. Follow the [starting instructions](https://github.com/oobabooga/text-generation-webui#starting-the-web-ui) to start your local instance, enabling API, e.g. `python server.py --model gpt2 --listen --api --api-blocking-port "5000" --api-streaming-port "5005"`. Note that `--model` parameter is optional and models can be downloaded and hot swapped using exclusively the web UI, making it easy to test various models.
 6. **Postgres**: start a postgres with the [pgvector](https://github.com/pgvector/pgvector) extension installed. You can easily do it using the docker image [ankane/pgvector](https://hub.docker.com/r/ankane/pgvector).
@@ -245,13 +300,27 @@
 
 ## Setup
 
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 > [!IMPORTANT]  
 > To run integration tests that depend on Azure OpenAI, you must have the Azure OpenAI models deployed and have the necessary permissions to access them.
 > These test authenticate using [AzureCliCredential](https://learn.microsoft.com/en-us/dotnet/api/azure.identity.azureclicredential?view=azure-dotnet).
 > Users must [Authenticate to Azure using Azure CLI](https://learn.microsoft.com/en-us/cli/azure/authenticate-azure-cli).
 
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -265,8 +334,17 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+>>>>>>> head
 ### Option 1: Use Secret Manager
 
 Integration tests will require secrets and credentials, to access OpenAI, Azure OpenAI,
@@ -293,6 +371,12 @@ dotnet user-secrets set "OpenAITextToImage:ModelId" "dall-e-3"
 dotnet user-secrets set "OpenAITextToImage:ApiKey" "..."
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -310,12 +394,30 @@ dotnet user-secrets set "OpenAITextToImage:ApiKey" "..."
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 dotnet user-secrets set "OpenAIEmbeddings:ServiceId" "text-embedding-ada-002"
 dotnet user-secrets set "OpenAIEmbeddings:ModelId" "text-embedding-ada-002"
 dotnet user-secrets set "OpenAIEmbeddings:ApiKey" "..."
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -331,7 +433,15 @@ dotnet user-secrets set "OpenAIEmbeddings:ApiKey" "..."
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 dotnet user-secrets set "AzureAIInference:ServiceId" "azure-ai-inference"
 dotnet user-secrets set "AzureAIInference:ApiKey" "..."
 dotnet user-secrets set "AzureAIInference:Endpoint" "https://contoso.models.ai.azure.com/"
@@ -373,12 +483,22 @@ dotnet user-secrets set "Planners:AzureOpenAI:ApiKey" "..."
 dotnet user-secrets set "Planners:OpenAI:ModelId" "gpt-3.5-turbo-1106"
 dotnet user-secrets set "Planners:OpenAI:ApiKey" "..."
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -397,6 +517,8 @@ dotnet user-secrets set "AzureAISearch:ApiKey" "..."
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -410,7 +532,19 @@ dotnet user-secrets set "AzureAISearch:ApiKey" "..."
 
 dotnet user-secrets set "AzureAISearch:ServiceUrl" "..."
 dotnet user-secrets set "AzureAISearch:ApiKey" "..."
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+
+dotnet user-secrets set "AzureAISearch:ServiceUrl" "..."
+dotnet user-secrets set "AzureAISearch:ApiKey" "..."
 >>>>>>> main
+=======
+>>>>>>> head
 ```
 
 ### Option 2: Use Configuration File

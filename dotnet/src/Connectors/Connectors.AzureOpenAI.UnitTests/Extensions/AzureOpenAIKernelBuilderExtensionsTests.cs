@@ -2,6 +2,11 @@
 
 using System;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,6 +41,19 @@ using System.ClientModel;
 =======
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,6 +85,11 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -83,10 +106,16 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
 =======
         var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,6 +132,16 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
 =======
         var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);
@@ -139,6 +178,11 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -155,10 +199,16 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
 =======
         var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,6 +225,16 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
 =======
         var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -229,6 +289,11 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -245,10 +310,16 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
 =======
         var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -265,6 +336,16 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
 =======
         var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);
@@ -299,6 +380,11 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -315,10 +401,16 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         var client = new AzureOpenAIClient(new Uri("https://endpoint"), "key");
 =======
         var client = new AzureOpenAIClient(new Uri("https://endpoint"), new ApiKeyCredential("key"));
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -335,6 +427,16 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
 =======
         var client = new AzureOpenAIClient(new Uri("https://endpoint"), new ApiKeyCredential("key"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        var client = new AzureOpenAIClient(new Uri("https://endpoint"), new ApiKeyCredential("key"));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<AzureOpenAIClient>(client);

@@ -1,5 +1,11 @@
 {
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,7 +38,19 @@
 =======
   "description": "Tell you the urgency level of the given text",
   "default_settings": {
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+  "description": "Tell you the urgency level of the given text",
+  "default_settings": {
+>>>>>>> Stashed changes
+=======
+  "description": "Tell you the urgency level of the given text",
+  "default_settings": {
+>>>>>>> Stashed changes
+>>>>>>> head
     "max_tokens": 64,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -43,12 +61,22 @@
     "text-davinci-002"
   ]
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -65,6 +93,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -76,5 +106,15 @@
 >>>>>>> Stashed changes
 =======
   }
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+  }
 >>>>>>> main
+=======
+>>>>>>> head
 }

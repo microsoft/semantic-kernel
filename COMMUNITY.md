@@ -11,11 +11,23 @@ We do our best to respond to each submission.
 
 We regularly have Community Office Hours that are open to the **public** to join.
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -47,6 +59,8 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -58,7 +72,17 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 Add Semantic Kernel events to your calendar - we're running two community calls to cater different timezones:
 
@@ -74,6 +98,12 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 * Asia Pacific timezone: download the [calendar-APAC.ics](https://aka.ms/sk-community-calendar-apac) file.
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,7 +119,15 @@ Add Semantic Kernel Development Office Hours for Python and Java to your calenda
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 If you have any questions or if you would like to showcase your project(s), please email what you'd like us to cover here: skofficehours[at]microsoft.com.
 
 If you are unable to make it live, all meetings will be recorded and posted online.

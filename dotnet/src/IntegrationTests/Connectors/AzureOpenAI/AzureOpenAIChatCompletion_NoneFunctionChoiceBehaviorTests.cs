@@ -7,6 +7,11 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -26,6 +31,10 @@ using System.Threading.Tasks;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -35,6 +44,8 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,6 +63,15 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -60,6 +80,11 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -77,6 +102,15 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
 {
@@ -229,6 +263,11 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -263,6 +302,19 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         var kernelBuilder = base.CreateKernelBuilder();
@@ -272,6 +324,11 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -288,10 +345,16 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
             credentials: new AzureCliCredential());
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -308,6 +371,16 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
 =======
             credentials: new AzureCliCredential());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            credentials: new AzureCliCredential());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         return kernelBuilder.Build();
     }

@@ -1,10 +1,19 @@
 SHELL = /bin/bash
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -100,9 +109,24 @@ SHELL = bash
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
 =======
 <<<<<<< main
 >>>>>>> main
+=======
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 .PHONY: help install clean build
 .SILENT:
@@ -179,6 +203,10 @@ build:
 <<<<<<< main
 SHELL = bash
 =======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 >>>>>>> ms/features/bugbash-prep
 
 .PHONY: help install clean build
@@ -234,6 +262,7 @@ install-python:
 	uv python install 3.10 3.11 3.12
 
 .ONESHELL:
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -244,6 +273,8 @@ install-python:
 =======
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 >>>>>>> origin/main
 
@@ -300,12 +331,15 @@ install-python:
 	uv python install 3.10 3.11 3.12
 
 .ONESHELL:
+=======
+>>>>>>> Stashed changes
 install-pre-commit:
 	echo "Installing pre-commit hooks"
 	uv run pre-commit install -c python/.pre-commit-config.yaml
 
 
 .ONESHELL:
+<<<<<<< Updated upstream
 install-sk:
 	echo "Creating and activating venv for python $(PYTHON_VERSION)"
 	uv venv --python $(PYTHON_VERSION)
@@ -388,6 +422,7 @@ install-pre-commit:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -404,6 +439,11 @@ install-pre-commit:
 
 .ONESHELL:
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 install-pre-commit:
 	poetry run pre-commit install
 	# Edit the pre-commit config file to change the config path
@@ -411,6 +451,12 @@ install-pre-commit:
 =======
 >>>>>>> upstream/main
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -428,8 +474,23 @@ install-pre-commit:
 <<<<<<< main
 =======
 =======
+>>>>>>> origin/main
+=======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< div
+=======
 >>>>>>> main
 =======
+>>>>>>> head
+=======
+>>>>>>> Stashed changes
 install-sk:
 	echo "Creating and activating venv for python $(PYTHON_VERSION)"
 	uv venv --python $(PYTHON_VERSION)
@@ -445,6 +506,12 @@ build:
 	uvx --from build pyproject-build --installer uv
 >>>>>>> ms/features/bugbash-prep
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -460,4 +527,12 @@ build:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head

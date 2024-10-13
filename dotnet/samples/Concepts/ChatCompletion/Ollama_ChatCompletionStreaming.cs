@@ -5,6 +5,11 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +44,19 @@ using OllamaSharp.Models.Chat;
 =======
 using OllamaSharp.Models.Chat;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+using OllamaSharp.Models.Chat;
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+using OllamaSharp.Models.Chat;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 namespace ChatCompletion;
 
@@ -65,6 +83,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -83,6 +106,15 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// <summary>
     /// This example demonstrates retrieving extra information chat completion streaming using Ollama.
     /// </summary>
@@ -121,6 +153,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     /// <summary>
     /// Demonstrates how you can template a chat history call while using the kernel for invocation.
     /// </summary>
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -138,6 +175,15 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     [Fact]
     public async Task StreamChatPromptAsync()
     {
@@ -166,6 +212,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
     /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -184,6 +235,15 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// Demonstrates how you can template a chat history call and get extra information from the response while using the kernel for invocation.
     /// </summary>
     /// <remarks>
@@ -219,6 +279,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     }
 
     /// <summary>
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -236,6 +301,15 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     /// This example demonstrates how the chat completion service streams text content.
     /// It shows how to access the response update via StreamingChatMessageContent.Content property
     /// and alternatively via the StreamingChatMessageContent.Items property.
@@ -339,6 +413,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         return fullMessage;
     }
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -357,6 +436,15 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
     /// <summary>
     /// Retrieve extra information from each streaming chunk response.
@@ -387,6 +475,11 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         }
         Console.WriteLine("------------------------");
     }
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -404,4 +497,13 @@ public class Ollama_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 }

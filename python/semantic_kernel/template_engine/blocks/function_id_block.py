@@ -3,12 +3,22 @@
 import logging
 from re import compile
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -25,6 +35,8 @@ from re import compile
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -36,13 +48,27 @@ from re import compile
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
 from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -50,6 +76,10 @@ from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
 <<<<<<< Updated upstream
 from semantic_kernel.template_engine.blocks.block import Block
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -73,6 +103,8 @@ from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockS
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -91,13 +123,27 @@ from pydantic import model_validator
 >>>>>>> ms/small_fixes
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockSyntaxError
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 
 logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
@@ -117,6 +163,14 @@ FUNCTION_ID_BLOCK_REGEX = (
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+
+logger: logging.Logger = logging.getLogger(__name__)
+>>>>>>> Stashed changes
+=======
+
+logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> Stashed changes
 <<<<<<< main
 
@@ -140,6 +194,12 @@ FUNCTION_ID_BLOCK_REGEX = r"^((?P<plugin>[0-9A-Za-z_]+)[.])?(?P<function>[0-9A-Z
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -158,6 +218,14 @@ FUNCTION_ID_BLOCK_MATCHER = compile(FUNCTION_ID_BLOCK_REGEX)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
@@ -184,8 +252,14 @@ class FunctionIdBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Anything other than that and a ValueError is raised.
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -207,6 +281,12 @@ class FunctionIdBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -232,7 +312,11 @@ class FunctionIdBlock(Block):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -245,6 +329,7 @@ class FunctionIdBlock(Block):
 =======
 <<<<<<< main
 >>>>>>> origin/main
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -302,7 +387,25 @@ class FunctionIdBlock(Block):
     function_name: str = ""
     plugin_name: str | None = None
 
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+    function_name: str = ""
+    plugin_name: str | None = None
+
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+    function_name: str = ""
+    plugin_name: str | None = None
+
+>>>>>>> Stashed changes
+>>>>>>> head
     @model_validator(mode="before")
     @classmethod
     def parse_content(cls, fields: dict[str, Any]) -> dict[str, Any]:
@@ -311,6 +414,12 @@ class FunctionIdBlock(Block):
         If both are present in the fields, return the fields as is.
         Otherwise, use the regex to extract the plugin and function name.
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -327,9 +436,24 @@ class FunctionIdBlock(Block):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
 =======
 >>>>>>> main
 =======
+>>>>>>> head
+=======
+>>>>>>> origin/main
+=======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
     function_name: Optional[str] = ""
     plugin_name: Optional[str] = None
 
@@ -342,6 +466,12 @@ class FunctionIdBlock(Block):
         Otherwise use the regex to extract the plugin and function name.
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -357,7 +487,15 @@ class FunctionIdBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
         """
         if "plugin_name" in fields and "function_name" in fields:
             return fields
@@ -371,6 +509,12 @@ class FunctionIdBlock(Block):
         return fields
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -379,6 +523,10 @@ class FunctionIdBlock(Block):
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -391,8 +539,19 @@ class FunctionIdBlock(Block):
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
 =======
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
@@ -400,6 +559,12 @@ class FunctionIdBlock(Block):
     def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -415,5 +580,13 @@ class FunctionIdBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
         return self.content

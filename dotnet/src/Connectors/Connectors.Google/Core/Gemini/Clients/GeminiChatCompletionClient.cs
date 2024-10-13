@@ -560,6 +560,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -579,6 +584,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         if (geminiResponse.Candidates is null || geminiResponse.Candidates.Count == 0)
         {
@@ -589,6 +598,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             }
 
             throw new KernelException("Gemini API doesn't return any data.");
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -606,10 +617,24 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         if (geminiResponse.PromptFeedback?.BlockReason is not null)
         {
             // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
             throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -627,6 +652,15 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         }
     }
 
@@ -656,6 +690,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -672,12 +711,18 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         => geminiResponse.Candidates!.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 =======
         => geminiResponse.Candidates == null ?
             [new GeminiChatMessageContent(role: AuthorRole.Assistant, content: string.Empty, modelId: this._modelId)]
             : geminiResponse.Candidates.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -696,6 +741,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             [new GeminiChatMessageContent(role: AuthorRole.Assistant, content: string.Empty, modelId: this._modelId)]
             : geminiResponse.Candidates.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
@@ -730,6 +782,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 calledToolResult: message.CalledToolResult,
                 metadata: message.Metadata,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -746,10 +803,16 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 choiceIndex: message.Metadata!.Index);
 =======
                 choiceIndex: message.Metadata?.Index ?? 0);
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -766,6 +829,16 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 =======
                 choiceIndex: message.Metadata?.Index ?? 0);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+                choiceIndex: message.Metadata?.Index ?? 0);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         }
 
         if (message.ToolCalls is not null)
@@ -777,6 +850,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 toolCalls: message.ToolCalls,
                 metadata: message.Metadata,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -793,10 +871,16 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 choiceIndex: message.Metadata!.Index);
 =======
                 choiceIndex: message.Metadata?.Index ?? 0);
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -813,6 +897,16 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 =======
                 choiceIndex: message.Metadata?.Index ?? 0);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+                choiceIndex: message.Metadata?.Index ?? 0);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         }
 
         return new GeminiStreamingChatMessageContent(
@@ -820,6 +914,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             content: message.Content,
             modelId: this._modelId,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -836,10 +935,16 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             choiceIndex: message.Metadata!.Index,
 =======
             choiceIndex: message.Metadata?.Index ?? 0,
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -856,6 +961,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 =======
             choiceIndex: message.Metadata?.Index ?? 0,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
             metadata: message.Metadata);
     }
 

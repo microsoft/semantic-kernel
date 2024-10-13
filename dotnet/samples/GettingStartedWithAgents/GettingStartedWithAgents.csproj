@@ -1,4 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15,10 +20,16 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 =======
 <Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +46,13 @@
 =======
 <Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
   <PropertyGroup>
     <AssemblyName>GettingStartedWithAgents</AssemblyName>
@@ -81,6 +99,11 @@
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -115,6 +138,19 @@
 =======
     <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+    <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+    <ProjectReference Include="..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
   </ItemGroup>
 
   <ItemGroup>
@@ -130,6 +166,11 @@
 
   <ItemGroup>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -150,12 +191,28 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    <None Remove="Resources\travelinfo.txt" />
+=======
+>>>>>>> Stashed changes
+=======
+    <None Remove="Resources\travelinfo.txt" />
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     <None Remove="Resources\*" />
     <None Remove="Resources\travelinfo.txt" />
 =======
     <None Remove="Resources\*" />
 >>>>>>> ms/main
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -173,6 +230,15 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
   </ItemGroup>
 
 </Project>

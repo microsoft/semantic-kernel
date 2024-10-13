@@ -3,6 +3,11 @@
 This folder contains a project with code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others.
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,6 +27,10 @@ This folder contains a project with code snippets that are related to online doc
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 | Subfolders        | Description                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -31,6 +40,8 @@ This folder contains a project with code snippets that are related to online doc
 
 You can run specific examples by using test filters (dotnet test --filter).
 Type "dotnet test --help" at the command line for more details.
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -48,6 +59,15 @@ Type "dotnet test --help" at the command line for more details.
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 | Subfolders             | Descriptio
 | ---------------------- | -----------------------------------------------------------------------------------------------------
 | `MicrosoftLearn`|de snippets that are related to[irsft Learn Docs](https://learn.microsoft.com/en-us/semantic-kernel/). |
@@ -70,6 +90,11 @@ e | col1 | col2 | col3 |
   |      |      |      |
 
   mmand line for more details.
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -87,6 +112,15 @@ e | col1 | col2 | col3 |
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 ## Configuring Secrets
 
@@ -97,6 +131,11 @@ to avoid the risk of leaking secrets into the repository, branches and pull requ
 You can also use environment variables if you prefer.
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -113,10 +152,16 @@ This project and KernelSyntaxExamples use the same pool of secrets.
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 This project and KernelSyntaxExamples use the same pool of secrets. 
 =======
 This project and KernelSyntaxExamples use the same pool of secrets.
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -133,6 +178,16 @@ This project and KernelSyntaxExamples use the same pool of secrets.
 =======
 This project and KernelSyntaxExamples use the same pool of secrets.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+This project and KernelSyntaxExamples use the same pool of secrets.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
 To set your secrets with Secret Manager:
 

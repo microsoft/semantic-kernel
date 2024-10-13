@@ -1,4 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15,10 +20,16 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +46,13 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 using System;
 using System.Collections;
@@ -88,6 +106,11 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -106,6 +129,15 @@ internal static class RedisVectorStoreCollectionCreateMapping
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, IReadOnlyDictionary<string, string> storagePropertyNames, bool useDollarPrefix)
     {
         var schema = new Schema();
@@ -113,6 +145,11 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -130,6 +167,15 @@ internal static class RedisVectorStoreCollectionCreateMapping
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, Dictionary<string, string> storagePropertyNames, bool useDollarPrefix)
     {
         var schema = new Schema();
@@ -162,6 +208,11 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     {
                         schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -178,9 +229,15 @@ internal static class RedisVectorStoreCollectionCreateMapping
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
                         schema.AddTextField(new FieldName($"$.{storageName}", storageName));
                         schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -198,6 +255,17 @@ internal static class RedisVectorStoreCollectionCreateMapping
                         schema.AddTextField(new FieldName($"$.{storageName}", storageName));
                         schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+                        schema.AddTextField(new FieldName($"$.{storageName}", storageName));
+                        schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
                     }
                     else
                     {
@@ -220,6 +288,11 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     {
                         schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -238,6 +311,15 @@ internal static class RedisVectorStoreCollectionCreateMapping
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
                         schema.AddTagField(new FieldName($"$.{storageName}", storageName));
                         schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
                     }
@@ -249,6 +331,11 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     {
                         schema.AddNumericField(new FieldName($"$.{storageName}", storageName));
                         schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -266,6 +353,15 @@ internal static class RedisVectorStoreCollectionCreateMapping
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
                     }
                     else
                     {
@@ -287,6 +383,11 @@ internal static class RedisVectorStoreCollectionCreateMapping
                 var storageName = storagePropertyNames[vectorProperty.DataModelPropertyName];
                 var indexKind = GetSDKIndexKind(vectorProperty);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -305,12 +406,26 @@ internal static class RedisVectorStoreCollectionCreateMapping
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
                 var vectorType = GetSDKVectorType(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
                 var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
                 {
                     ["TYPE"] = vectorType,
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -328,6 +443,15 @@ internal static class RedisVectorStoreCollectionCreateMapping
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
                 var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
                 schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
@@ -389,6 +513,11 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
     /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -407,6 +536,15 @@ internal static class RedisVectorStoreCollectionCreateMapping
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// Get the vector type to pass to the SDK based on the data type of the vector property.
     /// </summary>
     /// <param name="vectorProperty">The vector property definition.</param>
@@ -425,6 +563,11 @@ internal static class RedisVectorStoreCollectionCreateMapping
     }
 
     /// <summary>
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -442,6 +585,15 @@ internal static class RedisVectorStoreCollectionCreateMapping
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     /// Gets the type of object stored in the given enumerable type.
     /// </summary>
     /// <param name="type">The enumerable to get the stored type for.</param>

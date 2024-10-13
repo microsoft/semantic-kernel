@@ -10,6 +10,11 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -29,6 +34,10 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 /// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Redis when using JSON.
 /// </summary>
@@ -36,6 +45,8 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 {
     /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,12 +64,26 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using JSON.
 /// </summary>
 internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, JsonNode Node)>
 {
     /// <summary>All the properties from the record definition.</summary>
     private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -76,6 +101,15 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
     /// <summary>The JSON serializer options to use when converting between the data model and the Redis record.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -87,6 +121,11 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
     /// Initializes a new instance of the <see cref="RedisJsonGenericDataModelMapper"/> class.
     /// </summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -106,6 +145,10 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <param name="vectorStoreRecordDefinition">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
     /// <param name="jsonSerializerOptions">The JSON serializer options to use when converting between the data model and the Redis record.</param>
@@ -126,6 +169,8 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -138,6 +183,15 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// <param name="properties">All the properties from the record definition.</param>
     /// <param name="jsonSerializerOptions">The JSON serializer options to use when converting between the data model and the Redis record.</param>
     public RedisJsonGenericDataModelMapper(
@@ -152,6 +206,11 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 
         // Create a dictionary that maps from the data model property name to the storage property name.
         this._storagePropertyNames = properties.Select(x =>
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -169,6 +228,15 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         {
             if (x.StoragePropertyName is not null)
             {
@@ -196,6 +264,11 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
         var jsonObject = new JsonObject();
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -212,10 +285,16 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
         foreach (var property in this._properties)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -232,6 +311,16 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 =======
         foreach (var property in this._properties)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        foreach (var property in this._properties)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         {
             var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
             var sourceDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;
@@ -276,6 +365,11 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
         }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -292,10 +386,16 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         foreach (var property in this._vectorStoreRecordDefinition.Properties)
 =======
         foreach (var property in this._properties)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -312,6 +412,16 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
 =======
         foreach (var property in this._properties)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        foreach (var property in this._properties)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         {
             var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
             var targetDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;

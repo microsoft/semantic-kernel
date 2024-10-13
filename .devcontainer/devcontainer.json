@@ -7,6 +7,8 @@
 		"ghcr.io/devcontainers/features/dotnet:2.1.3": {
 		"ghcr.io/devcontainers/features/dotnet:2.0.6": {
 		"ghcr.io/devcontainers/features/dotnet:2.0.6": {
+		"ghcr.io/devcontainers/features/dotnet:2.0.6": {
+		"ghcr.io/devcontainers/features/dotnet:2.0.6": {
 			"version": "8"
 		},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
@@ -66,6 +68,8 @@
     }
   },
   "postCreateCommand": "sudo chmod a+rwx /usr/share/dotnet" // avoids needing to run as 'sudo' when starting KernelHttpServer
+}
+}
 }
 }
 }

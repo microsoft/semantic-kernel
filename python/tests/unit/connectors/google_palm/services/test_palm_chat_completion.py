@@ -2,6 +2,11 @@
 
 import asyncio
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,6 +41,19 @@ import asyncio
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -66,6 +84,11 @@ def test_google_palm_chat_completion_init_with_empty_api_key(google_palm_unit_te
             ai_model_id=ai_model_id,
             env_file_path="test.env",
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -84,6 +107,15 @@ def test_google_palm_chat_completion_init_with_empty_api_key(google_palm_unit_te
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
 import sys
 from unittest.mock import MagicMock, patch
@@ -129,6 +161,11 @@ def test_google_palm_chat_completion_init_with_empty_api_key() -> None:
             ai_model_id=ai_model_id,
             api_key="",
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -146,11 +183,25 @@ def test_google_palm_chat_completion_init_with_empty_api_key() -> None:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         )
 
 
 @pytest.mark.asyncio
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -171,11 +222,27 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters(go
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+async def test_google_palm_text_completion_complete_chat_call_with_parameters(google_palm_unit_test_env) -> None:
+=======
+>>>>>>> Stashed changes
+=======
+async def test_google_palm_text_completion_complete_chat_call_with_parameters(google_palm_unit_test_env) -> None:
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 async def test_google_palm_text_completion_complete_chat_call_with_parameters(google_palm_unit_test_env) -> None:
 =======
 async def test_google_palm_text_completion_complete_chat_call_with_parameters() -> None:
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -193,6 +260,15 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     class MockChatResponse(ChatResponse):
         def last(self):
             return ""
@@ -214,6 +290,11 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
     ):
         ai_model_id = "test_model_id"
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -232,10 +313,24 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 =======
         api_key = "test_api_key"
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -253,6 +348,15 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         chats = ChatHistory()
         chats.add_user_message("Hello word")
         gp_chat_completion = GooglePalmChatCompletion(
@@ -263,10 +367,18 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         )
         settings = GooglePalmChatPromptExecutionSettings()
         response = await gp_chat_completion.get_chat_message_contents(chats, settings)
 =======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -282,6 +394,13 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
         )
         settings = GooglePalmChatPromptExecutionSettings()
@@ -292,6 +411,11 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
         settings = GooglePalmChatPromptExecutionSettings()
         response = await gp_chat_completion.complete_chat(chats, settings)
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -309,6 +433,15 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
         assert isinstance(response[0].content, str) and len(response) > 0
         print(mock_gp.chat)
@@ -319,6 +452,11 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
             top_k=settings.top_k,
             candidate_count=settings.candidate_count,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -339,11 +477,27 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+            messages=[message.to_dict(role_key="author") for message in chats.messages],
+=======
+>>>>>>> Stashed changes
+=======
+            messages=[message.to_dict(role_key="author") for message in chats.messages],
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
             messages=[message.to_dict(role_key="author") for message in chats.messages],
 =======
             messages=gp_chat_completion._prepare_chat_history_for_request(chats),
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -361,4 +515,13 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         )

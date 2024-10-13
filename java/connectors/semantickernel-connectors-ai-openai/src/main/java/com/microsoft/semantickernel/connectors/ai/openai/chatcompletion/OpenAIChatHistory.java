@@ -7,6 +7,12 @@ import javax.annotation.Nullable;
 /** OpenAI Chat content */
 public final class OpenAIChatHistory extends ChatHistory {
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,7 +30,11 @@ public final class OpenAIChatHistory extends ChatHistory {
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
 public class OpenAIChatHistory extends ChatHistory {
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -37,6 +47,17 @@ public class OpenAIChatHistory extends ChatHistory {
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+public class OpenAIChatHistory extends ChatHistory {
+>>>>>>> origin/main
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

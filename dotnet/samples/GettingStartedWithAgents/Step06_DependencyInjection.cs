@@ -1,4 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -15,10 +20,16 @@
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +46,16 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -95,6 +116,11 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                     Instructions = TutorInstructions,
                     Name = TutorName,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,12 +137,18 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                     Kernel = sp.GetRequiredService<Kernel>(),
 =======
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
                     Kernel = sp.GetRequiredService<Kernel>(),
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -135,6 +167,18 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                     Kernel = sp.GetRequiredService<Kernel>(),
                     Kernel = sp.GetRequiredService<Kernel>().Clone(),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+                    Kernel = sp.GetRequiredService<Kernel>().Clone(),
+                    Kernel = sp.GetRequiredService<Kernel>(),
+                    Kernel = sp.GetRequiredService<Kernel>().Clone(),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
                 });
 
         // Create a service provider for resolving registered services
@@ -145,8 +189,14 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
         AgentClient agentClient = serviceProvider.GetRequiredService<AgentClient>();
 
         // Execute the agent-client
+<<<<<<< div
+<<<<<<< HEAD
+=======
+>>>>>>> head
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -166,11 +216,17 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         await WriteAgentResponse("The sunset is very colorful.");
 =======
         await WriteAgentResponse("The sunset is nice.");
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -188,10 +244,24 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         await WriteAgentResponse("The sunset is very colorful.");
         await WriteAgentResponse("The sunset is nice.");
         await WriteAgentResponse("The sunset is very colorful.");
  6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -209,6 +279,15 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         await WriteAgentResponse("The sunset is setting over the mountains.");
         await WriteAgentResponse("The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.");
 

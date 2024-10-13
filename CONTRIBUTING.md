@@ -8,6 +8,12 @@
 
 can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -25,7 +31,11 @@ can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
 You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -40,6 +50,18 @@ You can contribute to Semantic Kernel with issues and pull requests (PRs). Simpl
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 filing issues for problems you encounter is a great way to contribute. Contributing
 code is greatly appreciated.
@@ -58,6 +80,12 @@ New New issues can be reported in our [list of issues](https://github.com/semant
 >>>>>>>+8590ec5
 ore filing a new issue, please search the list of issues to make sure it does
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,7 +103,20 @@ ore filing a new issue, please search the list of issues to make sure it does
 <<<<<<< main
 =======
 =======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< div
+=======
 >>>>>>> main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 New issues can be reported in our [list of issues](https://github.com/microsoft/semantic-kernel/issues).
 
 Before filing a new issue, please search the list of issues to make sure it does
@@ -84,6 +125,12 @@ Before filing a new issue, please search the list of issues to make sure it does
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -108,6 +155,12 @@ report should contain the following information:
 
 <<<<<<- A high-level description of the problem.
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,7 +178,11 @@ report should contain the following information:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
 - A high-level description of the problem.
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -140,6 +197,18 @@ report should contain the following information:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+- A high-level description of the problem.
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+- A high-level description of the problem.
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 - A _minimal reproduction_, i.e. the smallest size of code/configuration required
   to reproduce the wrong behavior.
@@ -159,6 +228,12 @@ report should contain the following information:
 >>>>>>>+8590ec5
 ntributing Changes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -176,7 +251,11 @@ ntributing Changes
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
 
 ## Contributing Changes
 >>>>>>> origin/main
@@ -193,6 +272,20 @@ ntributing Changes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+
+## Contributing Changes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+
+## Contributing Changes
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 Project maintainers will merge accepted code changes from contributors.
 
@@ -202,6 +295,12 @@ DO's:
 
 <<<<<<- **DO** follow the standard coding conventions
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -219,7 +318,11 @@ DO's:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
 - **DO** follow the standard coding conventions
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -234,6 +337,18 @@ DO's:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+- **DO** follow the standard coding conventions
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+- **DO** follow the standard coding conventions
+>>>>>>> origin/main
 >>>>>>> Stashed changes
 
   - [.NET](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
@@ -270,6 +385,12 @@ DON'Ts:
 -   **DO** clearly state on an issue that you are going to take on implementing it.
 -   **DO** blog and tweet (or whatever) about your contributions, frequently!
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -287,6 +408,13 @@ DON'Ts:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+=======
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 DON'Ts:
 
@@ -299,7 +427,15 @@ DON'Ts:
 -   **DON'T** make new APIs without filing an issue and discussing with us first.
 >>>>>>>+8590ec5
 reaking Changes
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 DON'Ts:
 
@@ -312,6 +448,8 @@ DON'Ts:
 -   **DON'T** make new APIs without filing an issue and discussing with us first.
 >>>>>>>+8590ec5
 reaking Changes
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -326,6 +464,9 @@ reaking Changes
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+>>>>>>> Stashed changes
 
 DON'Ts:
 
@@ -338,6 +479,11 @@ DON'Ts:
 -   **DON'T** make new APIs without filing an issue and discussing with us first.
 >>>>>>>+8590ec5
 reaking Changes
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
 Contributions must maintain API signature and behavioral compatibility. Contributions
 that include breaking changes will be rejected. Please file an issue to discuss

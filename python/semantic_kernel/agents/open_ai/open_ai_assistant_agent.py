@@ -109,6 +109,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 
         if not client and not openai_settings.api_key:
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -128,6 +133,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 <<<<<<< main
             raise AgentInitializationError(
@@ -141,7 +150,13 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -156,6 +171,8 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             )
             raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,6 +192,19 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             )
             raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            raise AgentInitializationError(
+                "The OpenAI API key is required, if a client is not provided."
+            )
+            raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
 
@@ -412,6 +442,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             )
         except ValidationError as ex:
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -431,6 +466,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 <<<<<<< main
             raise AgentInitializationError(
@@ -444,6 +483,8 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -456,10 +497,24 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
             raise AgentInitializationError(
                 "Failed to create OpenAI settings.", ex
             ) from ex
             raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -477,6 +532,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
         return openai_settings
 
@@ -489,6 +553,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -505,10 +574,16 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             yield self._create_open_ai_assistant_definition(assistant)
 =======
             yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -525,6 +600,13 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
             yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
     @classmethod
     async def retrieve(
@@ -565,6 +647,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         )
         if not client and not openai_settings.api_key:
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -584,6 +671,10 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 <<<<<<< main
             raise AgentInitializationError(
@@ -592,6 +683,8 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
             raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
 >>>>>>> upstream/main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -609,10 +702,24 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
             raise AgentInitializationError(
                 "The OpenAI API key is required, if a client is not provided."
             )
             raise AgentInitializationException("The OpenAI API key is required, if a client is not provided.")
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -630,6 +737,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         if not openai_settings.chat_model_id:
             raise AgentInitializationException("The OpenAI chat model ID is required.")
         if not client:
@@ -648,6 +764,11 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         )
         return OpenAIAssistantAgent(kernel=kernel, **assistant_definition)
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -664,9 +785,15 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
         return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -684,5 +811,12 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
         return OpenAIAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
     # endregion

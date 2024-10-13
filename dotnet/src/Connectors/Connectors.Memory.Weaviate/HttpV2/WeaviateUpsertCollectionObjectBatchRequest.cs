@@ -15,6 +15,11 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
     public WeaviateUpsertCollectionObjectBatchRequest() { }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -31,10 +36,16 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public WeaviateUpsertCollectionObjectBatchRequest(List<JsonNode> collectionObjects)
 =======
     public WeaviateUpsertCollectionObjectBatchRequest(List<JsonObject> collectionObjects)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -51,6 +62,16 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
 =======
     public WeaviateUpsertCollectionObjectBatchRequest(List<JsonObject> collectionObjects)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+    public WeaviateUpsertCollectionObjectBatchRequest(List<JsonObject> collectionObjects)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     {
         this.CollectionObjects = collectionObjects;
     }
@@ -60,6 +81,11 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
 
     [JsonPropertyName("objects")]
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -76,10 +102,16 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public List<JsonNode>? CollectionObjects { get; set; }
 =======
     public List<JsonObject>? CollectionObjects { get; set; }
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -96,6 +128,16 @@ internal sealed class WeaviateUpsertCollectionObjectBatchRequest
 =======
     public List<JsonObject>? CollectionObjects { get; set; }
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+    public List<JsonObject>? CollectionObjects { get; set; }
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
     public HttpRequestMessage Build()
     {

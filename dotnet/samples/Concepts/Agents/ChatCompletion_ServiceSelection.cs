@@ -9,6 +9,11 @@ namespace Agents;
 /// <summary>
 /// Demonstrate service selection for <see cref="ChatCompletionAgent"/> through setting service-id
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -25,10 +30,16 @@ namespace Agents;
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 /// on <see cref="ChatHistoryKernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
 =======
 /// on <see cref="KernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -45,6 +56,16 @@ namespace Agents;
 =======
 /// on <see cref="KernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+/// on <see cref="KernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 /// when calling <see cref="ChatCompletionAgent.InvokeAsync"/>
 /// </summary>
 public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseTest(output)

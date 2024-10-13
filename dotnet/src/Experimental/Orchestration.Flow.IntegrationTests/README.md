@@ -1,4 +1,10 @@
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -18,13 +24,33 @@
 # Experimental Flow Orchestrator Integration Tests
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+# Experimental Flow Orchestrator Integration Tests
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+# Experimental Flow Orchestrator Integration Tests
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 # Experimental Flow Orchestrator Integration Tests
 =======
 ﻿# Experimental Flow Orchestrator Integration Tests
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,19 +66,37 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 
 ## Requirements
 
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
 <<<<<<< HEAD
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -73,6 +117,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -84,13 +130,29 @@
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< HEAD
 >>>>>>> main
+=======
+>>>>>>> head
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
 =======
    and deploy an instance of Azure OpenAI, deploy a model like "gpt-35-turbo-instruct" find your Endpoint and API key.
 >>>>>>> origin/111
 2. **OpenAI**: go to [OpenAI](https://platform.openai.com) to register and procure your API key.
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -106,12 +168,26 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
 2. **OpenAI**: go to [OpenAI](https://openai.com/product/) to register and procure your API key.
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -127,7 +203,15 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 3. **Azure Bing Web Search API**: go to [Bing Web Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
    and select `Try Now` to get started.
 
@@ -137,6 +221,12 @@
 
 Integration tests will require secrets and credentials, to access OpenAI, Azure OpenAI,
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -156,13 +246,33 @@ Bing and other resources.
 Bing and other resources.
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+Bing and other resources.
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+Bing and other resources.
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 Bing and other resources.
 =======
 Bing and other resources. 
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -178,7 +288,15 @@ Bing and other resources.
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 
 We suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 to avoid the risk of leaking secrets into the repository, branches and pull requests.
@@ -187,12 +305,22 @@ You can also use environment variables if you prefer.
 To set your secrets with Secret Manager:
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -209,6 +337,8 @@ To set your secrets with Secret Manager:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -220,7 +350,15 @@ To set your secrets with Secret Manager:
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 ```sh {"id":"01J6KPR1FAFBFPM4TCN6WEPFNE"}
 cd dotnet/src/IntegrationTests
 
@@ -233,6 +371,12 @@ dotnet user-secrets set "OpenAI:ApiKey" "..."
 dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -247,8 +391,17 @@ dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+>>>>>>> head
 =======
 ```
 >>>>>>> origin/main
@@ -268,6 +421,12 @@ dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-text-davinci-003"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -283,7 +442,15 @@ dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "gpt-4"
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
@@ -298,12 +465,22 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 
 ### Option 2: Use Configuration File
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -320,6 +497,8 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -331,7 +510,17 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< HEAD
 >>>>>>> main
+=======
+>>>>>>> head
 
 1. Create a `testsettings.development.json` file next to `testsettings.json`. This file will be ignored by git,
    the content will not end up in pull requests, so it's safe for personal settings. Keep the file safe.
@@ -347,6 +536,12 @@ For example:
     "ServiceId": "gpt-3.5-turbo-instruct",
     "ModelId": "gpt-3.5-turbo-instruct",
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -365,7 +560,15 @@ For example:
 >>>>>>> origin/main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+>>>>>>> head
 1. Create a `testsettings.development.json` file next to `testsettings.json`. This file will be ignored by git,
    the content will not end up in pull requests, so it's safe for personal settings. Keep the file safe.
 2. Edit `testsettings.development.json` and
@@ -385,6 +588,12 @@ For example:
     "ModelId": "text-davinci-003",
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -400,12 +609,26 @@ For example:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     "ChatModelId": "gpt-4",
     "ApiKey": "sk-...."
   },
   "AzureOpenAI": {
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -414,6 +637,10 @@ For example:
     "ServiceId": "gpt-35-turbo-instruct",
     "DeploymentName": "gpt-35-turbo-instruct",
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -426,8 +653,19 @@ For example:
     "ServiceId": "gpt-35-turbo-instruct",
     "DeploymentName": "gpt-35-turbo-instruct",
 =======
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     "ServiceId": "gpt-35-turbo-instruct",
     "DeploymentName": "gpt-35-turbo-instruct",
@@ -436,6 +674,12 @@ For example:
     "DeploymentName": "text-davinci-003",
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -451,7 +695,15 @@ For example:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     "ChatDeploymentName": "gpt-4",
     "Endpoint": "https://contoso.openai.azure.com/",
     "ApiKey": "...."
@@ -475,6 +727,12 @@ For example:
 
 ### Option 3: Use Environment Variables
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -494,12 +752,32 @@ For example:
 
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 
 =======
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -515,7 +793,15 @@ For example:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 You may also set the test settings in your environment variables. The environment variables will override the settings in the `testsettings.development.json` file.
 
 When setting environment variables, use a double underscore (i.e. "\_\_") to delineate between parent and child properties. For example:
@@ -523,12 +809,22 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
 - bash:
 
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -545,6 +841,8 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -556,7 +854,17 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< HEAD
 >>>>>>> main
+=======
+>>>>>>> head
 ```bash {"id":"01J6KPR1FBXXPNFHK1MXCK9QN7"}
 export OpenAI__ApiKey="sk-...."
 export AzureOpenAI__ApiKey="...."
@@ -567,11 +875,23 @@ export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
 export Bing__ApiKey="...."
 ```
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -604,6 +924,8 @@ $env:Bing__ApiKey = "...."
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -615,7 +937,17 @@ $env:Bing__ApiKey = "...."
 >>>>>>> Stashed changes
 =======
 =======
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 - PowerShell:
 
@@ -652,6 +984,12 @@ $env:Bing__ApiKey = "...."
   ```
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -667,4 +1005,12 @@ $env:Bing__ApiKey = "...."
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head

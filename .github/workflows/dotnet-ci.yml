@@ -21,6 +21,12 @@ jobs:
           include:
           - { os: ubuntu-latest, dotnet: '8.0', configuration: Debug }
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,7 +44,19 @@ jobs:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
           - { os: ubuntu-latest, dotnet: '6.0', configuration: Debug }
           - { os: ubuntu-latest, dotnet: '6.0', configuration: Release }
           - { os: ubuntu-latest, dotnet: '7.0', configuration: Release }
@@ -47,6 +65,12 @@ jobs:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -104,6 +128,12 @@ jobs:
           configuration: [Release, Debug]
           dotnet-version: ['8.0.x']
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -121,7 +151,11 @@ jobs:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
           dotnet-version: ['7.0.x']
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -134,6 +168,17 @@ jobs:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+          dotnet-version: ['7.0.x']
+>>>>>>> origin/main
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

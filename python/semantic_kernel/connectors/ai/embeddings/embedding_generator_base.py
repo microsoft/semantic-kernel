@@ -7,11 +7,23 @@ from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -44,6 +56,8 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -56,10 +70,27 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
 =======
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
+=======
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
+>>>>>>> origin/main
+=======
+=======
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
+>>>>>>> Stashed changes
+=======
+=======
+from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
+<<<<<<< div
 =======
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 >>>>>>> main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 if TYPE_CHECKING:
     from numpy import ndarray
 
@@ -74,6 +105,12 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
 
 class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,7 +126,15 @@ class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     @abstractmethod
     async def generate_embeddings(
         self,

@@ -4,12 +4,22 @@
 import pytest
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -26,6 +36,8 @@ import pytest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -37,13 +49,29 @@ import pytest
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
 >>>>>>> main
+=======
+>>>>>>> head
 from semantic_kernel.kernel import Kernel
 
 
 @pytest.fixture(scope="function")
 def setup_tldr_function_for_oai_models(kernel: Kernel):
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -60,9 +88,24 @@ def setup_tldr_function_for_oai_models(kernel: Kernel):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
 =======
 >>>>>>> main
 =======
+>>>>>>> head
+=======
+>>>>>>> origin/main
+=======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -76,6 +119,12 @@ def setup_tldr_function_for_oai_models(create_kernel):
 
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,7 +140,15 @@ def setup_tldr_function_for_oai_models(create_kernel):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     # Define semantic function using SK prompt template language
     prompt = """
     {{$input}}
@@ -120,6 +177,12 @@ def setup_tldr_function_for_oai_models(create_kernel):
 
 @pytest.fixture(scope="function")
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -139,7 +202,21 @@ def setup_summarize_conversation_using_plugin(kernel: Kernel):
 def setup_summarize_conversation_using_plugin(kernel: Kernel):
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+def setup_summarize_conversation_using_plugin(kernel: Kernel):
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+def setup_summarize_conversation_using_plugin(kernel: Kernel):
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 def setup_summarize_conversation_using_plugin(kernel: Kernel):
 =======
@@ -147,6 +224,12 @@ def setup_summarize_conversation_using_plugin(create_kernel):
     kernel = create_kernel
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -162,7 +245,15 @@ def setup_summarize_conversation_using_plugin(create_kernel):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     ChatTranscript = """John: Hello, how are you?
         Jane: I'm fine, thanks. How are you?
         John: I'm doing well, writing some example code.
@@ -203,6 +294,12 @@ def setup_summarize_conversation_using_plugin(create_kernel):
 
     yield kernel, ChatTranscript
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,7 +317,19 @@ def setup_summarize_conversation_using_plugin(create_kernel):
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
 
@@ -251,6 +360,12 @@ def setup_gp_text_completion_function(create_kernel, get_gp_config):
     yield kernel, text2text_function, simple_input
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -266,4 +381,12 @@ def setup_gp_text_completion_function(create_kernel, get_gp_config):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head

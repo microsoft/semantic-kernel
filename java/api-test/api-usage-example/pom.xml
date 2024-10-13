@@ -7,11 +7,23 @@
         <groupId>com.microsoft.semantic-kernel.test</groupId>
         <artifactId>api-test</artifactId>
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -37,6 +49,8 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
         <version>1.0.0-alpha.1-SNAPSHOT</version>
@@ -63,8 +77,17 @@
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
         <version>1.0.0-alpha.1-SNAPSHOT</version>
 >>>>>>> main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+        <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> origin/main
+>>>>>>> head
         <relativePath>../pom.xml</relativePath>
     </parent>
 

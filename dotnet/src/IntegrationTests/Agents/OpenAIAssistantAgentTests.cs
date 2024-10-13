@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +40,19 @@ using System.ClientModel;
 =======
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -75,6 +93,11 @@ public sealed class OpenAIAssistantAgentTests
 
         await this.ExecuteAgentAsync(
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -92,6 +115,10 @@ public sealed class OpenAIAssistantAgentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
             openAISettings.ChatModelId!,
 =======
@@ -99,6 +126,8 @@ public sealed class OpenAIAssistantAgentTests
             openAISettings.ChatModelId!,
             openAISettings.ModelId,
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,6 +146,18 @@ public sealed class OpenAIAssistantAgentTests
             openAISettings.ChatModelId!,
             openAISettings.ModelId,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
+            openAISettings.ChatModelId!,
+            openAISettings.ModelId,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
             input,
             expectedAnswerContains);
     }
@@ -127,6 +168,11 @@ public sealed class OpenAIAssistantAgentTests
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -161,6 +207,19 @@ public sealed class OpenAIAssistantAgentTests
 =======
     [Theory/*(Skip = "No supported endpoint configured.")*/]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+    [Theory/*(Skip = "No supported endpoint configured.")*/]
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+    [Theory/*(Skip = "No supported endpoint configured.")*/]
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task AzureOpenAIAssistantAgentAsync(string input, string expectedAnswerContains)
     {
@@ -169,6 +228,11 @@ public sealed class OpenAIAssistantAgentTests
 
         await this.ExecuteAgentAsync(
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -187,12 +251,18 @@ public sealed class OpenAIAssistantAgentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 =======
 =======
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -209,6 +279,13 @@ public sealed class OpenAIAssistantAgentTests
 =======
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
             OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
@@ -228,6 +305,11 @@ public sealed class OpenAIAssistantAgentTests
 
         await this.ExecuteStreamingAgentAsync(
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -244,10 +326,16 @@ public sealed class OpenAIAssistantAgentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
 =======
             OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -264,6 +352,13 @@ public sealed class OpenAIAssistantAgentTests
 =======
             OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
             openAISettings.ModelId,
             input,
             expectedAnswerContains);
@@ -283,6 +378,11 @@ public sealed class OpenAIAssistantAgentTests
         await this.ExecuteStreamingAgentAsync(
             OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint)),
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -299,10 +399,16 @@ public sealed class OpenAIAssistantAgentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> upstream/main
 =======
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -319,6 +425,16 @@ public sealed class OpenAIAssistantAgentTests
 =======
             OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
@@ -333,6 +449,11 @@ public sealed class OpenAIAssistantAgentTests
         // Arrange
         Kernel kernel = new();
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -350,10 +471,16 @@ public sealed class OpenAIAssistantAgentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -369,6 +496,15 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         kernel.Plugins.Add(plugin);
@@ -376,6 +512,11 @@ public sealed class OpenAIAssistantAgentTests
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -410,11 +551,29 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+                kernel,
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+                kernel,
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -431,11 +590,17 @@ public sealed class OpenAIAssistantAgentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 });
 =======
                 },
                 kernel);
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -453,6 +618,13 @@ public sealed class OpenAIAssistantAgentTests
                 },
                 kernel);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
         try
         {
@@ -484,6 +656,11 @@ public sealed class OpenAIAssistantAgentTests
         // Arrange
         Kernel kernel = new();
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -518,6 +695,19 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         kernel.Plugins.Add(plugin);
@@ -525,6 +715,11 @@ public sealed class OpenAIAssistantAgentTests
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -559,11 +754,29 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+                kernel,
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+                kernel,
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -580,9 +793,15 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
                 },
                 kernel);
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -600,6 +819,13 @@ public sealed class OpenAIAssistantAgentTests
                 },
                 kernel);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
                 });
 
         AgentGroupChat chat = new();
@@ -608,6 +834,11 @@ public sealed class OpenAIAssistantAgentTests
         // Act
         StringBuilder builder = new();
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -627,6 +858,10 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 <<<<<<< main
         await foreach (var message in chat.InvokeAsync(agent))
@@ -639,7 +874,13 @@ public sealed class OpenAIAssistantAgentTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -653,6 +894,8 @@ public sealed class OpenAIAssistantAgentTests
         try
         await foreach (var message in chat.InvokeStreamingAsync(agent))
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -671,6 +914,18 @@ public sealed class OpenAIAssistantAgentTests
         try
         await foreach (var message in chat.InvokeStreamingAsync(agent))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        await foreach (var message in chat.InvokeAsync(agent))
+        try
+        await foreach (var message in chat.InvokeStreamingAsync(agent))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         {
             AgentGroupChat chat = new();
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
@@ -690,6 +945,11 @@ public sealed class OpenAIAssistantAgentTests
             await agent.DeleteAsync();
         }
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -707,10 +967,16 @@ public sealed class OpenAIAssistantAgentTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 =======
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -726,12 +992,26 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         // Assert
         ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
         Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expected, history.First().Content, StringComparison.OrdinalIgnoreCase);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -766,6 +1046,19 @@ public sealed class OpenAIAssistantAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> upstream/main
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     }
 
     public sealed class MenuPlugin

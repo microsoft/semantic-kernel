@@ -170,6 +170,11 @@ public sealed class OpenAIFunction
         if (!string.IsNullOrWhiteSpace(description))
         {
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -186,10 +191,16 @@ public sealed class OpenAIFunction
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
 =======
             return KernelJsonSchemaBuilder.Build(typeof(string), description);
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -206,6 +217,16 @@ public sealed class OpenAIFunction
 =======
             return KernelJsonSchemaBuilder.Build(typeof(string), description);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            return KernelJsonSchemaBuilder.Build(typeof(string), description);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         }
 
         // Otherwise, we can use a cached schema for a string with no description.

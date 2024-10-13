@@ -7,6 +7,11 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +46,19 @@ using Azure.Identity;
 =======
 using Azure.Identity;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+using Azure.Identity;
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+using Azure.Identity;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -133,6 +151,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         Assert.NotNull(result);
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -167,6 +190,19 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -203,6 +239,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         Assert.NotNull(result);
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -237,6 +278,19 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -270,6 +324,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -286,10 +345,16 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -306,6 +371,16 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        Assert.NotEmpty(functionCalls);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -389,6 +464,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         Assert.NotNull(result);
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -423,6 +503,19 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -464,6 +557,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         Assert.NotNull(result);
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -498,6 +596,19 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+        Assert.Single(invokedFunctions);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -533,6 +644,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 
         // Assert
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -567,6 +683,19 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
@@ -602,6 +731,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -618,10 +752,16 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         Assert.Single(functionCalls);
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -638,6 +778,13 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 =======
         Assert.NotEmpty(functionCalls);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -676,6 +823,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 
         // Assert
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -710,6 +862,19 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+        Assert.Single(functionsForManualInvocation);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
@@ -721,6 +886,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -755,6 +925,19 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         var kernelBuilder = base.CreateKernelBuilder();
@@ -764,6 +947,11 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -780,10 +968,16 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             apiKey: azureOpenAIConfiguration.ApiKey);
 =======
             credentials: new AzureCliCredential());
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -800,6 +994,16 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 =======
             credentials: new AzureCliCredential());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            credentials: new AzureCliCredential());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         return kernelBuilder.Build();
     }

@@ -20,6 +20,12 @@ You can also use environment variables if you prefer.
 To set your secrets with Secret Manager:
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,13 +45,33 @@ To set your secrets with Secret Manager:
 ```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 ```sh {"id":"01J6KPXVWY6GSV092VFHJZJTTK"}
 =======
 ```
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -61,7 +87,15 @@ To set your secrets with Secret Manager:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 cd dotnet/samples/KernelSyntaxExamples
 
 dotnet user-secrets init
@@ -130,6 +164,12 @@ dotnet user-secrets set "Kusto:ConnectionString" "..."
 To set your secrets with environment variables, use these names:
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,13 +189,33 @@ To set your secrets with environment variables, use these names:
 ```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 ```rb {"id":"01J6KPXVWY6GSV092VFN38F55Y"}
 =======
 ```
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -171,7 +231,15 @@ To set your secrets with environment variables, use these names:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 # OpenAI
 OpenAI__ModelId
 OpenAI__ChatModelId
@@ -246,6 +314,12 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 `AuthenticateRequestAsyncCallback` is a delegate type that serves as a callback function for adding authentication information to HTTP requests sent by the OpenAPI plugin.
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -265,13 +339,33 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 ```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 ```csharp {"id":"01J6KPXVWY6GSV092VFN59ARV3"}
 =======
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -287,7 +381,15 @@ However, the Kernel needs to be able to authenticate outgoing requests per the r
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 public delegate Task AuthenticateRequestAsyncCallback(HttpRequestMessage request);
 ```
 
@@ -307,6 +409,12 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the credentia
 The following code demonstrates how to use this provider:
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -326,13 +434,33 @@ The following code demonstrates how to use this provider:
 ```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 ```csharp {"id":"01J6KPXVWY6GSV092VFP0WMY0R"}
 =======
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -348,7 +476,15 @@ The following code demonstrates how to use this provider:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 var basicAuthProvider = new BasicAuthenticationProvider(() =>
 {
     // JIRA API expects credentials in the format "email:apikey"
@@ -367,6 +503,12 @@ When the `AuthenticateRequestAsync` method is called, it retrieves the token and
 The following code demonstrates how to use this provider:
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -386,13 +528,33 @@ The following code demonstrates how to use this provider:
 ```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 ```csharp {"id":"01J6KPXVWY6GSV092VFSYXYX1A"}
 =======
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -408,7 +570,15 @@ The following code demonstrates how to use this provider:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 var bearerAuthProvider = new BearerAuthenticationProvider(() =>
 {
     return Task.FromResult(Env.Var("AZURE_KEYVAULT_TOKEN"));
@@ -432,6 +602,12 @@ To construct this provider, the caller must specify:
 - _Redirect URI_ - for redirecting the user back to the application. (When running locally, this is typically http://localhost.)
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -451,13 +627,33 @@ To construct this provider, the caller must specify:
 ```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 ```csharp {"id":"01J6KPXVWY6GSV092VFTF4M38N"}
 =======
 ```csharp
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -473,7 +669,15 @@ To construct this provider, the caller must specify:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 var msalAuthProvider = new InteractiveMsalAuthenticationProvider(
     Env.Var("AZURE_KEYVAULT_CLIENTID"), // clientId
     Env.Var("AZURE_KEYVAULT_TENANTID"), // tenantId

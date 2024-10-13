@@ -16,6 +16,11 @@ using Microsoft.SemanticKernel.Planning;
 using OpenAI.Chat;
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,9 +37,15 @@ using OpenAI.Chat;
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,6 +63,17 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 namespace Planners;
 
 /// <summary>
@@ -369,6 +391,11 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
                 completionsUsage is not null)
             {
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -385,10 +412,16 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 tokens += completionsUsage.TotalTokens;
 =======
                 tokens += completionsUsage.TotalTokenCount;
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -405,6 +438,16 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 =======
                 tokens += completionsUsage.TotalTokenCount;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+                tokens += completionsUsage.TotalTokenCount;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
             }
         }
 

@@ -3,6 +3,11 @@
 
 from enum import Enum
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,6 +42,19 @@ from typing import Final
 =======
 from typing import Final
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+from typing import Final
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+from typing import Final
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 
 class IndexKind(str, Enum):
@@ -54,6 +72,11 @@ class DistanceFunction(str, Enum):
     EUCLIDEAN = "euclidean"
     MANHATTAN = "manhattan"
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -72,6 +95,15 @@ class DistanceFunction(str, Enum):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 
 class VectorSearchQueryTypes(str, Enum):
@@ -97,6 +129,11 @@ DEFAULT_DESCRIPTION: Final[str] = (
     "Perform a search for content related to the specified query and return string results"
 )
 DEFAULT_COUNT: Final[int] = 5
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -114,3 +151,12 @@ DEFAULT_COUNT: Final[int] = 5
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head

@@ -7,6 +7,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -41,6 +46,19 @@ using Microsoft.SemanticKernel.Agents.Filters;
 =======
 using Microsoft.SemanticKernel.Agents.Filters;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+using Microsoft.SemanticKernel.Agents.Filters;
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+using Microsoft.SemanticKernel.Agents.Filters;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
@@ -185,6 +203,11 @@ public class AgentChatTests
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -203,6 +226,15 @@ public class AgentChatTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// <summary>
     /// Verify behavior of <see cref="AgentChat"/> over the course of agent interactions.
     /// </summary>
@@ -243,6 +275,11 @@ public class AgentChatTests
         mockFilter.Verify(f => f.OnAgentInvoked(It.IsAny<AgentChatFilterInvokedContext>()), Times.Once);
     }
 
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -260,6 +297,15 @@ public class AgentChatTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
     {
         Assert.Equal(expectedCount, await history.CountAsync());
@@ -270,6 +316,11 @@ public class AgentChatTests
         public MockAgent Agent { get; } = new() { Response = [new(AuthorRole.Assistant, "sup")] };
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -286,9 +337,15 @@ public class AgentChatTests
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
         public override IReadOnlyList<Agent> Agents => [this.Agent];
 
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -306,11 +363,27 @@ public class AgentChatTests
         public override IReadOnlyList<Agent> Agents => [this.Agent];
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        public override IReadOnlyList<Agent> Agents => [this.Agent];
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -330,6 +403,10 @@ public class AgentChatTests
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 <<<<<<< main
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
@@ -340,7 +417,13 @@ public class AgentChatTests
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -353,6 +436,8 @@ public class AgentChatTests
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -370,11 +455,27 @@ public class AgentChatTests
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
+            CancellationToken cancellationToken = default)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             ChatHistory history,
             IReadOnlyList<ChatMessageContent> history,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -391,11 +492,17 @@ public class AgentChatTests
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 >>>>>>> origin/PR
 =======
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -413,6 +520,17 @@ public class AgentChatTests
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
+            CancellationToken cancellationToken = default)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         {
             this.SetActivityOrThrow();
             return this.InvokeAgentAsync(this.Agent, cancellationToken);

@@ -9,6 +9,11 @@ def test_can_be_instantiated():
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,6 +48,19 @@ def test_can_be_instantiated():
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 def test_can_be_imported(kernel: Kernel):
     kernel.add_plugin(TextPlugin(), "text_plugin")
     assert not kernel.get_function(
@@ -54,6 +72,11 @@ def test_can_be_imported_with_name(kernel: Kernel):
     kernel.add_plugin(TextPlugin(), "text")
     assert not kernel.get_function(plugin_name="text", function_name="trim").is_prompt
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -72,6 +95,15 @@ def test_can_be_imported_with_name(kernel: Kernel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
 def test_can_be_imported():
     kernel = sk.Kernel()
@@ -84,6 +116,11 @@ def test_can_be_imported_with_name():
     assert kernel.import_plugin(TextPlugin(), "text")
     assert not kernel.plugins["text"]["trim"].is_prompt
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -101,6 +138,15 @@ def test_can_be_imported_with_name():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 
 def test_can_trim():

@@ -6,6 +6,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,6 +45,19 @@ using System.Text.Json.Nodes;
 =======
 using System.Text.Json.Nodes;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+using System.Text.Json.Nodes;
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+using System.Text.Json.Nodes;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -130,6 +148,11 @@ public Plan(string? originalPlan)
     /// <inheritdoc/>
     [JsonIgnore]
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,10 +169,16 @@ public Plan(string? originalPlan)
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public CompleteRequestSettings RequestSettings { get; private set; } = new();
 =======
     public JsonObject ServiceSettings { get; private set; } = new();
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -166,11 +195,26 @@ public Plan(string? originalPlan)
 =======
     public JsonObject ServiceSettings { get; private set; } = new();
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+    public JsonObject ServiceSettings { get; private set; } = new();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
     #endregion ISKFunction implementation
 
     /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -190,6 +234,10 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
@@ -203,6 +251,8 @@ public Plan(string? originalPlan)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -215,6 +265,15 @@ public Plan(string? originalPlan)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// Initializes a new instance of the <see cref="Plan"/> class.
     /// </summary>
     public Plan()
@@ -229,6 +288,11 @@ public Plan(string? originalPlan)
     public Plan(string goal) : this()
     {
         this.Description = goal;
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -246,6 +310,15 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     }
 
     /// <summary>
@@ -270,6 +343,11 @@ public Plan(string? originalPlan)
 
     /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -289,11 +367,17 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
     /// <param name="function">The function to execute.</param>
     public Plan(ISKFunction function)
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -311,6 +395,15 @@ public Plan(string? originalPlan)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// Initializes a new instance of the <see cref="Plan"/> class with steps.
     /// </summary>
     /// <param name="steps">The steps to add.</param>
@@ -324,6 +417,11 @@ public Plan(string? originalPlan)
     /// </summary>
     /// <param name="function">The function to execute.</param>
     public Plan(ISKFunction function) : this()
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -341,12 +439,26 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     {
         this.SetFunction(function);
     }
 
     /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -365,6 +477,15 @@ public Plan(string? originalPlan)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// Initializes a new instance of the <see cref="Plan"/> class with steps.
     /// </summary>
     /// <param name="steps">The steps to execute.</param>
@@ -374,6 +495,11 @@ public Plan(string? originalPlan)
     }
 
     /// <summary>
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -391,6 +517,15 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     /// Initializes a new instance of the <see cref="Plan"/> class with a function and steps.
     /// </summary>
     /// <param name="name">The name of the plan.</param>
@@ -485,6 +620,11 @@ public Plan(string? originalPlan)
     /// <param name="variables">The variables to use for the execution of the plan.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -501,10 +641,16 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
     /// <param name="textCompletionService">Text completion service</param>
     /// <param name="settings">AI service settings</param>
     /// <param name="cancellationToken">The cancellation token to cancel the execution of the plan.</param>
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -523,6 +669,13 @@ public Plan(string? originalPlan)
     /// <param name="settings">AI service settings</param>
     /// <param name="cancellationToken">The cancellation token to cancel the execution of the plan.</param>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
     /// This method executes the next step in the plan using the specified kernel instance and context variables.
@@ -530,6 +683,11 @@ public Plan(string? originalPlan)
     /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -546,10 +704,16 @@ public Plan(string? originalPlan)
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
 =======
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -566,6 +730,16 @@ public Plan(string? originalPlan)
 =======
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     {
         var context = new SKContext(
             variables,
@@ -581,6 +755,11 @@ public Plan(string? originalPlan)
         );
         return this.InvokeNextStepAsync(context);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -597,10 +776,16 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
             kernel.Log,
             cancellationToken);
         return this.InvokeNextStepAsync(context, textCompletionService, settings);
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -619,6 +804,18 @@ public Plan(string? originalPlan)
             cancellationToken);
         return this.InvokeNextStepAsync(context, textCompletionService, settings);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            kernel.Log,
+            cancellationToken);
+        return this.InvokeNextStepAsync(context, textCompletionService, settings);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     }
 
     /// <summary>
@@ -630,6 +827,11 @@ public Plan(string? originalPlan)
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
     public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -648,11 +850,25 @@ public Plan(string? originalPlan)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// <param name="textCompletionService">Text completion service</param>
     /// <param name="settings">AI service settings</param>
     /// <returns>The updated plan</returns>
     /// <exception cref="KernelException">If an error occurs while running the plan</exception>
     public async Task<Plan> InvokeNextStepAsync(SKContext context, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null)
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -670,6 +886,15 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     {
         if (this.HasNextStep)
         {
@@ -743,6 +968,11 @@ public Plan(string? originalPlan)
         SKContext context,
         CompleteRequestSettings? settings = null,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -761,6 +991,15 @@ public Plan(string? originalPlan)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     public Task<SKContext> InvokeAsync(
         string? input = null,
         ITextCompletion? textCompletionService = null,
@@ -769,6 +1008,11 @@ public Plan(string? originalPlan)
         ISemanticTextMemory? memory = null,
         ILogger? logger = null,
     public Task<SKContext> InvokeAsync(string input, SKContext? context = null, JsonObject? settings = null, ILogger? log = null,
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -786,6 +1030,15 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         CancellationToken cancellationToken = default)
     {
         // context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
@@ -798,6 +1051,11 @@ public Plan(string? originalPlan)
 
     /// <inheritdoc/>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -820,6 +1078,19 @@ public Plan(string? originalPlan)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+        CancellationToken cancellationToken = default)
+=======
+>>>>>>> Stashed changes
+=======
+    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+        CancellationToken cancellationToken = default)
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     public async Task<SKContext> InvokeAsync(SKContext? context = null, JsonObject? settings = null, ILogger? log = null,
         CancellationToken cancellationToken = default)
         SKContext context = new(
@@ -837,6 +1108,11 @@ public Plan(string? originalPlan)
         SKContext context,
         ITextCompletion? textCompletionService = null,
         CompleteRequestSettings? settings = null)
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -854,6 +1130,15 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     {
         // context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
         context ??= new SKContext(this.State);
@@ -866,6 +1151,11 @@ public Plan(string? originalPlan)
                 .InvokeAsync(context, settings, cancellationToken)
                 .ConfigureAwait(false);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -900,6 +1190,19 @@ public Plan(string? originalPlan)
 =======
             var result = await this.Function.InvokeAsync(context, textCompletionService, settings).ConfigureAwait(false);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+            var result = await this.Function.InvokeAsync(context, textCompletionService, settings).ConfigureAwait(false);
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+            var result = await this.Function.InvokeAsync(context, textCompletionService, settings).ConfigureAwait(false);
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
             if (result.ErrorOccurred)
             {
@@ -916,6 +1219,11 @@ public Plan(string? originalPlan)
                 AddVariablesToContext(this.State, context);
                 await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -934,6 +1242,15 @@ public Plan(string? originalPlan)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
                 var functionContext = context;
                 AddVariablesToContext(this.State, functionContext);
 
@@ -953,6 +1270,11 @@ public Plan(string? originalPlan)
                 }
                 await this.InvokeNextStepAsync(functionContext, textCompletionService, settings).ConfigureAwait(false);
 
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -970,6 +1292,15 @@ public Plan(string? originalPlan)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
                 this.UpdateContextWithOutputs(context);
             }
         }
@@ -979,6 +1310,11 @@ public Plan(string? originalPlan)
 
     /// <inheritdoc/>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1013,6 +1349,19 @@ public Plan(string? originalPlan)
 =======
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
         return this.Function is null
@@ -1030,6 +1379,11 @@ public Plan(string? originalPlan)
 
     /// <inheritdoc/>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1046,10 +1400,16 @@ public Plan(string? originalPlan)
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
 =======
     public ISKFunction SetAIConfiguration(JsonObject settings)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1066,6 +1426,16 @@ public Plan(string? originalPlan)
 =======
     public ISKFunction SetAIConfiguration(JsonObject settings)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+    public ISKFunction SetAIConfiguration(JsonObject settings)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     {
         return this.Function is null
             ? throw new NotImplementedException()
@@ -1281,6 +1651,11 @@ public Plan(string? originalPlan)
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1297,10 +1672,16 @@ public Plan(string? originalPlan)
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         this.RequestSettings = function.RequestSettings;
 =======
         this.ServiceSettings = function.ServiceSettings;
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1317,6 +1698,16 @@ public Plan(string? originalPlan)
 =======
         this.ServiceSettings = function.ServiceSettings;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        this.ServiceSettings = function.ServiceSettings;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     }
 
     private ISKFunction? Function { get; set; } = null;

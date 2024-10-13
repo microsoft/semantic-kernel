@@ -570,6 +570,12 @@ public sealed class PlanTests : IDisposable
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -577,6 +583,10 @@ public sealed class PlanTests : IDisposable
 <<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -594,6 +604,8 @@ public sealed class PlanTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -605,7 +617,17 @@ public sealed class PlanTests : IDisposable
 >>>>>>> Stashed changes
 =======
                 credentials: new AzureCliCredential());
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+                credentials: new AzureCliCredential());
 >>>>>>> main
+=======
+>>>>>>> head
         }
         else
         {
@@ -613,6 +635,12 @@ public sealed class PlanTests : IDisposable
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -620,6 +648,10 @@ public sealed class PlanTests : IDisposable
 <<<<<<< Updated upstream
                 apiKey: azureOpenAIConfiguration.ApiKey);
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -637,6 +669,8 @@ public sealed class PlanTests : IDisposable
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -648,7 +682,17 @@ public sealed class PlanTests : IDisposable
 >>>>>>> Stashed changes
 =======
                 credentials: new AzureCliCredential());
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+                credentials: new AzureCliCredential());
 >>>>>>> main
+=======
+>>>>>>> head
         }
 
         if (useEmbeddings)

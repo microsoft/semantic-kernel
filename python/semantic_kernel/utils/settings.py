@@ -2,6 +2,12 @@
 
 from typing import Optional, Tuple
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,7 +25,19 @@ from typing import Optional, Tuple
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 from typing import Dict, Optional, Tuple, Union
 
 from dotenv import dotenv_values
@@ -28,6 +46,12 @@ from dotenv import dotenv_values
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -49,6 +73,12 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
     api_key, org_id = None, None
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -57,6 +87,10 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     with open(".env", "r") as f:
         lines = f.readlines()
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -69,8 +103,19 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     with open(".env", "r") as f:
         lines = f.readlines()
 =======
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     config = dotenv_values(".env")
     api_key = config.get("OPENAI_API_KEY", None)
     org_id = config.get("OPENAI_ORG_ID", None)
@@ -79,6 +124,12 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -111,8 +162,14 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def azure_openai_settings_from_dot_env() -> Tuple[str, str]:
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -153,6 +210,12 @@ def azure_openai_settings_from_dot_env_as_dict(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -179,8 +242,14 @@ def azure_openai_settings_from_dot_env_as_dict(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
             if line.startswith("AZURE_OPENAI_API_KEY"):
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -223,6 +292,12 @@ def azure_openai_settings_from_dot_env() -> Tuple[str, str]:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -243,9 +318,15 @@ def azure_openai_settings_from_dot_env() -> Tuple[str, str]:
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 endpoint = "=".join(parts).strip().strip('"')
                 break
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -280,6 +361,12 @@ def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
         for line in lines:
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
             if line.startswith("AZURE_OPENAI_API_KEY"):
 =======
             if line.startswith("OPENAI_API_KEY"):
@@ -308,7 +395,11 @@ def azure_openai_settings_from_dot_env() -> Tuple[str, str]:
 
     api_key, endpoint = None, None
             if line.startswith("PINECONE_API_KEY"):
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
                 parts = line.split("=")[1:]
                 api_key = "=".join(parts).strip().strip('"')
                 break
@@ -365,6 +456,10 @@ def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
         lines = f.readlines()
 
         for line in lines:
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             if line.startswith("AZURE_OPENAI_API_KEY"):
                 parts = line.split("=")[1:]
                 api_key = "=".join(parts).strip().strip('"')
@@ -520,6 +615,12 @@ def azure_aisearch_settings_from_dot_env(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -539,8 +640,14 @@ def azure_aisearch_settings_from_dot_env(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     return api_key, endpoint
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -565,6 +672,12 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
     Reads the Azure AI Search environment variables including index name from the .env file.
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 =======
     assert url is not None, "Azure AI Search URL not found in .env file"
     assert api_key is not None, "Azure AI Search API key not found in .env file"
@@ -581,7 +694,15 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
     """
     Reads the Azure AI Search environment variables including index name from the .env file.
 
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     Returns:
         Dict[str, str]: the Azure AI search environment variables
     """
@@ -589,6 +710,12 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
     return {"key": api_key, "endpoint": url, "indexName": index_name}
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -604,4 +731,12 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head

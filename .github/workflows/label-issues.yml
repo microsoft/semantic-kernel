@@ -15,6 +15,12 @@ jobs:
     steps:
       - uses: actions/github-script@v7
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,7 +38,11 @@ jobs:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+>>>>>>> head
       - uses: actions/github-script@v6
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -45,6 +55,17 @@ jobs:
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+=======
+      - uses: actions/github-script@v6
+>>>>>>> origin/main
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

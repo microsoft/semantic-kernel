@@ -7,11 +7,23 @@ import google.generativeai as palm
 from numpy import array, ndarray
 from pydantic import StringConstraints, ValidationError
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -37,6 +49,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -51,7 +65,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
@@ -73,6 +97,12 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -86,6 +116,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
 >>>>>>> Stashed changes
 
 @experimental_class
@@ -101,6 +137,11 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     ) -> None:
         """Initializes a new instance of the GooglePalmTextEmbedding class.
 
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 =======
 >>>>>>> ms/small_fixes
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
@@ -115,7 +156,15 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     ) -> None:
         """Initializes a new instance of the GooglePalmTextEmbedding class.
 
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         Args:
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
@@ -130,12 +179,22 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
 
         """
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -171,7 +230,15 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
             ServiceInitializationError: When the Google Palm settings cannot be read.
 
         """
+<<<<<<< div
 =======
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         try:
             google_palm_settings = GooglePalmSettings.create(
                 api_key=api_key,
@@ -191,7 +258,14 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
 
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """Generates embeddings for the given list of texts."""
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         try:
             google_palm_settings = GooglePalmSettings.create(
                 api_key=api_key,
@@ -216,6 +290,11 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

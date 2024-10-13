@@ -125,7 +125,7 @@ Reply TERMINATE when the task is done.
                     ],
                 }
 
-        raise Exception("LLM type not provided, must be 'openai' or 'azure'")
+        raise ValueError(f"Invalid LLM type provided. Expected 'openai' or 'azure', but got '{self.llm_type}'. Please check your configuration.")
 
     def __get_function_definitions(self) -> List:
         """
@@ -166,6 +166,10 @@ Reply TERMINATE when the task is done.
 
 
 class SKFunctionWrapper:
+    """
+    Wrapper for SK functions to be used with AutoGen Function Calling.
+    This wrapper is designed for functions that accept a single string parameter.
+    """
     """
     Wrapper for SK functions to be used with AutoGen Function Calling.
     """

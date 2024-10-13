@@ -90,6 +90,11 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
     # Override from AIServiceClientBase
     @override
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,6 +129,19 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return VertexAITextPromptExecutionSettings
 
@@ -131,6 +149,11 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
     @trace_text_completion(VertexAIBase.MODEL_PROVIDER_NAME)
     async def _inner_get_text_contents(
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,10 +172,24 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
     @trace_text_completion(VertexAIBase.MODEL_PROVIDER_NAME)
     async def get_text_contents(
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -170,6 +207,15 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         self,
         prompt: str,
         settings: "PromptExecutionSettings",

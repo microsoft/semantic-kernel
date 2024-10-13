@@ -4,6 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,11 +27,17 @@ using System.Text.Json.Nodes;
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 =======
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -42,6 +53,13 @@ using System.Text.Json.Nodes;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.Data;
 using Pinecone;
 
@@ -89,6 +107,11 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     ];
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +131,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     private readonly PropertyInfo _keyPropertyInfo;
 
@@ -118,6 +145,8 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     private readonly Dictionary<string, string> _storagePropertyNames = [];
 
     private readonly Dictionary<string, string> _jsonPropertyNames = [];
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -151,11 +180,29 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStoreRecordMapper{TDataModel}"/> class.
     /// </summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,6 +222,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     public PineconeVectorStoreRecordMapper(
@@ -200,6 +251,8 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -212,6 +265,15 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
     public PineconeVectorStoreRecordMapper(
         VectorStoreRecordPropertyReader propertyReader)
@@ -224,6 +286,11 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 
         // Assign.
         this._propertyReader = propertyReader;
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -241,12 +308,26 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     }
 
     /// <inheritdoc />
     public Vector MapFromDataToStorageModel(TRecord dataModel)
     {
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -266,6 +347,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var keyObject = this._keyPropertyInfo.GetValue(dataModel);
         if (keyObject is null)
@@ -282,6 +367,8 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -294,6 +381,15 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         var keyObject = this._propertyReader.KeyPropertyInfo.GetValue(dataModel);
         if (keyObject is null)
         {
@@ -304,6 +400,11 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         foreach (var dataPropertyInfo in this._propertyReader.DataPropertiesInfo)
         {
             var propertyName = this._propertyReader.GetStoragePropertyName(dataPropertyInfo.Name);
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -321,6 +422,15 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
             var propertyValue = dataPropertyInfo.GetValue(dataModel);
             if (propertyValue != null)
             {
@@ -329,6 +439,11 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -348,6 +463,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var valuesObject = this._vectorPropertyInfo.GetValue(dataModel);
         if (valuesObject is not ReadOnlyMemory<float> values)
@@ -358,6 +477,8 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -370,10 +491,24 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         var valuesObject = this._propertyReader.FirstVectorPropertyInfo!.GetValue(dataModel);
         if (valuesObject is not ReadOnlyMemory<float> values)
         {
             throw new VectorStoreRecordMappingException($"Vector property {this._propertyReader.FirstVectorPropertyName} on provided record of type {typeof(TRecord).FullName} may not be null.");
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -391,6 +526,15 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         }
 
         // TODO: what about sparse values?
@@ -409,6 +553,11 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     public TRecord MapFromStorageToDataModel(Vector storageModel, StorageToDataModelMapperOptions options)
     {
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -428,6 +577,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         var keyJsonName = this._jsonPropertyNames[this._keyPropertyInfo.Name];
         var outputJsonObject = new JsonObject
@@ -480,6 +633,8 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -492,6 +647,15 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         // Construct the output record.
         var outputRecord = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
 
@@ -556,6 +720,11 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         };
     }
 
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -573,6 +742,15 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     // TODO: take advantage of MetadataValue.TryCreate once we upgrade the version of Pinecone.NET
     private static MetadataValue ConvertToMetadataValue(object? sourceValue)
         => sourceValue switch

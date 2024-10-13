@@ -207,15 +207,26 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     #region private
 
     private WeaviateHotel CreateTestHotel(Guid hotelId, string? hotelName = null)
 =======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -231,6 +242,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -509,6 +527,11 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Guid hotelId,
         string? hotelName = null,
         ReadOnlyMemory<float>? embedding = null)
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -526,6 +549,15 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     {
         return new WeaviateHotel
         {
@@ -537,6 +569,11 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -553,10 +590,16 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
 =======
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -573,6 +616,16 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+            DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
             Timestamp = new DateTime(2024, 8, 28, 10, 11, 12)
         };
     }
@@ -591,6 +644,11 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -607,10 +665,16 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -627,6 +691,16 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
             ]
         };

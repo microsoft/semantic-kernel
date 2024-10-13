@@ -5,6 +5,11 @@ from semantic_kernel.agents.open_ai import AzureAssistantAgent, OpenAIAssistantA
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +44,19 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 =======
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+=======
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
@@ -55,6 +73,11 @@ AGENT_INSTRUCTIONS = "Create charts as requested without explanation."
 use_azure_openai = True
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -71,9 +94,15 @@ use_azure_openai = True
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 streaming = True
 
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,6 +120,17 @@ streaming = True
 streaming = True
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+streaming = True
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
 # A helper method to invoke the agent with the user input
 async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) -> None:
@@ -100,6 +140,11 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
     print(f"# {AuthorRole.USER}: '{input}'")
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -119,6 +164,10 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     async for message in agent.invoke(thread_id=thread_id):
         if message.content:
@@ -133,6 +182,8 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -145,6 +196,16 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+=======
+>>>>>>> Stashed changes
+=======
+=======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     if streaming:
         first_chunk = True
         async for message in agent.invoke_stream(thread_id=thread_id):
@@ -168,6 +229,11 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
                 for item in message.items:
                     if isinstance(item, FileReferenceContent):
                         print(f"\n`{message.role}` => {item.file_id}")
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -185,6 +251,15 @@ async def invoke_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) 
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 
 async def main():

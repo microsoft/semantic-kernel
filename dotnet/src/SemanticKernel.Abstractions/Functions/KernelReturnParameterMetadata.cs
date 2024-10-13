@@ -3,12 +3,22 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -25,6 +35,8 @@ using System.Text.Json;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -36,7 +48,17 @@ using System.Text.Json;
 >>>>>>> Stashed changes
 =======
 using System.Text.Json;
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+using System.Text.Json;
 >>>>>>> main
+=======
+>>>>>>> head
 using static Microsoft.SemanticKernel.KernelParameterMetadata;
 
 namespace Microsoft.SemanticKernel;
@@ -47,6 +69,12 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelReturnParameterMetadata
 {
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -66,7 +94,21 @@ public sealed class KernelReturnParameterMetadata
     internal static readonly KernelReturnParameterMetadata Empty = new();
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+    internal static readonly KernelReturnParameterMetadata Empty = new();
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+    internal static readonly KernelReturnParameterMetadata Empty = new();
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     internal static KernelReturnParameterMetadata Empty
     {
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
@@ -77,6 +119,12 @@ public sealed class KernelReturnParameterMetadata
         }
     }
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -92,7 +140,15 @@ public sealed class KernelReturnParameterMetadata
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 
     /// <summary>The description of the return parameter.</summary>
     private string _description = string.Empty;
@@ -101,6 +157,12 @@ public sealed class KernelReturnParameterMetadata
     /// <summary>The schema of the return parameter, potentially lazily-initialized.</summary>
     private KernelParameterMetadata.InitializedSchema? _schema;
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -120,6 +182,10 @@ public sealed class KernelReturnParameterMetadata
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 <<<<<<< main
 
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
@@ -131,6 +197,11 @@ public sealed class KernelReturnParameterMetadata
     private static KernelReturnParameterMetadata? s_empty;
 
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 =======
     /// <summary>The serializer options to generate JSON schema.</summary>
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
@@ -138,7 +209,15 @@ public sealed class KernelReturnParameterMetadata
     private static KernelReturnParameterMetadata? s_empty;
 
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     [RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     public KernelReturnParameterMetadata() { }
@@ -155,6 +234,12 @@ public sealed class KernelReturnParameterMetadata
     [RequiresUnreferencedCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -168,14 +253,29 @@ public sealed class KernelReturnParameterMetadata
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+>>>>>>> head
     public KernelReturnParameterMetadata(KernelReturnParameterMetadata metadata)
     {
         this._description = metadata._description;
         this._parameterType = metadata._parameterType;
         this._schema = metadata._schema;
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,7 +293,19 @@ public sealed class KernelReturnParameterMetadata
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         this._jsonSerializerOptions = metadata._jsonSerializerOptions;
     }
 
@@ -207,6 +319,12 @@ public sealed class KernelReturnParameterMetadata
         this._schema = metadata._schema;
         this._jsonSerializerOptions = jsonSerializerOptions;
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -222,7 +340,15 @@ public sealed class KernelReturnParameterMetadata
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     }
 
     /// <summary>Gets a description of the return parameter, suitable for use in describing the purpose to a model.</summary>
@@ -259,6 +385,12 @@ public sealed class KernelReturnParameterMetadata
     public KernelJsonSchema? Schema
     {
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -266,6 +398,10 @@ public sealed class KernelReturnParameterMetadata
 <<<<<<< Updated upstream
         get => (this._schema ??= InferSchema(this.ParameterType, defaultValue: null, this.Description)).Schema;
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -285,6 +421,8 @@ public sealed class KernelReturnParameterMetadata
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -298,7 +436,19 @@ public sealed class KernelReturnParameterMetadata
         [RequiresUnreferencedCode("Uses reflection to generate schema if no JSOs are provided at construction time, making it incompatible with AOT scenarios.")]
         [RequiresDynamicCode("Uses reflection to generate schema if no JSOs are provided at construction time, making it incompatible with AOT scenarios.")]
         get => (this._schema ??= InferSchema(this.ParameterType, defaultValue: null, this.Description, this._jsonSerializerOptions)).Schema;
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+        [RequiresUnreferencedCode("Uses reflection to generate schema if no JSOs are provided at construction time, making it incompatible with AOT scenarios.")]
+        [RequiresDynamicCode("Uses reflection to generate schema if no JSOs are provided at construction time, making it incompatible with AOT scenarios.")]
+        get => (this._schema ??= InferSchema(this.ParameterType, defaultValue: null, this.Description, this._jsonSerializerOptions)).Schema;
 >>>>>>> main
+=======
+>>>>>>> head
         init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
     }
 }

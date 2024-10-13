@@ -8,12 +8,20 @@ from semantic_kernel.kernel import Kernel
 
 async def aggregate_chunked_results(
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -30,6 +38,7 @@ async def aggregate_chunked_results(
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -41,7 +50,21 @@ async def aggregate_chunked_results(
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+<<<<<<< main
+>>>>>>> origin/main
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
 >>>>>>> main
+=======
+>>>>>>> head
     func: KernelFunction,
     chunked_results: list[str],
     kernel: Kernel,
@@ -49,6 +72,12 @@ async def aggregate_chunked_results(
 ) -> str:
     """Aggregate the results from the chunked results."""
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -65,9 +94,24 @@ async def aggregate_chunked_results(
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
 =======
 >>>>>>> main
 =======
+>>>>>>> head
+=======
+>>>>>>> origin/main
+=======
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+=======
+>>>>>>> Stashed changes
     func: KernelFunction, chunked_results: List[str], kernel: Kernel, arguments: KernelArguments
 ) -> str:
     """
@@ -75,6 +119,12 @@ async def aggregate_chunked_results(
     """
 >>>>>>> ms/small_fixes
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,7 +140,15 @@ async def aggregate_chunked_results(
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     results = []
     for chunk in chunked_results:
         arguments["input"] = chunk

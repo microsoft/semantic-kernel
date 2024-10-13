@@ -48,6 +48,11 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -66,6 +71,10 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 kernel: new(),
                 clientProvider: this.GetClientProvider(),
                 definition: new(this.Model)
@@ -73,6 +82,8 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,11 +101,23 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
                     Metadata = AssistantSampleMetadata,
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,11 +134,17 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
 =======
 >>>>>>> Stashed changes
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 });
 =======
                 },
                 kernel: new Kernel());
 >>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -133,6 +162,13 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAgentsTest(outp
                 },
                 kernel: new Kernel());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =

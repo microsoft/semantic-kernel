@@ -2,6 +2,12 @@
 
 using System.Collections.Generic;
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,7 +28,19 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -38,6 +56,12 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,7 +76,15 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 
 /// <summary>
 /// Configuration for flow planner instances.
@@ -63,6 +95,12 @@ public sealed class FlowOrchestratorConfig
     /// A list of plugins to exclude from the plan creation request.
     /// </summary>
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,13 +120,33 @@ public sealed class FlowOrchestratorConfig
     public HashSet<string> ExcludedPlugins { get; } = [];
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+    public HashSet<string> ExcludedPlugins { get; } = [];
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+    public HashSet<string> ExcludedPlugins { get; } = [];
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     public HashSet<string> ExcludedPlugins { get; } = [];
 =======
     public HashSet<string> ExcludedPlugins { get; } = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,12 +162,26 @@ public sealed class FlowOrchestratorConfig
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 
     /// <summary>
     /// A list of functions to exclude from the plan creation request.
     /// </summary>
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -129,13 +201,33 @@ public sealed class FlowOrchestratorConfig
     public HashSet<string> ExcludedFunctions { get; } = [];
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+    public HashSet<string> ExcludedFunctions { get; } = [];
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+    public HashSet<string> ExcludedFunctions { get; } = [];
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     public HashSet<string> ExcludedFunctions { get; } = [];
 =======
     public HashSet<string> ExcludedFunctions { get; } = new();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -151,7 +243,15 @@ public sealed class FlowOrchestratorConfig
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
 
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
@@ -166,6 +266,12 @@ public sealed class FlowOrchestratorConfig
     /// However when the variable is too long, it will either be truncated or decrease the robustness of value passing.
     /// To mitigate that, the <see cref="ReActEngine"/> will avoid rendering the variables exceeding MaxVariableLength in the prompt.
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -173,6 +279,8 @@ public sealed class FlowOrchestratorConfig
 <<<<<<< Updated upstream
     /// And the variables should be accessed implicitly from ContextVariables instead of function parameters by the plugins.
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -190,6 +298,7 @@ public sealed class FlowOrchestratorConfig
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -199,6 +308,21 @@ public sealed class FlowOrchestratorConfig
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+    /// And the variables should be accessed implicitly from ContextVariables instead of function parameters by the plugins.
+=======
+    /// And the variables should be accessed implicitly from SKContext instead of function parameters by the plugins.
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< Updated upstream
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
 =======
 <<<<<<< HEAD
     /// And the variables should be accessed implicitly from ContextVariables instead of function parameters by the plugins.
@@ -206,6 +330,8 @@ public sealed class FlowOrchestratorConfig
     /// And the variables should be accessed implicitly from SKContext instead of function parameters by the plugins.
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 >>>>>>> main
+=======
+>>>>>>> head
     /// </remarks>
     public int MaxVariableLength { get; set; } = 400;
 
@@ -221,6 +347,12 @@ public sealed class FlowOrchestratorConfig
 
     /// <summary>
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -238,7 +370,19 @@ public sealed class FlowOrchestratorConfig
 <<<<<<< main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 =======
     /// Optional. The prompt template override for ReAct engine.
@@ -248,6 +392,12 @@ public sealed class FlowOrchestratorConfig
     /// <summary>
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -263,7 +413,15 @@ public sealed class FlowOrchestratorConfig
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     /// Optional. The prompt template configuration override for the ReAct engine.
     /// </summary>
     public PromptTemplateConfig? ReActPromptTemplateConfig { get; set; } = null;
@@ -275,12 +433,22 @@ public sealed class FlowOrchestratorConfig
 
     /// <summary>
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -297,6 +465,8 @@ public sealed class FlowOrchestratorConfig
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -308,7 +478,15 @@ public sealed class FlowOrchestratorConfig
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
     /// Optional. The allowed AI service id for the React engine.
     /// </summary>
     public HashSet<string> AIServiceIds { get; set; } = [];
@@ -322,6 +500,12 @@ public sealed class FlowOrchestratorConfig
     /// </remarks>
     public PromptExecutionSettings? AIRequestSettings { get; set; } = null;
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -337,7 +521,15 @@ public sealed class FlowOrchestratorConfig
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 =======
     /// Optional. The AI request settings for the ReAct engine.
     /// </summary>
@@ -348,6 +540,12 @@ public sealed class FlowOrchestratorConfig
     public AIRequestSettings? AIRequestSettings { get; set; } = null;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
 <<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -361,6 +559,15 @@ public sealed class FlowOrchestratorConfig
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+>>>>>>> head
 }

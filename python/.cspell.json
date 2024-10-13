@@ -58,6 +58,11 @@
         "opentelemetry",
         "SEMANTICKERNEL",
 <<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,6 +85,19 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        "OTEL",
+        "mistralai"
+=======
+>>>>>>> Stashed changes
+=======
+        "OTEL",
+        "mistralai"
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         "OTEL",
         "mistralai"
@@ -87,6 +105,11 @@
 =======
         "OTEL"
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -104,5 +127,14 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     ]
 }

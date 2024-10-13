@@ -16,29 +16,10 @@ extend-exclude = [
     "test_code_tokenizer.py",
     "*response.json",
     "test_content.txt",
-<<<<<<< div
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     "serializedChatHistoryV1_15_1.json",
     "MultipleFunctionsVsParameters.cs"
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
     "serializedChatHistoryV1_15_1.json",
     "MultipleFunctionsVsParameters.cs"
-=======
-=======
->>>>>>> main
     "google_what_is_the_semantic_kernel.json",
     "what-is-semantic-kernel.json",
     "serializedChatHistoryV1_15_1.json",
@@ -47,8 +28,6 @@ extend-exclude = [
     "MultipleFunctionsVsParameters.cs",
     "PopulationByCountry.csv",
     "PopulationByAdmin1.csv",
-<<<<<<< div
-=======
 ]
 
 [default.extend-words]
@@ -63,7 +42,6 @@ arange = "arange"         # Method in Python numpy package
 prompty = "prompty"       # prompty is a format name.
 ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
->>>>>>> main
 ]
 
 [default.extend-words]
@@ -78,20 +56,6 @@ arange = "arange"         # Method in Python numpy package
 prompty = "prompty"       # prompty is a format name.
 ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ]
 
 [default.extend-words]
@@ -119,38 +83,6 @@ extend-ignore-re = [
 extend-ignore-re = [
     'Version=".*"', # ignore package version numbers
 ]
-<<<<<<< div
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
 ]
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
 ]
->>>>>>> main
+]

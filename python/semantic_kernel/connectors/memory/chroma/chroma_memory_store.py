@@ -193,12 +193,20 @@ class ChromaMemoryStore(MemoryStoreBase):
 
 <<<<<<< main
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -215,6 +223,7 @@ class ChromaMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -226,7 +235,18 @@ class ChromaMemoryStore(MemoryStoreBase):
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
 >>>>>>> main
+=======
+>>>>>>> head
     async def get(
         self, collection_name: str, key: str, with_embedding: bool
     ) -> MemoryRecord:
@@ -234,12 +254,22 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
 >>>>>>> upstream/main
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -258,6 +288,8 @@ class ChromaMemoryStore(MemoryStoreBase):
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -271,7 +303,15 @@ class ChromaMemoryStore(MemoryStoreBase):
 =======
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
         """Gets a record.
 
         Args:
@@ -293,6 +333,12 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def get_batch(
 <<<<<<< main
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -301,6 +347,10 @@ class ChromaMemoryStore(MemoryStoreBase):
         self, collection_name: str, keys: list[str], with_embeddings: bool
 =======
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -313,14 +363,31 @@ class ChromaMemoryStore(MemoryStoreBase):
         self, collection_name: str, keys: list[str], with_embeddings: bool
 =======
 =======
+<<<<<<< div
 =======
 >>>>>>> main
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         self, collection_name: str, keys: list[str], with_embeddings: bool
 =======
 =======
 >>>>>>> ms/features/bugbash-prep
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -336,12 +403,26 @@ class ChromaMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
         self, 
         collection_name: str, 
         keys: list[str], 
         with_embeddings: bool = False
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -361,12 +442,32 @@ class ChromaMemoryStore(MemoryStoreBase):
 >>>>>>> upstream/main
 =======
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+>>>>>>> origin/main
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+=======
+<<<<<<< main
+>>>>>>> upstream/main
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 >>>>>>> upstream/main
 =======
 >>>>>>> ms/features/bugbash-prep
 <<<<<<< div
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -382,7 +483,15 @@ class ChromaMemoryStore(MemoryStoreBase):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
 >>>>>>> main
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/main
+>>>>>>> head
     ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
