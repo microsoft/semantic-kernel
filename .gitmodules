@@ -1,0 +1,148 @@
+[submodule "Singularity"]
+<<<<<<< main
+    path = Singularity
+    url = <URL_HERE>
+=======
+[submodule "Bryan-Roe"]
+[submodule "semantic-kernel"]
+<<<<<<< Updated upstream
+<<<<<<< div
+<<<<<<< HEAD
+=======
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
+[submodule "semantic-kernel2"]
+[submodule "SK"]
+=======
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> div
+[submodule "semantic-kernel2"]
+    path = semantic-kernel2
+    url = <URL_HERE>
+[submodule "SK"]
+<<<<<<< main
+    path = SK
+    url = <URL_HERE>
+[submodule "semantic-kernel"]
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< div
+=======
+[submodule "semantic-kernel2"]
+[submodule "SK"]
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
+<<<<<<< main
+[submodule "semantic-kernel2"]
+[submodule "SK"]
+=======
+>>>>>>> div
+	path = semantic-kernel
+	url = https://github.com/Bryan-Roe/semantic-kernel.git
+[submodule "SK.AI"]
+	path = SK.AI
+	url = https://github.com/Bryan-Roe/SK.AI.git
+[submodule "tree-sitter-python"]
+<<<<<<< main
+    path = tree-sitter-python
+    url = <URL_HERE>
+=======
+>>>>>>> origin/PR
+<<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> main
+>>>>>>> head
+>>>>>>> Stashed changes
+>>>>>>> div
