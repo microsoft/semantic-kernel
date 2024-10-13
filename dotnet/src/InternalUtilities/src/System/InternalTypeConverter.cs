@@ -39,16 +39,16 @@ internal static class InternalTypeConverter
     /// <param name="sourceType">The source Type for which to retrieve the type-to-string converter delegate.</param>
     /// <returns>A Func delegate for converting the source type to a string, considering CultureInfo, or null if no suitable converter is found.</returns>
     private static Func<object?, CultureInfo, string?>? GetTypeToStringConverterDelegate(Type sourceType) =>
-        s_converters.GetOrAdd(sourceType, static sourceType =>
+        s_converters.GetOrAdd(sourceType, (Type innerSourceType) =>
         {
             // Strings just render as themselves.
-            if (sourceType == typeof(string))
+            if (innerSourceType == typeof(string))
             {
                 return (input, cultureInfo) => (string)input!;
             }
 
             // Look up and use a type converter.
-            if (TypeConverterFactory.GetTypeConverter(sourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
+            if (TypeConverterFactory.GetTypeConverter(innerSourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
             {
                 return (input, cultureInfo) =>
                 {

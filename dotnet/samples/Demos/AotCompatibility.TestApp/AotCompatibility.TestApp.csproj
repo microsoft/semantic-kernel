@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
+    <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Abstractions" />
+    <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Core" />
+    <TrimmerRootAssembly Include="Microsoft.SemanticKernel.Connectors.Onnx" />
+  </ItemGroup>
+
+</Project>

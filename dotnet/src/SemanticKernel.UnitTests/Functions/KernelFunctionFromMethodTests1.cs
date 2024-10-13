@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Moq;
+using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -1392,6 +1393,44 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.True(actual is KernelFunctionCanceledException);
         Assert.True(actual.Data.Contains("Key"));
         Assert.Equal("Value", actual.Data["Key"]);
+    }
+
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForTestParameterAndReturnTypes))]
+    public async Task ItCanBeCloned(JsonSerializerOptions? jsos)
+    {
+        // Arrange
+        var kernel = new Kernel();
+
+        static TestReturnType StaticMethod(TestParameterType p1)
+        {
+            return new TestReturnType() { Result = int.Parse(p1.Value!) };
+        }
+
+        // Arrange & Act
+        KernelFunction function = jsos is not null ?
+            function = KernelFunctionFromMethod.Create(((Func<TestParameterType, TestReturnType>)StaticMethod).Method, jsonSerializerOptions: jsos, functionName: "f1", description: "f1-description") :
+            function = KernelFunctionFromMethod.Create(((Func<TestParameterType, TestReturnType>)StaticMethod).Method, functionName: "f1", description: "f1-description");
+
+        // Act
+        function = function.Clone("new-plugin-name");
+
+        // Assert plugin name
+        Assert.Equal("new-plugin-name", function.Metadata.PluginName);
+
+        // Assert schema
+        Assert.NotEmpty(function.Metadata.Parameters);
+        Assert.NotNull(function.Metadata.Parameters[0].Schema);
+        Assert.Equal("{\"type\":\"object\",\"properties\":{\"Value\":{\"type\":[\"string\",\"null\"]}}}", function.Metadata.Parameters[0].Schema!.ToString());
+
+        Assert.NotNull(function.Metadata.ReturnParameter);
+        Assert.NotNull(function.Metadata.ReturnParameter.Schema);
+        Assert.Equal("{\"type\":\"object\",\"properties\":{\"Result\":{\"type\":\"integer\"}}}", function.Metadata.ReturnParameter.Schema!.ToString());
+
+        // Assert invocation
+        var invokeResult = await function.InvokeAsync(this._kernel, new() { ["p1"] = """{"Value": "34"}""" }); // Check marshaling logic that deserialize JSON into target type using JSOs
+        var result = invokeResult?.GetValue<TestReturnType>();
+        Assert.Equal(34, result?.Result);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

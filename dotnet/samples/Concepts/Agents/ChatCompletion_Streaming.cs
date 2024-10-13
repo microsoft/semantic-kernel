@@ -85,7 +85,10 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -102,6 +105,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -146,7 +152,10 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -179,6 +188,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -225,7 +237,10 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -242,6 +257,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -289,7 +307,10 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -332,6 +353,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -389,6 +413,7 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -396,6 +421,8 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 >>>>>>> upstream/main
 =======
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -440,6 +467,9 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
