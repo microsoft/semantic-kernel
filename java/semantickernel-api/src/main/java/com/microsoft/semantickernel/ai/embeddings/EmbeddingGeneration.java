@@ -12,7 +12,7 @@ import com.microsoft.semantickernel.builders.BuildersSingleton;
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 >>>>>>> main
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.services.AIService;
+import com.microsoft.semantickernel.aiservices.AIService;
 import java.util.List;
 import reactor.core.publisher.Mono;
 

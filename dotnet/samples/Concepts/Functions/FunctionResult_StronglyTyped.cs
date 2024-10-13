@@ -82,6 +82,7 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
             var usage = FunctionResult.Metadata?["Usage"] as ChatTokenUsage;
 
             return new TokenCounts(
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -121,6 +122,11 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                completionTokens: usage?.OutputTokenCount ?? 0,
+                promptTokens: usage?.InputTokenCount ?? 0,
+                totalTokens: usage?.TotalTokenCount ?? 0);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
         }
 
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()

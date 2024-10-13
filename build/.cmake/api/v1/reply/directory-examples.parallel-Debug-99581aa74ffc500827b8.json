@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/parallel/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/llama-parallel"
+			],
+			"targetId" : "llama-parallel::@4daa360967fb15ed349f",
+			"targetIndex" : 56,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/parallel",
+		"source" : "examples/parallel"
+	}
+}

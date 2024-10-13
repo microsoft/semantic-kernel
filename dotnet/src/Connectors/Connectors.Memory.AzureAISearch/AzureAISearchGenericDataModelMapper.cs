@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Data;
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -44,6 +45,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure AI Search.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 /// </summary>
 internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, JsonObject>
 {

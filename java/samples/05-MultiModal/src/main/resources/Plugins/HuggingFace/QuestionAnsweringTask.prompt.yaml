@@ -1,0 +1,18 @@
+name: QuestionAnsweringTask
+template: |
+  <message role="user">
+  What's my name?
+  </message>
+
+  <context>
+    The user's name is Clara and lives in Berkeley.
+  </context>
+template_format: handlebars
+description: A function that answers a question using context.
+input_variables:
+output_variable:
+    type: string
+    description: The answer.
+execution_settings:
+  - model_id_pattern: ^deepset/roberta-base-squad2
+  - model_id_pattern: ^gpt-3\.?5-turbo

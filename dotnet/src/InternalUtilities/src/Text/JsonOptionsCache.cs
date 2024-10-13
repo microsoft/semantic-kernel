@@ -15,16 +15,10 @@ namespace Microsoft.SemanticKernel.Text;
 [ExcludeFromCodeCoverage]
 internal static class JsonOptionsCache
 {
-    /// <summary>Singleton for <see cref="ReadOnlyMemoryConverter"/>.</summary>
-    public static ReadOnlyMemoryConverter ReadOnlyMemoryConverter { get; } = new();
-
     /// <summary>
     /// Cached <see cref="JsonSerializerOptions"/> instance for reading and writing JSON using the default settings.
     /// </summary>
-    public static JsonSerializerOptions Default { get; } = new()
-    {
-        Converters = { ReadOnlyMemoryConverter },
-    };
+    public static JsonSerializerOptions Default { get; } = new();
 
     /// <summary>
     /// Cached <see cref="JsonSerializerOptions"/> instance for writing JSON with indentation.
@@ -32,7 +26,6 @@ internal static class JsonOptionsCache
     public static JsonSerializerOptions WriteIndented { get; } = new()
     {
         WriteIndented = true,
-        Converters = { ReadOnlyMemoryConverter },
     };
 
     /// <summary>
@@ -44,6 +37,5 @@ internal static class JsonOptionsCache
         AllowTrailingCommas = true,
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
-        Converters = { ReadOnlyMemoryConverter },
     };
 }

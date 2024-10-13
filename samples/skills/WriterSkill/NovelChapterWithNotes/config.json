@@ -1,8 +1,6 @@
 {
-  "schema": 1,
-  "type": "completion",
   "description": "Write a chapter of a novel using notes about the chapter to write.",
-  "completion": {
+  "default_settings": {
     "max_tokens": 1024,
     "temperature": 0.5,
     "top_p": 0.0,

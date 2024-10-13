@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using OpenAI.Chat;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +48,10 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 namespace Planners;
 
 /// <summary>
@@ -363,6 +368,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
                 usage is ChatTokenUsage completionsUsage &&
                 completionsUsage is not null)
             {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -396,6 +402,9 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+                tokens += completionsUsage.TotalTokenCount;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
             }
         }
 

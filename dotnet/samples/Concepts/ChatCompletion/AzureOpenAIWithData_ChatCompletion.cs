@@ -127,6 +127,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureSearchChatDataSource"/> class.
     /// </summary>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -158,6 +159,9 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
     private static AzureSearchChatDataSource GetAzureSearchDataSource()
     {
         return new AzureSearchChatDataSource
@@ -167,6 +171,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
             IndexName = TestConfiguration.AzureAISearch.IndexName
         };
     }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -198,4 +203,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 }
