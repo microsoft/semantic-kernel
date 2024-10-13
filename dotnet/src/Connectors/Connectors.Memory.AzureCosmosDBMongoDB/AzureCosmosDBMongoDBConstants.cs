@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,6 +24,8 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
@@ -29,12 +34,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -52,12 +61,15 @@ using System.Collections.Generic;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
@@ -72,8 +84,11 @@ internal static class AzureCosmosDBMongoDBConstants
     /// <summary>Reserved key property name in data model.</summary>
     internal const string DataModelReservedKeyPropertyName = "Id";
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -92,12 +107,15 @@ internal static class AzureCosmosDBMongoDBConstants
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
 
@@ -136,8 +154,11 @@ internal static class AzureCosmosDBMongoDBConstants
         typeof(ReadOnlyMemory<double>?)
     ];
 >>>>>>> ms/main
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -155,10 +176,13 @@ internal static class AzureCosmosDBMongoDBConstants
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 }

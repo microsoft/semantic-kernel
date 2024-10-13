@@ -14,9 +14,13 @@ jobs:
       issues: write
     steps:
       - uses: actions/github-script@v7
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,7 +38,11 @@ jobs:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
       - uses: actions/github-script@v6
 >>>>>>> origin/main
 <<<<<<< Updated upstream

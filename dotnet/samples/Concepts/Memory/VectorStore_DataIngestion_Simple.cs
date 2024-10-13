@@ -3,8 +3,11 @@
 using System.Text.Json;
 using Memory.VectorStoreFixtures;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -25,6 +28,8 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 =======
@@ -33,6 +38,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -42,8 +48,11 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 =======
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -61,12 +70,15 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;

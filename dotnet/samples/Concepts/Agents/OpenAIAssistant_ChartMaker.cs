@@ -22,8 +22,11 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         OpenAIClientProvider provider = this.GetClientProvider();
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -70,6 +73,12 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -104,6 +113,10 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
                 provider,
                 new(this.Model)
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -111,6 +124,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
                 kernel: new(),
@@ -118,8 +132,11 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
                 new(this.Model)
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -137,20 +154,26 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
                 {
                     Instructions = AgentInstructions,
                     Name = AgentName,
                     EnableCodeInterpreter = true,
                     Metadata = AssistantSampleMetadata,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -171,6 +194,8 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
                 });
 =======
@@ -179,13 +204,17 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
                 });
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 },
                 kernel: new());
                 });
                 },
                 kernel: new());
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -203,12 +232,15 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
@@ -240,8 +272,11 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
         async Task InvokeAgentAsync(string input)
         {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -317,10 +352,13 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             ChatMessageContent message = new(AuthorRole.User, input);
             chat.AddChatMessage(new(AuthorRole.User, input));
             this.WriteAgentChatMessage(message);

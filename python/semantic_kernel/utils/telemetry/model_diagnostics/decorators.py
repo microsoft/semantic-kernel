@@ -28,8 +28,11 @@ MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings.create()
 # Operation names
 CHAT_COMPLETION_OPERATION = "chat.completions"
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -76,10 +79,13 @@ CHAT_STREAMING_COMPLETION_OPERATION = "chat.streaming_completions"
 TEXT_COMPLETION_OPERATION = "text.completions"
 TEXT_STREAMING_COMPLETION_OPERATION = "text.streaming_completions"
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 # Creates a tracer from the global tracer provider
 tracer = get_tracer(__name__)
@@ -134,8 +140,11 @@ def trace_chat_completion(model_provider: str) -> Callable:
                 kwargs.get("settings") if kwargs.get("settings") is not None else args[2]
             )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -182,6 +191,13 @@ def trace_chat_completion(model_provider: str) -> Callable:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+            chat_history: ChatHistory = kwargs["chat_history"]
+            settings: PromptExecutionSettings = kwargs["settings"]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
             with use_span(
                 _start_completion_activity(
@@ -208,8 +224,11 @@ def trace_chat_completion(model_provider: str) -> Callable:
 
 @experimental_function
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -228,12 +247,15 @@ def trace_chat_completion(model_provider: str) -> Callable:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 def trace_streaming_chat_completion(model_provider: str) -> Callable:
     """Decorator to trace streaming chat completion activities.
 
@@ -303,8 +325,11 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
 
 
 @experimental_function
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -322,12 +347,15 @@ def trace_streaming_chat_completion(model_provider: str) -> Callable:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 def trace_text_completion(model_provider: str) -> Callable:
     """Decorator to trace text completion activities."""
 
@@ -342,8 +370,11 @@ def trace_text_completion(model_provider: str) -> Callable:
             prompt: str = kwargs.get("prompt") if kwargs.get("prompt") is not None else args[1]
             settings: PromptExecutionSettings = kwargs["settings"] if kwargs.get("settings") is not None else args[2]
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -390,6 +421,13 @@ def trace_text_completion(model_provider: str) -> Callable:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+            prompt: str = kwargs["prompt"]
+            settings: PromptExecutionSettings = kwargs["settings"]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
             with use_span(
                 _start_completion_activity(
@@ -415,8 +453,11 @@ def trace_text_completion(model_provider: str) -> Callable:
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -435,12 +476,15 @@ def trace_text_completion(model_provider: str) -> Callable:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 @experimental_function
 def trace_streaming_text_completion(model_provider: str) -> Callable:
     """Decorator to trace streaming text completion activities.
@@ -504,8 +548,11 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
     return inner_trace_streaming_text_completion
 
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -523,12 +570,15 @@ def trace_streaming_text_completion(model_provider: str) -> Callable:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 def _start_completion_activity(
     operation_name: str,
     model_name: str,

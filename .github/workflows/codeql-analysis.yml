@@ -7,6 +7,9 @@ name: "CodeQL"
 on:
   push:
     branches: ["*"]
+    branches: ["main", "experimental*", "feature*", "*-development"]
+    branches: ["main", "experimental*", "feature*", "*-development"]
+    branches: ["main", "experimental*", "feature*", "*-development"]
   schedule:
     - cron: "17 11 * * 2"
 
@@ -24,6 +27,9 @@ jobs:
       matrix:
         language: [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
 
+        language: ["csharp", "python", "java"]
+        language: ["csharp", "python", "java"]
+        language: ["csharp", "python", "java"]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Use only 'java' to analyze code written in Java, Kotlin or both
         # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both
@@ -36,6 +42,8 @@ jobs:
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
           # If you wish to specify custom queries, you can do so here or in a config file.
@@ -62,6 +70,7 @@ jobs:
       - name: Autobuild
         if: ${{ matrix.language != 'C' }}
         uses: github/codeql-action/autobuild@v4
+        uses: github/codeql-action/autobuild@v3
 
       - name: Setup JDK
         uses: actions/setup-java@v4
@@ -89,5 +98,8 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
 
+        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{matrix.language}}"

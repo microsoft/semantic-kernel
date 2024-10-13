@@ -1,0 +1,10 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=827846
+  // for the documentation about the extensions.json format
+  "recommendations": [
+    "streetsidesoftware.code-spell-checker",
+    "ms-python.python",
+    "charliermarsh.ruff",
+    "rodolphebarbanneau.python-docstring-highlighter"
+  ]
+}

@@ -4,9 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +27,9 @@ import static org.mockito.Mockito.when;
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -33,6 +40,7 @@ import static org.mockito.Mockito.when;
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcServerRule;
 import org.junit.Before;
@@ -80,9 +88,13 @@ import reference_skill.ActivityOuterClass.GetRandomActivityRequest;
 import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
 
 // import reference_skill.RandomActivitySkillGrpc.RandomActivitySkillBlockingStub; // Remove the unused import statement
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -100,7 +112,11 @@ import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 >>>>>>> origin/main
@@ -138,9 +154,13 @@ public class RandomActivitySkillTest {
     public GrpcServerRule grpcServerRule = new GrpcServerRule().directExecutor();
 
     // Remove the unused field declaration
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -158,7 +178,11 @@ public class RandomActivitySkillTest {
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
     private RandomActivitySkillGrpc.RandomActivitySkillBlockingStub blockingStub;
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -189,9 +213,13 @@ public class RandomActivitySkillTest {
     @Before
     public void setUp() {
         grpcServerRule.getServiceRegistry().addService(new RandomActivitySkill());
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -208,6 +236,9 @@ public class RandomActivitySkillTest {
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -218,6 +249,7 @@ public class RandomActivitySkillTest {
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     }
 
     /**
@@ -271,9 +303,13 @@ public class RandomActivitySkillTest {
         GetRandomActivityRequest request = GetRandomActivityRequest.newBuilder().build();
         GetRandomActivityRequest getRandomActivityRequest = GetRandomActivityRequest.newBuilder().build();
         StreamObserver<GetRandomActivityResponse> responseObserver = mock(StreamObserver.class);
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -290,6 +326,9 @@ public class RandomActivitySkillTest {
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -300,6 +339,7 @@ public class RandomActivitySkillTest {
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         randomActivitySkill.getRandomActivity(request, responseObserver);
 
         verify(responseObserver).onNext(any(GetRandomActivityResponse.class));

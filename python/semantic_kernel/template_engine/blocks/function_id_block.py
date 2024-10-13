@@ -2,6 +2,10 @@
 
 import logging
 from re import compile
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -44,19 +48,27 @@ from re import compile
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
 from semantic_kernel.exceptions import FunctionIdBlockSyntaxError
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,19 +123,27 @@ from pydantic import model_validator
 >>>>>>> ms/small_fixes
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_errors import FunctionIdBlockSyntaxError
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 
 logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< Updated upstream
@@ -367,6 +387,9 @@ class FunctionIdBlock(Block):
     function_name: str = ""
     plugin_name: str | None = None
 
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
     function_name: str = ""
@@ -382,6 +405,7 @@ class FunctionIdBlock(Block):
     plugin_name: str | None = None
 
 >>>>>>> Stashed changes
+>>>>>>> head
     @model_validator(mode="before")
     @classmethod
     def parse_content(cls, fields: dict[str, Any]) -> dict[str, Any]:
@@ -389,9 +413,13 @@ class FunctionIdBlock(Block):
 
         If both are present in the fields, return the fields as is.
         Otherwise, use the regex to extract the plugin and function name.
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -408,6 +436,11 @@ class FunctionIdBlock(Block):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -432,9 +465,13 @@ class FunctionIdBlock(Block):
         If both are present in the fields, return the fields as is.
         Otherwise use the regex to extract the plugin and function name.
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -450,11 +487,15 @@ class FunctionIdBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         """
         if "plugin_name" in fields and "function_name" in fields:
             return fields
@@ -467,9 +508,13 @@ class FunctionIdBlock(Block):
         fields["function_name"] = matches.group("function")
         return fields
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -494,6 +539,10 @@ class FunctionIdBlock(Block):
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -502,15 +551,20 @@ class FunctionIdBlock(Block):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
 =======
     def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -526,9 +580,13 @@ class FunctionIdBlock(Block):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         return self.content

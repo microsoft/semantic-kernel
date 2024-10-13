@@ -2,8 +2,11 @@
 
 using Microsoft.Extensions.DependencyInjection;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +27,8 @@ using Microsoft.SemanticKernel;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 using Microsoft.SemanticKernel;
 =======
@@ -32,12 +37,16 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel;
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 using Microsoft.SemanticKernel;
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -55,12 +64,15 @@ using Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.Data;
 using Xunit;
 

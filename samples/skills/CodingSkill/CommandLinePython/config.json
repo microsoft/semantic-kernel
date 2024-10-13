@@ -1,7 +1,11 @@
 {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +38,9 @@
 =======
   "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
   "default_settings": {
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
   "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
@@ -43,6 +50,7 @@
   "description": "Turns natural language into Python command line scripts. Reads variables from args, operates on stdin, out",
   "default_settings": {
 >>>>>>> Stashed changes
+>>>>>>> head
     "max_tokens": 256,
     "temperature": 0.0,
     "top_p": 0.0,
@@ -55,9 +63,13 @@
   "default_backends": [
     "code-davinci-002"
   ]
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -99,9 +111,13 @@
 =======
     "stop_sequences": ["# Done"]
   }
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 }

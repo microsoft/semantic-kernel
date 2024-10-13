@@ -39,8 +39,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
     /// also increase the time required to build the index. EfConstruction has to be at least 2 * m
     /// </summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -61,6 +64,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     public int? EfConstruction { get; set; } = null;
 =======
@@ -69,6 +74,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
     public int? EfConstruction { get; set; } = null;
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     public int EfConstruction { get; set; } = 64;
 
@@ -80,8 +86,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
 =======
     public int? EfConstruction { get; set; } = null;
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -99,10 +108,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 }

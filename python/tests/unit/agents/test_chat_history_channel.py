@@ -31,8 +31,11 @@ class MockChatHistoryHandler:
             )
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -51,18 +54,24 @@ class MockChatHistoryHandler:
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     async def invoke_stream(self, history: list[ChatMessageContent]) -> AsyncIterable[ChatMessageContent]:
         for message in history:
             yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -80,12 +89,15 @@ class MockChatHistoryHandler:
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 class MockNonChatHistoryHandler:
     """Mock agent to test incorrect instance handling."""
@@ -137,8 +149,11 @@ async def test_invoke():
 
 @pytest.mark.asyncio
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,12 +172,15 @@ async def test_invoke():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 async def test_invoke_stream():
     channel = ChatHistoryChannel()
     agent = AsyncMock(spec=MockChatHistoryHandler)
@@ -189,8 +207,11 @@ async def test_invoke_stream():
 
 
 @pytest.mark.asyncio
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -208,12 +229,15 @@ async def test_invoke_stream():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 async def test_invoke_leftover_in_queue():
     channel = ChatHistoryChannel()
     agent = AsyncMock(spec=MockChatHistoryHandler)
@@ -269,8 +293,11 @@ async def test_invoke_incorrect_instance_throws():
 
 @pytest.mark.asyncio
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -289,12 +316,15 @@ async def test_invoke_incorrect_instance_throws():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 async def test_invoke_stream_incorrect_instance_throws():
     channel = ChatHistoryChannel()
     agent = MockNonChatHistoryHandler()
@@ -305,8 +335,11 @@ async def test_invoke_stream_incorrect_instance_throws():
 
 
 @pytest.mark.asyncio
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -324,12 +357,15 @@ async def test_invoke_stream_incorrect_instance_throws():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 async def test_receive():
     channel = ChatHistoryChannel()
     history = [

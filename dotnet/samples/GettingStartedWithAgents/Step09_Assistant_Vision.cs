@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,10 +46,13 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -72,8 +78,11 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,12 +132,15 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 provider,
                 definition: new OpenAIAssistantDefinition(this.Model)
                 {
@@ -144,8 +156,11 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
  6d73513a859ab2d05e01db3bc1d405827799e34b
                 },
                 kernel: new Kernel());
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -163,12 +178,15 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;
@@ -191,8 +209,11 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
             await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -239,6 +260,12 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+            await provider.Client.GetOpenAIFileClient().DeleteFileAsync(fileId);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         }
 
         // Local function to invoke agent and display the conversation messages.

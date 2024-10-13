@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ["main"]
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,7 +28,11 @@ on:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
     branches: ["main", "java-development"]
 >>>>>>> origin/main
 <<<<<<< Updated upstream

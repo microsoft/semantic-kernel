@@ -1,7 +1,11 @@
 {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +38,9 @@
 =======
   "description": "A chat bot that plays a persona or role",
   "default_settings": {
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
   "description": "A chat bot that plays a persona or role",
@@ -43,6 +50,7 @@
   "description": "A chat bot that plays a persona or role",
   "default_settings": {
 >>>>>>> Stashed changes
+>>>>>>> head
     "max_tokens": 150,
     "temperature": 0.9,
     "top_p": 0.0,
@@ -56,9 +64,13 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -100,9 +112,13 @@
 =======
     "stop_sequences": ["Human:", "AI:"]
   }
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 }

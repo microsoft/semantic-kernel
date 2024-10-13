@@ -1,8 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -25,6 +29,9 @@ using System.Collections.Generic;
 >>>>>>> Stashed changes
 =======
 using System.Collections.Generic;
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 using System.Collections.Generic;
@@ -32,6 +39,7 @@ using System.Collections.Generic;
 =======
 using System.Collections.Generic;
 >>>>>>> Stashed changes
+>>>>>>> head
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,9 +54,13 @@ namespace Microsoft.SemanticKernel.TextToImage;
 public interface ITextToImageService : IAIService
 {
     /// <summary>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -136,20 +148,35 @@ public interface ITextToImageService : IAIService
     /// <param name="executionSettings">Text to image execution settings</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+<<<<<<< div
+=======
+    /// Given a prompt and/or an input text, the model will generate a new image.
+    /// </summary>
+    /// <param name="input">Input text for image generation</param>
+    /// <param name="executionSettings">Text to image execution settings</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     /// <returns>Generated image contents</returns>
     [Experimental("SKEXP0001")]
     public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
         TextContent input,
         PromptExecutionSettings? executionSettings = null,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -165,11 +192,15 @@ public interface ITextToImageService : IAIService
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 }

@@ -116,8 +116,11 @@ async def test_create_agent(kernel: Kernel, azure_openai_unit_test_env):
 
 @pytest.mark.asyncio
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -196,6 +199,14 @@ async def test_list_definitions(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+async def test_list_definitions(
+    kernel: Kernel, mock_assistant, azure_openai_unit_test_env
+):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 async def test_create_agent_with_files(kernel: Kernel, azure_openai_unit_test_env):
     mock_open_file = mock_open(read_data="file_content")
     with (
@@ -277,8 +288,11 @@ async def test_create_agent_with_search_files_not_found_raises_exception(kernel:
 @pytest.mark.asyncio
 async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_unit_test_env):
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -313,6 +327,8 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_uni
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> upstream/main
 =======
@@ -323,6 +339,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_uni
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     agent = AzureAssistantAgent(
         kernel=kernel,
         service_id="test_service",
@@ -395,8 +412,11 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
             return_value=AsyncMock()
         )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -431,16 +451,19 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
 =======
         mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
         mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock(spec=Assistant))
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
         OpenAIAssistantBase._create_open_ai_assistant_definition = MagicMock(
             return_value={
@@ -529,8 +552,11 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
 )
 @pytest.mark.asyncio
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -565,6 +591,8 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 <<<<<<< main
 =======
@@ -575,6 +603,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 async def test_retrieve_agent_missing_chat_deployment_name_throws(
     kernel, azure_openai_unit_test_env
 ):
@@ -583,8 +612,11 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(
         match="The Azure OpenAI chat_deployment_name is required.",
     ):
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -660,6 +692,13 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_openai_unit_test_env):
+    with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         _ = await AzureAssistantAgent.retrieve(
             id="test_id",
             api_key="test_api_key",
@@ -671,8 +710,11 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 @pytest.mark.asyncio
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -707,6 +749,8 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 <<<<<<< main
 =======
@@ -717,6 +761,7 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 async def test_retrieve_agent_missing_api_key_throws(
     kernel, azure_openai_unit_test_env
 ):
@@ -728,8 +773,11 @@ async def test_retrieve_agent_missing_api_key_throws(
             id="test_id", kernel=kernel, env_file_path="test.env"
         )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -764,24 +812,30 @@ async def test_retrieve_agent_missing_api_key_throws(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 async def test_retrieve_agent_missing_api_key_throws(kernel, azure_openai_unit_test_env):
     with pytest.raises(
         AgentInitializationException, match="Please provide either api_key, ad_token or ad_token_provider."
     ):
         _ = await AzureAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -816,6 +870,8 @@ async def test_retrieve_agent_missing_api_key_throws(kernel, azure_openai_unit_t
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> upstream/main
 =======
@@ -826,6 +882,7 @@ async def test_retrieve_agent_missing_api_key_throws(kernel, azure_openai_unit_t
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 
 def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
@@ -837,8 +894,11 @@ def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
         )
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -873,6 +933,8 @@ def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 <<<<<<< main
 =======
@@ -883,6 +945,7 @@ def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         with pytest.raises(
             AgentInitializationError, match="Failed to create Azure OpenAI settings."
         ):
@@ -892,8 +955,11 @@ def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
                 deployment_name="test_deployment_name",
             )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -969,6 +1035,13 @@ def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        with pytest.raises(AgentInitializationException, match="Failed to create Azure OpenAI settings."):
+            AzureAssistantAgent(service_id="test", api_key="test_api_key", deployment_name="test_deployment_name")
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
 
 @pytest.mark.parametrize(
@@ -976,8 +1049,11 @@ def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
 )
 def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_test_env):
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1012,6 +1088,8 @@ def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_tes
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 <<<<<<< main
 =======
@@ -1022,13 +1100,17 @@ def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_tes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     with pytest.raises(
         AgentInitializationError,
         match="The Azure OpenAI chat_deployment_name is required.",
     ):
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1075,10 +1157,13 @@ def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_tes
 =======
     with pytest.raises(AgentInitializationException, match="The Azure OpenAI chat_deployment_name is required."):
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         AzureAssistantAgent(
             service_id="test_service",
             api_key="test_key",
@@ -1091,8 +1176,11 @@ def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_tes
 def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
     with pytest.raises(
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1127,6 +1215,8 @@ def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 <<<<<<< main
 =======
@@ -1137,6 +1227,7 @@ def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         AgentInitializationError,
         match="Please provide either api_key, ad_token or ad_token_provider.",
     ):
@@ -1146,8 +1237,11 @@ def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
             env_file_path="test.env",
         )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1222,7 +1316,10 @@ def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
     ):
         AzureAssistantAgent(service_id="test_service", endpoint="https://example.com", env_file_path="test.env")
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head

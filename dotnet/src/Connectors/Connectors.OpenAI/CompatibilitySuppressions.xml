@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,14 +50,23 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<?xml version="1.0" encoding="utf-8"?>
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose.Assistants</Target>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,16 +101,19 @@
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -205,8 +220,11 @@
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose</Target>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -241,16 +259,19 @@
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

@@ -1,7 +1,11 @@
 {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +38,9 @@
 =======
   "description": "Given a query and a list of possible intents, detect which intent the input matches",
   "default_settings": {
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
   "description": "Given a query and a list of possible intents, detect which intent the input matches",
@@ -43,6 +50,7 @@
   "description": "Given a query and a list of possible intents, detect which intent the input matches",
   "default_settings": {
 >>>>>>> Stashed changes
+>>>>>>> head
     "max_tokens": 100,
     "temperature": 0.1,
     "top_p": 1.0,
@@ -52,6 +60,10 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -99,4 +111,10 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+  }
+>>>>>>> main
+=======
+>>>>>>> head
 }

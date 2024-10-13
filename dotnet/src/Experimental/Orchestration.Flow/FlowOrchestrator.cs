@@ -4,9 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -29,6 +33,9 @@ using System.Threading.Tasks;
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< HEAD
@@ -36,10 +43,15 @@ using System.Threading.Tasks;
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -63,6 +75,11 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
@@ -73,6 +90,10 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -95,15 +116,24 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 
 /// <summary>
 /// A flow orchestrator that using semantic kernel for execution.
 /// </summary>
 public class FlowOrchestrator
 {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -122,6 +152,9 @@ public class FlowOrchestrator
 <<<<<<< main
     private readonly IKernelBuilder _kernelBuilder;
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -134,14 +167,19 @@ public class FlowOrchestrator
     private readonly IKernelBuilder _kernelBuilder;
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     private readonly IKernelBuilder _kernelBuilder;
 =======
     private readonly KernelBuilder _kernelBuilder;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,11 +195,15 @@ public class FlowOrchestrator
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
     private readonly IFlowStatusProvider _flowStatusProvider;
 
@@ -180,9 +222,13 @@ public class FlowOrchestrator
     /// <param name="validator">The flow validator.</param>
     /// <param name="config">Optional configuration object</param>
     public FlowOrchestrator(
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -201,6 +247,9 @@ public class FlowOrchestrator
 <<<<<<< main
         IKernelBuilder kernelBuilder,
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -213,14 +262,19 @@ public class FlowOrchestrator
         IKernelBuilder kernelBuilder,
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
         IKernelBuilder kernelBuilder,
 =======
         KernelBuilder kernelBuilder,
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -236,11 +290,15 @@ public class FlowOrchestrator
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         IFlowStatusProvider flowStatusProvider,
         Dictionary<object, string?>? globalPluginCollection = null,
         IFlowValidator? validator = null,
@@ -250,9 +308,13 @@ public class FlowOrchestrator
 
         this._kernelBuilder = kernelBuilder;
         this._flowStatusProvider = flowStatusProvider;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -271,6 +333,9 @@ public class FlowOrchestrator
 <<<<<<< main
         this._globalPluginCollection = globalPluginCollection ?? [];
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -283,14 +348,19 @@ public class FlowOrchestrator
         this._globalPluginCollection = globalPluginCollection ?? [];
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
         this._globalPluginCollection = globalPluginCollection ?? [];
 =======
         this._globalPluginCollection = globalPluginCollection ?? new Dictionary<object, string?>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -306,11 +376,15 @@ public class FlowOrchestrator
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         this._flowValidator = validator ?? new FlowValidator();
         this._config = config;
     }
@@ -321,9 +395,13 @@ public class FlowOrchestrator
     /// <param name="flow">goal to achieve</param>
     /// <param name="sessionId">execution session id</param>
     /// <param name="input">current input</param>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -376,6 +454,9 @@ public class FlowOrchestrator
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 =======
@@ -383,6 +464,7 @@ public class FlowOrchestrator
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     /// <param name="kernelArguments">execution kernel arguments</param>
     /// <returns>KernelArguments, which includes a json array of strings as output. The flow result is also exposed through the context when completes.</returns>
@@ -402,9 +484,13 @@ public class FlowOrchestrator
         [Description("Execution context variables")]
         ContextVariables? contextVariables = null)
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -420,11 +506,15 @@ public class FlowOrchestrator
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     {
         try
         {
@@ -432,9 +522,13 @@ public class FlowOrchestrator
         }
         catch (Exception ex)
         {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -457,6 +551,9 @@ public class FlowOrchestrator
 >>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< HEAD
@@ -464,11 +561,16 @@ public class FlowOrchestrator
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+>>>>>>> head
             throw new KernelException("Invalid flow", ex);
         }
 
         var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalPluginCollection, this._config);
         return await executor.ExecuteFlowAsync(flow, sessionId, input, kernelArguments ?? new KernelArguments()).ConfigureAwait(false);
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -499,6 +601,11 @@ public class FlowOrchestrator
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> Stashed changes
             throw new SKException("Invalid flow", ex);
@@ -507,9 +614,13 @@ public class FlowOrchestrator
         var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalPluginCollection, this._config);
         return await executor.ExecuteAsync(flow, sessionId, input, contextVariables ?? new ContextVariables(null)).ConfigureAwait(false);
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -525,10 +636,14 @@ public class FlowOrchestrator
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     }
 }

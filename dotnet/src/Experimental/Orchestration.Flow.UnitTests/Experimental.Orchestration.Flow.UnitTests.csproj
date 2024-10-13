@@ -2,9 +2,13 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Experimental.Orchestration.Flow.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Experimental.Orchestration.Flow.UnitTests</RootNamespace>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +27,9 @@
 <<<<<<< main
     <TargetFramework>net8.0</TargetFramework>
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -35,15 +42,20 @@
     <TargetFramework>net8.0</TargetFramework>
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     <TargetFramework>net8.0</TargetFramework>
 =======
     <TargetFramework>net6.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -59,18 +71,26 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -89,6 +109,9 @@
 <<<<<<< main
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101</NoWarn>
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -101,14 +124,19 @@
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101</NoWarn>
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101</NoWarn>
 =======
     <NoWarn>CA2007,VSTHRD111</NoWarn>
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,11 +152,15 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

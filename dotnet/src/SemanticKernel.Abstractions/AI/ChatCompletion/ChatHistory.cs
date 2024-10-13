@@ -1,6 +1,10 @@
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +28,9 @@
 >>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 // Copyright (c) Microsoft. All rights reserved.
@@ -31,6 +38,7 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+>>>>>>> head
 
 using System;
 using System.Collections;
@@ -55,6 +63,9 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// Creates a new instance of the <see cref="ChatHistory"/> class
     /// </summary>
     public ChatHistory()
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -99,6 +110,7 @@ public class ChatHistory : List<ChatMessageBase>
         {
         }
 >>>>>>> origin/main
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -137,6 +149,32 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+#pragma warning disable CA1710
+
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+
+public class ChatHistory : List<ChatMessageBase>
+{
+    [Obsolete("This enumeration is deprecated, use AuthorRole struct instead")]
+    public enum AuthorRoles
+    {
+        this._messages = [];
+    }
+
+    private sealed class ChatMessage : ChatMessageBase
+    {
+        public ChatMessage(AuthorRole authorRole, string content) : base(authorRole, content)
+        {
+        }
+>>>>>>> main
+=======
+>>>>>>> head
     }
 
     /// <summary>
@@ -149,9 +187,13 @@ public class ChatHistory : List<ChatMessageBase>
 
         this._messages = [];
         this.AddSystemMessage(systemMessage);
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -166,12 +208,16 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     [Obsolete("This class is deprecated, using instances of this class will not be supported")]
     public class Message : ChatMessageBase
     {
@@ -189,6 +235,10 @@ public class ChatHistory : List<ChatMessageBase>
         {
             this.AuthorRole = authorRole;
         }
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -211,6 +261,11 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
     }
 
     /// <summary>Initializes the history will all of the specified messages.</summary>
@@ -297,6 +352,10 @@ public class ChatHistory : List<ChatMessageBase>
     {
         Verify.NotNull(item);
         this._messages.Insert(index, item);
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -320,6 +379,11 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
     public List<ChatMessageBase> Messages => this;
 
     /// <summary>
@@ -331,9 +395,13 @@ public class ChatHistory : List<ChatMessageBase>
     public void AddMessage(AuthorRoles authorRole, string content)
     {
         this.Add(new Message(authorRole, content));
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -347,12 +415,16 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     }
 
     /// <summary>
@@ -391,6 +463,10 @@ public class ChatHistory : List<ChatMessageBase>
     {
         Verify.NotNull(item);
         return this._messages.Contains(item);
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -414,6 +490,11 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
     public void AddMessage(AuthorRole authorRole, string content)
@@ -446,9 +527,13 @@ public class ChatHistory : List<ChatMessageBase>
     public void AddSystemMessage(string content)
     {
         this.AddMessage(AuthorRole.System, content);
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -462,12 +547,16 @@ public class ChatHistory : List<ChatMessageBase>
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     }
 
     /// <summary>Searches for the specified message and returns the index of the first occurrence.</summary>

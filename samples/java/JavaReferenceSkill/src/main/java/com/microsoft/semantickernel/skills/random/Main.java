@@ -5,9 +5,13 @@ import java.util.logging.Logger;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +28,9 @@ import io.grpc.ServerBuilder;
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -34,6 +41,7 @@ import io.grpc.ServerBuilder;
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -71,9 +79,13 @@ public class Main {
                 // allows the server to handle requests related to the functionality provided by the
                 // `RandomActivitySkill` class.
                 addService(new RandomActivitySkill()).build();
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,7 +103,11 @@ public class Main {
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
                 .addService(new RandomActivitySkill()).build();
 >>>>>>> origin/main
 <<<<<<< Updated upstream

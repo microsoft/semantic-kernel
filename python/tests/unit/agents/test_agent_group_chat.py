@@ -35,8 +35,11 @@ def selection_strategy():
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -81,10 +84,13 @@ def selection_strategy():
 
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 def test_agent_group_chat_initialization(agents, termination_strategy, selection_strategy):
     group_chat = AgentGroupChat(
         agents=agents, termination_strategy=termination_strategy, selection_strategy=selection_strategy
@@ -184,8 +190,11 @@ async def test_invoke_with_agent_joining(agents, termination_strategy):
 async def test_invoke_with_complete_chat(agents, termination_strategy):
     termination_strategy.automatic_reset = False
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -232,6 +241,12 @@ async def test_invoke_with_complete_chat(agents, termination_strategy):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    group_chat = AgentGroupChat(agents=agents, termination_strategy=termination_strategy)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     group_chat.is_complete = True
 
     with pytest.raises(AgentChatException, match="Chat is already complete"):
@@ -241,8 +256,11 @@ async def test_invoke_with_complete_chat(agents, termination_strategy):
 
 @pytest.mark.asyncio
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -261,12 +279,15 @@ async def test_invoke_with_complete_chat(agents, termination_strategy):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 async def test_invoke_agent_with_none_defined_errors(agents):
     group_chat = AgentGroupChat()
 
@@ -276,8 +297,11 @@ async def test_invoke_agent_with_none_defined_errors(agents):
 
 
 @pytest.mark.asyncio
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -295,12 +319,15 @@ async def test_invoke_agent_with_none_defined_errors(agents):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 async def test_invoke_selection_strategy_error(agents, selection_strategy):
     group_chat = AgentGroupChat(agents=agents, selection_strategy=selection_strategy)
 
@@ -367,8 +394,11 @@ async def test_invoke_is_complete_then_reset(agents, termination_strategy, selec
 
         assert iteration_count == 2
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -387,12 +417,15 @@ async def test_invoke_is_complete_then_reset(agents, termination_strategy, selec
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 
 # endregion
@@ -529,8 +562,11 @@ async def test_invoke_streaming_agent_with_none_defined_errors(agents):
 
 
 # endregion
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -548,9 +584,12 @@ async def test_invoke_streaming_agent_with_none_defined_errors(agents):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head

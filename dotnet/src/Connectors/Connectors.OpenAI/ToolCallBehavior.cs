@@ -147,8 +147,11 @@ public abstract class ToolCallBehavior
                 if (functions.Count > 0)
                 {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -195,6 +198,12 @@ public abstract class ToolCallBehavior
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+                    choice = ChatToolChoice.CreateAutoChoice();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
                     tools = [];
                     for (int i = 0; i < functions.Count; i++)
                     {
@@ -255,8 +264,11 @@ public abstract class ToolCallBehavior
                 }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -303,6 +315,12 @@ public abstract class ToolCallBehavior
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+                choice = ChatToolChoice.CreateAutoChoice();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
                 tools = [];
                 for (int i = 0; i < openAIFunctions.Length; i++)
                 {
@@ -338,8 +356,11 @@ public abstract class ToolCallBehavior
             this._function = function;
             this._tool = function.ToFunctionDefinition();
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -382,10 +403,13 @@ public abstract class ToolCallBehavior
 =======
             this._choice = ChatToolChoice.CreateFunctionChoice(this._tool.FunctionName);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         }
 
         public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.FunctionName}";

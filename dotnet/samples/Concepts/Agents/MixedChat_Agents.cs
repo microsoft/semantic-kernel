@@ -48,8 +48,11 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,10 +83,13 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
                 kernel: new(),
@@ -91,8 +97,11 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
                 definition: new(this.Model)
                 clientProvider: this.GetClientProvider(),
                 definition: new OpenAIAssistantDefinition(this.Model)
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -110,19 +119,25 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
                     Metadata = AssistantSampleMetadata,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -143,6 +158,8 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
                 });
 =======
@@ -151,13 +168,17 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
                 });
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 },
                 kernel: new Kernel());
                 });
                 },
                 kernel: new Kernel());
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -175,12 +196,15 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -206,8 +230,11 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 
         // Invoke chat and display messages.
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -287,6 +314,14 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        string input = "concept: maps made out of egg cartons.";
+        chat.Add(new ChatMessageContent(AuthorRole.User, input));
+        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
         chat.AddChatMessage(input);
         this.WriteAgentChatMessage(input);

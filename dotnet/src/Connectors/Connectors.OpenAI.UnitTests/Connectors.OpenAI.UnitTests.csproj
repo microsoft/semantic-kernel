@@ -8,8 +8,11 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -30,6 +33,8 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070;SKEXP0010;CS1591;IDE1006;RCS1261;CA1031;CA1308;CA1861;CA2007;CA2234;VSTHRD111;CA1812</NoWarn>
 =======
@@ -38,13 +43,17 @@
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070;SKEXP0010;CS1591;IDE1006;RCS1261;CA1031;CA1308;CA1861;CA2007;CA2234;VSTHRD111;CA1812</NoWarn>
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070;SKEXP0010;CS1591;IDE1006;RCS1261;CA1031;CA1308;CA1861;CA2007;CA2234;VSTHRD111;CA1812</NoWarn>
 =======
     <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070;SKEXP0010;CS1591;IDE1006;RCS1261;CA1031;CA1308;CA1861;CA2007;CA2234;VSTHRD111</NoWarn>
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -62,12 +71,15 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
   </PropertyGroup>
 
   <ItemGroup>
@@ -117,8 +129,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,16 +168,19 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     <None Update="TestData\chat_completion_streaming_refusal_test_response.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -173,8 +191,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,19 +214,25 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
     <None Update="TestData\chat_completion_streaming_test_response.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -223,12 +250,15 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     <None Update="TestData\chat_completion_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -251,8 +281,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -273,6 +306,8 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     <None Update="TestData\text-to-image-response.txt">
 =======
@@ -281,12 +316,16 @@
     <None Update="TestData\text-to-image-response.txt">
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <None Update="TestData\text-to-image-b64_json-format-response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestData\text-to-image-response.json">
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -304,12 +343,15 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

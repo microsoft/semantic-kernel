@@ -4,8 +4,11 @@ import asyncio
 import logging
 import threading
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,10 +55,13 @@ from collections.abc import AsyncGenerator, AsyncIterable
 =======
 from collections.abc import AsyncGenerator, AsyncIterable
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 from pydantic import Field, PrivateAttr
 
@@ -75,8 +81,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,6 +158,11 @@ class AgentChatProtocol(Protocol):
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 class AgentChat(KernelBaseModel):
     """A base class chat interface for agents."""
 
@@ -282,8 +296,11 @@ class AgentChat(KernelBaseModel):
             self.clear_activity_signal()
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -302,12 +319,15 @@ class AgentChat(KernelBaseModel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     async def invoke_agent_stream(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
         """Invoke an agent stream asynchronously."""
         self.set_activity_or_throw()
@@ -331,8 +351,11 @@ class AgentChat(KernelBaseModel):
         finally:
             self.clear_activity_signal()
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -350,12 +373,15 @@ class AgentChat(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     async def reset(self) -> None:
         """Reset the agent chat."""
         self.set_activity_or_throw()

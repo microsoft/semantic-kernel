@@ -34,9 +34,13 @@ They can then be run by:
 
 # Configuration
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -204,6 +208,10 @@ They can then be run by:
 
 # Configuration
 
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -212,6 +220,7 @@ They can then be run by:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< AI
 =======
 <<<<<<< HEAD
@@ -248,9 +257,13 @@ OR
 
 ## Client Settings
 <<<<<<< AI
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -297,14 +310,23 @@ The samples search for the client settings in the following order:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 The samples search for the client settings in the following order:
 The tests search for the client settings in the following order:
 =======
 <<<<<<< HEAD
 The samples search for the client settings in the following order:
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -326,11 +348,15 @@ The samples search for the client settings in the following order:
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 =======
 The tests search for the client settings in the following order:
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
@@ -349,6 +375,10 @@ You can set the location of a properties file, by setting the `CONF_PROPERTIES` 
 ```shell
 CONF_PROPERTIES=my.properties \
 <<<<<<< AI
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -374,14 +404,23 @@ CONF_PROPERTIES=my.properties \
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 OPENAI_CLIENT_TYPE=OPEN_AI \
 OPENAI_CLIENT_TYPE=OPENAI \
 =======
 <<<<<<< HEAD
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 OPENAI_CLIENT_TYPE=OPEN_AI \
 =======
 <<<<<<< Updated upstream
@@ -434,11 +473,15 @@ OPENAI_CLIENT_TYPE=OPEN_AI \
 >>>>>>> Stashed changes
 =======
 OPENAI_CLIENT_TYPE=OPEN_AI \
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 =======
 OPENAI_CLIENT_TYPE=OPENAI \
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f

@@ -77,8 +77,11 @@ async def test_trace_text_completion(
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -113,23 +116,29 @@ async def test_trace_text_completion(
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     with patch.object(MockTextCompletion, "_inner_get_text_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
         MockTextCompletion._inner_get_text_contents = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
             text_completion._inner_get_text_contents
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -148,20 +157,26 @@ async def test_trace_text_completion(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
     with patch.object(MockTextCompletion, "get_text_contents", return_value=mock_response):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
         MockTextCompletion.get_text_contents = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
             text_completion.get_text_contents
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -179,12 +194,15 @@ async def test_trace_text_completion(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         )
 
         results: list[ChatMessageContent] = await text_completion.get_text_contents(
@@ -240,8 +258,11 @@ async def test_trace_text_completion_exception(
     text_completion: TextCompletionClientBase = MockTextCompletion(ai_model_id="ai_model_id")
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -276,23 +297,29 @@ async def test_trace_text_completion_exception(
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     with patch.object(MockTextCompletion, "_inner_get_text_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
         MockTextCompletion._inner_get_text_contents = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
             text_completion._inner_get_text_contents
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -311,20 +338,26 @@ async def test_trace_text_completion_exception(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
     with patch.object(MockTextCompletion, "get_text_contents", side_effect=ServiceResponseException()):
         # We need to reapply the decorator to the method since the mock will not have the decorator applied
         MockTextCompletion.get_text_contents = trace_text_completion(MockTextCompletion.MODEL_PROVIDER_NAME)(
             text_completion.get_text_contents
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -342,12 +375,15 @@ async def test_trace_text_completion_exception(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         )
 
         with pytest.raises(ServiceResponseException):

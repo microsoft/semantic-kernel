@@ -62,8 +62,11 @@ public class VolatileVectorStoreTests
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -84,6 +87,8 @@ public class VolatileVectorStoreTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     public sealed class SinglePropsModel<TKey>
 =======
@@ -92,6 +97,7 @@ public class VolatileVectorStoreTests
     public sealed class SinglePropsModel<TKey>
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     [Fact]
     public async Task GetCollectionDoesNotAllowADifferentDataTypeThanPreviouslyUsedAsync()
@@ -111,8 +117,11 @@ public class VolatileVectorStoreTests
 =======
     public sealed class SinglePropsModel<TKey>
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -130,12 +139,15 @@ public class VolatileVectorStoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     {
         [VectorStoreRecordKey]
         public required TKey Key { get; set; }
@@ -149,8 +161,11 @@ public class VolatileVectorStoreTests
         public string? NotAnnotated { get; set; }
     }
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -169,12 +184,15 @@ public class VolatileVectorStoreTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 
     private sealed class SecondModel
@@ -188,8 +206,11 @@ public class VolatileVectorStoreTests
 #pragma warning restore CA1812
 =======
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -207,10 +228,13 @@ public class VolatileVectorStoreTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 }

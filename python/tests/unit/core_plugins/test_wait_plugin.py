@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -23,6 +26,8 @@
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 # Copyright (c) Microsoft. All rights reserved.
 
@@ -33,13 +38,17 @@
 
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 # Copyright (c) Microsoft. All rights reserved.
 
 =======
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -57,12 +66,15 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 from unittest.mock import patch
 
 import pytest
@@ -112,8 +124,11 @@ async def test_wait_valid_params(wait_time):
         await plugin.wait(wait_time)
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -134,6 +149,8 @@ async def test_wait_valid_params(wait_time):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
@@ -142,13 +159,17 @@ async def test_wait_valid_params(wait_time):
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         patched_sleep.assert_called_once_with(abs(float(wait_time)))
 =======
         assert patched_sleep.called_once_with(abs(float(wait_time)))
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -166,12 +187,15 @@ async def test_wait_valid_params(wait_time):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 
 @pytest.mark.asyncio

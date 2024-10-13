@@ -1,6 +1,10 @@
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,6 +57,16 @@ using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Diagnostics;
+>>>>>>> main
+=======
+>>>>>>> head
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
@@ -270,6 +284,10 @@ public class CodeTokenizerTests
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => this._target.Tokenize(template));
         Assert.Equal("A function named argument must contain a name and value separated by a '=' character.", exception.Message);
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -298,7 +316,12 @@ public class CodeTokenizerTests
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
         Assert.Throws<SKException>(() => this._target.Tokenize(template1));
         Assert.Throws<SKException>(() => this._target.Tokenize(template2));
     [Theory]
@@ -308,9 +331,13 @@ public class CodeTokenizerTests
     {
         // Act & Assert
         Assert.Throws<SKException>(() => this._target.Tokenize(template));
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -326,10 +353,14 @@ public class CodeTokenizerTests
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     }
 }

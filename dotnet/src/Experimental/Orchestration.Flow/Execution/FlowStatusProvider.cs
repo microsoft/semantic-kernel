@@ -5,9 +5,13 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -26,6 +30,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 <<<<<<< main
 using Microsoft.SemanticKernel.ChatCompletion;
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -38,14 +45,19 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.ChatCompletion;
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.ChatCompletion;
 =======
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -61,18 +73,26 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Microsoft.SemanticKernel.Memory;
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -94,6 +114,9 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
 <<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -106,10 +129,15 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -132,6 +160,11 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 
 /// <summary>
 /// Default flow status provider implemented on top of <see cref="IMemoryStore"/>
@@ -246,9 +279,13 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         {
             try
             {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -267,6 +304,9 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
 <<<<<<< main
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -279,14 +319,19 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
 =======
                 return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? new List<ReActStep>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -302,11 +347,15 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
             }
             catch
             {
@@ -315,9 +364,13 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
             }
         }
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -336,6 +389,9 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
 <<<<<<< main
         return [];
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -348,14 +404,19 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         return [];
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
         return [];
 =======
         return new List<ReActStep>();
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -371,11 +432,15 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     }
 
     /// <inheritdoc/>

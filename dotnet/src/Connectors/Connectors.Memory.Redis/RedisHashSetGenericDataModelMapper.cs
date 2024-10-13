@@ -11,8 +11,11 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,20 +65,26 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using hash sets.
 /// </summary>
 internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, HashEntry[] HashEntries)>
 {
     /// <summary>All the properties from the record definition.</summary>
     private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -93,19 +102,25 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetGenericDataModelMapper"/> class.
     /// </summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -155,19 +170,25 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     /// <param name="properties">All the properties from the record definition.</param>
     public RedisHashSetGenericDataModelMapper(IReadOnlyList<VectorStoreRecordProperty> properties)
     {
         Verify.NotNull(properties);
         this._properties = properties;
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -185,12 +206,15 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     }
 
     /// <inheritdoc />
@@ -199,8 +223,11 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
         var hashEntries = new List<HashEntry>();
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -243,10 +270,13 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
         foreach (var property in this._properties)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         {
             var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
             var sourceDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;
@@ -296,8 +326,11 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
         var dataModel = new VectorStoreGenericDataModel<string>(storageModel.Key);
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -340,10 +373,13 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
         foreach (var property in this._properties)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         {
             var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
             var targetDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;
@@ -370,8 +406,11 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
                 dataModel.Data.Add(dataProperty.DataModelPropertyName, convertedValue);
             }
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -406,16 +445,19 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
 =======
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
             // Map vector properties
             else if (property is VectorStoreRecordVectorProperty vectorProperty)
             {

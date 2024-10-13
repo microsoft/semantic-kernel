@@ -22,9 +22,13 @@ async def test_oai_embedding_service(kernel: Kernel):
 
     kernel.add_service(embedding_gen)
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -129,10 +133,13 @@ async def test_oai_embedding_service(kernel: Kernel):
     kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
 >>>>>>> ms/small_fixes
 
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     await memory.save_reference(
         "test",
         external_id="info1",
@@ -140,6 +147,9 @@ async def test_oai_embedding_service(kernel: Kernel):
         external_source_name="external source",
     )
 
+<<<<<<< div
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> origin/main
@@ -147,6 +157,7 @@ async def test_oai_embedding_service(kernel: Kernel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 @pytest.mark.asyncio
 async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
@@ -161,9 +172,13 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
 
     embedding_gen = sk_oai.OpenAITextEmbedding(
         service_id="oai-ada", ai_model_id="text-embedding-ada-002", async_client=client
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -200,6 +215,9 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
@@ -209,6 +227,7 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
 <<<<<<< main
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+>>>>>>> head
     )
 
     kernel.add_service(embedding_gen)
@@ -216,9 +235,13 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
         storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen
     )
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -235,6 +258,11 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -253,9 +281,13 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
     kernel.add_service(embedding_gen)
     kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -271,11 +303,15 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
     await memory.save_reference(
         "test",

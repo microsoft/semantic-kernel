@@ -13,6 +13,10 @@ import sentence_transformers
 import torch
 from numpy import ndarray
 
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -41,14 +45,23 @@ from numpy import ndarray
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
 from semantic_kernel.connectors.ai.ai_exception import AIException
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -64,11 +77,15 @@ from semantic_kernel.connectors.ai.ai_exception import AIException
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
@@ -85,9 +102,13 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -132,13 +153,23 @@ logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
+>>>>>>> main
+=======
+>>>>>>> head
 @experimental_class
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     """Hugging Face text embedding service."""
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -182,20 +213,28 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 =======
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> ms/small_fixes
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     device: str
     generator: Any
 
     def __init__(
         self,
         ai_model_id: str,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +259,10 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         device: int = -1,
         service_id: str | None = None,
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -228,6 +271,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         device: int = -1,
         service_id: str | None = None,
@@ -235,9 +279,13 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         device: Optional[int] = -1,
         service_id: Optional[str] = None,
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -253,11 +301,15 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     ) -> None:
         """Initializes a new instance of the HuggingFaceTextEmbedding class.
 
@@ -269,9 +321,13 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -290,11 +346,15 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         resolved_device = (
             f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
@@ -302,9 +362,13 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 =======
         resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -318,12 +382,16 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         super().__init__(
             ai_model_id=ai_model_id,
             service_id=service_id,

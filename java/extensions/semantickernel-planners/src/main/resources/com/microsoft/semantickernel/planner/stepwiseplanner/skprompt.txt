@@ -8,9 +8,13 @@ The function definitions below are in the following format:
  - ...
 
 {{$functionDescriptions}} = "This variable contains the descriptions of available functions.";
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,7 +32,11 @@ The function definitions below are in the following format:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 {{$functionDescriptions}}
 >>>>>>> origin/main
 <<<<<<< Updated upstream

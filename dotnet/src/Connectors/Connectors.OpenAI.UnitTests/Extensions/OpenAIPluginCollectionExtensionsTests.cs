@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -51,6 +54,14 @@ using System.Text.Json;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
@@ -68,8 +79,11 @@ public sealed class OpenAIPluginCollectionExtensionsTests
     {
         // Arrange
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,19 +131,25 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin");
         var plugins = new KernelPluginCollection([plugin]);
 
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", BinaryData.FromString(args));
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -147,12 +167,15 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -168,8 +191,11 @@ public sealed class OpenAIPluginCollectionExtensionsTests
     {
         // Arrange
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -204,23 +230,29 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 =======
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+        var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         var function = KernelFunctionFactory.CreateFromMethod(() => "Result", "MyFunction");
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         var plugins = new KernelPluginCollection([plugin]);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -267,6 +299,12 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", BinaryData.FromString(args));
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -275,8 +313,11 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         Assert.True(result);
         Assert.Equal(function.Name, actualFunction?.Name);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -323,6 +364,12 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        Assert.Empty(actualArguments!);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     }
 
     [Fact]
@@ -334,8 +381,11 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 
         var plugins = new KernelPluginCollection([plugin]);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -378,10 +428,13 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 =======
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", BinaryData.FromString("{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}"));
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);

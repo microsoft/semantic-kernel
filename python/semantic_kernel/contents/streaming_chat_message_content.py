@@ -9,8 +9,11 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -57,10 +60,13 @@ from semantic_kernel.contents.streaming_annotation_content import StreamingAnnot
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -72,8 +78,11 @@ ITEM_TYPES = Union[
     FunctionCallContent,
     FunctionResultContent,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -116,10 +125,13 @@ ITEM_TYPES = Union[
     StreamingFileReferenceContent,
     StreamingAnnotationContent,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 ]
 
 
@@ -129,8 +141,11 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
     All Chat Completion Services should return an instance of this class as streaming response,
     where each part of the response as it is streamed is converted to an instance of this class,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,12 +164,15 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 from typing import Optional
 
 from semantic_kernel.contents.chat_role import ChatRole
@@ -167,8 +185,11 @@ class StreamingChatMessageContent(StreamingKernelContent):
 
     All Chat Completion Services should return a instance of this class as streaming response,
     where each part of the response as it is streamed is converted to a instance of this class,
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -186,12 +207,15 @@ class StreamingChatMessageContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     the end-user will have to either do something directly or gather them and combine them into a
     new instance. A service can implement their own subclass of this class and return instances of that.
 
@@ -316,8 +340,11 @@ class StreamingChatMessageContent(StreamingKernelContent):
         self, other: "StreamingChatMessageContent"
     ) -> "StreamingChatMessageContent":
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -365,12 +392,15 @@ class StreamingChatMessageContent(StreamingKernelContent):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     role: Optional[ChatRole] = ChatRole.ASSISTANT
     content: Optional[str] = None
     encoding: Optional[str] = None
@@ -392,8 +422,11 @@ class StreamingChatMessageContent(StreamingKernelContent):
             4. role should be the same.
             5. choice_index should be the same.
             6. Metadata will be combined
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -411,12 +444,15 @@ class StreamingChatMessageContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         """
         if not isinstance(other, StreamingChatMessageContent):
             raise ContentAdditionException(
@@ -463,8 +499,11 @@ class StreamingChatMessageContent(StreamingKernelContent):
             role=self.role,
             items=self.items,  # type: ignore
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -517,7 +556,11 @@ class StreamingChatMessageContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
         if self.choice_index != other.choice_index:
             raise ValueError("Cannot add StreamingChatMessageContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
@@ -537,8 +580,11 @@ class StreamingChatMessageContent(StreamingKernelContent):
             ai_model_id=self.ai_model_id,
             metadata=self.metadata,
             metadata=self.metadata | other.metadata,
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -556,12 +602,15 @@ class StreamingChatMessageContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
         )
@@ -596,8 +645,11 @@ class StreamingChatMessageContent(StreamingKernelContent):
             root.insert(index, item.to_element())
         return root
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -616,12 +668,15 @@ class StreamingChatMessageContent(StreamingKernelContent):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             role=self.role,
             content=(self.content or "") + (other.content or ""),
             encoding=self.encoding,
@@ -640,8 +695,11 @@ class StreamingChatMessageContent(StreamingKernelContent):
             self.choice_index,
             *self.items,
         ))
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -659,9 +717,12 @@ class StreamingChatMessageContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head

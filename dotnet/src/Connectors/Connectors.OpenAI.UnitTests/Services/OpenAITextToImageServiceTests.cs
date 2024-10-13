@@ -4,8 +4,11 @@ using System;
 using System.IO;
 using System.Net.Http;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -40,23 +43,29 @@ using System.Text;
 =======
 using System.Text;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-using System.Text;
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 using System.Text;
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+using System.Text;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -103,10 +112,13 @@ using Microsoft.SemanticKernel.TextToImage;
 using Moq;
 using OpenAI.Images;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
@@ -127,8 +139,11 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
             ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,6 +190,12 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+                Content = new StringContent(File.ReadAllText("./TestData/text-to-image-response.json"))
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
             }
         };
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
@@ -186,8 +207,11 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     {
         // Arrange & Act
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -234,6 +258,12 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        var sut = new OpenAITextToImageService("apiKey", "organization", "model");
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         // Assert
         Assert.NotNull(sut);
@@ -264,8 +294,11 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -284,12 +317,15 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     [Theory]
     [InlineData(null, null)]
     [InlineData("uri", "url")]
@@ -471,8 +507,11 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         Assert.Equal("my prompt", breakingGlass!.RevisedPrompt);
     }
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -490,12 +529,15 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     public void Dispose()
     {
         this._httpClient.Dispose();

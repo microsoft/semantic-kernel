@@ -16,8 +16,11 @@ class TextPlugin(KernelBaseModel):
 
         KernelArguments["input"] = "  hello world  "
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -52,23 +55,29 @@ class TextPlugin(KernelBaseModel):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< main
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         {{text.trimStart $input}} => "hello world  "
 
         KernelArguments["input"] = "  hello world  "
         {{text.trimEnd $input}} => "  hello world"
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -87,20 +96,26 @@ class TextPlugin(KernelBaseModel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
         {{text.trimStart $input} => "hello world  "
 
         KernelArguments["input"] = "  hello world  "
         {{text.trimEnd $input} => "  hello world"
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -118,12 +133,15 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         KernelArguments["input"] = "hello world"
         {{text.uppercase $input}} => "HELLO WORLD"
@@ -135,8 +153,11 @@ class TextPlugin(KernelBaseModel):
     @kernel_function(description="Trim whitespace from the start and end of a string.")
     def trim(self, input: str) -> str:
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,6 +178,8 @@ class TextPlugin(KernelBaseModel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
         """Trim whitespace from the start and end of a string.
 =======
@@ -165,14 +188,18 @@ class TextPlugin(KernelBaseModel):
         """Trim whitespace from the start and end of a string.
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         """Trim whitespace from the start and end of a string.
 =======
         """
         Trim whitespace from the start and end of a string.
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -190,12 +217,15 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         Example:
             KernelArguments["input"] = "  hello world  "
@@ -206,7 +236,10 @@ class TextPlugin(KernelBaseModel):
     @kernel_function(description="Trim whitespace from the start of a string.")
     def trim_start(self, input: str) -> str:
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -235,6 +268,10 @@ class TextPlugin(KernelBaseModel):
 
         Example:
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -242,6 +279,7 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         """Trim whitespace from the start of a string.
 
@@ -252,8 +290,11 @@ class TextPlugin(KernelBaseModel):
 
          Example:
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -271,12 +312,15 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
              KernelArguments["input"] = "  hello world  "
              {{input.trim $input}} => "hello world  "
         """
@@ -285,7 +329,10 @@ class TextPlugin(KernelBaseModel):
     @kernel_function(description="Trim whitespace from the end of a string.")
     def trim_end(self, input: str) -> str:
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -314,6 +361,10 @@ class TextPlugin(KernelBaseModel):
 
         Example:
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -321,6 +372,7 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         """Trim whitespace from the end of a string.
 
@@ -331,8 +383,11 @@ class TextPlugin(KernelBaseModel):
 
          Example:
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -350,12 +405,15 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
              KernelArguments["input"] = "  hello world  "
              {{input.trim $input}} => "  hello world"
         """
@@ -364,8 +422,11 @@ class TextPlugin(KernelBaseModel):
     @kernel_function(description="Convert a string to uppercase.")
     def uppercase(self, input: str) -> str:
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -386,6 +447,8 @@ class TextPlugin(KernelBaseModel):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
         """Convert a string to uppercase.
 =======
@@ -394,14 +457,18 @@ class TextPlugin(KernelBaseModel):
         """Convert a string to uppercase.
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         """Convert a string to uppercase.
 =======
         """
         Convert a string to uppercase.
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -419,12 +486,15 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         Example:
             KernelArguments["input"] = "hello world"
@@ -464,6 +534,10 @@ class TextPlugin(KernelBaseModel):
 
         Example:
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -471,6 +545,7 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         """Convert a string to lowercase.
 
@@ -481,8 +556,11 @@ class TextPlugin(KernelBaseModel):
 
          Example:
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -500,12 +578,15 @@ class TextPlugin(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
              KernelArguments["input"] = "HELLO WORLD"
              {{input.lowercase $input}} => "hello world"
         """

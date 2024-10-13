@@ -14,8 +14,11 @@ internal sealed class WeaviateConstants
     internal const string ReservedVectorPropertyName = "vectors";
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,6 +41,8 @@ internal sealed class WeaviateConstants
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     /// <summary>Reserved collection property name in Weaviate.</summary>
     internal const string ReservedCollectionPropertyName = "class";
@@ -48,6 +53,7 @@ internal sealed class WeaviateConstants
     internal const string ReservedCollectionPropertyName = "class";
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     /// <summary>Collection property name in Weaviate.</summary>
     internal const string CollectionPropertyName = "class";
 
@@ -56,8 +62,11 @@ internal sealed class WeaviateConstants
 
     /// <summary>Additional properties property name in Weaviate.</summary>
     internal const string AdditionalPropertiesPropertyName = "_additional";
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -75,10 +84,13 @@ internal sealed class WeaviateConstants
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 }

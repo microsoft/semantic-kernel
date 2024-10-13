@@ -3,8 +3,11 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -32,6 +35,10 @@ using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -39,6 +46,7 @@ namespace Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -48,8 +56,11 @@ namespace Microsoft.SemanticKernel;
 
 namespace Microsoft.SemanticKernel.Data;
 >>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -67,12 +78,15 @@ namespace Microsoft.SemanticKernel.Data;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 /// <summary>
 /// Extension methods to register Data services on an <see cref="IServiceCollection"/>.
@@ -89,8 +103,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddVolatileVectorStore(this IServiceCollection services, string? serviceId = default)
     {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -111,6 +128,8 @@ public static class ServiceCollectionExtensions
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
         services.AddKeyedSingleton<IVectorStore, VolatileVectorStore>(serviceId);
 =======
@@ -119,6 +138,7 @@ public static class ServiceCollectionExtensions
         services.AddKeyedSingleton<IVectorStore, VolatileVectorStore>(serviceId);
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         services.AddKeyedSingleton<VolatileVectorStore, VolatileVectorStore>(serviceId);
         services.AddKeyedSingleton<IVectorStore>(serviceId, (sp, obj) => sp.GetRequiredKeyedService<VolatileVectorStore>(serviceId));
         return services;
@@ -158,8 +178,11 @@ public static class ServiceCollectionExtensions
                 return new VectorStoreTextSearch<TRecord>(vectorSearch, generationService, stringMapper, resultMapper, options);
             });
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -177,12 +200,15 @@ public static class ServiceCollectionExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         return services;
     }
 }

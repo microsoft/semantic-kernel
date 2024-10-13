@@ -5,9 +5,13 @@ import reference_skill.ActivityOuterClass.GetRandomActivityRequest;
 
 
 import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -25,7 +29,11 @@ import reference_skill.ActivityOuterClass.GetRandomActivityResponse;
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 import reference_skill.ActivityOuterClass;
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -90,6 +98,10 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
 
     // Removed duplicate getRandomActivity method
 
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -118,16 +130,25 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
     public static final String API_ACTIVITY_URL = "https://www.boredapi.com/api/activity";
 
     public static String getApiActivityUrl() {
         return API_ACTIVITY_URL;
     }
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -143,11 +164,15 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     public static final String API_ACTIVITY_URL = "https://www.boredapi.com/api/activity";
 
     public static String getApiActivityUrl() {
@@ -164,9 +189,13 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
      */
     @Override
     public void getRandomActivity(GetRandomActivityRequest request, StreamObserver<GetRandomActivityResponse> responseObserver) {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -184,7 +213,11 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
     public void getRandomActivity(ActivityOuterClass.GetRandomActivityRequest request, StreamObserver<ActivityOuterClass.GetRandomActivityResponse> responseObserver) {
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -220,9 +253,13 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
             CompletableFuture<HttpResponse<String>> response = httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
             logger.info("Response: " + response.get().body());
             responseObserver.onNext(GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -240,7 +277,11 @@ public class RandomActivitySkill extends RandomActivitySkillGrpc.RandomActivityS
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
             responseObserver.onNext(ActivityOuterClass.GetRandomActivityResponse.newBuilder().setActivity(response.get().body()).build());
 >>>>>>> origin/main
 <<<<<<< Updated upstream

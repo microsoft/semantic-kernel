@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +50,12 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
 using Microsoft.SemanticKernel.Data;
 using StackExchange.Redis;
@@ -62,8 +71,11 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,16 +110,19 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
 =======
     /// key names before reading or writing to the Redis store. Default is true.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-    /// key names before reading or writing to the Redis store. Default is true.
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
     /// key names before reading or writing to the Redis store. Default is true.
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+    /// key names before reading or writing to the Redis store. Default is true.
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     /// key names before reading or writing to the Redis store. Default is false.
     /// </summary>
     /// <remarks>
@@ -115,8 +130,11 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
     /// You can either pass in keys that are already prefixed, or set this option to true to have the collection name prefixed to the key names automatically.
     /// </remarks>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -151,16 +169,19 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
 =======
     public bool PrefixCollectionNameToKeyNames { get; init; } = true;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-    public bool PrefixCollectionNameToKeyNames { get; init; } = true;
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
     public bool PrefixCollectionNameToKeyNames { get; init; } = true;
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+    public bool PrefixCollectionNameToKeyNames { get; init; } = true;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     public bool PrefixCollectionNameToKeyNames { get; init; } = false;
 
     /// <summary>

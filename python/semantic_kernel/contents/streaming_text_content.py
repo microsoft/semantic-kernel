@@ -8,8 +8,11 @@ from semantic_kernel.exceptions import ContentAdditionException
 class StreamingTextContent(StreamingContentMixin, TextContent):
     """This represents streaming text response content.
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,12 +31,15 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 from typing import Optional
 
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
@@ -44,8 +50,11 @@ class StreamingTextContent(StreamingKernelContent):
 
     All Text Completion Services should return a instance of this class as streaming response.
     Or they can implement their own subclass of this class and return an instance.
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -63,12 +72,15 @@ class StreamingTextContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
     Args:
         choice_index: int - The index of the choice that generated this response.
@@ -96,7 +108,10 @@ class StreamingTextContent(StreamingKernelContent):
 
     def __add__(self, other: TextContent) -> "StreamingTextContent":
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,6 +140,10 @@ class StreamingTextContent(StreamingKernelContent):
 
         The inner_content of the first one is used, choice_index, ai_model_id and encoding should be the same.
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -132,6 +151,7 @@ class StreamingTextContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     text: Optional[str] = None
     encoding: Optional[str] = None
 
@@ -150,8 +170,11 @@ class StreamingTextContent(StreamingKernelContent):
             3. encoding should be the same.
             4. choice_index should be the same.
             5. Metadata will be combined.
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -169,12 +192,15 @@ class StreamingTextContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         """
         if (
             isinstance(other, StreamingTextContent)
@@ -192,8 +218,11 @@ class StreamingTextContent(StreamingKernelContent):
                 "Cannot add StreamingTextContent with different encoding"
             )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,6 +249,10 @@ class StreamingTextContent(StreamingKernelContent):
             choice_index=self.choice_index,
             inner_content=self.inner_content,
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -228,6 +261,7 @@ class StreamingTextContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         if self.choice_index != other.choice_index:
             raise ValueError("Cannot add StreamingTextContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
@@ -242,8 +276,11 @@ class StreamingTextContent(StreamingKernelContent):
         return StreamingTextContent(
             choice_index=self.choice_index,
             inner_content=self._merge_inner_contents(other.inner_content),
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -261,12 +298,15 @@ class StreamingTextContent(StreamingKernelContent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
             ai_model_id=self.ai_model_id,
             metadata=self.metadata,
             text=(self.text or "") + (other.text or ""),

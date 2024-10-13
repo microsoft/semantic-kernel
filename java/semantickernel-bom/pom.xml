@@ -5,9 +5,13 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -72,12 +76,17 @@
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+    <version>1.0.0-alpha.1-SNAPSHOT</version>
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
     <version>1.0.0-alpha.1-SNAPSHOT</version>
 >>>>>>> origin/main
+>>>>>>> head
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
@@ -213,9 +222,13 @@
                 <artifactId>aiservices-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -251,11 +264,15 @@
                 <artifactId>aiservices-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
@@ -370,9 +387,13 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-core-http-netty</artifactId>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -396,6 +417,9 @@
 >>>>>>> Stashed changes
 =======
                 <version>1.13.10</version>
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
                 <version>1.13.10</version>
@@ -403,6 +427,7 @@
 =======
                 <version>1.13.10</version>
 >>>>>>> Stashed changes
+>>>>>>> head
                 <scope>runtime</scope>
             </dependency>
             <dependency>
@@ -507,9 +532,13 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -533,6 +562,9 @@
 >>>>>>> Stashed changes
 =======
         <tag>java-0.2.11-alpha</tag>
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
         <tag>java-0.2.11-alpha</tag>
@@ -540,5 +572,6 @@
 =======
         <tag>java-0.2.11-alpha</tag>
 >>>>>>> Stashed changes
+>>>>>>> head
     </scm>
 </project>

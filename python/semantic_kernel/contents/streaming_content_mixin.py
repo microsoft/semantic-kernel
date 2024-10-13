@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,16 +40,19 @@ import logging
 =======
 import logging
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-import logging
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 import logging
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+import logging
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 import sys
 from abc import ABC, abstractmethod
 from typing import Any
@@ -57,8 +63,11 @@ else:
     from typing_extensions import Self  # pragma: no cover
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -81,6 +90,8 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -91,13 +102,17 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.exceptions.content_exceptions import ContentAdditionException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -115,12 +130,15 @@ logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 class StreamingContentMixin(KernelBaseModel, ABC):
     """Mixin class for all streaming kernel contents."""
@@ -135,8 +153,11 @@ class StreamingContentMixin(KernelBaseModel, ABC):
     def __add__(self, other: Any) -> Self:
         """Combine two streaming contents together."""
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -155,12 +176,15 @@ class StreamingContentMixin(KernelBaseModel, ABC):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         pass
 
     def _merge_items_lists(self, other_items: list[Any]) -> list[Any]:
@@ -214,8 +238,11 @@ class StreamingContentMixin(KernelBaseModel, ABC):
         new_inner_contents_list.extend(other_inner_content)
 
         return new_inner_contents_list
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -233,9 +260,12 @@ class StreamingContentMixin(KernelBaseModel, ABC):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head

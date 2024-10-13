@@ -1,6 +1,10 @@
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +28,9 @@
 >>>>>>> Stashed changes
 =======
 <Project Sdk="Microsoft.NET.Sdk">
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <Project Sdk="Microsoft.NET.Sdk">
@@ -31,13 +38,18 @@
 =======
 <Project Sdk="Microsoft.NET.Sdk">
 >>>>>>> Stashed changes
+>>>>>>> head
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests</AssemblyName>
     <RootNamespace>SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -64,6 +76,10 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101,SKEXP0050</NoWarn>
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -72,6 +88,7 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101,SKEXP0050</NoWarn>
@@ -81,9 +98,13 @@
     <IsPackable>false</IsPackable>
     <NoWarn>CA2007,VSTHRD111</NoWarn>
  9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -99,11 +120,15 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -127,9 +152,13 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -146,6 +175,9 @@
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -156,6 +188,7 @@
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <!-- Because some of the referenced projects have dependencies that themselves have System.Text.Json set with a minimum of 7.0. -->
     <PackageReference Include="System.Text.Json" />
     <PackageVersion Update="System.Text.Json" Version="7.0.3" />
@@ -166,9 +199,13 @@
     <ProjectReference Include="..\..\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
  9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -184,11 +221,15 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />

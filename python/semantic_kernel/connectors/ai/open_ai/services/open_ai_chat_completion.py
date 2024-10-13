@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,6 +32,10 @@ from typing import Any
 from collections.abc import Mapping
 from typing import Any
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -36,6 +44,7 @@ from typing import Any
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 from collections.abc import Mapping
 from typing import Any
@@ -47,9 +56,13 @@ from typing import (
     overload,
 )
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -65,11 +78,15 @@ from typing import (
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -99,9 +116,13 @@ class OpenAIChatCompletion(
 ):
     """OpenAI Chat completion class."""
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,6 +145,9 @@ class OpenAIChatCompletion(
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< main
@@ -131,6 +155,7 @@ class OpenAIChatCompletion(
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+>>>>>>> head
     def __init__(
         self,
         ai_model_id: str | None = None,
@@ -141,9 +166,13 @@ class OpenAIChatCompletion(
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -159,8 +188,11 @@ class OpenAIChatCompletion(
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+=======
 >>>>>>> Stashed changes
 =======
+>>>>>>> head
     @overload
     def __init__(
         self,
@@ -181,10 +213,14 @@ class OpenAIChatCompletion(
     def __init__(
         self,
         ai_model_id: str,
+<<<<<<< div
+=======
+=======
 <<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
     @overload
     def __init__(
@@ -285,15 +321,26 @@ class OpenAIChatCompletion(
 =======
     def __init__(
         self,
+<<<<<<< div
+        ai_model_id: str,
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
         ai_model_id: str,
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         api_key: Optional[str] = None,
         org_id: Optional[str] = None,
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< div
+<<<<<<< div
+=======
+        async_client: Optional[AsyncOpenAI] = None,
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< head
 =======
@@ -301,6 +348,7 @@ class OpenAIChatCompletion(
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -309,10 +357,14 @@ class OpenAIChatCompletion(
             ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
             api_key {Optional[str]} -- OpenAI API key, see
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< head
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 https://platform.openai.com/account/api-keys
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
@@ -478,6 +530,10 @@ class OpenAIChatCompletion(
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
 =======
             api_key {Optional[str]} -- OpenAI API key, see
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -486,6 +542,7 @@ class OpenAIChatCompletion(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 https://platform.openai.com/account/api-keys
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
@@ -493,9 +550,13 @@ class OpenAIChatCompletion(
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -511,11 +572,15 @@ class OpenAIChatCompletion(
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         """
         try:
             openai_settings = OpenAISettings.create(
@@ -596,9 +661,13 @@ class OpenAIChatCompletion(
             api_key=api_key,
             org_id=org_id,
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -614,11 +683,15 @@ class OpenAIChatCompletion(
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
             service_id=service_id,
             ai_model_type=OpenAIModelTypes.CHAT,
             default_headers=default_headers,
@@ -634,9 +707,13 @@ class OpenAIChatCompletion(
         """
         return OpenAIChatCompletion(
             ai_model_id=settings["ai_model_id"],
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -653,6 +730,9 @@ class OpenAIChatCompletion(
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -663,14 +743,19 @@ class OpenAIChatCompletion(
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
             api_key=settings["api_key"],
             org_id=settings.get("org_id"),
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -686,11 +771,15 @@ class OpenAIChatCompletion(
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers"),
         )

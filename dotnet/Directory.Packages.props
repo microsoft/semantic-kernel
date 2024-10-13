@@ -6,9 +6,13 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.1" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -25,6 +29,9 @@
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -35,6 +42,7 @@
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.11.20" />
     <PackageVersion Include="OpenAI" Version="[2.1.0-beta.1]" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
@@ -322,6 +330,12 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+<<<<<<< div
+<<<<<<< div
+>>>>>>> origin/main
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -332,6 +346,7 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     <PackageVersion Include="OpenAI" Version="2.0.0-beta.10" />
     <PackageVersion Include="System.ClientModel" Version="1.1.0-beta.7" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
@@ -356,6 +371,9 @@
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.64.0" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -363,11 +381,17 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.19.2" />
 =======
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
 >>>>>>> origin/main
+<<<<<<< div
+=======
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -377,6 +401,7 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
@@ -406,6 +431,9 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -413,11 +441,17 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.9.1" />
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
 >>>>>>> origin/main
+<<<<<<< div
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -427,6 +461,7 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
     <PackageVersion Include="Microsoft.PowerShell.SDK" Version="6.2.7" />
     <!-- Microsoft.Extensions.Logging -->
@@ -439,6 +474,9 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -446,6 +484,7 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.7.0" />
 =======
@@ -454,6 +493,11 @@
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
 >>>>>>> origin/main
+<<<<<<< div
+=======
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -463,12 +507,16 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="8.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
     <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -476,11 +524,17 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 >>>>>>> Stashed changes
 =======
     <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
 >>>>>>> origin/main
+<<<<<<< div
+=======
+    <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -490,6 +544,7 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -498,6 +553,9 @@
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -505,6 +563,7 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
@@ -674,8 +733,11 @@
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 =======
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" /> 
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
@@ -750,7 +812,11 @@
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
     <PackageVersion Include="CoreCLR-NCalc" Version="2.2.113" />
     <PackageVersion Include="YamlDotNet" Version="13.1.1" />
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
@@ -762,7 +828,11 @@
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< head
+>>>>>>> head
 =======
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
@@ -832,6 +902,9 @@
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
+<<<<<<< div
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> origin/main
@@ -839,6 +912,7 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24415.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
@@ -1034,9 +1108,13 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1050,12 +1128,16 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="OpenAI" Version="2.0.0-beta.10" />
     <PackageVersion Include="System.ClientModel" Version="1.1.0-beta.7" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
@@ -1080,9 +1162,13 @@
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.64.0" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1106,6 +1192,9 @@
 >>>>>>> Stashed changes
 =======
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
@@ -1113,6 +1202,7 @@
 =======
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
@@ -1142,9 +1232,13 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1168,6 +1262,9 @@
 >>>>>>> Stashed changes
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
@@ -1175,6 +1272,7 @@
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
     <PackageVersion Include="Microsoft.PowerShell.SDK" Version="6.2.7" />
     <!-- Microsoft.Extensions.Logging -->
@@ -1187,9 +1285,13 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1216,6 +1318,9 @@
 >>>>>>> Stashed changes
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
@@ -1223,15 +1328,20 @@
 =======
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
 >>>>>>> Stashed changes
+>>>>>>> head
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="8.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
     <PackageVersion Include="Verify.Xunit" Version="26.1.5" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1248,12 +1358,16 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -1262,9 +1376,13 @@
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1294,11 +1412,15 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" /> 
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
@@ -1386,6 +1508,10 @@
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" /> 
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1408,6 +1534,11 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
     <PackageVersion Include="MongoDB.Driver" Version="2.27.0" />
@@ -1421,6 +1552,10 @@
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="16.0.0" />
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1446,15 +1581,24 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1492,6 +1636,9 @@
     <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
     <PackageVersion Include="Qdrant.Client" Version="1.9.0" />
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
     <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
@@ -1503,10 +1650,15 @@
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
     <PackageVersion Include="Qdrant.Client" Version="1.9.0" />
 >>>>>>> Stashed changes
+>>>>>>> head
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1532,6 +1684,11 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -1546,9 +1703,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1565,11 +1726,15 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="Moq.Analyzers" Version="0.1.1" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.8.0" />
     <PackageVersion Include="OpenAI" Version="2.0.0-beta.10" />
@@ -1681,6 +1846,12 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24324.1" />
+<<<<<<< div
+<<<<<<< div
+>>>>>>> origin/main
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1691,11 +1862,19 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.11.20" />
+<<<<<<< div
+<<<<<<< div
+<<<<<<< main
+=======
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1711,12 +1890,19 @@
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.6.40" />
+<<<<<<< div
+<<<<<<< div
+>>>>>>> origin/main
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1727,11 +1913,15 @@
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageVersion Include="xunit.analyzers" Version="1.16.0" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1739,10 +1929,16 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
     <PackageVersion Include="xunit.analyzers" Version="1.1.0" />
 >>>>>>> origin/main
+<<<<<<< div
+=======
+    <PackageVersion Include="xunit.analyzers" Version="1.1.0" />
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -1752,18 +1948,27 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< main
     <PackageVersion Include="Moq.Analyzers" Version="0.1.2" />
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
     <PackageVersion Include="Moq.Analyzers" Version="0.1.1" />
     <PackageVersion Include="Moq.Analyzers" Version="0.0.9" />
 >>>>>>> origin/main
@@ -1798,9 +2003,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageVersion Include="Roslynator.Analyzers" Version="[4.12.4]" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1845,11 +2054,21 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    <PackageVersion Include="Roslynator.Analyzers" Version="4.3.0" />
+>>>>>>> main
+=======
+>>>>>>> head
     <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.4]" />
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1892,19 +2111,27 @@
 >>>>>>> Stashed changes
 =======
     <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.3.0" />
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.12.4]" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1949,11 +2176,21 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.3.0" />
+>>>>>>> main
+=======
+>>>>>>> head
     <PackageReference Include="Roslynator.Formatting.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <!-- OnnxRuntimeGenAI -->
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -2008,6 +2245,9 @@
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 =======
@@ -2015,14 +2255,19 @@
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.4.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.3.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.4.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.4.0" />
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2038,10 +2283,14 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
   </ItemGroup>
 </Project>

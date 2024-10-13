@@ -1,8 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -48,15 +52,25 @@
 <<<<<<< main
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
+>>>>>>> main
+=======
+>>>>>>> head
 PLUGIN_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 FUNCTION_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 FULLY_QUALIFIED_FUNCTION_NAME = (
     r"^(?P<plugin>[0-9A-Za-z_]+)[.](?P<function>[0-9A-Za-z_]+)$"
 )
 FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]+$"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -73,6 +87,11 @@ FUNCTION_PARAM_NAME_REGEX = r"^[0-9A-Za-z_]+$"
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -160,9 +179,13 @@ def validate_function_param_name(value: Optional[str]) -> None:
             f"names may only contain ASCII letters, digits, and underscores."
         )
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -178,8 +201,12 @@ def validate_function_param_name(value: Optional[str]) -> None:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head

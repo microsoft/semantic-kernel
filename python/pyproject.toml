@@ -34,9 +34,13 @@ openai = ">=1.0"
 aiofiles = "^23.1.0"
 python-dotenv = "1.0.1"
 regex = ">=2023.6.3,<2025.0.0"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -63,6 +67,10 @@ openapi_core = ">=0.18,<0.20"
 # openapi and swagger
 openapi_core = ">=0.18,<0.20"
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -71,6 +79,7 @@ openapi_core = ">=0.18,<0.20"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 
 # openapi and swagger
@@ -80,9 +89,13 @@ openapi_core = ">=0.18,<0.20"
     # azure identity
     "azure-identity ~= 1.13",
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,11 +111,15 @@ openapi_core = ">=0.18,<0.20"
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     # embeddings
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
@@ -113,9 +130,13 @@ openapi_core = ">=0.18,<0.20"
 
     "prance ~= 23.6.21.0",
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -132,6 +153,9 @@ openapi_core = ">=0.18,<0.20"
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -142,6 +166,7 @@ openapi_core = ">=0.18,<0.20"
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     # embeddings
     "numpy ~= 1.25.0; python_version < '3.12'",
     "numpy ~= 1.26.0; python_version >= '3.12'",
@@ -157,9 +182,13 @@ openapi_core = ">=0.18,<0.20"
     "opentelemetry-sdk ~= 1.24",
     "prance ~= 23.6.21.0",
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,11 +204,15 @@ openapi_core = ">=0.18,<0.20"
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
@@ -202,9 +235,13 @@ google-generativeai = { version = ">=0.1", markers = "python_version >= '3.9'", 
 # hugging face
 transformers = { version = "^4.28.1", extras=['torch'], optional = true}
 sentence-transformers = { version = "^2.2.2", optional = true}
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -272,6 +309,11 @@ torch = { version = "^2.2.0", optional = true}
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+torch = { version = "^2.2.2", optional = true}
+torch = { version = "^2.2.0", optional = true}
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -279,6 +321,7 @@ torch = { version = "^2.2.0", optional = true}
 torch = { version = "^2.2.2", optional = true}
 torch = { version = "^2.2.0", optional = true}
 >>>>>>> origin/main
+>>>>>>> head
 qdrant-client = { version = '^1.9', optional = true}
 chromadb = { version = ">=0.4.13,<0.6.0", optional = true}
 pymilvus = { version = ">=2.3,<2.4.4", optional = true}
@@ -298,9 +341,13 @@ ollama = { version = "^0.2.1", optional = true}
 # anthropic
 anthropic = { version = "^0.32.0", optional = true }
 # pinecone
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -364,6 +411,12 @@ psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+pinecone-client = { version = "^5.0.0", optional = true}
+# postgres
+psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
+>>>>>>> main
+=======
 <<<<<<< main
 <<<<<<< main
 pinecone-client = { version = "^5.0.0", optional = true}
@@ -378,6 +431,7 @@ pinecone-client = { version = "^5.0.0", optional = true}
 # postgres
 psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
 >>>>>>> origin/main
+>>>>>>> head
 pinecone-client = { version = ">=3.0.0", optional = true}
 # postgres
 psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
@@ -385,9 +439,13 @@ psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
 pinecone-client = { version = ">=3.0.0", optional = true}
 # postgres
 psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -432,6 +490,11 @@ psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 redis = { version = ">=4.6,<6.0", optional = true}
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true, optional = true}
 azure-core = { version = "^1.28.0", optional = true}
@@ -447,9 +510,13 @@ usearch = { version = "^2.9", optional = true}
 pyarrow = { version = ">=12.0.1,<18.0.0", optional = true}
 weaviate-client = { version = ">=3.18,<5.0", optional = true}
 pandas = {version = "^2.2.2", optional = true}
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -466,6 +533,9 @@ pandas = {version = "^2.2.2", optional = true}
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -476,14 +546,19 @@ pandas = {version = "^2.2.2", optional = true}
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 ruff = "0.5.2"
 =======
 ruff = "0.5.1"
 >>>>>>> origin/pr/Bryan-Roe/278
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -499,11 +574,15 @@ ruff = "0.5.1"
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = ">=3.7.1"
@@ -517,6 +596,9 @@ snoop = "^0.4.3"
 mypy = ">=1.10.0"
 types-PyYAML = "^6.0.12.20240311"
 ruff = ">=0.5.2,<0.7.0"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -524,6 +606,7 @@ ruff = ">=0.5.2,<0.7.0"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 [tool.poetry.group.unit-tests]
 optional = true
@@ -673,7 +756,34 @@ pandas = {version = "^2.2.2"}
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+
+[tool.poetry.group.unit-tests]
+optional = true
+
+[tool.poetry.group.unit-tests.dependencies]
+google-generativeai = { version = ">=0.1,<0.4" }
+azure-ai-inference = {version = "^1.0.0b1", allow-prereleases = true}
+azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
+azure-core = "^1.28.0"
+azure-cosmos = "^4.7.0"
+mistralai = "^0.4.1"
+ollama = "^0.2.1"
+google-cloud-aiplatform = "^1.60.0"
+anthropic = "^0.32.0"
+google-generativeai = "^0.7.2"
+transformers = { version = "^4.28.1", extras=['torch']}
+sentence-transformers = { version = "^2.2.2"}
+torch = {version = "2.2.2"}
+# qdrant
+qdrant-client = '^1.9'
+# redis
+redis = { version = "^5.0.7", extras=['hiredis']}
+pandas = {version = "^2.2.2"}
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 transformers = { version = "^4.28.1", extras=["torch"]}
 sentence-transformers = "^2.2.2"
 <<<<<<< main
@@ -730,6 +840,10 @@ redis = "^4.6.0"
 
 [tool.poetry.group.azure_cognitive_search.dependencies]
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -777,11 +891,21 @@ azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
+>>>>>>> main
+=======
+>>>>>>> head
 azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
 
 [tool.poetry.group.tests.dependencies]
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -829,14 +953,24 @@ azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+azure-search-documents = {version = "11.6.0b2", allow-prereleases = true}
+>>>>>>> main
+=======
+>>>>>>> head
 azure-core = "^1.28.0"
 
 [tool.poetry.group.usearch.dependencies]
 usearch = "1.1.1"
 pyarrow = ">=12.0.1,<16.0.0"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -890,6 +1024,12 @@ pyarrow = ">=12.0.1,<16.0.0"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+
+>>>>>>> main
+=======
+>>>>>>> head
 [tool.poetry.group.tests.dependencies]
 # azure
 azure-ai-inference = {version = "^1.0.0b1", allow-prereleases = true}
@@ -905,9 +1045,13 @@ google-cloud-aiplatform = "^1.60.0"
 google-generativeai = "^0.7.2"
 google-generativeai = { version = ">=0.1,<0.4" }
 # hugging face
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -940,6 +1084,9 @@ google-generativeai = { version = ">=0.1,<0.4" }
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 =======
@@ -952,6 +1099,7 @@ google-generativeai = { version = ">=0.1,<0.4" }
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 # milvus
 pymilvus = ">=2.3,<2.4.6"
 milvus = { version = ">=2.3,<2.3.8", markers = 'sys_platform != "win32"'}
@@ -967,9 +1115,13 @@ motor = "^3.3.2"
 pinecone-client = "^5.0.0"
 # postgres
 psycopg = { version="^3.1.9", extras=["binary","pool"]}
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1014,6 +1166,11 @@ psycopg = { version="^3.1.9", extras=["binary","pool"]}
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 transformers = { version = "^4.28.1", extras=["torch"]}
 sentence-transformers = "^2.2.2"
 # milvus
@@ -1035,9 +1192,13 @@ mistralai = "^0.4.1"
 ollama = "^0.2.1"
 # mongodb
 motor = "^3.3.2"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1082,6 +1243,11 @@ motor = "^3.3.2"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 redis = ">=4.6,<6.0"
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
 azure-core = "^1.28.0"
@@ -1110,9 +1276,13 @@ hugging_face = ["transformers", "sentence-transformers", "torch"]
 milvus = ["pymilvus", "milvus"]
 mistralai = ["mistralai"]
 ollama = ["ollama"]
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1164,6 +1334,12 @@ anthropic = ["anthropic"]
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+anthropic = ["anthropic"]
+>>>>>>> main
+=======
+>>>>>>> head
 all = ["google-generativeai", "transformers", "sentence-transformers", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
 
 azure = ["azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
@@ -1185,9 +1361,13 @@ chromadb = ["chromadb"]
 google = ["google-generativeai"]
 hugging_face = ["transformers", "sentence-transformers"]
 milvus = ["pymilvus", "milvus"]
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1227,11 +1407,15 @@ milvus = ["pymilvus", "milvus"]
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 mongo = ["motor"]
 notebooks = ["ipykernel"]
 pinecone = ["pinecone-client"]
@@ -1246,9 +1430,13 @@ notebooks = ["ipykernel"]
 all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel"]
 [tool.pytest.ini_options]
 addopts = "-ra -q -r fEX -n logical --dist loadfile --dist worksteal"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1281,6 +1469,9 @@ addopts = "-ra -q -r fEX -n logical --dist loadfile --dist worksteal"
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 =======
@@ -1293,6 +1484,7 @@ addopts = "-ra -q -r fEX -n logical --dist loadfile --dist worksteal"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 [project.optional-dependencies]
 azure = [
     "azure-ai-inference >= 1.0.0b3",
@@ -1310,6 +1502,10 @@ google = [
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers ~= 2.2",
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1361,6 +1557,9 @@ mongo = [
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 =======
@@ -1368,15 +1567,20 @@ mongo = [
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     "torch == 2.4.1"
     "sentence-transformers >= 2.2,< 4.0",
     "torch == 2.4.1"
 ]
 mongo = [
     "motor >= 3.3.2,< 3.7.0"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1392,19 +1596,27 @@ mongo = [
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 ]
 notebooks = [
     "ipykernel ~= 6.29"
 ]
 milvus = [
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1460,15 +1672,23 @@ mistralai = [
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
     "pymilvus >= 2.3,< 2.5",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
     "mistralai >= 0.4,< 2.0"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1484,11 +1704,15 @@ mistralai = [
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 ]
 ollama = [
     "ollama ~= 0.2"
@@ -1519,6 +1743,10 @@ weaviate = [
 pandas = [
     "pandas ~= 2.2"
 ]
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1566,6 +1794,12 @@ bing = []
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+bing = []
+>>>>>>> main
+=======
+>>>>>>> head
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"
@@ -1590,9 +1824,13 @@ environments = [
 
 [tool.pytest.ini_options]
 addopts = "-ra -q -r fEX"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1639,6 +1877,11 @@ addopts = "-ra -q -r fEX"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 
 [tool.ruff]
 line-length = 120
@@ -1726,9 +1969,13 @@ profile = "black"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1743,17 +1990,25 @@ build-backend = "poetry.core.masonry.api"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
 
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1776,3 +2031,8 @@ build-backend = "flit_core.buildapi"
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
