@@ -332,6 +332,47 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         Assert.Equal("Test audio-to-text response", result[0].Text);
     }
 
+    [Theory]
+    [MemberData(nameof(Versions))]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? expectedVersion = null)
+    {
+        // Arrange
+        var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("Test audio-to-text response")
+        };
+
+        // Act
+        var settings = new OpenAIAudioToTextExecutionSettings("file.mp3");
+        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), settings);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(result);
+
+        Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUri!.ToString());
+    }
+
+    public static TheoryData<string?, string?> Versions => new()
+    {
+        { null, "2024-08-01-preview" },
+        { "V2024_10_01_preview", "2024-10-01-preview" },
+        { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
+        { "2024_10_01_Preview", "2024-10-01-preview" },
+        { "2024-10-01-preview", "2024-10-01-preview" },
+        { "V2024_08_01_preview", "2024-08-01-preview" },
+        { "V2024_08_01_PREVIEW", "2024-08-01-preview" },
+        { "2024_08_01_Preview", "2024-08-01-preview" },
+        { "2024-08-01-preview", "2024-08-01-preview" },
+        { "V2024_06_01", "2024-06-01" },
+        { "2024_06_01", "2024-06-01" },
+        { "2024-06-01", "2024-06-01" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
+    };
+
     public void Dispose()
     {
         this._httpClient.Dispose();

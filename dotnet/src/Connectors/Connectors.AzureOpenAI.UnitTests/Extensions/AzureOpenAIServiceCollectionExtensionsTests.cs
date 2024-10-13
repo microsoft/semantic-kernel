@@ -74,6 +74,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
     [InlineData(InitializationType.TokenCredential)]
     [InlineData(InitializationType.ClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
+    [InlineData(InitializationType.ApiVersion)]
     public void ServiceCollectionAddAzureOpenAIChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
@@ -138,6 +139,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
             InitializationType.TokenCredential => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", credentials),
             InitializationType.ClientInline => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", client),
             InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAIChatCompletion("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
             _ => builder.Services
         };
 
@@ -158,6 +160,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
     [InlineData(InitializationType.TokenCredential)]
     [InlineData(InitializationType.ClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
+    [InlineData(InitializationType.ApiVersion)]
     public void ServiceCollectionAddAzureOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
@@ -222,6 +225,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
             InitializationType.TokenCredential => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", credentials),
             InitializationType.ClientInline => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
             InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
             _ => builder.Services
         };
 
@@ -243,7 +247,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
         var sut = new ServiceCollection();
 
         // Act
-        var service = sut.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key")
+        var service = sut.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview")
             .BuildServiceProvider()
             .GetRequiredService<ITextToAudioService>();
 
@@ -260,6 +264,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
     [InlineData(InitializationType.TokenCredential)]
     [InlineData(InitializationType.ClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
+    [InlineData(InitializationType.ApiVersion)]
     public void ServiceCollectionExtensionsAddAzureOpenAITextToImageService(InitializationType type)
     {
         // Arrange
@@ -324,6 +329,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
             InitializationType.TokenCredential => builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials),
             InitializationType.ClientInline => builder.Services.AddAzureOpenAITextToImage("deployment-name", client),
             InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAITextToImage("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
             _ => builder.Services
         };
 
@@ -342,6 +348,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
     [InlineData(InitializationType.TokenCredential)]
     [InlineData(InitializationType.ClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
+    [InlineData(InitializationType.ApiVersion)]
     public void ServiceCollectionAddAzureOpenAIAudioToTextAddsValidService(InitializationType type)
     {
         // Arrange
@@ -406,6 +413,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
             InitializationType.TokenCredential => builder.Services.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", credentials),
             InitializationType.ClientInline => builder.Services.AddAzureOpenAIAudioToText("deployment-name", client),
             InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAIAudioToText("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
             _ => builder.Services
         };
 
@@ -424,5 +432,6 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
         ClientInline,
         ClientInServiceProvider,
         ClientEndpoint,
+        ApiVersion
     }
 }

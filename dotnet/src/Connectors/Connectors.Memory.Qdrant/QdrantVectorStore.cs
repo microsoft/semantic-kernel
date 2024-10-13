@@ -53,7 +53,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Grpc.Core;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Qdrant.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;

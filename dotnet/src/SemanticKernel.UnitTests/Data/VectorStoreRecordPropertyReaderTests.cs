@@ -53,7 +53,7 @@ using System.Reflection;
 >>>>>>> Stashed changes
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Data;

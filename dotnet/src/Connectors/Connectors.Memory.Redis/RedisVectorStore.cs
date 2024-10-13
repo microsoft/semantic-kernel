@@ -52,7 +52,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using NRedisStack.RedisStackCommands;
 using StackExchange.Redis;
 

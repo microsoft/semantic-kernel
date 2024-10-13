@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using StackExchange.Redis;
 using Xunit;
 

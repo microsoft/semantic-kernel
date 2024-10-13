@@ -197,14 +197,14 @@ internal class LocalStep : KernelProcessMessageChannel
         {
             this._logger?.LogError("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             eventName = $"{targetFunction}.OnError";
-            eventValue = ex.Message;
+            eventValue = ex;
         }
         finally
         {
             await this.EmitEventAsync(new KernelProcessEvent { Id = eventName, Data = eventValue }).ConfigureAwait(false);
 
             // Reset the inputs for the function that was just executed
-            this._inputs[targetFunction] = this._initialInputs[targetFunction];
+            this._inputs[targetFunction] = new(this._initialInputs[targetFunction] ?? []);
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }
@@ -228,7 +228,7 @@ internal class LocalStep : KernelProcessMessageChannel
 
         // Initialize the input channels
         this._initialInputs = this.FindInputChannels();
-        this._inputs = new(this._initialInputs);
+        this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
         KernelProcessStepState? stateObject = null;

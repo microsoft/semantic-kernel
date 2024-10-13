@@ -6,12 +6,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics.Tensors;
 using System.Reflection;
+<<<<<<< HEAD
+=======
+using Microsoft.Extensions.VectorData;
+>>>>>>> main
 
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Contains mapping helpers to use when searching for documents using the Volatile store.
 /// </summary>
+<<<<<<< HEAD
+=======
+[Obsolete("This has been replaced by InMemoryVectorStoreCollectionSearchMapping in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
+>>>>>>> main
 internal static class VolatileVectorStoreCollectionSearchMapping
 {
     /// <summary>

@@ -2,9 +2,16 @@
 
 using System;
 using System.Threading.Tasks;
+<<<<<<< HEAD
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+=======
+using Azure.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+>>>>>>> main
 using Microsoft.SemanticKernel.Data;
 using SemanticKernel.IntegrationTests.Data;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -69,11 +76,22 @@ public class AzureAISearchTextSearchTests(AzureAISearchVectorStoreFixture fixtur
     {
         if (this.VectorStore is null)
         {
+<<<<<<< HEAD
             OpenAIConfiguration? openAIConfiguration = this.Configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
             Assert.NotNull(openAIConfiguration);
             Assert.NotEmpty(openAIConfiguration.ModelId);
             Assert.NotEmpty(openAIConfiguration.ApiKey);
             this.EmbeddingGenerator = new OpenAITextEmbeddingGenerationService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+=======
+            AzureOpenAIConfiguration? azureOpenAIConfiguration = this.Configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+            Assert.NotNull(azureOpenAIConfiguration);
+            Assert.NotEmpty(azureOpenAIConfiguration.DeploymentName);
+            Assert.NotEmpty(azureOpenAIConfiguration.Endpoint);
+            this.EmbeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
+                azureOpenAIConfiguration.DeploymentName,
+                azureOpenAIConfiguration.Endpoint,
+                new AzureCliCredential());
+>>>>>>> main
 
             this.VectorStore = new AzureAISearchVectorStore(fixture.SearchIndexClient);
         }
@@ -133,7 +151,11 @@ public class AzureAISearchTextSearchTests(AzureAISearchVectorStoreFixture fixtur
         {
             if (result is Hotel hotel)
             {
+<<<<<<< HEAD
                 return new TextSearchResult(name: hotel.HotelName, value: hotel.Description, link: $"id://{hotel.HotelId}");
+=======
+                return new TextSearchResult(value: hotel.Description) { Name = hotel.HotelName, Link = $"id://{hotel.HotelId}" };
+>>>>>>> main
             }
             throw new ArgumentException("Invalid result type.");
         }

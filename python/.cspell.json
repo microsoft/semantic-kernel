@@ -26,6 +26,7 @@
         "aeiou",
         "azuredocindex",
         "azuredocs",
+        "boto",
         "contentvector",
         "dotenv",
         "logit",

@@ -403,6 +403,12 @@ jobs:
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
@@ -455,6 +461,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
           POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          POSTGRES_MAX_POOL: ${{ vars.POSTGRES_MAX_POOL }}
           AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
           AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
@@ -975,6 +982,12 @@ jobs:
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
@@ -1080,6 +1093,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
           POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          POSTGRES_MAX_POOL: ${{ vars.POSTGRES_MAX_POOL }}
           AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
           AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}

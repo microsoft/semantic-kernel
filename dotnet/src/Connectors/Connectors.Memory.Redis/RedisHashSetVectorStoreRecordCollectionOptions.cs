@@ -48,7 +48,7 @@
 =======
 >>>>>>> Stashed changes
 
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;

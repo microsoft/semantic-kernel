@@ -92,7 +92,7 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
     }
 
     # Create the ai search service if it doesn't exist.
-    $service = Get-AzSearchService -ResourceGroupName $resourceGroup -Name $aiSearchResourceName
+    $service = Get-AzSearchService -ResourceGroupName $overrideResourceGroup -Name $overrideAISearchResourceName
     if (-not $service) {
 <<<<<<< HEAD
 <<<<<<< Updated upstream

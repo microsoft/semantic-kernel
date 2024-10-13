@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using NRedisStack.Search;
 using Xunit;
 using static NRedisStack.Search.Schema;
