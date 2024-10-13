@@ -7,65 +7,6 @@ name: "CodeQL"
 on:
   push:
     branches: ["*"]
-<<<<<<< main
-=======
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
->>>>>>> head
-    branches: ["main", "experimental*", "feature*", "*-development"]
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-    branches: ["main", "experimental*", "feature*", "*-development"]
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-    branches: ["main", "experimental*", "feature*", "*-development"]
->>>>>>> origin/main
->>>>>>> Stashed changes
->>>>>>> div
   schedule:
     - cron: "17 11 * * 2"
 
@@ -82,66 +23,6 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
-<<<<<<< main
-
-=======
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
->>>>>>> head
-        language: ["csharp", "python", "java"]
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-        language: ["csharp", "python", "java"]
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-        language: ["csharp", "python", "java"]
->>>>>>> origin/main
->>>>>>> Stashed changes
->>>>>>> div
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Use only 'java' to analyze code written in Java, Kotlin or both
         # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both
@@ -154,64 +35,6 @@ jobs:
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
-<<<<<<< main
-=======
-<<<<<<< div
-<<<<<<< div
-=======
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-        uses: github/codeql-action/init@v3
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-        uses: github/codeql-action/init@v3
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> head
->>>>>>> div
         with:
           languages: ${{ matrix.language }}
           # If you wish to specify custom queries, you can do so here or in a config file.
@@ -238,59 +61,18 @@ jobs:
       - name: Autobuild
         if: ${{ matrix.language != 'C' }}
         uses: github/codeql-action/autobuild@v4
-<<<<<<< main
-=======
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
-=======
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
->>>>>>> Stashed changes
->>>>>>> head
-        uses: github/codeql-action/autobuild@v3
->>>>>>> div
 
       - name: Setup JDK
         uses: actions/setup-java@v4
         if: ${{ matrix.language == 'java' }}
         with:
-          java-version: 17
+          java-version: 21
           distribution: microsoft
           cache: maven
 
       - name: Build Java
         if: ${{ matrix.language == 'java' }}
-        run: ./mvnw -B -DskipTests -Pcompile-jdk17 clean install --file pom.xml
+        run: ./mvnw -B -DskipTests -Pcompile-jdk21 clean install --file pom.xml
         working-directory: java
 
       # ℹ️ Command-line programs to run using the OS shell.
@@ -305,66 +87,5 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
-<<<<<<< main
-
-=======
-<<<<<<< div
-<<<<<<< div
-=======
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-        uses: github/codeql-action/analyze@v3
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-        uses: github/codeql-action/analyze@v3
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< div
-=======
-        uses: github/codeql-action/analyze@v3
->>>>>>> main
-=======
->>>>>>> head
->>>>>>> div
         with:
           category: "/language:${{matrix.language}}"

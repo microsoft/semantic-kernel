@@ -16,40 +16,6 @@ jobs:
 
     steps:
       - uses: actions/github-script@v7
-<<<<<<< main
-=======
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
->>>>>>> head
->>>>>>> div
-      - uses: actions/github-script@v6
-      - uses: actions/github-script@v6
         name: "Issue/PR: update title"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

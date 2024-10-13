@@ -808,3 +808,5 @@ swa-cli.config.json
 /.reef/vscode_dbgport
 !/.reef/*
 
+!/python/.env.example
+
