@@ -806,3 +806,5 @@ swa-cli.config.json
 >>>>>>> head
 /.reef/vscode_lsport
 /.reef/vscode_dbgport
+!/.reef/*
+
