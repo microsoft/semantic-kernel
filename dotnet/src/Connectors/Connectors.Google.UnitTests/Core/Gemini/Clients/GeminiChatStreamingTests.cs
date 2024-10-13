@@ -35,8 +35,11 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
     [Fact]
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,12 +58,15 @@ public sealed class GeminiChatStreamingTests : IDisposable
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     public async Task ShouldReturnEmptyMessageContentAndNullMetadataIfEmptyJsonInResponseAsync()
     {
         // Arrange
@@ -79,8 +85,11 @@ public sealed class GeminiChatStreamingTests : IDisposable
     }
 
     [Fact]
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -98,12 +107,15 @@ public sealed class GeminiChatStreamingTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     public async Task ShouldReturnEmptyMessageContentIfNoContentInResponseAsync()
     {
         // Arrange

@@ -6,7 +6,10 @@ from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,6 +38,10 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -42,6 +49,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
@@ -49,8 +57,11 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 =======
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -68,12 +79,15 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
@@ -88,8 +102,11 @@ async def test_azure_summarize_conversation_using_plugin(
     kernel, chatTranscript = setup_summarize_conversation_using_plugin
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -124,16 +141,19 @@ async def test_azure_summarize_conversation_using_plugin(
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< main
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     service_id = "text_completion"
 
     execution_settings = PromptExecutionSettings(
@@ -160,8 +180,11 @@ async def test_azure_summarize_conversation_using_plugin(
             conversationSummaryPlugin["SummarizeConversation"], arguments
         )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -186,6 +209,11 @@ async def test_azure_summarize_conversation_using_plugin(
     )
 
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 =======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -230,8 +258,11 @@ async def test_azure_summarize_conversation_using_plugin(
 
     summary = await retry(lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], arguments))
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -249,12 +280,15 @@ async def test_azure_summarize_conversation_using_plugin(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     output = str(summary).strip().lower()
     print(output)
     assert "john" in output and "jane" in output
@@ -266,8 +300,11 @@ async def test_oai_summarize_conversation_using_plugin(
     setup_summarize_conversation_using_plugin,
 ):
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -302,16 +339,19 @@ async def test_oai_summarize_conversation_using_plugin(
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< main
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     kernel, chatTranscript = setup_summarize_conversation_using_plugin
 
     execution_settings = PromptExecutionSettings(
@@ -339,7 +379,10 @@ async def test_oai_summarize_conversation_using_plugin(
             conversationSummaryPlugin["SummarizeConversation"], arguments
         )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -366,6 +409,11 @@ async def test_oai_summarize_conversation_using_plugin(
     )
 
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 =======
 <<<<<<< Updated upstream
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -412,8 +460,11 @@ async def test_oai_summarize_conversation_using_plugin(
 
     summary = await retry(lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], arguments))
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -431,12 +482,15 @@ async def test_oai_summarize_conversation_using_plugin(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     output = str(summary).strip().lower()
     print(output)
     assert "john" in output and "jane" in output

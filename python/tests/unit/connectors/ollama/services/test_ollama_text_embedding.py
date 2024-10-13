@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,16 +38,19 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 # Copyright (c) Microsoft. All rights reserved.
 
 from unittest.mock import patch
@@ -178,8 +184,11 @@ async def test_raw_embedding_list_input(mock_embedding_client, model_id, prompt)
     mock_embedding_client.assert_called_with(
         model=model_id, prompt=prompt, options=settings.options
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -198,12 +207,15 @@ async def test_raw_embedding_list_input(mock_embedding_client, model_id, prompt)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
 from unittest.mock import patch
 
@@ -233,8 +245,11 @@ async def test_embedding(mock_post):
             "options": {},
         },
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -252,10 +267,13 @@ async def test_embedding(mock_post):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     )

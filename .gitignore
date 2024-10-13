@@ -676,9 +676,13 @@ swa-cli.config.json
 
 # python devcontainer
 /python/.devcontainer/*
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -705,19 +709,27 @@ swa-cli.config.json
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 .env*
 .flaskenv*
 !.env.project
 !.env.vault
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -777,9 +789,22 @@ swa-cli.config.json
 =======
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+<<<<<<< div
+!/python/.env.example
+
+!/build/CMakeFiles/3.22.1/*
+
+=======
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> origin/main
+>>>>>>> head
+/.reef/vscode_lsport
+/.reef/vscode_dbgport
+!/.reef/*
+

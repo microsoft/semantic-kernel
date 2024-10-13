@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -26,6 +29,8 @@ using System.Threading.Tasks;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,12 +41,16 @@ using System.Threading;
 using System.Threading.Tasks;
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Serialization;
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -59,12 +68,15 @@ using Microsoft.SemanticKernel.Agents.Serialization;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -125,8 +137,11 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
         return Task.FromResult<AgentChannel>(channel);
     }
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,12 +160,15 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     /// <inheritdoc/>
     protected internal async override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
@@ -169,8 +187,11 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
 
         return channel;
     }
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -188,10 +209,13 @@ ebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync)
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 }

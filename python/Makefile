@@ -1,7 +1,11 @@
 SHELL = /bin/bash
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -105,6 +109,11 @@ SHELL = bash
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
+=======
+<<<<<<< main
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 =======
 <<<<<<< main
@@ -117,6 +126,7 @@ SHELL = bash
 <<<<<<< main
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 .PHONY: help install clean build
 .SILENT:
@@ -440,6 +450,10 @@ install-pre-commit:
 	sed -i 's|\.pre-commit-config\.yaml|\.conf/\.pre-commit-config\.yaml|g' .git/hooks/pre-commit
 =======
 >>>>>>> upstream/main
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -470,6 +484,11 @@ install-pre-commit:
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> Stashed changes
 install-sk:
@@ -486,9 +505,13 @@ clean:
 build:
 	uvx --from build pyproject-build --installer uv
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -504,8 +527,12 @@ build:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head

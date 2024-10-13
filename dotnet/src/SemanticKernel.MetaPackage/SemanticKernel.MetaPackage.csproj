@@ -15,9 +15,13 @@
 Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
   </PropertyGroup>
   <ItemGroup>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,6 +47,14 @@ Empowers app owners to integrate cutting-edge LLM technology quickly and easily 
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+<<<<<<< main
+    <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -62,9 +74,13 @@ Empowers app owners to integrate cutting-edge LLM technology quickly and easily 
     <ProjectReference Include="..\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" PrivateAssets="none" />
 >>>>>>> ms/feature/memory-plugin
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -80,10 +96,14 @@ Empowers app owners to integrate cutting-edge LLM technology quickly and easily 
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
   </ItemGroup>
 </Project>

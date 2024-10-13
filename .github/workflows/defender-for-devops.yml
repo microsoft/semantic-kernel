@@ -40,8 +40,11 @@ jobs:
           6.0.x
     - name: Run Microsoft Security DevOps
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -88,6 +91,12 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+      uses: microsoft/security-devops-action@v1.6.0
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
       id: msdo
     - name: Upload results to Security tab
       uses: github/codeql-action/upload-sarif@v2

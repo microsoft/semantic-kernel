@@ -6,9 +6,13 @@ from copy import deepcopy
 from typing import Any, TypeVar
 from uuid import uuid4
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,6 +31,9 @@ from openai import AsyncAzureOpenAI
 <<<<<<< main
 from openai import AsyncAzureOpenAI
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -39,6 +46,7 @@ from openai import AsyncAzureOpenAI
 from openai import AsyncAzureOpenAI
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 import json
 import logging
 import sys
@@ -53,9 +61,13 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from openai import AsyncAzureOpenAI, AsyncStream
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -71,11 +83,15 @@ from openai import AsyncAzureOpenAI, AsyncStream
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 from openai.lib.azure import AsyncAzureADTokenProvider
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
@@ -103,9 +119,13 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -122,6 +142,9 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -132,6 +155,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -142,9 +166,13 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -160,11 +188,15 @@ from semantic_kernel.contents.chat_history import ChatHistory
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -174,9 +206,13 @@ from semantic_kernel.contents.streaming_chat_message_content import (
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,6 +229,9 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -203,15 +242,20 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_streaming_chat_completion
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -227,11 +271,15 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_s
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -260,6 +308,10 @@ class AzureChatCompletion(
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -435,25 +487,37 @@ class AzureChatCompletion(
         self,
         deployment_name: str,
         endpoint: Union[HttpsUrl, str],
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 =======
         deployment_name: str,
         base_url: Union[HttpsUrl, str],
         service_id: Optional[str] = None,
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         api_version: str = DEFAULT_AZURE_API_VERSION,
         service_id: Optional[str] = None,
         api_key: Optional[str] = None,
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< div
+<<<<<<< div
+=======
+=======
 <<<<<<< Updated upstream
 <<<<<<< head
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     ) -> None:
         """Initialize an AzureChatCompletion service.
 
@@ -547,12 +611,16 @@ class AzureChatCompletion(
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
+<<<<<<< div
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -594,9 +662,13 @@ class AzureChatCompletion(
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
             async_client {AsyncAzureOpenAI} -- An existing client to use.
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 =======
         """
 
@@ -638,11 +710,15 @@ class AzureChatCompletion(
         use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
             When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
             The default value is False.
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         """
 
     @overload
@@ -879,6 +955,10 @@ class AzureChatCompletion(
             client=async_client,
         )
 
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -906,6 +986,10 @@ class AzureChatCompletion(
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -914,6 +998,7 @@ class AzureChatCompletion(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     @override
     @trace_streaming_chat_completion(OpenAIChatCompletionBase.MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_chat_message_contents(
@@ -950,6 +1035,10 @@ class AzureChatCompletion(
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
 
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -972,13 +1061,22 @@ class AzureChatCompletion(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
     @classmethod
     def from_dict(cls, settings: dict[str, Any]) -> "AzureChatCompletion":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1000,11 +1098,15 @@ class AzureChatCompletion(
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         Args:
             settings: A dictionary of settings for the service.
                 should contain keys: service_id, and optionally:
@@ -1017,6 +1119,10 @@ class AzureChatCompletion(
             endpoint=settings.get("endpoint"),
             base_url=settings.get("base_url"),
             api_version=settings.get("api_version"),
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1045,7 +1151,12 @@ class AzureChatCompletion(
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
             api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key"),
@@ -1073,6 +1184,9 @@ class AzureChatCompletion(
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
             env_file_path=settings.get("env_file_path"),
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1080,6 +1194,7 @@ class AzureChatCompletion(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         )
 
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
@@ -1194,10 +1309,13 @@ class AzureChatCompletion(
         """Create an Azure chat message content object from a choice."""
         content = super()._create_chat_message_content(
             response, choice, response_metadata
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         )
         return self._add_tool_message_to_chat_message_content(content, choice)
 
@@ -1211,7 +1329,11 @@ class AzureChatCompletion(
         content = super()._create_streaming_chat_message_content(
             chunk, choice, chunk_metadata
         )
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
         assert isinstance(content, StreamingChatMessageContent) and isinstance(
             choice, ChunkChoice
         )  # nosec

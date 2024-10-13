@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -37,16 +40,19 @@ using System.ClientModel;
 =======
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-using System.ClientModel;
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 using System.ClientModel;
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+using System.ClientModel;
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -90,8 +96,11 @@ public sealed class MixedAgentTests
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -138,6 +147,12 @@ public sealed class MixedAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
             openAISettings.ChatModelId!,
             useNewFunctionCallingModel);
     }
@@ -191,8 +206,11 @@ public sealed class MixedAgentTests
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -227,6 +245,8 @@ public sealed class MixedAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
                 kernel: new(),
 =======
@@ -237,13 +257,17 @@ public sealed class MixedAgentTests
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu."
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -292,6 +316,13 @@ public sealed class MixedAgentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+                },
+                new Kernel());
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         // Act & Assert
         try

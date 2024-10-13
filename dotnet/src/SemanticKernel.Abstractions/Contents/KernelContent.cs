@@ -10,8 +10,11 @@ namespace Microsoft.SemanticKernel;
 /// Base class for all AI non-streaming results
 /// </summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -58,6 +61,12 @@ namespace Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
 [JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]
 [JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: nameof(FunctionCallContent))]
@@ -65,8 +74,11 @@ namespace Microsoft.SemanticKernel;
 [JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -101,16 +113,19 @@ namespace Microsoft.SemanticKernel;
 =======
 [JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-[JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 [JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+[JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 #pragma warning disable SKEXP0110
 [JsonDerivedType(typeof(AnnotationContent), typeDiscriminator: nameof(AnnotationContent))]
 [JsonDerivedType(typeof(FileReferenceContent), typeDiscriminator: nameof(FileReferenceContent))]

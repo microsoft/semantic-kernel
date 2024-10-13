@@ -4,6 +4,10 @@ import logging
 
 from pytest import mark, raises
 
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -51,13 +55,23 @@ from pytest import mark, raises
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
+>>>>>>> main
+=======
+>>>>>>> head
 from semantic_kernel.exceptions import VarBlockSyntaxError
 from semantic_kernel.exceptions.template_engine_exceptions import VarBlockRenderError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -74,6 +88,11 @@ from semantic_kernel.kernel import Kernel
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -91,9 +110,13 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxError
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -109,11 +132,15 @@ from semantic_kernel.template_engine.blocks.block_errors import VarBlockSyntaxEr
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
@@ -156,6 +183,10 @@ def test_valid_syntax(name):
 @mark.parametrize(
     "content",
     ["$", "$test-var", "test_var", "$a>b", "$."],
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -198,11 +229,15 @@ def test_valid_syntax(name):
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     ids=[
         "prefix_only",
         "invalid_characters",
@@ -213,9 +248,13 @@ def test_valid_syntax(name):
 )
 def test_syntax_errors(content):
     match = content.replace("$", "\\$") if "$" in content else content
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -232,6 +271,11 @@ def test_syntax_errors(content):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -253,9 +297,13 @@ def test_syntax_errors(content):
     else:
         match = content
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -271,11 +319,15 @@ def test_syntax_errors(content):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     with raises(VarBlockSyntaxError, match=rf".*{match}.*"):
         VarBlock(content=content)
 
@@ -296,9 +348,13 @@ def test_render_no_args():
     target = VarBlock(content="$var")
     result = target.render(Kernel())
     assert result == ""
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -321,6 +377,9 @@ def test_render_no_args():
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< main
@@ -328,6 +387,7 @@ def test_render_no_args():
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 
 class MockNonString(str):
@@ -339,6 +399,10 @@ def test_not_string():
     target = VarBlock(content="$var")
     with raises(VarBlockRenderError):
         target.render(Kernel(), KernelArguments(var=MockNonString("1")))
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -388,3 +452,10 @@ def test_not_string():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> main
+=======
+>>>>>>> head

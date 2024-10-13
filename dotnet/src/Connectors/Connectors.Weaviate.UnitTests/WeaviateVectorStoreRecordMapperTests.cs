@@ -21,8 +21,11 @@ public sealed class WeaviateVectorStoreRecordMapperTests
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,6 +46,8 @@ public sealed class WeaviateVectorStoreRecordMapperTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 =======
@@ -51,14 +56,18 @@ public sealed class WeaviateVectorStoreRecordMapperTests
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Converters =
         {
             new WeaviateDateTimeOffsetConverter(),
             new WeaviateNullableDateTimeOffsetConverter()
         }
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -76,12 +85,15 @@ public sealed class WeaviateVectorStoreRecordMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     };
 
     private readonly WeaviateVectorStoreRecordMapper<WeaviateHotel> _sut;

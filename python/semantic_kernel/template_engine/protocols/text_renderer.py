@@ -11,9 +11,13 @@ if TYPE_CHECKING:
 class TextRenderer(Protocol):
     """Protocol for static (text) blocks that don't need async rendering."""
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -59,13 +63,23 @@ class TextRenderer(Protocol):
 <<<<<<< main
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
+>>>>>>> main
+=======
+>>>>>>> head
     def render(
         self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None
     ) -> str:
         """Render the block using only the given variables.
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +96,11 @@ class TextRenderer(Protocol):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -99,9 +118,13 @@ class TextRenderer(Protocol):
         """
         Render the block using only the given variables.
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,11 +140,15 @@ class TextRenderer(Protocol):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
         :param variables: Optional variables used to render the block
         :return: Rendered content

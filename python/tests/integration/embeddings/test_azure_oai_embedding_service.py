@@ -16,9 +16,13 @@ from semantic_kernel.memory.volatile_memory_store import VolatileMemoryStore
 
 
 @pytest.mark.asyncio
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -46,6 +50,10 @@ async def test_azure_text_embedding_service(kernel: Kernel):
     embeddings_gen = sk_oai.AzureTextEmbedding(
         service_id="aoai-ada",
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -54,6 +62,7 @@ async def test_azure_text_embedding_service(kernel: Kernel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 async def test_azure_text_embedding_service(kernel: Kernel):
     embeddings_gen = sk_oai.AzureTextEmbedding(
@@ -75,6 +84,9 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
         deployment_name=deployment_name,
         endpoint=endpoint,
         api_key=api_key,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -82,6 +94,7 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 >>>>>>> origin/main
     )
 
@@ -152,10 +165,13 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
 
     kernel.use_memory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_gen)
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     kernel.add_service(embeddings_gen)
 
@@ -167,7 +183,11 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
     await memory.save_information(
         collection="generic", id="info1", text="My budget for 2024 is $100,000"
     )
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
     await memory.save_reference(
         "test",
         external_id="info1",
@@ -183,6 +203,10 @@ async def test_azure_text_embedding_service_with_provided_client(kernel: Kernel)
     deployment_name = azure_openai_settings.embedding_deployment_name
     ad_token = azure_openai_settings.get_azure_openai_auth_token()
     api_version = azure_openai_settings.api_version
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -211,7 +235,12 @@ async def test_azure_text_embedding_service_with_provided_client(kernel: Kernel)
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     client = AsyncAzureOpenAI(
         azure_endpoint=endpoint,
@@ -304,9 +333,13 @@ async def test_batch_azure_embeddings():
     await memory.save_information(
         collection="generic", id="info1", text="My budget for 2024 is $100,000"
     )
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -378,12 +411,17 @@ async def test_batch_azure_embeddings():
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> ms/small_fixes
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> ms/small_fixes
 >>>>>>> origin/main
+>>>>>>> head
     texts = ["hello world"]
     results = await embeddings_service.generate_embeddings(texts)
     batch_results = await embeddings_service.generate_embeddings(texts, batch_size=1)

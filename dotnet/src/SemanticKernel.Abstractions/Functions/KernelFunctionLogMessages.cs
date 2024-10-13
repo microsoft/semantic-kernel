@@ -4,8 +4,11 @@
 
 using System;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -56,6 +59,14 @@ using System.Text.Json.Serialization.Metadata;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
@@ -80,8 +91,11 @@ internal static partial class KernelFunctionLogMessages
 
     /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -128,6 +142,12 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    /// Logs arguments of a <see cref="KernelFunction"/>.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     /// The action provides the benefit of caching the template parsing result for better performance.
     /// And the public method is a helper to serialize the arguments.
     /// </summary>
@@ -137,8 +157,11 @@ internal static partial class KernelFunctionLogMessages
             eventId: 0,
             "Function arguments: {Arguments}");
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -161,6 +184,8 @@ internal static partial class KernelFunctionLogMessages
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments)
     {
@@ -171,6 +196,7 @@ internal static partial class KernelFunctionLogMessages
     {
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     [RequiresUnreferencedCode("Uses reflection to serialize function arguments, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to serialize the function arguments, making it incompatible with AOT scenarios.")]
@@ -196,8 +222,11 @@ internal static partial class KernelFunctionLogMessages
     [RequiresDynamicCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
     private static void LogFunctionArgumentsInternal(this ILogger logger, KernelArguments arguments, JsonSerializerOptions? jsonSerializerOptions = null)
     {
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -215,19 +244,25 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         if (logger.IsEnabled(LogLevel.Trace))
         {
             try
             {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -248,6 +283,8 @@ internal static partial class KernelFunctionLogMessages
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
                 var jsonString = JsonSerializer.Serialize(arguments);
 =======
@@ -256,6 +293,7 @@ internal static partial class KernelFunctionLogMessages
                 var jsonString = JsonSerializer.Serialize(arguments);
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 string jsonString;
 
                 if (jsonSerializerOptions is not null)
@@ -268,8 +306,11 @@ internal static partial class KernelFunctionLogMessages
                     jsonString = JsonSerializer.Serialize(arguments);
                 }
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -287,12 +328,15 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
                 s_logFunctionArguments(logger, jsonString, null);
             }
             catch (NotSupportedException ex)
@@ -322,8 +366,11 @@ internal static partial class KernelFunctionLogMessages
             eventId: 0,
             "Function result: {ResultValue}");
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -350,6 +397,10 @@ internal static partial class KernelFunctionLogMessages
     public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
     {
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -358,6 +409,7 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     [RequiresUnreferencedCode("Uses reflection to serialize function result, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to serialize the function result, making it incompatible with AOT scenarios.")]
     public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
@@ -382,8 +434,11 @@ internal static partial class KernelFunctionLogMessages
     [RequiresDynamicCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
     private static void LogFunctionResultValueInternal(this ILogger logger, FunctionResult? resultValue, JsonSerializerOptions? jsonSerializerOptions = null)
     {
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -401,12 +456,15 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         if (logger.IsEnabled(LogLevel.Trace))
         {
             // Attempt to convert the result value to string using the GetValue heuristic
@@ -421,8 +479,11 @@ internal static partial class KernelFunctionLogMessages
             try
             {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -443,6 +504,8 @@ internal static partial class KernelFunctionLogMessages
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
                 s_logFunctionResultValue(logger, JsonSerializer.Serialize(resultValue?.Value), null);
 =======
@@ -451,6 +514,7 @@ internal static partial class KernelFunctionLogMessages
                 s_logFunctionResultValue(logger, JsonSerializer.Serialize(resultValue?.Value), null);
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 string jsonString;
 
                 if (jsonSerializerOptions is not null)
@@ -464,8 +528,11 @@ internal static partial class KernelFunctionLogMessages
                 }
 
                 s_logFunctionResultValue(logger, jsonString, null);
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -483,12 +550,15 @@ internal static partial class KernelFunctionLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
             }
             catch (NotSupportedException ex)
             {

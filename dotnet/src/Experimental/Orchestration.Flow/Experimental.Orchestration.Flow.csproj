@@ -3,9 +3,13 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Experimental.Orchestration.Flow</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Experimental.Orchestration</RootNamespace>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -30,6 +34,10 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -38,6 +46,7 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
@@ -45,9 +54,13 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -63,11 +76,15 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
@@ -86,9 +103,13 @@
     <InternalsVisibleTo Include="SemanticKernel.Experimental.Orchestration.Flow.UnitTests" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -107,6 +128,9 @@
 <<<<<<< main
     <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -119,6 +143,7 @@
     <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
 =======
@@ -127,9 +152,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -145,11 +174,15 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>

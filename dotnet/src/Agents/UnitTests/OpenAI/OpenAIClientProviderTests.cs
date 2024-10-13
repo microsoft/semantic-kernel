@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -49,17 +52,23 @@ using System.ClientModel;
 using System;
 using System.ClientModel;
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 using System.Net.Http;
 using Azure.Core;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Moq;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -108,6 +117,14 @@ using OpenAI;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+using OpenAI;
+6d73513a859ab2d05e01db3bc1d405827799e34b
+using OpenAI;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -122,7 +139,10 @@ public class OpenAIClientProviderTests
     /// </summary>
     [Fact]
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -156,10 +176,13 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     public void VerifyOpenAIClientProviderTargetAzureByKey()
     {
         // Act
@@ -172,8 +195,11 @@ public class OpenAIClientProviderTests
         // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI("key", new Uri("https://localhost"));
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential("key"), new Uri("https://localhost"));
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -191,12 +217,15 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         // Assert
         Assert.NotNull(provider.Client);
@@ -207,8 +236,11 @@ public class OpenAIClientProviderTests
     /// </summary>
     [Fact]
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -227,20 +259,26 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     public void VerifyOpenAIClientProviderTargetAzureByCredential()
     {
         // Arrange
         Mock<TokenCredential> mockCredential = new();
 
         // Act
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -258,19 +296,25 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     public void VerifyOpenAIClientFactoryTargetAzureByCredential()
     {
         // Arrange
         Mock<TokenCredential> mockCredential = new();
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -289,12 +333,15 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
  6d73513a859ab2d05e01db3bc1d405827799e34b
     public void VerifyOpenAIClientProviderTargetAzureByCredential()
     {
@@ -302,8 +349,11 @@ public class OpenAIClientProviderTests
         Mock<TokenCredential> mockCredential = new();
 
         // Act
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -321,12 +371,15 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(mockCredential.Object, new Uri("https://localhost"));
 
         // Assert
@@ -340,7 +393,10 @@ public class OpenAIClientProviderTests
     [InlineData(null)]
     [InlineData("http://myproxy:9819")]
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -372,10 +428,13 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
     {
         // Act
@@ -386,8 +445,11 @@ public class OpenAIClientProviderTests
     public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
     {
         // Act
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -405,12 +467,15 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(endpoint != null ? new Uri(endpoint) : null);
 
         // Assert
@@ -424,7 +489,10 @@ public class OpenAIClientProviderTests
     [InlineData("key", null)]
     [InlineData("key", "http://myproxy:9819")]
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -455,6 +523,10 @@ public class OpenAIClientProviderTests
         // Arrange
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -462,6 +534,7 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     public void VerifyOpenAIClientProviderTargetOpenAIByKey(string key, string? endpoint)
     {
         // Act
@@ -474,8 +547,11 @@ public class OpenAIClientProviderTests
         // Act
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(key), endpoint != null ? new Uri(endpoint) : null);
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -493,12 +569,15 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         // Assert
         Assert.NotNull(provider.Client);
@@ -509,8 +588,11 @@ public class OpenAIClientProviderTests
     /// </summary>
     [Fact]
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -529,20 +611,26 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     public void VerifyOpenAIClientProviderWithHttpClient()
     {
         // Arrange
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
 
         // Act
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -560,19 +648,25 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     public void VerifyOpenAIClientFactoryWithHttpClient()
     {
         // Arrange
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -591,12 +685,15 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
  6d73513a859ab2d05e01db3bc1d405827799e34b
     public void VerifyOpenAIClientProviderWithHttpClient()
     {
@@ -633,8 +730,11 @@ public class OpenAIClientProviderTests
         httpClient.DefaultRequestHeaders.Add("X-Test", "Test");
 
         // Act
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -652,20 +752,26 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(httpClient: httpClient);
 
         // Assert
         Assert.NotNull(provider.Client);
     }
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -684,12 +790,15 @@ public class OpenAIClientProviderTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     /// <summary>
     /// Verify that the factory can accept an client that already exists.
@@ -706,8 +815,11 @@ public class OpenAIClientProviderTests
         Assert.Equal(mockClient.Object, provider.Client);
  6d73513a859ab2d05e01db3bc1d405827799e34b
     }
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -725,10 +837,13 @@ public class OpenAIClientProviderTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 }

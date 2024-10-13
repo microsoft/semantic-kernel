@@ -54,8 +54,11 @@ class MockChatCompletion(ChatCompletionClientBase):
 
     @override
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -90,23 +93,29 @@ class MockChatCompletion(ChatCompletionClientBase):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     async def _inner_get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +132,11 @@ class MockChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
@@ -140,8 +154,11 @@ class MockChatCompletion(ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
         **kwargs: Any,
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -159,19 +176,25 @@ class MockChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     ) -> list["ChatMessageContent"]:
         return []
 
     @override
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -206,23 +229,29 @@ class MockChatCompletion(ChatCompletionClientBase):
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     async def _inner_get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -241,12 +270,15 @@ class MockChatCompletion(ChatCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
     async def get_streaming_chat_message_contents(
         self,
@@ -254,8 +286,11 @@ class MockChatCompletion(ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
         **kwargs: Any,
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -273,12 +308,15 @@ class MockChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         yield []
 
@@ -288,8 +326,11 @@ class MockTextCompletion(TextCompletionClientBase):
 
     @override
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -310,6 +351,8 @@ class MockTextCompletion(TextCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     async def _inner_get_text_contents(
 =======
@@ -318,13 +361,17 @@ class MockTextCompletion(TextCompletionClientBase):
     async def _inner_get_text_contents(
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     async def _inner_get_text_contents(
 =======
     async def get_text_contents(
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -342,12 +389,15 @@ class MockTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
@@ -356,8 +406,11 @@ class MockTextCompletion(TextCompletionClientBase):
 
     @override
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -378,6 +431,8 @@ class MockTextCompletion(TextCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     async def _inner_get_streaming_text_contents(
 =======
@@ -386,13 +441,17 @@ class MockTextCompletion(TextCompletionClientBase):
     async def _inner_get_streaming_text_contents(
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     async def _inner_get_streaming_text_contents(
 =======
     async def get_streaming_text_contents(
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -410,12 +469,15 @@ class MockTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         self,
         prompt: str,
         settings: "PromptExecutionSettings",

@@ -1,6 +1,10 @@
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,6 +23,9 @@
 <<<<<<< main
     # MIT License
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -31,6 +38,7 @@
     # MIT License
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/

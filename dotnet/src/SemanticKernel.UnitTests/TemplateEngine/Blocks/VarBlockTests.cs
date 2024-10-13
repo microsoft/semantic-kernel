@@ -1,6 +1,10 @@
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +28,9 @@
 >>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 // Copyright (c) Microsoft. All rights reserved.
@@ -31,13 +38,18 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+>>>>>>> head
 
 using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -54,6 +66,9 @@ using Microsoft.SemanticKernel.TemplateEngine;
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -64,6 +79,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -199,9 +215,13 @@ public class VarBlockTests
 
         // Act + Assert
         Assert.Throws<KernelException>(() => target.Render(arguments));
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -230,6 +250,9 @@ public class VarBlockTests
 =======
         Assert.Throws<SKException>(() => target.Render(variables));
         Assert.Throws<SKException>(() => target.Render(variables));
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
         Assert.Throws<SKException>(() => target.Render(variables));
@@ -239,6 +262,7 @@ public class VarBlockTests
         Assert.Throws<SKException>(() => target.Render(variables));
         Assert.Throws<SKException>(() => target.Render(variables));
 >>>>>>> Stashed changes
+>>>>>>> head
     }
 
     [Theory]

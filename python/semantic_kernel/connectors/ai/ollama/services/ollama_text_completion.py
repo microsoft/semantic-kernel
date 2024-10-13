@@ -25,8 +25,11 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 <<<<<<< main
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -61,16 +64,19 @@ from semantic_kernel.contents.text_content import TextContent
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< main
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidResponseError,
@@ -79,8 +85,11 @@ from semantic_kernel.exceptions.service_exceptions import (
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -101,6 +110,8 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_t
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> upstream/main
 =======
@@ -109,12 +120,16 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_t
 >>>>>>> upstream/main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 >>>>>>> upstream/main
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -132,20 +147,26 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_t
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
         PromptExecutionSettings,
     )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -192,13 +213,23 @@ if TYPE_CHECKING:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+=======
+>>>>>>> ms/small_fixes
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -221,6 +252,8 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     """Initializes a new instance of the OllamaTextCompletion class.
@@ -231,6 +264,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     """Initializes a new instance of the OllamaTextCompletion class.
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     """Initializes a new instance of the OllamaTextCompletion class.
@@ -239,8 +273,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
     """
     Initializes a new instance of the OllamaTextCompletion class.
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -258,12 +295,15 @@ class OllamaTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
     Make sure to have the ollama service running either locally or remotely.
     """
@@ -271,8 +311,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
     def __init__(
         self,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -307,16 +350,19 @@ class OllamaTextCompletion(TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< main
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         service_id: str | None = None,
         ai_model_id: str | None = None,
         host: str | None = None,
@@ -335,8 +381,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
             env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
             env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -355,19 +404,25 @@ class OllamaTextCompletion(TextCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
     ) -> List[TextContent]:
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -385,12 +440,15 @@ class OllamaTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         """
         try:
             ollama_settings = OllamaSettings.create(
@@ -414,8 +472,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
         )
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -450,16 +511,19 @@ class OllamaTextCompletion(TextCompletionClientBase):
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< main
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     # region Overriding base class methods
 
     # Override from AIServiceClientBase
@@ -471,7 +535,10 @@ class OllamaTextCompletion(TextCompletionClientBase):
     @trace_text_completion(OllamaBase.MODEL_PROVIDER_NAME)
     async def _inner_get_text_contents(
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -498,6 +565,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 =======
 <<<<<<< Updated upstream
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -513,8 +585,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
 <<<<<<< main
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -532,12 +607,15 @@ class OllamaTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         settings: "PromptExecutionSettings",
     ) -> list[TextContent]:
         if not isinstance(settings, OllamaTextPromptExecutionSettings):
@@ -600,8 +678,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
 
     # endregion
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -618,6 +699,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 <<<<<<< HEAD
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
@@ -664,8 +750,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
         """Get the request settings class."""
         return OllamaTextPromptExecutionSettings
 >>>>>>> ms/small_fixes
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -683,9 +772,12 @@ class OllamaTextCompletion(TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head

@@ -1,7 +1,11 @@
 name: Python Code Quality Checks
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -19,7 +23,11 @@ name: Python Code Quality Checks
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 name: Python Lint
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -56,9 +64,13 @@ on:
 jobs:
   pre-commit:
     if: '!cancelled()'
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,6 +87,9 @@ jobs:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -85,6 +100,7 @@ jobs:
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     strategy:
       fail-fast: false
       matrix:
@@ -198,9 +214,13 @@ jobs:
       - name: Install poetry
         run: pipx install poetry
       - uses: actions/setup-python@v5
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -216,11 +236,15 @@ jobs:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         with:
           python-version: ${{ matrix.python-version }}
 <<<<<<< main
@@ -258,9 +282,13 @@ jobs:
       - name: Install dependencies
         run: cd python && poetry install
       - uses: pre-commit/action@v3.0.1
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -312,6 +340,9 @@ jobs:
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 =======
@@ -319,6 +350,7 @@ jobs:
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
       - name: Restore uv cache
         uses: actions/cache@v4
         with:
@@ -329,9 +361,13 @@ jobs:
       - uses: pre-commit/action@v3.0.1
         with:
           python-version: ${{ matrix.python-version }}
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -347,11 +383,15 @@ jobs:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
       - name: Restore uv cache
         uses: actions/cache@v4
         with:
@@ -364,9 +404,13 @@ jobs:
           extra_args: --config python/.pre-commit-config.yaml
       - name: Minimize uv cache
         run: uv cache prune --ci
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -407,18 +451,25 @@ jobs:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+=======
 =======
 <<<<<<< main
 >>>>>>> upstream/main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 >>>>>>> upstream/main
 =======
 >>>>>>> origin/main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head

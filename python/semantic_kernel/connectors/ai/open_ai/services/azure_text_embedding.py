@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,6 +32,10 @@ from typing import Any
 from collections.abc import Mapping
 from typing import Any
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -36,15 +44,20 @@ from typing import Any
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 from collections.abc import Mapping
 from typing import Any
 =======
 from typing import Dict, Mapping, Optional, overload
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -60,11 +73,15 @@ from typing import Dict, Mapping, Optional, overload
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -84,9 +101,13 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 )
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -98,7 +119,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 
 logger: logging.Logger = logging.getLogger(__name__)
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 
 =======
 =======
@@ -112,6 +137,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 <<<<<<< main
 =======
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< head
 =======
 <<<<<<< main
@@ -123,6 +151,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 
 >>>>>>> Stashed changes
+>>>>>>> head
 logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> origin/main
 
@@ -153,15 +182,24 @@ logger: logging.Logger = logging.getLogger(__name__)
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 @experimental_class
 class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
     """Azure Text Embedding class."""
 
     def __init__(
         self,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -198,6 +236,9 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
@@ -207,6 +248,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< main
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+>>>>>>> head
         service_id: str | None = None,
         api_key: str | None = None,
         deployment_name: str | None = None,
@@ -218,9 +260,13 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -408,6 +454,51 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
     def __init__(
         self,
         deployment_name: str,
+<<<<<<< div
+=======
+=======
+        deployment_name: str,
+        async_client: AsyncAzureOpenAI,
+        service_id: Optional[str] = None,
+>>>>>>> ms/small_fixes
+    ) -> None:
+        """Initialize an AzureTextEmbedding service.
+
+<<<<<<< main
+        service_id: The service ID. (Optional)
+        api_key  {str | None}: The optional api key. If provided, will override the value in the
+                env vars or .env file.
+        deployment_name  {str | None}: The optional deployment. If provided, will override the value
+            (text_deployment_name) in the env vars or .env file.
+        endpoint {str | None}: The optional deployment endpoint. If provided will override the value
+            in the env vars or .env file.
+        base_url {str | None}: The optional deployment base_url. If provided will override the value
+            in the env vars or .env file.
+        api_version {str | None}: The optional deployment api version. If provided will override the value
+            in the env vars or .env file.
+        ad_token {str | None}: The Azure AD token for authentication. (Optional)
+        ad_auth {AsyncAzureADTokenProvider | None}: Whether to use Azure Active Directory authentication.
+            (Optional) The default value is False.
+        default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+        async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
+        env_file_path (str | None): Use the environment settings file as a fallback to
+            environment variables. (Optional)
+=======
+        Arguments:
+            deployment_name: The name of the Azure deployment. This value
+                will correspond to the custom name you chose for your deployment
+                when you deployed a model. This value can be found under
+                Resource Management > Deployments in the Azure portal or, alternatively,
+                under Management > Deployments in Azure OpenAI Studio.
+            async_client {AsyncAzureOpenAI} -- An existing client to use.
+        """
+
+    def __init__(
+        self,
+        deployment_name: str,
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> origin/main
@@ -415,6 +506,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         endpoint: Optional[str] = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
         service_id: Optional[str] = None,
@@ -501,9 +593,13 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             service_id=service_id,
             api_key=api_key,
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -519,11 +615,15 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
@@ -541,9 +641,13 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
                 and optionally: api_version, ad_auth
         """
         return AzureTextEmbedding(
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -580,6 +684,9 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
@@ -589,15 +696,20 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 <<<<<<< main
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+>>>>>>> head
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key"),
             deployment_name=settings.get("deployment_name"),
             endpoint=settings.get("endpoint"),
             base_url=settings.get("base_url"),
             api_version=settings.get("api_version"),
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -614,6 +726,11 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -633,9 +750,13 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             service_id=settings.get("service_id"),
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -651,11 +772,15 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),

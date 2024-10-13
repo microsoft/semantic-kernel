@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -35,24 +38,30 @@
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -101,6 +110,14 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+=======
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
@@ -108,8 +125,11 @@ def test_kernel_arguments():
     kargs = KernelArguments()
     assert kargs is not None
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -130,6 +150,8 @@ def test_kernel_arguments():
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     assert kargs.execution_settings is None
 =======
@@ -138,13 +160,17 @@ def test_kernel_arguments():
     assert kargs.execution_settings is None
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
     assert kargs.execution_settings is None
 =======
     assert kargs.execution_settings == {}
 >>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -162,12 +188,15 @@ def test_kernel_arguments():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     assert not kargs.keys()
 
 
@@ -196,8 +225,11 @@ def test_kernel_arguments_with_execution_settings():
     assert kargs is not None
     assert kargs.execution_settings == {"test": test_pes}
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -232,16 +264,19 @@ def test_kernel_arguments_with_execution_settings():
 =======
 <<<<<<< HEAD
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< HEAD
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< HEAD
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 
 def test_kernel_arguments_bool():
@@ -254,8 +289,11 @@ def test_kernel_arguments_bool():
     # An KernelArguments object with both keyword arguments and execution_settings should return True
     assert KernelArguments(input=10, settings=PromptExecutionSettings(service_id="test"))
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -302,3 +340,10 @@ def test_kernel_arguments_bool():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+=======
+>>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head

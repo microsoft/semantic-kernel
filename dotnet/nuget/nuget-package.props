@@ -1,140 +1,13 @@
 <Project>
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
-<<<<<<< main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-    <VersionPrefix>1.15.0</VersionPrefix>
-    <VersionPrefix>1.15.0</VersionPrefix>
-
-=======
-    <VersionPrefix>1.20.0</VersionPrefix>
->>>>>>> ms/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
-    <VersionPrefix>1.21.1</VersionPrefix>
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-=======
-    <VersionPrefix>1.21.1</VersionPrefix>
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-=======
-    <VersionPrefix>1.21.1</VersionPrefix>
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-=======
-    <VersionPrefix>1.21.1</VersionPrefix>
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-=======
-    <VersionPrefix>1.21.1</VersionPrefix>
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-    <VersionPrefix>1.21.1</VersionPrefix>
->>>>>>> origin/main
-=======
     <VersionPrefix>1.22.0</VersionPrefix>
->>>>>>> upstream/main
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
-
     <Configurations>Debug;Release;Publish</Configurations>
     <IsPackable>true</IsPackable>
-
     <!-- Package validation. Baseline Version should be lower or equal to current version. -->
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    <PackageValidationBaselineVersion>1.16.2</PackageValidationBaselineVersion>
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-    <PackageValidationBaselineVersion>1.16.2</PackageValidationBaselineVersion>
-=======
-    <PackageValidationBaselineVersion>1.21.1</PackageValidationBaselineVersion>
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-    <PackageValidationBaselineVersion>1.21.1</PackageValidationBaselineVersion>
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+ <PackageValidationBaselineVersion>1.21.1</PackageValidationBaselineVersion>
     <!-- Validate assembly attributes only for Publish builds -->
     <NoWarn Condition="'$(Configuration)' != 'Publish'">$(NoWarn);CP0003</NoWarn>
     <!-- Do not validate reference assemblies -->
@@ -147,7 +20,6 @@
     <Description>Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
     <PackageTags>AI, Artificial Intelligence, SDK</PackageTags>
     <PackageId>$(AssemblyName)</PackageId>
-
     <!-- Required license, copyright, and repo information. Packages can override. -->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>

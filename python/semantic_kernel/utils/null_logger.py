@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +28,9 @@ class NullLogger(Logger):
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< main
@@ -33,6 +40,7 @@ class NullLogger(Logger):
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 
 class NullLogger(Logger):
@@ -43,15 +51,22 @@ from typing import Any, Callable
 
 logger: Logger = getLogger(__name__)
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 # TODO: delete
 =======
 logger: Logger = getLogger(__name__)
 
 # TODO: delete
 
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 
 =======
@@ -60,6 +75,7 @@ logger: Logger = getLogger(__name__)
 >>>>>>> Stashed changes
 =======
 # TODO: delete
+>>>>>>> head
 
 >>>>>>> Stashed changes
 
@@ -116,9 +132,13 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 
     def info(self, _: str) -> None:
         pass
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -135,6 +155,9 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -145,6 +168,7 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     def warning(self, _: str) -> None:
         pass
@@ -159,9 +183,13 @@ class NullLogger(Logger, metaclass=_NullerMeta):
                 "the same goes for all 'log' and 'logger' arguments.",
             )
         )
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -177,11 +205,15 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
     def warning(self, _: str) -> None:
         pass

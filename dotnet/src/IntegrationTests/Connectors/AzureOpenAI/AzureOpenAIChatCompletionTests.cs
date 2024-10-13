@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,16 +39,19 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-// Copyright (c) Microsoft. All rights reserved.
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 using System;
 using System.Collections.Generic;
@@ -178,8 +184,11 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 
         var jsonObject = JsonSerializer.SerializeToElement(usageObject);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -228,19 +237,25 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         Assert.True(jsonObject.TryGetProperty("InputTokenCount", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
         Assert.NotEqual(0, promptTokens);
 
         Assert.True(jsonObject.TryGetProperty("OutputTokenCount", out JsonElement completionTokensJson));
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -258,12 +273,15 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
     }
@@ -340,8 +358,11 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
         var result = await kernel.InvokePromptAsync("Hi, can you help me today?", new(settings));
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -388,6 +409,12 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityDetails>;
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         // Assert
         Assert.NotNull(logProbabilityInfo);

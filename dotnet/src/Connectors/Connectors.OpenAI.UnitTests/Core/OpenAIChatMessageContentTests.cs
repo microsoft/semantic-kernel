@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -25,6 +28,8 @@ using System.Collections.Generic;
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 using System.Collections;
 using System.Collections.Generic;
@@ -35,12 +40,16 @@ using System.Collections;
 using System.Collections.Generic;
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -58,12 +67,15 @@ using System.Text.Json;
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
@@ -81,8 +93,11 @@ public sealed class OpenAIChatMessageContentTests
     {
         // Arrange
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -129,6 +144,12 @@ public sealed class OpenAIChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        List<ChatToolCall> toolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         // Act
         var content1 = new OpenAIChatMessageContent(ChatMessageRole.User, "content1", "model-id1", toolCalls) { AuthorName = "Fred" };
@@ -144,8 +165,11 @@ public sealed class OpenAIChatMessageContentTests
     {
         // Arrange
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -172,6 +196,10 @@ public sealed class OpenAIChatMessageContentTests
             ChatToolCall.CreateFunctionToolCall("id1", "name", string.Empty),
             ChatToolCall.CreateFunctionToolCall("id2", "name", string.Empty)];
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -180,13 +208,17 @@ public sealed class OpenAIChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
 
         List<ChatToolCall> toolCalls = [
             ChatToolCall.CreateFunctionToolCall("id1", "name", BinaryData.FromString(args)),
             ChatToolCall.CreateFunctionToolCall("id2", "name", BinaryData.FromString(args))];
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -204,12 +236,15 @@ public sealed class OpenAIChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
         var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content", "model-id", toolCalls);
         var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content", "model-id", []);
@@ -233,8 +268,11 @@ public sealed class OpenAIChatMessageContentTests
     {
         // Arrange
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -277,18 +315,24 @@ public sealed class OpenAIChatMessageContentTests
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         IReadOnlyDictionary<string, object?> metadata = readOnlyMetadata ?
             new CustomReadOnlyDictionary<string, object?>(new Dictionary<string, object?> { { "key", "value" } }) :
             new Dictionary<string, object?> { { "key", "value" } };
 
         List<ChatToolCall> toolCalls = [
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -339,6 +383,13 @@ public sealed class OpenAIChatMessageContentTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+            ChatToolCall.CreateFunctionToolCall("id1", "name", BinaryData.FromString(args)),
+            ChatToolCall.CreateFunctionToolCall("id2", "name", BinaryData.FromString(args))];
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
         // Act
         var content1 = new OpenAIChatMessageContent(AuthorRole.User, "content1", "model-id1", [], metadata);

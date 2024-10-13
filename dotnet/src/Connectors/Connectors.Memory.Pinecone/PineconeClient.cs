@@ -1,6 +1,10 @@
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +28,9 @@
 >>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 // Copyright (c) Microsoft. All rights reserved.
@@ -31,6 +38,7 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+>>>>>>> head
 
 using System;
 using System.Collections.Concurrent;
@@ -45,9 +53,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,11 +103,15 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 using Microsoft.SemanticKernel.Diagnostics;
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -148,6 +164,10 @@ public sealed class PineconeClient : IPineconeClient
         {
             this._logger.LogError(e, "Error occurred on Get Vectors request: {Message}", e.Message);
             yield break;
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -171,15 +191,24 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
             response.EnsureSuccess(responseContent, this._logger);
         }
         catch (HttpOperationException e)
         {
             this._logger.LogError("Error occurred on Get Vectors request: {0}", e.Message);
             throw;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -193,12 +222,16 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         }
 
         FetchResponse? data = JsonSerializer.Deserialize<FetchResponse>(responseContent, this._jsonSerializerOptions);
@@ -252,9 +285,13 @@ public sealed class PineconeClient : IPineconeClient
         {
             this._logger.LogError(e, "Error occurred on Query Vectors request: {Message}", e.Message);
             yield break;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -269,21 +306,29 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             response.EnsureSuccess(responseContent, this._logger);
         }
         catch (HttpOperationException e)
         {
             this._logger.LogError("Error occurred on Query Vectors request: {0}", e.Message);
             throw;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -297,12 +342,16 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         }
 
         QueryResponse? queryResponse = JsonSerializer.Deserialize<QueryResponse>(responseContent, this._jsonSerializerOptions);
@@ -405,9 +454,13 @@ public sealed class PineconeClient : IPineconeClient
             try
             {
                 (_, responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -430,6 +483,9 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
                 response.EnsureSuccess(responseContent, this._logger);
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
                 response.EnsureSuccess(responseContent, this._logger);
@@ -437,6 +493,7 @@ public sealed class PineconeClient : IPineconeClient
 =======
                 response.EnsureSuccess(responseContent, this._logger);
 >>>>>>> Stashed changes
+>>>>>>> head
             }
             catch (HttpOperationException e)
             {
@@ -473,9 +530,13 @@ public sealed class PineconeClient : IPineconeClient
     {
         if (ids is null && string.IsNullOrEmpty(indexNamespace) && filter is null && !deleteAll)
         {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -494,6 +555,9 @@ public sealed class PineconeClient : IPineconeClient
 <<<<<<< main
             throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -506,6 +570,7 @@ public sealed class PineconeClient : IPineconeClient
             throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 <<<<<<< main
             throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
@@ -515,9 +580,13 @@ public sealed class PineconeClient : IPineconeClient
 =======
             throw new SKException("Must provide at least one of ids, filter, or deleteAll");
 >>>>>>> ms/feature-error-handling-part3
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -533,11 +602,15 @@ public sealed class PineconeClient : IPineconeClient
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         }
 
         ids = ids?.ToList();
@@ -556,9 +629,13 @@ public sealed class PineconeClient : IPineconeClient
 
         using HttpRequestMessage request = deleteRequest.Build();
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -577,11 +654,15 @@ public sealed class PineconeClient : IPineconeClient
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         try
         {
@@ -593,9 +674,13 @@ public sealed class PineconeClient : IPineconeClient
         {
             response.EnsureSuccess(responseContent, this._logger);
 >>>>>>> ms/feature-error-handling
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -609,12 +694,16 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         }
         catch (HttpOperationException e)
         {
@@ -635,9 +724,13 @@ public sealed class PineconeClient : IPineconeClient
             .InNamespace(indexNamespace)
             .Build();
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -660,6 +753,9 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< main
@@ -667,6 +763,7 @@ public sealed class PineconeClient : IPineconeClient
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+>>>>>>> head
         try
         {
             await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
@@ -674,9 +771,13 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Vector update for Document {Id} failed. {Message}", document.Id, e.Message);
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -691,12 +792,16 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
@@ -708,9 +813,13 @@ public sealed class PineconeClient : IPineconeClient
         {
             this._logger.LogError(e, "Vector update for Document {0} failed. Message: {1}", document.Id, e.Message);
 >>>>>>> ms/feature-error-handling
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -724,12 +833,16 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             throw;
         }
     }
@@ -752,9 +865,13 @@ public sealed class PineconeClient : IPineconeClient
 
         try
         {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -777,6 +894,9 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< main
@@ -784,14 +904,19 @@ public sealed class PineconeClient : IPineconeClient
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+>>>>>>> head
             (_, responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Index not found {Message}", e.Message);
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -806,12 +931,16 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
             response.EnsureSuccess(responseContent, this._logger);
         }
@@ -819,6 +948,10 @@ public sealed class PineconeClient : IPineconeClient
         {
             this._logger.LogError(e, "Index not found {0}", e.Message);
 >>>>>>> ms/feature-error-handling
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -841,6 +974,11 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
             throw;
         }
 
@@ -863,9 +1001,13 @@ public sealed class PineconeClient : IPineconeClient
     {
         using HttpRequestMessage request = ListIndexesRequest.Create().Build();
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -882,11 +1024,15 @@ public sealed class PineconeClient : IPineconeClient
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
         try
@@ -898,6 +1044,10 @@ public sealed class PineconeClient : IPineconeClient
             this._logger.LogError(e, "Listing index names failed. Message: {0}", e.Message);
             throw;
         }
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -920,6 +1070,11 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 
         string[]? indices = JsonSerializer.Deserialize<string[]?>(responseContent, this._jsonSerializerOptions);
 
@@ -945,6 +1100,10 @@ public sealed class PineconeClient : IPineconeClient
 
         try
         {
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -977,6 +1136,12 @@ public sealed class PineconeClient : IPineconeClient
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
+>>>>>>> main
+=======
+>>>>>>> head
             await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.BadRequest)
@@ -985,9 +1150,13 @@ public sealed class PineconeClient : IPineconeClient
             throw;
         }
         catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.Conflict)
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1002,17 +1171,25 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 =======
             response.EnsureSuccess(responseContent, this._logger);
         }
         catch (HttpOperationException e) when (response.StatusCode == HttpStatusCode.Conflict)
 >>>>>>> ms/feature-error-handling
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1035,6 +1212,11 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
         {
             this._logger.LogError(e, "Index of given name already exists: {StatusCode}, {Response}", e.StatusCode, e.ResponseContent);
             throw;
@@ -1055,9 +1237,13 @@ public sealed class PineconeClient : IPineconeClient
 
         try
         {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1076,11 +1262,15 @@ public sealed class PineconeClient : IPineconeClient
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
             await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
         }
@@ -1090,6 +1280,10 @@ public sealed class PineconeClient : IPineconeClient
         }
         catch (HttpOperationException e) when (response.StatusCode == HttpStatusCode.NotFound)
 >>>>>>> ms/feature-error-handling
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1112,6 +1306,11 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
         {
             this._logger.LogError(e, "Index Not Found: {StatusCode}, {Response}", e.StatusCode, e.ResponseContent);
             throw;
@@ -1153,9 +1352,13 @@ public sealed class PineconeClient : IPineconeClient
 
         try
         {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1178,6 +1381,9 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< main
@@ -1185,15 +1391,20 @@ public sealed class PineconeClient : IPineconeClient
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+>>>>>>> head
             (_, responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.BadRequest)
         {
             this._logger.LogError(e, "Bad Request: {StatusCode}, {Response}", e.StatusCode, e.ResponseContent);
             throw;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1228,6 +1439,9 @@ public sealed class PineconeClient : IPineconeClient
 =======
             response.EnsureSuccess(responseContent, this._logger);
 >>>>>>> ms/feature-error-handling
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 =======
@@ -1239,6 +1453,7 @@ public sealed class PineconeClient : IPineconeClient
             response.EnsureSuccess(responseContent, this._logger);
 >>>>>>> ms/feature-error-handling
 >>>>>>> Stashed changes
+>>>>>>> head
         }
         catch (HttpOperationException e)
         {
@@ -1269,12 +1484,21 @@ public sealed class PineconeClient : IPineconeClient
 
         try
         {
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
+=======
+<<<<<<< main
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -1286,13 +1510,18 @@ public sealed class PineconeClient : IPineconeClient
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+>>>>>>> head
             await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.BadRequest)
 =======
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 =======
 >>>>>>> Stashed changes
 =======
@@ -1307,15 +1536,23 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.BadRequest)
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             response.EnsureSuccess(responseContent, this._logger);
         }
         catch (HttpOperationException e) when (response.StatusCode == HttpStatusCode.BadRequest)
 >>>>>>> ms/feature-error-handling
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1338,13 +1575,22 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
         {
             this._logger.LogError(e, "Request exceeds quota or collection name is invalid. {Index}", indexName);
             throw;
         }
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1395,6 +1641,16 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
+        catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.NotFound)
+=======
+        catch (HttpOperationException e) when (response.StatusCode == HttpStatusCode.NotFound)
+>>>>>>> ms/feature-error-handling
+>>>>>>> main
+=======
+>>>>>>> head
         {
             this._logger.LogError(e, "Index not found. {Index}", indexName);
             throw;
@@ -1455,9 +1711,13 @@ public sealed class PineconeClient : IPineconeClient
 
         this._logger.LogDebug("Getting index host from Pinecone.");
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1498,17 +1758,25 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         PineconeIndex pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException("Index not found in Pinecone. Create index to perform operations with vectors.");
 
         if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
         {
             throw new KernelException($"Host of index {indexName} is unknown.");
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1532,6 +1800,11 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
         PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
 
@@ -1548,6 +1821,10 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> ms/feature-error-handling
 =======
 >>>>>>> ms/feature-error-handling-part3
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -1570,6 +1847,11 @@ public sealed class PineconeClient : IPineconeClient
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
         }
 
         this._logger.LogDebug("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);

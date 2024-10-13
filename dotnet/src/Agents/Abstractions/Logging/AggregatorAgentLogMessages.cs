@@ -43,8 +43,11 @@ internal static partial class AggregatorAgentLogMessages
         AggregatorMode channelMode,
         Type agentChatType);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -63,12 +66,15 @@ internal static partial class AggregatorAgentLogMessages
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     /// <summary>
     /// Logs <see cref="AggregatorAgent"/> restoring serialized channel (started).
@@ -93,8 +99,11 @@ internal static partial class AggregatorAgentLogMessages
         this ILogger logger,
         string methodName,
         string channelType);
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -112,10 +121,13 @@ internal static partial class AggregatorAgentLogMessages
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 }

@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -22,6 +26,9 @@ from typing import Annotated, Any
 <<<<<<< main
 from typing import Annotated, Any
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -34,6 +41,7 @@ from typing import Annotated, Any
 from typing import Annotated, Any
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 from typing import Annotated, Any
 =======
@@ -48,9 +56,13 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -66,18 +78,26 @@ else:
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, MessageDict
 from pydantic import PrivateAttr, StringConstraints, ValidationError
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -149,7 +169,12 @@ int_to_role = {1: AuthorRole.USER, 2: AuthorRole.SYSTEM, 3: AuthorRole.ASSISTANT
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 =======
@@ -175,9 +200,13 @@ from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvali
 logger: logging.Logger = logging.getLogger(__name__)
 
 int_to_role = {1: AuthorRole.USER, 2: AuthorRole.SYSTEM, 3: AuthorRole.ASSISTANT, 4: AuthorRole.TOOL}
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -191,18 +220,26 @@ int_to_role = {1: AuthorRole.USER, 2: AuthorRole.SYSTEM, 3: AuthorRole.ASSISTANT
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
     _message_history: ChatHistory | None = PrivateAttr()
     service_id: str | None = None
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -226,6 +263,11 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
@@ -236,6 +278,12 @@ from semantic_kernel.contents.chat_role import ChatRole
 logger: logging.Logger = logging.getLogger(__name__)
 
 int_to_role = {1: ChatRole.USER, 2: ChatRole.SYSTEM, 3: ChatRole.ASSISTANT, 4: ChatRole.TOOL}
+<<<<<<< div
+<<<<<<< div
+>>>>>>> origin/main
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -246,10 +294,14 @@ int_to_role = {1: ChatRole.USER, 2: ChatRole.SYSTEM, 3: ChatRole.ASSISTANT, 4: C
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -257,6 +309,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     _message_history: ChatHistory | None = PrivateAttr()
     service_id: str | None = None
@@ -289,13 +342,25 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    _message_history: Optional[ChatHistory] = PrivateAttr()
+    service_id: Optional[str] = None
+>>>>>>> ms/small_fixes
+>>>>>>> main
+=======
+>>>>>>> head
 
     def __init__(
         self,
         ai_model_id: str,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -341,13 +406,23 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 <<<<<<< main
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
+>>>>>>> main
+=======
+>>>>>>> head
         api_key: str | None = None,
         message_history: ChatHistory | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -365,12 +440,20 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 =======
         api_key: str,
         message_history: Optional[ChatHistory] = None,
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -385,6 +468,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 =======
 =======
@@ -400,15 +486,20 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     ):
         """Initializes a new instance of the GooglePalmChatCompletion class.
 
         Args:
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -445,6 +536,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
@@ -454,6 +548,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 <<<<<<< main
 >>>>>>> origin/main
 >>>>>>> Stashed changes
+>>>>>>> head
             api_key (str | None): The optional API key to use. If not provided, will be read from either
                 the env vars or the .env settings file
             message_history (ChatHistory | None): The message history to use for context. (Optional)
@@ -463,9 +558,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
         Raises:
             ServiceInitializationError: When any of the required settings are missing.
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -482,6 +581,11 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -499,9 +603,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 https://developers.generativeai.google/products/palm
             message_history {Optional[ChatHistory]} -- The message history to use for context. (Optional)
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -517,11 +625,15 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         """
         try:
             google_palm_settings = GooglePalmSettings.create(
@@ -544,9 +656,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def get_chat_message_contents(
         self,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -565,6 +681,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 <<<<<<< main
         chat_history: ChatHistory,
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -577,14 +696,19 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         chat_history: ChatHistory,
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         chat_history: ChatHistory,
 =======
         messages: ChatHistory,
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -600,11 +724,15 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         settings: GooglePalmPromptExecutionSettings,
         **kwargs: Any,
     ) -> list[ChatMessageContent]:
@@ -619,9 +747,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Returns:
             List[ChatMessageContent]: A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -640,6 +772,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 <<<<<<< main
         settings.messages = self._prepare_chat_history_for_request(chat_history, role_key="author")
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -652,14 +787,19 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         settings.messages = self._prepare_chat_history_for_request(chat_history, role_key="author")
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
         settings.messages = self._prepare_chat_history_for_request(chat_history, role_key="author")
 =======
         settings.messages = self._prepare_chat_history_for_request(messages)
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -675,11 +815,15 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
@@ -710,9 +854,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -731,6 +879,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 <<<<<<< main
             role=int_to_role[int(candidate.get("author"))],  # TODO (moonbox3): why is author coming back as '1'?
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -743,14 +894,19 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             role=int_to_role[int(candidate.get("author"))],  # TODO (moonbox3): why is author coming back as '1'?
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
             role=int_to_role[int(candidate.get("author"))],  # TODO (moonbox3): why is author coming back as '1'?
 =======
             role=int_to_role[int(candidate.get("author"))],  # TODO: why is author coming back as '1'?
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -766,11 +922,15 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
             content=candidate.get("content"),
         )
 
@@ -791,9 +951,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -818,6 +982,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -826,6 +994,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
@@ -834,9 +1003,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -852,11 +1025,15 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
         Args:
             prompt (str): The prompt to send to the LLM.
@@ -895,9 +1072,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
     ):
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -931,6 +1112,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
@@ -938,14 +1122,19 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 =======
 <<<<<<< main
 >>>>>>> origin/main
+>>>>>>> head
         """Return a streaming text content.
 
         Raises:
             NotImplementedError: Google Palm API does not currently support streaming
         """
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -987,11 +1176,15 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 =======
 =======
 >>>>>>> ms/small_fixes
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def _send_chat_request(
@@ -1043,9 +1236,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return GooglePalmChatPromptExecutionSettings
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1062,6 +1259,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -1072,6 +1272,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     def _prepare_chat_history_for_request(
         self,
@@ -1085,9 +1286,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         for message in standard_out:
             message["author"] = message.pop("role")
         return standard_out
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1103,8 +1308,12 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head

@@ -8,9 +8,13 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ["main", "feature*"]
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,6 +31,9 @@ on:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -37,6 +44,7 @@ on:
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     paths:
       - "dotnet/**"
       - "samples/dotnet/**"
@@ -82,9 +90,13 @@ jobs:
       matrix:
         include:
           - { dotnet: "8.0", configuration: Release, os: ubuntu-latest }
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -128,11 +140,15 @@ jobs:
         #- { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
         #- { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
         - { dotnet: '8.0', configuration: Release, os: ubuntu-latest }
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     runs-on: ${{ matrix.os }}
     env:
@@ -162,9 +178,13 @@ jobs:
         run: |
           csproj_files=()
           exclude_files=("Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -204,11 +224,15 @@ jobs:
 >>>>>>> Stashed changes
 =======
           exclude_files=("Planners.Core.csproj" "Planners.Core.UnitTests.csproj" "Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")  
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
           if [[ ${{ steps.changed-files.outcome }} == 'success' ]]; then
             for file in ${{ steps.changed-files.outputs.added_modified }}; do
               echo "$file was changed"
@@ -218,9 +242,13 @@ jobs:
                   csproj_path="$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)"
                   if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then
                     csproj_files+=("$csproj_path")
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -267,6 +295,13 @@ jobs:
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+                  if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then  
+                    csproj_files+=("$csproj_path")  
+>>>>>>> main
+=======
+>>>>>>> head
                   fi
                   break
                 fi

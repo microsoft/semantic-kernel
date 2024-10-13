@@ -1,6 +1,10 @@
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,15 +42,21 @@ using System.Text.Json;
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+<<<<<<< div
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> origin/main
@@ -54,6 +64,7 @@ using System.Text.Json;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 namespace Microsoft.SemanticKernel;
 
@@ -72,9 +83,13 @@ public sealed class KernelParameterMetadata
     private Type? _parameterType;
     /// <summary>The schema of the parameter, potentially lazily-initialized.</summary>
     private InitializedSchema? _schema;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -153,6 +168,12 @@ public sealed class KernelParameterMetadata
     [RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     public KernelParameterMetadata(string name) => this.Name = name;
+<<<<<<< div
+=======
+    /// <summary>The serializer options to generate JSON schema.</summary>
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -161,14 +182,19 @@ public sealed class KernelParameterMetadata
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
     /// <exception cref="ArgumentException">The <paramref name="name"/> was empty or composed entirely of whitespace.</exception>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 =======
     [RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
@@ -181,12 +207,16 @@ public sealed class KernelParameterMetadata
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
     /// <exception cref="ArgumentException">The <paramref name="name"/> was empty or composed entirely of whitespace.</exception>
+<<<<<<< div
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     public KernelParameterMetadata(string name, JsonSerializerOptions jsonSerializerOptions)
     {
         this.Name = name;
@@ -199,6 +229,10 @@ public sealed class KernelParameterMetadata
     /// <remarks>This creates a shallow clone of <paramref name="metadata"/>.</remarks>
     [RequiresUnreferencedCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -221,12 +255,36 @@ public sealed class KernelParameterMetadata
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
     public KernelParameterMetadata(KernelParameterMetadata metadata)
     {
         Verify.NotNull(metadata);
         this._name = metadata._name;
         this._description = metadata._description;
         this._defaultValue = metadata._defaultValue;
+<<<<<<< div
+<<<<<<< div
+        this.IsRequired = metadata.IsRequired;
+        this._parameterType = metadata._parameterType;
+        this._schema = metadata._schema;
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -256,6 +314,7 @@ public sealed class KernelParameterMetadata
         this.IsRequired = metadata.IsRequired;
         this._parameterType = metadata._parameterType;
         this._schema = metadata._schema;
+>>>>>>> head
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
@@ -278,12 +337,18 @@ public sealed class KernelParameterMetadata
         this._schema = metadata._schema;
         this._jsonSerializerOptions = jsonSerializerOptions;
 >>>>>>> origin/main
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
+>>>>>>> head
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -315,11 +380,15 @@ public sealed class KernelParameterMetadata
         this._parameterType = metadata._parameterType;
         this._schema = metadata._schema;
         this._jsonSerializerOptions = jsonSerializerOptions;
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     }
 
     /// <summary>Gets the name of the function.</summary>
@@ -383,9 +452,13 @@ public sealed class KernelParameterMetadata
     /// <summary>Gets a JSON Schema describing the parameter's type.</summary>
     public KernelJsonSchema? Schema
     {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -431,11 +504,15 @@ public sealed class KernelParameterMetadata
         [RequiresUnreferencedCode("Uses reflection if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
         [RequiresDynamicCode("Uses reflection if created with a non-AOT compatible constructor, making it incompatible with AOT scenarios.")]
         get => (this._schema ??= InferSchema(this.ParameterType, this.DefaultValue, this.Description, this._jsonSerializerOptions)).Schema;
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
     }
 
@@ -443,9 +520,13 @@ public sealed class KernelParameterMetadata
     /// <param name="parameterType">The parameter type. If null, no schema can be inferred.</param>
     /// <param name="defaultValue">The parameter's default value, if any.</param>
     /// <param name="description">The parameter description. If null, it won't be included in the schema.</param>
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -464,6 +545,9 @@ public sealed class KernelParameterMetadata
 <<<<<<< main
     internal static InitializedSchema InferSchema(Type? parameterType, object? defaultValue, string? description)
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -476,13 +560,18 @@ public sealed class KernelParameterMetadata
     internal static InitializedSchema InferSchema(Type? parameterType, object? defaultValue, string? description)
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
     [RequiresUnreferencedCode("Uses reflection if no JSOs are provided, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection if no JSOs are provided, making it incompatible with AOT scenarios.")]
     internal static InitializedSchema InferSchema(Type? parameterType, object? defaultValue, string? description, JsonSerializerOptions? jsonSerializerOptions)
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -498,11 +587,15 @@ public sealed class KernelParameterMetadata
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     {
         KernelJsonSchema? schema = null;
 
@@ -530,6 +623,10 @@ public sealed class KernelParameterMetadata
                     }
 
                     schema = KernelJsonSchemaBuilder.Build(null, parameterType, description);
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -558,7 +655,12 @@ public sealed class KernelParameterMetadata
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
                     // Register the handler for the 'System.ComponentModel.DescriptionAttribute' attribute to provide descriptions for .NET type members, such as fields and properties.
                     // See the Attributes section for more details - https://docs.json-everything.net/schema/schemagen/schema-generation/.
                     // This line must precede the JsonSchemaBuilder creation; otherwise, the registration will not take place.
@@ -574,9 +676,13 @@ public sealed class KernelParameterMetadata
                     schema = jsonSerializerOptions is not null
                         ? KernelJsonSchemaBuilder.Build(parameterType, jsonSerializerOptions, description)
                         : KernelJsonSchemaBuilder.Build(parameterType, description);
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -592,11 +698,15 @@ public sealed class KernelParameterMetadata
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
                 }
                 catch (ArgumentException)
                 {

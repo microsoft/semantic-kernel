@@ -20,9 +20,13 @@ async def test_can_call_to_plan_from_xml():
     kernel.add_service(
         sk_oai.AzureChatCompletion(
             service_id="text_completion",
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -39,6 +43,9 @@ async def test_can_call_to_plan_from_xml():
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -49,15 +56,20 @@ async def test_can_call_to_plan_from_xml():
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 =======
             deployment_name=deployment_name,
             endpoint=endpoint,
             api_key=api_key,
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -73,11 +85,15 @@ async def test_can_call_to_plan_from_xml():
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         ),
     )
     kernel.add_plugin(EmailPluginFake(), "email")
@@ -94,9 +110,13 @@ async def test_can_call_to_plan_from_xml():
 """
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -115,6 +135,9 @@ async def test_can_call_to_plan_from_xml():
 <<<<<<< main
     plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -127,6 +150,7 @@ async def test_can_call_to_plan_from_xml():
     plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
     plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
 =======
@@ -136,9 +160,13 @@ async def test_can_call_to_plan_from_xml():
         SequentialPlanParser.get_plugin_function(kernel),
     )
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -154,11 +182,15 @@ async def test_can_call_to_plan_from_xml():
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
     assert plan is not None
     assert (

@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -605,6 +609,9 @@ from semantic_kernel.kernel_exception import KernelException
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 =======
@@ -612,6 +619,7 @@ from semantic_kernel.kernel_exception import KernelException
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from copy import copy
@@ -676,9 +684,13 @@ from semantic_kernel.prompt_template.prompt_template_config import (
 from semantic_kernel.exceptions.kernel_exceptions import KernelServiceNotFoundError
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 )
 <<<<<<< main
 from semantic_kernel.filters.filter_types import FilterTypes
@@ -713,10 +725,13 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 =======
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 )
 <<<<<<< main
 from semantic_kernel.filters.filter_types import FilterTypes
@@ -1660,9 +1675,13 @@ from semantic_kernel.skill_definition.skill_collection_base import SkillCollecti
 from semantic_kernel.template_engine.prompt_template_engine_base import (
     PromptTemplateEngineBase,
 )
+<<<<<<< div
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> origin/main
+>>>>>>> head
 
 TDataModel = TypeVar("TDataModel")
 =======
@@ -1675,7 +1694,11 @@ from semantic_kernel.utils.validation import (
 
 T = TypeVar("T")
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< head
+>>>>>>> head
 ALL_SERVICE_TYPES = Union[TextCompletionClientBase, ChatCompletionClientBase, EmbeddingGeneratorBase]
 >>>>>>> ms/small_fixes
 
@@ -1933,7 +1956,11 @@ class Kernel(KernelBase):
     @property
     def config(self) -> KernelConfig:
         return self._config
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 
     async def invoke_prompt(
         self,
@@ -2013,7 +2040,11 @@ class Kernel(KernelBase):
             KernelFunctionFromPrompt,
         )
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< head
+>>>>>>> head
         function = KernelFunctionFromPrompt(
             function_name=function_name or generate_random_ascii_name(),
             plugin_name=plugin_name,
@@ -2024,7 +2055,11 @@ class Kernel(KernelBase):
     @property
     def prompt_template_engine(self) -> PromptTemplateEngineBase:
         return self._prompt_template_engine
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 
         function_result: list[list["StreamingContentMixin"] | Any] = []
 
@@ -2080,7 +2115,11 @@ class Kernel(KernelBase):
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< head
+>>>>>>> head
         try:
             if function_call.name is None:
                 raise FunctionExecutionException("The function name is required.")
@@ -2114,7 +2153,11 @@ class Kernel(KernelBase):
 =======
         Verify.valid_skill_name(skill_name)
         Verify.valid_function_name(function_name)
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 
         num_required_func_params = len(
             [param for param in function_to_call.parameters if param.is_required]
@@ -2138,7 +2181,11 @@ class Kernel(KernelBase):
             f"Calling {function_call.name} function with args: {function_call.arguments}"
         )
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< head
+>>>>>>> head
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(
             function=function_to_call,
@@ -2721,6 +2768,9 @@ class Kernel(KernelBase):
             self._log,
         )
 
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
         pipeline_step = 0
         for func in functions:
@@ -2888,6 +2938,7 @@ class Kernel(KernelBase):
         )
 >>>>>>> Stashed changes
 
+>>>>>>> head
         pipeline_step = 0
         for func in functions:
             assert isinstance(func, SKFunctionBase), (
@@ -3021,6 +3072,9 @@ class Kernel(KernelBase):
             if len(function_config.prompt_template_config.default_backends) > 0
             else None
         )
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -3028,6 +3082,7 @@ class Kernel(KernelBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
         function.set_ai_configuration(
             CompleteRequestSettings.from_completion_config(
@@ -3146,10 +3201,13 @@ class Kernel(KernelBase):
         if backend.backend_type == BackendType.AzureOpenAI:
             Verify.not_null(
                 backend.azure_open_ai, "Azure OpenAI configuration is missing"
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             )
             function.set_ai_backend(
                 lambda: AzureTextCompletion(
@@ -3170,7 +3228,11 @@ class Kernel(KernelBase):
                     self._log,
                 )
             )
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
         else:
             raise AIException(
                 AIException.ErrorCodes.InvalidConfiguration,
@@ -3178,9 +3240,13 @@ class Kernel(KernelBase):
                 f"unable to prepare semantic function. Function description: "
                 f"{function_config.prompt_template_config.description}",
             )
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3214,8 +3280,11 @@ class Kernel(KernelBase):
 
         return plugin
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 =======
 
         return function
@@ -3226,11 +3295,15 @@ class Kernel(KernelBase):
 
         return plugin
 
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     def import_native_plugin_from_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
         MODULE_NAME = "native_function"
 
@@ -3526,9 +3599,13 @@ class Kernel(KernelBase):
 
     # endregion
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3544,8 +3621,12 @@ class Kernel(KernelBase):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head

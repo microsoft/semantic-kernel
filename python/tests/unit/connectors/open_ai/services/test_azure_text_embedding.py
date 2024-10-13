@@ -7,8 +7,11 @@ from openai import AsyncAzureOpenAI
 from openai.resources.embeddings import AsyncEmbeddings
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -88,6 +91,14 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
@@ -98,8 +109,11 @@ def test_azure_text_embedding_init(azure_openai_unit_test_env) -> None:
     assert azure_text_embedding.client is not None
     assert isinstance(azure_text_embedding.client, AsyncAzureOpenAI)
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -166,20 +180,26 @@ def test_azure_text_embedding_init_with_empty_api_key(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     assert azure_text_embedding.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]
     assert isinstance(azure_text_embedding, EmbeddingGeneratorBase)
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]], indirect=True)
 def test_azure_text_embedding_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -197,12 +217,15 @@ def test_azure_text_embedding_init_with_empty_deployment_name(azure_openai_unit_
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     with pytest.raises(ServiceInitializationError):
         AzureTextEmbedding(
             env_file_path="test.env",
@@ -210,8 +233,11 @@ def test_azure_text_embedding_init_with_empty_deployment_name(azure_openai_unit_
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -279,6 +305,11 @@ def test_azure_text_embedding_init_with_empty_endpoint_and_base_url(
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
 def test_azure_text_embedding_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
@@ -288,8 +319,11 @@ def test_azure_text_embedding_init_with_empty_endpoint_and_base_url(azure_openai
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -369,6 +403,13 @@ def test_azure_text_embedding_init_with_invalid_endpoint(azure_openai_unit_test_
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+@pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
+def test_azure_text_embedding_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     with pytest.raises(ServiceInitializationError):
         AzureTextEmbedding()
 
@@ -383,8 +424,11 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
 
     settings = {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -431,10 +475,13 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
 =======
         "deployment_name": azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"],
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         "endpoint": azure_openai_unit_test_env["AZURE_OPENAI_ENDPOINT"],
         "api_key": azure_openai_unit_test_env["AZURE_OPENAI_API_KEY"],
         "api_version": azure_openai_unit_test_env["AZURE_OPENAI_API_VERSION"],
@@ -446,8 +493,11 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
     assert azure_text_embedding.client is not None
     assert isinstance(azure_text_embedding.client, AsyncAzureOpenAI)
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -501,18 +551,24 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     assert azure_text_embedding.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]
     assert isinstance(azure_text_embedding, EmbeddingGeneratorBase)
     assert settings["deployment_name"] in str(azure_text_embedding.client.base_url)
     assert azure_text_embedding.client.api_key == azure_openai_unit_test_env["AZURE_OPENAI_API_KEY"]
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -530,12 +586,15 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
     # Assert that the default header we added is present in the client's default headers
     for key, value in default_headers.items():
@@ -544,8 +603,11 @@ def test_azure_text_embedding_init_with_from_dict(azure_openai_unit_test_env) ->
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -594,12 +656,15 @@ async def test_azure_text_embedding_calls_with_parameters(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_openai_unit_test_env) -> None:
     with (
         patch(
@@ -617,8 +682,11 @@ def test_azure_text_embedding_generates_no_token_with_api_key_in_env(azure_opena
 @pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_openai_unit_test_env) -> None:
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -636,20 +704,26 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_ope
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     texts = ["hello world", "goodbye world"]
     embedding_dimensions = 1536
 
     azure_text_embedding = AzureTextEmbedding()
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -696,10 +770,13 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_ope
 =======
     await azure_text_embedding.generate_embeddings(texts, dimensions=embedding_dimensions)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     mock_create.assert_awaited_once_with(
         input=texts,
@@ -711,8 +788,11 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create, azure_ope
 @pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -759,10 +839,13 @@ async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai
 =======
 async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai_unit_test_env) -> None:
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     texts = [i for i in range(0, 5)]
 
     azure_text_embedding = AzureTextEmbedding()
@@ -773,8 +856,11 @@ async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai
         [
             call(
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -827,19 +913,25 @@ async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 model=azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"],
                 input=texts[0:3],
             ),
             call(
                 model=azure_openai_unit_test_env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"],
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -857,12 +949,15 @@ async def test_azure_text_embedding_calls_with_batches(mock_create, azure_openai
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
                 input=texts[3:5],
             ),
         ],

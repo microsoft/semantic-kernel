@@ -19,8 +19,11 @@ from semantic_kernel.kernel import Kernel
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,16 +58,19 @@ from tests.integration.completions.chat_completion_test_base import (
 =======
     anthropic_setup,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-    anthropic_setup,
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
     anthropic_setup,
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+    anthropic_setup,
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     google_ai_setup,
     mistral_ai_setup,
     vertex_ai_setup,
@@ -450,8 +456,11 @@ pytestmark = pytest.mark.parametrize(
         # region Anthropic
         pytest.param(
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -470,12 +479,15 @@ pytestmark = pytest.mark.parametrize(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             "anthropic",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
@@ -546,8 +558,11 @@ pytestmark = pytest.mark.parametrize(
         # endregion
         # region Google AI
         pytest.param(
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -565,12 +580,15 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
             "google_ai",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(

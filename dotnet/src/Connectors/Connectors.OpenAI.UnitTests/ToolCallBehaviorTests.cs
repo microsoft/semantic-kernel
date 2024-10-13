@@ -107,8 +107,11 @@ public sealed class ToolCallBehaviorTests
 
         // Assert
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,6 +160,12 @@ public sealed class ToolCallBehaviorTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        Assert.NotNull(options.Choice);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         this.AssertTools(options.Tools);
     }
 
@@ -217,8 +226,11 @@ public sealed class ToolCallBehaviorTests
 
         // Assert
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -267,6 +279,12 @@ public sealed class ToolCallBehaviorTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        Assert.NotNull(options.Choice);
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         this.AssertTools(options.Tools);
     }
 

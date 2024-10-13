@@ -26,9 +26,13 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,6 +59,10 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -63,6 +71,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_t
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< main
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -75,9 +84,13 @@ from semantic_kernel.utils.telemetry.model_diagnostics import trace_text_complet
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import StreamingTextContent, TextContent
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -93,11 +106,15 @@ from semantic_kernel.contents import StreamingTextContent, TextContent
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import (
@@ -109,6 +126,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     """Base class for OpenAI text completion services."""
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -164,6 +185,9 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
 
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 
@@ -175,6 +199,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
 
 >>>>>>> Stashed changes
+>>>>>>> head
     # region Overriding base class methods
 
     # Override from AIServiceClientBase
@@ -182,9 +207,13 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return OpenAITextPromptExecutionSettings
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -206,19 +235,27 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> origin/main
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     @override
     @trace_text_completion(MODEL_PROVIDER_NAME)
     async def _inner_get_text_contents(
         self,
         prompt: str,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -255,12 +292,16 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         settings: "PromptExecutionSettings",
     ) -> list["TextContent"]:
         if not isinstance(
@@ -274,9 +315,13 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         )  # nosec
         assert isinstance(settings, (OpenAITextPromptExecutionSettings, OpenAIChatPromptExecutionSettings))  # nosec
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -293,6 +338,11 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -318,9 +368,13 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             List["TextContent"] -- The completion result(s).
         """
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -336,20 +390,28 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
         if isinstance(settings, OpenAITextPromptExecutionSettings):
             settings.prompt = prompt
         else:
             settings.messages = [{"role": "user", "content": prompt}]
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -428,10 +490,13 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
->>>>>>> Stashed changes
+<<<<<<< div
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> Stashed changes
+=======
+>>>>>>> head
 
         response = await self._send_request(request_settings=settings)
         assert isinstance(response, (TextCompletion, ChatCompletion))  # nosec
@@ -442,14 +507,22 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             for choice in response.choices
         ]
 
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
     @override
     async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -486,12 +559,16 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
         if not isinstance(
@@ -505,6 +582,10 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         )  # nosec
 
         if isinstance(settings, OpenAITextPromptExecutionSettings):
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -535,6 +616,11 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> Stashed changes
         settings: "OpenAIPromptExecutionSettings",
@@ -552,9 +638,13 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         """
         if "prompt" in settings.model_fields:
 >>>>>>> ms/small_fixes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -570,17 +660,24 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
             settings.prompt = prompt
         else:
             if not settings.messages:
                 settings.messages = [{"role": "user", "content": prompt}]
             else:
                 settings.messages.append({"role": "user", "content": prompt})
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -588,22 +685,30 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.stream = True
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 =======
 
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.stream = True
 
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         response = await self._send_request(request_settings=settings)
         assert isinstance(response, AsyncStream)  # nosec
 

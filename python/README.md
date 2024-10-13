@@ -75,7 +75,11 @@ kernel = Kernel()
 <<<<<<< main
 =======
 api_key, org_id = sk.openai_settings_from_dot_env()
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,6 +95,9 @@ api_key, org_id = sk.openai_settings_from_dot_env()
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 <<<<<<< main
 =======
@@ -102,10 +109,15 @@ api_key, org_id = sk.openai_settings_from_dot_env()
 api_key, org_id = sk.openai_settings_from_dot_env()
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 service_id="chat-gpt"
 kernel.add_service(
     OpenAIChatCompletion(
         service_id=service_id,
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -152,11 +164,15 @@ kernel.add_service(
         ai_model_id="gpt-3.5-turbo",
         api_key=api_key,
         org_id=org_id
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     )
 )
 
@@ -164,6 +180,10 @@ kernel.add_service(
 # kernel.add_service(
 #   AzureChatCompletion(
 #       service_id=service_id,
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -192,7 +212,12 @@ kernel.add_service(
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 # deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
 # kernel.add_service(
 #   AzureChatCompletion(
@@ -200,9 +225,13 @@ kernel.add_service(
 #       deployment_name=deployment,
 #       base_url=endpoint,
 #       api_key=api_key
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -218,19 +247,27 @@ kernel.add_service(
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 #   )
 # )
 
 # Define the request settings
 req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -275,6 +312,12 @@ req_settings = kernel.get_service(service_id).get_prompt_execution_settings_clas
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
+>>>>>>> main
+=======
+>>>>>>> head
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
@@ -292,9 +335,13 @@ does not conflict with the First or Second Law.
 Give me the TLDR in exactly 5 words."""
 
 prompt_template_config = PromptTemplateConfig(
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -334,11 +381,15 @@ prompt_template_config = sk.PromptTemplateConfig(
 >>>>>>> Stashed changes
 =======
 prompt_template_config = sk.PromptTemplateConfig(
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     template=prompt,
     name="tldr",
     template_format="semantic-kernel",
@@ -348,6 +399,10 @@ prompt_template_config = sk.PromptTemplateConfig(
 function = kernel.add_function(
     function_name="tldr_function",
     plugin_name="tldr_plugin",
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -390,11 +445,15 @@ function = kernel.create_function_from_prompt(
 >>>>>>> Stashed changes
 =======
 function = kernel.create_function_from_prompt(
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     prompt_template_config=prompt_template_config,
 )
 
@@ -419,9 +478,13 @@ summarize = kernel.add_function(
     plugin_name="tldr_plugin",
     prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
     prompt_template_settings=req_settings,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -470,6 +533,14 @@ summarize = kernel.create_function_from_prompt(
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+summarize = kernel.create_function_from_prompt(
+    template="{{$input}}\n\nOne line TLDR with the fewest words."
+    execution_settings=req_settings,
+>>>>>>> main
+=======
+>>>>>>> head
 )
 
 # Summarize the laws of thermodynamics
@@ -514,9 +585,13 @@ Python notebooks:
 - [Groundedness Checking with Semantic Kernel](./samples/getting_started/09-groundedness-checking.ipynb)
 - [Returning multiple results per prompt](./samples/getting_started/10-multiple-results-per-prompt.ipynb)
 - [Streaming completions with Semantic Kernel](./samples/getting_started/11-streaming-completions.ipynb)
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -533,6 +608,9 @@ Python notebooks:
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -543,6 +621,7 @@ Python notebooks:
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 - [Getting started with Semantic Kernel](./notebooks/00-getting-started.ipynb)
 - [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
 - [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)

@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +50,12 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
 using System;
 using System.Collections.Generic;
@@ -82,8 +91,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 
         this._sut = new(definition, keyProperty.DataModelPropertyName);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -102,12 +114,15 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
@@ -125,8 +140,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 
         this._sut = new(definition, storagePropertyNames);
         this._sut = new(new VectorStoreRecordPropertyReader(typeof(AzureCosmosDBMongoDBHotelModel), definition, null));
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -144,12 +162,15 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     }
 
     [Fact]
@@ -176,8 +197,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         Assert.True(document["parking_is_included"].AsBoolean);
         Assert.Equal([1f, 2f, 3f], document["DescriptionEmbedding"].AsBsonArray);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -212,16 +236,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 =======
         Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-        Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
         Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+        Assert.Equal([1f, 2f, 3f], document["description_embedding"].AsBsonArray);
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     }
 
     [Fact]
@@ -236,8 +263,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
             ["parking_is_included"] = BsonValue.Create(true),
             ["DescriptionEmbedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -272,16 +302,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
 =======
             ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-            ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
             ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+            ["description_embedding"] = BsonArray.Create(new List<float> { 1f, 2f, 3f })
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         };
 
         // Act

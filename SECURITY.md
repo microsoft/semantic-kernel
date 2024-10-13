@@ -22,9 +22,13 @@ If you believe you have found a security vulnerability in any Microsoft-owned re
 Microsoft takes the security of our software products and services seriously, which includes all source code repositories managed through our GitHub organizations, which include [Microsoft](https://github.com/microsoft), [Azure](https://github.com/Azure), [DotNet](https://github.com/dotnet), [AspNet](https://github.com/aspnet), [Xamarin](https://github.com/xamarin), and [our GitHub organizations](https://opensource.microsoft.com/).
 
 If you believe you have found a security vulnerability in any Microsoft-owned repository that meets [Microsoft's definition of a security vulnerability](https://aka.ms/opensource/security/definition), please report it to us as described below.
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,6 +57,9 @@ If you believe you have found a security vulnerability in any Microsoft-owned re
 =======
 :
 
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 :
@@ -62,6 +69,7 @@ If you believe you have found a security vulnerability in any Microsoft-owned re
 :
 
 >>>>>>> Stashed changes
+>>>>>>> head
 
 ## Reporting Security Issues
 
@@ -72,6 +80,9 @@ Instead, please report them to the Microsoft Security Response Center (MSRC) at 
 If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com).  If possible, encrypt your message with our PGP key; please download it from the [Microsoft Security Response Center PGP Key page](https://www.microsoft.com/en-us/msrc/pgp-key-msrc?rtc=2).
 
 You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://www.microsoft.com/en-us/msrc?rtc=2).
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -133,6 +144,7 @@ This information will help us triage your report more quickly.
 If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -241,6 +253,44 @@ You should receive a response within 24 hours. If for some reason you do not, pl
 
 Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 
+<<<<<<< div
+=======
+
+Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
+
+* Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
+   <<<<<<< HEAD
+* Full paths of source file(s) related to the manifestation of the issue
+* The location of the affected source code (tag/branch/commit or direct URL)
+* Any special configuration required to reproduce the issue
+* Step-by-step instructions to reproduce the issue
+* Proof-of-concept or exploit code (if possible)
+* Impact of the issue, including how an attacker might exploit the issue
+   =======
+   * Full paths of source file(s) related to the manifestation of the issue
+   * The location of the affected source code (tag/branch/commit or direct URL)
+   * Any special configuration required to reproduce the issue
+   * Step-by-step instructions to reproduce the issue
+   * Proof-of-concept or exploit code (if possible)
+   * Impact of the issue, including how an attacker might exploit the issue
+
+> > > > > > > dependabot/github_actions/actions/setup-dotnet-4
+
+This information will help us triage your report more quickly.
+
+If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
+This information will help us triage your report more quickly.
+
+If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
+
+If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com). If possible, encrypt your message with our PGP key; please download it from the [Microsoft Security Response Center PGP Key page](https://aka.ms/opensource/security/pgpkey).
+
+You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://aka.ms/opensource/security/msrc).
+
+Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
+
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> origin/main
@@ -248,6 +298,7 @@ Please include the requested information listed below (as much as you can provid
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 -   Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
 -   Full paths of source file(s) related to the manifestation of the issue
 -   The location of the affected source code (tag/branch/commit or direct URL)
@@ -271,6 +322,10 @@ Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https:
 <!-- END MICROSOFT SECURITY.MD BLOCK -->
 Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https://aka.ms/opensource/security/cvd).
 <!-- END MICROSOFT SECURITY.MD BLOCK -->
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -315,8 +370,12 @@ Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https:
 =======
 <!-- END MICROSOFT SECURITY.MD BLOCK -->
 <!-- END MICROSOFT SECURITY.MD BLOCK -->
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head

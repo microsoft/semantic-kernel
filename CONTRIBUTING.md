@@ -7,9 +7,13 @@
 > and we appreciate your support, input and PRs!
 
 can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -27,7 +31,11 @@ can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -71,6 +79,10 @@ tips on how you can make reporting your issue as effective as possible.
 New New issues can be reported in our [list of issues](https://github.com/semantic-kernel/issues).
 >>>>>>>+8590ec5
 ore filing a new issue, please search the list of issues to make sure it does
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -99,7 +111,12 @@ ore filing a new issue, please search the list of issues to make sure it does
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 New issues can be reported in our [list of issues](https://github.com/microsoft/semantic-kernel/issues).
 
 Before filing a new issue, please search the list of issues to make sure it does
@@ -137,9 +154,13 @@ The better a bug report, the faster the problem will be resolved. Ideally, a bug
 report should contain the following information:
 
 <<<<<<- A high-level description of the problem.
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -157,7 +178,11 @@ report should contain the following information:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 - A high-level description of the problem.
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -202,9 +227,13 @@ report should contain the following information:
     any known workarounds?
 >>>>>>>+8590ec5
 ntributing Changes
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -222,7 +251,11 @@ ntributing Changes
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 
 ## Contributing Changes
 >>>>>>> origin/main
@@ -261,9 +294,13 @@ Project maintainers will merge accepted code changes from contributors.
 DO's:
 
 <<<<<<- **DO** follow the standard coding conventions
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -281,7 +318,11 @@ DO's:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
 - **DO** follow the standard coding conventions
 >>>>>>> origin/main
 <<<<<<< Updated upstream
@@ -343,9 +384,13 @@ DON'Ts:
     it's often better to create new issue than to side track the discussion.
 -   **DO** clearly state on an issue that you are going to take on implementing it.
 -   **DO** blog and tweet (or whatever) about your contributions, frequently!
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -363,10 +408,13 @@ DON'Ts:
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+=======
 =======
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 DON'Ts:
 
@@ -379,11 +427,15 @@ DON'Ts:
 -   **DON'T** make new APIs without filing an issue and discussing with us first.
 >>>>>>>+8590ec5
 reaking Changes
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 DON'Ts:
 

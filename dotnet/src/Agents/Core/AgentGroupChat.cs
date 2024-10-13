@@ -34,8 +34,11 @@ public sealed class AgentGroupChat : AgentChat
     /// The agents participating in the chat.
     /// </summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -82,6 +85,12 @@ public sealed class AgentGroupChat : AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    public override IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
     /// <summary>
     /// Add a <see cref="Agent"/> to the chat.
@@ -112,8 +121,11 @@ public sealed class AgentGroupChat : AgentChat
         this.Logger.LogAgentGroupChatInvokingAgents(nameof(InvokeAsync), this.Agents);
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -156,10 +168,13 @@ public sealed class AgentGroupChat : AgentChat
         bool isComplete = false;
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
@@ -205,8 +220,11 @@ public sealed class AgentGroupChat : AgentChat
             await foreach (var message in this.InvokeStreamingAsync(agent, cancellationToken).ConfigureAwait(false))
             {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -254,12 +272,15 @@ public sealed class AgentGroupChat : AgentChat
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
                 if (message.Role == AuthorRole.Assistant)
                 {
                     var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
@@ -270,8 +291,11 @@ public sealed class AgentGroupChat : AgentChat
             }
 
             if (isComplete)
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -289,20 +313,26 @@ public sealed class AgentGroupChat : AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
             {
                 break;
             }
         }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -345,10 +375,13 @@ public sealed class AgentGroupChat : AgentChat
         this.IsComplete = isComplete;
 
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
     }
 
@@ -371,8 +404,11 @@ public sealed class AgentGroupChat : AgentChat
 
 <<<<<<< main
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -417,17 +453,23 @@ public sealed class AgentGroupChat : AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         if (isJoining)
         {
             this.Add(agent);
         }
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -503,10 +545,13 @@ public sealed class AgentGroupChat : AgentChat
 =======
         this.AddAgent(agent);
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 >>>>>>> origin/main
 
         await foreach (ChatMessageContent message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
@@ -550,8 +595,11 @@ public sealed class AgentGroupChat : AgentChat
 
     /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -570,12 +618,15 @@ public sealed class AgentGroupChat : AgentChat
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     /// Convenience method to create a <see cref="KernelFunction"/> for a given strategy without HTML encoding the specified parameters.
     /// </summary>
     /// <param name="template">The prompt template string that defines the prompt.</param>
@@ -601,8 +652,11 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -620,12 +674,15 @@ public sealed class AgentGroupChat : AgentChat
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     /// Initializes a new instance of the <see cref="AgentGroupChat"/> class.
     /// </summary>
     /// <param name="agents">The agents initially participating in the chat.</param>

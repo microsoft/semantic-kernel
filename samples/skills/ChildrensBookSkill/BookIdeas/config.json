@@ -9,9 +9,13 @@
         "presence_penalty": 0.0,
         "frequency_penalty": 0.0
     }
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -28,6 +32,9 @@
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -38,6 +45,7 @@
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
   "description": "Given a topic description generate a number of children's book ideas with short descriptions",
   "default_settings": {
     "max_tokens": 2000,
@@ -46,9 +54,13 @@
     "presence_penalty": 0.0,
     "frequency_penalty": 0.0
   }
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -64,9 +76,13 @@
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 }

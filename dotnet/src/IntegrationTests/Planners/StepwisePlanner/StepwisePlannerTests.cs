@@ -150,9 +150,13 @@ public sealed class StepwisePlannerTests : IDisposable
             builder.Services.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -199,15 +203,25 @@ public sealed class StepwisePlannerTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+                credentials: new AzureCliCredential());
+>>>>>>> main
+=======
+>>>>>>> head
         }
         else
         {
             builder.Services.AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -254,6 +268,12 @@ public sealed class StepwisePlannerTests : IDisposable
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+                credentials: new AzureCliCredential());
+>>>>>>> main
+=======
+>>>>>>> head
         }
 
         if (useEmbeddings)

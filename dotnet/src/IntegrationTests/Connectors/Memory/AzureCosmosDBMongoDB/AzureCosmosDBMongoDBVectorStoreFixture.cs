@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -47,6 +50,12 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+// Copyright (c) Microsoft. All rights reserved.
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
 using System;
 using System.Collections.Generic;
@@ -102,8 +111,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -138,16 +150,19 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
             ]
@@ -166,8 +181,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
     {
 <<<<<<< main
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -186,12 +204,15 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         var cursor = await this.MongoDatabase.ListCollectionNamesAsync();
 
         while (await cursor.MoveNextAsync().ConfigureAwait(false))
@@ -200,8 +221,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
             {
                 await this.MongoDatabase.DropCollectionAsync(collection);
             }
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -219,12 +243,15 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         foreach (var collection in this._testCollections)
 =======
         var cursor = await this.MongoDatabase.ListCollectionNamesAsync();
@@ -249,8 +276,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         /// <summary>A string metadata field.</summary>
 <<<<<<< main
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -285,16 +315,19 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 =======
         [VectorStoreRecordData(IsFilterable = true)]
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-        [VectorStoreRecordData(IsFilterable = true)]
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
         [VectorStoreRecordData(IsFilterable = true)]
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+        [VectorStoreRecordData(IsFilterable = true)]
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         [VectorStoreRecordData]
 =======
         [VectorStoreRecordData(IsFilterable = true)]
@@ -322,8 +355,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         public string Description { get; set; }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -342,18 +378,24 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         /// <summary>A datetime metadata field.</summary>
         [VectorStoreRecordData]
         public DateTime Timestamp { get; set; }
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -371,12 +413,15 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         /// <summary>A vector field.</summary>
         [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }

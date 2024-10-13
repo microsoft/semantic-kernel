@@ -1,6 +1,10 @@
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -24,6 +28,9 @@
 >>>>>>> Stashed changes
 =======
 // Copyright (c) Microsoft. All rights reserved.
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 // Copyright (c) Microsoft. All rights reserved.
@@ -31,6 +38,7 @@
 =======
 // Copyright (c) Microsoft. All rights reserved.
 >>>>>>> Stashed changes
+>>>>>>> head
 
 using System;
 using System.Collections.Generic;
@@ -40,6 +48,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -68,14 +80,23 @@ using Microsoft.SemanticKernel.Connectors.Pinecone;
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 using Microsoft.SemanticKernel.Diagnostics;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -91,11 +112,15 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -151,9 +176,13 @@ public class PineconeMemoryStoreTests
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -182,6 +211,9 @@ public class PineconeMemoryStoreTests
 =======
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
@@ -191,6 +223,7 @@ public class PineconeMemoryStoreTests
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
         var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 >>>>>>> Stashed changes
+>>>>>>> head
 
         // Assert
         this._mockPineconeClient

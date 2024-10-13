@@ -1,7 +1,11 @@
 {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -34,6 +38,9 @@
 =======
   "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
   "default_settings": {
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
   "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
@@ -43,6 +50,7 @@
   "description": "Given a single word or acronym, generate the expanded form matching the acronym letters.",
   "default_settings": {
 >>>>>>> Stashed changes
+>>>>>>> head
     "max_tokens": 256,
     "temperature": 0.5,
     "top_p": 1.0,
@@ -55,9 +63,13 @@
   "default_backends": [
     "text-davinci-003"
   ]
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -99,9 +111,13 @@
 =======
     "stop_sequences": ["#END#"]
   }
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 }

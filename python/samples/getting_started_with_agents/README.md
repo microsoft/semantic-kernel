@@ -7,8 +7,11 @@ This project contains a step by step guide to get started with _Semantic Kernel 
 - For the use of OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.4.0.
 - For the use of Agent Group Chat, the minimum allowed Semantic kernel pypi version is 1.6.0.
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,16 +46,19 @@ This project contains a step by step guide to get started with _Semantic Kernel 
 =======
 - For the use of Streaming OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.11.0
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-- For the use of Streaming OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.11.0
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 - For the use of Streaming OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.11.0
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+- For the use of Streaming OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.11.0
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 #### Source
 

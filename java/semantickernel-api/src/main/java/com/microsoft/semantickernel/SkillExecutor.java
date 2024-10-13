@@ -1,9 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -18,16 +22,24 @@ package com.microsoft.semantickernel;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -50,13 +62,22 @@ import javax.annotation.Nullable;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -75,11 +96,15 @@ import javax.annotation.Nullable;
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 public interface SkillExecutor {
 
@@ -91,9 +116,13 @@ public interface SkillExecutor {
      * @return the function collection
      * @throws SkillsNotFoundException if the skill is not found
      */
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -131,16 +160,22 @@ public interface SkillExecutor {
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     @Deprecated
     default ReadOnlyFunctionCollection importSkill(
             String skillName, Map<String, SemanticFunctionConfig> skills)
             throws SkillsNotFoundException { 
                 throw new UnsupportedOperationException("Deprecated"); 
         }
+<<<<<<< div
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> origin/main
@@ -148,6 +183,7 @@ public interface SkillExecutor {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     /**
      * Get function collection with the skill name
@@ -156,9 +192,13 @@ public interface SkillExecutor {
      * @return the function collection
      * @throws SkillsNotFoundException if the skill is not found
      */
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -175,15 +215,23 @@ public interface SkillExecutor {
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     @Deprecated
     default ReadOnlyFunctionCollection getSkill(String skillName) throws SkillsNotFoundException { 
                 throw new UnsupportedOperationException("Deprecated"); 
         }
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -206,6 +254,11 @@ public interface SkillExecutor {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 
     /**
      * Imports the native functions annotated on the given object as a skill.
@@ -213,9 +266,13 @@ public interface SkillExecutor {
      * @param skillName name of the skill
      * @return the function collection
      */
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -255,19 +312,35 @@ public interface SkillExecutor {
         }
 
     /** Imports the native functions annotated on the given object as a skill. */
+<<<<<<< div
+=======
+    @Deprecated
+    default ReadOnlyFunctionCollection importSkillFromDirectory(
+            String skillName, String parentDirectory, String skillDirectoryName) { 
+                throw new UnsupportedOperationException("Deprecated"); 
+        }
+
+    /** Imports the native functions annotated on the given object as a skill. */
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     @Deprecated
     default void importSkillsFromDirectory(String parentDirectory, String... skillNames) { 
                 throw new UnsupportedOperationException("Deprecated"); 
         }
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -281,12 +354,16 @@ public interface SkillExecutor {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     /**
      * Imports the native functions annotated on the given object as a skill. Assumes that the
@@ -296,9 +373,13 @@ public interface SkillExecutor {
      * @param parentDirectory directory that contains the skill
      * @return the function collection
      */
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -315,15 +396,23 @@ public interface SkillExecutor {
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     @Deprecated
     default ReadOnlyFunctionCollection importSkillFromDirectory(String skillName, String parentDirectory) { 
                 throw new UnsupportedOperationException("Deprecated"); 
         }
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -346,6 +435,11 @@ public interface SkillExecutor {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 
     /**
      * Imports a skill using ClassLoader.getResourceAsStream to load skills from the classpath.
@@ -360,6 +454,10 @@ public interface SkillExecutor {
 >>>>>>> main
      * @throws KernelException if it is not possible to correctly load the skill
      */
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -392,6 +490,12 @@ public interface SkillExecutor {
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< main
+>>>>>>> main
+=======
+>>>>>>> head
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName) throws KernelException;
 <<<<<<< AI
@@ -405,9 +509,13 @@ public interface SkillExecutor {
             String pluginDirectory, String skillName, String functionName);
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 >>>>>>> main
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -424,6 +532,11 @@ public interface SkillExecutor {
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -443,9 +556,13 @@ public interface SkillExecutor {
                 throw new UnsupportedOperationException("Deprecated"); 
         }
 >>>>>>> origin/dsgrieve/java-v1-api
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -461,11 +578,15 @@ public interface SkillExecutor {
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
     /**
      * Imports a skill using clazz.getResourceAsStream to load skills from the classpath.
@@ -480,9 +601,13 @@ public interface SkillExecutor {
 >>>>>>> main
      * @throws KernelException if it is not possible to correctly load the skill
      */
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -505,6 +630,9 @@ public interface SkillExecutor {
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< main
@@ -512,6 +640,7 @@ public interface SkillExecutor {
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
+>>>>>>> head
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) throws KernelException;
 <<<<<<< AI
@@ -525,9 +654,13 @@ public interface SkillExecutor {
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz);
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 >>>>>>> main
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -544,6 +677,11 @@ public interface SkillExecutor {
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
 >>>>>>> origin/main
 =======
@@ -564,9 +702,13 @@ public interface SkillExecutor {
                 throw new UnsupportedOperationException("Deprecated"); 
         }
 >>>>>>> origin/dsgrieve/java-v1-api
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -582,11 +724,15 @@ public interface SkillExecutor {
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
     /**
      * Imports the native functions annotated on the given object as a skill.
@@ -595,9 +741,13 @@ public interface SkillExecutor {
      * @param skillName name of the skill
      * @return the function collection
      */
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -614,15 +764,23 @@ public interface SkillExecutor {
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     @Deprecated
     default ReadOnlyFunctionCollection importSkill(Object nativeSkill, @Nullable String skillName) { 
                 throw new UnsupportedOperationException("Deprecated"); 
         }
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -645,13 +803,22 @@ public interface SkillExecutor {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 
     /**
      * @return Reference to the read-only skill collection containing all the imported functions
      */
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -668,18 +835,26 @@ public interface SkillExecutor {
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     @Deprecated
     default ReadOnlySkillCollection getSkills() { 
                 throw new UnsupportedOperationException("Deprecated"); 
         }
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -693,10 +868,14 @@ public interface SkillExecutor {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 }

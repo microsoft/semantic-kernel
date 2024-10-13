@@ -54,8 +54,11 @@ internal partial class ClientCore
         => new()
         {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -102,6 +105,12 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+            TimestampGranularities = AudioTimestampGranularities.Default,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
             Temperature = executionSettings.Temperature,
@@ -111,8 +120,11 @@ internal partial class ClientCore
     private static AudioTranscriptionFormat? ConvertResponseFormat(string? responseFormat)
     {
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -131,19 +143,25 @@ internal partial class ClientCore
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         if (responseFormat is null)
         {
             return null;
         }
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -161,12 +179,15 @@ internal partial class ClientCore
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         return responseFormat switch
         {
             "json" => AudioTranscriptionFormat.Simple,
@@ -174,8 +195,11 @@ internal partial class ClientCore
             "vtt" => AudioTranscriptionFormat.Vtt,
             "srt" => AudioTranscriptionFormat.Srt,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -220,10 +244,13 @@ internal partial class ClientCore
 =======
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported.")
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         };
     }
 

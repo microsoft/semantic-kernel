@@ -175,8 +175,11 @@ class ChatCompletionAgent(Agent):
         )
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -204,6 +207,10 @@ class ChatCompletionAgent(Agent):
             for message in message_list:
                 message.name = self.name
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
@@ -211,6 +218,7 @@ class ChatCompletionAgent(Agent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         role = None
         message_builder: list[str] = []
         async for message_list in messages:
@@ -218,8 +226,11 @@ class ChatCompletionAgent(Agent):
                 role = message.role
                 message.name = self.name
                 message_builder.append(message.content)
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -237,12 +248,15 @@ class ChatCompletionAgent(Agent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
                 yield message
 
         # Capture mutated messages related function calling / tools
@@ -252,8 +266,11 @@ class ChatCompletionAgent(Agent):
             history.add_message(message)
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -272,12 +289,15 @@ class ChatCompletionAgent(Agent):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         if role != AuthorRole.TOOL:
             history.add_message(
                 ChatMessageContent(
@@ -285,8 +305,11 @@ class ChatCompletionAgent(Agent):
                 )
             )
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -304,12 +327,15 @@ class ChatCompletionAgent(Agent):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     def _setup_agent_chat_history(self, history: ChatHistory) -> ChatHistory:
         """Setup the agent chat history."""
         chat = []

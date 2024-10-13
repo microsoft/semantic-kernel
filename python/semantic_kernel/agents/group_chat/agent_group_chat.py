@@ -17,8 +17,11 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,23 +56,29 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 =======
 from semantic_kernel.utils.experimental_decorator import experimental_class
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-from semantic_kernel.utils.experimental_decorator import experimental_class
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 from semantic_kernel.utils.experimental_decorator import experimental_class
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+from semantic_kernel.utils.experimental_decorator import experimental_class
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -104,16 +113,19 @@ logger: logging.Logger = logging.getLogger(__name__)
 =======
 @experimental_class
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-@experimental_class
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 @experimental_class
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+@experimental_class
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 class AgentGroupChat(AgentChat):
     """An agent chat that supports multi-turn interactions."""
 
@@ -180,8 +192,11 @@ class AgentGroupChat(AgentChat):
             yield message
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -200,12 +215,15 @@ class AgentGroupChat(AgentChat):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     async def invoke_stream_single_turn(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent chat for a single turn.
 
@@ -220,8 +238,11 @@ class AgentGroupChat(AgentChat):
 
         self.is_complete = await self.termination_strategy.should_terminate(agent, self.history.messages)
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -239,12 +260,15 @@ class AgentGroupChat(AgentChat):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     async def invoke(self, agent: Agent | None = None, is_joining: bool = True) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent chat asynchronously.
 
@@ -270,8 +294,11 @@ class AgentGroupChat(AgentChat):
             return
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -318,6 +345,12 @@ class AgentGroupChat(AgentChat):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        if not self.agents:
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
             raise AgentChatException("No agents are available")
 
         if self.is_complete:
@@ -342,8 +375,11 @@ class AgentGroupChat(AgentChat):
             if self.is_complete:
                 break
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -362,12 +398,15 @@ class AgentGroupChat(AgentChat):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     async def invoke_stream(
         self, agent: Agent | None = None, is_joining: bool = True
@@ -418,8 +457,11 @@ class AgentGroupChat(AgentChat):
 
             if self.is_complete:
                 break
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -437,9 +479,12 @@ class AgentGroupChat(AgentChat):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head

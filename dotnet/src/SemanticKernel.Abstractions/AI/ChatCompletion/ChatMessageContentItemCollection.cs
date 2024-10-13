@@ -23,8 +23,11 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 
     /// <summary>
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -43,12 +46,15 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
     /// </summary>
     public ChatMessageContentItemCollection(IReadOnlyList<KernelContent> items)
@@ -57,8 +63,11 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     }
 
     /// <summary>
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -76,12 +85,15 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     /// Gets or sets the content item at the specified index in the collection.
     /// </summary>
     /// <param name="index">The index of the content item to get or set.</param>

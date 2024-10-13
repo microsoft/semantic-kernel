@@ -23,8 +23,11 @@ public class OpenAIAssistantInvocationOptionsTests
         // Assert
         Assert.Null(options.ModelName);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -45,6 +48,8 @@ public class OpenAIAssistantInvocationOptionsTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
         Assert.Null(options.AdditionalInstructions);
 =======
@@ -53,12 +58,16 @@ public class OpenAIAssistantInvocationOptionsTests
         Assert.Null(options.AdditionalInstructions);
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
         Assert.Null(options.AdditionalInstructions);
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -76,12 +85,15 @@ public class OpenAIAssistantInvocationOptionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         Assert.Null(options.Metadata);
         Assert.Null(options.Temperature);
         Assert.Null(options.TopP);
@@ -109,8 +121,11 @@ public class OpenAIAssistantInvocationOptionsTests
             {
                 ModelName = "testmodel",
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -131,6 +146,8 @@ public class OpenAIAssistantInvocationOptionsTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
                 AdditionalInstructions = "test instructions",
 =======
@@ -139,12 +156,16 @@ public class OpenAIAssistantInvocationOptionsTests
                 AdditionalInstructions = "test instructions",
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
                 AdditionalInstructions = "test instructions",
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -162,12 +183,15 @@ public class OpenAIAssistantInvocationOptionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 MaxCompletionTokens = 1000,
                 MaxPromptTokens = 1000,
@@ -183,8 +207,11 @@ public class OpenAIAssistantInvocationOptionsTests
         // Assert
         Assert.Equal("testmodel", options.ModelName);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -205,6 +232,8 @@ public class OpenAIAssistantInvocationOptionsTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
         Assert.Equal("test instructions", options.AdditionalInstructions);
 =======
@@ -213,12 +242,16 @@ public class OpenAIAssistantInvocationOptionsTests
         Assert.Equal("test instructions", options.AdditionalInstructions);
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
         Assert.Equal("test instructions", options.AdditionalInstructions);
 =======
 >>>>>>> 6d73513a859ab2d05e01db3bc1d405827799e34b
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -236,12 +269,15 @@ public class OpenAIAssistantInvocationOptionsTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         Assert.Equal(2, options.Temperature);
         Assert.Equal(0, options.TopP);
         Assert.Equal(1000, options.MaxCompletionTokens);

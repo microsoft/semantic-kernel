@@ -1,79 +1,18 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-<<<<<<< main
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-=======
->>>>>>> Stashed changes
-=======
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-<<<<<<< HEAD
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-=======
 using Microsoft.SemanticKernel.Connectors.OpenAI;
->>>>>>> 46c3c89f5c5dbc355794ac231b509e142f4fb770
-=======
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
->>>>>>> ms/features/bugbash-prep
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
 using Microsoft.SemanticKernel.Connectors.InMemory;
->>>>>>> upstream/main
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Embeddings;

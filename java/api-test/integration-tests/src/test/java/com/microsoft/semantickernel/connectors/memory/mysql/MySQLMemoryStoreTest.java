@@ -26,9 +26,13 @@ import reactor.util.function.Tuple2;
 @Testcontainers
 public class MySQLMemoryStoreTest {
     @Container private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>();
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -46,7 +50,11 @@ public class MySQLMemoryStoreTest {
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
+>>>>>>> head
     @Container private static final MySQLContainer CONTAINER = new MySQLContainer();
 >>>>>>> origin/main
 <<<<<<< Updated upstream

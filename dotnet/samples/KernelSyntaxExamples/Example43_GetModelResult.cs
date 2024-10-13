@@ -2,9 +2,13 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,6 +25,9 @@ using Microsoft.SemanticKernel;
 >>>>>>> Stashed changes
 <<<<<<< main
 =======
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
@@ -31,6 +38,7 @@ using Microsoft.SemanticKernel;
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 <<<<<<< main
 =======
@@ -40,9 +48,13 @@ using Microsoft.SemanticKernel.Diagnostics;
 >>>>>>> ms/feature-error-handling
 =======
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -58,11 +70,15 @@ using Microsoft.SemanticKernel.Diagnostics;
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 using RepoUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -96,9 +112,13 @@ public class Example43_GetModelResult : BaseTest
         WriteLine();
     }
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -123,6 +143,10 @@ public class Example43_GetModelResult : BaseTest
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
     {
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -131,6 +155,7 @@ public class Example43_GetModelResult : BaseTest
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 <<<<<<< main
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
@@ -150,9 +175,13 @@ public class Example43_GetModelResult : BaseTest
     public Example43_GetModelResult(ITestOutputHelper output) : base(output)
     {
 >>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -168,10 +197,14 @@ public class Example43_GetModelResult : BaseTest
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     }
 }

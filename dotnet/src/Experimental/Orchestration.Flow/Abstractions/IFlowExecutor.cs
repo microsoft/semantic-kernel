@@ -1,6 +1,10 @@
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -36,14 +40,20 @@ using Microsoft.SemanticKernel.Orchestration;
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
+<<<<<<< div
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> origin/main
@@ -51,6 +61,7 @@ using Microsoft.SemanticKernel.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
@@ -66,6 +77,10 @@ public interface IFlowExecutor
     /// <param name="sessionId">Session id, which is used to track the execution status.</param>
     /// <param name="input">The input from client to continue the execution.</param>
     /// <param name="kernelArguments">The request kernel arguments </param>
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -94,7 +109,12 @@ public interface IFlowExecutor
 =======
 <<<<<<< main
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
     /// <returns>The execution context</returns>
     Task<FunctionResult> ExecuteFlowAsync(Flow flow, string sessionId, string input, KernelArguments kernelArguments);
     /// <param name="contextVariables">The request context variables </param>

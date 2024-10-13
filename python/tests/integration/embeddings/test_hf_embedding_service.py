@@ -13,9 +13,13 @@ async def test_hf_embeddings_with_memories():
 
     model_id = "sentence-transformers/all-MiniLM-L6-v2"
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -55,11 +59,15 @@ async def test_hf_embeddings_with_memories():
 >>>>>>> Stashed changes
 =======
 <<<<<<< main
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     embedding_gen = sk_hf.HuggingFaceTextEmbedding(
         service_id=model_id, ai_model_id=model_id
     )
@@ -78,6 +86,10 @@ async def test_hf_embeddings_with_memories():
         text="this is a test",
         external_source_name="external source",
     )
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -101,6 +113,11 @@ async def test_hf_embeddings_with_memories():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
     embedding_gen = sk_hf.HuggingFaceTextEmbedding(service_id=model_id, ai_model_id=model_id)
 
@@ -115,9 +132,13 @@ async def test_hf_embeddings_with_memories():
     await memory.save_information("test", id="info3", text="Penguins are birds.")
     await memory.save_information("test", id="info4", text="Dolphins are mammals.")
     await memory.save_information("test", id="info5", text="Flies are insects.")
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -142,6 +163,10 @@ async def test_hf_embeddings_with_memories():
     await memory.save_information("test", id="info3", text="Penguins are birds.")
     await memory.save_information("test", id="info4", text="Dolphins are mammals.")
     await memory.save_information("test", id="info5", text="Flies are insects.")
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -150,6 +175,7 @@ async def test_hf_embeddings_with_memories():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
     # Search for documents
     query = "What are mammals?"

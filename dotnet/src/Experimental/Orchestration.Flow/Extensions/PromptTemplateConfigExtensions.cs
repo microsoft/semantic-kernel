@@ -1,8 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -21,6 +25,9 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< main
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< main
@@ -30,6 +37,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 <<<<<<< main
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
@@ -37,6 +45,9 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -44,6 +55,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 >>>>>>> origin/main
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
@@ -72,6 +84,14 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+#pragma warning restore IDE0130
+>>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+>>>>>>> main
+=======
+>>>>>>> head
 
 /// <summary>
 /// Extension methods for PromptTemplateConfig
@@ -85,6 +105,10 @@ internal static class PromptTemplateConfigExtensions
     /// <param name="maxTokens">Value of max tokens to set</param>
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -139,6 +163,12 @@ internal static class PromptTemplateConfigExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+<<<<<<< HEAD
+>>>>>>> main
+=======
+>>>>>>> head
         var executionSettings = config.ExecutionSettings;
         foreach (var setting in executionSettings)
         {
@@ -147,6 +177,10 @@ internal static class PromptTemplateConfigExtensions
                 setting.Value.ExtensionData["max_tokens"] = maxTokens;
             }
         }
+<<<<<<< div
+<<<<<<< div
+=======
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
@@ -170,6 +204,11 @@ internal static class PromptTemplateConfigExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> main
+=======
+>>>>>>> head
 =======
         AIRequestSettings requestSettings = config.GetDefaultRequestSettings() ?? new();
         if (config.ModelSettings.Count == 0)
@@ -178,9 +217,13 @@ internal static class PromptTemplateConfigExtensions
         }
         requestSettings.ExtensionData["max_tokens"] = maxTokens;
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -196,10 +239,14 @@ internal static class PromptTemplateConfigExtensions
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
     }
 }

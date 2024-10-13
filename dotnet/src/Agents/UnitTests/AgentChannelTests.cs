@@ -68,8 +68,11 @@ public class AgentChannelTests
         }
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -88,12 +91,15 @@ public class AgentChannelTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         protected internal override string Serialize()
         {
             throw new NotImplementedException();
@@ -102,8 +108,11 @@ public class AgentChannelTests
 
     private sealed class NextAgent : TestAgent;
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -121,12 +130,15 @@ public class AgentChannelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
@@ -135,8 +147,11 @@ public class AgentChannelTests
 
     private sealed class NextAgent : MockAgent;
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -171,23 +186,29 @@ public class AgentChannelTests
 =======
 <<<<<<< main
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-<<<<<<< main
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 <<<<<<< main
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+<<<<<<< main
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         Mock<Agent> mockAgent = new();
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(mockAgent.Object).ToArrayAsync().AsTask());
         // Assert
         Assert.Equal(1, channel.InvokeCount);
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -208,6 +229,8 @@ public class AgentChannelTests
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
     }
 =======
@@ -216,6 +239,7 @@ public class AgentChannelTests
     }
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
         protected internal override IEnumerable<string> GetChannelKeys()
         {
             throw new NotImplementedException();
@@ -228,8 +252,11 @@ public class AgentChannelTests
     }
 =======
 >>>>>>> ms/features/bugbash-prep
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -247,10 +274,13 @@ public class AgentChannelTests
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 }

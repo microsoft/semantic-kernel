@@ -4,9 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -14,6 +18,9 @@ using System.Threading.Tasks;
 <<<<<<< Updated upstream
 =======
 <<<<<<< HEAD
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 <<<<<<< HEAD
@@ -21,13 +28,18 @@ using System.Threading.Tasks;
 =======
 <<<<<<< HEAD
 >>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 =======
 >>>>>>> Stashed changes
 =======
@@ -42,11 +54,15 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 =======
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
@@ -55,9 +71,13 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -71,12 +91,16 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+<<<<<<< div
+>>>>>>> main
 =======
 >>>>>>> origin/main
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 /// <summary>
 /// Extension methods for <see cref="Flow"/>.
@@ -90,9 +114,13 @@ public static class FlowExtensions
 
         while (remainingSteps.Count > 0)
         {
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,6 +145,10 @@ public static class FlowExtensions
             var independentStep = remainingSteps.FirstOrDefault(step => !remainingSteps.Any(step.DependsOn)) ??
                 throw new KernelException("The plan contains circular dependencies.");
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -125,6 +157,7 @@ public static class FlowExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
             var independentStep = remainingSteps.FirstOrDefault(step => !remainingSteps.Any(step.DependsOn)) ??
                 throw new KernelException("The plan contains circular dependencies.");
@@ -136,9 +169,13 @@ public static class FlowExtensions
                 throw new SKException("The plan contains circular dependencies.");
             }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -154,11 +191,15 @@ public static class FlowExtensions
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
             sortedSteps.Add(independentStep);
             remainingSteps.Remove(independentStep);
@@ -181,9 +222,13 @@ public static class FlowExtensions
         foreach (var step in referenceSteps)
         {
             flow.Steps.Remove(step);
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -208,6 +253,10 @@ public static class FlowExtensions
             var referencedFlow = await flowRepository.GetFlowAsync(step.FlowName).ConfigureAwait(false) ??
                 throw new ArgumentException($"Referenced flow {step.FlowName} is not found");
 =======
+<<<<<<< div
+=======
+>>>>>>> main
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -216,6 +265,7 @@ public static class FlowExtensions
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 <<<<<<< HEAD
             var referencedFlow = await flowRepository.GetFlowAsync(step.FlowName).ConfigureAwait(false) ??
                 throw new ArgumentException($"Referenced flow {step.FlowName} is not found");
@@ -226,9 +276,13 @@ public static class FlowExtensions
                 throw new ArgumentException($"Referenced flow {step.FlowName} is not found");
             }
 >>>>>>> 9cfcc609b1cbe6e1d6975df1d665fa0b064c5624
+<<<<<<< div
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< head
+>>>>>>> head
 >>>>>>> origin/main
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -244,11 +298,15 @@ public static class FlowExtensions
 =======
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+>>>>>>> main
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> origin/main
+>>>>>>> head
 
             referencedFlow.CompletionType = step.CompletionType;
             referencedFlow.AddPassthrough(step.Passthrough.ToArray());

@@ -2,8 +2,11 @@
 
 import pytest
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -38,16 +41,19 @@ from pydantic import BaseModel
 =======
 from pydantic import BaseModel
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-from pydantic import BaseModel
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 from pydantic import BaseModel
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+from pydantic import BaseModel
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSource,
@@ -60,8 +66,11 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -117,7 +126,11 @@ from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
@@ -135,8 +148,11 @@ class TestClassPydantic(KernelBaseModel):
 
 
 ############################################
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -154,12 +170,15 @@ class TestClassPydantic(KernelBaseModel):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
 
 def test_default_openai_chat_prompt_execution_settings():
@@ -201,8 +220,11 @@ def test_custom_openai_chat_prompt_execution_settings():
 def test_openai_chat_prompt_execution_settings_from_default_completion_config():
     settings = PromptExecutionSettings(service_id="test_service")
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -249,10 +271,13 @@ def test_openai_chat_prompt_execution_settings_from_default_completion_config():
 =======
     chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature is None
     assert chat_settings.top_p is None
@@ -266,8 +291,11 @@ def test_openai_chat_prompt_execution_settings_from_default_completion_config():
 
 def test_openai_chat_prompt_execution_settings_from_openai_prompt_execution_settings():
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -341,10 +369,13 @@ def test_openai_chat_prompt_execution_settings_from_openai_prompt_execution_sett
     chat_settings = OpenAIChatPromptExecutionSettings(service_id="test_service", temperature=1.0)
     new_settings = OpenAIChatPromptExecutionSettings(service_id="test_2", temperature=0.0)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     chat_settings.update_from_prompt_execution_settings(new_settings)
     assert chat_settings.service_id == "test_2"
     assert chat_settings.temperature == 0.0
@@ -352,8 +383,11 @@ def test_openai_chat_prompt_execution_settings_from_openai_prompt_execution_sett
 
 def test_openai_text_prompt_execution_settings_validation():
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -427,14 +461,23 @@ def test_openai_text_prompt_execution_settings_validation():
     with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
 >>>>>>> main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=2)
 
 
 def test_openai_text_prompt_execution_settings_validation_manual():
     text_oai = OpenAITextPromptExecutionSettings(best_of=1, number_of_responses=1)
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -498,16 +541,19 @@ def test_openai_text_prompt_execution_settings_validation_manual():
 =======
     with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-    with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
     with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+    with pytest.raises(ServiceInvalidExecutionSettingsError, match="best_of must be greater than number_of_responses"):
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         text_oai.number_of_responses = 2
 
 
@@ -528,8 +574,11 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config():
         },
     )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -580,6 +629,12 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config():
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -607,8 +662,11 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
         },
     )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -659,6 +717,12 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -688,8 +752,11 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
         },
     )
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -740,6 +807,12 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.presence_penalty == 0.5
@@ -794,8 +867,11 @@ def test_create_options_azure_data():
 
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -873,6 +949,13 @@ def test_create_options_azure_data_from_azure_ai_settings(azure_ai_search_unit_t
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+def test_create_options_azure_data_from_azure_ai_settings(azure_ai_search_unit_test_env):
+    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(AzureAISearchSettings.create())
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     extra = ExtraBody(data_sources=[az_source])
     assert extra["data_sources"] is not None
     settings = AzureChatPromptExecutionSettings(extra_body=extra)
@@ -907,8 +990,11 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources
         },
     }
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -955,10 +1041,13 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources
 =======
     settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"
 
 
@@ -988,8 +1077,11 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
         },
     }
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1040,6 +1132,12 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"
 
 
@@ -1070,8 +1168,11 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_response_format_json(
     options = settings.prepare_settings_dict()
     assert options["response_format"] == response_format
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1090,12 +1191,15 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_response_format_json(
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 
 
 def test_openai_chat_prompt_execution_settings_with_json_structured_output():
@@ -1143,8 +1247,11 @@ def test_openai_chat_prompt_execution_settings_with_invalid_structured_output():
     settings = OpenAIChatPromptExecutionSettings()
     with pytest.raises(ServiceInvalidExecutionSettingsError):
         settings.response_format = "invalid"
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1162,9 +1269,12 @@ def test_openai_chat_prompt_execution_settings_with_invalid_structured_output():
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head

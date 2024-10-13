@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -53,6 +56,13 @@ import logging
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+import json
+import logging
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 import sys
 from collections.abc import AsyncGenerator
 from typing import Any, ClassVar
@@ -62,8 +72,11 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -125,7 +138,11 @@ from anthropic.types import (
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 from collections.abc import AsyncGenerator
 from typing import Any
 import sys
@@ -146,8 +163,11 @@ from anthropic.types import (
     RawMessageStartEvent,
     TextBlock,
     ToolUseBlock,
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -165,12 +185,15 @@ from anthropic.types import (
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 )
 from pydantic import ValidationError
 
@@ -180,8 +203,11 @@ from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic
 from semantic_kernel.connectors.ai.anthropic.settings.anthropic_settings import AnthropicSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -208,6 +234,10 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 =======
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
@@ -216,6 +246,7 @@ from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessag
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -223,8 +254,11 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -242,12 +276,15 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -255,8 +292,11 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -310,7 +350,11 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_c
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
@@ -320,8 +364,11 @@ from semantic_kernel.exceptions.service_exceptions import (
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -339,20 +386,26 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_c
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceResponseException,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -403,6 +456,14 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_c
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
+from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_chat_completion
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
 
 # map finish reasons from Anthropic to Semantic Kernel
 ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP = {
@@ -419,8 +480,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     """Antropic ChatCompletion class."""
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -479,12 +543,15 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     MODEL_PROVIDER_NAME: ClassVar[str] = "anthropic"
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True
 
@@ -496,8 +563,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
     async_client: AsyncAnthropic
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -515,12 +585,15 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     def __init__(
         self,
         ai_model_id: str | None = None,
@@ -539,8 +612,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             api_key: The optional API key to use. If provided will override,
                 the env vars or .env file value.
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -575,21 +651,27 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
             async_client: An existing client to use.
             env_file_path: Use the environment settings file as a fallback
                 to environment variables.
             env_file_encoding: The encoding of the environment settings file.
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -624,23 +706,29 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
             async_client: An existing client to use. 
             env_file_path: Use the environment settings file as a fallback
                 to environment variables. 
             env_file_encoding: The encoding of the environment settings file. 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -661,6 +749,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
@@ -669,12 +759,16 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             async_client: An existing client to use.
             env_file_path: Use the environment settings file as a fallback
                 to environment variables.
             env_file_encoding: The encoding of the environment settings file.
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -692,12 +786,15 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         """
         try:
             anthropic_settings = AnthropicSettings.create(
@@ -709,8 +806,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Anthropic settings.", ex) from ex
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -790,6 +890,14 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+
+        
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         if not anthropic_settings.chat_model_id:
             raise ServiceInitializationError("The Anthropic chat model ID is required.")
 
@@ -805,8 +913,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         )
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -853,14 +964,20 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
     @override
     @trace_chat_completion(MODEL_PROVIDER_NAME)
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -878,16 +995,22 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
     async def get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
         **kwargs: Any,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -985,6 +1108,14 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+    ) -> list["ChatMessageContent"]:
+    ) -> list["ChatMessageContent"]: 
+    ) -> list["ChatMessageContent"]:
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         """Executes a chat completion request and returns the result.
 
         Args:
@@ -996,8 +1127,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             The completion result(s).
         """
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1032,16 +1166,19 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
     # region Overriding base class methods
 
     # Override from AIServiceClientBase
@@ -1057,8 +1194,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
     ) -> list["ChatMessageContent"]:
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1093,6 +1233,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> upstream/main
 =======
@@ -1103,6 +1245,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
@@ -1116,8 +1259,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 f"{type(self)} service failed to complete the prompt",
                 ex,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1168,20 +1314,26 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
 >>>>>>> Stashed changes
 =======
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             ) from ex
 
         ) from ex
         
             ) from ex
 
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1199,9 +1351,12 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         metadata: dict[str, Any] = {"id": response.id}
         # Check if usage exists and has a value, then add it to the metadata
         if hasattr(response, "usage") and response.usage is not None:
@@ -1260,9 +1415,12 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
+>>>>>>> head
         return [
             self._create_chat_message_content(response, content_block, metadata) for content_block in response.content
         ]
@@ -1279,8 +1437,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             settings.system = parsed_system_message
 
         return await self._send_chat_request(settings)
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1298,19 +1459,25 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
     @override
     async def _inner_get_streaming_chat_message_contents(
         self,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1345,6 +1512,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 <<<<<<< main
 =======
@@ -1355,13 +1524,17 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         chat_history: ChatHistory,
         settings: PromptExecutionSettings,
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1396,16 +1569,19 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         return [self._create_chat_message_content(response, content_block, metadata) 
                 for content_block in response.content]
         
@@ -1413,8 +1589,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         self,
         chat_history: ChatHistory,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1467,13 +1646,20 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
         settings: PromptExecutionSettings,
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]: 
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -1491,12 +1677,15 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         """Executes a streaming chat completion request and returns the result.
 
         Args:
@@ -1509,7 +1698,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             A stream of StreamingChatMessageContent.
         """
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1580,12 +1772,23 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         if not isinstance(settings, AnthropicChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, AnthropicChatPromptExecutionSettings)  # nosec
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1621,11 +1824,14 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
         settings.messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history, stream=True)
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 =======
         settings.messages, parsed_system_message = self._prepare_chat_history_for_request(chat_history, stream=True)
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         try:
@@ -1634,7 +1840,10 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 metadata: dict[str, Any] = {"usage": {}, "id": None}
                 content_block_idx = 0
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1706,6 +1915,14 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+
+                
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
                 async for stream_event in stream:
                     if isinstance(stream_event, RawMessageStartEvent):
                         author_role = stream_event.message.role
@@ -1879,11 +2096,46 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 <<<<<<< Updated upstream
 =======
 >>>>>>> main
+<<<<<<< div
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
                         yield [
                             self._create_streaming_chat_message_content(
                                 stream_event, content_block_idx, author_role, metadata
                             )
                         ]
+<<<<<<< div
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> head
 <<<<<<< HEAD
 =======
 =======
@@ -1909,10 +2161,30 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
+<<<<<<< div
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> main
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+                        yield [self._create_streaming_chat_message_content(stream_event, 
+                                                                           content_block_idx, 
+                                                                           author_role, 
+                                                                           metadata)]
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> head
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
                     elif isinstance(stream_event, ContentBlockStopEvent):
                         content_block_idx += 1
         except Exception as ex:
@@ -1925,8 +2197,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
     def _create_chat_message_content(
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1982,7 +2257,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
         self, response: Message, content: TextBlock, response_metadata: dict[str, Any]
         if settings.system is None and parsed_system_message is not None:
             settings.system = parsed_system_message
@@ -2290,13 +2569,24 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 
 >>>>>>> main
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+
+        
+
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         return ChatMessageContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=response_metadata,
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2339,18 +2629,24 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 =======
             role=AuthorRole.ASSISTANT,
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+>>>>>>> head
             items=items,
             finish_reason=finish_reason,
         )
 
     def _create_streaming_chat_message_content(
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2427,6 +2723,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+<<<<<<< div
+=======
+        self,
+        stream_event: TextEvent | ContentBlockStopEvent | RawMessageDeltaEvent,
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
+>>>>>>> head
         metadata: dict[str, Any] = {},
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a choice."""
@@ -2438,8 +2741,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         items: list[STREAMING_ITEM_TYPES] = [StreamingTextContent(choice_index=content_block_idx, text=text_content)]
 
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2474,16 +2780,19 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
 =======
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
 =======
 =======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+=======
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
         self, 
         stream_event: RawContentBlockDeltaEvent | RawMessageDeltaEvent, 
         content_block_idx: int, 
@@ -2493,8 +2802,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         """Create a streaming chat message content object from a choice."""
         text_content = ""
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2567,7 +2879,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
 
         if stream_event.delta and hasattr(stream_event.delta, "text"):
             text_content = stream_event.delta.text
@@ -2608,8 +2924,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             finish_reason=finish_reason,
             items=items,
         )
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -2627,19 +2946,25 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
 
     def get_prompt_execution_settings_class(self) -> "type[AnthropicChatPromptExecutionSettings]":
         """Create a request settings object."""
         return AnthropicChatPromptExecutionSettings
 <<<<<<< HEAD
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2694,7 +3019,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<< div
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+=======
 >>>>>>> Stashed changes
+>>>>>>> head
     
 
     def update_settings_from_function_call_configuration_anthropic(
@@ -2809,8 +3138,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             settings.tool_choice = None
         if hasattr(settings, "tools"):
             settings.tools = None
+<<<<<<< div
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+>>>>>>> head
 <<<<<<< HEAD
 >>>>>>> main
 <<<<<<< Updated upstream
@@ -2828,9 +3160,12 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
 >>>>>>> Stashed changes
 =======
 >>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
 =======
 >>>>>>> main
 >>>>>>> Stashed changes
+>>>>>>> head
