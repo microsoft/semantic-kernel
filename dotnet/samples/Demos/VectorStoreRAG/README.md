@@ -11,12 +11,15 @@ The sample can be configured in various ways:
    1. AzureAISearch
    1. AzureCosmosDBMongoDB
    1. AzureCosmosDBNoSQL
+   1. InMemory
    1. Qdrant
    1. Redis
    1. Weaviate
 1. You can choose whether to load data into the vector store by setting the `Rag:BuildCollection` configuration setting in the `appsettings.json` file to `true`. If you set this to `false`, the sample will assume that data was already loaded previously and it will go straight into the chat experience.
 1. You can choose the name of the collection to use by setting the `Rag:CollectionName` configuration setting in the `appsettings.json` file.
 1. You can choose the pdf file to load into the vector store by setting the `Rag:PdfFilePaths` array in the `appsettings.json` file.
+1. You can choose the number of records to process per batch when loading data into the vector store by setting the `Rag:DataLoadingMaxDegreeOfParallelism` configuration setting in the `appsettings.json` file.
+1. You can choose the number of milliseconds to wait between batches when loading data into the vector store by setting the `Rag:DataLoadingBetweenBatchDelayInMilliseconds` configuration setting in the `appsettings.json` file.
 
 ## Dependency Setup
 
@@ -45,6 +48,7 @@ For Azure OpenAI, you need to add the following secrets:
 
 ```cli
 dotnet user-secrets set "AIServices:AzureOpenAI:Endpoint" "https://<yourservice>.openai.azure.com"
+dotnet user-secrets set "AIServices:AzureOpenAI:ChatDeploymentName" "gpt-4"
 ```
 
 Note that the code doesn't use an API Key to communicate with Azure Open AI, but rather an `AzureCliCredential` so no api key secret is required.
@@ -55,6 +59,7 @@ For Azure OpenAI Embeddings, you need to add the following secrets:
 
 ```cli
 dotnet user-secrets set "AIServices:AzureOpenAIEmbeddings:Endpoint" "https://<yourservice>.openai.azure.com"
+dotnet user-secrets set "AIServices:AzureOpenAIEmbeddings:DeploymentName" "text-embedding-ada-002"
 ```
 
 Note that the code doesn't use an API Key to communicate with Azure Open AI, but rather an `AzureCliCredential` so no api key secret is required.

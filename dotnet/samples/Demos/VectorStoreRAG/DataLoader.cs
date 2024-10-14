@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
@@ -21,14 +23,14 @@ internal sealed class DataLoader<TKey>(
     ITextEmbeddingGenerationService textEmbeddingGenerationService) : IDataLoader where TKey : notnull
 {
     /// <inheritdoc/>
-    public async Task LoadPdf(string pdfPath, CancellationToken cancellationToken)
+    public async Task LoadPdf(string pdfPath, int maxDegreeOfParallelism, int betweenBatchDelayInMs, CancellationToken cancellationToken)
     {
         // Create the collection if it doesn't exist.
         await vectorStoreRecordCollection.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // Load the paragraphs from the PDF file and split them into batches.
         var sections = LoadParagraphs(pdfPath, cancellationToken);
-        var batches = sections.Chunk(10);
+        var batches = sections.Chunk(maxDegreeOfParallelism);
 
         // Process each batch of paragraphs.
         foreach (var batch in batches)
@@ -40,7 +42,7 @@ internal sealed class DataLoader<TKey>(
                 Text = section.ParagraphText,
                 ReferenceDescription = $"{new FileInfo(pdfPath).Name}#page={section.PageNumber}",
                 ReferenceLink = $"{new Uri(new FileInfo(pdfPath).FullName).AbsoluteUri}#page={section.PageNumber}",
-                TextEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(section.ParagraphText, cancellationToken: cancellationToken).ConfigureAwait(false)
+                TextEmbedding = await GenerateEmbeddingsWithRetryAsync(textEmbeddingGenerationService, section.ParagraphText, cancellationToken: cancellationToken).ConfigureAwait(false)
             });
 
             // Upsert the records into the vector store.
@@ -50,6 +52,8 @@ internal sealed class DataLoader<TKey>(
             {
                 Console.WriteLine($"Upserted record '{key}' into VectorDB");
             }
+
+            await Task.Delay(betweenBatchDelayInMs, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -79,6 +83,41 @@ internal sealed class DataLoader<TKey>(
                     }
 
                     yield return (ParagraphText: block.Text, PageNumber: page.Number);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Add a simple retry mechanism to embedding generation.
+    /// </summary>
+    /// <param name="textEmbeddingGenerationService">The embedding generation service.</param>
+    /// <param name="text">The text to generate the embedding for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>The generated embedding.</returns>
+    private static async Task<ReadOnlyMemory<float>> GenerateEmbeddingsWithRetryAsync(ITextEmbeddingGenerationService textEmbeddingGenerationService, string text, CancellationToken cancellationToken)
+    {
+        var tries = 0;
+
+        while (true)
+        {
+            try
+            {
+                return await textEmbeddingGenerationService.GenerateEmbeddingAsync(text, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+            catch (HttpOperationException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                tries++;
+
+                if (tries < 3)
+                {
+                    Console.WriteLine($"Failed to generate embedding. Error: {ex}");
+                    Console.WriteLine("Retrying embedding generation...");
+                    await Task.Delay(10_000, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    throw;
                 }
             }
         }
