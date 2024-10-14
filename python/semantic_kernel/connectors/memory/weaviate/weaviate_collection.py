@@ -50,8 +50,8 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
     def __init__(
         self,
         data_model_type: type[TModel],
+        data_model_definition: VectorStoreRecordDefinition,
         collection_name: str,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
         url: str | None = None,
         api_key: str | None = None,
         local_host: str | None = None,
@@ -66,8 +66,8 @@ class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
 
         Args:
             data_model_type: The type of the data model.
-            collection_name: The name of the collection.
             data_model_definition: The definition of the data model.
+            collection_name: The name of the collection.
             url: The Weaviate URL
             api_key: The Weaviate API key.
             local_host: The local Weaviate host (i.e. Weaviate in a Docker container).
