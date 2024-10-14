@@ -106,8 +106,8 @@ class WeaviateStore(VectorStore):
         if collection_name not in self.vector_record_collections:
             self.vector_record_collections[collection_name] = WeaviateCollection(
                 data_model_type=data_model_type,
-                data_model_definition=data_model_definition,
                 collection_name=collection_name,
+                data_model_definition=data_model_definition,
                 async_client=self.async_client,
                 **kwargs,
             )
