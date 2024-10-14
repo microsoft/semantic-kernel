@@ -2,9 +2,9 @@
 
 using System.Diagnostics;
 using System.IO;
-using Xunit.Abstractions;
-using Xunit;
 using System.Text;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace SemanticKernel.UnitTests;
 public class AotCompatibilityTests(ITestOutputHelper output)
