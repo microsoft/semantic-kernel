@@ -32,17 +32,17 @@ public static class SqliteKernelBuilderExtensions
     /// Register a SQLite <see cref="IVectorStore"/> with the specified service ID.
     /// </summary>
     /// <param name="builder">The builder to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Kernel builder.</returns>
     public static IKernelBuilder AddSqliteVectorStore(
         this IKernelBuilder builder,
-        SqliteConnection connection,
+        string connectionString,
         SqliteVectorStoreOptions? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddSqliteVectorStore(connection, options, serviceId);
+        builder.Services.AddSqliteVectorStore(connectionString, options, serviceId);
         return builder;
     }
 
@@ -76,20 +76,20 @@ public static class SqliteKernelBuilderExtensions
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="builder">The builder to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Kernel builder.</returns>
     public static IKernelBuilder AddSqliteVectorStoreRecordCollection<TKey, TRecord>(
         this IKernelBuilder builder,
         string collectionName,
-        SqliteConnection connection,
+        string connectionString,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : class
     {
-        builder.Services.AddSqliteVectorStoreRecordCollection<TKey, TRecord>(collectionName, connection, options, serviceId);
+        builder.Services.AddSqliteVectorStoreRecordCollection<TKey, TRecord>(collectionName, connectionString, options, serviceId);
         return builder;
     }
 }

@@ -38,7 +38,7 @@ public sealed class SqliteKernelBuilderExtensionsTests
     public void AddVectorStoreWithSqliteConnectionRegistersClass()
     {
         // Act
-        this._kernelBuilder.AddSqliteVectorStore(Mock.Of<SqliteConnection>());
+        this._kernelBuilder.AddSqliteVectorStore("Data Source=:test:");
 
         var kernel = this._kernelBuilder.Build();
         var vectorStore = kernel.Services.GetRequiredService<IVectorStore>();
@@ -94,7 +94,7 @@ public sealed class SqliteKernelBuilderExtensionsTests
     public void AddVectorStoreRecordCollectionWithStringKeyAndSqliteConnectionRegistersClass()
     {
         // Act
-        this._kernelBuilder.AddSqliteVectorStoreRecordCollection<string, TestRecord>("testcollection", Mock.Of<SqliteConnection>());
+        this._kernelBuilder.AddSqliteVectorStoreRecordCollection<string, TestRecord>("testcollection", "Data Source=:test:");
 
         var kernel = this._kernelBuilder.Build();
 
@@ -112,7 +112,7 @@ public sealed class SqliteKernelBuilderExtensionsTests
     public void AddVectorStoreRecordCollectionWithNumericKeyAndSqliteConnectionRegistersClass()
     {
         // Act
-        this._kernelBuilder.AddSqliteVectorStoreRecordCollection<ulong, TestRecord>("testcollection", Mock.Of<SqliteConnection>());
+        this._kernelBuilder.AddSqliteVectorStoreRecordCollection<ulong, TestRecord>("testcollection", "Data Source=:test:");
 
         var kernel = this._kernelBuilder.Build();
 

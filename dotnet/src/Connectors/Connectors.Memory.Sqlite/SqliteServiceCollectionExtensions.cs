@@ -42,20 +42,25 @@ public static class SqliteServiceCollectionExtensions
     /// Register a SQLite <see cref="IVectorStore"/> with the specified service ID.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddSqliteVectorStore(
         this IServiceCollection services,
-        SqliteConnection connection,
+        string connectionString,
         SqliteVectorStoreOptions? options = default,
         string? serviceId = default)
     {
-        services.AddKeyedTransient<IVectorStore>(
+        services.AddKeyedSingleton<IVectorStore>(
             serviceId,
             (sp, obj) =>
             {
+                var connection = new SqliteConnection(connectionString);
+                var extensionName = GetExtensionName(options?.VectorSearchExtensionName);
+
+                connection.LoadExtension(extensionName);
+
                 var selectedOptions = options ?? sp.GetService<SqliteVectorStoreOptions>();
                 return new SqliteVectorStore(connection, options);
             });
@@ -104,14 +109,14 @@ public static class SqliteServiceCollectionExtensions
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddSqliteVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
-        SqliteConnection connection,
+        string connectionString,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
@@ -121,6 +126,11 @@ public static class SqliteServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
+                var connection = new SqliteConnection(connectionString);
+                var extensionName = GetExtensionName(options?.VectorSearchExtensionName);
+
+                connection.LoadExtension(extensionName);
+
                 var selectedOptions = options ?? sp.GetService<SqliteVectorStoreRecordCollectionOptions<TRecord>>();
 
                 return (new SqliteVectorStoreRecordCollection<TRecord>(connection, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
@@ -148,5 +158,13 @@ public static class SqliteServiceCollectionExtensions
             {
                 return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<TKey, TRecord>>(serviceId);
             });
+    }
+
+    /// <summary>
+    /// Returns extension name for vector search.
+    /// </summary>
+    private static string GetExtensionName(string? extensionName)
+    {
+        return !string.IsNullOrWhiteSpace(extensionName) ? extensionName! : SqliteConstants.VectorSearchExtensionName;
     }
 }

@@ -38,7 +38,7 @@ public sealed class SqliteServiceCollectionExtensionsTests
     public void AddVectorStoreWithSqliteConnectionRegistersClass()
     {
         // Act
-        this._serviceCollection.AddSqliteVectorStore(Mock.Of<SqliteConnection>());
+        this._serviceCollection.AddSqliteVectorStore("Data Source=:test:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
         var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
@@ -94,7 +94,7 @@ public sealed class SqliteServiceCollectionExtensionsTests
     public void AddVectorStoreRecordCollectionWithStringKeyAndSqliteConnectionRegistersClass()
     {
         // Act
-        this._serviceCollection.AddSqliteVectorStoreRecordCollection<string, TestRecord>("testcollection", Mock.Of<SqliteConnection>());
+        this._serviceCollection.AddSqliteVectorStoreRecordCollection<string, TestRecord>("testcollection", "Data Source=:test:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
@@ -112,7 +112,7 @@ public sealed class SqliteServiceCollectionExtensionsTests
     public void AddVectorStoreRecordCollectionWithNumericKeyAndSqliteConnectionRegistersClass()
     {
         // Act
-        this._serviceCollection.AddSqliteVectorStoreRecordCollection<ulong, TestRecord>("testcollection", Mock.Of<SqliteConnection>());
+        this._serviceCollection.AddSqliteVectorStoreRecordCollection<ulong, TestRecord>("testcollection", "Data Source=:test:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
