@@ -11,7 +11,6 @@ public class AotCompatibilityTests(ITestOutputHelper output)
 {
     /// <summary>
     /// The test verifies that SK Native-AOT compatible packages don't have issues by analyzing warnings emitted by the AOT compiler while publishing the `samples/Demos/AotCompatibility.TestApp` application.
-    /// (TBD)It also executes the application to run several test samples from each of the Native-AOT enabled packages and checks their results.
     ///
     /// If this test fails, it is due to adding Native-AOT incompatible changes to SK Native-AOT compatible packages or their dependencies.
     ///
