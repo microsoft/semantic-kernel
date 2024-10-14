@@ -191,7 +191,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
 
         var (command, whereClause) = this.GetCommandWithWhereClause(conditions);
 
-        builder.AppendLine($"DELETE FROM {tableName}");
+        builder.AppendLine($"DELETE FROM [{tableName}]");
 
         AppendWhereClauseIfExists(builder, whereClause);
 
