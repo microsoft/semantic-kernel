@@ -29,6 +29,9 @@
     },
     {
       "pattern": "^https://outlook.office.com/bookings"
+    },
+    {
+      "pattern": "^https://arxiv.org"
     }
   ],
   "timeout": "20s",
