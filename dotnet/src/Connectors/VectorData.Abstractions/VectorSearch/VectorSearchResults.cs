@@ -10,7 +10,6 @@ namespace Microsoft.Extensions.VectorData;
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
 /// <param name="results">The list of records returned by the search operation.</param>
 public class VectorSearchResults<TRecord>(IAsyncEnumerable<VectorSearchResult<TRecord>> results)
-    where TRecord : class
 {
     /// <summary>
     /// The total count of results found by the search operation, or null

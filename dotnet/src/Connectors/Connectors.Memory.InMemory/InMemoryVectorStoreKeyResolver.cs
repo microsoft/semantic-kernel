@@ -8,5 +8,4 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// <param name="record">The record to look up the key for.</param>
 /// <returns>The record key.</returns>
 public delegate TKey? InMemoryVectorStoreKeyResolver<TKey, TRecord>(TRecord record)
-    where TKey : notnull
-    where TRecord : class;
+    where TKey : notnull;

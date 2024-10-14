@@ -20,7 +20,6 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
-    where TRecord : class
 {
     /// <summary>A set of types that vectors on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedVectorTypes =
@@ -145,10 +144,10 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (collectionDictionary.TryGetValue(key, out var record))
         {
-            return Task.FromResult<TRecord?>(record as TRecord);
+            return Task.FromResult<TRecord?>((TRecord?)record);
         }
 
-        return Task.FromResult<TRecord?>(null);
+        return Task.FromResult<TRecord?>(default);
     }
 
     /// <inheritdoc />
@@ -190,6 +189,8 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(record);
+
         var collectionDictionary = this.GetCollectionDictionary();
 
         var key = (TKey)this._keyResolver(record)!;

@@ -64,7 +64,6 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         string collectionName,
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         builder.Services.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
         return builder;
@@ -89,7 +88,6 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         string databaseName,
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         builder.Services.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(collectionName, connectionString, databaseName, options, serviceId);
         return builder;

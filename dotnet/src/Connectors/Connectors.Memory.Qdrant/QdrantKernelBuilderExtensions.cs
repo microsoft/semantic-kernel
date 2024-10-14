@@ -57,7 +57,6 @@ public static class QdrantKernelBuilderExtensions
         QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         builder.Services.AddQdrantVectorStoreRecordCollection<TKey, TRecord>(collectionName, options, serviceId);
         return builder;
@@ -88,7 +87,6 @@ public static class QdrantKernelBuilderExtensions
         QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         builder.Services.AddQdrantVectorStoreRecordCollection<TKey, TRecord>(collectionName, host, port, https, apiKey, options, serviceId);
         return builder;

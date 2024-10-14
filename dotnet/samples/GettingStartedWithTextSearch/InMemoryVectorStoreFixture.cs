@@ -98,7 +98,7 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
     /// </summary>
     /// <typeparam name="TKey">Type of the record key.</typeparam>
     /// <typeparam name="TRecord">Type of the record.</typeparam>
-    internal delegate TRecord CreateRecord<TKey, TRecord>(int index, string text, ReadOnlyMemory<float> vector) where TKey : notnull where TRecord : class;
+    internal delegate TRecord CreateRecord<TKey, TRecord>(int index, string text, ReadOnlyMemory<float> vector) where TKey : notnull;
 
     /// <summary>
     /// Create a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings by:
@@ -113,7 +113,6 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
         string[] entries,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
-        where TRecord : class
     {
         // Get and create collection if it doesn't exist.
         var collection = this.InMemoryVectorStore.GetCollection<TKey, TRecord>(this.CollectionName);
