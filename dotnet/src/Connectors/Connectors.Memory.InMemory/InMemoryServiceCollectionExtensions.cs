@@ -42,7 +42,6 @@ public static class InMemoryServiceCollectionExtensions
         InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<TKey, TRecord>>(
             serviceId,

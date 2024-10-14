@@ -17,7 +17,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TRecord : class
 {
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
@@ -231,8 +230,11 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 
         await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            yield return result.Record;
-            await Task.Yield();
+            if (result.Record is not null)
+            {
+                yield return result.Record;
+                await Task.Yield();
+            }
         }
     }
 
@@ -250,8 +252,11 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 
         await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            yield return this._resultMapper.MapFromResultToTextSearchResult(result.Record);
-            await Task.Yield();
+            if (result.Record is not null)
+            {
+                yield return this._resultMapper.MapFromResultToTextSearchResult(result.Record);
+                await Task.Yield();
+            }
         }
     }
 
@@ -269,8 +274,11 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 
         await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            yield return this._stringMapper.MapFromResultToString(result.Record);
-            await Task.Yield();
+            if (result.Record is not null)
+            {
+                yield return this._stringMapper.MapFromResultToString(result.Record);
+                await Task.Yield();
+            }
         }
     }
 

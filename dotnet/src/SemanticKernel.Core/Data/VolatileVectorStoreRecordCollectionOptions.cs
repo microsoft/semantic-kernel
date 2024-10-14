@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Obsolete("This has been replaced by InMemoryVectorStoreRecordCollectionOptions in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     where TKey : notnull
-    where TRecord : class
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

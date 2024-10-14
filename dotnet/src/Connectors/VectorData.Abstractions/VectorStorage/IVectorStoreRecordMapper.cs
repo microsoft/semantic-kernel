@@ -8,7 +8,6 @@ namespace Microsoft.Extensions.VectorData;
 /// <typeparam name="TRecordDataModel">The consumer record data model to map to or from.</typeparam>
 /// <typeparam name="TStorageModel">The storage model to map to or from.</typeparam>
 public interface IVectorStoreRecordMapper<TRecordDataModel, TStorageModel>
-    where TRecordDataModel : class
 {
     /// <summary>
     /// Map from the consumer record data model to the storage model.
