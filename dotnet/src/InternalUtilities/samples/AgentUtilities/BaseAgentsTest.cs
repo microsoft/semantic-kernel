@@ -6,7 +6,10 @@ using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 using OpenAI.Files;
+
+using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 
 /// <summary>
 /// Base class for samples that demonstrate the usage of agents.
@@ -78,9 +81,26 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                 Console.WriteLine($"  [{item.GetType().Name}] {functionResult.CallId}");
             }
         }
+
+        if (message.Metadata?.TryGetValue("Usage", out object? usage) ?? false)
+        {
+            if (usage is RunStepTokenUsage assistantUsage)
+            {
+                WriteUsage(assistantUsage.TotalTokenCount, assistantUsage.InputTokenCount, assistantUsage.OutputTokenCount);
+            }
+            else if (usage is ChatTokenUsage chatUsage)
+            {
+                WriteUsage(chatUsage.TotalTokenCount, chatUsage.InputTokenCount, chatUsage.OutputTokenCount);
+            }
+        }
+
+        void WriteUsage(int totalTokens, int inputTokens, int outputTokens)
+        {
+            Console.WriteLine($"  [Usage] Tokens: {totalTokens}, Input: {inputTokens}, Output: {outputTokens}");
+        }
     }
 
-    protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
+    protected async Task DownloadResponseContentAsync(OpenAIFileClient client, ChatMessageContent message)
     {
         foreach (KernelContent item in message.Items)
         {
@@ -91,7 +111,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
-    protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
+    protected async Task DownloadResponseImageAsync(OpenAIFileClient client, ChatMessageContent message)
     {
         foreach (KernelContent item in message.Items)
         {
@@ -102,10 +122,10 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
-    private async Task DownloadFileContentAsync(FileClient client, string fileId, bool launchViewer = false)
+    private async Task DownloadFileContentAsync(OpenAIFileClient client, string fileId, bool launchViewer = false)
     {
-        OpenAIFileInfo fileInfo = client.GetFile(fileId);
-        if (fileInfo.Purpose == OpenAIFilePurpose.AssistantsOutput)
+        OpenAIFile fileInfo = client.GetFile(fileId);
+        if (fileInfo.Purpose == FilePurpose.AssistantsOutput)
         {
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
             if (launchViewer)

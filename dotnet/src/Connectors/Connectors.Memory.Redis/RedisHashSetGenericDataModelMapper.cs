@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -107,6 +107,7 @@ internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<Vec
                 var convertedValue = Convert.ChangeType(hashEntry.Value, typeOrNullableType);
                 dataModel.Data.Add(dataProperty.DataModelPropertyName, convertedValue);
             }
+
             // Map vector properties
             else if (property is VectorStoreRecordVectorProperty vectorProperty)
             {

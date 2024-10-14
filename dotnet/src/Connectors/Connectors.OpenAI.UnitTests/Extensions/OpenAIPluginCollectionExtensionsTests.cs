@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -22,7 +23,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin");
         var plugins = new KernelPluginCollection([plugin]);
 
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", args);
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", BinaryData.FromString(args));
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -42,7 +43,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         var plugins = new KernelPluginCollection([plugin]);
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", args);
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", BinaryData.FromString(args));
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -61,7 +62,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         var plugins = new KernelPluginCollection([plugin]);
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}");
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", BinaryData.FromString("{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}"));
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);

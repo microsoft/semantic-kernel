@@ -40,6 +40,12 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
         return this.Response.Select(m => new StreamingChatMessageContent(m.Role, m.Content)).ToAsyncEnumerable();
     }
 
+    // Expose protected method for testing
+    public new KernelArguments? MergeArguments(KernelArguments? arguments)
+    {
+        return base.MergeArguments(arguments);
+    }
+
     protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         ChatHistory history =

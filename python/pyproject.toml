@@ -73,7 +73,8 @@ hugging_face = [
     "torch == 2.4.1"
 ]
 mongo = [
-    "motor >= 3.3.2,< 3.7.0"
+    "pymongo >= 4.8.0, < 4.9",
+    "motor >= 3.3.2,< 3.6.0"
 ]
 notebooks = [
     "ipykernel ~= 6.29"
@@ -87,6 +88,9 @@ mistralai = [
 ]
 ollama = [
     "ollama ~= 0.2"
+]
+onnx = [
+    "onnxruntime-genai ~= 0.4; platform_system != 'Darwin'"
 ]
 anthropic = [
     "anthropic ~= 0.32"
@@ -113,6 +117,9 @@ weaviate = [
 ]
 pandas = [
     "pandas ~= 2.2"
+]
+aws = [
+    "boto3>=1.28.57",
 ]
 
 [tool.uv]

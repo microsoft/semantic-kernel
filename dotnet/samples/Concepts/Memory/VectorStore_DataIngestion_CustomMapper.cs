@@ -2,10 +2,11 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Azure.Identity;
 using Memory.VectorStoreFixtures;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using StackExchange.Redis;
 
@@ -58,7 +59,7 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+                new AzureCliCredential());
 
         // Initiate the docker container and construct the vector store using the custom factory for creating collections.
         await redisFixture.ManualInitializeAsync();
@@ -135,7 +136,6 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
     {
         public IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(IDatabase database, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
             where TKey : notnull
-            where TRecord : class
         {
             // If the record definition is the glossary definition and the record type is the generic data model, inject the custom mapper into the collection options.
             if (vectorStoreRecordDefinition == s_glossaryDefinition && typeof(TRecord) == typeof(GenericDataModel))

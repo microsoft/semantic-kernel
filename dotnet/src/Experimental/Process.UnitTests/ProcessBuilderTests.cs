@@ -2,7 +2,7 @@
 
 using Xunit;
 
-namespace Microsoft.SemanticKernel.UnitTests;
+namespace Microsoft.SemanticKernel.Process.UnitTests;
 
 /// <summary>
 /// Unit tests for the ProcessBuilder class.
@@ -73,7 +73,7 @@ public class ProcessBuilderTests
         var processBuilder = new ProcessBuilder(ProcessName);
 
         // Act
-        var edgeBuilder = processBuilder.OnExternalEvent(EventId);
+        var edgeBuilder = processBuilder.OnInputEvent(EventId);
 
         // Assert
         Assert.NotNull(edgeBuilder);

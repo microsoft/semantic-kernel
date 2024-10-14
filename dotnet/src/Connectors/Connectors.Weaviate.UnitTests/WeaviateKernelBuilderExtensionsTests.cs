@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
-using Microsoft.SemanticKernel.Data;
 using Moq;
 using Xunit;
 
@@ -32,5 +33,35 @@ public sealed class WeaviateKernelBuilderExtensionsTests
         // Assert
         Assert.NotNull(vectorStore);
         Assert.IsType<WeaviateVectorStore>(vectorStore);
+    }
+
+    [Fact]
+    public void AddWeaviateVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange
+        using var httpClient = new HttpClient() { BaseAddress = new Uri("http://localhost") };
+        this._kernelBuilder.Services.AddSingleton<HttpClient>(httpClient);
+
+        // Act
+        this._kernelBuilder.AddWeaviateVectorStoreRecordCollection<TestRecord>("testcollection");
+
+        var kernel = this._kernelBuilder.Build();
+
+        // Assert
+        var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<Guid, TestRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<WeaviateVectorStoreRecordCollection<TestRecord>>(collection);
+
+        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        Assert.NotNull(vectorizedSearch);
+        Assert.IsType<WeaviateVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestRecord
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public Guid Id { get; set; }
     }
 }
