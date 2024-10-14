@@ -18,9 +18,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
 
     public SqliteVectorStoreCollectionCommandBuilderTests()
     {
-        var parameterCollection = new FakeDbParameterCollection();
-
-        this._command = new(parameterCollection: parameterCollection);
+        this._command = new();
         this._connection = new(this._command);
         this._commandBuilder = new(this._connection);
     }
