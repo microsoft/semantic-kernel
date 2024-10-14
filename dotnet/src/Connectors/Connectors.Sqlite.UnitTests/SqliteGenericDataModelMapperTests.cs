@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
@@ -30,7 +31,11 @@ public sealed class SqliteGenericDataModelMapperTests
         Assert.Equal("key", result["Key"]);
         Assert.Equal("Value1", result["StringProperty"]);
         Assert.Equal(5, result["IntProperty"]);
-        Assert.Equal("[1.1, 2.2, 3.3, 4.4]", result["FloatVector"]);
+
+        var vectorBytes = result["FloatVector"] as byte[];
+
+        Assert.NotNull(vectorBytes);
+        Assert.True(vectorBytes.Length > 0);
     }
 
     [Fact]
@@ -50,7 +55,11 @@ public sealed class SqliteGenericDataModelMapperTests
         Assert.Equal((ulong)1, result["Key"]);
         Assert.Equal("Value1", result["StringProperty"]);
         Assert.Equal(5, result["IntProperty"]);
-        Assert.Equal("[1.1, 2.2, 3.3, 4.4]", result["FloatVector"]);
+
+        var vectorBytes = result["FloatVector"] as byte[];
+
+        Assert.NotNull(vectorBytes);
+        Assert.True(vectorBytes.Length > 0);
     }
 
     [Theory]
@@ -60,13 +69,14 @@ public sealed class SqliteGenericDataModelMapperTests
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f]);
+        var storageVector = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
         var storageModel = new Dictionary<string, object?>
         {
             ["Key"] = "key",
             ["StringProperty"] = "Value1",
             ["IntProperty"] = 5,
-            ["FloatVector"] = vector
+            ["FloatVector"] = storageVector
         };
 
         var definition = GetRecordDefinition<string>();
@@ -100,13 +110,14 @@ public sealed class SqliteGenericDataModelMapperTests
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f]);
+        var storageVector = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
         var storageModel = new Dictionary<string, object?>
         {
             ["Key"] = (ulong)1,
             ["StringProperty"] = "Value1",
             ["IntProperty"] = 5,
-            ["FloatVector"] = vector
+            ["FloatVector"] = storageVector
         };
 
         var definition = GetRecordDefinition<ulong>();

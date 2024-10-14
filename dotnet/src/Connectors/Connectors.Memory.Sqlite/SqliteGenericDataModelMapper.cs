@@ -25,6 +25,10 @@ internal sealed class SqliteGenericDataModelMapper :
         Verify.NotNull(propertyReader);
 
         this._propertyReader = propertyReader;
+
+        // Validate property types.
+        this._propertyReader.VerifyDataProperties(SqliteConstants.SupportedDataTypes, supportEnumerable: false);
+        this._propertyReader.VerifyVectorProperties(SqliteConstants.SupportedVectorTypes);
     }
 
     #region Implementation of IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, Dictionary<string, object?>>
@@ -90,7 +94,7 @@ internal sealed class SqliteGenericDataModelMapper :
                     if (vectorValue is not null)
                     {
                         var vector = (ReadOnlyMemory<float>)vectorValue;
-                        result = SqliteVectorStoreRecordPropertyMapping.MapVector(vector);
+                        result = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
                     }
 
                     properties.Add(this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName), result);
@@ -132,9 +136,11 @@ internal sealed class SqliteGenericDataModelMapper :
         {
             foreach (var property in this._propertyReader.VectorProperties)
             {
-                if (storageModel.TryGetValue(this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName), out var vectorValue))
+                if (storageModel.TryGetValue(this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName), out var vectorValue) &&
+                    vectorValue is byte[] vectorBytes)
                 {
-                    vectorProperties.Add(property.DataModelPropertyName, vectorValue);
+                    var vector = SqliteVectorStoreRecordPropertyMapping.MapVectorForDataModel(vectorBytes);
+                    vectorProperties.Add(property.DataModelPropertyName, vector);
                 }
             }
         }

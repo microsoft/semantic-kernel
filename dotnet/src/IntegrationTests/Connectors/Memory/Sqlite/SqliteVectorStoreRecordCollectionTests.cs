@@ -120,7 +120,6 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.Equal(record.HotelRating, getResult.HotelRating);
         Assert.Equal(record.ParkingIncluded, getResult.ParkingIncluded);
         Assert.Equal(record.Description, getResult.Description);
-        Assert.Equal(record.Timestamp, getResult.Timestamp);
 
         if (includeVectors)
         {
@@ -391,7 +390,6 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
                 { "HotelName", "Generic Mapper Hotel" },
                 { "Description", "This is a generic mapper hotel" },
                 { "ParkingIncluded", true },
-                { "Timestamp", new DateTime(1970, 1, 18, 0, 0, 0) },
                 { "HotelRating", 3.6f }
             },
             Vectors =
@@ -409,7 +407,6 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
         Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
         Assert.True((bool?)localGetResult.Data["ParkingIncluded"]);
-        Assert.Equal(new DateTime(1970, 1, 18, 0, 0, 0), localGetResult.Data["Timestamp"]);
         Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
     }
@@ -439,7 +436,6 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
                 { "HotelName", "Generic Mapper Hotel" },
                 { "Description", "This is a generic mapper hotel" },
                 { "ParkingIncluded", true },
-                { "Timestamp", new DateTime(1970, 1, 18, 0, 0, 0) },
                 { "HotelRating", 3.6f }
             },
             Vectors =
@@ -457,7 +453,6 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
         Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
         Assert.True((bool?)localGetResult.Data["ParkingIncluded"]);
-        Assert.Equal(new DateTime(1970, 1, 18, 0, 0, 0), localGetResult.Data["Timestamp"]);
         Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
     }
@@ -473,7 +468,6 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
             new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
             new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
-            new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
             new VectorStoreRecordDataProperty("Description", typeof(string)),
             new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
         ]
@@ -489,7 +483,6 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             HotelRating = 4.5f,
             ParkingIncluded = true,
             Description = "This is a great hotel.",
-            Timestamp = new DateTime(2024, 09, 23, 15, 32, 33),
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
         };
     }

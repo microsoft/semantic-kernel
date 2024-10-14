@@ -31,10 +31,6 @@ public record SqliteHotel<TKey>()
     [VectorStoreRecordData]
     public string? Description { get; set; }
 
-    /// <summary>A datetime metadata field.</summary>
-    [VectorStoreRecordData]
-    public DateTime Timestamp { get; set; }
-
     /// <summary>A vector field.</summary>
     [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }

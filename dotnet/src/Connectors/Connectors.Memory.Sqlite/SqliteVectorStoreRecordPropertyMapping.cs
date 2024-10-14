@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 internal static class SqliteVectorStoreRecordPropertyMapping
 {
-    public static byte[] MapVector<TVector>(TVector vector)
+    public static byte[] MapVectorForStorageModel<TVector>(TVector vector)
     {
         if (vector is ReadOnlyMemory<float> memoryFloat)
         {
@@ -27,6 +27,12 @@ internal static class SqliteVectorStoreRecordPropertyMapping
         }
 
         throw new NotSupportedException($"Mapping for type {typeof(TVector).FullName} to a vector is not supported.");
+    }
+
+    public static ReadOnlyMemory<float> MapVectorForDataModel(byte[] byteArray)
+    {
+        var array = MemoryMarshal.Cast<byte, float>(byteArray).ToArray();
+        return new ReadOnlyMemory<float>(array);
     }
 
     public static List<SqliteColumn> GetColumns(
@@ -98,21 +104,14 @@ internal static class SqliteVectorStoreRecordPropertyMapping
             Type t when t == typeof(float) || t == typeof(float?) => reader.GetFloat(propertyIndex),
             Type t when t == typeof(double) || t == typeof(double?) => reader.GetDouble(propertyIndex),
             Type t when t == typeof(decimal) || t == typeof(decimal?) => reader.GetDecimal(propertyIndex),
-            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => reader.GetDateTime(propertyIndex),
             Type t when t == typeof(string) => reader.GetString(propertyIndex),
             Type t when t == typeof(byte[]) => (byte[])reader[propertyName],
-            Type t when t == typeof(ReadOnlyMemory<float>) || t == typeof(ReadOnlyMemory<float>?) => GetReadOnlyMemory((byte[])reader[propertyName]),
+            Type t when t == typeof(ReadOnlyMemory<float>) || t == typeof(ReadOnlyMemory<float>?) => (byte[])reader[propertyName],
             _ => throw new NotSupportedException($"Unsupported type: {propertyType} for property: {propertyName}")
         };
     }
 
     #region private
-
-    private static ReadOnlyMemory<float> GetReadOnlyMemory(byte[] byteArray)
-    {
-        var array = MemoryMarshal.Cast<byte, float>(byteArray).ToArray();
-        return new ReadOnlyMemory<float>(array);
-    }
 
     private static string GetStorageDataPropertyType(VectorStoreRecordProperty property)
     {
@@ -138,9 +137,6 @@ internal static class SqliteVectorStoreRecordPropertyMapping
 
             // Byte array (BLOB)
             Type t when t == typeof(byte[]) => "BLOB",
-
-            // DateTime types - use ISO 8601 string for datetimes
-            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => "TEXT",
 
             // Default fallback for unknown types
             _ => throw new NotSupportedException($"Property {property.DataModelPropertyName} has type {property.PropertyType.FullName}, which is not supported by SQLite connector.")

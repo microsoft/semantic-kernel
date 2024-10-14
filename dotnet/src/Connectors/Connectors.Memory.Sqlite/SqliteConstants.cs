@@ -43,8 +43,6 @@ internal static class SqliteConstants
         typeof(decimal),
         typeof(decimal?),
         typeof(byte[]),
-        typeof(DateTime),
-        typeof(DateTime?)
     ];
 
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>

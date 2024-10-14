@@ -27,6 +27,10 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         this._propertyReader = propertyReader;
 
         this._propertyReader.VerifyHasParameterlessConstructor();
+
+        // Validate property types.
+        this._propertyReader.VerifyDataProperties(SqliteConstants.SupportedDataTypes, supportEnumerable: false);
+        this._propertyReader.VerifyVectorProperties(SqliteConstants.SupportedVectorTypes);
     }
 
     public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
@@ -52,7 +56,7 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
             if (propertyValue is not null)
             {
                 var vector = (ReadOnlyMemory<float>)propertyValue;
-                result = SqliteVectorStoreRecordPropertyMapping.MapVector(vector);
+                result = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
             }
 
             properties.Add(this._propertyReader.GetStoragePropertyName(property.Name), result);
@@ -86,7 +90,9 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
             var vectorPropertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
                 this._propertyReader.VectorPropertiesInfo,
                 this._propertyReader.StoragePropertyNamesMap,
-                storageModel);
+                storageModel,
+                (object? vector, Type type) => vector is byte[] vectorBytes ?
+                    SqliteVectorStoreRecordPropertyMapping.MapVectorForDataModel(vectorBytes) : null);
 
             VectorStoreRecordMapping.SetPropertiesOnRecord(record, vectorPropertiesInfoWithValues);
         }

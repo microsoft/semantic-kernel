@@ -101,8 +101,6 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         // Validate property types.
         this._propertyReader.VerifyKeyProperties(SqliteConstants.SupportedKeyTypes);
-        this._propertyReader.VerifyDataProperties(SqliteConstants.SupportedDataTypes, supportEnumerable: false);
-        this._propertyReader.VerifyVectorProperties(SqliteConstants.SupportedVectorTypes);
 
         this._vectorPropertiesExist = this._propertyReader.VectorProperties.Count > 0;
 
@@ -184,7 +182,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
             throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
         }
 
-        var mappedArray = SqliteVectorStoreRecordPropertyMapping.MapVector(vector);
+        var mappedArray = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
