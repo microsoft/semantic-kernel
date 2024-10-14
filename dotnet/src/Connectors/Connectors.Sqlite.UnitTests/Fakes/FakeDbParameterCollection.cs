@@ -7,6 +7,8 @@ using System.Data.Common;
 
 namespace SemanticKernel.Connectors.Sqlite.UnitTests;
 
+#pragma warning disable CA1812
+
 internal sealed class FakeDbParameterCollection : DbParameterCollection
 {
     private readonly List<object> _parameters = [];
