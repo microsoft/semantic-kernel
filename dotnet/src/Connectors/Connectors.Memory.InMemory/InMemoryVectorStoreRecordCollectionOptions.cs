@@ -11,7 +11,6 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data on the collection that this options will be used with.</typeparam>
 public sealed class InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>
     where TKey : notnull
-    where TRecord : class
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

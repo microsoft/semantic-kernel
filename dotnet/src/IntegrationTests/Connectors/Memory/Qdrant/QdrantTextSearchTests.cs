@@ -16,51 +16,6 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant;
 [Collection("QdrantVectorStoreCollection")]
 public class QdrantTextSearchTests(QdrantVectorStoreFixture fixture) : BaseVectorStoreTextSearchTests
 {
-    // If null, all tests will be enabled
-    private const string SkipReason = "Failing in integration test pipeline so disabling while investigating a fix (Issue 9168)";
-
-    [Fact(Skip = SkipReason)]
-    public override async Task CanSearchAsync()
-    {
-        await base.CanSearchAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task CanGetTextSearchResultsAsync()
-    {
-        await base.CanGetTextSearchResultsAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task CanGetSearchResultsAsync()
-    {
-        await base.CanGetSearchResultsAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task UsingTextSearchWithAFilterAsync()
-    {
-        await base.UsingTextSearchWithAFilterAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task FunctionCallingUsingCreateWithSearchAsync()
-    {
-        await base.FunctionCallingUsingCreateWithSearchAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task FunctionCallingUsingCreateWithGetSearchResultsAsync()
-    {
-        await base.FunctionCallingUsingCreateWithGetSearchResultsAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task FunctionCallingUsingGetTextSearchResultsAsync()
-    {
-        await base.FunctionCallingUsingGetTextSearchResultsAsync();
-    }
-
     /// <inheritdoc/>
     public override Task<ITextSearch> CreateTextSearchAsync()
     {

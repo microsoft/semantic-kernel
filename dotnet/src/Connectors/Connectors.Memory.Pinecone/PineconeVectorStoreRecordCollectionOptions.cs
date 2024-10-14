@@ -9,7 +9,6 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// Options when creating a <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
 public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
-    where TRecord : class
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Pinecone vector.
