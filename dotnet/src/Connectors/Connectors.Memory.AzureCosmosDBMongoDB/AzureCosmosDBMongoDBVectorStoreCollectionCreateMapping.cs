@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -112,7 +112,9 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
     /// </summary>
     private static string GetIndexKind(string? indexKind, string vectorPropertyName)
     {
-        return indexKind switch
+        var vectorPropertyIndexKind = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetVectorPropertyIndexKind(indexKind);
+
+        return vectorPropertyIndexKind switch
         {
             IndexKind.Hnsw => "vector-hnsw",
             IndexKind.IvfFlat => "vector-ivf",
@@ -125,7 +127,9 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
     /// </summary>
     private static string GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
     {
-        return distanceFunction switch
+        var vectorPropertyDistanceFunction = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetVectorPropertyDistanceFunction(distanceFunction);
+
+        return vectorPropertyDistanceFunction switch
         {
             DistanceFunction.CosineDistance => "COS",
             DistanceFunction.DotProductSimilarity => "IP",

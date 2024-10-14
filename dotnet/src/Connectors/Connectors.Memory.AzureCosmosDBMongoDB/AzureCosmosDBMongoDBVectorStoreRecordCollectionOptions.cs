@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// Options when creating a <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
-public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord> where TRecord : class
+public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Azure CosmosDB MongoDB BSON object.

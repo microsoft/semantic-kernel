@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
-using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
 using Xunit;
 

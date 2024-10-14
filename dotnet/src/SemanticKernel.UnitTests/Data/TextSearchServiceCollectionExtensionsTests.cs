@@ -2,7 +2,9 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
@@ -15,7 +17,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     {
         // Arrange
         var services = new ServiceCollection();
-        var vectorStore = new VolatileVectorStore();
+        var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
@@ -38,7 +40,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     {
         // Arrange
         var services = new ServiceCollection();
-        var vectorStore = new VolatileVectorStore();
+        var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();

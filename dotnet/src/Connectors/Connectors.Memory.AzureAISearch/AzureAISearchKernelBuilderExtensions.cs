@@ -4,8 +4,8 @@ using System;
 using Azure;
 using Azure.Core;
 using Azure.Search.Documents.Indexes;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 
@@ -72,7 +72,6 @@ public static class AzureAISearchKernelBuilderExtensions
         string collectionName,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-            where TRecord : class
     {
         builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
         return builder;
@@ -97,7 +96,6 @@ public static class AzureAISearchKernelBuilderExtensions
         TokenCredential tokenCredential,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-            where TRecord : class
     {
         builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, endpoint, tokenCredential, options, serviceId);
         return builder;
@@ -122,7 +120,6 @@ public static class AzureAISearchKernelBuilderExtensions
         AzureKeyCredential credential,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-            where TRecord : class
     {
         builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, endpoint, credential, options, serviceId);
         return builder;

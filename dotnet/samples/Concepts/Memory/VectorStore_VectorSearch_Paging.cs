@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 
 namespace Memory;
 
@@ -8,7 +9,7 @@ namespace Memory;
 /// An example showing how to do paging when there are many records in the database and you want to page through these page by page.
 ///
 /// The example shows the following steps:
-/// 1. Create a Volatile Vector Store.
+/// 1. Create an InMemory Vector Store.
 /// 2. Generate and add some test data entries.
 /// 3. Read the data back using vector search by paging through the results page by page.
 /// </summary>
@@ -17,8 +18,8 @@ public class VectorStore_VectorSearch_Paging(ITestOutputHelper output) : BaseTes
     [Fact]
     public async Task VectorSearchWithPagingAsync()
     {
-        // Construct a volatile vector store.
-        var vectorStore = new VolatileVectorStore();
+        // Construct an InMemory vector store.
+        var vectorStore = new InMemoryVectorStore();
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<int, TextSnippet>("skglossary");

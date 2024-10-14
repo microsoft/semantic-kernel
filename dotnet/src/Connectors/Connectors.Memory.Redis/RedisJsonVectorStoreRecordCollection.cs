@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using NRedisStack.Json.DataTypes;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
@@ -24,7 +24,6 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TRecord : class
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Redis";
@@ -206,7 +205,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Check if the key was found before trying to parse the result.
         if (redisResult.IsNull || redisResult is null)
         {
-            return null;
+            return default;
         }
 
         // Check if the value contained any JSON text before trying to parse the result.

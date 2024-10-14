@@ -8,13 +8,25 @@ using Moq;
 
 internal static class MoqExtensions
 {
-    public static void VerifyLog<T>(this Mock<ILogger<T>> logger, LogLevel logLevel, string message, Times times)
+    public static void VerifyLog<T>(this Mock<ILogger<T>> logger, LogLevel logLevel, string containsMessage, Times times)
     {
         logger.Verify(
             x => x.Log(
                 It.Is<LogLevel>(l => l == logLevel),
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(message)),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(containsMessage)),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            times);
+    }
+
+    public static void VerifyLog(this Mock<ILogger> logger, LogLevel logLevel, string containsMessage, Times times)
+    {
+        logger.Verify(
+            x => x.Log(
+                It.Is<LogLevel>(l => l == logLevel),
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(containsMessage)),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
             times);
