@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -13,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.Ollama.Core;
+using Microsoft.SemanticKernel.Diagnostics;
 using OllamaSharp;
 using OllamaSharp.Models.Chat;
 
@@ -28,15 +31,12 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     /// </summary>
     public static string ToolIdProperty => "ChatCompletionsToolCall.Id";
 
+    private const string ModelPlatform = "ollama";
+
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
     /// <remarks>This separator was previously <c>_</c>, but has been changed to <c>-</c> to better align to the behavior elsewhere in SK and in response
     /// to developers who want to use underscores in their function or plugin names. We plan to make this setting configurable in the future.</remarks>
     public static string FunctionNameSeparator { get; set; } = "-";
-
-    /// <summary>
-    /// Gets the metadata key for the list of <see cref="ChatToolCall"/>.
-    /// </summary>
-    internal static string FunctionToolCallsProperty => "ChatResponseMessage.FunctionToolCalls";
 
     // Keeping private as Ollama currently only supports auto choice.
     // See: https://github.com/ollama/ollama/blob/main/docs/openai.md#supported-request-fields
@@ -52,7 +52,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     /// <summary>
     /// The function calls processor.
     /// </summary>
-    private FunctionCallsProcessor _functionCallsProcessor;
+    private readonly FunctionCallsProcessor _functionCallsProcessor;
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -94,6 +94,8 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         : base(modelId, endpoint, null, loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService)))
     {
         Verify.NotNull(endpoint);
+
+        this._functionCallsProcessor = new FunctionCallsProcessor(this.Logger);
     }
 
     /// <summary>
@@ -110,6 +112,8 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     {
         Verify.NotNull(httpClient);
         Verify.NotNull(httpClient.BaseAddress);
+
+        this._functionCallsProcessor = new FunctionCallsProcessor(this.Logger);
     }
 
     /// <summary>
@@ -124,10 +128,67 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         ILoggerFactory? loggerFactory = null)
         : base(modelId, ollamaClient, loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService)))
     {
+        this._functionCallsProcessor = new FunctionCallsProcessor(this.Logger);
     }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
+
+    /// <summary>
+    /// Captures usage details, including token information.
+    /// </summary>
+    /// <param name="usage">Instance of <see cref="ChatDoneResponseStream"/> with token usage details.</param>
+    private void LogUsage(ChatDoneResponseStream? usage)
+    {
+        if (usage is null)
+        {
+            this.Logger!.LogDebug("Token usage information unavailable.");
+            return;
+        }
+
+        if (this.Logger!.IsEnabled(LogLevel.Information))
+        {
+            this.Logger.LogInformation(
+                "Prompt tokens: {InputTokenCount}. Completion tokens: {OutputTokenCount}. Total tokens: {TotalTokenCount}.",
+                usage.PromptEvalCount, usage.EvalCount, usage.PromptEvalCount + usage.EvalCount);
+        }
+
+        s_promptTokensCounter.Add(usage.PromptEvalCount);
+        s_completionTokensCounter.Add(usage.EvalCount);
+        s_totalTokensCounter.Add(usage.PromptEvalCount + usage.EvalCount);
+    }
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for metrics.
+    /// </summary>
+    private static readonly Meter s_meter = new("Microsoft.SemanticKernel.Connectors.Ollama");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_promptTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "semantic_kernel.connectors.ollama.tokens.prompt",
+            unit: "{token}",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "semantic_kernel.connectors.ollama.tokens.completion",
+            unit: "{token}",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "semantic_kernel.connectors.ollama.tokens.total",
+            unit: "{token}",
+            description: "Number of tokens used");
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
@@ -151,15 +212,70 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
-            var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
+            var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
+            var request = CreateChatRequest(chatHistory, chatExecutionSettings, this._client.SelectedModel, toolCallingConfig);
+            request.Stream = false;
 
-            var request = CreateChatRequest(chatHistory, chatExecutionSettings, this._client.SelectedModel);
             var chatMessageContent = new ChatMessageContent();
             var fullContent = new StringBuilder();
             string? modelId = null;
             AuthorRole? authorRole = null;
             List<ChatResponseStream> innerContent = [];
+
+            ChatDoneResponseStream? singleChunk = null;
+            using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
+            {
+                try
+                {
+                    var asyncRequest = this._client.Chat(request, cancellationToken).ConfigureAwait(false);
+
+                    var enumerator = asyncRequest.GetAsyncEnumerator();
+
+                    await enumerator.MoveNextAsync();
+                    singleChunk = enumerator.Current as ChatDoneResponseStream;
+
+                    this.LogUsage(singleChunk);
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    if (singleChunk != null)
+                    {
+                        // Capture available metadata even if the operation failed.
+                        activity
+                            .SetResponseId(singleChunk.CreatedAt)
+                            .SetPromptTokenUsage(singleChunk.PromptEvalCount)
+                            .SetCompletionTokenUsage(singleChunk.EvalCount);
+                    }
+
+                    throw;
+                }
+
+                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel);
+                activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
+            }
+
+            // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
+            if (!toolCallingConfig.AutoInvoke || chatCompletion.ToolCalls.Count == 0)
+            {
+                return [chatMessageContent];
+            }
+
+            // Process function calls by invoking the functions and adding the results to the chat history.
+            // Each function call will trigger auto-function-invocation filters, which can terminate the process.
+            // In such cases, we'll return the last message in the chat history.
+            var lastMessage = await this._functionCallsProcessor.ProcessFunctionCallsAsync(
+                chatMessageContent,
+                chatHistory,
+                requestIndex,
+                (FunctionCallContent content) => IsRequestableTool(request.Tools, content),
+                kernel,
+                cancellationToken).ConfigureAwait(false);
+            if (lastMessage != null)
+            {
+                return [lastMessage];
+            }
 
             await foreach (var responseStreamChunk in this._client.Chat(request, cancellationToken).ConfigureAwait(false))
             {
@@ -182,15 +298,204 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
 
                 modelId ??= responseStreamChunk.Model;
             }
+
+            return [new ChatMessageContent(
+                    role: authorRole ?? new(),
+                    content: fullContent.ToString(),
+                    modelId: modelId,
+                    innerContent: innerContent)];
+        }
+    }
+
+    /// <summary>Checks if a tool call is for a function that was defined.</summary>
+    private static bool IsRequestableTool(IEnumerable<Tool>? tools, FunctionCallContent functionCallContent)
+    {
+        if (tools is null)
+        {
+            return false;
         }
 
+        foreach (var tool in tools)
+        {
+            if (tool.Function?.Name is not null &&
+                string.Equals(tool.Function!.Name, FunctionName.ToFullyQualifiedName(functionCallContent.FunctionName, functionCallContent.PluginName, OllamaChatCompletionService.FunctionNameSeparator), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
 
-        return [new ChatMessageContent(
-            role: authorRole ?? new(),
-            content: fullContent.ToString(),
-            modelId: modelId,
-            innerContent: innerContent)];
+        return false;
     }
+
+    /// <summary>
+    /// Start a chat completion activity for a given model.
+    /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
+    /// </summary>
+    private Activity? StartCompletionActivity(ChatHistory chatHistory, PromptExecutionSettings settings)
+        => ModelDiagnostics.StartCompletionActivity(this._client.Config.Uri, this._client.Config.Model, ModelPlatform, chatHistory, settings);
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // Ollama accepts empty chat history to trigger Model Loading https://github.com/ollama/ollama/blob/main/docs/api.md#load-a-model-1
+        chatHistory ??= [];
+
+        if (this.Logger!.IsEnabled(LogLevel.Trace))
+        {
+            this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
+                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(executionSettings));
+        }
+
+        var chatExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+
+        StringBuilder? contentBuilder = null;
+        Dictionary<int, string>? toolCallIdsByIndex = null;
+        Dictionary<int, string>? functionNamesByIndex = null;
+        Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
+
+        for (int requestIndex = 0; ; requestIndex++)
+        {
+            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
+            var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
+
+            if (toolCallingConfig.Tools is { Count: > 0 })
+            {
+                throw new NotSupportedException(
+                    "Currently, Ollama does not support function calls in streaming mode. " +
+                    "See Ollama docs at https://github.com/ollama/ollama/blob/main/docs/api.md#parameters-1 to see whether support has since been added.");
+            }
+
+            var request = CreateChatRequest(chatHistory, chatExecutionSettings, this._client.SelectedModel, toolCallingConfig);
+
+            // Reset state
+            contentBuilder?.Clear();
+            toolCallIdsByIndex?.Clear();
+            functionNamesByIndex?.Clear();
+            functionArgumentBuildersByIndex?.Clear();
+
+            // Stream the response.
+            IReadOnlyDictionary<string, object?>? metadata = null;
+            string? streamedName = null;
+            ChatRole? streamedRole = default;
+            string? doneReason = default;
+            Tool[]? toolCalls = null;
+
+            FunctionCallContent[]? functionCallContents = null;
+
+            using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
+            {
+                // Make the request.
+                AsyncCollectionResult<StreamingChatCompletionUpdate> response;
+                try
+                {
+                    response = RunRequest(() => this.Client!.GetChatClient(targetModel).CompleteChatStreamingAsync(chatForRequest, chatOptions, cancellationToken));
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    throw;
+                }
+
+                var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
+                List<OpenAIStreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+                try
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            if (!await responseEnumerator.MoveNextAsync())
+                            {
+                                break;
+                            }
+                        }
+                        catch (Exception ex) when (activity is not null)
+                        {
+                            activity.SetError(ex);
+                            throw;
+                        }
+
+                        StreamingChatCompletionUpdate chatCompletionUpdate = responseEnumerator.Current;
+                        metadata = GetChatCompletionMetadata(chatCompletionUpdate);
+                        streamedRole ??= chatCompletionUpdate.Role;
+                        //streamedName ??= update.AuthorName;
+                        finishReason = chatCompletionUpdate.FinishReason ?? default;
+
+                        // If we're intending to invoke function calls, we need to consume that function call information.
+                        if (toolCallingConfig.AutoInvoke)
+                        {
+                            try
+                            {
+                                foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
+                                {
+                                    if (contentPart.Kind == ChatMessageContentPartKind.Text)
+                                    {
+                                        (contentBuilder ??= new()).Append(contentPart.Text);
+                                    }
+                                }
+                                OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                            }
+                            catch (NullReferenceException)
+                            {
+                                // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
+                                // TODO: Remove this try-catch block once the bug is fixed.
+                            }
+                        }
+
+                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
+
+                        if (openAIStreamingChatMessageContent.ToolCallUpdates is not null)
+                        {
+                            foreach (var functionCallUpdate in openAIStreamingChatMessageContent.ToolCallUpdates!)
+                            {
+                                // Using the code below to distinguish and skip non - function call related updates.
+                                // The Kind property of updates can't be reliably used because it's only initialized for the first update.
+                                if (string.IsNullOrEmpty(functionCallUpdate.ToolCallId) &&
+                                    string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
+                                    (functionCallUpdate.FunctionArgumentsUpdate is null || functionCallUpdate.FunctionArgumentsUpdate.ToMemory().IsEmpty))
+                                {
+                                    continue;
+                                }
+
+                                openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
+                                    callId: functionCallUpdate.ToolCallId,
+                                    name: functionCallUpdate.FunctionName,
+                                    arguments: functionCallUpdate.FunctionArgumentsUpdate?.ToString(),
+                                    functionCallIndex: functionCallUpdate.Index));
+                            }
+                        }
+                        streamedContents?.Add(openAIStreamingChatMessageContent);
+                        yield return openAIStreamingChatMessageContent;
+                    }
+
+                    // Translate all entries into ChatCompletionsFunctionToolCall instances.
+                    toolCalls = OpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(
+                        ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+
+                    // Translate all entries into FunctionCallContent instances for diagnostics purposes.
+                    functionCallContents = this.GetFunctionCallContents(toolCalls).ToArray();
+                }
+                finally
+                {
+                    activity?.EndStreaming(streamedContents, ModelDiagnostics.IsSensitiveEventsEnabled() ? functionCallContents : null);
+                    await responseEnumerator.DisposeAsync();
+                }
+            }
+
+            await foreach (var message in this._client.Chat(request, cancellationToken).ConfigureAwait(false))
+            {
+                yield return new StreamingChatMessageContent(
+                    role: GetAuthorRole(message!.Message.Role),
+                    content: message.Message.Content,
+                    modelId: message.Model,
+                    innerContent: message);
+            }
+        }
 
     private ToolCallingConfig GetFunctionCallingConfiguration(Kernel? kernel, OllamaPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
     {
@@ -425,7 +730,6 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                     continue;
                 }
 
-
                 var toolCallRequest = new Message.ToolCall
                 {
                     Function = new Message.Function
@@ -437,6 +741,8 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
 
                 if (callRequest.Arguments is not null)
                 {
+                    // Adapt to provide the call_id as an argument to the tool call
+                    callRequest.Arguments.Add("call_id", callRequest.Id);
                     foreach (var callArgument in callRequest.Arguments)
                     {
                         toolCallRequest.Function.Arguments.Add(callArgument.Key, callArgument.Value?.ToString() ?? string.Empty);
@@ -459,25 +765,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         throw new NotSupportedException($"Role {message.Role} is not supported.");
     }
 
-    /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        var request = CreateChatRequest(chatHistory, settings, this._client.SelectedModel);
-
-        await foreach (var message in this._client.Chat(request, cancellationToken).ConfigureAwait(false))
-        {
-            yield return new StreamingChatMessageContent(
-                role: GetAuthorRole(message!.Message.Role),
-                content: message.Message.Content,
-                modelId: message.Model,
-                innerContent: message);
-        }
-    }
+  
 
     #region Private
 
@@ -490,7 +778,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         _ => new AuthorRole(role.ToString()!)
     };
 
-    private static ChatRequest CreateChatRequest(ChatHistory chatHistory, OllamaPromptExecutionSettings settings, string selectedModel)
+    private static ChatRequest CreateChatRequest(ChatHistory chatHistory, OllamaPromptExecutionSettings settings, string selectedModel, ToolCallingConfig toolCallingConfig)
     {
         var messages = new List<Message>();
         foreach (var chatHistoryMessage in chatHistory)
@@ -521,6 +809,11 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             Model = selectedModel,
             Stream = true
         };
+
+        if (toolCallingConfig.Tools is { Count: > 0 } tools)
+        {
+            request.Tools = tools;
+        }
 
         return request;
     }

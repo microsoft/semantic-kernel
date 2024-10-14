@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -250,6 +251,58 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Equal(ollamaExecutionSettings.Temperature, requestPayload.Options.Temperature);
         Assert.Equal(ollamaExecutionSettings.TopP, requestPayload.Options.TopP);
         Assert.Equal(ollamaExecutionSettings.TopK, requestPayload.Options.TopK);
+    }
+
+    // Function Calling start
+
+    [Fact]
+    public async Task GetChatMessageContentsShouldAdvertiseToolAsync()
+    {
+        //Arrange
+        var sut = new OllamaChatCompletionService(
+            "phi3",
+            httpClient: this._httpClient);
+
+        var chat = new ChatHistory();
+        chat.AddMessage(AuthorRole.User, "fake-text");
+        Kernel kernel = new();
+        kernel.Plugins.AddFromFunctions("TestPlugin", [KernelFunctionFactory.CreateFromMethod((string testInput) => { return "Test output"; }, "TestFunction")]);
+        var settings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        //Act
+        var messages = await sut.GetChatMessageContentsAsync(chat, settings, kernel, CancellationToken.None);
+
+        //Assert
+        var requestContent = this._messageHandlerStub.GetRequestContentAsString();
+
+        Assert.NotNull(messages);
+        var message = messages.SingleOrDefault();
+        Assert.NotNull(message);
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Null(requestPayload.Options.Stop);
+        Assert.Null(requestPayload.Options.Temperature);
+        Assert.Null(requestPayload.Options.TopK);
+        Assert.Null(requestPayload.Options.TopP);
+
+        Assert.NotNull(message.ModelId);
+        Assert.Equal("phi3", message.ModelId);
+
+        // Ollama Sharp always perform streaming even for non-streaming calls,
+        // The inner content in this case is the full list of chunks returned by the Ollama Client.
+        Assert.NotNull(message.InnerContent);
+        Assert.IsType<List<ChatResponseStream>>(message.InnerContent);
+        var innerContentList = message.InnerContent as List<ChatResponseStream>;
+        Assert.NotNull(innerContentList);
+        Assert.NotEmpty(innerContentList);
+        var lastMessage = innerContentList.Last();
+        var doneMessageChunk = lastMessage as ChatDoneResponseStream;
+        Assert.NotNull(doneMessageChunk);
+        Assert.True(doneMessageChunk.Done);
+        Assert.Equal("stop", doneMessageChunk.DoneReason);
     }
 
     public void Dispose()
