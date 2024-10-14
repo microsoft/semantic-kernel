@@ -28,8 +28,8 @@ public sealed class KernelParameterMetadata
     /// <param name="name">The name of the parameter.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
     /// <exception cref="ArgumentException">The <paramref name="name"/> was empty or composed entirely of whitespace.</exception>
-    [RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
+    //[RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
+    //[RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     public KernelParameterMetadata(string name) => this.Name = name;
 
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
