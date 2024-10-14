@@ -170,7 +170,7 @@ internal sealed class RAGChatService<TKey>(
                 Console.WriteLine($"Loading PDF into vector store: {pdfFilePath}");
                 await dataLoader.LoadPdf(
                     pdfFilePath,
-                    ragConfigOptions.Value.DataLoadingMaxDegreeOfParallelism,
+                    ragConfigOptions.Value.DataLoadingBatchSize,
                     ragConfigOptions.Value.DataLoadingBetweenBatchDelayInMilliseconds,
                     cancellationToken).ConfigureAwait(false);
             }

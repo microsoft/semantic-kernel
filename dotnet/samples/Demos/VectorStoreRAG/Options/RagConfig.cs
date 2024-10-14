@@ -24,7 +24,7 @@ internal sealed class RagConfig
     public string CollectionName { get; set; } = string.Empty;
 
     [Required]
-    public int DataLoadingMaxDegreeOfParallelism { get; set; } = 2;
+    public int DataLoadingBatchSize { get; set; } = 2;
 
     [Required]
     public int DataLoadingBetweenBatchDelayInMilliseconds { get; set; } = 0;

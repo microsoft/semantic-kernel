@@ -23,14 +23,14 @@ internal sealed class DataLoader<TKey>(
     ITextEmbeddingGenerationService textEmbeddingGenerationService) : IDataLoader where TKey : notnull
 {
     /// <inheritdoc/>
-    public async Task LoadPdf(string pdfPath, int maxDegreeOfParallelism, int betweenBatchDelayInMs, CancellationToken cancellationToken)
+    public async Task LoadPdf(string pdfPath, int batchSize, int betweenBatchDelayInMs, CancellationToken cancellationToken)
     {
         // Create the collection if it doesn't exist.
         await vectorStoreRecordCollection.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // Load the paragraphs from the PDF file and split them into batches.
         var sections = LoadParagraphs(pdfPath, cancellationToken);
-        var batches = sections.Chunk(maxDegreeOfParallelism);
+        var batches = sections.Chunk(batchSize);
 
         // Process each batch of paragraphs.
         foreach (var batch in batches)

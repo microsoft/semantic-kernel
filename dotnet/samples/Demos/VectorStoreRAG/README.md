@@ -18,7 +18,7 @@ The sample can be configured in various ways:
 1. You can choose whether to load data into the vector store by setting the `Rag:BuildCollection` configuration setting in the `appsettings.json` file to `true`. If you set this to `false`, the sample will assume that data was already loaded previously and it will go straight into the chat experience.
 1. You can choose the name of the collection to use by setting the `Rag:CollectionName` configuration setting in the `appsettings.json` file.
 1. You can choose the pdf file to load into the vector store by setting the `Rag:PdfFilePaths` array in the `appsettings.json` file.
-1. You can choose the number of records to process per batch when loading data into the vector store by setting the `Rag:DataLoadingMaxDegreeOfParallelism` configuration setting in the `appsettings.json` file.
+1. You can choose the number of records to process per batch when loading data into the vector store by setting the `Rag:DataLoadingBatchSize` configuration setting in the `appsettings.json` file.
 1. You can choose the number of milliseconds to wait between batches when loading data into the vector store by setting the `Rag:DataLoadingBetweenBatchDelayInMilliseconds` configuration setting in the `appsettings.json` file.
 
 ## Dependency Setup
