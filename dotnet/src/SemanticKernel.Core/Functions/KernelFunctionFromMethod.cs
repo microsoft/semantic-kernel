@@ -118,8 +118,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
-    {
-        return CreateMetadata(
+        => CreateMetadata(
             method,
             new KernelFunctionFromMethodOptions
             {
@@ -129,7 +128,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 ReturnParameter = returnParameter,
                 LoggerFactory = loggerFactory
             });
-    }
 
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
@@ -137,6 +135,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="options">Optional function creation options.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    [Experimental("SKEXP0001")]
     public static KernelFunctionMetadata CreateMetadata(
         MethodInfo method,
         KernelFunctionFromMethodOptions? options = default)

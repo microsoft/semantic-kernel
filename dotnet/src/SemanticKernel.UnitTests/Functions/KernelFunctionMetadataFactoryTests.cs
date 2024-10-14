@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
+
 public class KernelFunctionMetadataFactoryTests
 {
     [Fact]
