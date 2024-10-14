@@ -136,6 +136,8 @@ jobs:
           AzureOpenAITextToImage__Endpoint: ${{ secrets.AZUREOPENAITEXTTOIMAGE__ENDPOINT }}
           AzureOpenAITextToImage__DeploymentName: ${{ vars.AZUREOPENAITEXTTOIMAGE__DEPLOYMENTNAME }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+          Google__SearchEngineId: ${{ secrets.GOOGLE__SEARCHENGINEID }}
+          Google__ApiKey: ${{ secrets.GOOGLE__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
           OpenAI__ChatModelId: ${{ vars.OPENAI__CHATMODELID }}
           AzureAIInference__ApiKey: ${{ secrets.AZUREAIINFERENCE__APIKEY }}

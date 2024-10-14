@@ -6,10 +6,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
+using SemanticKernel.IntegrationTests.Data;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Data;
+namespace SemanticKernel.IntegrationTests.Connectors.Memory.InMemory;
 
 /// <summary>
 /// Integration tests for using <see cref="InMemoryVectorStore"/> with <see cref="ITextSearch"/>.
@@ -23,8 +24,8 @@ public class InMemoryVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
         {
             OpenAIConfiguration? openAIConfiguration = this.Configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
             Assert.NotNull(openAIConfiguration);
-            Assert.NotEmpty(openAIConfiguration.ModelId);
-            Assert.NotEmpty(openAIConfiguration.ApiKey);
+            Assert.NotNull(openAIConfiguration.ModelId);
+            Assert.NotNull(openAIConfiguration.ApiKey);
             this.EmbeddingGenerator = new OpenAITextEmbeddingGenerationService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
 
             // Delegate which will create a record.
