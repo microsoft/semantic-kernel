@@ -23,7 +23,8 @@ Example|Description
 ---|---
 [Step01_Processes](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step01/Step01_Processes.cs)|How to create a simple process with a loop and a conditional exit
 [Step02_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02_AccountOpening.cs)|Showcasing processes cycles, fan in, fan out for opening an account.
-[Step03_FoodPreparation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03_FoodPreparation.cs)|Showcasing reuse of steps, creation of processes, spawning of multiple events.
+[Step03a_FoodPreparation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03a_FoodPreparation.cs)|Showcasing reuse of steps, creation of processes, spawning of multiple events with food preparation samples.
+[Step03b_FoodOrdering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03b_FoodOrdering.cs)|Showcasing use of subprocesses as steps, spawning of multiple events conditionally reusing the food preparation samples. 
 
 ### Step01_Processes
 
@@ -67,7 +68,7 @@ flowchart LR
     Mailer -->|End of Interaction| User
 ```
 
-### Step03_FoodPreparation
+### Step03a_FoodPreparation
 
 This tutorial contains a set of food recipes associated with the Food Preparation Processes of a restaurant.
 
@@ -134,6 +135,8 @@ flowchart LR
     PrepareFishAndChipsEvent -->|Prepare Potato Fries| PotatoFriesStep -->|Potato Fries Ready| AddCondiments
     AddCondiments -->|Condiments Added| FishAndChipsReadyEvent
 ```
+
+### Step03b_FoodOrdering
 
 #### Single Order Preparation Process
 
