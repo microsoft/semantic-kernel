@@ -9,6 +9,8 @@ class IndexKind(str, Enum):
 
     HNSW = "hnsw"
     FLAT = "flat"
+    QUANTIZED_FLAT = "quantized_flat"
+    DISK_ANN = "disk_ann"
 
 
 class DistanceFunction(str, Enum):
