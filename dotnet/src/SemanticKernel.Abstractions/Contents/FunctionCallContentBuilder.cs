@@ -34,6 +34,7 @@ public sealed class FunctionCallContentBuilder
     /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
     /// </summary>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for deserializing function arguments.</param>
+    [Experimental("SKEXP0120")]
     public FunctionCallContentBuilder(JsonSerializerOptions jsonSerializerOptions)
     {
         this._jsonSerializerOptions = jsonSerializerOptions;
