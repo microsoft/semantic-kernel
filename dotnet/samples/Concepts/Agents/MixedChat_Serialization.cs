@@ -15,13 +15,14 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(
     private const string TranslatorName = "Translator";
     private const string TranslatorInstructions =
         """
-        Spell the very last number in chat as a word in english and spanish
+        Spell the last number in chat as a word in english and spanish on a single line without any line breaks.
         """;
 
     private const string CounterName = "Counter";
     private const string CounterInstructions =
         """
-        Add 1 to the very last number in the chat.
+        Increment the last number from your most recent response.
+        Never repeat the same number.
         
         Only respond with a single number that is the result of your calculation without explanation.
         """;
@@ -51,12 +52,18 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(
         AgentGroupChat chat = CreateGroupChat();
 
         // Invoke chat and display messages.
-        string input = "1";
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
-        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+        ChatMessageContent input = new(AuthorRole.User, "1");
+        chat.AddChatMessage(input);
+        this.WriteAgentChatMessage(input);
 
         Console.WriteLine("============= Source Chat ==============");
         await InvokeAgents(chat);
+
+        Console.WriteLine("============= Counter Thread ==============");
+        await foreach (ChatMessageContent content in chat.GetChatMessagesAsync(agentCounter))
+        {
+            this.WriteAgentChatMessage(content);
+        }
 
         AgentGroupChat copy = CreateGroupChat();
         Console.WriteLine("\n=========== Serialized Chat ============");
@@ -68,14 +75,14 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(
         Console.WriteLine("\n============ Full History ==============");
         await foreach (ChatMessageContent content in copy.GetChatMessagesAsync())
         {
-            Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteAgentChatMessage(content);
         }
 
         async Task InvokeAgents(AgentGroupChat chat)
         {
             await foreach (ChatMessageContent content in chat.InvokeAsync())
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteAgentChatMessage(content);
             }
         }
 
