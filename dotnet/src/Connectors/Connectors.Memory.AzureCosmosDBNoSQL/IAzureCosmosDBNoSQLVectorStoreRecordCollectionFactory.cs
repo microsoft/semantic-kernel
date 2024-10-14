@@ -23,6 +23,5 @@ public interface IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory
         Database database,
         string name,
         VectorStoreRecordDefinition? vectorStoreRecordDefinition)
-        where TKey : notnull
-        where TRecord : class;
+        where TKey : notnull;
 }
