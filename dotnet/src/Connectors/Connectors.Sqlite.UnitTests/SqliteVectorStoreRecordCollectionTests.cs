@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Data.Common;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Sqlite.UnitTests;

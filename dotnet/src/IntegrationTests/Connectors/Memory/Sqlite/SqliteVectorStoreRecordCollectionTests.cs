@@ -2,9 +2,10 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
@@ -226,8 +227,77 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.Empty(getResults);
     }
 
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItCanGetExistingRecordAsync(bool includeVectors)
+    {
+        // Arrange
+        var collectionNamePostfix = includeVectors ? "WithVectors" : "WithoutVectors";
+        var collectionName = $"Collection{collectionNamePostfix}";
+
+        const ulong HotelId = 5;
+        var sut = fixture.GetCollection<SqliteHotel<ulong>>(collectionName);
+
+        await sut.CreateCollectionAsync();
+
+        var record = CreateTestHotel(HotelId);
+
+        var commandData = fixture.Connection.CreateCommand();
+
+        commandData.CommandText =
+            $"INSERT INTO {collectionName} " +
+            "VALUES (@HotelId0, @HotelName0, @HotelCode0, @HotelRating0, @parking_is_included0, @Description0)";
+
+        commandData.Parameters.AddWithValue("@HotelId0", record.HotelId);
+        commandData.Parameters.AddWithValue("@HotelName0", record.HotelName);
+        commandData.Parameters.AddWithValue("@HotelCode0", record.HotelCode);
+        commandData.Parameters.AddWithValue("@HotelRating0", record.HotelRating);
+        commandData.Parameters.AddWithValue("@parking_is_included0", record.ParkingIncluded);
+        commandData.Parameters.AddWithValue("@Description0", record.Description);
+
+        await commandData.ExecuteNonQueryAsync();
+
+        if (includeVectors)
+        {
+            var commandVector = fixture.Connection.CreateCommand();
+
+            commandVector.CommandText =
+                $"INSERT INTO vec_{collectionName} " +
+                "VALUES (@HotelId0, @DescriptionEmbedding0)";
+
+            commandVector.Parameters.AddWithValue("@HotelId0", record.HotelId);
+            commandVector.Parameters.AddWithValue("@DescriptionEmbedding0", GetVectorForStorageModel(record.DescriptionEmbedding!.Value));
+
+            await commandVector.ExecuteNonQueryAsync();
+        }
+
+        // Act
+        var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = includeVectors });
+
+        // Assert
+        Assert.NotNull(getResult);
+
+        Assert.Equal(record.HotelId, getResult.HotelId);
+        Assert.Equal(record.HotelName, getResult.HotelName);
+        Assert.Equal(record.HotelCode, getResult.HotelCode);
+        Assert.Equal(record.HotelRating, getResult.HotelRating);
+        Assert.Equal(record.ParkingIncluded, getResult.ParkingIncluded);
+        Assert.Equal(record.Description, getResult.Description);
+
+        if (includeVectors)
+        {
+            Assert.NotNull(getResult.DescriptionEmbedding);
+            Assert.Equal(record.DescriptionEmbedding!.Value.ToArray(), getResult.DescriptionEmbedding.Value.ToArray());
+        }
+        else
+        {
+            Assert.Null(getResult.DescriptionEmbedding);
+        }
+    }
+
     [Fact(Skip = SkipReason)]
-    public async Task ItCanUpsertRecordAsync()
+    public async Task ItCanUpsertExistingRecordAsync()
     {
         // Arrange
         const ulong HotelId = 5;
@@ -485,6 +555,17 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             Description = "This is a great hotel.",
             DescriptionEmbedding = embedding ?? new[] { 30f, 31f, 32f, 33f },
         };
+    }
+
+    private static byte[] GetVectorForStorageModel(ReadOnlyMemory<float> vector)
+    {
+        ReadOnlySpan<float> floatSpan = vector.Span;
+
+        byte[] byteArray = new byte[floatSpan.Length * sizeof(float)];
+
+        MemoryMarshal.Cast<float, byte>(floatSpan).CopyTo(byteArray);
+
+        return byteArray;
     }
 
 #pragma warning disable CA1812
