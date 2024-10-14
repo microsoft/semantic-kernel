@@ -33,12 +33,9 @@ internal static class KernelJsonSchemaBuilder
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     public static KernelJsonSchema Build(Type type, string? description = null, JsonSchemaMapperConfiguration? configuration = null)
     {
-#pragma warning disable SKEXP0120
         return Build(type, GetDefaultOptions(), description, configuration);
-#pragma warning restore SKEXP0120
     }
 
-    [Experimental("SKEXP0120")]
     public static KernelJsonSchema Build(
         Type type,
         JsonSerializerOptions options,
