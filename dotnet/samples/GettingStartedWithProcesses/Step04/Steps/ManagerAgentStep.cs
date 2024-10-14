@@ -10,44 +10,39 @@ namespace Step04.Steps;
 /// <summary>
 /// %%%
 /// </summary>
-public class ManagerAgentStep : KernelProcessStep<ChatHistory>
+public class ManagerAgentStep : AgentProcessStep<ChatCompletionAgent>
 {
+    public const string AgentServiceKey = nameof(ManagerAgentStep);
+
     public static class Functions
     {
         public const string InvokeAgent = nameof(InvokeAgent);
         public const string ProcessResponse = nameof(ProcessResponse);
     }
 
-    private readonly ChatHistory _history = [];
-    private ChatCompletionAgent _agent;
-
     /// <inheritdoc/>
-    public override ValueTask ActivateAsync(KernelProcessStepState<ChatHistory> state)
-    {
-        state.State = this._history; // %%% ???
-        return ValueTask.CompletedTask;
-    }
+    protected override string ServiceKey => AgentServiceKey;
 
     [KernelFunction(Functions.InvokeAgent)]
     public async Task InvokeAgentAsync(KernelProcessStepContext context, string userInput, Kernel kernel)
     {
-        this._history.Add(new ChatMessageContent(AuthorRole.User, userInput));
+        ChatHistory history = kernel.GetHistory();
 
-        ChatCompletionAgent agent = this.GetAgent(kernel); // %%% HACK
+        ChatCompletionAgent agent = this.GetAgent(kernel);
 
         List<ChatMessageContent> response = [];
-        await foreach (ChatMessageContent message in agent.InvokeAsync(this._history))
+        await foreach (ChatMessageContent message in agent.InvokeAsync(history))
         {
             response.Add(message);
         }
-        this._history.AddRange(response);
-        if (this._history.Count == 4)
+        history.AddRange(response);
+        if (history.Count == 4)
         {
             await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.ManagerAgentWorking, Data = response });
         }
         else
         {
-            await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.ManagerAgentResponded, Data = response });
+            await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.AgentResponded, Data = response });
         }
     }
 
@@ -58,34 +53,11 @@ public class ManagerAgentStep : KernelProcessStep<ChatHistory>
         IEnumerable<ChatMessageContent>? reducedResponse = await reducer.ReduceAsync(chat);
         ChatMessageContent summary = reducedResponse == null ? chat.Last() : reducedResponse.First();
         summary.AuthorName = GetAgent(kernel).Name; // %%% CONSTANT or MEMBER
+
         ChatMessageContent[] response = [summary];
-        this._history.AddRange(response);
+        ChatHistory history = kernel.GetHistory();
+        history.AddRange(response);
 
-        await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.ManagerAgentResponded, Data = response });
+        await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.AgentResponded, Data = response });
     }
-
-    public ChatCompletionAgent GetAgent(Kernel kernel)
-    {
-        return
-           this._agent ??=
-           new ChatCompletionAgent()
-           {
-               Name = "Manager",
-               //Instructions = "%% TBD",
-               Kernel = kernel,
-           };
-
-    }
-
-    //public ManagerAgentStep(Kernel kernel)
-    //{
-    //    this._agent =
-    //       new ChatCompletionAgent()
-    //       {
-    //           Name = "Manager",
-    //           //Instructions = "%% TBD",
-    //           Kernel = kernel,
-    //       };
-
-    //}
 }
