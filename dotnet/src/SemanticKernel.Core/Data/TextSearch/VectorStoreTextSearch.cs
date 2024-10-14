@@ -230,7 +230,7 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 
         await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            if (result.Record != null)
+            if (result.Record is not null)
             {
                 yield return result.Record;
                 await Task.Yield();
@@ -252,7 +252,7 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 
         await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            if (result.Record != null)
+            if (result.Record is not null)
             {
                 yield return this._resultMapper.MapFromResultToTextSearchResult(result.Record);
                 await Task.Yield();
@@ -274,7 +274,7 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
 
         await foreach (var result in searchResponse.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            if (result.Record != null)
+            if (result.Record is not null)
             {
                 yield return this._stringMapper.MapFromResultToString(result.Record);
                 await Task.Yield();
