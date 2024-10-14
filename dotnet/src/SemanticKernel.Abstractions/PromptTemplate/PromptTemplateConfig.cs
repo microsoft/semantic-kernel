@@ -75,6 +75,7 @@ public sealed class PromptTemplateConfig
     /// <exception cref="ArgumentException"><paramref name="json"/> is an invalid JSON representation of a <see cref="PromptTemplateConfig"/>.</exception>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    [Experimental("SKEXP0120")]
     public static PromptTemplateConfig FromJson(string json, JsonSerializerOptions jsonSerializerOptions)
     {
         return FromJsonInternal(json, jsonSerializerOptions);
