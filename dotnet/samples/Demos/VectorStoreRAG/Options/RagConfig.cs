@@ -22,4 +22,10 @@ internal sealed class RagConfig
 
     [Required]
     public string CollectionName { get; set; } = string.Empty;
+
+    [Required]
+    public int DataLoadingBatchSize { get; set; } = 2;
+
+    [Required]
+    public int DataLoadingBetweenBatchDelayInMilliseconds { get; set; } = 0;
 }
