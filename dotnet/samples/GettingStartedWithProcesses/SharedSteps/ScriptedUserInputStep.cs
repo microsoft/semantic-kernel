@@ -9,8 +9,8 @@ namespace SharedSteps;
 /// A step that elicits user input.
 ///
 /// Step used in the Processes Samples:
-/// - Step_01_Processes.cs
-/// - Step_02_AccountOpening.cs
+/// - Step01_Processes.cs
+/// - Step02_AccountOpening.cs
 /// - Step04_AgentOrchestration
 /// </summary>
 public class ScriptedUserInputStep : KernelProcessStep<UserInputState>

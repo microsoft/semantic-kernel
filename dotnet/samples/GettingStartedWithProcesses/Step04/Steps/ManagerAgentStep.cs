@@ -46,7 +46,7 @@ public class ManagerAgentStep : KernelProcessStep
             await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.AgentResponse, Data = message });
         }
 
-        // Commit any chages to the chat history
+        // Commit any changes to the chat history
         await historyProvider.CommitAsync();
 
         bool requireUserResponse = await IsRequestingUserInputAsync(kernel, history, logger);
@@ -85,10 +85,11 @@ public class ManagerAgentStep : KernelProcessStep
     private static async Task<bool> IsRequestingUserInputAsync(Kernel kernel, ChatHistory history, ILogger logger)
     {
         ChatHistory localHistory =
-            [
-                new ChatMessageContent(AuthorRole.System, "Analyze the conversation and determine if user input is being solicited."),
-                ..history.TakeLast(2)
-            ];
+        [
+            new ChatMessageContent(AuthorRole.System, "Analyze the conversation and determine if user input is being solicited."),
+            ..history.TakeLast(2)
+        ];
+
         IChatCompletionService service = kernel.GetRequiredService<IChatCompletionService>();
 
         ChatMessageContent response = await service.GetChatMessageContentAsync(localHistory, new OpenAIPromptExecutionSettings { ResponseFormat = s_intentResponseFormat });
