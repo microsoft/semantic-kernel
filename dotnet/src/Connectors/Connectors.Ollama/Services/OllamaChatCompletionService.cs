@@ -252,8 +252,8 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                     throw;
                 }
 
-                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel);
-                activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
+                chatMessageContent = this.CreateChatMessageContent(singleChunk!);
+                activity?.SetCompletionResponse([chatMessageContent], singleChunk.PromptEvalCount, singleChunk.EvalCount);
             }
 
             // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
@@ -305,6 +305,78 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                     modelId: modelId,
                     innerContent: innerContent)];
         }
+    }
+
+    private ChatMessageContent CreateChatMessageContent(ChatDoneResponseStream completion)
+    {
+        var message = new ChatMessageContent(
+            role: GetAuthorRole(completion.Message.Role)!.Value,
+            content: completion.Message.Content)
+        {
+            ModelId = completion.Model,
+            InnerContent = completion,
+            Metadata = this.GetChatCompletionMetadata(completion)
+        };
+
+        message.Items.AddRange(this.GetFunctionCallContents(completion.Message.ToolCalls));
+
+        return message;
+    }
+
+    private List<FunctionCallContent> GetFunctionCallContents(IEnumerable<Message.ToolCall>? toolCalls)
+    {
+        List<FunctionCallContent> result = [];
+
+        if (toolCalls is null)
+        {
+            return result;
+        }
+
+        foreach (var toolCall in toolCalls)
+        {
+            // Adding items of 'FunctionCallContent' type to the 'Items' collection even though the function calls are available via the 'ToolCalls' property.
+            // This allows consumers to work with functions in an LLM-agnostic way.
+            Exception? exception = null;
+            KernelArguments? kernelArguments = null;
+            var responseArguments = toolCall.Function!.Arguments;
+            if (responseArguments is not null)
+            {
+                // Iterate over copy of the names to avoid mutating the dictionary while enumerating it
+                var names = responseArguments.Keys.ToArray();
+                foreach (var name in names)
+                {
+                    (kernelArguments ??= []).Add(name, responseArguments[name]);
+                }
+            }
+
+            var functionName = FunctionName.Parse(toolCall.Function!.Name!, OllamaChatCompletionService.FunctionNameSeparator);
+
+            var functionCallContent = new FunctionCallContent(
+                functionName: functionName.Name,
+                pluginName: functionName.PluginName,
+                id: Guid.NewGuid().ToString().Substring(0, 8),
+                arguments: kernelArguments)
+            {
+                InnerContent = toolCall,
+                Exception = exception
+            };
+
+            result.Add(functionCallContent);
+        }
+
+        return result;
+    }
+
+    private Dictionary<string, object?> GetChatCompletionMetadata(ChatDoneResponseStream completions)
+    {
+        return new Dictionary<string, object?>
+        {
+            // Necessary for the function telemetry 
+            { "Usage", new {
+                PromptTokens = completions.PromptEvalCount,
+                CompletionTokens = completions.EvalCount
+            }},
+        };
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
