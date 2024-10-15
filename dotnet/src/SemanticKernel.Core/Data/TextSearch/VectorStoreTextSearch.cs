@@ -108,8 +108,6 @@ public sealed class VectorStoreTextSearch<TRecord> : ITextSearch
         VectorStoreTextSearchOptions? options = null)
     {
         Verify.NotNull(vectorizableTextSearch);
-        Verify.NotNull(stringMapper);
-        Verify.NotNull(resultMapper);
 
         this._vectorizableTextSearch = vectorizableTextSearch;
         this._propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
