@@ -28,6 +28,9 @@ dependencies = [
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
 
+    # azure identity
+    "azure-identity ~= 1.13",
+
     # embeddings
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
@@ -41,7 +44,6 @@ dependencies = [
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
-
     "prance ~= 23.6.21.0",
 
     # templating
@@ -67,24 +69,28 @@ google = [
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers ~= 2.2",
-    "torch == 2.2.2"
+    "sentence-transformers >= 2.2,< 4.0",
+    "torch == 2.4.1"
 ]
 mongo = [
-    "motor ~= 3.3.2"
+    "pymongo >= 4.8.0, < 4.9",
+    "motor >= 3.3.2,< 3.6.0"
 ]
 notebooks = [
     "ipykernel ~= 6.29"
 ]
 milvus = [
-    "pymilvus >= 2.3,<2.4",
+    "pymilvus >= 2.3,< 2.5",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
-    "mistralai ~= 0.4"
+    "mistralai >= 0.4,< 2.0"
 ]
 ollama = [
     "ollama ~= 0.2"
+]
+onnx = [
+    "onnxruntime-genai ~= 0.4; platform_system != 'Darwin'"
 ]
 anthropic = [
     "anthropic ~= 0.32"
@@ -111,6 +117,9 @@ weaviate = [
 ]
 pandas = [
     "pandas ~= 2.2"
+]
+aws = [
+    "boto3>=1.28.57",
 ]
 
 [tool.uv]

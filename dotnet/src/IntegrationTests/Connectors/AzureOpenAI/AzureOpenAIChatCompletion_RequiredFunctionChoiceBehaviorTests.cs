@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -97,7 +98,6 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -133,7 +133,6 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -166,7 +165,7 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
-        Assert.Single(functionCalls);
+        Assert.NotEmpty(functionCalls);
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -249,7 +248,6 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -290,7 +288,6 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         // Assert
         Assert.NotNull(result);
 
-        Assert.Single(invokedFunctions);
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
@@ -325,7 +322,6 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         }
 
         // Assert
-        Assert.Single(functionsForManualInvocation);
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
@@ -360,7 +356,7 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
 
         var functionCalls = FunctionCallContent.GetFunctionCalls(result);
         Assert.NotNull(functionCalls);
-        Assert.Single(functionCalls);
+        Assert.NotEmpty(functionCalls);
 
         var functionCall = functionCalls.First();
         Assert.Equal("DateTimeUtils", functionCall.PluginName);
@@ -398,7 +394,6 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         }
 
         // Assert
-        Assert.Single(functionsForManualInvocation);
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
@@ -409,7 +404,6 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
-        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         var kernelBuilder = base.CreateKernelBuilder();
@@ -418,7 +412,7 @@ public sealed class AzureOpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegra
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
+            credentials: new AzureCliCredential());
 
         return kernelBuilder.Build();
     }

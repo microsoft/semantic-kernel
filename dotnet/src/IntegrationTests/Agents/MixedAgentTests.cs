@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel;
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,7 +43,7 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
-            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
             openAISettings.ChatModelId!,
             useNewFunctionCallingModel);
     }
@@ -93,12 +94,12 @@ public sealed class MixedAgentTests
         // Assistant doesn't need plug-in since it has access to the shared function result.
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu."
-                });
+                },
+                new Kernel());
 
         // Act & Assert
         try

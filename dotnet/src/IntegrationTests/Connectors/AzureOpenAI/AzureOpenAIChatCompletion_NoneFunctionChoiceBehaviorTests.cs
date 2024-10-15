@@ -6,14 +6,14 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
 public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
 {
@@ -165,7 +165,6 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
-        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         var kernelBuilder = base.CreateKernelBuilder();
@@ -174,7 +173,7 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
+            credentials: new AzureCliCredential());
 
         return kernelBuilder.Build();
     }

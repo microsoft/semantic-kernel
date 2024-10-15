@@ -15,6 +15,8 @@ using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTest
@@ -80,7 +82,19 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
-        var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+        var kernel = this.CreateAndInitializeKernel();
+        kernel.ImportPluginFromFunctions("HelperFunctions",
+        [
+            kernel.CreateFunctionFromMethod((WeatherParameters parameters) =>
+            {
+                if (parameters.City.Name == "Dublin" && (parameters.City.Country == "Ireland" || parameters.City.Country == "IE"))
+                {
+                    return Task.FromResult(42.8); // 42.8 Fahrenheit.
+                }
+
+                throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
+            }, "Get_Current_Temperature", "Get current temperature."),
+        ]);
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -185,7 +199,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.Contains("Transportation", result, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact(Skip = "Temporarily disabled to unblock PR pipeline.")]
+    [Fact]
     public async Task ConnectorSpecificChatMessageContentClassesCanBeUsedForManualFunctionCallingAsync()
     {
         // Arrange
@@ -482,7 +496,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 
-    [Fact(Skip = "Weather in Boston (USA) is not supported.")]
+    [Fact]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingForStreamingAsync()
     {
         // Arrange
@@ -867,7 +881,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
-        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
 
         var chatHistory = new ChatHistory();
@@ -891,7 +905,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
-        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday.ToString(), "GetDayOfWeek", "Retrieves the current day of the week.");
         kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
 
         var chatHistory = new ChatHistory();
@@ -937,20 +951,6 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
                         _ => "31 and snowing",
                     };
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
-                kernel.CreateFunctionFromMethod((WeatherParameters parameters) =>
-                {
-                    if (parameters.City.Name == "Dublin" && (parameters.City.Country == "Ireland" || parameters.City.Country == "IE"))
-                    {
-                        return Task.FromResult(42.8); // 42.8 Fahrenheit.
-                    }
-
-                    throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
-                }, "Get_Current_Temperature", "Get current temperature."),
-                kernel.CreateFunctionFromMethod((double temperatureInFahrenheit) =>
-                {
-                    double temperatureInCelsius = (temperatureInFahrenheit - 32) * 5 / 9;
-                    return Task.FromResult(temperatureInCelsius);
-                }, "Convert_Temperature_From_Fahrenheit_To_Celsius", "Convert temperature from Fahrenheit to Celsius.")
             ]);
         }
 

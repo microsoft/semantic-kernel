@@ -10,7 +10,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | Filtering | Creating and using Filters |
 | Functions | Invoking [`Method`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_method.py) or [`Prompt`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_prompt.py) functions with [`Kernel`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/kernel.py) |
 | Grounding | An example of how to perform LLM grounding |
-| Local Models | Using the [`OpenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) to talk to models hosted locally in Ollama and LM Studio |
+| Local Models | Using the [`OpenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) and [`OnnxGenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_chat_completion.py) to talk to models hosted locally in Ollama, OnnxGenAI and LM Studio |
 | Logging | Showing how to set up logging |
 | Memory | Using [`Memory`](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/SemanticKernel.Abstractions/Memory) AI concepts |
 | Model-as-a-Service | Using models deployed as [`serverless APIs on Azure AI Studio`](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless?tabs=azure-ai-studio) to benchmark model performance against open-source datasets |
@@ -22,6 +22,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | Search | Using search services information |
 | Service Selector | Shows how to create and use a custom service selector class. |
 | Setup | How to setup environment variables for Semantic Kernel |
+| Structured Output | How to leverage OpenAI's json_schema structured output functionality. |
 | TextGeneration | Using [`TextGeneration`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/text_completion_client_base.py) capable service with models  |
 
 # Configuring the Kernel
@@ -39,6 +40,12 @@ In Semantic Kernel for Python, we leverage Pydantic Settings to manage configura
 
 3. **Direct Constructor Input:**
    - As an alternative to environment variables and `.env` files, you can pass the required settings directly through the constructor of the AI Connector or Memory Connector.
+
+## Microsoft Entra Token Authentication
+
+To authenticate to your Azure resources using a Microsoft Entra Authentication Token, the `AzureChatCompletion` AI Service connector now supports this as a built-in feature. If you do not provide an API key -- either through an environment variable, a `.env` file, or the constructor -- and you also do not provide a custom `AsyncAzureOpenAI` client, an `ad_token`, or an `ad_token_provider`, the `AzureChatCompletion` connector will attempt to retrieve a token using the [`DefaultAzureCredential`](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python).
+
+To successfully retrieve and use the Entra Auth Token, you need the `Cognitive Services OpenAI Contributor` role assigned to your Azure OpenAI resource. By default, the `https://cognitiveservices.azure.com` token endpoint is used. You can override this endpoint by setting an environment variable `.env` variable as `AZURE_OPENAI_TOKEN_ENDPOINT` or by passing a new value to the `AzureChatCompletion` constructor as part of the `AzureOpenAISettings`.
 
 ## Best Practices
 

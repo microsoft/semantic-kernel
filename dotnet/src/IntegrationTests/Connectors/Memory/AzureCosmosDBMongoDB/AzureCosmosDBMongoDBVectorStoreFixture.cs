@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
 using Xunit;
 
@@ -53,6 +53,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
             ]
@@ -69,9 +70,14 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        foreach (var collection in this._testCollections)
+        var cursor = await this.MongoDatabase.ListCollectionNamesAsync();
+
+        while (await cursor.MoveNextAsync().ConfigureAwait(false))
         {
-            await this.MongoDatabase.DropCollectionAsync(collection);
+            foreach (var collection in cursor.Current)
+            {
+                await this.MongoDatabase.DropCollectionAsync(collection);
+            }
         }
     }
 
@@ -83,7 +89,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         public string HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
         public string? HotelName { get; set; }
 
         /// <summary>An int metadata field.</summary>
@@ -105,6 +111,10 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         /// <summary>A data field.</summary>
         [VectorStoreRecordData]
         public string Description { get; set; }
+
+        /// <summary>A datetime metadata field.</summary>
+        [VectorStoreRecordData]
+        public DateTime Timestamp { get; set; }
 
         /// <summary>A vector field.</summary>
         [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]

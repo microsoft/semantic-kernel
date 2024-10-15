@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
-using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
 using Xunit;
 
@@ -32,7 +32,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
             ]
         };
 
-        this._sut = new(definition, keyProperty.DataModelPropertyName);
+        this._sut = new(new VectorStoreRecordPropertyReader(typeof(AzureCosmosDBMongoDBHotelModel), definition, null));
     }
 
     [Fact]

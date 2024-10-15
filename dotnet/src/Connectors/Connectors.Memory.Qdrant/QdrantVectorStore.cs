@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Grpc.Core;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Qdrant.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -53,7 +53,6 @@ public sealed class QdrantVectorStore : IVectorStore
     /// <inheritdoc />
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
-        where TRecord : class
     {
         if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid))
         {
