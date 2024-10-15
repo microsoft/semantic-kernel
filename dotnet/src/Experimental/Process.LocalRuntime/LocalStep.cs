@@ -255,6 +255,7 @@ internal class LocalStep : KernelProcessMessageChannel
             }
 
             stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, this.Id);
+            stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, Activator.CreateInstance(userStateType));
         }
         else
         {

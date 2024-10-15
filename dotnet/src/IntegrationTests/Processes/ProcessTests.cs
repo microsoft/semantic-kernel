@@ -329,7 +329,7 @@ public sealed class ProcessTests
     /// </summary>
     private sealed class FanInStep : KernelProcessStep<StepState>
     {
-        private StepState? _state = new();
+        private StepState? _state;
 
         public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
         {
