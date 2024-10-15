@@ -82,4 +82,27 @@ public sealed class OpenAIFunctionToolCallTests
         Assert.Equal("test-function", toolCall.FunctionName);
         Assert.Equal("test-argument", toolCall.FunctionArguments.ToString());
     }
+
+    [Fact]
+    public void TrackStreamingToolingUpdateWithNullUpdatesDoesNotThrowException()
+    {
+        // Arrange
+        Dictionary<int, string>? toolCallIdsByIndex = null;
+        Dictionary<int, string>? functionNamesByIndex = null;
+        Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
+        IReadOnlyList<StreamingChatToolCallUpdate>? updates = null;
+
+        // Act
+        var exception = Record.Exception(() =>
+            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(
+                updates,
+                ref toolCallIdsByIndex,
+                ref functionNamesByIndex,
+                ref functionArgumentBuildersByIndex
+            ));
+
+        // Assert
+        Assert.Null(exception);
+    }
+
 }
