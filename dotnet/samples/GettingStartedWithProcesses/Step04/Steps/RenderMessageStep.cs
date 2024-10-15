@@ -7,7 +7,7 @@ namespace Step04.Steps;
 /// <summary>
 /// Displays output to the user.  While in this case it is just writing to the console,
 /// in a real-world scenario this would be a more sophisticated rendering system.  Isolating this
-/// rendering logic from the internal logic of other process steps simplifies responsibilty contract
+/// rendering logic from the internal logic of other process steps simplifies responsibility contract
 /// and simplifies testing and state management.
 /// </summary>
 public class RenderMessageStep : KernelProcessStep

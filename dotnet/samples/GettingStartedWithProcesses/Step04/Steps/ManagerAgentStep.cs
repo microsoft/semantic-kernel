@@ -22,7 +22,7 @@ public class ManagerAgentStep : KernelProcessStep
     {
         public const string InvokeAgent = nameof(InvokeAgent);
         public const string InvokeGroup = nameof(InvokeGroup);
-        public const string RecieveResponse = nameof(RecieveResponse);
+        public const string ReceiveResponse = nameof(ReceiveResponse);
     }
 
     [KernelFunction(Functions.InvokeAgent)]
@@ -68,8 +68,8 @@ public class ManagerAgentStep : KernelProcessStep
         await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.GroupInput, Data = summary });
     }
 
-    [KernelFunction(Functions.RecieveResponse)]
-    public async Task RecieveResponseAsync(KernelProcessStepContext context, Kernel kernel, string response)
+    [KernelFunction(Functions.ReceiveResponse)]
+    public async Task ReceiveResponseAsync(KernelProcessStepContext context, Kernel kernel, string response)
     {
         // Get the chat history
         IChatHistoryProvider historyProvider = kernel.GetHistory();

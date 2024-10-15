@@ -66,7 +66,7 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
                     Id = AgentOrchestrationEvents.StartProcess
                 });
 
-        // Demonstrate history is maintained independant of process state
+        // Demonstrate history is maintained independent of process state
         this.WriteHorizontalRule();
         foreach (ChatMessageContent message in history)
         {
@@ -132,7 +132,7 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
             .OnEvent(AgentOrchestrationEvents.GroupInput)
             .SendEventTo(new ProcessFunctionTargetBuilder(agentGroupStep, parameterName: "input"));
 
-        // Render response from inner chat (for visiblity)
+        // Render response from inner chat (for visibIlity)
         agentGroupStep
             .OnEvent(AgentOrchestrationEvents.GroupMessage)
             .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.Functions.RenderInnerMessage, parameterName: "message"));
@@ -140,7 +140,7 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
         // Provide inner response to primary agent
         agentGroupStep
             .OnEvent(AgentOrchestrationEvents.GroupCompleted)
-            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.Functions.RecieveResponse, parameterName: "response"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.Functions.ReceiveResponse, parameterName: "response"));
 
         KernelProcess kernelProcess = process.Build();
 

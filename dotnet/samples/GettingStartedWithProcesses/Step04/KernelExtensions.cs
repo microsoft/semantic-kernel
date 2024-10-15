@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Agents.History;
 namespace Step04;
 
 /// <summary>
-/// Convience extensions for agent based process patterns.
+/// Convenience extensions for agent based process patterns.
 /// </summary>
 internal static class KernelExtensions
 {
