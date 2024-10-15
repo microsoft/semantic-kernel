@@ -47,7 +47,6 @@ public static class ServiceCollectionExtensions
         VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         // If we are not constructing the dependent services, add the VectorStoreTextSearch as transient, since we
         // cannot make assumptions about how dependent services are being managed.

@@ -10,7 +10,6 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
 public interface IVectorizableTextSearch<TRecord>
-    where TRecord : class
 {
     /// <summary>
     /// Search the vector store for records that match the given text and filter. The text string will be vectorized downstream and used for the vector search.

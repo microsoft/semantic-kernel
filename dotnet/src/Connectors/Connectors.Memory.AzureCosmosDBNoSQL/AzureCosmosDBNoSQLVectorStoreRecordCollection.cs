@@ -25,7 +25,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     IVectorStoreRecordCollection<string, TRecord>,
     IVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, TRecord>
-    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
     /// <summary>The name of this database for telemetry purposes.</summary>

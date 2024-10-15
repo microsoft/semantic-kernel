@@ -14,57 +14,13 @@ namespace SemanticKernel.IntegrationTests.Plugins.Web.Google;
 /// </summary>
 public class GoogleTextSearchTests : BaseTextSearchTests
 {
-    // If null, all tests will be enabled
-    private const string SkipReason = "Failing in integration test pipeline so disabling while investigating a fix (issue 9168)";
-
-    [Fact(Skip = SkipReason)]
-    public override async Task CanSearchAsync()
-    {
-        await base.CanSearchAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task CanGetTextSearchResultsAsync()
-    {
-        await base.CanGetTextSearchResultsAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task CanGetSearchResultsAsync()
-    {
-        await base.CanGetSearchResultsAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task UsingTextSearchWithAFilterAsync()
-    {
-        await base.UsingTextSearchWithAFilterAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task FunctionCallingUsingCreateWithSearchAsync()
-    {
-        await base.FunctionCallingUsingCreateWithSearchAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task FunctionCallingUsingCreateWithGetSearchResultsAsync()
-    {
-        await base.FunctionCallingUsingCreateWithGetSearchResultsAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task FunctionCallingUsingGetTextSearchResultsAsync()
-    {
-        await base.FunctionCallingUsingGetTextSearchResultsAsync();
-    }
-
     /// <inheritdoc/>
     public override Task<ITextSearch> CreateTextSearchAsync()
     {
         var configuration = this.Configuration.GetSection("Google").Get<GoogleConfiguration>();
         Assert.NotNull(configuration);
         Assert.NotNull(configuration.ApiKey);
+        Assert.NotNull(configuration.SearchEngineId);
 
         return Task.FromResult<ITextSearch>(new GoogleTextSearch(
             initializer: new() { ApiKey = configuration.ApiKey },
