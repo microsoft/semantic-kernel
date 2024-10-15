@@ -170,9 +170,9 @@ This includes both direct _agent_ interaction as well as making use of _AgentGro
 ```mermaid
 flowchart RL
     O --> A
-    O@{shape: circle, label: "Start"}
+    O((Start))
     A[User] -->|input| B[ManagerAgent]
-    A --> F@{shape: double-circle, label: Done}
+    A --> F((Done))
     B --> |response|A
     B --> |delegate| G
     G --> |response|B
