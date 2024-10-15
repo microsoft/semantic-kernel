@@ -85,6 +85,8 @@ internal sealed class RAGChatService<TKey>(
         }
 
         Console.WriteLine("PDF loading complete\n");
+
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Assistant > Press enter with no prompt to exit.");
 
         // Add a search plugin to the kernel which we will use in the template below
