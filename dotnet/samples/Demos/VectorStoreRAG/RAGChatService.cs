@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
@@ -17,11 +18,13 @@ namespace VectorStoreRAG;
 /// <param name="vectorStoreTextSearch">Used to search the vector store.</param>
 /// <param name="kernel">Used to make requests to the LLM.</param>
 /// <param name="ragConfigOptions">The configuration options for the application.</param>
+/// <param name="appShutdownCancellationTokenSource">Used to gracefully shut down the entire application when cancelled.</param>
 internal sealed class RAGChatService<TKey>(
     IDataLoader dataLoader,
     VectorStoreTextSearch<TextSnippet<TKey>> vectorStoreTextSearch,
     Kernel kernel,
-    IOptions<RagConfig> ragConfigOptions) : IHostedService
+    IOptions<RagConfig> ragConfigOptions,
+    [FromKeyedServices("AppShutdown")] CancellationTokenSource appShutdownCancellationTokenSource) : IHostedService
 {
     private Task? _dataLoaded;
     private Task? _chatLoop;
@@ -83,6 +86,9 @@ internal sealed class RAGChatService<TKey>(
 
         Console.WriteLine("PDF loading complete\n");
 
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Assistant > Press enter with no prompt to exit.");
+
         // Add a search plugin to the kernel which we will use in the template below
         // to do a vector search for related information to the user query.
         kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
@@ -98,6 +104,13 @@ internal sealed class RAGChatService<TKey>(
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("User > ");
             var question = Console.ReadLine();
+
+            // Exit the application if the user didn't type anything.
+            if (string.IsNullOrWhiteSpace(question))
+            {
+                appShutdownCancellationTokenSource.Cancel();
+                break;
+            }
 
             // Invoke the LLM with a template that uses the search plugin to
             // 1. get related information to the user query from the vector store
@@ -158,7 +171,11 @@ internal sealed class RAGChatService<TKey>(
             foreach (var pdfFilePath in ragConfigOptions.Value.PdfFilePaths ?? [])
             {
                 Console.WriteLine($"Loading PDF into vector store: {pdfFilePath}");
-                await dataLoader.LoadPdf(pdfFilePath, cancellationToken).ConfigureAwait(false);
+                await dataLoader.LoadPdf(
+                    pdfFilePath,
+                    ragConfigOptions.Value.DataLoadingBatchSize,
+                    ragConfigOptions.Value.DataLoadingBetweenBatchDelayInMilliseconds,
+                    cancellationToken).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
