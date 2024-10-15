@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
-    private const string EndProcessId = "END";
+    private const string EndProcessId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;

@@ -41,8 +41,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     /// <returns>A <see cref="ValueTask"/></returns>
     public override ValueTask ActivateAsync(KernelProcessStepState<UserInputState> state)
     {
-        state.State ??= new();
-        _state = state.State;
+        _state = state.State ?? new();
 
         PopulateUserInputs(_state);
 
