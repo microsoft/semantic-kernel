@@ -87,7 +87,7 @@ public class ManagerAgentStep : KernelProcessStep
         ChatHistory localHistory =
         [
             new ChatMessageContent(AuthorRole.System, "Analyze the conversation and determine if user input is being solicited."),
-            ..history.TakeLast(2)
+            .. history.TakeLast(2)
         ];
 
         IChatCompletionService service = kernel.GetRequiredService<IChatCompletionService>();
