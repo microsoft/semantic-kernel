@@ -5,6 +5,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="AssemblyAI" Version="1.1.3" />
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.11.20" />
     <PackageVersion Include="OpenAI" Version="[2.1.0-beta.1]" />

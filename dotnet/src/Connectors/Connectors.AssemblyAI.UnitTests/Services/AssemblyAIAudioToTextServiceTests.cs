@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
@@ -15,37 +17,23 @@ namespace SemanticKernel.Connectors.AssemblyAI.UnitTests;
 /// </summary>
 public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 {
-    private const string TranscriptGuid = "0D0446CE-5C41-476F-9642-61F425FEA477";
-
-    private const string UploadFileResponseContent =
-        """
-        {
-            "upload_url": "http://localhost/path/to/file.mp3"
-        }
-        """;
-
-    private const string CreateTranscriptResponseContent =
-        $$"""
-          {
-            "id": "{{TranscriptGuid}}",
-            "text": null,
-            "status": "queued"
-          }
-          """;
-
-    private const string TranscriptCompletedResponseContent =
-        $$"""
-          {
-            "id": "{{TranscriptGuid}}",
-            "text": "Test audio-to-text response",
-            "status": "completed"
-          }
-          """;
-
     private const string ExpectedTranscriptText = "Test audio-to-text response";
+    private static string UploadFileResponseContent { get; set; }
+    private static string TranscriptGuid { get; set; }
+    private static string CreateTranscriptResponseContent { get; set; }
+    private static string TranscriptCompletedResponseContent { get; set; }
 
     private readonly MultipleHttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
+
+    static AssemblyAIAudioToTextServiceTests()
+    {
+        UploadFileResponseContent = File.ReadAllText("./TestData/upload_file_response.json");
+        CreateTranscriptResponseContent = File.ReadAllText("./TestData/create_transcript_response.json");
+        TranscriptCompletedResponseContent = File.ReadAllText("./TestData/transcript_completed_response.json");
+        var json = JsonSerializer.Deserialize<JsonElement>(CreateTranscriptResponseContent);
+        TranscriptGuid = json.GetProperty("id").GetString()!;
+    }
 
     public AssemblyAIAudioToTextServiceTests()
     {
@@ -83,7 +71,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
 
         // Act
         var result = await service.GetTextContentsAsync(
-            new AudioContent(new BinaryData("data"))
+            new AudioContent(new BinaryData("data").ToMemory(), null)
         ).ConfigureAwait(true);
 
         // Assert
@@ -128,7 +116,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentsAsync(
-                new AudioContent(new BinaryData("data"))
+                new AudioContent(new BinaryData("data").ToMemory(), null)
             ).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }
@@ -157,7 +145,7 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(
             async () => await service.GetTextContentsAsync(
-                new AudioContent(new BinaryData("data"))
+                new AudioContent(new BinaryData("data").ToMemory(), null)
             ).ConfigureAwait(true)
         ).ConfigureAwait(true);
     }
