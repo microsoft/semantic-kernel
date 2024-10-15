@@ -48,7 +48,7 @@ For Azure OpenAI, you need to add the following secrets:
 
 ```cli
 dotnet user-secrets set "AIServices:AzureOpenAI:Endpoint" "https://<yourservice>.openai.azure.com"
-dotnet user-secrets set "AIServices:AzureOpenAI:ChatDeploymentName" "gpt-4"
+dotnet user-secrets set "AIServices:AzureOpenAI:ChatDeploymentName" "<your deployment name>"
 ```
 
 Note that the code doesn't use an API Key to communicate with Azure Open AI, but rather an `AzureCliCredential` so no api key secret is required.
@@ -59,7 +59,7 @@ For Azure OpenAI Embeddings, you need to add the following secrets:
 
 ```cli
 dotnet user-secrets set "AIServices:AzureOpenAIEmbeddings:Endpoint" "https://<yourservice>.openai.azure.com"
-dotnet user-secrets set "AIServices:AzureOpenAIEmbeddings:DeploymentName" "text-embedding-ada-002"
+dotnet user-secrets set "AIServices:AzureOpenAIEmbeddings:DeploymentName" "<your deployment name>"
 ```
 
 Note that the code doesn't use an API Key to communicate with Azure Open AI, but rather an `AzureCliCredential` so no api key secret is required.

@@ -85,6 +85,7 @@ internal sealed class RAGChatService<TKey>(
         }
 
         Console.WriteLine("PDF loading complete\n");
+        Console.WriteLine("Assistant > Press enter with no prompt to exit.");
 
         // Add a search plugin to the kernel which we will use in the template below
         // to do a vector search for related information to the user query.
@@ -102,8 +103,8 @@ internal sealed class RAGChatService<TKey>(
             Console.Write("User > ");
             var question = Console.ReadLine();
 
-            // Exit the application if the user types "exit".
-            if (question is not null && question.Trim().Equals("exit", StringComparison.OrdinalIgnoreCase))
+            // Exit the application if the user didn't type anything.
+            if (string.IsNullOrWhiteSpace(question))
             {
                 appShutdownCancellationTokenSource.Cancel();
                 break;
