@@ -162,6 +162,26 @@ graph TD
     SingleOrderReadyEvent-->PackFoodStep --> OrderPackedEvent
 ```
 
+### Step04_AgentOrchestration
+
+This tutorial demonstrates integrating the _Agent Framework_ with processes.
+This includes both direct _agent_ interaction as well as making use of _AgentGroupChat_.
+
+```mermaid
+flowchart RL
+    O@{ shape: circle, label: "Start" } --> A
+    A[User] -->|input| B[ManagerAgent]
+    A --> F@{shape: double-circle, label: Done}
+    B --> |response|A
+    B --> |delegate| G
+    G --> |response|B
+    subgraph G[GroupChat]
+        direction LR
+        D[Agent1] --> E
+        E[Agent2] --> D
+    end
+```
+
 ## Running Examples with Filters
 Examples may be explored and ran within _Visual Studio_ using _Test Explorer_.
 

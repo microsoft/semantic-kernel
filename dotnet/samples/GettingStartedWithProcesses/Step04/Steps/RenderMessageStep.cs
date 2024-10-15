@@ -5,48 +5,79 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Step04.Steps;
 
 /// <summary>
-/// %%%
+/// Displays output to the user.  While in this case it is just writing to the console,
+/// in a real-world scenario this would be a more sophisticated rendering system.  Isolating this
+/// rendering logic from the internal logic of other process steps simplifies responsibilty contract
+/// and simplifies testing and state management.
 /// </summary>
 public class RenderMessageStep : KernelProcessStep
 {
     public static class Functions
     {
+        public const string RenderDone = nameof(RenderMessageStep.RenderDone);
         public const string RenderError = nameof(RenderMessageStep.RenderError);
+        public const string RenderInnerMessage = nameof(RenderMessageStep.RenderInnerMessage);
         public const string RenderMessage = nameof(RenderMessageStep.RenderMessage);
-        public const string RenderMessages = nameof(RenderMessageStep.RenderMessages);
         public const string RenderUserText = nameof(RenderMessageStep.RenderUserText);
     }
 
+    /// <summary>
+    /// Render an explicit message to indicate the process has completed in the expected state.
+    /// </summary>
+    /// <remarks>
+    /// If this message isn't rendered, the process is considered to have failed.
+    /// </remarks>
     [KernelFunction]
-    public void RenderError(string message)
+    public void RenderDone()
     {
-        Console.WriteLine($"ERROR: {message}");
+        Render("DONE!");
     }
 
+    /// <summary>
+    /// Render exception
+    /// </summary>
+    [KernelFunction]
+    public void RenderError(Exception exception)
+    {
+        string message = string.IsNullOrWhiteSpace(exception.Message) ? "Unexpected failure" : exception.Message;
+        Render($"ERROR: {message} [{exception.GetType().Name}]{Environment.NewLine}{exception.StackTrace}");
+    }
+
+    /// <summary>
+    /// Render user input
+    /// </summary>
     [KernelFunction]
     public void RenderUserText(string message)
     {
-        Console.WriteLine($"{AuthorRole.User.Label.ToUpperInvariant()}: {message}");
+        Render($"{AuthorRole.User.Label.ToUpperInvariant()}: {message}");
     }
 
+    /// <summary>
+    /// Render an assistant message from the primary chat
+    /// </summary>
     [KernelFunction]
     public void RenderMessage(ChatMessageContent message)
     {
         Render(message);
     }
 
+    /// <summary>
+    /// Render an assistant message from the inner chat
+    /// </summary>
     [KernelFunction]
-    public void RenderMessages(IEnumerable<ChatMessageContent> messages)
+    public void RenderInnerMessage(ChatMessageContent message)
     {
-        foreach (ChatMessageContent message in messages)
-        {
-            Render(message);
-        }
+        Render(message, indent: true);
     }
 
-    public static void Render(ChatMessageContent message)
+    public static void Render(ChatMessageContent message, bool indent = false)
     {
         string displayName = !string.IsNullOrWhiteSpace(message.AuthorName) ? $" - {message.AuthorName}" : string.Empty;
-        Console.WriteLine($"{message.Role.Label.ToUpperInvariant()}{displayName}: {message.Content}");
+        Render($"{(indent ? "\t" : string.Empty)}{message.Role.Label.ToUpperInvariant()}{displayName}: {message.Content}");
+    }
+
+    public static void Render(string message)
+    {
+        Console.WriteLine(message);
     }
 }

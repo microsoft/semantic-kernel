@@ -25,7 +25,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     /// <summary>
     /// The state object for the user input step. This object holds the user inputs and the current input index.
     /// </summary>
-    private UserInputState? _state;
+    private readonly UserInputState _state = new();
 
     /// <summary>
     /// Method to be overridden by the user to populate with custom user messages
@@ -44,8 +44,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     /// <returns>A <see cref="ValueTask"/></returns>
     public override ValueTask ActivateAsync(KernelProcessStepState<UserInputState> state)
     {
-        state.State ??= new();
-        _state = state.State;
+        state.State ??= _state;
 
         PopulateUserInputs(_state);
 
@@ -61,7 +60,14 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     [KernelFunction(Functions.GetUserInput)]
     public async ValueTask GetUserInputAsync(KernelProcessStepContext context)
     {
-        var userMessage = _state!.UserInputs[_state.CurrentInputIndex];
+        if (_state.CurrentInputIndex >= _state.UserInputs.Count)
+        {
+            // Emit the completion event
+            await context.EmitEventAsync(new() { Id = CommonEvents.UserInputComplete });
+            return;
+        }
+
+        string userMessage = _state.UserInputs[_state.CurrentInputIndex];
         _state.CurrentInputIndex++;
 
         if (!this.SuppressOutput)
@@ -70,6 +76,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
             Console.WriteLine($"USER: {userMessage}");
             Console.ResetColor();
         }
+
         // Emit the user input
         await context.EmitEventAsync(new() { Id = CommonEvents.UserInputReceived, Data = userMessage });
     }
