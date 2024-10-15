@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// <summary>
 /// Options when creating a <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
-public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord> where TRecord : class
+public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Azure CosmosDB NoSQL record.

@@ -8,5 +8,4 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// <param name="vectorName">The name of the vector to find.</param>
 /// <param name="record">The record that contains the vector to look up.</param>
 /// <returns>The named vector from the record.</returns>
-public delegate object? InMemoryVectorStoreVectorResolver<TRecord>(string vectorName, TRecord record)
-    where TRecord : class;
+public delegate object? InMemoryVectorStoreVectorResolver<TRecord>(string vectorName, TRecord record);

@@ -44,13 +44,13 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// Initializes a new instance of the <see cref="VectorStoreRecordVectorAttribute"/> class.
     /// </summary>
     /// <param name="Dimensions">The number of dimensions that the vector has.</param>
-    /// <param name="IndexKind">The kind of index to use.</param>
     /// <param name="DistanceFunction">The distance function to use when comparing vectors.</param>
-    public VectorStoreRecordVectorAttribute(int Dimensions, string? IndexKind, string? DistanceFunction)
+    /// <param name="IndexKind">The kind of index to use.</param>
+    public VectorStoreRecordVectorAttribute(int Dimensions, string? DistanceFunction, string? IndexKind)
     {
         this.Dimensions = Dimensions;
-        this.IndexKind = IndexKind;
         this.DistanceFunction = DistanceFunction;
+        this.IndexKind = IndexKind;
     }
 
     /// <summary>

@@ -7,7 +7,6 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
 public sealed class VectorSearchResult<TRecord>
-    where TRecord : class
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorSearchResult{TRecord}"/> class.
