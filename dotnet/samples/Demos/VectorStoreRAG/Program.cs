@@ -13,12 +13,16 @@ using VectorStoreRAG.Options;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
-builder.Configuration
-    .AddUserSecrets<Program>();
-
+// Configure configuration and load the application configuration.
+builder.Configuration.AddUserSecrets<Program>();
 builder.Services.Configure<RagConfig>(builder.Configuration.GetSection(RagConfig.ConfigSectionName));
-
 var appConfig = new ApplicationConfig(builder.Configuration);
+
+// Create a cancellation token and source to pass to the application service to allow them
+// to request a graceful application shutdown.
+CancellationTokenSource appShutdownCancellationTokenSource = new();
+CancellationToken appShutdownCancellationToken = appShutdownCancellationTokenSource.Token;
+builder.Services.AddKeyedSingleton("AppShutdown", appShutdownCancellationTokenSource);
 
 // Register the kernel with the dependency injection container
 // and add Chat Completion and Text Embedding Generation services.
@@ -54,6 +58,10 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.AzureCosmosDBNoSQLConfig.ConnectionString,
             appConfig.AzureCosmosDBNoSQLConfig.DatabaseName);
         break;
+    case "InMemory":
+        kernelBuilder.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
+            appConfig.RagConfig.CollectionName);
+        break;
     case "Qdrant":
         kernelBuilder.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
             appConfig.RagConfig.CollectionName,
@@ -84,6 +92,7 @@ switch (appConfig.RagConfig.VectorStoreType)
     case "AzureAISearch":
     case "AzureCosmosDBMongoDB":
     case "AzureCosmosDBNoSQL":
+    case "InMemory":
     case "Redis":
         RegisterServices<string>(builder, kernelBuilder, appConfig);
         break;
@@ -97,7 +106,7 @@ switch (appConfig.RagConfig.VectorStoreType)
 
 // Build and run the host.
 using IHost host = builder.Build();
-await host.RunAsync().ConfigureAwait(false);
+await host.RunAsync(appShutdownCancellationToken).ConfigureAwait(false);
 
 static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilder kernelBuilder, ApplicationConfig vectorStoreRagConfig)
     where TKey : notnull

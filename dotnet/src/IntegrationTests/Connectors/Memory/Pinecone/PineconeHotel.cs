@@ -34,6 +34,6 @@ public record PineconeHotel()
     [VectorStoreRecordData]
     public string Description { get; set; }
 
-    [VectorStoreRecordVector(Dimensions: 8, IndexKind: null, DistanceFunction: DistanceFunction.DotProductSimilarity)]
+    [VectorStoreRecordVector(Dimensions: 8, DistanceFunction: DistanceFunction.DotProductSimilarity)]
     public ReadOnlyMemory<float> DescriptionEmbedding { get; set; }
 }
