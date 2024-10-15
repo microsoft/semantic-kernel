@@ -92,13 +92,13 @@ internal static class VolatileVectorStoreCollectionSearchMapping
     /// <summary>
     /// Filter the provided records using the provided filter definition.
     /// </summary>
-    /// <param name="filter">The filter definition to filter the <paramref name="records"/> with.</param>
+    /// <param name="filterClauses">The filter clauses to filter the <paramref name="records"/> with.</param>
     /// <param name="records">The records to filter.</param>
     /// <returns>The filtered records.</returns>
     /// <exception cref="InvalidOperationException">Thrown when an unsupported filter clause is encountered.</exception>
-    public static IEnumerable<object> FilterRecords(VectorSearchFilter? filter, IEnumerable<object> records)
+    public static IEnumerable<object> FilterRecords(IEnumerable<FilterClause>? filterClauses, IEnumerable<object> records)
     {
-        if (filter == null)
+        if (filterClauses == null)
         {
             return records;
         }
@@ -110,7 +110,7 @@ internal static class VolatileVectorStoreCollectionSearchMapping
             // Run each filter clause against the record, and AND the results together.
             // Break if any clause returns false, since we are doing an AND and no need
             // to check any further clauses.
-            foreach (var clause in filter.FilterClauses)
+            foreach (var clause in filterClauses)
             {
                 if (clause is EqualToFilterClause equalToFilter)
                 {

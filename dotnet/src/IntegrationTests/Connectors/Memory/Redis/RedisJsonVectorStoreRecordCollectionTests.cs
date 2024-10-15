@@ -335,6 +335,41 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     [Theory(Skip = SkipReason)]
     [InlineData("equality")]
     [InlineData("tagContains")]
+    public async Task ItCanSearchWithoutVectorAndWithFilterAsync(string filterType)
+    {
+        // Arrange
+        var options = new RedisJsonVectorStoreRecordCollectionOptions<Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisJsonVectorStoreRecordCollection<Hotel>(fixture.Database, TestCollectionName, options);
+        var filter = filterType == "equality" ? new VectorlessSearchFilter().EqualTo("HotelCode", 1) : new VectorlessSearchFilter().AnyTagEqualTo("Tags", "pool");
+
+        // Act
+        var actual = await sut.VectorlessSearchAsync(
+            new()
+            {
+                IncludeVectors = true,
+                Filter = filter
+            });
+
+        // Assert
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResult = searchResults.First();
+        Assert.Equal("BaseSet-1", searchResult?.HotelId);
+        Assert.Equal("My Hotel 1", searchResult?.HotelName);
+        Assert.Equal(1, searchResult?.HotelCode);
+        Assert.Equal(new[] { "pool", "air conditioning", "concierge" }, searchResult?.Tags);
+        Assert.Equal(new[] { "pool", "air conditioning", "concierge" }, searchResult?.FTSTags);
+        Assert.True(searchResult?.ParkingIncluded);
+        Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), searchResult?.LastRenovationDate);
+        Assert.Equal(3.6, searchResult?.Rating);
+        Assert.Equal("Seattle", searchResult?.Address.City);
+        Assert.Equal("This is a great hotel.", searchResult?.Description);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, searchResult?.DescriptionEmbedding?.ToArray());
+    }
+
+    [Theory(Skip = SkipReason)]
+    [InlineData("equality")]
+    [InlineData("tagContains")]
     public async Task ItCanSearchWithFloat32VectorAndFilterAsync(string filterType)
     {
         // Arrange
@@ -352,7 +387,6 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
         var searchResult = searchResults.First().Record;
-        Assert.Equal("My Hotel 1", searchResults.First().Record.HotelName);
         Assert.Equal("BaseSet-1", searchResult?.HotelId);
         Assert.Equal("My Hotel 1", searchResult?.HotelName);
         Assert.Equal(1, searchResult?.HotelCode);
