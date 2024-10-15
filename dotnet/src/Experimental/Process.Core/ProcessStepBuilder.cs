@@ -46,6 +46,16 @@ public abstract class ProcessStepBuilder
         return this.OnEvent($"{functionName}.OnResult");
     }
 
+    /// <summary>
+    /// Define the behavior of the step when the specified function has thrown an exception.
+    /// </summary>
+    /// <param name="functionName">The name of the function of interest.</param>
+    /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
+    public ProcessStepEdgeBuilder OnFunctionError(string functionName)
+    {
+        return this.OnEvent($"{functionName}.OnError");
+    }
+
     #endregion
 
     /// <summary>The namespace for events that are scoped to this step.</summary>

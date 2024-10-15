@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Pinecone.Grpc;
 using Sdk = Pinecone;
 
@@ -20,7 +20,6 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TRecord : class
 {
     private const string DatabaseName = "Pinecone";
     private const string CreateCollectionName = "CreateCollection";
@@ -233,6 +232,12 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         {
             yield return vector.Id;
         }
+    }
+
+    /// <inheritdoc />
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
