@@ -5,19 +5,6 @@ import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
 
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_composite_key import (
-    AzureCosmosDBNoSQLCompositeKey,
-)
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.utils import (
-    create_default_indexing_policy,
-    create_default_vector_embedding_policy,
-    get_partition_key,
-)
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorResourceNotFound,
-    VectorStoreModelDeserializationException,
-)
 from semantic_kernel.kernel_types import OneOrMany
 
 if sys.version_info >= (3, 12):
@@ -30,12 +17,25 @@ from azure.cosmos.partition_key import PartitionKey
 from azure.identity import DefaultAzureCredential
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_composite_key import (
+    AzureCosmosDBNoSQLCompositeKey,
+)
 from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_settings import (
     AzureCosmosDBNoSQLSettings,
 )
+from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.utils import (
+    create_default_indexing_policy,
+    create_default_vector_embedding_policy,
+    get_partition_key,
+)
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorException,
+    MemoryConnectorInitializationError,
+    MemoryConnectorResourceNotFound,
+    VectorStoreModelDeserializationException,
+)
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 TModel = TypeVar("TModel")
@@ -53,17 +53,15 @@ class AzureCosmosDBNoSQLCollection(VectorStoreRecordCollection[TKey, TModel]):
     database_name: str | None
     database_proxy: DatabaseProxy | None
     container_proxy: ContainerProxy | None
-    partition_key: PartitionKey | None
 
     def __init__(
         self,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition,
         collection_name: str,
+        database_name: str,
         url: str | None = None,
         key: str | None = None,
-        database_name: str | None = None,
-        database_proxy: DatabaseProxy = None,
         cosmos_client: CosmosClient = None,
     ):
         """Initializes a new instance of the AzureCosmosDBNoSQLCollection class.
@@ -72,40 +70,27 @@ class AzureCosmosDBNoSQLCollection(VectorStoreRecordCollection[TKey, TModel]):
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition): The definition of the data model.
             collection_name (str): The name of the collection.
+            database_name (str): The name of the database. Used to create a database proxy if not provided.
             url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
             key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
-            database_name (str): The name of the database. Used to create a database proxy if not provided.
-                                 Defaults to None.
-            database_proxy (DatabaseProxy): A custom database proxy. Used to create a container proxy.
-                                            Defaults to None.
-            cosmos_client (CosmosClient): A custom Cosmos client. Used to create a database proxy if
-                                          not provided. Defaults to None.
+            cosmos_client (CosmosClient): A custom Cosmos client.
         """
-        if not database_proxy and not database_name:
-            raise ServiceInitializationError("database_name is required if database_proxy is not provided.")
-
-        if not database_proxy and not cosmos_client:
+        if not cosmos_client:
             try:
                 cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
             except ValidationError as e:
-                raise ServiceInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
+                raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
 
             if cosmos_db_nosql_settings.key:
                 cosmos_client = CosmosClient(url, credential=key)
             else:
                 cosmos_client = CosmosClient(url, DefaultAzureCredential())
 
-        if database_proxy and cosmos_client:
-            raise ServiceInitializationError(
-                "Both database_proxy and cosmos_client are provided. Only one of them should be provided."
-            )
-
         super().__init__(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
             database_name=database_name,
-            database_proxy=database_proxy,
             cosmos_client=cosmos_client,
         )
 
@@ -197,13 +182,12 @@ class AzureCosmosDBNoSQLCollection(VectorStoreRecordCollection[TKey, TModel]):
                 except Exception as e:
                     raise MemoryConnectorException("Failed to create database.") from e
 
-            self.partition_key = kwargs.pop(
-                "partition_key", PartitionKey(path=f"/{self.data_model_definition.key_field_name}")
-            )
             try:
                 self.container_proxy = await self.database_proxy.create_container_if_not_exists(
                     id=self.collection_name,
-                    partition_key=self.partition_key,
+                    partition_key=kwargs.pop(
+                        "partition_key", PartitionKey(path=f"/{self.data_model_definition.key_field_name}")
+                    ),
                     indexing_policy=kwargs.pop(
                         "indexing_policy", create_default_indexing_policy(self.data_model_definition)
                     ),
