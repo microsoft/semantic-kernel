@@ -448,6 +448,44 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetStreamingChatMessageContentsWithFunctionCallAndEmptyArgumentsDoNotThrowAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function = KernelFunctionFactory.CreateFromMethod((string addressCode) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetWeather");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("WeatherPlugin", [function]));
+        using var multiHttpClient = new HttpClient(this._multiMessageHandlerStub, false);
+        var service = new OpenAIChatCompletionService("model-id", "api-key", httpClient: multiHttpClient, loggerFactory: this._mockLoggerFactory.Object);
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        this._multiMessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_single_function_call_empty_assistance_response.txt"))
+            });
+
+        this._multiMessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt"))
+            });
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
+        {
+        }
+
+        Assert.Equal(1, functionCallCount);
+    }
+
+    [Fact]
     public async Task GetStreamingChatMessageContentsWithRequiredFunctionCallAsync()
     {
         // Arrange
