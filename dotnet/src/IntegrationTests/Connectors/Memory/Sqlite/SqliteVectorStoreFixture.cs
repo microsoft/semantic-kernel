@@ -26,7 +26,6 @@ public class SqliteVectorStoreFixture : IAsyncLifetime, IDisposable
     public SqliteVectorStoreRecordCollection<TRecord> GetCollection<TRecord>(
         string collectionName,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default)
-        where TRecord : class
     {
         return new SqliteVectorStoreRecordCollection<TRecord>(
             this.Connection,

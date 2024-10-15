@@ -63,7 +63,6 @@ public static class SqliteKernelBuilderExtensions
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         builder.Services.AddSqliteVectorStoreRecordCollection<TKey, TRecord>(collectionName, options, serviceId);
         return builder;
@@ -87,7 +86,6 @@ public static class SqliteKernelBuilderExtensions
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         builder.Services.AddSqliteVectorStoreRecordCollection<TKey, TRecord>(collectionName, connectionString, options, serviceId);
         return builder;

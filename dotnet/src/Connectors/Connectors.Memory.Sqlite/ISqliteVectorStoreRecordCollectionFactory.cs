@@ -23,6 +23,5 @@ public interface ISqliteVectorStoreRecordCollectionFactory
         DbConnection connection,
         string name,
         VectorStoreRecordDefinition? vectorStoreRecordDefinition)
-        where TKey : notnull
-        where TRecord : class;
+        where TKey : notnull;
 }

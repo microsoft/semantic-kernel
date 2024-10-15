@@ -11,7 +11,6 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>
-    where TRecord : class
 {
     /// <summary><see cref="VectorStoreRecordPropertyReader"/> with helpers for reading vector store model properties and their attributes.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;

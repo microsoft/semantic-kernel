@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <summary>
 /// Options when creating a <see cref="SqliteVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
-public sealed class SqliteVectorStoreRecordCollectionOptions<TRecord> where TRecord : class
+public sealed class SqliteVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the SQLite record.
