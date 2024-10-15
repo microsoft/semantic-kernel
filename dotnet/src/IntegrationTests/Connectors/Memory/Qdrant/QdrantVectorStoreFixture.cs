@@ -335,7 +335,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(VectorDimensions, IndexKind.Hnsw, DistanceFunction.ManhattanDistance)]
+        [VectorStoreRecordVector(VectorDimensions, DistanceFunction.ManhattanDistance, IndexKind.Hnsw)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 
@@ -358,7 +358,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(VectorDimensions, IndexKind.Hnsw, DistanceFunction.ManhattanDistance)]
+        [VectorStoreRecordVector(VectorDimensions, DistanceFunction.ManhattanDistance, IndexKind.Hnsw)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 }
