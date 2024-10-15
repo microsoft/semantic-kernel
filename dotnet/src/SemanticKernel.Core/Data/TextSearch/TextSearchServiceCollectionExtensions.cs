@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Data;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register <see cref="ITextSearch"/> for use with <see cref="IServiceCollection"/>.
 /// </summary>
+[Experimental("SKEXP0001")]
 public static class TextSearchServiceCollectionExtensions
 {
     /// <summary>
