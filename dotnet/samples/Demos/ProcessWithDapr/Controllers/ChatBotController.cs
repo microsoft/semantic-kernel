@@ -52,7 +52,7 @@ public class ChatBotController : ControllerBase
         var kickoffStep = processBuilder.AddStepFromType<KickoffStep>();
         var myAStep = processBuilder.AddStepFromType<AStep>();
         var myBStep = processBuilder.AddStepFromType<BStep>();
-        var myCStep = processBuilder.AddStepFromType<CStep, CStepState>(new() { CurrentCycle = 1 });
+        var myCStep = processBuilder.AddStepFromType<CStep, CStepState>(initialState: new() { CurrentCycle = 1 });
 
         processBuilder
             .OnInputEvent(CommonEvents.StartProcess)
