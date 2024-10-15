@@ -62,6 +62,8 @@ def data_model_definition_to_weaviate_named_vectors(
                 )
             )
 
+    return named_vectors
+
 
 def to_weaviate_vector_index_config(vector: VectorStoreRecordVectorField) -> _VectorIndexConfigCreate:
     """Convert a vector field to a Weaviate vector index configuration.
@@ -102,6 +104,8 @@ def to_weaviate_vector_distance(distance_function: DistanceFunction | None) -> s
             return "l2-squared"
         case DistanceFunction.MANHATTAN:
             return "manhattan"
+        case DistanceFunction.HAMMING:
+            return "hamming"
 
     return None
 

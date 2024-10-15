@@ -5,6 +5,7 @@ from unittest.mock import ANY, AsyncMock, patch
 import pytest
 import weaviate
 from weaviate import WeaviateAsyncClient
+from weaviate.classes.config import Configure, DataType, Property
 from weaviate.collections.classes.config_vectorizers import VectorDistances
 from weaviate.collections.classes.data import DataObject
 from weaviate.collections.collections.async_ import _CollectionsAsync
@@ -293,8 +294,18 @@ async def test_weaviate_collection_create_collection(
 
     mock_async_client.collections.create.assert_called_once_with(
         collection_name,
-        properties=ANY,
-        vectorizer_config=ANY,
+        properties=[
+            Property(
+                name="content",
+                data_type=DataType.TEXT,
+            )
+        ],
+        vectorizer_config=[
+            Configure.NamedVectors.none(
+                name="vector",
+                vector_index_config=Configure.VectorIndex.none(),
+            )
+        ],
     )
 
 
@@ -627,6 +638,7 @@ def test_distance_function_mapping() -> None:
     assert to_weaviate_vector_distance(DistanceFunction.DOT_PROD) == VectorDistances.DOT
     assert to_weaviate_vector_distance(DistanceFunction.EUCLIDEAN) == VectorDistances.L2_SQUARED
     assert to_weaviate_vector_distance(DistanceFunction.MANHATTAN) == VectorDistances.MANHATTAN
+    assert to_weaviate_vector_distance(DistanceFunction.HAMMING) == VectorDistances.HAMMING
 
 
 # endregion

@@ -8,7 +8,7 @@ There are a few ways you can deploy your Weaviate database:
 - [Weaviate Cloud](https://weaviate.io/developers/weaviate/installation/weaviate-cloud-services)
 - [Docker](https://weaviate.io/developers/weaviate/installation/docker-compose)
 - [Embedded](https://weaviate.io/developers/weaviate/installation/embedded)
-- Other cloud providers such as [AWS](https://weaviate.io/developers/weaviate/installation/aws-marketplace) or [GCP](https://weaviate.io/developers/weaviate/installation/gc-marketplace).
+- Other cloud providers such as [Azure](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/weaviatebv1686614539420.weaviate_1?tab=Overview), [AWS](https://weaviate.io/developers/weaviate/installation/aws-marketplace) or [GCP](https://weaviate.io/developers/weaviate/installation/gc-marketplace).
 
 > Note that embedded mode is not supported on Windows yet: [GitHub issue](https://github.com/weaviate/weaviate/issues/3315)
 

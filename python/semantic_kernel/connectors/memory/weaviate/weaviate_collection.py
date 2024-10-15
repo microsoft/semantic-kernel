@@ -38,11 +38,11 @@ from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 TModel = TypeVar("TModel")
-TKey = TypeVar("TKey")
+TKey = TypeVar("TKey", str, int)
 
 
 @experimental_class
-class WeaviateCollection(VectorStoreRecordCollection[str | int, TModel]):
+class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
     """A Weaviate collection is a collection of records that are stored in a Weaviate database."""
 
     async_client: weaviate.WeaviateAsyncClient
