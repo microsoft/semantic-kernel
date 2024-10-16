@@ -14,13 +14,13 @@ public sealed class KernelProcessEdge
     /// <summary>
     /// The unique identifier of the source Step.
     /// </summary>
-    [DataMember(Name = "sourceStepId")]
+    [DataMember]
     public string SourceStepId { get; init; }
 
     /// <summary>
     /// The collection of <see cref="KernelProcessFunctionTarget"/>s that are the output of the source Step.
     /// </summary>
-    [DataMember(Name = "outputTarget")]
+    [DataMember]
     public KernelProcessFunctionTarget OutputTarget { get; init; }
 
     /// <summary>

@@ -264,7 +264,6 @@ internal class LocalStep : KernelProcessMessageChannel
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
             stateType = typeof(KernelProcessStepState);
-            //stateObject = new KernelProcessStepState(this.Name, this.Id);
         }
 
         if (stateObject is null)
