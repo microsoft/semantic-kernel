@@ -7,7 +7,7 @@ namespace Step03.Processes;
 
 /// <summary>
 /// Sample process that showcases how to create a process with sequential steps and reuse of existing steps.<br/>
-/// For a visual reference of the FriedFishProcess check this <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#Fried_Fish_Preparation_Process" >diagram</see>
+/// For a visual reference of the FriedFishProcess check this <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#fried-fish-preparation-process" >diagram</see>
 /// </summary>
 public static class FriedFishProcess
 {
@@ -20,12 +20,12 @@ public static class FriedFishProcess
         public const string FriedFishReady = nameof(FryFoodStep.OutputEvents.FriedFoodReady);
     }
 
-    public static ProcessBuilder CreateProcess(string processName = "FriedFish")
+    public static ProcessBuilder CreateProcess(string processName = "FriedFishProcess")
     {
         var processBuilder = new ProcessBuilder(processName);
 
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsStep>();
-        var chopStep = processBuilder.AddStepFromType<CutFoodStep>();
+        var chopStep = processBuilder.AddStepFromType<CutFoodStep>("chopStep");
         var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
 
         processBuilder
