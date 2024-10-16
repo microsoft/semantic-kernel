@@ -26,15 +26,41 @@ builder.Services.AddKeyedSingleton("AppShutdown", appShutdownCancellationTokenSo
 
 // Register the kernel with the dependency injection container
 // and add Chat Completion and Text Embedding Generation services.
-var kernelBuilder = builder.Services.AddKernel()
-    .AddAzureOpenAIChatCompletion(
-        appConfig.AzureOpenAIConfig.ChatDeploymentName,
-        appConfig.AzureOpenAIConfig.Endpoint,
-        new AzureCliCredential())
-    .AddAzureOpenAITextEmbeddingGeneration(
-        appConfig.AzureOpenAIEmbeddingsConfig.DeploymentName,
-        appConfig.AzureOpenAIEmbeddingsConfig.Endpoint,
-        new AzureCliCredential());
+var kernelBuilder = builder.Services.AddKernel();
+
+switch (appConfig.RagConfig.AIChatService)
+{
+    case "AzureOpenAI":
+        kernelBuilder.AddAzureOpenAIChatCompletion(
+            appConfig.AzureOpenAIConfig.ChatDeploymentName,
+            appConfig.AzureOpenAIConfig.Endpoint,
+            new AzureCliCredential());
+        break;
+    case "OpenAI":
+        kernelBuilder.AddOpenAIChatCompletion(
+            appConfig.OpenAIConfig.ModelId,
+            appConfig.OpenAIConfig.ApiKey);
+        break;
+    default:
+        throw new NotSupportedException($"AI Chat Service type '{appConfig.RagConfig.AIChatService}' is not supported.");
+}
+
+switch (appConfig.RagConfig.AIEmbeddingService)
+{
+    case "AzureOpenAIEmbeddings":
+        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
+            appConfig.AzureOpenAIEmbeddingsConfig.DeploymentName,
+            appConfig.AzureOpenAIEmbeddingsConfig.Endpoint,
+            new AzureCliCredential());
+        break;
+    case "OpenAIEmbeddings":
+        kernelBuilder.AddOpenAITextEmbeddingGeneration(
+            appConfig.OpenAIEmbeddingsConfig.ModelId,
+            appConfig.OpenAIEmbeddingsConfig.ApiKey);
+        break;
+    default:
+        throw new NotSupportedException($"AI Embedding Service type '{appConfig.RagConfig.AIEmbeddingService}' is not supported.");
+}
 
 // Add the configured vector store record collection type to the
 // dependency injection container.
