@@ -39,7 +39,8 @@ switch (appConfig.RagConfig.AIChatService)
     case "OpenAI":
         kernelBuilder.AddOpenAIChatCompletion(
             appConfig.OpenAIConfig.ModelId,
-            appConfig.OpenAIConfig.ApiKey);
+            appConfig.OpenAIConfig.ApiKey,
+            appConfig.OpenAIConfig.OrgId);
         break;
     default:
         throw new NotSupportedException($"AI Chat Service type '{appConfig.RagConfig.AIChatService}' is not supported.");
@@ -56,7 +57,8 @@ switch (appConfig.RagConfig.AIEmbeddingService)
     case "OpenAIEmbeddings":
         kernelBuilder.AddOpenAITextEmbeddingGeneration(
             appConfig.OpenAIEmbeddingsConfig.ModelId,
-            appConfig.OpenAIEmbeddingsConfig.ApiKey);
+            appConfig.OpenAIEmbeddingsConfig.ApiKey,
+            appConfig.OpenAIEmbeddingsConfig.OrgId);
         break;
     default:
         throw new NotSupportedException($"AI Embedding Service type '{appConfig.RagConfig.AIEmbeddingService}' is not supported.");

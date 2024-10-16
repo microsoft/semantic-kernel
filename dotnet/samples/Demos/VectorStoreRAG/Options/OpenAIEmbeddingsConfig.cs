@@ -16,4 +16,7 @@ internal sealed class OpenAIEmbeddingsConfig
 
     [Required]
     public string ApiKey { get; set; } = string.Empty;
+
+    [Required]
+    public string? OrgId { get; set; } = null;
 }

@@ -68,6 +68,12 @@ dotnet user-secrets set "AIServices:OpenAI:ModelId" "<your model id>"
 dotnet user-secrets set "AIServices:OpenAI:ApiKey" "<your api key>"
 ```
 
+Optionally, you can also provide an Org Id
+
+```cli
+dotnet user-secrets set "AIServices:OpenAI:OrgId" "<your org id>"
+```
+
 ### Azure OpenAI Embeddings
 
 For Azure OpenAI Embeddings, you need to add the following secrets:
@@ -86,6 +92,12 @@ For OpenAI Embeddings, you need to add the following secrets:
 ```cli
 dotnet user-secrets set "AIServices:OpenAIEmbeddings:ModelId" "<your model id>"
 dotnet user-secrets set "AIServices:OpenAIEmbeddings:ApiKey" "<your api key>"
+```
+
+Optionally, you can also provide an Org Id
+
+```cli
+dotnet user-secrets set "AIServices:OpenAIEmbeddings:OrgId" "<your org id>"
 ```
 
 ### Azure AI Search
