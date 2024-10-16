@@ -733,7 +733,7 @@ internal static class AssistantThreadActions
 
     private static ChatMessageContent GenerateFunctionCallContent(string agentName, IList<FunctionCallContent> functionCalls)
     {
-        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        ChatMessageContent functionCallContent = new(AuthorRole.Assistant, content: null)
         {
             AuthorName = agentName
         };

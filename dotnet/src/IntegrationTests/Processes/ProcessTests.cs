@@ -285,12 +285,11 @@ public sealed class ProcessTests
     /// </summary>
     private sealed class RepeatStep : KernelProcessStep<StepState>
     {
-        private readonly StepState _state = new();
+        private StepState? _state;
 
         public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
         {
-            state.State ??= this._state;
-
+            this._state = state.State;
             return default;
         }
 
@@ -299,7 +298,7 @@ public sealed class ProcessTests
         {
             var output = string.Join(" ", Enumerable.Repeat(message, count));
             Console.WriteLine($"[REPEAT] {output}");
-            this._state.LastMessage = output;
+            this._state!.LastMessage = output;
 
             // Emit the OnReady event with a public visibility and an internal visibility to aid in testing
             await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadyPublic, Data = output, Visibility = KernelProcessEventVisibility.Public });
@@ -330,12 +329,11 @@ public sealed class ProcessTests
     /// </summary>
     private sealed class FanInStep : KernelProcessStep<StepState>
     {
-        private readonly StepState _state = new();
+        private StepState? _state;
 
         public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
         {
-            state.State ??= this._state;
-
+            this._state = state.State;
             return default;
         }
 
@@ -344,7 +342,7 @@ public sealed class ProcessTests
         {
             var output = $"{firstInput}-{secondInput}";
             Console.WriteLine($"[EMIT_COMBINED] {output}");
-            this._state.LastMessage = output;
+            this._state!.LastMessage = output;
 
             await context.EmitEventAsync(new()
             {
