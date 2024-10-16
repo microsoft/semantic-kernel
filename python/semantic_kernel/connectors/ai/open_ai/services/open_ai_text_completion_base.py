@@ -18,6 +18,7 @@ from openai.types.chat.chat_completion import Choice as ChatCompletionChoice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChatCompletionChunkChoice
 
+from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
     OpenAITextPromptExecutionSettings,
@@ -26,7 +27,10 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.utils.telemetry.model_diagnostics.decorators import trace_text_completion
+from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
+    trace_streaming_text_completion,
+    trace_text_completion,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -45,6 +49,11 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return OpenAITextPromptExecutionSettings
+
+    # Override from AIServiceClientBase
+    @override
+    def service_url(self) -> str | None:
+        return str(self.client.base_url)
 
     @override
     @trace_text_completion(MODEL_PROVIDER_NAME)
@@ -71,6 +80,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         return [self._create_text_content(response, choice, metadata) for choice in response.choices]
 
     @override
+    @trace_streaming_text_completion(MODEL_PROVIDER_NAME)
     async def _inner_get_streaming_text_contents(
         self,
         prompt: str,
@@ -147,8 +157,8 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
         }
-        if hasattr(response, "usage"):
-            ret["usage"] = response.usage
+        if response.usage is not None:
+            ret["usage"] = CompletionUsage.from_openai(response.usage)
         return ret
 
     def _get_metadata_from_text_choice(

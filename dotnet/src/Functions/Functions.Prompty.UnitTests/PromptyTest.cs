@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -119,6 +120,69 @@ public sealed class PromptyTest
         Assert.Single(kernelFunction.Metadata.Parameters);
         Assert.Equal("prompt", kernelFunction.Metadata.Parameters[0].Name);
         Assert.Empty(kernelFunction.ExecutionSettings!);
+    }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithEmbeddedFileProvider()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        ManifestEmbeddedFileProvider manifestEmbeddedProvider = new(typeof(PromptyTest).Assembly);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath,
+            fileProvider: manifestEmbeddedProvider);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
+    }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithFileProvider()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        using PhysicalFileProvider fileProvider = new(currentDirectory);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath,
+            fileProvider);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
+    }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithFileInfo()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        using PhysicalFileProvider fileProvider = new(currentDirectory);
+        var fileInfo = fileProvider.GetFileInfo(chatPromptyPath);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(
+            fileInfo: fileInfo);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
     }
 
     [Fact]

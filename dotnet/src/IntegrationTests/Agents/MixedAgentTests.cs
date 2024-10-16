@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Identity;
@@ -11,6 +13,7 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents;
@@ -30,8 +33,10 @@ public sealed class MixedAgentTests
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
     /// and targeting Open AI services.
     /// </summary>
-    [Fact(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
-    public async Task OpenAIMixedAgentTestAsync()
+    [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OpenAIMixedAgentTestAsync(bool useNewFunctionCallingModel)
     {
         OpenAIConfiguration openAISettings = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
         Assert.NotNull(openAISettings);
@@ -39,16 +44,19 @@ public sealed class MixedAgentTests
         // Arrange, Act & Assert
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(openAISettings),
-            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
-            openAISettings.ChatModelId!);
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
+            openAISettings.ChatModelId!,
+            useNewFunctionCallingModel);
     }
 
     /// <summary>
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Fact]
-    public async Task AzureOpenAIMixedAgentAsync()
+    [RetryTheory(typeof(HttpOperationException))]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AzureOpenAIMixedAgentAsync(bool useNewFunctionCallingModel)
     {
         AzureOpenAIConfiguration azureOpenAISettings = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
         Assert.NotNull(azureOpenAISettings);
@@ -57,36 +65,45 @@ public sealed class MixedAgentTests
         await this.VerifyAgentExecutionAsync(
             this.CreateChatCompletionKernel(azureOpenAISettings),
             OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(azureOpenAISettings.Endpoint)),
-            azureOpenAISettings.ChatDeploymentName!);
+            azureOpenAISettings.ChatDeploymentName!,
+            useNewFunctionCallingModel);
     }
 
     private async Task VerifyAgentExecutionAsync(
         Kernel chatCompletionKernel,
         OpenAIClientProvider config,
-        string modelName)
+        string modelName,
+        bool useNewFunctionCallingModel)
     {
         // Arrange
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
-        // Configure chat agent with the plugin.
+        var executionSettings = useNewFunctionCallingModel ?
+            new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() } :
+            new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        // Chat agent doesn't need plug-in since it has access to the shared function result.
         ChatCompletionAgent chatAgent =
             new()
             {
+                Name = "Chat",
                 Kernel = chatCompletionKernel,
                 Instructions = "Answer questions about the menu.",
-                Arguments = new(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
+                Arguments = new(executionSettings),
             };
         chatAgent.Kernel.Plugins.Add(plugin);
 
-        // Assistant doesn't need plug-in since it has access to the shared function result.
+        // Configure assistant agent with the plugin.
         OpenAIAssistantAgent assistantAgent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
                 config,
                 new(modelName)
                 {
+                    Name = "Assistant",
                     Instructions = "Answer questions about the menu."
-                });
+                },
+                new Kernel());
+        assistantAgent.Kernel.Plugins.Add(plugin);
 
         // Act & Assert
         try
@@ -114,6 +131,27 @@ public sealed class MixedAgentTests
 
         // Assert
         Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
+        await foreach (var message in chat.GetChatMessagesAsync())
+        {
+            AssertMessageValid(message);
+        }
+    }
+
+    private static void AssertMessageValid(ChatMessageContent message)
+    {
+        if (message.Items.OfType<FunctionResultContent>().Any())
+        {
+            Assert.Equal(AuthorRole.Tool, message.Role);
+            return;
+        }
+
+        if (message.Items.OfType<FunctionCallContent>().Any())
+        {
+            Assert.Equal(AuthorRole.Assistant, message.Role);
+            return;
+        }
+
+        Assert.Equal(string.IsNullOrEmpty(message.AuthorName) ? AuthorRole.User : AuthorRole.Assistant, message.Role);
     }
 
     private Kernel CreateChatCompletionKernel(AzureOpenAIConfiguration configuration)

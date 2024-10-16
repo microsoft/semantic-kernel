@@ -29,7 +29,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// </summary>
     public const string DefaultSummarizationPrompt =
         """
-        Provide a concise and complete summarizion of the entire dialog that does not exceed 5 sentences
+        Provide a concise and complete summarization of the entire dialog that does not exceed 5 sentences
 
         This summary must always:
         - Consider both user and assistant interactions

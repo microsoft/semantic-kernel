@@ -31,7 +31,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result1 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result1);
         Console.WriteLine(result1);
@@ -57,7 +57,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result);
         Console.WriteLine(result);
@@ -78,7 +78,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         string chatPrompt = """
             <message role="user">What is the weather like in Paris?</message>
             """;
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result = await kernel.InvokePromptAsync(chatPrompt, new(executionSettings));
         Console.WriteLine(result);
     }
@@ -100,7 +100,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result);
         Console.WriteLine(result);
@@ -124,7 +124,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result);
         Console.WriteLine(result);
@@ -193,7 +193,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
             {
                 new ChatMessageContent(AuthorRole.User, $"Provide an explanation why these functions: {string.Join(',', functionNames)} need to be called to answer this query: {message.Content}")
             };
-            var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+            var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
             var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, context.Kernel);
             this._output.WriteLine(result);
 

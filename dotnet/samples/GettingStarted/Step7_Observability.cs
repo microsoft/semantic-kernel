@@ -33,7 +33,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         kernel.PromptRenderFilters.Add(new MyPromptFilter(this.Output));
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
@@ -88,7 +88,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         kernel.FunctionInvoked += MyInvokedHandler;
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 

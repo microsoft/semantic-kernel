@@ -111,6 +111,8 @@ async def test_trace_chat_completion(
             gen_ai_attributes.MODEL: chat_completion.ai_model_id,
         })
 
+        mock_span.set_attribute.assert_any_call(gen_ai_attributes.ADDRESS, chat_completion.service_url())
+
         # No all connectors take the same parameters
         if execution_settings.extension_data.get("max_tokens") is not None:
             mock_span.set_attribute.assert_any_call(

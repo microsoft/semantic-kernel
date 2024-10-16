@@ -234,6 +234,7 @@ def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dic
         "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
         "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
         "AZURE_OPENAI_BASE_URL": "https://test_text_deployment.test-base-url.com",
+        "AZURE_OPENAI_TOKEN_ENDPOINT": "https://test-token-endpoint.com",
     }
 
     env_vars.update(override_env_param_dict)
@@ -412,6 +413,28 @@ def google_search_unit_test_env(monkeypatch, exclude_list, override_env_param_di
         "GOOGLE_SEARCH_API_KEY": "test_api_key",
         "GOOGLE_SEARCH_ENGINE_ID": "test_id",
     }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@fixture
+def postgres_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for Postgres connector."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {"POSTGRES_CONNECTION_STRING": "host=localhost port=5432 dbname=postgres user=testuser password=example"}
 
     env_vars.update(override_env_param_dict)
 

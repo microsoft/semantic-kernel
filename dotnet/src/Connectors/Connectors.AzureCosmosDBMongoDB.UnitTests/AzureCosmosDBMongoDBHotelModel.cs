@@ -2,7 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 
@@ -13,7 +14,7 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
     public string HotelId { get; init; } = hotelId;
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreRecordData(IsFilterable = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
@@ -25,7 +26,8 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
-    [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
+    [BsonElement("parking_is_included")]
+    [VectorStoreRecordData]
     public bool ParkingIncluded { get; set; }
 
     /// <summary>An array metadata field.</summary>
@@ -37,6 +39,6 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
     public string? Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
+    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance, IndexKind: IndexKind.IvfFlat)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

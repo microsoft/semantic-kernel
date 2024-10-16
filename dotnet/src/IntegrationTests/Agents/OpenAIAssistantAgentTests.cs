@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents;
@@ -38,7 +40,7 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(openAISettings);
 
         await this.ExecuteAgentAsync(
-            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
             openAISettings.ChatModelId!,
             input,
             expectedAnswerContains);
@@ -48,7 +50,7 @@ public sealed class OpenAIAssistantAgentTests
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Theory]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task AzureOpenAIAssistantAgentAsync(string input, string expectedAnswerContains)
     {
@@ -74,7 +76,7 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(openAISettings);
 
         await this.ExecuteStreamingAgentAsync(
-            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+            OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(openAISettings.ApiKey)),
             openAISettings.ModelId,
             input,
             expectedAnswerContains);
@@ -84,7 +86,7 @@ public sealed class OpenAIAssistantAgentTests
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Theory/*(Skip = "No supported endpoint configured.")*/]
+    [RetryTheory(typeof(HttpOperationException))]
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task AzureOpenAIAssistantAgentStreamingAsync(string input, string expectedAnswerContains)
     {
@@ -112,12 +114,12 @@ public sealed class OpenAIAssistantAgentTests
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel,
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
-                });
+                },
+                kernel);
 
         try
         {
@@ -133,6 +135,10 @@ public sealed class OpenAIAssistantAgentTests
 
             // Assert
             Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
+            await foreach (var message in chat.GetChatMessagesAsync())
+            {
+                AssertMessageValid(message);
+            }
         }
         finally
         {
@@ -154,12 +160,12 @@ public sealed class OpenAIAssistantAgentTests
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel,
                 config,
                 new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
-                });
+                },
+                kernel);
 
         AgentGroupChat chat = new();
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
@@ -175,6 +181,23 @@ public sealed class OpenAIAssistantAgentTests
         ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
         Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expected, history.First().Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void AssertMessageValid(ChatMessageContent message)
+    {
+        if (message.Items.OfType<FunctionResultContent>().Any())
+        {
+            Assert.Equal(AuthorRole.Tool, message.Role);
+            return;
+        }
+
+        if (message.Items.OfType<FunctionCallContent>().Any())
+        {
+            Assert.Equal(AuthorRole.Assistant, message.Role);
+            return;
+        }
+
+        Assert.Equal(string.IsNullOrEmpty(message.AuthorName) ? AuthorRole.User : AuthorRole.Assistant, message.Role);
     }
 
     public sealed class MenuPlugin

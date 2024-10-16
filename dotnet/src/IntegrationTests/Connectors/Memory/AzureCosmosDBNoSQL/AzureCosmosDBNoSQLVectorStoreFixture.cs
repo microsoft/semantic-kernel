@@ -31,7 +31,7 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
             .Build();
 
         var connectionString = GetConnectionString(configuration);
-        var options = new CosmosClientOptions { Serializer = new CosmosSystemTextJsonSerializer(JsonSerializerOptions.Default) };
+        var options = new CosmosClientOptions { UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default };
 
         this._cosmosClient = new CosmosClient(connectionString, options);
     }

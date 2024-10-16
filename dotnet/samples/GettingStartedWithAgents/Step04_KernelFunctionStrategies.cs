@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
+using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted;
@@ -27,6 +28,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
         You are a copywriter with ten years of experience and are known for brevity and a dry humor.
         The goal is to refine and decide on the single best copy as an expert in the field.
         Only provide a single proposal per response.
+        Never delimit the response with quotation marks.
         You're laser focused on the goal at hand.
         Don't waste time with chit chat.
         Consider suggestions when refining an idea.
@@ -53,16 +55,17 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
             };
 
         KernelFunction terminationFunction =
-            KernelFunctionFactory.CreateFromPrompt(
+            AgentGroupChat.CreatePromptFunctionForStrategy(
                 """
                 Determine if the copy has been approved.  If so, respond with a single word: yes
 
                 History:
                 {{$history}}
-                """);
+                """,
+                safeParameterNames: "history");
 
         KernelFunction selectionFunction =
-            KernelFunctionFactory.CreateFromPrompt(
+            AgentGroupChat.CreatePromptFunctionForStrategy(
                 $$$"""
                 Determine which participant takes the next turn in a conversation based on the the most recent participant.
                 State only the name of the participant to take the next turn.
@@ -78,7 +81,11 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
 
                 History:
                 {{$history}}
-                """);
+                """,
+                safeParameterNames: "history");
+
+        // Limit history used for selection and termination to the most recent message.
+        ChatHistoryTruncationReducer strategyReducer = new(1);
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -100,6 +107,8 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                                 HistoryVariableName = "history",
                                 // Limit total number of turns
                                 MaximumIterations = 10,
+                                // Save tokens by not including the entire history in the prompt
+                                HistoryReducer = strategyReducer,
                             },
                         // Here a KernelFunctionSelectionStrategy selects agents based on a prompt function.
                         SelectionStrategy =
@@ -109,10 +118,10 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                                 InitialAgent = agentWriter,
                                 // Returns the entire result value as a string.
                                 ResultParser = (result) => result.GetValue<string>() ?? CopyWriterName,
-                                // The prompt variable name for the agents argument.
-                                AgentsVariableName = "agents",
                                 // The prompt variable name for the history argument.
                                 HistoryVariableName = "history",
+                                // Save tokens by not including the entire history in the prompt
+                                HistoryReducer = strategyReducer,
                             },
                     }
             };

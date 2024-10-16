@@ -6,8 +6,6 @@
   [![Python package](https://img.shields.io/pypi/v/semantic-kernel)](https://pypi.org/project/semantic-kernel/)
 - .NET <br/>
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)[![dotnet Docker](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml)[![dotnet Windows](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml)
-- Java <br/>
-  [![Java CICD Builds](https://github.com/microsoft/semantic-kernel/actions/workflows/java-build.yml/badge.svg?branch=java-development)](https://github.com/microsoft/semantic-kernel/actions/workflows/java-build.yml)[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.microsoft.semantic-kernel/semantickernel-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.microsoft.semantic-kernel/semantickernel-api)
 
 ## Overview
 
@@ -113,7 +111,7 @@ on our Learn site. Each sample comes with a completed C# and Python project that
 
 1. 📖 [Getting Started](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)
 1. 🔌 [Detailed Samples](https://learn.microsoft.com/en-us/semantic-kernel/get-started/detailed-samples)
-1. 💡 [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/agents)
+1. 💡 [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel)
 
 Finally, refer to our API references for more details on the C# and Python APIs:
 
@@ -138,7 +136,7 @@ in a different direction, but also to consider the impact on the larger ecosyste
 To learn more and get started:
 
 - Read the [documentation](https://aka.ms/sk/learn)
-- Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/get-started/contributing) to the project
+- Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/support/contributing) to the project
 - Ask questions in the [GitHub discussions](https://github.com/microsoft/semantic-kernel/discussions)
 - Ask questions in the [Discord community](https://aka.ms/SKDiscord)
 

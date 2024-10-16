@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -26,7 +26,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
         string collectionName,
         IEnumerable<VectorStoreRecordDataProperty> dataProperties,
         IEnumerable<VectorStoreRecordVectorProperty> vectorProperties,
-        Dictionary<string, string> storagePropertyNames)
+        IReadOnlyDictionary<string, string> storagePropertyNames)
     {
         var schema = new WeaviateCollectionSchema(collectionName);
 

@@ -93,6 +93,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
         using var generator = new Generator(this.GetModel(), generatorParams);
 
+        bool removeNextTokenStartingWithSpace = true;
         while (!generator.IsDone())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -104,7 +105,14 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
                 var outputTokens = generator.GetSequence(0);
                 var newToken = outputTokens.Slice(outputTokens.Length - 1, 1);
-                var output = this.GetTokenizer().Decode(newToken);
+                string output = this.GetTokenizer().Decode(newToken);
+
+                if (removeNextTokenStartingWithSpace && output[0] == ' ')
+                {
+                    removeNextTokenStartingWithSpace = false;
+                    output = output.TrimStart();
+                }
+
                 return output;
             }, cancellationToken).ConfigureAwait(false);
         }

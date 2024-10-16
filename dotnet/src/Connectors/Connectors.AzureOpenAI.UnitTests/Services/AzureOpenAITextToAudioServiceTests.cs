@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -206,6 +207,49 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         var requestBody = JsonSerializer.Deserialize<JsonObject>(this._messageHandlerStub.RequestContent!);
         Assert.Equal(expectedModel, requestBody?["model"]?.ToString());
     }
+
+    [Theory]
+    [MemberData(nameof(Versions))]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? expectedVersion = null)
+    {
+        // Arrange
+        var expectedByteArray = new byte[] { 0x00, 0x00, 0xFF, 0x7F };
+
+        var service = new AzureOpenAITextToAudioService("deploymentName", "https://endpoint", "api-key", "model", this._httpClient, apiVersion: apiVersion);
+        await using var stream = new MemoryStream(expectedByteArray);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        // Act
+        var result = await service.GetAudioContentsAsync("Some text");
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+
+        Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUri!.ToString());
+    }
+
+    public static TheoryData<string?, string?> Versions => new()
+    {
+        { null, "2024-08-01-preview" },
+        { "V2024_10_01_preview", "2024-10-01-preview" },
+        { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
+        { "2024_10_01_Preview", "2024-10-01-preview" },
+        { "2024-10-01-preview", "2024-10-01-preview" },
+        { "V2024_08_01_preview", "2024-08-01-preview" },
+        { "V2024_08_01_PREVIEW", "2024-08-01-preview" },
+        { "2024_08_01_Preview", "2024-08-01-preview" },
+        { "2024-08-01-preview", "2024-08-01-preview" },
+        { "V2024_06_01", "2024-06-01" },
+        { "2024_06_01", "2024-06-01" },
+        { "2024-06-01", "2024-06-01" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
+    };
 
     public void Dispose()
     {

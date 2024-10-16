@@ -68,6 +68,10 @@ class MockChatCompletion(ChatCompletionClientBase):
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         yield []
 
+    @override
+    def service_url(self) -> str | None:
+        return "http://mock-service-url"
+
 
 class MockTextCompletion(TextCompletionClientBase):
     MODEL_PROVIDER_NAME: ClassVar[str] = "mock"
@@ -87,3 +91,8 @@ class MockTextCompletion(TextCompletionClientBase):
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
         yield []
+
+    @override
+    def service_url(self) -> str | None:
+        # Returning None to test the case where the service URL is not available
+        return None
