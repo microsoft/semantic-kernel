@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Text.Json;
 using Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,25 +22,6 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
 {
     // Target Open AI Services
     protected override bool ForceOpenAI => true;
-
-    //[Fact] // $$$ REMOVE
-    //public void TestCalendar()
-    //{
-    //    for (int index = 0; index < 20; index++)
-    //    {
-    //        CalendarPlugin calendar1 = new("test", new PersonalCalendarGenerator());
-    //        foreach (CalendarEvent calendarEvent in calendar1.Events)
-    //        {
-    //            this.WriteLine(JsonSerializer.Serialize(calendarEvent));
-    //        }
-
-    //        CalendarPlugin calendar2 = new("test", new ProfessionalCalendarGenerator());
-    //        foreach (CalendarEvent calendarEvent in calendar2.Events)
-    //        {
-    //            this.WriteLine(JsonSerializer.Serialize(calendarEvent));
-    //        }
-    //    }
-    //}
 
     /// <summary>
     /// Orchestrates a single agent gathering user input and then delegating to a group of agents.
