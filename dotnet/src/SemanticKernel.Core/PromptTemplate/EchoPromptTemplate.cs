@@ -27,7 +27,5 @@ internal sealed class EchoPromptTemplate : IPromptTemplate
     }
 
     /// <inheritdoc/>
-#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default) => this._renderResult;
-#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 }
