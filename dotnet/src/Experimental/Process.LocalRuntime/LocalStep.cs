@@ -231,7 +231,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
-        KernelProcessStepState? stateObject = null;
+        KernelProcessStepState stateObject = this._stepInfo.State;
         Type? stateType = null;
 
         if (TryGetSubtypeOfStatefulStep(this._stepInfo.InnerStepType, out Type? genericStepType) && genericStepType is not null)
@@ -254,13 +254,16 @@ internal class LocalStep : IKernelProcessMessageChannel
                 throw new KernelException(errorMessage);
             }
 
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, this.Id);
+            var userState = stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.GetValue(stateObject);
+            if (userState is null)
+            {
+                stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, Activator.CreateInstance(userStateType));
+            }
         }
         else
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
             stateType = typeof(KernelProcessStepState);
-            stateObject = new KernelProcessStepState(this.Name, this.Id);
         }
 
         if (stateObject is null)

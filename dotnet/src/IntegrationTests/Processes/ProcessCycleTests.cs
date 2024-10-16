@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using SemanticKernel.IntegrationTests.Agents;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using SemanticKernel.IntegrationTests.Agents;
 using System.Linq;
 
 namespace SemanticKernel.IntegrationTests.Processes;
@@ -134,18 +133,18 @@ public sealed class ProcessCycleTests
     /// </summary>
     private sealed class CStep : KernelProcessStep<CStepState>
     {
-        private readonly CStepState _state = new();
+        private CStepState? _state = new();
 
         public override ValueTask ActivateAsync(KernelProcessStepState<CStepState> state)
         {
-            state.State = this._state;
+            this._state = state.State;
             return base.ActivateAsync(state);
         }
 
         [KernelFunction]
         public async ValueTask DoItAsync(KernelProcessStepContext context, string astepdata, string bstepdata)
         {
-            this._state.CurrentCycle++;
+            this._state!.CurrentCycle++;
             if (this._state.CurrentCycle == 3)
             {
                 // Exit the processes

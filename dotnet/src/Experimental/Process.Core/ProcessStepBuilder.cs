@@ -204,7 +204,7 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
     /// </summary>
     /// <param name="name">Optional: The name of the step.</param>
     /// <param name="initialState">Optional: The initial state of the step.</param>
-    public ProcessStepBuilder(string? name = null, object? initialState = default)
+    internal ProcessStepBuilder(string? name = null, object? initialState = default)
         : base(name ?? typeof(TStep).Name)
     {
         this.FunctionsDict = this.GetFunctionMetadataMap();

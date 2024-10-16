@@ -25,17 +25,27 @@ public record KernelProcessStepState
     private static HashSet<Type> GetKnownTypes() => s_knownTypes;
 
     /// <summary>
+    /// Registers a derived type for serialization. Types registered here are used by the KnownType attribute
+    /// to support DataContractSerialization of derived types as required to support Dapr.
+    /// </summary>
+    /// <param name="derivedType">A Type that derives from <typeref name="KernelProcessStepState"/></param>
+    internal static void RegisterDerivedType(Type derivedType)
+    {
+        s_knownTypes.Add(derivedType);
+    }
+
+    /// <summary>
     /// The identifier of the Step which is required to be unique within an instance of a Process.
     /// This may be null until a process containing this step has been invoked.
     /// </summary>
-    [DataMember(Name = "id")]
+    [DataMember]
     public string? Id { get; init; }
 
     /// <summary>
     /// The name of the Step. This is intended to be human readable and is not required to be unique. If
     /// not provided, the name will be derived from the steps .NET type.
     /// </summary>
-    [DataMember(Name = "name")]
+    [DataMember]
     public string Name { get; init; }
 
     /// <summary>
@@ -49,16 +59,6 @@ public record KernelProcessStepState
 
         this.Id = id;
         this.Name = name;
-    }
-
-    /// <summary>
-    /// Registers a derived type for serialization. Types registered here are used by the KnownType attribute
-    /// to support DataContractSerialization of derived types as required to support Dapr.
-    /// </summary>
-    /// <param name="derivedType">A Type that derives from <typeref name="KernelProcessStepState"/></param>
-    public static void RegisterDerivedType(Type derivedType)
-    {
-        s_knownTypes.Add(derivedType);
     }
 }
 
