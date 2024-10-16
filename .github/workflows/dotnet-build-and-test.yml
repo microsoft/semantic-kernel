@@ -121,6 +121,8 @@ jobs:
           # OpenAI Models
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
           OpenAI__ChatModelId: ${{ vars.OPENAI__CHATMODELID }}
+          OpenAIEmbeddings__ApiKey: ${{ secrets.OPENAIEMBEDDINGS__APIKEY }}
+          OpenAIEmbeddings__ModelId: ${{ vars.OPENAIEMBEDDINGS__MODELID }}
           OpenAITextToAudio__ApiKey: ${{ secrets.OPENAITEXTTOAUDIO__APIKEY }}
           OpenAITextToAudio__ModelId: ${{ vars.OPENAITEXTTOAUDIO__MODELID }}
           OpenAIAudioToText__ApiKey: ${{ secrets.OPENAIAUDIOTOTEXT__APIKEY }}
