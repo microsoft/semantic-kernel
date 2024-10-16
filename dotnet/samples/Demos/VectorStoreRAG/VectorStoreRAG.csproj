@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.AzureCosmosDBMongoDB\Connectors.Memory.AzureCosmosDBMongoDB.csproj" />
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.Memory.AzureCosmosDBNoSQL\Connectors.Memory.AzureCosmosDBNoSQL.csproj" />
