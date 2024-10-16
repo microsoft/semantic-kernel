@@ -24,7 +24,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
     internal readonly List<LocalStep> _steps = [];
     internal readonly KernelProcess _process;
-    internal readonly Kernel _kernel;
 
     private readonly ILogger _logger;
     private JoinableTask? _processTask;
@@ -40,12 +39,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
         : base(process, kernel, parentProcessId, loggerFactory)
     {
-        Verify.NotNull(process);
         Verify.NotNull(process.Steps);
-        Verify.NotNull(kernel);
 
         this._stepsInfos = new List<KernelProcessStepInfo>(process.Steps);
-        this._kernel = kernel;
         this._process = process;
         this._initializeTask = new Lazy<ValueTask>(this.InitializeProcessAsync);
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
