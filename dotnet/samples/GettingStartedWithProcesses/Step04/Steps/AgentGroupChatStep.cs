@@ -24,7 +24,11 @@ public class AgentGroupChatStep : KernelProcessStep
     {
         AgentGroupChat chat = kernel.GetRequiredService<AgentGroupChat>();
 
-        ChatMessageContent message = new(AuthorRole.Assistant, input);
+        // Reset chat state from previous invocation
+        //await chat.ResetAsync();
+        chat.IsComplete = false;
+
+        ChatMessageContent message = new(AuthorRole.User, input);
         chat.AddChatMessage(message);
         await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.GroupMessage, Data = message });
 
@@ -33,7 +37,7 @@ public class AgentGroupChatStep : KernelProcessStep
             await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.GroupMessage, Data = response });
         }
 
-        ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
+        ChatMessageContent[] history = await chat.GetChatMessagesAsync().Reverse().ToArrayAsync();
 
         // Summarize the group chat as a response to the primary agent
         string summary = await kernel.SummarizeHistoryAsync(ReducerServiceKey, history);

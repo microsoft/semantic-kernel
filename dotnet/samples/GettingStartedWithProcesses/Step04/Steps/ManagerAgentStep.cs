@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json;
+using Events;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -37,7 +38,7 @@ public class ManagerAgentStep : KernelProcessStep
 
         // Obtain the agent response
         ChatCompletionAgent agent = kernel.GetAgent<ChatCompletionAgent>(AgentServiceKey);
-        await foreach (ChatMessageContent message in agent.InvokeAsync(await historyProvider.GetHistoryAsync()))
+        await foreach (ChatMessageContent message in agent.InvokeAsync(history))
         {
             // Capture each response
             history.Add(message);
@@ -49,10 +50,17 @@ public class ManagerAgentStep : KernelProcessStep
         // Commit any changes to the chat history
         await historyProvider.CommitAsync();
 
-        bool requireUserResponse = await IsRequestingUserInputAsync(kernel, history, logger);
+        // Evalute current intent
+        IntentResult intent = await IsRequestingUserInputAsync(kernel, history, logger);
 
-        string finalEventId = requireUserResponse ? AgentOrchestrationEvents.AgentResponded : AgentOrchestrationEvents.AgentWorking;
-        await context.EmitEventAsync(new() { Id = finalEventId });
+        string intentEventId =
+            intent.IsRequestingUserInput ?
+                AgentOrchestrationEvents.AgentResponded :
+                intent.IsWorking ?
+                    AgentOrchestrationEvents.AgentWorking :
+                    CommonEvents.UserInputComplete;
+
+        await context.EmitEventAsync(new() { Id = intentEventId });
     }
 
     [KernelFunction(Functions.InvokeGroup)]
@@ -75,19 +83,22 @@ public class ManagerAgentStep : KernelProcessStep
         IChatHistoryProvider historyProvider = kernel.GetHistory();
         ChatHistory history = await historyProvider.GetHistoryAsync();
 
-        ChatMessageContent message = new(AuthorRole.Assistant, response) { AuthorName = "Group" };
-        history.Add(new ChatMessageContent(AuthorRole.Assistant, response) { AuthorName = "Group" }); // %%% PLACE HOLDER
-        await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.AgentResponse, Data = message }); // %%% PLACE HOLDER
+        // Proxy the inner response
+        ChatCompletionAgent agent = kernel.GetAgent<ChatCompletionAgent>(AgentServiceKey);
+        ChatMessageContent message = new(AuthorRole.Assistant, response) { AuthorName = agent.Name };
+        history.Add(message);
+
+        await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.AgentResponse, Data = message });
 
         await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.AgentResponded });
     }
 
-    private static async Task<bool> IsRequestingUserInputAsync(Kernel kernel, ChatHistory history, ILogger logger)
+    private static async Task<IntentResult> IsRequestingUserInputAsync(Kernel kernel, ChatHistory history, ILogger logger)
     {
         ChatHistory localHistory =
         [
             new ChatMessageContent(AuthorRole.System, "Analyze the conversation and determine if user input is being solicited."),
-            .. history.TakeLast(2)
+            .. history.TakeLast(1)
         ];
 
         IChatCompletionService service = kernel.GetRequiredService<IChatCompletionService>();
@@ -96,15 +107,9 @@ public class ManagerAgentStep : KernelProcessStep
         IntentResult intent = JsonSerializer.Deserialize<IntentResult>(response.ToString())!;
 
         logger.LogTrace("{StepName} Response Intent - {IsRequestingUserInput}: {Rationale}", nameof(ManagerAgentStep), intent.IsRequestingUserInput, intent.Rationale);
-        //Console.WriteLine($"\t{intent.IsRequestingUserInput}:{Environment.NewLine}\t{intent.Rationale}"); // %%% REMOVE
 
-        return intent.IsRequestingUserInput;
+        return intent;
     }
-
-    //    "IsUserDone": {
-    //    "type": "boolean",
-    //    "description": "True if user has indicated they having finished the interaction."
-    //},
 
     private static readonly ChatResponseFormat s_intentResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
         jsonSchemaFormatName: "intent_result",
@@ -117,12 +122,16 @@ public class ManagerAgentStep : KernelProcessStep
                     "type": "boolean",
                     "description": "True if user input is requested or solicited.  Addressing the user with no specific request is False.  Asking a question to the user is True."
                 },
+                "IsWorking": {
+                    "type": "boolean",
+                    "description": "True if the user request is being worked on."
+                },
                 "Rationale": {
                     "type": "string",
                     "description": "Rationale for the value assigned to IsRequestingUserInput"
                 }
             },
-            "required": ["IsRequestingUserInput", "Rationale"],
+            "required": ["IsRequestingUserInput", "IsWorking", "Rationale"],
             "additionalProperties": false
         }
         """),
@@ -131,6 +140,7 @@ public class ManagerAgentStep : KernelProcessStep
     private sealed class IntentResult
     {
         public bool IsRequestingUserInput { get; set; }
+        public bool IsWorking { get; set; }
         public string Rationale { get; set; }
     }
 }

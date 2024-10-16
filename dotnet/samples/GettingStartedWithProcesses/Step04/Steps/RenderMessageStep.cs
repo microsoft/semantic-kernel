@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -20,6 +21,8 @@ public class RenderMessageStep : KernelProcessStep
         public const string RenderMessage = nameof(RenderMessageStep.RenderMessage);
         public const string RenderUserText = nameof(RenderMessageStep.RenderUserText);
     }
+
+    private readonly static Stopwatch s_timer = Stopwatch.StartNew();
 
     /// <summary>
     /// Render an explicit message to indicate the process has completed in the expected state.
@@ -78,6 +81,6 @@ public class RenderMessageStep : KernelProcessStep
 
     public static void Render(string message)
     {
-        Console.WriteLine(message);
+        Console.WriteLine($"[{s_timer.Elapsed:mm\\:ss}] {message}");
     }
 }
