@@ -128,6 +128,45 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
+    /// Map a collection of values to individual steps to for parallel processing of each value.
+    /// Results are coalesced into a result collection of the same dimension as the source collection.
+    /// </summary>
+    /// <typeparam name="TMap">The step type.</typeparam>
+    /// <typeparam name="TValue">The value type.</typeparam>
+    /// <param name="startEventId">// %%% COMMENT</param>
+    /// <param name="completeEventId">// %%% COMMENT</param>
+    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <returns>An instance of <see cref="ProcessMapBuilder{TValue}"/></returns> // %%% TBD - Return `ProcessStepBuilder` base if not needed
+    public ProcessMapBuilder<TValue> AddMapFromType<TMap, TValue>(string startEventId, string completeEventId, string? name = null) where TMap : KernelProcessStep
+    {
+        var stepBuilder = new ProcessStepBuilder<TMap>(name);
+
+        var mapBuilder = new ProcessMapBuilder<TValue>(stepBuilder, startEventId, completeEventId);
+        this._steps.Add(mapBuilder);
+
+        return mapBuilder;
+    }
+
+    /// <summary>
+    /// Map a collection of values to individual steps to for parallel processing of each value.
+    /// Results are coalesced into a result collection of the same dimension as the source collection.
+    /// </summary>
+    /// <typeparam name="TValue">The value type.</typeparam>
+    /// <param name="mapProcess">// %%% COMMENT</param>
+    /// <param name="startEventId">// %%% COMMENT</param>
+    /// <param name="completeEventId">// %%% COMMENT</param>
+    /// <returns>An instance of <see cref="ProcessMapBuilder{TValue}"/></returns> // %%% TBD - Return `ProcessStepBuilder` base if not needed
+    public ProcessMapBuilder<TValue> AddMapFromProcess<TValue>(ProcessBuilder mapProcess, string startEventId, string completeEventId)
+    {
+        mapProcess.HasParentProcess = true;
+
+        var mapBuilder = new ProcessMapBuilder<TValue>(mapProcess, startEventId, completeEventId);
+        this._steps.Add(mapBuilder);
+
+        return mapBuilder;
+    }
+
+    /// <summary>
     /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
     /// step inside the process for a given external event.
     /// </summary>

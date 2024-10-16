@@ -41,4 +41,14 @@ public sealed class ProcessEdgeBuilder
 
         return new ProcessEdgeBuilder(this.Source, this.EventId);
     }
+
+    /// <summary>
+    /// Sends the output of the source step to the specified target when the associated event fires.
+    /// </summary>
+    public ProcessEdgeBuilder SendEventTo(ProcessBuilder targetProcess, string? targetEventId = null)
+    {
+        var target = targetProcess.WhereInputEventIs(targetEventId ?? this.EventId);
+
+        return this.SendEventTo(target);
+    }
 }

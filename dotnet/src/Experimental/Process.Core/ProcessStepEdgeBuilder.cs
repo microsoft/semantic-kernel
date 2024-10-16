@@ -65,6 +65,15 @@ public sealed class ProcessStepEdgeBuilder
     }
 
     /// <summary>
+    /// Sends the output of the source step to the specified target when the associated event fires.
+    /// </summary>
+    public ProcessStepEdgeBuilder SendEventTo(ProcessBuilder targetProcess, string? targetEventId = null)
+    {
+        var target = targetProcess.WhereInputEventIs(targetEventId ?? this.EventId);
+        return this.SendEventTo(target);
+    }
+
+    /// <summary>
     /// Signals that the process should be stopped.
     /// </summary>
     public void StopProcess()

@@ -24,7 +24,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
     internal readonly List<LocalStep> _steps = [];
     internal readonly KernelProcess _process;
-    internal readonly Kernel _kernel;
 
     private readonly ILogger _logger;
     private JoinableTask? _processTask;
@@ -40,12 +39,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
         : base(process, kernel, parentProcessId, loggerFactory)
     {
-        Verify.NotNull(process);
         Verify.NotNull(process.Steps);
-        Verify.NotNull(kernel);
 
         this._stepsInfos = new List<KernelProcessStepInfo>(process.Steps);
-        this._kernel = kernel;
         this._process = process;
         this._initializeTask = new Lazy<ValueTask>(this.InitializeProcessAsync);
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
@@ -183,22 +179,30 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             // The current step should already have a name.
             Verify.NotNull(step.State?.Name);
 
-            if (step is KernelProcess kernelStep)
+            if (step is KernelProcess processStep)
             {
                 // The process will only have an Id if its already been executed.
-                if (string.IsNullOrWhiteSpace(kernelStep.State.Id))
+                if (string.IsNullOrWhiteSpace(processStep.State.Id))
                 {
-                    kernelStep = kernelStep with { State = kernelStep.State with { Id = Guid.NewGuid().ToString() } };
+                    processStep = processStep with { State = processStep.State with { Id = Guid.NewGuid().ToString() } };
                 }
 
                 var process = new LocalProcess(
-                    process: kernelStep,
+                    process: processStep,
                     kernel: this._kernel,
                     parentProcessId: this.Id,
                     loggerFactory: this.LoggerFactory);
 
                 //await process.StartAsync(kernel: this._kernel, keepAlive: true).ConfigureAwait(false);
                 localStep = process;
+            }
+            else if (step is KernelProcessMap mapStep)
+            {
+                localStep = new LocalMap(
+                    map: mapStep,
+                    kernel: this._kernel,
+                    parentProcessId: this.Id,
+                    loggerFactory: this.LoggerFactory);
             }
             else
             {

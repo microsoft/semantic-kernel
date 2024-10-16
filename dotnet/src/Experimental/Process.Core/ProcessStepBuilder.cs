@@ -187,7 +187,7 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
     /// </summary>
-    public ProcessStepBuilder(string? name = null)
+    internal ProcessStepBuilder(string? name = null)
         : base(name ?? typeof(TStep).Name)
     {
         this.FunctionsDict = this.GetFunctionMetadataMap();
