@@ -57,6 +57,7 @@ public static class KernelExtensions
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
+    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFunctionFromMethod(
         this Kernel kernel,
         Delegate method,
@@ -114,6 +115,7 @@ public static class KernelExtensions
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
+    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFunctionFromMethod(
         this Kernel kernel,
         MethodInfo method,
@@ -187,6 +189,7 @@ public static class KernelExtensions
     /// If null, a default factory will be used.
     /// </param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
+    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         string promptTemplate,
@@ -264,6 +267,7 @@ public static class KernelExtensions
     /// If null, a default factory will be used.
     /// </param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
+    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         string promptTemplate,
@@ -322,6 +326,7 @@ public static class KernelExtensions
     /// If null, a default factory will be used.
     /// </param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
+    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         PromptTemplateConfig promptConfig,
@@ -368,6 +373,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
+    [Experimental("SKEXP0120")]
     public static KernelPlugin CreatePluginFromType<[DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicConstructors |
         DynamicallyAccessedMemberTypes.PublicMethods |
@@ -412,6 +418,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
+    [Experimental("SKEXP0120")]
     public static KernelPlugin CreatePluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(kernel);
@@ -484,6 +491,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
+    [Experimental("SKEXP0120")]
     public static KernelPlugin ImportPluginFromType<[DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicConstructors |
         DynamicallyAccessedMemberTypes.PublicMethods |
@@ -530,6 +538,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
+    [Experimental("SKEXP0120")]
     public static KernelPlugin AddFromType<[DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicConstructors |
         DynamicallyAccessedMemberTypes.PublicMethods |
@@ -576,6 +585,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
+    [Experimental("SKEXP0120")]
     public static IKernelBuilderPlugins AddFromType<[DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicConstructors |
         DynamicallyAccessedMemberTypes.PublicMethods |
@@ -636,6 +646,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
+    [Experimental("SKEXP0120")]
     public static KernelPlugin ImportPluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         KernelPlugin plugin = CreatePluginFromObject<T>(kernel, target, jsonSerializerOptions, pluginName);
@@ -679,6 +690,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
+    [Experimental("SKEXP0120")]
     public static KernelPlugin AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this ICollection<KernelPlugin> plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
@@ -722,6 +734,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
+    [Experimental("SKEXP0120")]
     public static IKernelBuilderPlugins AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this IKernelBuilderPlugins plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(plugins);
@@ -910,6 +923,7 @@ public static class KernelExtensions
     /// <returns>A <see cref="KernelPlugin"/> containing prompt functions created from the specified directory.</returns>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    [Experimental("SKEXP0120")]
     public static KernelPlugin CreatePluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
@@ -1085,6 +1099,7 @@ public static class KernelExtensions
     /// If null, a default factory will be used.
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing prompt functions created from the specified directory.</returns>
+    [Experimental("SKEXP0120")]
     public static KernelPlugin ImportPluginFromPromptDirectory(
         this Kernel kernel,
         string pluginDirectory,
@@ -1190,6 +1205,7 @@ public static class KernelExtensions
     /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    [Experimental("SKEXP0120")]
     public static IKernelBuilderPlugins AddFromPromptDirectory(
         this IKernelBuilderPlugins plugins,
         string pluginDirectory,
@@ -1268,6 +1284,7 @@ public static class KernelExtensions
     /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
     /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    [Experimental("SKEXP0120")]
     public static Task<FunctionResult> InvokePromptAsync(
         this Kernel kernel,
         JsonSerializerOptions jsonSerializerOptions,
@@ -1351,6 +1368,7 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
     /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    [Experimental("SKEXP0120")]
     public static Task<T?> InvokePromptAsync<T>(
         this Kernel kernel,
         JsonSerializerOptions jsonSerializerOptions,
@@ -1476,6 +1494,7 @@ public static class KernelExtensions
     /// The function will not be invoked until an enumerator is retrieved from the returned <see cref="IAsyncEnumerable{T}"/>
     /// and its iteration initiated via an initial call to <see cref="IAsyncEnumerator{T}.MoveNextAsync"/>.
     /// </remarks>
+    [Experimental("SKEXP0120")]
     public static IAsyncEnumerable<StreamingKernelContent> InvokePromptStreamingAsync(
         this Kernel kernel,
         JsonSerializerOptions jsonSerializerOptions,
@@ -1565,6 +1584,7 @@ public static class KernelExtensions
     /// </remarks>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT save.")]
+    [Experimental("SKEXP0120")]
     public static IAsyncEnumerable<T> InvokePromptStreamingAsync<T>(
         this Kernel kernel,
         JsonSerializerOptions jsonSerializerOptions,
