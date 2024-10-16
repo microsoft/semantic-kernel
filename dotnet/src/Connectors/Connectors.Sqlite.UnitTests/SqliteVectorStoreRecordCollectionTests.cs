@@ -3,6 +3,7 @@
 using System;
 using System.Data.Common;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -28,7 +29,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests
         using var fakeCommand = new FakeDbCommand(scalarResult: tableCount);
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<RecordWithVectorProperty>(fakeConnection, TableName);
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord>(fakeConnection, TableName);
 
         // Act
         var result = await sut.CollectionExistsAsync();
@@ -45,7 +46,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests
         using var fakeCommand = new FakeDbCommand();
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<RecordWithVectorProperty>(fakeConnection, TableName);
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord>(fakeConnection, TableName);
 
         // Act
         await sut.CreateCollectionAsync();
@@ -63,7 +64,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests
         using var fakeCommand = new FakeDbCommand();
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<RecordWithVectorProperty>(fakeConnection, TableName);
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord>(fakeConnection, TableName);
 
         // Act
         await sut.CreateCollectionIfNotExistsAsync();
@@ -82,7 +83,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests
         using var fakeCommandWithoutVectorProperty = new FakeDbCommand();
         using var fakeConnectionWithoutVectorProperty = new FakeDBConnection(fakeCommandWithoutVectorProperty);
 
-        var collectionWithVectorProperty = new SqliteVectorStoreRecordCollection<RecordWithVectorProperty>(fakeConnectionWithVectorProperty, "WithVectorProperty");
+        var collectionWithVectorProperty = new SqliteVectorStoreRecordCollection<TestRecord>(fakeConnectionWithVectorProperty, "WithVectorProperty");
         var collectionWithoutVectorProperty = new SqliteVectorStoreRecordCollection<RecordWithoutVectorProperty>(fakeConnectionWithoutVectorProperty, "WithoutVectorProperty");
 
         // Act
@@ -101,31 +102,16 @@ public sealed class SqliteVectorStoreRecordCollectionTests
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]);
-        var vectorBytes = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
-        var mockReader = new Mock<DbDataReader>();
-        mockReader
-            .SetupSequence(l => l.ReadAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true)
-            .ReturnsAsync(false);
+        var mockReader = GetDbDataReaderMock(key: 1, data: "Test data", vector: vector);
 
-        mockReader.Setup(l => l.IsDBNull(It.IsAny<int>())).Returns(false);
-
-        mockReader.Setup(l => l.GetOrdinal(nameof(RecordWithVectorProperty.Key))).Returns(0);
-        mockReader.Setup(l => l.GetOrdinal(nameof(RecordWithVectorProperty.Text))).Returns(1);
-        mockReader.Setup(l => l.GetOrdinal(nameof(RecordWithVectorProperty.Embedding))).Returns(2);
         mockReader.Setup(l => l.GetOrdinal("distance")).Returns(3);
-
-        mockReader.Setup(l => l.GetInt64(0)).Returns(1);
-        mockReader.Setup(l => l.GetString(1)).Returns("Test data");
-        mockReader.Setup(l => l[2]).Returns(vectorBytes);
-
         mockReader.Setup(l => l.GetFieldValue<double>(3)).Returns(5.5);
 
         using var fakeCommand = new FakeDbCommand(mockReader.Object);
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<RecordWithVectorProperty>(fakeConnection, "VectorizedSearch");
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord>(fakeConnection, "VectorizedSearch");
 
         // Act
         var results = await sut.VectorizedSearchAsync(vector, new() { IncludeVectors = includeVectors });
@@ -155,8 +141,34 @@ public sealed class SqliteVectorStoreRecordCollectionTests
 
     #region private
 
+    private static Mock<DbDataReader> GetDbDataReaderMock(
+        long key,
+        string data,
+        ReadOnlyMemory<float> vector)
+    {
+        var vectorBytes = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
+
+        var mockReader = new Mock<DbDataReader>();
+        mockReader
+            .SetupSequence(l => l.ReadAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true)
+            .ReturnsAsync(false);
+
+        mockReader.Setup(l => l.IsDBNull(It.IsAny<int>())).Returns(false);
+
+        mockReader.Setup(l => l.GetOrdinal(nameof(TestRecord.Key))).Returns(0);
+        mockReader.Setup(l => l.GetOrdinal(nameof(TestRecord.Text))).Returns(1);
+        mockReader.Setup(l => l.GetOrdinal(nameof(TestRecord.Embedding))).Returns(2);
+
+        mockReader.Setup(l => l.GetInt64(0)).Returns(key);
+        mockReader.Setup(l => l.GetString(1)).Returns(data);
+        mockReader.Setup(l => l[2]).Returns(vectorBytes);
+
+        return mockReader;
+    }
+
 #pragma warning disable CA1812
-    private sealed class RecordWithVectorProperty
+    private sealed class TestRecord
     {
         [VectorStoreRecordKey]
         public ulong Key { get; set; }
