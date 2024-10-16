@@ -17,7 +17,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     /// Reset selection to initial/first agent. Agent order is based on the order
     /// in which they joined <see cref="AgentGroupChat"/>.
     /// </summary>
-    public void Reset() => this._index = 0;
+    public void Reset() => this._index = -1;
 
     /// <inheritdoc/>
     protected override Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
