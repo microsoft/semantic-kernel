@@ -28,7 +28,7 @@ def to_vector_index_policy_type(index_kind: IndexKind) -> str:
         case IndexKind.DISK_ANN:
             return "diskANN"
 
-    raise ValueError(f"Index kind '{index_kind}' is not supported.")
+    raise ValueError(f"Index kind '{index_kind}' is not supported by Azure Cosmos DB NoSQL container.")
 
 
 def to_distance_function(distance_function: DistanceFunction) -> str:
@@ -41,7 +41,7 @@ def to_distance_function(distance_function: DistanceFunction) -> str:
         case DistanceFunction.EUCLIDEAN:
             return "euclidean"
 
-    raise ValueError(f"Distance function '{distance_function}' is not supported.")
+    raise ValueError(f"Distance function '{distance_function}' is not supported by Azure Cosmos DB NoSQL container.")
 
 
 def create_default_indexing_policy(data_model_definition: VectorStoreRecordDefinition) -> dict[str, Any]:
@@ -102,10 +102,11 @@ def create_default_vector_embedding_policy(data_model_definition: VectorStoreRec
 
     for _, field in data_model_definition.fields.items():
         if isinstance(field, VectorStoreRecordVectorField):
-            vector_embedding_policy["vectorEmbedding"].append({
+            vector_embedding_policy["vectorEmbeddings"].append({
                 "path": f'/"{field.name}"',
-                "dimension": field.dimensions,
-                "distanceFunction": field.distance_function,
+                "dataType": "float32",
+                "distanceFunction": to_distance_function(field.distance_function),
+                "dimensions": field.dimensions,
             })
 
     return vector_embedding_policy

@@ -4,13 +4,16 @@ import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
 
+from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_base import AzureCosmosDBNoSQLBase
+from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_collection import (
+    AzureCosmosDBNoSQLCollection,
+)
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from azure.cosmos.aio import CosmosClient
-from azure.identity import DefaultAzureCredential
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_settings import (
@@ -22,6 +25,7 @@ from semantic_kernel.data.vector_store_record_collection import VectorStoreRecor
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
+    MemoryConnectorResourceNotFound,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -29,42 +33,31 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class AzureCosmosDBNoSQLStore(VectorStore):
+class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
     """A VectorStore implementation that uses Azure CosmosDB NoSQL as the backend storage."""
-
-    cosmos_client: CosmosClient | None
-    database_name: str | None
 
     def __init__(
         self,
         database_name: str,
         url: str | None = None,
         key: str | None = None,
-        cosmos_client: CosmosClient = None,
     ):
         """Initialize the AzureCosmosDBNoSQLStore.
 
         Args:
-            database_name (str): The name of the database.
+            database_name (str): The name of the database. The database may not exist yet.
+                                 If it does not exist, it will be created when the first collection is created.
             url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
             key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
-            cosmos_client (CosmosClient): A custom Cosmos client. Used to create a database proxy if
-                                          not provided. Defaults to None.
         """
-        if not cosmos_client:
-            try:
-                cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
-            except ValidationError as e:
-                raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
-
-            if cosmos_db_nosql_settings.key:
-                cosmos_client = CosmosClient(url, credential=key)
-            else:
-                cosmos_client = CosmosClient(url, DefaultAzureCredential())
+        try:
+            cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
+        except ValidationError as e:
+            raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
 
         super().__init__(
+            cosmos_db_nosql_settings=cosmos_db_nosql_settings,
             database_name=database_name,
-            cosmos_client=cosmos_client,
         )
 
     @override
@@ -76,22 +69,24 @@ class AzureCosmosDBNoSQLStore(VectorStore):
         **kwargs: Any,
     ) -> VectorStoreRecordCollection:
         if collection_name not in self.vector_record_collections:
-            self.vector_record_collections[collection_name] = VectorStoreRecordCollection(
+            self.vector_record_collections[collection_name] = AzureCosmosDBNoSQLCollection(
                 data_model_type,
                 data_model_definition,
                 collection_name,
                 self.database_name,
-                self.cosmos_client,
             )
 
         return self.vector_record_collections[collection_name]
 
     @override
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
-        async with self.cosmos_client:
+        async with self._get_cosmos_client() as cosmos_client:
+            if not await self._does_database_exist(cosmos_client):
+                raise MemoryConnectorResourceNotFound(f"Database '{self.database_name}' does not exist.")
+
             try:
-                databases = await self.cosmos_client.create_database_if_not_exists(id=self.database_name)
-                containers = databases.list_containers()
+                database = self._get_database_proxy(self.database_name, cosmos_client)
+                containers = database.list_containers()
                 return [container["id"] async for container in containers]
             except Exception as e:
                 raise MemoryConnectorException("Failed to list collection names.") from e

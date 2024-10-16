@@ -11,6 +11,7 @@ import pytest
 from pytest import fixture, mark, param
 
 from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_store import AzureAISearchStore
+from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
 from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
 from semantic_kernel.connectors.memory.redis.redis_store import RedisStore
@@ -40,7 +41,7 @@ def DataModelArray(record) -> param:
         vector: Annotated[
             np.ndarray | None,
             VectorStoreRecordVectorField(
-                index_kind="hnsw",
+                index_kind="flat",
                 dimensions=5,
                 distance_function="cosine",
                 property_type="float",
@@ -132,6 +133,8 @@ def store(request):
             yield QdrantStore(location=":memory:"), {}
         case "qdrant_grpc":
             yield QdrantStore(), {"prefer_grpc": True}
+        case "cosmos_db_nosql":
+            yield AzureCosmosDBNoSQLStore("test_db"), {}
 
 
 @fixture
@@ -157,7 +160,15 @@ async def collection_and_data(store, collection_details):
 @mark.parametrize("collection_details", ["array", "list", "pandas"], indirect=True)
 @mark.parametrize(
     "store",
-    ["redis_json", "redis_hashset", "azure_ai_search", "qdrant", "qdrant_in_memory", "qdrant_grpc"],
+    [
+        "redis_json",
+        "redis_hashset",
+        "azure_ai_search",
+        "qdrant",
+        "qdrant_in_memory",
+        "qdrant_grpc",
+        "cosmos_db_nosql",
+    ],
     indirect=True,
 )
 async def test_collections(collection_and_data):
