@@ -97,7 +97,8 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
         AttachErrorStep(
             managerAgentStep,
             ManagerAgentStep.Functions.InvokeAgent,
-            ManagerAgentStep.Functions.InvokeGroup);
+            ManagerAgentStep.Functions.InvokeGroup,
+            ManagerAgentStep.Functions.ReceiveResponse);
 
         AttachErrorStep(
             agentGroupStep,
