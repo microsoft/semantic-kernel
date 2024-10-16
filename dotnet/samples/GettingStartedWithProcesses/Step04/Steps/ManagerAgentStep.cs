@@ -50,7 +50,7 @@ public class ManagerAgentStep : KernelProcessStep
         // Commit any changes to the chat history
         await historyProvider.CommitAsync();
 
-        // Evalute current intent
+        // Evaluate current intent
         IntentResult intent = await IsRequestingUserInputAsync(kernel, history, logger);
 
         string intentEventId =

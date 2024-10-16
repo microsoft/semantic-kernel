@@ -23,7 +23,7 @@ internal sealed record CalendarEvent(
 /// </summary>
 /// <remarks>
 /// Calendar information is simplified in the sense that any event covers the entire
-/// day.  Also, no special treatement for weekend.
+/// day.  Also, no special treatment for weekend.
 /// </remarks>
 internal sealed class CalendarPlugin
 {

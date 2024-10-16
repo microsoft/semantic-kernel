@@ -294,7 +294,7 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
         KernelFunction terminationFunction =
             AgentGroupChat.CreatePromptFunctionForStrategy(
                 $$$"""
-                Evaluate if the a user's most recent calendar request has recieved a final response.
+                Evaluate if the a user's most recent calendar request has received a final response.
                 If weather conditions are requested, {{{WeatherAgentName}}} is required to provide input.
 
                 If all of these conditions are met, respond with a single word: yes
