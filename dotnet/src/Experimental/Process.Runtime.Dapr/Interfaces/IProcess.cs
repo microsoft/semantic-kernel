@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 public interface IProcess : IActor
 {
     /// <summary>
-    /// Initializes the process with the speficied instance of <see cref="DaprProcessInfo"/>.
+    /// Initializes the process with the specified instance of <see cref="DaprProcessInfo"/>.
     /// </summary>
     /// <param name="processInfo">Used to initialize the process.</param>
     /// <param name="parentProcessId">The parent Id of the process if one exists.</param>
