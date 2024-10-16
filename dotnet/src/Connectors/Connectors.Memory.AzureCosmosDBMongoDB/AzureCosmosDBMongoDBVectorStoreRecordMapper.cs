@@ -2,7 +2,7 @@
 
 using System;
 using System.Reflection;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
@@ -11,7 +11,6 @@ using MongoDB.Bson.Serialization.Conventions;
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, BsonDocument>
-    where TRecord : class
 {
     /// <summary>A key property info of the data model.</summary>
     private readonly PropertyInfo _keyProperty;

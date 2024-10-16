@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace Memory;
@@ -14,7 +14,7 @@ namespace Memory;
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_AzureAISearch"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Qdrant"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
-/// <para><see cref="VectorStore_VectorSearch_MultiStore_Volatile"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_InMemory"/></para>
 /// </summary>
 /// <param name="vectorStore">The vector store to ingest data into.</param>
 /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings.</param>

@@ -9,7 +9,7 @@ namespace Step03.Processes;
 
 /// <summary>
 /// Sample process that showcases how to create a process with a fan in/fan out behavior and use of existing processes as steps.<br/>
-/// Visual reference of this process can be found in the <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#Fish_And_Chips_Preparation_Process" >diagram</see>
+/// Visual reference of this process can be found in the <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#fish-and-chips-preparation-process" >diagram</see>
 /// </summary>
 public static class FishAndChipsProcess
 {
@@ -30,10 +30,7 @@ public static class FishAndChipsProcess
 
         processBuilder
             .OnInputEvent(ProcessEvents.PrepareFishAndChips)
-            .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish));
-
-        processBuilder
-            .OnInputEvent(ProcessEvents.PrepareFishAndChips)
+            .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish))
             .SendEventTo(makePotatoFriesStep.WhereInputEventIs(PotatoFriesProcess.ProcessEvents.PreparePotatoFries));
 
         makeFriedFishStep

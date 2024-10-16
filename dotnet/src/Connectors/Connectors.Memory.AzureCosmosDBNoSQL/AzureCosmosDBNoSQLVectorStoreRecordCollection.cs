@@ -10,10 +10,10 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction;
-using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
-using SKDistanceFunction = Microsoft.SemanticKernel.Data.DistanceFunction;
+using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
+using SKDistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -25,7 +25,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     IVectorStoreRecordCollection<string, TRecord>,
     IVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, TRecord>
-    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -528,6 +527,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// </summary>
     private static VectorIndexType GetIndexKind(string? indexKind, string vectorPropertyName)
     {
+        if (string.IsNullOrWhiteSpace(indexKind))
+        {
+            // Use default index kind.
+            return VectorIndexType.DiskANN;
+        }
+
         return indexKind switch
         {
             IndexKind.Flat => VectorIndexType.Flat,
@@ -542,6 +547,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// </summary>
     private static DistanceFunction GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
     {
+        if (string.IsNullOrWhiteSpace(distanceFunction))
+        {
+            // Use default distance function.
+            return DistanceFunction.Cosine;
+        }
+
         return distanceFunction switch
         {
             SKDistanceFunction.CosineSimilarity => DistanceFunction.Cosine,

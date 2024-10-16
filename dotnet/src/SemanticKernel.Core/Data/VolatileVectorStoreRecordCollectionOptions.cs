@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -9,10 +10,9 @@ namespace Microsoft.SemanticKernel.Data;
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key of the collection that this options will be used with.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data on the collection that this options will be used with.</typeparam>
-[Experimental("SKEXP0001")]
+[Obsolete("This has been replaced by InMemoryVectorStoreRecordCollectionOptions in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 public sealed class VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>
     where TKey : notnull
-    where TRecord : class
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

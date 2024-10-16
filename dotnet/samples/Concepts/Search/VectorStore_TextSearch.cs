@@ -1,4 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -12,18 +15,18 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="VectorStoreTextSearch{TRecord}"/> and use it to perform a text search
-    /// on top of the <see cref="VolatileVectorStore"/>.
+    /// on top of the <see cref="InMemoryVectorStore"/>.
     /// </summary>
     [Fact]
-    public async Task UsingVolatileVectorStoreRecordTextSearchAsync()
+    public async Task UsingInMemoryVectorStoreRecordTextSearchAsync()
     {
         // Create an embedding generation service.
         var textEmbeddingGeneration = new OpenAITextEmbeddingGenerationService(
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
 
-        // Construct a volatile vector store.
-        var vectorStore = new VolatileVectorStore();
+        // Construct an InMemory vector store.
+        var vectorStore = new InMemoryVectorStore();
         var collectionName = "records";
 
         // Delegate which will create a record.
@@ -47,11 +50,11 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var vectorizedSearch = await CreateCollectionFromListAsync<Guid, DataModel>(
             vectorStore, collectionName, lines, textEmbeddingGeneration, CreateRecord);
 
-        // Create a text search instance using the volatile vector store.
+        // Create a text search instance using the InMemory vector store.
         var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
         await ExecuteSearchesAsync(textSearch);
 
-        // Create a text search instance using a vectorized search wrapper around the volatile vector store.
+        // Create a text search instance using a vectorized search wrapper around the InMemory vector store.
         IVectorizableTextSearch<DataModel> vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorizedSearch, textEmbeddingGeneration);
         textSearch = new VectorStoreTextSearch<DataModel>(vectorizableTextSearch);
         await ExecuteSearchesAsync(textSearch);
@@ -98,11 +101,11 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     /// <typeparam name="TKey">Type of the record key.</typeparam>
     /// <typeparam name="TRecord">Type of the record.</typeparam>
-    internal delegate TRecord CreateRecord<TKey, TRecord>(string text, ReadOnlyMemory<float> vector) where TKey : notnull where TRecord : class;
+    internal delegate TRecord CreateRecord<TKey, TRecord>(string text, ReadOnlyMemory<float> vector) where TKey : notnull;
 
     /// <summary>
     /// Create a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings by:
-    /// 1. Creating an instance of <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}"/>
+    /// 1. Creating an instance of <see cref="InMemoryVectorStoreRecordCollection{TKey, TRecord}"/>
     /// 2. Generating embeddings for each string.
     /// 3. Creating a record with a valid key for each string and it's embedding.
     /// 4. Insert the records into the collection.
@@ -119,7 +122,6 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
-        where TRecord : class
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -140,7 +142,6 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
     /// </summary>
     private sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
-        where TRecord : class
     {
         /// <inheritdoc/>
         public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)

@@ -17,6 +17,7 @@ from tests.integration.completions.chat_completion_test_base import (
     anthropic_setup,
     mistral_ai_setup,
     ollama_setup,
+    onnx_setup,
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
@@ -114,6 +115,17 @@ pytestmark = pytest.mark.parametrize(
             id="ollama_text_input",
         ),
         pytest.param(
+            "onnx_gen_ai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+            id="onnx_gen_ai",
+        ),
+        pytest.param(
             "anthropic",
             {},
             [
@@ -145,6 +157,66 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_text_input",
+        ),
+        pytest.param(
+            "bedrock_amazon_titan",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            id="bedrock_amazon_titan_text_input",
+        ),
+        pytest.param(
+            "bedrock_ai21labs",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            id="bedrock_ai21labs_text_input",
+        ),
+        pytest.param(
+            "bedrock_anthropic_claude",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            id="bedrock_anthropic_claude_text_input",
+        ),
+        pytest.param(
+            "bedrock_cohere_command",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            id="bedrock_cohere_command_text_input",
+        ),
+        pytest.param(
+            "bedrock_meta_llama",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            id="bedrock_meta_llama_text_input",
+        ),
+        pytest.param(
+            "bedrock_mistralai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            id="bedrock_mistralai_text_input",
         ),
     ],
 )

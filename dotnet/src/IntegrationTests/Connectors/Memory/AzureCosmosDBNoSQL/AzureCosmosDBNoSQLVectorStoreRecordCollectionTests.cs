@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using Microsoft.SemanticKernel.Data;
 using Xunit;
-using DistanceFunction = Microsoft.SemanticKernel.Data.DistanceFunction;
-using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
+using DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
+using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 
