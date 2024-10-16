@@ -15,13 +15,13 @@ internal static class SqliteVectorStoreRecordPropertyMapping
 {
     public static byte[] MapVectorForStorageModel<TVector>(TVector vector)
     {
-        if (vector is ReadOnlyMemory<float> memoryFloat)
+        if (vector is ReadOnlyMemory<float> floatMemory)
         {
-            ReadOnlySpan<float> floatSpan = memoryFloat.Span;
+            ReadOnlySpan<float> floatSpan = floatMemory.Span;
 
             byte[] byteArray = new byte[floatSpan.Length * sizeof(float)];
 
-            MemoryMarshal.Cast<float, byte>(floatSpan).CopyTo(byteArray);
+            MemoryMarshal.AsBytes(floatSpan).CopyTo(byteArray);
 
             return byteArray;
         }

@@ -563,7 +563,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         byte[] byteArray = new byte[floatSpan.Length * sizeof(float)];
 
-        MemoryMarshal.Cast<float, byte>(floatSpan).CopyTo(byteArray);
+        MemoryMarshal.AsBytes(floatSpan).CopyTo(byteArray);
 
         return byteArray;
     }
