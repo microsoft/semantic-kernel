@@ -62,7 +62,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
 
     /// <summary>
     /// Gets the user input.
-    /// Could be overriden to customize the output events to be emitted
+    /// Could be overridden to customize the output events to be emitted
     /// </summary>
     /// <param name="context">An instance of <see cref="KernelProcessStepContext"/> which can be
     /// used to emit events from within a KernelFunction.</param>
