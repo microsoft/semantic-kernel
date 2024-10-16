@@ -149,7 +149,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     public async Task RunOnceAsync(KernelProcessEvent processEvent)
     {
         Verify.NotNull(processEvent);
-        var externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventQueue>(new ActorId(this.Id.GetId()), nameof(ExternalEventQueueActor));
+        var externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
         await externalEventQueue.EnqueueAsync(processEvent).ConfigureAwait(false);
         await this.StartAsync(keepAlive: false).ConfigureAwait(false);
         await this._processTask!.JoinAsync().ConfigureAwait(false);
@@ -316,7 +316,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 await Task.WhenAll(stepProcessingTasks).ConfigureAwait(false);
 
                 // Handle public events that need to be bubbled out of the process.
-                var eventQueue = this.ProxyFactory.CreateActorProxy<IEventQueue>(new ActorId(this.Id.GetId()), nameof(EventQueueActor));
+                var eventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.Id.GetId()), nameof(EventBufferActor));
                 var allEvents = await eventQueue.DequeueAllAsync().ConfigureAwait(false);
             }
         }
@@ -344,7 +344,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// </summary>
     private async Task EnqueueExternalMessagesAsync()
     {
-        var externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventQueue>(new ActorId(this.Id.GetId()), nameof(ExternalEventQueueActor));
+        var externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
         var externalEvents = await externalEventQueue.DequeueAllAsync().ConfigureAwait(false);
 
         foreach (var externalEvent in externalEvents)
@@ -354,7 +354,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 foreach (var edge in edges)
                 {
                     DaprMessage message = DaprMessageFactory.CreateFromEdge(edge, externalEvent.Data);
-                    var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageQueue>(new ActorId(edge.OutputTarget.StepId), nameof(MessageQueueActor));
+                    var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(edge.OutputTarget.StepId), nameof(MessageBufferActor));
                     await messageQueue.EnqueueAsync(message).ConfigureAwait(false);
                 }
             }
@@ -367,7 +367,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <returns>True if the end message has been sent, otherwise false.</returns>
     private async Task<bool> IsEndMessageSentAsync()
     {
-        var endMessageQueue = this.ProxyFactory.CreateActorProxy<IMessageQueue>(new ActorId(EndStepId), nameof(MessageQueueActor));
+        var endMessageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(EndStepId), nameof(MessageBufferActor));
         var messages = await endMessageQueue.DequeueAllAsync().ConfigureAwait(false);
         return messages.Count > 0;
     }

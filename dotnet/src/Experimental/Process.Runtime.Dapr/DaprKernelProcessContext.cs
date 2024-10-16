@@ -13,14 +13,12 @@ namespace Microsoft.SemanticKernel;
 public class DaprKernelProcessContext
 {
     private readonly IProcess _daprProcess;
-    private readonly Kernel _kernel;
     private readonly KernelProcess _process;
 
-    internal DaprKernelProcessContext(KernelProcess process, Kernel kernel)
+    internal DaprKernelProcessContext(KernelProcess process)
     {
         Verify.NotNull(process);
         Verify.NotNullOrWhiteSpace(process.State?.Name);
-        Verify.NotNull(kernel);
 
         if (string.IsNullOrWhiteSpace(process.State.Id))
         {
@@ -28,12 +26,16 @@ public class DaprKernelProcessContext
         }
 
         this._process = process;
-        this._kernel = kernel;
         var processId = new ActorId(process.State.Id);
         this._daprProcess = ActorProxy.Create<IProcess>(processId, nameof(ProcessActor));
     }
 
-    internal async Task StartWithEventAsync(KernelProcessEvent initialEvent, Kernel? kernel = null)
+    /// <summary>
+    /// Starts the process with an initial event.
+    /// </summary>
+    /// <param name="initialEvent">The initial event.</param>
+    /// <returns></returns>
+    internal async Task StartWithEventAsync(KernelProcessEvent initialEvent)
     {
         var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
         await this._daprProcess.InitializeProcessAsync(daprProcess, null).ConfigureAwait(false);

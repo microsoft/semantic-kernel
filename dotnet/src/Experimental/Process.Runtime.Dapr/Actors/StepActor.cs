@@ -18,6 +18,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     private const string DaprStepInfoStateName = "DaprStepInfo";
     private const string StepStateJson = "kernelStepStateJson";
     private const string StepStateType = "kernelStepStateType";
+    private const string StepParentProcessId = "parentProcessId";
+    private const string StepIncomingMessagesState = "incomingMessagesState";
 
     /// <summary>
     /// The generic state type for a process step.
@@ -34,7 +36,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
     private bool _isInitialized;
 
-    internal List<DaprMessage> _incomingMessages = new();
+    internal Queue<DaprMessage> _incomingMessages = new();
     internal KernelProcessStepState? _stepState;
     internal Type? _stepStateType;
     internal readonly ILoggerFactory? LoggerFactory;
@@ -82,7 +84,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         // Save initial state
         await this.StateManager.AddStateAsync(DaprStepInfoStateName, stepInfo).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync("parentProcessId", parentProcessId).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(StepParentProcessId, parentProcessId).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -113,19 +115,41 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Triggers the step to dequeue all pending messages and prepare for processing.
+    /// </summary>
+    /// <returns>A <see cref="Task{Task}"/> where T is an <see cref="int"/> indicating the number of messages that are prepared for processing.</returns>
     public async Task<int> PrepareIncomingMessagesAsync()
     {
-        var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageQueue>(new ActorId(this.Id.GetId()), nameof(MessageQueueActor));
-        this._incomingMessages = await messageQueue.DequeueAllAsync().ConfigureAwait(false);
+        var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(this.Id.GetId()), nameof(MessageBufferActor));
+        var incoming = await messageQueue.DequeueAllAsync().ConfigureAwait(false);
+        foreach (var message in incoming)
+        {
+            this._incomingMessages.Enqueue(message);
+        }
+
+        // Save the incoming messages to state
+        await this.StateManager.SetStateAsync(StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
+        await this.StateManager.SaveStateAsync().ConfigureAwait(false);
+
         return this._incomingMessages.Count;
     }
 
+    /// <summary>
+    /// Triggers the step to process all prepared messages.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
     public async Task ProcessIncomingMessagesAsync()
     {
         // Handle all the incoming messages one at a time
-        foreach (var message in this._incomingMessages)
+        while (this._incomingMessages.Count > 0)
         {
+            var message = this._incomingMessages.Dequeue();
             await this.HandleMessageAsync(message).ConfigureAwait(false);
+
+            // Save the incoming messages to state
+            await this.StateManager.SetStateAsync(StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
+            await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
     }
 
@@ -143,13 +167,25 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         return stepInfo;
     }
 
+    /// <summary>
+    /// Overrides the base method to initialize the step from persisted state.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
         var existingStepInfo = await this.StateManager.TryGetStateAsync<DaprStepInfo>(DaprStepInfoStateName).ConfigureAwait(false);
         if (existingStepInfo.HasValue)
         {
-            var parentProcessId = await this.StateManager.GetStateAsync<string>("parentProcessId").ConfigureAwait(false);
+            // Initialize the step from persisted state
+            var parentProcessId = await this.StateManager.GetStateAsync<string>(StepParentProcessId).ConfigureAwait(false);
             await this.Int_InitializeStepAsync(existingStepInfo.Value, parentProcessId).ConfigureAwait(false);
+
+            // Load the persisted incoming messages
+            var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<DaprMessage>>(StepIncomingMessagesState).ConfigureAwait(false);
+            if (incomingMessages.HasValue)
+            {
+                this._incomingMessages = incomingMessages.Value;
+            }
         }
     }
 
@@ -459,7 +495,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             if (this.ParentProcessId is not null)
             {
                 // Emit the event to the parent process
-                var parentProcess = this.ProxyFactory.CreateActorProxy<IEventQueue>(new ActorId(this.ParentProcessId), nameof(EventQueueActor));
+                var parentProcess = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.ParentProcessId), nameof(EventBufferActor));
                 await parentProcess.EnqueueAsync(scopedEvent).ConfigureAwait(false);
             }
         }
@@ -468,7 +504,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         foreach (var edge in this.GetEdgeForEvent(daprEvent.Id!))
         {
             DaprMessage message = DaprMessageFactory.CreateFromEdge(edge, daprEvent.Data);
-            var targetStep = this.ProxyFactory.CreateActorProxy<IMessageQueue>(new ActorId(edge.OutputTarget.StepId), nameof(MessageQueueActor));
+            var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(edge.OutputTarget.StepId), nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message).ConfigureAwait(false);
         }
     }

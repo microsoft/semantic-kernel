@@ -12,20 +12,14 @@ public static class KernelProcessDaprExtensions
     /// <summary>
     /// Adds the process runtime actors to the actor runtime options.
     /// </summary>
-    /// <param name="actorOptions"></param>
+    /// <param name="actorOptions">The instance of <see cref="ActorRuntimeOptions"/></param>
     public static void AddProcessActors(this ActorRuntimeOptions actorOptions)
     {
         // Register actor types and configure actor settings
         actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.ProcessActor>();
         actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.StepActor>();
-        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.EventQueueActor>();
-        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.MessageQueueActor>();
-        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.ExternalEventQueueActor>();
-
-        // actorOptions.ReentrancyConfig = new Dapr.Actors.ActorReentrancyConfig()
-        // {
-        //     Enabled = true,
-        //     MaxStackDepth = 32
-        // };
+        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.EventBufferActor>();
+        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.MessageBufferActor>();
+        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.ExternalEventBufferActor>();
     }
 }

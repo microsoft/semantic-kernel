@@ -10,11 +10,28 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public interface IStep : IActor
 {
+    /// <summary>
+    /// Initializes the step with the provided step information.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    /// <exception cref="KernelException"></exception>
     Task InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId);
 
+    /// <summary>
+    /// Triggers the step to dequeue all pending messages and prepare for processing.
+    /// </summary>
+    /// <returns>A <see cref="Task{Task}"/> where T is an <see cref="int"/> indicating the number of messages that are prepared for processing.</returns>
     Task<int> PrepareIncomingMessagesAsync();
 
+    /// <summary>
+    /// Triggers the step to process all prepared messages.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
     Task ProcessIncomingMessagesAsync();
 
+    /// <summary>
+    /// Builds the current state of the step into a <see cref="DaprStepInfo"/>.
+    /// </summary>
+    /// <returns>An instance of <see cref="DaprStepInfo"/></returns>
     Task<DaprStepInfo> ToDaprStepInfoAsync();
 }

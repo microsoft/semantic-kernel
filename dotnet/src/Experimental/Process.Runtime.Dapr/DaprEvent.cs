@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel;
+/// <summary>
+/// A representation of an event raised within a process while running in Dapr.
+/// </summary>
 public record DaprEvent
 {
     /// <summary>
