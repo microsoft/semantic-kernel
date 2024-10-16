@@ -102,7 +102,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         {
             var userMessage = this.GetNextUserMessage();
 
-            if (userMessage.ToLower() == "exit")
+            if (string.Equals(userMessage, "exit", StringComparison.OrdinalIgnoreCase))
             {
                 // exit condition met, emitting exit event
                 await context.EmitEventAsync(new() { Id = ChatBotEvents.Exit, Data = userMessage });
