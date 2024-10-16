@@ -94,7 +94,6 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
         string collectionName,
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -130,7 +129,6 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
         string databaseName,
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -160,7 +158,6 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
-        where TRecord : class
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

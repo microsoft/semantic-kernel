@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonObject>
-    where TRecord : class
 {
     /// <summary>The JSON serializer options to use when converting between the data model and the Azure CosmosDB NoSQL record.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;

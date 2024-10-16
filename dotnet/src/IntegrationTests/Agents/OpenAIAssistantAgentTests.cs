@@ -135,6 +135,10 @@ public sealed class OpenAIAssistantAgentTests
 
             // Assert
             Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
+            await foreach (var message in chat.GetChatMessagesAsync())
+            {
+                AssertMessageValid(message);
+            }
         }
         finally
         {
@@ -177,6 +181,23 @@ public sealed class OpenAIAssistantAgentTests
         ChatMessageContent[] history = await chat.GetChatMessagesAsync().ToArrayAsync();
         Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expected, history.First().Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void AssertMessageValid(ChatMessageContent message)
+    {
+        if (message.Items.OfType<FunctionResultContent>().Any())
+        {
+            Assert.Equal(AuthorRole.Tool, message.Role);
+            return;
+        }
+
+        if (message.Items.OfType<FunctionCallContent>().Any())
+        {
+            Assert.Equal(AuthorRole.Assistant, message.Role);
+            return;
+        }
+
+        Assert.Equal(string.IsNullOrEmpty(message.AuthorName) ? AuthorRole.User : AuthorRole.Assistant, message.Role);
     }
 
     public sealed class MenuPlugin

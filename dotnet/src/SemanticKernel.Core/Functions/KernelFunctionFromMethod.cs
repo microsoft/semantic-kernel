@@ -100,6 +100,66 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return result;
     }
 
+    /// <summary>
+    /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="functionName">The name to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="description">The description to use for the function. If null, it will default to one derived from the method represented by <paramref name="method"/>, if possible (e.g. via a <see cref="DescriptionAttribute"/> on the method).</param>
+    /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    [Experimental("SKEXP0001")]
+    public static KernelFunctionMetadata CreateMetadata(
+        MethodInfo method,
+        string? functionName = null,
+        string? description = null,
+        IEnumerable<KernelParameterMetadata>? parameters = null,
+        KernelReturnParameterMetadata? returnParameter = null,
+        ILoggerFactory? loggerFactory = null)
+        => CreateMetadata(
+            method,
+            new KernelFunctionFromMethodOptions
+            {
+                FunctionName = functionName,
+                Description = description,
+                Parameters = parameters,
+                ReturnParameter = returnParameter,
+                LoggerFactory = loggerFactory
+            });
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    [Experimental("SKEXP0001")]
+    public static KernelFunctionMetadata CreateMetadata(
+        MethodInfo method,
+        KernelFunctionFromMethodOptions? options = default)
+    {
+        Verify.NotNull(method);
+
+        MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, null);
+        var result = new KernelFunctionFromMethod(
+            methodDetails.Function,
+            methodDetails.Name,
+            options?.Description ?? methodDetails.Description,
+            options?.Parameters?.ToList() ?? methodDetails.Parameters,
+            options?.ReturnParameter ?? methodDetails.ReturnParameter,
+            options?.AdditionalMetadata);
+
+        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Created KernelFunctionMetadata '{Name}' for '{MethodName}'", result.Name, method.Name);
+        }
+
+        return result.Metadata;
+    }
+
     /// <inheritdoc/>
     protected override ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,

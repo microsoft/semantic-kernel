@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
@@ -7,6 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register <see cref="ITextSearch"/> for use with <see cref="KernelBuilder"/>.
 /// </summary>
+[Experimental("SKEXP0001")]
 public static class TextSearchKernelBuilderExtensions
 {
     /// <summary>
@@ -23,7 +25,6 @@ public static class TextSearchKernelBuilderExtensions
         ITextSearchResultMapper? resultMapper = null,
         VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
-        where TRecord : class
     {
         builder.Services.AddVectorStoreTextSearch<TRecord>(stringMapper, resultMapper, options, serviceId);
         return builder;

@@ -25,7 +25,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IVectorizableTextSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TRecord : class
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "AzureAISearch";
@@ -424,7 +423,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
             if (jsonObject is null)
             {
-                return null;
+                return default;
             }
 
             return VectorStoreErrorHandler.RunModelConversion(

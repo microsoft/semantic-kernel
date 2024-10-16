@@ -45,7 +45,6 @@ public sealed class WeaviateVectorStore : IVectorStore
     /// <inheritdoc />
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
-        where TRecord : class
     {
         if (typeof(TKey) != typeof(Guid))
         {
