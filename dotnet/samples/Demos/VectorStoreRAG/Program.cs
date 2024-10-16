@@ -13,24 +13,56 @@ using VectorStoreRAG.Options;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
-builder.Configuration
-    .AddUserSecrets<Program>();
-
+// Configure configuration and load the application configuration.
+builder.Configuration.AddUserSecrets<Program>();
 builder.Services.Configure<RagConfig>(builder.Configuration.GetSection(RagConfig.ConfigSectionName));
-
 var appConfig = new ApplicationConfig(builder.Configuration);
+
+// Create a cancellation token and source to pass to the application service to allow them
+// to request a graceful application shutdown.
+CancellationTokenSource appShutdownCancellationTokenSource = new();
+CancellationToken appShutdownCancellationToken = appShutdownCancellationTokenSource.Token;
+builder.Services.AddKeyedSingleton("AppShutdown", appShutdownCancellationTokenSource);
 
 // Register the kernel with the dependency injection container
 // and add Chat Completion and Text Embedding Generation services.
-var kernelBuilder = builder.Services.AddKernel()
-    .AddAzureOpenAIChatCompletion(
-        appConfig.AzureOpenAIConfig.ChatDeploymentName,
-        appConfig.AzureOpenAIConfig.Endpoint,
-        new AzureCliCredential())
-    .AddAzureOpenAITextEmbeddingGeneration(
-        appConfig.AzureOpenAIEmbeddingsConfig.DeploymentName,
-        appConfig.AzureOpenAIEmbeddingsConfig.Endpoint,
-        new AzureCliCredential());
+var kernelBuilder = builder.Services.AddKernel();
+
+switch (appConfig.RagConfig.AIChatService)
+{
+    case "AzureOpenAI":
+        kernelBuilder.AddAzureOpenAIChatCompletion(
+            appConfig.AzureOpenAIConfig.ChatDeploymentName,
+            appConfig.AzureOpenAIConfig.Endpoint,
+            new AzureCliCredential());
+        break;
+    case "OpenAI":
+        kernelBuilder.AddOpenAIChatCompletion(
+            appConfig.OpenAIConfig.ModelId,
+            appConfig.OpenAIConfig.ApiKey,
+            appConfig.OpenAIConfig.OrgId);
+        break;
+    default:
+        throw new NotSupportedException($"AI Chat Service type '{appConfig.RagConfig.AIChatService}' is not supported.");
+}
+
+switch (appConfig.RagConfig.AIEmbeddingService)
+{
+    case "AzureOpenAIEmbeddings":
+        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
+            appConfig.AzureOpenAIEmbeddingsConfig.DeploymentName,
+            appConfig.AzureOpenAIEmbeddingsConfig.Endpoint,
+            new AzureCliCredential());
+        break;
+    case "OpenAIEmbeddings":
+        kernelBuilder.AddOpenAITextEmbeddingGeneration(
+            appConfig.OpenAIEmbeddingsConfig.ModelId,
+            appConfig.OpenAIEmbeddingsConfig.ApiKey,
+            appConfig.OpenAIEmbeddingsConfig.OrgId);
+        break;
+    default:
+        throw new NotSupportedException($"AI Embedding Service type '{appConfig.RagConfig.AIEmbeddingService}' is not supported.");
+}
 
 // Add the configured vector store record collection type to the
 // dependency injection container.
@@ -53,6 +85,10 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.RagConfig.CollectionName,
             appConfig.AzureCosmosDBNoSQLConfig.ConnectionString,
             appConfig.AzureCosmosDBNoSQLConfig.DatabaseName);
+        break;
+    case "InMemory":
+        kernelBuilder.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
+            appConfig.RagConfig.CollectionName);
         break;
     case "Qdrant":
         kernelBuilder.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
@@ -84,6 +120,7 @@ switch (appConfig.RagConfig.VectorStoreType)
     case "AzureAISearch":
     case "AzureCosmosDBMongoDB":
     case "AzureCosmosDBNoSQL":
+    case "InMemory":
     case "Redis":
         RegisterServices<string>(builder, kernelBuilder, appConfig);
         break;
@@ -97,7 +134,7 @@ switch (appConfig.RagConfig.VectorStoreType)
 
 // Build and run the host.
 using IHost host = builder.Build();
-await host.RunAsync().ConfigureAwait(false);
+await host.RunAsync(appShutdownCancellationToken).ConfigureAwait(false);
 
 static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilder kernelBuilder, ApplicationConfig vectorStoreRagConfig)
     where TKey : notnull

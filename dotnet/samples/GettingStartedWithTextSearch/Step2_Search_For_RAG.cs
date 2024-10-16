@@ -266,7 +266,7 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
+                modelId: TestConfiguration.OpenAI.ChatModelId, // Requires a large context window e.g. gpt-4o or gpt-4o-mini 
                 apiKey: TestConfiguration.OpenAI.ApiKey);
         Kernel kernel = kernelBuilder.Build();
 
