@@ -51,33 +51,42 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
         return ValueTask.CompletedTask;
     }
 
+    internal string GetNextUserMessage()
+    {
+        if (_state != null && _state.CurrentInputIndex >= 0 && _state.CurrentInputIndex < this._state.UserInputs.Count)
+        {
+            var userMessage = this._state!.UserInputs[_state.CurrentInputIndex];
+            _state.CurrentInputIndex++;
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"USER: {userMessage}");
+            Console.ResetColor();
+
+            return userMessage;
+        }
+
+        Console.WriteLine("SCRIPTED_USER_INPUT: No more scripted user messages defined, returning empty string as user message");
+        return string.Empty;
+    }
+
     /// <summary>
     /// Gets the user input.
+    /// Could be overridden to customize the output events to be emitted
     /// </summary>
     /// <param name="context">An instance of <see cref="KernelProcessStepContext"/> which can be
     /// used to emit events from within a KernelFunction.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
     [KernelFunction(Functions.GetUserInput)]
-    public async ValueTask GetUserInputAsync(KernelProcessStepContext context)
+    public virtual async ValueTask GetUserInputAsync(KernelProcessStepContext context)
     {
-        if (_state == null || _state.CurrentInputIndex >= _state.UserInputs.Count)
+        var userMessage = this.GetNextUserMessage();
+        // Emit the user input
+        if (string.IsNullOrEmpty(userMessage))
         {
-            // Emit the completion event
-            await context.EmitEventAsync(new() { Id = CommonEvents.UserInputComplete });
+            await context.EmitEventAsync(new() { Id = CommonEvents.Exit });
             return;
         }
 
-        string userMessage = _state.UserInputs[_state.CurrentInputIndex];
-        _state.CurrentInputIndex++;
-
-        if (!this.SuppressOutput)
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"USER: {userMessage}");
-            Console.ResetColor();
-        }
-
-        // Emit the user input
         await context.EmitEventAsync(new() { Id = CommonEvents.UserInputReceived, Data = userMessage });
     }
 }
