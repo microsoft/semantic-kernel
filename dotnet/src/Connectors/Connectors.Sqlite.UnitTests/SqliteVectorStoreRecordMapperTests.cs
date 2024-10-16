@@ -9,19 +9,19 @@ using Xunit;
 namespace SemanticKernel.Connectors.Sqlite.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="SqliteGenericDataModelMapper"/> class.
+/// Unit tests for <see cref="SqliteVectorStoreRecordMapper{TRecord}"/> class.
 /// </summary>
-public sealed class SqliteGenericDataModelMapperTests
+public sealed class SqliteVectorStoreRecordMapperTests
 {
     [Fact]
     public void MapFromDataToStorageModelWithStringKeyReturnsValidStorageModel()
     {
         // Arrange
         var definition = GetRecordDefinition<string>();
-        var propertyReader = GetPropertyReader<VectorStoreGenericDataModel<string>>(definition);
-        var dataModel = GetGenericDataModel<string>("key");
+        var propertyReader = GetPropertyReader<TestRecord<string>>(definition);
+        var dataModel = GetDataModel<string>("key");
 
-        var mapper = new SqliteGenericDataModelMapper(propertyReader);
+        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<string>>(propertyReader);
 
         // Act
         var result = mapper.MapFromDataToStorageModel(dataModel);
@@ -42,10 +42,10 @@ public sealed class SqliteGenericDataModelMapperTests
     {
         // Arrange
         var definition = GetRecordDefinition<ulong>();
-        var propertyReader = GetPropertyReader<VectorStoreGenericDataModel<ulong>>(definition);
-        var dataModel = GetGenericDataModel<ulong>(1);
+        var propertyReader = GetPropertyReader<TestRecord<ulong>>(definition);
+        var dataModel = GetDataModel<ulong>(1);
 
-        var mapper = new SqliteGenericDataModelMapper(propertyReader);
+        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<ulong>>(propertyReader);
 
         // Act
         var result = mapper.MapFromDataToStorageModel(dataModel);
@@ -79,26 +79,26 @@ public sealed class SqliteGenericDataModelMapperTests
         };
 
         var definition = GetRecordDefinition<string>();
-        var propertyReader = GetPropertyReader<VectorStoreGenericDataModel<string>>(definition);
+        var propertyReader = GetPropertyReader<TestRecord<string>>(definition);
 
-        var mapper = new SqliteGenericDataModelMapper(propertyReader);
+        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<string>>(propertyReader);
 
         // Act
         var result = mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
 
         // Assert
         Assert.Equal("key", result.Key);
-        Assert.Equal("Value1", result.Data["StringProperty"]);
-        Assert.Equal(5, result.Data["IntProperty"]);
+        Assert.Equal("Value1", result.StringProperty);
+        Assert.Equal(5, result.IntProperty);
 
         if (includeVectors)
         {
-            Assert.NotNull(result.Vectors["FloatVector"]);
-            Assert.Equal(vector.ToArray(), ((ReadOnlyMemory<float>)result.Vectors["FloatVector"]!).ToArray());
+            Assert.NotNull(result.FloatVector);
+            Assert.Equal(vector.Span.ToArray(), result.FloatVector.Value.Span.ToArray());
         }
         else
         {
-            Assert.False(result.Vectors.ContainsKey("FloatVector"));
+            Assert.Null(result.FloatVector);
         }
     }
 
@@ -120,26 +120,26 @@ public sealed class SqliteGenericDataModelMapperTests
         };
 
         var definition = GetRecordDefinition<ulong>();
-        var propertyReader = GetPropertyReader<VectorStoreGenericDataModel<ulong>>(definition);
+        var propertyReader = GetPropertyReader<TestRecord<ulong>>(definition);
 
-        IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, Dictionary<string, object?>> mapper = new SqliteGenericDataModelMapper(propertyReader);
+        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<ulong>>(propertyReader);
 
         // Act
         var result = mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
 
         // Assert
         Assert.Equal((ulong)1, result.Key);
-        Assert.Equal("Value1", result.Data["StringProperty"]);
-        Assert.Equal(5, result.Data["IntProperty"]);
+        Assert.Equal("Value1", result.StringProperty);
+        Assert.Equal(5, result.IntProperty);
 
         if (includeVectors)
         {
-            Assert.NotNull(result.Vectors["FloatVector"]);
-            Assert.Equal(vector.ToArray(), ((ReadOnlyMemory<float>)result.Vectors["FloatVector"]!).ToArray());
+            Assert.NotNull(result.FloatVector);
+            Assert.Equal(vector.Span.ToArray(), result.FloatVector.Value.Span.ToArray());
         }
         else
         {
-            Assert.False(result.Vectors.ContainsKey("FloatVector"));
+            Assert.Null(result.FloatVector);
         }
     }
 
@@ -159,19 +159,14 @@ public sealed class SqliteGenericDataModelMapperTests
         };
     }
 
-    private static VectorStoreGenericDataModel<TKey> GetGenericDataModel<TKey>(TKey key)
+    private static TestRecord<TKey> GetDataModel<TKey>(TKey key)
     {
-        return new VectorStoreGenericDataModel<TKey>(key)
+        return new TestRecord<TKey>
         {
-            Data = new()
-            {
-                ["StringProperty"] = "Value1",
-                ["IntProperty"] = 5
-            },
-            Vectors = new()
-            {
-                ["FloatVector"] = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f])
-            }
+            Key = key,
+            StringProperty = "Value1",
+            IntProperty = 5,
+            FloatVector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f])
         };
     }
 
@@ -184,6 +179,23 @@ public sealed class SqliteGenericDataModelMapperTests
             SupportsMultipleVectors = true
         });
     }
+
+#pragma warning disable CA1812
+    private sealed class TestRecord<TKey>
+    {
+        [VectorStoreRecordKey]
+        public TKey? Key { get; set; }
+
+        [VectorStoreRecordData]
+        public string? StringProperty { get; set; }
+
+        [VectorStoreRecordData]
+        public int? IntProperty { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        public ReadOnlyMemory<float>? FloatVector { get; set; }
+    }
+#pragma warning restore CA1812
 
     #endregion
 }
