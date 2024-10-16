@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel;
 
@@ -56,8 +57,8 @@ internal sealed class CalendarPlugin
         [Description("The final date in the range")]
         string end)
     {
-        DateTime startDate = DateTime.Parse(start);
-        DateTime endDate = DateTime.Parse(end);
+        DateTime startDate = DateTime.Parse(start, CultureInfo.CurrentCulture);
+        DateTime endDate = DateTime.Parse(end, CultureInfo.CurrentCulture);
 
         return this._events.Where(e => e.StartDate.Date >= startDate.Date && e.StartDate.Date < endDate.Date.AddDays(1)).ToArray();
     }
