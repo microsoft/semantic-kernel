@@ -105,8 +105,8 @@ internal static class SqliteVectorStoreRecordPropertyMapping
             Type t when t == typeof(double) || t == typeof(double?) => reader.GetDouble(propertyIndex),
             Type t when t == typeof(decimal) || t == typeof(decimal?) => reader.GetDecimal(propertyIndex),
             Type t when t == typeof(string) => reader.GetString(propertyIndex),
-            Type t when t == typeof(byte[]) => (byte[])reader[propertyName],
-            Type t when t == typeof(ReadOnlyMemory<float>) || t == typeof(ReadOnlyMemory<float>?) => (byte[])reader[propertyName],
+            Type t when t == typeof(byte[]) => (byte[])reader[propertyIndex],
+            Type t when t == typeof(ReadOnlyMemory<float>) || t == typeof(ReadOnlyMemory<float>?) => (byte[])reader[propertyIndex],
             _ => throw new NotSupportedException($"Unsupported type: {propertyType} for property: {propertyName}")
         };
     }
