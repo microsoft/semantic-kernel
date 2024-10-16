@@ -7,7 +7,6 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,24 +52,6 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     /// The function calls processor.
     /// </summary>
     private readonly FunctionCallsProcessor _functionCallsProcessor;
-
-    /// <summary>
-    /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
-    /// asynchronous chain of execution.
-    /// </summary>
-    /// <remarks>
-    /// This is a fail-safe mechanism. If someone accidentally manages to set up execution settings in such a way that
-    /// auto-invocation is invoked recursively, and in particular where a prompt function is able to auto-invoke itself,
-    /// we could end up in an infinite loop. This const is a backstop against that happening. We should never come close
-    /// to this limit, but if we do, auto-invoke will be disabled for the current flow in order to prevent runaway execution.
-    /// With the current setup, the way this could possibly happen is if a prompt function is configured with built-in
-    /// execution settings that opt-in to auto-invocation of everything in the kernel, in which case the invocation of that
-    /// prompt function could advertize itself as a candidate for auto-invocation. We don't want to outright block that,
-    /// if that's something a developer has asked to do (e.g. it might be invoked with different arguments than its parent
-    /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
-    /// configurable should need arise.
-    /// </remarks>
-    private const int MaxInflightAutoInvokes = 128;
 
     /// <summary>
     /// Cached JSON for a function with no parameters.
@@ -211,53 +192,45 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         for (int requestIndex = 0; ; requestIndex++)
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
-
             var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
-
             var request = CreateChatRequest(chatHistory, chatExecutionSettings, this._client.SelectedModel, toolCallingConfig);
             request.Stream = false;
 
             var chatMessageContent = new ChatMessageContent();
-            var fullContent = new StringBuilder();
-            string? modelId = null;
-            AuthorRole? authorRole = null;
-            List<ChatResponseStream> innerContent = [];
 
-            ChatDoneResponseStream? singleChunk = null;
+            ChatDoneResponseStream? singleDoneChunk = null;
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
             {
                 try
                 {
-                    var asyncRequest = this._client.Chat(request, cancellationToken).ConfigureAwait(false);
+                    var enumerator = this._client.Chat(request, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                    await enumerator.MoveNextAsync().ConfigureAwait(false);
+                    // When streaming is false in the configuration, we expect the first chunk to be the full response.
+                    singleDoneChunk = enumerator.Current as ChatDoneResponseStream;
 
-                    var enumerator = asyncRequest.GetAsyncEnumerator();
-
-                    await enumerator.MoveNextAsync();
-                    singleChunk = enumerator.Current as ChatDoneResponseStream;
-
-                    this.LogUsage(singleChunk);
+                    this.LogUsage(singleDoneChunk);
                 }
                 catch (Exception ex) when (activity is not null)
                 {
                     activity.SetError(ex);
-                    if (singleChunk != null)
+                    if (singleDoneChunk != null)
                     {
                         // Capture available metadata even if the operation failed.
                         activity
-                            .SetResponseId(singleChunk.CreatedAt)
-                            .SetPromptTokenUsage(singleChunk.PromptEvalCount)
-                            .SetCompletionTokenUsage(singleChunk.EvalCount);
+                            .SetResponseId(singleDoneChunk.CreatedAt)
+                            .SetPromptTokenUsage(singleDoneChunk.PromptEvalCount)
+                            .SetCompletionTokenUsage(singleDoneChunk.EvalCount);
                     }
 
                     throw;
                 }
 
-                chatMessageContent = this.CreateChatMessageContent(singleChunk!);
-                activity?.SetCompletionResponse([chatMessageContent], singleChunk.PromptEvalCount, singleChunk.EvalCount);
+                chatMessageContent = this.CreateChatMessageContent(singleDoneChunk!);
+                activity?.SetCompletionResponse([chatMessageContent], singleDoneChunk.PromptEvalCount, singleDoneChunk.EvalCount);
             }
 
             // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
-            if (!toolCallingConfig.AutoInvoke || chatCompletion.ToolCalls.Count == 0)
+            if (!toolCallingConfig.AutoInvoke || !(singleDoneChunk!.Message.ToolCalls?.Any() ?? false))
             {
                 return [chatMessageContent];
             }
@@ -276,34 +249,6 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             {
                 return [lastMessage];
             }
-
-            await foreach (var responseStreamChunk in this._client.Chat(request, cancellationToken).ConfigureAwait(false))
-            {
-                if (responseStreamChunk is null)
-                {
-                    continue;
-                }
-
-                innerContent.Add(responseStreamChunk);
-
-                if (responseStreamChunk.Message.Content is not null)
-                {
-                    fullContent.Append(responseStreamChunk.Message.Content);
-                }
-
-                if (responseStreamChunk.Message.Role is not null)
-                {
-                    authorRole = GetAuthorRole(responseStreamChunk.Message.Role)!.Value;
-                }
-
-                modelId ??= responseStreamChunk.Model;
-            }
-
-            return [new ChatMessageContent(
-                    role: authorRole ?? new(),
-                    content: fullContent.ToString(),
-                    modelId: modelId,
-                    innerContent: innerContent)];
         }
     }
 
@@ -407,12 +352,16 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         => ModelDiagnostics.StartCompletionActivity(this._client.Config.Uri, this._client.Config.Model, ModelPlatform, chatHistory, settings);
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        throw new NotImplementedException();
+
+        /*
+
         // Ollama accepts empty chat history to trigger Model Loading https://github.com/ollama/ollama/blob/main/docs/api.md#load-a-model-1
         chatHistory ??= [];
 
@@ -462,9 +411,20 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
             {
                 // Make the request.
-                AsyncCollectionResult<StreamingChatCompletionUpdate> response;
+                IAsyncEnumerator<StreamingChatCompletionUpdate> response;
                 try
                 {
+
+                    response = this._client.Chat(request, cancellationToken);
+
+                    {
+                        yield return new StreamingChatMessageContent(
+                            role: GetAuthorRole(message!.Message.Role),
+                            content: message.Message.Content,
+                            modelId: message.Model,
+                            innerContent: message);
+                    }
+
                     response = RunRequest(() => this.Client!.GetChatClient(targetModel).CompleteChatStreamingAsync(chatForRequest, chatOptions, cancellationToken));
                 }
                 catch (Exception ex) when (activity is not null)
@@ -558,16 +518,9 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                     await responseEnumerator.DisposeAsync();
                 }
             }
-
-            await foreach (var message in this._client.Chat(request, cancellationToken).ConfigureAwait(false))
-            {
-                yield return new StreamingChatMessageContent(
-                    role: GetAuthorRole(message!.Message.Role),
-                    content: message.Message.Content,
-                    modelId: message.Model,
-                    innerContent: message);
-            }
         }
+        */
+    }
 
     private ToolCallingConfig GetFunctionCallingConfiguration(Kernel? kernel, OllamaPromptExecutionSettings executionSettings, ChatHistory chatHistory, int requestIndex)
     {

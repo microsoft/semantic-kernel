@@ -259,8 +259,15 @@ public sealed class OllamaChatCompletionTests : IDisposable
     public async Task GetChatMessageContentsShouldAdvertiseToolAsync()
     {
         //Arrange
+        var targetModel = "llama3.2";
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt")),
+            StatusCode = System.Net.HttpStatusCode.OK,
+        };
+
         var sut = new OllamaChatCompletionService(
-            "phi3",
+            targetModel,
             httpClient: this._httpClient);
 
         var chat = new ChatHistory();
@@ -287,22 +294,26 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Null(requestPayload.Options.Temperature);
         Assert.Null(requestPayload.Options.TopK);
         Assert.Null(requestPayload.Options.TopP);
+        Assert.Equal(targetModel, requestPayload.Model);
+
+        Assert.NotNull(requestPayload.Tools);
+        Assert.NotEmpty(requestPayload.Tools);
+        Assert.Equal(1, requestPayload.Tools?.Count());
+        var firstTool = requestPayload.Tools?.First()!;
+        Assert.Equal("TestPlugin-TestFunction", firstTool.Function!.Name);
+        Assert.Single(firstTool.Function!.Parameters!.Properties!);
+        Assert.Equal("testInput", firstTool.Function!.Parameters!.Properties!.First().Key);
+        Assert.Equal("string", firstTool.Function!.Parameters!.Properties!.First().Value.Type);
+        Assert.Equal("testInput", firstTool.Function!.Parameters!.Required!.First());
 
         Assert.NotNull(message.ModelId);
-        Assert.Equal("phi3", message.ModelId);
-
-        // Ollama Sharp always perform streaming even for non-streaming calls,
-        // The inner content in this case is the full list of chunks returned by the Ollama Client.
+        Assert.Equal(targetModel, message.ModelId);
         Assert.NotNull(message.InnerContent);
-        Assert.IsType<List<ChatResponseStream>>(message.InnerContent);
-        var innerContentList = message.InnerContent as List<ChatResponseStream>;
-        Assert.NotNull(innerContentList);
-        Assert.NotEmpty(innerContentList);
-        var lastMessage = innerContentList.Last();
-        var doneMessageChunk = lastMessage as ChatDoneResponseStream;
-        Assert.NotNull(doneMessageChunk);
-        Assert.True(doneMessageChunk.Done);
-        Assert.Equal("stop", doneMessageChunk.DoneReason);
+        Assert.IsType<ChatDoneResponseStream>(message.InnerContent);
+        var innerContent = message.InnerContent as ChatDoneResponseStream;
+        Assert.NotNull(innerContent);
+        Assert.True(innerContent.Done);
+        Assert.Equal("stop", innerContent.DoneReason);
     }
 
     public void Dispose()
