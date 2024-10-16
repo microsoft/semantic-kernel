@@ -34,7 +34,7 @@ public static partial class KernelPluginFactory
     /// </remarks>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    public static KernelPlugin CreateFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= EmptyServiceProvider.Instance;
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
@@ -56,10 +56,13 @@ public static partial class KernelPluginFactory
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static KernelPlugin CreateFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin CreateFromType<[DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= EmptyServiceProvider.Instance;
-        return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        return CreateFromObject<T>(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
@@ -95,7 +98,7 @@ public static partial class KernelPluginFactory
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
     [Experimental("SKEXP0120")]
-    public static KernelPlugin CreateFromObject(object target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, ILoggerFactory? loggerFactory = null)
+    public static KernelPlugin CreateFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(jsonSerializerOptions);
         return CreateFromObjectInternal(target, pluginName, jsonSerializerOptions, loggerFactory: loggerFactory);
@@ -177,7 +180,7 @@ public static partial class KernelPluginFactory
     /// </remarks>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    private static KernelPlugin CreateFromObjectInternal(object target, string? pluginName = null, JsonSerializerOptions? jsonSerializerOptions = null, ILoggerFactory? loggerFactory = null)
+    private static KernelPlugin CreateFromObjectInternal<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(T target, string? pluginName = null, JsonSerializerOptions? jsonSerializerOptions = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(target);
 

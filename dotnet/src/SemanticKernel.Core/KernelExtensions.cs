@@ -354,7 +354,7 @@ public static class KernelExtensions
     /// </remarks>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    public static KernelPlugin CreatePluginFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this Kernel kernel, string? pluginName = null)
+    public static KernelPlugin CreatePluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
@@ -374,7 +374,10 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static KernelPlugin CreatePluginFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin CreatePluginFromType<[DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
@@ -416,11 +419,11 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static KernelPlugin CreatePluginFromObject(this Kernel kernel, object target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin CreatePluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
-        return KernelPluginFactory.CreateFromObject(target, jsonSerializerOptions, pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromObject<T>(target, jsonSerializerOptions, pluginName, kernel.LoggerFactory);
     }
     #endregion
 
@@ -469,7 +472,7 @@ public static class KernelExtensions
     /// </remarks>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    public static KernelPlugin ImportPluginFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this Kernel kernel, string? pluginName = null)
+    public static KernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
         KernelPlugin plugin = CreatePluginFromType<T>(kernel, pluginName);
         kernel.Plugins.Add(plugin);
@@ -489,7 +492,10 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static KernelPlugin ImportPluginFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin ImportPluginFromType<[DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         KernelPlugin plugin = CreatePluginFromType<T>(kernel, jsonSerializerOptions, pluginName);
         kernel.Plugins.Add(plugin);
@@ -510,7 +516,7 @@ public static class KernelExtensions
     /// </remarks>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    public static KernelPlugin AddFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this ICollection<KernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin AddFromType<T>(this ICollection<KernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
@@ -533,7 +539,10 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static KernelPlugin AddFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this ICollection<KernelPlugin> plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin AddFromType<[DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this ICollection<KernelPlugin> plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
@@ -555,7 +564,7 @@ public static class KernelExtensions
     /// </remarks>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    public static IKernelBuilderPlugins AddFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IKernelBuilderPlugins plugins, string? pluginName = null)
+    public static IKernelBuilderPlugins AddFromType<T>(this IKernelBuilderPlugins plugins, string? pluginName = null)
     {
         Verify.NotNull(plugins);
 
@@ -577,7 +586,10 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static IKernelBuilderPlugins AddFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IKernelBuilderPlugins plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static IKernelBuilderPlugins AddFromType<[DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this IKernelBuilderPlugins plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(plugins);
 
@@ -635,9 +647,9 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static KernelPlugin ImportPluginFromObject(this Kernel kernel, object target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin ImportPluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
-        KernelPlugin plugin = CreatePluginFromObject(kernel, target, jsonSerializerOptions, pluginName);
+        KernelPlugin plugin = CreatePluginFromObject<T>(kernel, target, jsonSerializerOptions, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -679,11 +691,11 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static KernelPlugin AddFromObject(this ICollection<KernelPlugin> plugins, object target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this ICollection<KernelPlugin> plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
-        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject<T>(target, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>());
         plugins.Add(plugin);
         return plugin;
     }
@@ -723,11 +735,11 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static IKernelBuilderPlugins AddFromObject(this IKernelBuilderPlugins plugins, object target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static IKernelBuilderPlugins AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this IKernelBuilderPlugins plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(plugins);
 
-        plugins.Services.AddSingleton(serviceProvider => KernelPluginFactory.CreateFromObject(target, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>()));
+        plugins.Services.AddSingleton(serviceProvider => KernelPluginFactory.CreateFromObject<T>(target, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>()));
 
         return plugins;
     }
