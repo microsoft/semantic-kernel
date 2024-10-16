@@ -3,14 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Channels;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.Threading;
-using Dapr.Actors.Runtime;
 using Dapr.Actors;
+using Dapr.Actors.Runtime;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
 internal sealed class ProcessActor : StepActor, IProcess, IDisposable

@@ -4,13 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging;
-using Dapr.Actors.Runtime;
-using Dapr.Actors;
 using System.Text.Json;
+using System.Threading.Tasks;
+using Dapr.Actors;
+using Dapr.Actors.Runtime;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel;
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
