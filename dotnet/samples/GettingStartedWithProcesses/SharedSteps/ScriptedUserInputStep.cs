@@ -48,22 +48,29 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
         return ValueTask.CompletedTask;
     }
 
-    /// <summary>
-    /// Gets the user input.
-    /// </summary>
-    /// <param name="context">An instance of <see cref="KernelProcessStepContext"/> which can be
-    /// used to emit events from within a KernelFunction.</param>
-    /// <returns>A <see cref="ValueTask"/></returns>
-    [KernelFunction(Functions.GetUserInput)]
-    public async ValueTask GetUserInputAsync(KernelProcessStepContext context)
+    internal string GetNextUserMessage()
     {
-        var userMessage = _state!.UserInputs[_state.CurrentInputIndex];
+        var userMessage = this._state!.UserInputs[_state.CurrentInputIndex];
         _state.CurrentInputIndex++;
 
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"USER: {userMessage}");
         Console.ResetColor();
 
+        return userMessage;
+    }
+
+    /// <summary>
+    /// Gets the user input.
+    /// Could be overriden to customize the output events to be emitted
+    /// </summary>
+    /// <param name="context">An instance of <see cref="KernelProcessStepContext"/> which can be
+    /// used to emit events from within a KernelFunction.</param>
+    /// <returns>A <see cref="ValueTask"/></returns>
+    [KernelFunction(Functions.GetUserInput)]
+    public virtual async ValueTask GetUserInputAsync(KernelProcessStepContext context)
+    {
+        var userMessage = this.GetNextUserMessage();
         // Emit the user input
         await context.EmitEventAsync(new() { Id = CommonEvents.UserInputReceived, Data = userMessage });
     }
