@@ -48,8 +48,8 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
 
         var columns = new List<SqliteColumn>
         {
-            new("Column1", "Type1", IsPrimary: true),
-            new("Column2", "Type2", IsPrimary: false, Configuration: new() { ["distance_metric"] = "l2" }),
+            new("Column1", "Type1", isPrimary: true),
+            new("Column2", "Type2", isPrimary: false) { Configuration = new() { ["distance_metric"] = "l2" } },
         };
 
         // Act
@@ -76,8 +76,8 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
 
         var columns = new List<SqliteColumn>
         {
-            new("Column1", "Type1", IsPrimary: true),
-            new("Column2", "Type2", IsPrimary: false, Configuration: new() { ["distance_metric"] = "l2" }),
+            new("Column1", "Type1", isPrimary: true),
+            new("Column2", "Type2", isPrimary: false) { Configuration = new() { ["distance_metric"] = "l2" } },
         };
 
         // Act

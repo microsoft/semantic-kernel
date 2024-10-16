@@ -7,8 +7,16 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <summary>
 /// Representation of SQLite column.
 /// </summary>
-internal sealed record SqliteColumn(
-    string Name,
-    string Type,
-    bool IsPrimary,
-    Dictionary<string, object>? Configuration = null);
+internal sealed class SqliteColumn(
+    string name,
+    string type,
+    bool isPrimary)
+{
+    public string Name { get; set; } = name;
+
+    public string Type { get; set; } = type;
+
+    public bool IsPrimary { get; set; } = isPrimary;
+
+    public Dictionary<string, object>? Configuration { get; set; }
+}

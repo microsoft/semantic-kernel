@@ -5,7 +5,7 @@ using Microsoft.Extensions.VectorData;
 
 namespace SemanticKernel.Connectors.Sqlite.UnitTests;
 
-public record SqliteHotel<TKey>()
+public class SqliteHotel<TKey>()
 {
     /// <summary>The key of the record.</summary>
     [VectorStoreRecordKey]

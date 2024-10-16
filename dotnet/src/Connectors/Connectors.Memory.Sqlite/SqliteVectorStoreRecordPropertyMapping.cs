@@ -64,7 +64,10 @@ internal static class SqliteVectorStoreRecordPropertyMapping
                 propertyType = GetStorageDataPropertyType(property);
             }
 
-            var column = new SqliteColumn(propertyName, propertyType, isPrimary, configuration);
+            var column = new SqliteColumn(propertyName, propertyType, isPrimary)
+            {
+                Configuration = configuration
+            };
 
             columns.Add(column);
         }
