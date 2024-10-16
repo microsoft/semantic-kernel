@@ -95,9 +95,9 @@ public static partial class KernelPluginFactory
     /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    [Experimental("SKEXP0120")]
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    [Experimental("SKEXP0120")]
     public static KernelPlugin CreateFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(jsonSerializerOptions);
