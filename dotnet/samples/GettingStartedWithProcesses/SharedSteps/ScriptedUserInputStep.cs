@@ -25,7 +25,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     /// <summary>
     /// The state object for the user input step. This object holds the user inputs and the current input index.
     /// </summary>
-    private readonly UserInputState _state = new();
+    private UserInputState? _state;
 
     /// <summary>
     /// Method to be overridden by the user to populate with custom user messages
@@ -60,7 +60,7 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     [KernelFunction(Functions.GetUserInput)]
     public async ValueTask GetUserInputAsync(KernelProcessStepContext context)
     {
-        if (_state.CurrentInputIndex >= _state.UserInputs.Count)
+        if (_state == null || _state.CurrentInputIndex >= _state.UserInputs.Count)
         {
             // Emit the completion event
             await context.EmitEventAsync(new() { Id = CommonEvents.UserInputComplete });
