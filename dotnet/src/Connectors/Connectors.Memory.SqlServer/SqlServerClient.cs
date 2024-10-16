@@ -68,7 +68,7 @@ internal sealed class SqlServerClient : ISqlServerClient
                     [embedding] VECTOR({this._embeddingsDimensionsCount}),
                     [timestamp] DATETIMEOFFSET,
                     PRIMARY KEY NONCLUSTERED ([key]),
-                    INDEX IXC CLUSTERED ([timestamp])
+                    INDEX IXC CLUSTERED ([timestamp] DESC)
                 )
                 """;
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
