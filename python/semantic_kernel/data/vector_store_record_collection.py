@@ -9,9 +9,7 @@ from typing import Any, ClassVar, Generic, TypeVar
 
 from pydantic import model_validator
 
-from semantic_kernel.data.vector_store_model_definition import (
-    VectorStoreRecordDefinition,
-)
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_model_protocols import (
     VectorStoreModelFunctionSerdeProtocol,
     VectorStoreModelPydanticProtocol,
@@ -199,6 +197,9 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     ) -> OneOrMany[TKey] | None:
         """Upsert a record.
 
+        If the key of the record already exists, the existing record will be updated.
+        If the key does not exist, a new record will be created.
+
         Args:
             record: The record.
             embedding_generation_function: Supply this function to generate embeddings.
@@ -238,6 +239,9 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     ) -> Sequence[TKey]:
         """Upsert a batch of records.
 
+        If the key of the record already exists, the existing record will be updated.
+        If the key does not exist, a new record will be created.
+
         Args:
             records: The records to upsert, can be a list of records, or a single container.
             embedding_generation_function: Supply this function to generate embeddings.
@@ -264,7 +268,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             raise MemoryConnectorException(f"Error upserting records: {exc}") from exc
 
     async def get(self, key: TKey, include_vectors: bool = True, **kwargs: Any) -> TModel | None:
-        """Get a record.
+        """Get a record if the key exists.
 
         Args:
             key: The key.
@@ -275,7 +279,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             **kwargs: Additional arguments.
 
         Returns:
-            TModel: The record.
+            TModel: The record. None if the key does not exist.
         """
         try:
             records = await self._inner_get([key], include_vectors=include_vectors, **kwargs)
@@ -304,7 +308,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     async def get_batch(
         self, keys: Sequence[TKey], include_vectors: bool = True, **kwargs: Any
     ) -> OneOrMany[TModel] | None:
-        """Get a batch of records.
+        """Get a batch of records whose keys exist in the collection, i.e. keys that do not exist are ignored.
 
         Args:
             keys: The keys.
@@ -336,7 +340,8 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         Args:
             key: The key.
             **kwargs: Additional arguments.
-
+        Exceptions:
+            MemoryConnectorException: If an error occurs during deletion or the record does not exist.
         """
         try:
             await self._inner_delete([key], **kwargs)
@@ -346,10 +351,13 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     async def delete_batch(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         """Delete a batch of records.
 
+        An exception will be raised at the end if any record does not exist.
+
         Args:
             keys: The keys.
             **kwargs: Additional arguments.
-
+        Exceptions:
+            MemoryConnectorException: If an error occurs during deletion or a record does not exist.
         """
         try:
             await self._inner_delete(keys, **kwargs)
