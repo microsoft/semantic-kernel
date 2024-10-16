@@ -18,19 +18,21 @@ namespace SemanticKernel.Connectors.Ollama.UnitTests.Services;
 
 public sealed class OllamaChatCompletionTests : IDisposable
 {
-    private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly MultipleHttpMessageHandlerStub _multiMessageHandlerStub;
     private readonly HttpClient _httpClient;
-
+    private readonly HttpResponseMessage _defaultResponseMessage;
     public OllamaChatCompletionTests()
     {
-        this._messageHandlerStub = new()
+        this._defaultResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response_stream.txt"))
-            }
+            Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response_stream.txt"))
         };
-        this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
+
+        this._multiMessageHandlerStub = new()
+        {
+            ResponsesToReturn = [this._defaultResponseMessage]
+        };
+        this._httpClient = new HttpClient(this._multiMessageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
     }
 
     [Fact]
@@ -47,7 +49,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         await sut.GetChatMessageContentsAsync(chat);
 
         //Assert
-        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._multiMessageHandlerStub.RequestContents[0]);
         Assert.NotNull(requestPayload);
         Assert.Equal("fake-text", requestPayload.Messages!.First().Content);
     }
@@ -94,7 +96,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(message);
 
         // Assert
-        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._multiMessageHandlerStub.RequestContents[0]);
         Assert.NotNull(requestPayload);
         Assert.NotNull(requestPayload.Options);
         Assert.Null(requestPayload.Options.Stop);
@@ -140,7 +142,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         }
 
         // Assert
-        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._multiMessageHandlerStub.RequestContents[0]);
         Assert.NotNull(requestPayload);
         Assert.NotNull(requestPayload.Options);
         Assert.Null(requestPayload.Options.Stop);
@@ -210,7 +212,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         await sut.GetStreamingChatMessageContentsAsync(chat, ollamaExecutionSettings).GetAsyncEnumerator().MoveNextAsync();
 
         // Assert
-        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._multiMessageHandlerStub.RequestContents[0]);
         Assert.NotNull(requestPayload);
         Assert.NotNull(requestPayload.Options);
         Assert.Equal(ollamaExecutionSettings.Stop, requestPayload.Options.Stop);
@@ -244,7 +246,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         await sut.GetChatMessageContentsAsync(chat, ollamaExecutionSettings);
 
         // Assert
-        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._multiMessageHandlerStub.RequestContents[0]);
         Assert.NotNull(requestPayload);
         Assert.NotNull(requestPayload.Options);
         Assert.Equal(ollamaExecutionSettings.Stop, requestPayload.Options.Stop);
@@ -260,11 +262,12 @@ public sealed class OllamaChatCompletionTests : IDisposable
     {
         //Arrange
         var targetModel = "llama3.2";
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt")),
-            StatusCode = System.Net.HttpStatusCode.OK,
         };
+
+        this._multiMessageHandlerStub.ResponsesToReturn = [response];
 
         var sut = new OllamaChatCompletionService(
             targetModel,
@@ -280,14 +283,14 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var messages = await sut.GetChatMessageContentsAsync(chat, settings, kernel, CancellationToken.None);
 
         //Assert
-        var requestContent = this._messageHandlerStub.GetRequestContentAsString();
+        var requestContent = this._multiMessageHandlerStub.GetRequestContentAsString(0);
 
         Assert.NotNull(messages);
         var message = messages.SingleOrDefault();
         Assert.NotNull(message);
 
         // Assert
-        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._multiMessageHandlerStub.RequestContents[0]);
         Assert.NotNull(requestPayload);
         Assert.NotNull(requestPayload.Options);
         Assert.Null(requestPayload.Options.Stop);
@@ -316,9 +319,84 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Equal("stop", innerContent.DoneReason);
     }
 
+    [Fact]
+    public async Task GetChatMessageContentsWhenModelHasToolCallShouldTriggerToolAsync()
+    {
+        //Arrange
+        var targetModel = "llama3.2";
+        using var firstResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_function_call_response.txt")),
+        };
+        using var secondResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt"))
+        };
+
+        this._multiMessageHandlerStub.ResponsesToReturn = [firstResponse, secondResponse];
+
+        var sut = new OllamaChatCompletionService(
+            targetModel,
+            httpClient: this._httpClient);
+
+        var chat = new ChatHistory();
+        chat.AddMessage(AuthorRole.User, "fake-text");
+        Kernel kernel = new();
+        var invocationCount = 0;
+        kernel.Plugins.AddFromFunctions("TestPlugin", [KernelFunctionFactory.CreateFromMethod((string testInput) =>
+        {
+            invocationCount++;
+            return "Test output";
+        }, "TestFunction")]);
+
+        var settings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        //Act
+        var messages = await sut.GetChatMessageContentsAsync(chat, settings, kernel, CancellationToken.None);
+
+        //Assert
+        var requestContent = this._multiMessageHandlerStub.GetRequestContentAsString(0);
+
+        Assert.NotNull(messages);
+        var message = messages.SingleOrDefault();
+        Assert.NotNull(message);
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._multiMessageHandlerStub.RequestContents[0]);
+        Assert.NotNull(requestPayload);
+        Assert.NotNull(requestPayload.Options);
+        Assert.Null(requestPayload.Options.Stop);
+        Assert.Null(requestPayload.Options.Temperature);
+        Assert.Null(requestPayload.Options.TopK);
+        Assert.Null(requestPayload.Options.TopP);
+        Assert.Equal(targetModel, requestPayload.Model);
+
+        Assert.NotNull(requestPayload.Tools);
+        Assert.NotEmpty(requestPayload.Tools);
+        Assert.Equal(1, requestPayload.Tools?.Count());
+        var firstTool = requestPayload.Tools?.First()!;
+        Assert.Equal("TestPlugin-TestFunction", firstTool.Function!.Name);
+        Assert.Single(firstTool.Function!.Parameters!.Properties!);
+        Assert.Equal("testInput", firstTool.Function!.Parameters!.Properties!.First().Key);
+        Assert.Equal("string", firstTool.Function!.Parameters!.Properties!.First().Value.Type);
+        Assert.Equal("testInput", firstTool.Function!.Parameters!.Required!.First());
+
+        Assert.Equal(1, invocationCount);
+
+        Assert.NotNull(message.ModelId);
+        Assert.Equal(targetModel, message.ModelId);
+        Assert.NotNull(message.InnerContent);
+        Assert.IsType<ChatDoneResponseStream>(message.InnerContent);
+        var innerContent = message.InnerContent as ChatDoneResponseStream;
+        Assert.NotNull(innerContent);
+        Assert.True(innerContent.Done);
+        Assert.Equal("stop", innerContent.DoneReason);
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
-        this._messageHandlerStub.Dispose();
+        this._multiMessageHandlerStub.Dispose();
+        this._defaultResponseMessage.Dispose();
     }
 }

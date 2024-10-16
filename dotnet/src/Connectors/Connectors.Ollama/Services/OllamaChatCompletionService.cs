@@ -808,6 +808,12 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         var messages = new List<Message>();
         foreach (var chatHistoryMessage in chatHistory)
         {
+            if (chatHistoryMessage.InnerContent is Message innerMessage && innerMessage is not null)
+            {
+                messages.Add(innerMessage);
+                continue;
+            }
+
             ChatRole role = ChatRole.User;
             if (chatHistoryMessage.Role == AuthorRole.System)
             {
@@ -816,6 +822,10 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             else if (chatHistoryMessage.Role == AuthorRole.Assistant)
             {
                 role = ChatRole.Assistant;
+            }
+            else if (chatHistoryMessage.Role == AuthorRole.Tool)
+            {
+                role = ChatRole.Tool;
             }
 
             messages.Add(new Message(role, chatHistoryMessage.Content!));
