@@ -121,7 +121,7 @@ public sealed class OpenAIFunctionToolCall
             }
 
             // Ensure we're tracking the function's arguments.
-            if (update.FunctionArgumentsUpdate is not null)
+            if (update.FunctionArgumentsUpdate is not null && !update.FunctionArgumentsUpdate.ToMemory().IsEmpty)
             {
                 if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(update.Index, out StringBuilder? arguments))
                 {
