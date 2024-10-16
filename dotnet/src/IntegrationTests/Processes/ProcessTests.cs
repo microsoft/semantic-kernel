@@ -289,7 +289,7 @@ public sealed class ProcessTests
 
         public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
         {
-            this._state ??= state.State ?? new();
+            this._state = state.State;
             return default;
         }
 
@@ -333,7 +333,7 @@ public sealed class ProcessTests
 
         public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
         {
-            this._state ??= state.State ?? new();
+            this._state = state.State;
             return default;
         }
 
