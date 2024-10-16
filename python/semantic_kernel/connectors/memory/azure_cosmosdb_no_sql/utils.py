@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
+from collections.abc import Sequence
 from typing import Any
 
 from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_composite_key import (
@@ -113,7 +113,7 @@ def create_default_vector_embedding_policy(data_model_definition: VectorStoreRec
 
 
 def get_partition_key(key: str | AzureCosmosDBNoSQLCompositeKey) -> str:
-    """Gets the partition key from the key.
+    """Gets the partition key value from the key.
 
     Args:
         key (str | AzureCosmosDBNoSQLCompositeKey): The key.
@@ -125,3 +125,42 @@ def get_partition_key(key: str | AzureCosmosDBNoSQLCompositeKey) -> str:
         return key.partition_key
 
     return key
+
+
+# The name of the property that will be used as the item id in Azure Cosmos DB NoSQL
+COSMOS_ITEM_ID_PROPERTY_NAME = "id"
+
+
+def build_query_parameters(
+    data_model_definition: VectorStoreRecordDefinition,
+    keys: Sequence[str | AzureCosmosDBNoSQLCompositeKey],
+    include_vectors: bool,
+) -> tuple[str, list[dict[str, str]]]:
+    """Builds the query and parameters for the Azure Cosmos DB NoSQL query item operation.
+
+    Args:
+        data_model_definition (VectorStoreRecordDefinition): The definition of the data model.
+        keys (Sequence[str | AzureCosmosDBNoSQLCompositeKey]): The keys.
+        include_vectors (bool): Whether to include the vectors in the query.
+
+    Returns:
+        tuple[str, list[dict[str, str]]]: The query and parameters.
+    """
+    included_fields = [
+        field
+        for field in data_model_definition.field_names
+        if include_vectors or field not in data_model_definition.vector_field_names
+    ]
+    if data_model_definition.key_field_name != COSMOS_ITEM_ID_PROPERTY_NAME:
+        # Replace the key field name with the Cosmos item id property name
+        included_fields = [
+            field if field != data_model_definition.key_field_name else COSMOS_ITEM_ID_PROPERTY_NAME
+            for field in included_fields
+        ]
+
+    select_clause = ", ".join(f"c.{field}" for field in included_fields)
+
+    return (
+        f"SELECT {select_clause} FROM c WHERE c.id IN ({', '.join([f'@id{i}' for i in range(len(keys))])})",
+        [{"name": f"@id{i}", "value": key} for i, key in enumerate(keys)],
+    )

@@ -25,7 +25,6 @@ from semantic_kernel.data.vector_store_record_collection import VectorStoreRecor
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
-    MemoryConnectorResourceNotFound,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -41,6 +40,7 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
         database_name: str,
         url: str | None = None,
         key: str | None = None,
+        create_database: bool = False,
     ):
         """Initialize the AzureCosmosDBNoSQLStore.
 
@@ -49,6 +49,8 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
                                  If it does not exist, it will be created when the first collection is created.
             url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
             key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
+            create_database (bool): If True, the database will be created if it does not exist.
+                                    Defaults to False.
         """
         try:
             cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
@@ -58,6 +60,7 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
         super().__init__(
             cosmos_db_nosql_settings=cosmos_db_nosql_settings,
             database_name=database_name,
+            create_database=create_database,
         )
 
     @override
@@ -71,9 +74,11 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
         if collection_name not in self.vector_record_collections:
             self.vector_record_collections[collection_name] = AzureCosmosDBNoSQLCollection(
                 data_model_type,
-                data_model_definition,
-                collection_name,
                 self.database_name,
+                collection_name,
+                data_model_definition=data_model_definition,
+                create_database=self.create_database,
+                **kwargs,
             )
 
         return self.vector_record_collections[collection_name]
@@ -81,11 +86,8 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
     @override
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
         async with self._get_cosmos_client() as cosmos_client:
-            if not await self._does_database_exist(cosmos_client):
-                raise MemoryConnectorResourceNotFound(f"Database '{self.database_name}' does not exist.")
-
             try:
-                database = self._get_database_proxy(self.database_name, cosmos_client)
+                database = await self._get_database_proxy(cosmos_client)
                 containers = database.list_containers()
                 return [container["id"] async for container in containers]
             except Exception as e:

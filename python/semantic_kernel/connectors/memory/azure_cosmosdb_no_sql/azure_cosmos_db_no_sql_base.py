@@ -18,6 +18,9 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
 
     cosmos_db_nosql_settings: AzureCosmosDBNoSQLSettings
     database_name: str
+    # If create_database is True, the database will be created
+    # if it does not exist when an operation requires a database.
+    create_database: bool
 
     def _get_cosmos_client(self) -> CosmosClient:
         """Gets the Cosmos client.
@@ -36,30 +39,29 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
     async def _does_database_exist(self, cosmos_client: CosmosClient) -> bool:
         """Checks if the database exists."""
         try:
-            cosmos_client.get_database_client(self.database_name)
+            await cosmos_client.get_database_client(self.database_name).read()
             return True
         except CosmosResourceNotFoundError:
             return False
         except Exception as e:
             raise MemoryConnectorResourceNotFound(f"Failed to check if database '{self.database_name}' exists.") from e
 
-    def _get_database_proxy(self, id: str, cosmos_client: CosmosClient) -> DatabaseProxy:
-        """Gets the database proxy.
-
-        The database must exist before calling this method.
-        """
+    async def _get_database_proxy(self, cosmos_client: CosmosClient) -> DatabaseProxy:
+        """Gets the database proxy."""
         try:
-            return cosmos_client.get_database_client(id)
+            if await self._does_database_exist(cosmos_client):
+                return cosmos_client.get_database_client(self.database_name)
+
+            if self.create_database:
+                return await cosmos_client.create_database(self.database_name)
+            raise MemoryConnectorResourceNotFound(f"Database '{self.database_name}' does not exist.")
         except Exception as e:
             raise MemoryConnectorResourceNotFound(f"Failed to get database proxy for '{id}'.") from e
 
-    def _get_container_proxy(self, container_name: str, cosmos_client: CosmosClient) -> ContainerProxy:
-        """Gets the container proxy.
-
-        The container must exist before calling this method.
-        """
+    async def _get_container_proxy(self, container_name: str, cosmos_client: CosmosClient) -> ContainerProxy:
+        """Gets the container proxy."""
         try:
-            database_proxy = self._get_database_proxy(self.database_name, cosmos_client)
+            database_proxy = await self._get_database_proxy(cosmos_client)
             return database_proxy.get_container_client(container_name)
         except Exception as e:
             raise MemoryConnectorResourceNotFound(f"Failed to get container proxy for '{container_name}'.") from e

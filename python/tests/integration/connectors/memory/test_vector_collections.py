@@ -67,7 +67,7 @@ def DataModelList(record) -> tuple:
         vector: Annotated[
             list[float] | None,
             VectorStoreRecordVectorField(
-                index_kind="hnsw",
+                index_kind="flat",
                 dimensions=5,
                 distance_function="cosine",
                 property_type="float",
@@ -89,7 +89,7 @@ def DataModelPandas(record) -> tuple:
         fields={
             "vector": VectorStoreRecordVectorField(
                 name="vector",
-                index_kind="hnsw",
+                index_kind="flat",
                 dimensions=5,
                 distance_function="cosine",
                 property_type="float",
@@ -134,7 +134,7 @@ def store(request):
         case "qdrant_grpc":
             yield QdrantStore(), {"prefer_grpc": True}
         case "cosmos_db_nosql":
-            yield AzureCosmosDBNoSQLStore("test_db"), {}
+            yield AzureCosmosDBNoSQLStore("test_db", create_database=True), {}
 
 
 @fixture
