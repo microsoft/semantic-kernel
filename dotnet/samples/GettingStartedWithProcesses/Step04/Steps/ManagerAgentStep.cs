@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 using System.Text.Json;
 using Events;
 using Microsoft.Extensions.Logging;
@@ -139,8 +141,16 @@ public class ManagerAgentStep : KernelProcessStep
 
     private sealed class IntentResult
     {
+        [Required]
+        [Description("True if user input is requested or solicited.  Addressing the user with no specific request is False.  Asking a question to the user is True.")]
         public bool IsRequestingUserInput { get; set; }
+
+        [Required]
+        [Description("True if the user request is being worked on.")]
         public bool IsWorking { get; set; }
+
+        [Required]
+        [Description("Rationale for the value assigned to IsRequestingUserInput")]
         public string Rationale { get; set; }
     }
 }
