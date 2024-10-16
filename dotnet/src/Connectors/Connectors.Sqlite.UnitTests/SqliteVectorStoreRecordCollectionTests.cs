@@ -5,7 +5,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Castle.DynamicProxy.Generators;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Moq;
