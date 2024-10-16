@@ -1,6 +1,0 @@
-@ProcessWithDapr_HostAddress = http://localhost:5231
-
-GET {{ProcessWithDapr_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
