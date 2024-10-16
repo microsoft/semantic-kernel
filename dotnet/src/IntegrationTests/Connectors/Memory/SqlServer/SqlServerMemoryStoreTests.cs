@@ -17,10 +17,11 @@ namespace SemanticKernel.IntegrationTests.Connectors.SqlServer;
 /// </summary>
 public class SqlServerMemoryStoreTests : IAsyncLifetime
 {
-    private const string? SkipReason = "Configure SQL Server or Azure SQL connection string and then set this to 'null'.";
-    //private const string? SkipReason = null;
+    //private const string? SkipReason = "Configure SQL Server or Azure SQL connection string and then set this to 'null'.";
+    private const string? SkipReason = null;
     private const string SchemaName = "sk_it";
     private const string DefaultCollectionName = "test";
+    private const int TestEmbeddingDimensionsCount = 5;
 
     private string _connectionString = null!;
 
@@ -47,7 +48,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         await this.CleanupDatabaseAsync();
         await this.InitializeDatabaseAsync();
 
-        this.Store = new SqlServerMemoryStore(this._connectionString, SchemaName);
+        this.Store = new SqlServerMemoryStore(this._connectionString, SchemaName, TestEmbeddingDimensionsCount);
     }
 
     public async Task DisposeAsync()
