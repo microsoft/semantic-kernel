@@ -368,7 +368,10 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static KernelPlugin CreatePluginFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin CreatePluginFromType<[DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
@@ -409,7 +412,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static KernelPlugin CreatePluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin CreatePluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
@@ -481,7 +484,10 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static KernelPlugin ImportPluginFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin ImportPluginFromType<[DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         KernelPlugin plugin = CreatePluginFromType<T>(kernel, jsonSerializerOptions, pluginName);
         kernel.Plugins.Add(plugin);
@@ -524,7 +530,10 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static KernelPlugin AddFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)] T>(this ICollection<KernelPlugin> plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin AddFromType<[DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this ICollection<KernelPlugin> plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
@@ -567,7 +576,10 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static IKernelBuilderPlugins AddFromType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IKernelBuilderPlugins plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static IKernelBuilderPlugins AddFromType<[DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this IKernelBuilderPlugins plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(plugins);
 
@@ -624,7 +636,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static KernelPlugin ImportPluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin ImportPluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         KernelPlugin plugin = CreatePluginFromObject<T>(kernel, target, jsonSerializerOptions, pluginName);
         kernel.Plugins.Add(plugin);
@@ -667,7 +679,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static KernelPlugin AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this ICollection<KernelPlugin> plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this ICollection<KernelPlugin> plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
@@ -710,7 +722,7 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static IKernelBuilderPlugins AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IKernelBuilderPlugins plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static IKernelBuilderPlugins AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this IKernelBuilderPlugins plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(plugins);
 
