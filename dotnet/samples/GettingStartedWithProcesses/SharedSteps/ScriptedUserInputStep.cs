@@ -50,14 +50,20 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
 
     internal string GetNextUserMessage()
     {
-        var userMessage = this._state!.UserInputs[_state.CurrentInputIndex];
-        _state.CurrentInputIndex++;
+        if (_state != null && _state.CurrentInputIndex >= 0 && _state.CurrentInputIndex < this._state.UserInputs.Count)
+        {
+            var userMessage = this._state!.UserInputs[_state.CurrentInputIndex];
+            _state.CurrentInputIndex++;
 
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"USER: {userMessage}");
-        Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"USER: {userMessage}");
+            Console.ResetColor();
 
-        return userMessage;
+            return userMessage;
+        }
+
+        Console.WriteLine("SCRIPTED_USER_INPUT: No more scripted user messages defined, returning empty string as user message");
+        return string.Empty;
     }
 
     /// <summary>
@@ -72,6 +78,12 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     {
         var userMessage = this.GetNextUserMessage();
         // Emit the user input
+        if (string.IsNullOrEmpty(userMessage))
+        {
+            await context.EmitEventAsync(new() { Id = CommonEvents.Exit });
+            return;
+        }
+
         await context.EmitEventAsync(new() { Id = CommonEvents.UserInputReceived, Data = userMessage });
     }
 }
