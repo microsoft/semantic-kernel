@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal sealed class EndStep : ProcessStepBuilder
 {
-    private const string EndStepValue = "END";
+    private const string EndStepValue = "Microsoft.SemanticKernel.Process.EndStep";
 
     /// <summary>
     /// The name of the end step.
