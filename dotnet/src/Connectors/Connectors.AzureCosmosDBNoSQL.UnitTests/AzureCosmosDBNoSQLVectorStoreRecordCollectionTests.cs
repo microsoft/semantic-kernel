@@ -7,12 +7,12 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using Microsoft.SemanticKernel.Data;
 using Moq;
 using Xunit;
-using DistanceFunction = Microsoft.SemanticKernel.Data.DistanceFunction;
-using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
+using DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
+using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 
@@ -701,16 +701,16 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public string? Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 1, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 1, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
         public ReadOnlyMemory<Half>? DescriptionEmbedding1 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 2, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 2, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 3, IndexKind: IndexKind.QuantizedFlat, DistanceFunction: DistanceFunction.DotProductSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 3, DistanceFunction: DistanceFunction.DotProductSimilarity, IndexKind: IndexKind.QuantizedFlat)]
         public ReadOnlyMemory<byte>? DescriptionEmbedding3 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.DiskAnn, DistanceFunction: DistanceFunction.EuclideanDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance, IndexKind: IndexKind.DiskAnn)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
 
         [VectorStoreRecordData(IsFilterable = true)]

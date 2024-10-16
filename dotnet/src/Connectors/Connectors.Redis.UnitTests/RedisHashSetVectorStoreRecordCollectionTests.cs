@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Moq;
 using NRedisStack;
 using StackExchange.Redis;

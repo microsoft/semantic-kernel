@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
@@ -39,6 +39,6 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
     public string? Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
+    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance, IndexKind: IndexKind.IvfFlat)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

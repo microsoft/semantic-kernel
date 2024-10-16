@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
 
@@ -12,6 +13,7 @@ namespace SemanticKernel.UnitTests.Data;
 /// <summary>
 /// Contains tests for the <see cref="VolatileVectorStore"/> class.
 /// </summary>
+[Obsolete("The VolatileVectorStore is obsolete so these tests are as well.")]
 public class VolatileVectorStoreTests
 {
     private const string TestCollectionName = "testcollection";

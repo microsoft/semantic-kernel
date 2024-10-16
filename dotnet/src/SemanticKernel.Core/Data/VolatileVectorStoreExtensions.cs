@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// 1. Serializing an instance of <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}"/> to a stream.
 /// 2. Deserializing an instance of <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}"/> from a stream.
 /// </summary>
+[Obsolete("This has been replaced by InMemoryVectorStoreExtensions in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 public static class VolatileVectorStoreExtensions
 {
     /// <summary>
@@ -31,7 +33,6 @@ public static class VolatileVectorStoreExtensions
         Stream stream,
         JsonSerializerOptions? jsonSerializerOptions = null)
         where TKey : notnull
-        where TRecord : class
     {
         // Get collection and verify that it exists.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -59,7 +60,6 @@ public static class VolatileVectorStoreExtensions
         this VolatileVectorStore vectorStore,
         Stream stream)
         where TKey : notnull
-        where TRecord : class
     {
         IVectorStoreRecordCollection<TKey, TRecord>? collection = null;
 
@@ -91,7 +91,6 @@ public static class VolatileVectorStoreExtensions
     /// <summary>Model class used when storing a <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}" />.</summary>
     private sealed class VolatileRecordCollection<TKey, TRecord>(string name, IDictionary<TKey, TRecord> records)
         where TKey : notnull
-        where TRecord : class
     {
         public string Name { get; init; } = name;
         public IDictionary<TKey, TRecord> Records { get; init; } = records;

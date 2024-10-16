@@ -2,7 +2,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, PointStruct>
-    where TRecord : class
 {
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;

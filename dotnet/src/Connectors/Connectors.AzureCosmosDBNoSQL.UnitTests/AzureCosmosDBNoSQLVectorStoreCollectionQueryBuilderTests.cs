@@ -3,8 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using Microsoft.SemanticKernel.Data;
 using Xunit;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
@@ -134,31 +134,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     }
 
     [Fact]
-    public void BuildSearchQueryWithUnsupportedFilterThrowsException()
-    {
-        // Arrange
-        var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
-        var vectorPropertyName = "test_property_1";
-        var fields = this._storagePropertyNames.Values.ToList();
-
-        var filter = new VectorSearchFilter();
-
-        ((List<FilterClause>)filter.FilterClauses).Add(new UnsupportedFilterClause());
-
-        var searchOptions = new VectorSearchOptions { Filter = filter, Skip = 5, Top = 10 };
-
-        // Act & Assert
-        Assert.Throws<NotSupportedException>(() =>
-            AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
-                vector,
-                fields,
-                this._storagePropertyNames,
-                vectorPropertyName,
-                ScorePropertyName,
-                searchOptions));
-    }
-
-    [Fact]
     public void BuildSelectQueryByDefaultReturnsValidQueryDefinition()
     {
         // Arrange
@@ -192,10 +167,4 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         Assert.Equal("@pk0", queryParameters[1].Name);
         Assert.Equal("partition_key", queryParameters[1].Value);
     }
-
-    #region private
-
-    private sealed class UnsupportedFilterClause : FilterClause;
-
-    #endregion
 }

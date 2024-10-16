@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, Vector>
-    where TRecord : class
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes = [typeof(string)];

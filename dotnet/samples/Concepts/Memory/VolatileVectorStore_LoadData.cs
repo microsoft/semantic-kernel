@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -9,10 +11,10 @@ using Resources;
 namespace Memory;
 
 /// <summary>
-/// Sample showing how to create a <see cref="VolatileVectorStore"/> collection from a list of strings
+/// Sample showing how to create an <see cref="InMemoryVectorStore"/> collection from a list of strings
 /// and then save it to disk so that it can be reloaded later.
 /// </summary>
-public class VolatileVectorStore_LoadData(ITestOutputHelper output) : BaseTest(output)
+public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task LoadStringListAndSearchAsync()
@@ -27,8 +29,8 @@ public class VolatileVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
                 apiKey: TestConfiguration.OpenAI.ApiKey,
                 httpClient: httpClient);
 
-        // Construct a volatile vector store.
-        var vectorStore = new VolatileVectorStore();
+        // Construct an InMemory vector store.
+        var vectorStore = new InMemoryVectorStore();
         var collectionName = "records";
 
         // Path to the file where the record collection will be saved to and loaded from.
@@ -86,8 +88,8 @@ public class VolatileVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
 
-        // Construct a volatile vector store.
-        var vectorStore = new VolatileVectorStore();
+        // Construct an InMemory vector store.
+        var vectorStore = new InMemoryVectorStore();
         var collectionName = "records";
 
         // Read a list of text strings from a file, to load into a new record collection.

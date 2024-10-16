@@ -48,5 +48,8 @@ public record KernelProcessStepInfo
         this.InnerStepType = innerStepType;
         this.Edges = edges.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyCollection<KernelProcessEdge>)kvp.Value.AsReadOnly());
         this._state = state;
+
+        // Register the state as a know type for the DataContractSerialization used by Dapr.
+        KernelProcessState.RegisterDerivedType(state.GetType());
     }
 }

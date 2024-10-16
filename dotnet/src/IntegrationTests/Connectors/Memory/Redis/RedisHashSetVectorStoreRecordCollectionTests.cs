@@ -3,8 +3,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Data;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
 using StackExchange.Redis;
