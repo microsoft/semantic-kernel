@@ -94,7 +94,7 @@
     "ConnectionString": ""
   },
   "SqlServer": {
-    "ConnectionString": ""    
+    "ConnectionString": ""
   },
   "Planners": {
     "AzureOpenAI": {
