@@ -31,7 +31,7 @@ public class FryFoodStep : KernelProcessStep
         int fryerMalfunction = _randomSeed.Next(0, 10);
 
         // foodToFry could potentially be used to set the frying temperature and cooking duration
-        if (fryerMalfunction > 6)
+        if (fryerMalfunction < 5)
         {
             // Oh no! Food got burnt :(
             foodActions.Add($"{foodToFry}_frying_failed");

@@ -28,7 +28,6 @@ async def retry(func, retries=3):
 
 
 def initialize_kernel(use_embeddings=False, use_chat_model=False):
-
     kernel = Kernel()
     if use_chat_model:
         kernel.add_service(
@@ -71,8 +70,7 @@ def initialize_kernel(use_embeddings=False, use_chat_model=False):
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=PlannerException,
-    reason="Test is known to occasionally produce unexpected results.",
+    reason="Test is known to be blocked by Azure OpenAI content policy.",
 )
 async def test_create_plan_function_flow(use_chat_model, prompt, expected_function, expected_plugin):
     # Arrange
@@ -139,8 +137,7 @@ async def test_create_plan_with_defaults(prompt, expected_function, expected_plu
 )
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=PlannerException,
-    reason="Test is known to occasionally produce unexpected results.",
+    reason="Test is known to be blocked by Azure OpenAI content policy.",
 )
 async def test_create_plan_goal_relevant(prompt, expected_function, expected_plugin):
     # Arrange
