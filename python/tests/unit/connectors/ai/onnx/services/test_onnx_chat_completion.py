@@ -135,7 +135,7 @@ class TestOnnxChatCompletion:
             )
 
             image_content = ImageContent.from_image_path(
-                image_path=os.path.join(os.path.dirname(__file__), "../../../../", "assets/sample_image.jpg")
+                image_path=os.path.join(os.path.dirname(__file__), "../../../../../", "assets/sample_image.jpg")
             )
 
             history = ChatHistory()
@@ -171,7 +171,7 @@ class TestOnnxChatCompletion:
             )
 
             image_content = ImageContent.from_image_path(
-                image_path=os.path.join(os.path.dirname(__file__), "../../../../", "assets/sample_image.jpg")
+                image_path=os.path.join(os.path.dirname(__file__), "../../../../../", "assets/sample_image.jpg")
             )
 
             history = ChatHistory()
