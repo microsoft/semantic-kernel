@@ -46,7 +46,7 @@ public class AotCompatibilityTests(ITestOutputHelper outputHelper)
         try
         {
             // Using debug configuration to prevent source code formatting kicks in and fix warnings including AOT related ones.
-            (process, processOutput) = this.RunProcess(testAppPath, "dotnet", "publish -c Debug -r win-x64");
+            (process, processOutput) = this.RunProcess(testAppPath, "dotnet", "publish -c Debug");
 
             Assert.True(process.ExitCode == 0, "Publishing the AotCompatibility.TestApp app failed. See output for more details.");
 
