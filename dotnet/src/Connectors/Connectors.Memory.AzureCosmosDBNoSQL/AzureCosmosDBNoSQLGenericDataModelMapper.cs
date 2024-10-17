@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -21,20 +21,20 @@ internal sealed class AzureCosmosDBNoSQLGenericDataModelMapper : IVectorStoreRec
     /// <summary>A <see cref="JsonSerializerOptions"/> for serialization/deserialization of data properties</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-    /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+    /// <summary>The list of properties from the record definition.</summary>
+    private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;
 
     /// <summary>A dictionary that maps from a property name to the storage name.</summary>
     public readonly Dictionary<string, string> _storagePropertyNames;
 
     public AzureCosmosDBNoSQLGenericDataModelMapper(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition,
+        IReadOnlyList<VectorStoreRecordProperty> properties,
         Dictionary<string, string> storagePropertyNames,
         JsonSerializerOptions jsonSerializerOptions)
     {
-        Verify.NotNull(vectorStoreRecordDefinition);
+        Verify.NotNull(properties);
 
-        this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
+        this._properties = properties;
         this._storagePropertyNames = storagePropertyNames;
         this._jsonSerializerOptions = jsonSerializerOptions;
     }
@@ -46,7 +46,7 @@ internal sealed class AzureCosmosDBNoSQLGenericDataModelMapper : IVectorStoreRec
         var jsonObject = new JsonObject();
 
         // Loop through all known properties and map each from the data model to the storage model.
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in this._properties)
         {
             var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
 
@@ -87,7 +87,7 @@ internal sealed class AzureCosmosDBNoSQLGenericDataModelMapper : IVectorStoreRec
         var vectorProperties = new Dictionary<string, object?>();
 
         // Loop through all known properties and map each from the storage model to the data model.
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in this._properties)
         {
             var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
 

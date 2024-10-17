@@ -2,15 +2,15 @@
 
 using System;
 using System.Reflection;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Conventions;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, BsonDocument>
-    where TRecord : class
 {
     /// <summary>A key property info of the data model.</summary>
     private readonly PropertyInfo _keyProperty;
@@ -21,18 +21,25 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordMapper{TRecord}"/> class.
     /// </summary>
-    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
-    /// <param name="keyPropertyName">A key property name of the data model.</param>
-    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition, string keyPropertyName)
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
+    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordPropertyReader propertyReader)
     {
-        var (keyProperty, dataProperties, vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: true);
+        propertyReader.VerifyKeyProperties(AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
+        propertyReader.VerifyDataProperties(AzureCosmosDBMongoDBConstants.SupportedDataTypes, supportEnumerable: true);
+        propertyReader.VerifyVectorProperties(AzureCosmosDBMongoDBConstants.SupportedVectorTypes);
 
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([keyProperty], AzureCosmosDBMongoDBConstants.SupportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, AzureCosmosDBMongoDBConstants.SupportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, AzureCosmosDBMongoDBConstants.SupportedVectorTypes, "Vector");
+        this._keyPropertyName = propertyReader.KeyPropertyName;
+        this._keyProperty = propertyReader.KeyPropertyInfo;
 
-        this._keyPropertyName = keyPropertyName;
-        this._keyProperty = keyProperty;
+        var conventionPack = new ConventionPack
+        {
+            new IgnoreExtraElementsConvention(ignoreExtraElements: true)
+        };
+
+        ConventionRegistry.Register(
+            nameof(AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>),
+            conventionPack,
+            type => type == typeof(TRecord));
     }
 
     public BsonDocument MapFromDataToStorageModel(TRecord dataModel)

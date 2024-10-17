@@ -3,7 +3,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.UnitTests;
+namespace Microsoft.SemanticKernel.Process.UnitTests;
 
 /// <summary>
 /// Unit testing of <see cref="KernelProcessState"/>.

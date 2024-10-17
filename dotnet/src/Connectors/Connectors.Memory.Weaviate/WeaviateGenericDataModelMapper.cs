@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -20,13 +20,13 @@ internal sealed class WeaviateGenericDataModelMapper : IVectorStoreRecordMapper<
     private readonly VectorStoreRecordKeyProperty _keyProperty;
 
     /// <summary>A collection of <see cref="VectorStoreRecordDataProperty"/> properties of record definition.</summary>
-    private readonly List<VectorStoreRecordDataProperty> _dataProperties;
+    private readonly IReadOnlyList<VectorStoreRecordDataProperty> _dataProperties;
 
     /// <summary>A collection of <see cref="VectorStoreRecordVectorProperty"/> properties of record definition.</summary>
-    private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
+    private readonly IReadOnlyList<VectorStoreRecordVectorProperty> _vectorProperties;
 
     /// <summary>A dictionary that maps from a property name to the storage name.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames;
+    private readonly IReadOnlyDictionary<string, string> _storagePropertyNames;
 
     /// <summary>A <see cref="JsonSerializerOptions"/> for serialization/deserialization of record properties.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -43,9 +43,9 @@ internal sealed class WeaviateGenericDataModelMapper : IVectorStoreRecordMapper<
     public WeaviateGenericDataModelMapper(
         string collectionName,
         VectorStoreRecordKeyProperty keyProperty,
-        List<VectorStoreRecordDataProperty> dataProperties,
-        List<VectorStoreRecordVectorProperty> vectorProperties,
-        Dictionary<string, string> storagePropertyNames,
+        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
+        IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
+        IReadOnlyDictionary<string, string> storagePropertyNames,
         JsonSerializerOptions jsonSerializerOptions)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -70,7 +70,7 @@ internal sealed class WeaviateGenericDataModelMapper : IVectorStoreRecordMapper<
         // Transform generic data model to Weaviate object model.
         var weaviateObjectModel = new JsonObject
         {
-            { WeaviateConstants.ReservedCollectionPropertyName, JsonValue.Create(this._collectionName) },
+            { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
             { WeaviateConstants.ReservedKeyPropertyName, dataModel.Key },
             { WeaviateConstants.ReservedDataPropertyName, new JsonObject() },
             { WeaviateConstants.ReservedVectorPropertyName, new JsonObject() },

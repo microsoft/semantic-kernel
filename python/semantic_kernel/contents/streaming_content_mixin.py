@@ -49,10 +49,11 @@ class StreamingContentMixin(KernelBaseModel, ABC):
                             new_item = item + other_item  # type: ignore
                             new_items_list[id] = new_item
                             added = True
-                        except (ValueError, ContentAdditionException):
-                            logger.warning("Could not add item %s to %s. Skipping...", other_item, item)
+                        except (ValueError, ContentAdditionException) as ex:
+                            logger.debug(f"Could not add item {other_item} to {item}.", exc_info=ex)
                             continue
                 if not added:
+                    logger.debug(f"Could not add item {other_item} to any item in the list. Adding it as a new item.")
                     new_items_list.append(other_item)
 
         return new_items_list

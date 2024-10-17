@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// Options when creating a <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
-public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord> where TRecord : class
+public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Azure CosmosDB MongoDB BSON object.
@@ -38,5 +38,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TReco
     /// maximum value is 1000). Higher ef_construction will result in better index quality and higher accuracy, but it will
     /// also increase the time required to build the index. EfConstruction has to be at least 2 * m
     /// </summary>
-    public int? EfConstruction { get; set; } = null;
+    public int EfConstruction { get; set; } = 64;
+
+    /// <summary>
+    /// The size of the dynamic candidate list for search (40 by default). A higher value provides better recall at
+    /// the cost of speed.
+    /// </summary>
+    public int EfSearch { get; set; } = 40;
 }

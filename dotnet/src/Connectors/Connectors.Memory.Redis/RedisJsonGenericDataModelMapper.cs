@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -13,8 +13,8 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, JsonNode Node)>
 {
-    /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+    /// <summary>All the properties from the record definition.</summary>
+    private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;
 
     /// <summary>The JSON serializer options to use when converting between the data model and the Redis record.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -25,20 +25,20 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisJsonGenericDataModelMapper"/> class.
     /// </summary>
-    /// <param name="vectorStoreRecordDefinition">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
+    /// <param name="properties">All the properties from the record definition.</param>
     /// <param name="jsonSerializerOptions">The JSON serializer options to use when converting between the data model and the Redis record.</param>
     public RedisJsonGenericDataModelMapper(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition,
+        IReadOnlyList<VectorStoreRecordProperty> properties,
         JsonSerializerOptions jsonSerializerOptions)
     {
-        Verify.NotNull(vectorStoreRecordDefinition);
+        Verify.NotNull(properties);
         Verify.NotNull(jsonSerializerOptions);
 
-        this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
+        this._properties = properties;
         this._jsonSerializerOptions = jsonSerializerOptions;
 
         // Create a dictionary that maps from the data model property name to the storage property name.
-        this._storagePropertyNames = vectorStoreRecordDefinition.Properties.Select(x =>
+        this._storagePropertyNames = properties.Select(x =>
         {
             if (x.StoragePropertyName is not null)
             {
@@ -65,7 +65,7 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
     {
         var jsonObject = new JsonObject();
 
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in this._properties)
         {
             var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
             var sourceDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;
@@ -109,7 +109,7 @@ internal class RedisJsonGenericDataModelMapper : IVectorStoreRecordMapper<Vector
             throw new VectorStoreRecordMappingException($"Invalid data format for document with key '{storageModel.Key}'");
         }
 
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in this._properties)
         {
             var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
             var targetDictionary = property is VectorStoreRecordDataProperty ? dataModel.Data : dataModel.Vectors;

@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Tests;
+namespace Microsoft.SemanticKernel.Process.UnitTests;
 
 /// <summary>
 /// Unit tests for the <see cref="ProcessStepBuilder"/> class.
@@ -43,6 +43,8 @@ public class ProcessStepBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
+        Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
+        Assert.EndsWith("TestEvent", edgeBuilder.EventId);
     }
 
     /// <summary>
@@ -59,6 +61,26 @@ public class ProcessStepBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
+        Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
+        Assert.EndsWith("TestFunction.OnResult", edgeBuilder.EventId);
+    }
+
+    /// <summary>
+    /// Verify that the <see cref="ProcessStepBuilder.OnFunctionResult(string)"/> method returns a <see cref="ProcessStepEdgeBuilder"/>.
+    /// </summary>
+    [Fact]
+    public void OnFunctionErrorShouldReturnProcessStepEdgeBuilder()
+    {
+        // Arrange
+        var stepBuilder = new TestProcessStepBuilder("TestStep");
+
+        // Act
+        var edgeBuilder = stepBuilder.OnFunctionError("TestFunction");
+
+        // Assert
+        Assert.NotNull(edgeBuilder);
+        Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
+        Assert.EndsWith("TestFunction.OnError", edgeBuilder.EventId);
     }
 
     /// <summary>
@@ -216,11 +238,6 @@ public class ProcessStepBuilderTests
         internal override KernelProcessStepInfo BuildStep()
         {
             return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, this.Id), []);
-        }
-
-        internal override string GetScopedEventId(string eventId)
-        {
-            return $"TestScope.{eventId}";
         }
 
         internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()

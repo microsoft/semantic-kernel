@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal sealed class EndStep : ProcessStepBuilder
 {
-    private const string EndStepValue = "END";
+    private const string EndStepValue = "Microsoft.SemanticKernel.Process.EndStep";
 
     /// <summary>
     /// The name of the end step.
@@ -32,12 +32,6 @@ internal sealed class EndStep : ProcessStepBuilder
     internal EndStep()
         : base(EndStepName)
     {
-    }
-
-    internal override string GetScopedEventId(string eventId)
-    {
-        // No event scoping for the end step.
-        return eventId;
     }
 
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
