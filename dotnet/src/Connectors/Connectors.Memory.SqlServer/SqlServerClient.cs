@@ -82,10 +82,10 @@ internal sealed class SqlServerClient : ISqlServerClient
         {
             using var cmd = this._connection.CreateCommand();
             cmd.CommandText = """
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_type = 'BASE TABLE'
-                    AND table_schema = @schema
+                SELECT TABLE_NAME
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE = 'BASE TABLE'
+                    AND TABLE_SCHEMA = @schema
                 """;
             cmd.Parameters.AddWithValue("@schema", this._schema);
             using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -103,11 +103,11 @@ internal sealed class SqlServerClient : ISqlServerClient
         {
             using var cmd = this._connection.CreateCommand();
             cmd.CommandText = """
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_type = 'BASE TABLE'
-                    AND table_schema = @schema
-                    AND table_name = @tableName
+                SELECT TABLE_NAME
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE = 'BASE TABLE'
+                    AND TABLE_SCHEMA = @schema
+                    AND TABLE_NAME = @tableName
                 """;
             cmd.Parameters.AddWithValue("@schema", this._schema);
             cmd.Parameters.AddWithValue("@tableName", tableName);
