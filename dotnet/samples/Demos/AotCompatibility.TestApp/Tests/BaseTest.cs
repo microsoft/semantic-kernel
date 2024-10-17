@@ -15,7 +15,7 @@ internal class BaseTest
         // Assert return type schema
         Assert.AreEqual("{\"type\":\"object\",\"properties\":{\"Temperature\":{\"type\":[\"integer\",\"null\"]},\"Condition\":{\"type\":[\"string\",\"null\"]}}}", function.Metadata.ReturnParameter.Schema!.ToString());
 
-        // Assert the function is invokable
+        // Assert the function is invocable
         KernelArguments arguments = new() { ["location"] = new Location("USA", "Boston") };
 
         // Assert the function result
@@ -34,7 +34,7 @@ internal class BaseTest
         // Assert return type schema
         Assert.IsNull(function.Metadata.ReturnParameter.Schema);
 
-        // Assert the function is invokable
+        // Assert the function is invocable
         KernelArguments arguments = new() { ["location"] = new Location("USA", "Boston") };
 
         // Assert the function result

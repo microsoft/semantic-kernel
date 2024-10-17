@@ -57,7 +57,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
         Kernel kernel = kernelBuilder.Build();
 
         await AssertPromptFunctionSchemaAndInvocationResult(kernel, function);
-        await AssertPromptFunctionSchemaAndStreammedInvocationResult(kernel, function);
+        await AssertPromptFunctionSchemaAndStreamedInvocationResult(kernel, function);
     }
 
     public static async Task CreateFromPromptTemplate(IConfigurationRoot _)
@@ -76,7 +76,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
         Kernel kernel = kernelBuilder.Build();
 
         await AssertPromptFunctionSchemaAndInvocationResult(kernel, function);
-        await AssertPromptFunctionSchemaAndStreammedInvocationResult(kernel, function);
+        await AssertPromptFunctionSchemaAndStreamedInvocationResult(kernel, function);
     }
 
     private static Weather GetWeather(Location location)
@@ -84,7 +84,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
         return location.City == "Boston" ? new Weather { Temperature = 61, Condition = "rainy" } : throw new NotImplementedException();
     }
 
-    private static async Task AssertPromptFunctionSchemaAndStreammedInvocationResult(Kernel kernel, KernelFunction function)
+    private static async Task AssertPromptFunctionSchemaAndStreamedInvocationResult(Kernel kernel, KernelFunction function)
     {
         // Assert parameter type schema
         Assert.AreEqual("{\"type\":\"string\"}", function.Metadata.Parameters[0].Schema!.ToString());
@@ -92,7 +92,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
         // Assert return type schema
         Assert.IsNull(function.Metadata.ReturnParameter.Schema);
 
-        // Assert the function is invokable
+        // Assert the function is invocable
         KernelArguments arguments = new() { ["location"] = new Location("USA", "Boston") };
 
         StringBuilder contentBuilder = new();
