@@ -268,6 +268,10 @@ def test_scmc_add():
     assert len(combined.items) == 1
     assert len(combined.inner_content) == 2
 
+    # Make sure the original inner content is preserved
+    assert message1.inner_content == "source1"
+    assert message2.inner_content == "source2"
+
 
 def test_scmc_add_three():
     message1 = StreamingChatMessageContent(
@@ -359,6 +363,10 @@ def test_scmc_add_three():
 def test_scmc_add_different_items_same_type(message1, message2):
     combined = message1 + message2
     assert len(combined.items) == 2
+
+    # Make sure the original items are preserved
+    assert len(message1.items) == 1
+    assert len(message2.items) == 1
 
 
 @pytest.mark.parametrize(

@@ -10,8 +10,8 @@ omit =
     semantic_kernel/connectors/memory/mongodb_atlas/*
     semantic_kernel/connectors/memory/pinecone/*
     semantic_kernel/connectors/memory/postgres/*
-    semantic_kernel/connectors/memory/qdrant/*
-    semantic_kernel/connectors/memory/redis/*
+    semantic_kernel/connectors/memory/qdrant/qdrant_memory_store.py
+    semantic_kernel/connectors/memory/redis/redis_memory_store.py
     semantic_kernel/connectors/memory/usearch/*
     semantic_kernel/connectors/memory/weaviate/*
     semantic_kernel/reliability/*

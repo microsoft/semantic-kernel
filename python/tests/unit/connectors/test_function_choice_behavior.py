@@ -32,20 +32,20 @@ def update_settings_callback():
 
 def test_function_choice_behavior_auto():
     behavior = FunctionChoiceBehavior.Auto(auto_invoke=True)
-    assert behavior.type == FunctionChoiceType.AUTO
+    assert behavior.type_ == FunctionChoiceType.AUTO
     assert behavior.maximum_auto_invoke_attempts == DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
 
 
 def test_function_choice_behavior_none_invoke():
     behavior = FunctionChoiceBehavior.NoneInvoke()
-    assert behavior.type == FunctionChoiceType.NONE
+    assert behavior.type_ == FunctionChoiceType.NONE
     assert behavior.maximum_auto_invoke_attempts == 0
 
 
 def test_function_choice_behavior_required():
     expected_filters = {"included_functions": ["plugin1-func1"]}
     behavior = FunctionChoiceBehavior.Required(auto_invoke=True, filters=expected_filters)
-    assert behavior.type == FunctionChoiceType.REQUIRED
+    assert behavior.type_ == FunctionChoiceType.REQUIRED
     assert behavior.maximum_auto_invoke_attempts == 1
     assert behavior.filters == expected_filters
 
@@ -53,14 +53,14 @@ def test_function_choice_behavior_required():
 def test_from_function_call_behavior_kernel_functions():
     behavior = FunctionCallBehavior.AutoInvokeKernelFunctions()
     new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior.type == FunctionChoiceType.AUTO
+    assert new_behavior.type_ == FunctionChoiceType.AUTO
     assert new_behavior.auto_invoke_kernel_functions is True
 
 
 def test_from_function_call_behavior_required():
     behavior = FunctionCallBehavior.RequiredFunction(auto_invoke=True, function_fully_qualified_name="plugin1-func1")
     new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior.type == FunctionChoiceType.REQUIRED
+    assert new_behavior.type_ == FunctionChoiceType.REQUIRED
     assert new_behavior.auto_invoke_kernel_functions is True
     assert new_behavior.filters == {"included_functions": ["plugin1-func1"]}
 
@@ -69,7 +69,7 @@ def test_from_function_call_behavior_enabled_functions():
     expected_filters = {"included_functions": ["plugin1-func1"]}
     behavior = FunctionCallBehavior.EnableFunctions(auto_invoke=True, filters=expected_filters)
     new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior.type == FunctionChoiceType.AUTO
+    assert new_behavior.type_ == FunctionChoiceType.AUTO
     assert new_behavior.auto_invoke_kernel_functions is True
     assert new_behavior.filters == expected_filters
 
@@ -90,7 +90,7 @@ def test_auto_function_choice_behavior_from_dict(type: str, max_auto_invoke_atte
         "maximum_auto_invoke_attempts": max_auto_invoke_attempts,
     }
     behavior = FunctionChoiceBehavior.from_dict(data)
-    assert behavior.type == FunctionChoiceType(type)
+    assert behavior.type_ == FunctionChoiceType(type)
     assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2"]}
     assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
 
@@ -106,7 +106,7 @@ def test_auto_function_choice_behavior_from_dict_with_same_filters_and_functions
         "maximum_auto_invoke_attempts": max_auto_invoke_attempts,
     }
     behavior = FunctionChoiceBehavior.from_dict(data)
-    assert behavior.type == FunctionChoiceType(type)
+    assert behavior.type_ == FunctionChoiceType(type)
     assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2"]}
     assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
 
@@ -122,7 +122,7 @@ def test_auto_function_choice_behavior_from_dict_with_different_filters_and_func
         "maximum_auto_invoke_attempts": max_auto_invoke_attempts,
     }
     behavior = FunctionChoiceBehavior.from_dict(data)
-    assert behavior.type == FunctionChoiceType(type)
+    assert behavior.type_ == FunctionChoiceType(type)
     assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2", "plugin3-func3"]}
     assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
 

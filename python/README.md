@@ -1,17 +1,18 @@
 # Get Started with Semantic Kernel ⚡
 
 Install the latest package:
-
-    python -m pip install --upgrade semantic-kernel
-
+```bash
+python -m pip install --upgrade semantic-kernel
+```
 If you want to use some of the optional dependencies (OpenAI is installed by default), you can install them with:
-
-    python -m pip install --upgrade semantic-kernel[hugging_face]
+```bash
+python -m pip install --upgrade semantic-kernel[hugging_face]
+```
 
 or all of them:
-
-    python -m pip install --upgrade semantic-kernel[all]
-
+```bash
+python -m pip install --upgrade semantic-kernel[all]
+```
 # AI Services
 
 ## OpenAI / Azure OpenAI API keys
@@ -26,7 +27,7 @@ There are two methods to manage keys, secrets, and endpoints:
 
 2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys in the file (see the `.env.example` file):
 
-```
+```bash
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
 AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""

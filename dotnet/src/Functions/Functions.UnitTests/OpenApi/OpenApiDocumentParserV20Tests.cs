@@ -103,7 +103,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         var putOperation = restApi.Operations.Single(o => o.Id == "SetSecret");
         Assert.NotNull(putOperation);
         Assert.Equal("Sets a secret in a specified key vault.", putOperation.Description);
-        Assert.Equal("https://my-key-vault.vault.azure.net/", putOperation.ServerUrl?.AbsoluteUri);
+        Assert.Equal("https://my-key-vault.vault.azure.net", putOperation.Server.Url);
         Assert.Equal(HttpMethod.Put, putOperation.Method);
         Assert.Equal("/secrets/{secret-name}", putOperation.Path);
 
@@ -225,7 +225,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.Equal(5, restApi.Operations.Count);
+        Assert.Equal(6, restApi.Operations.Count);
     }
 
     [Fact]
@@ -266,7 +266,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         var restApi = await this._sut.ParseAsync(stream);
 
         //Assert
-        Assert.All(restApi.Operations, (op) => Assert.Null(op.ServerUrl));
+        Assert.All(restApi.Operations, (op) => Assert.Null(op.Server.Url));
     }
 
     [Fact]
@@ -364,6 +364,44 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotEmpty(restApi.Info.Title);
         Assert.NotNull(restApi.Info.Description);
         Assert.NotEmpty(restApi.Info.Description);
+    }
+
+    [Theory]
+    [InlineData("string-parameter", "string", null)]
+    [InlineData("boolean-parameter", "boolean", null)]
+    [InlineData("number-parameter", "number", null)]
+    [InlineData("float-parameter", "number", "float")]
+    [InlineData("double-parameter", "number", "double")]
+    [InlineData("integer-parameter", "integer", null)]
+    [InlineData("int32-parameter", "integer", "int32")]
+    [InlineData("int64-parameter", "integer", "int64")]
+    public async Task ItCanParseParametersOfPrimitiveDataTypeAsync(string name, string type, string? format)
+    {
+        // Arrange & Act
+        var restApiSpec = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        var parameters = restApiSpec.Operations.Single(o => o.Id == "TestParameterDataTypes").GetParameters();
+
+        var parameter = parameters.FirstOrDefault(p => p.Name == name);
+        Assert.NotNull(parameter);
+
+        Assert.Equal(type, parameter.Type);
+        Assert.Equal(format, parameter.Format);
+    }
+
+    [Fact]
+    public async Task ItCanParsePropertiesOfObjectDataTypeAsync()
+    {
+        // Arrange & Act
+        var restApiSpec = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        var properties = restApiSpec.Operations.Single(o => o.Id == "TestParameterDataTypes").Payload!.Properties;
+
+        var property = properties.Single(p => p.Name == "attributes");
+        Assert.Equal("object", property.Type);
+        Assert.Null(property.Format);
     }
 
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,

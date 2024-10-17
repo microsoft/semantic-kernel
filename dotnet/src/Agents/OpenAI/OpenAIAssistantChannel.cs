@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI.Assistants;
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
+using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-internal sealed class OpenAIAssistantChannel(AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration)
+internal sealed class OpenAIAssistantChannel(AssistantClient client, string threadId)
     : AgentChannel<OpenAIAssistantAgent>
 {
-    private readonly AssistantsClient _client = client;
+    private readonly AssistantClient _client = client;
     private readonly string _threadId = threadId;
 
     /// <inheritdoc/>
@@ -31,7 +32,15 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     {
         agent.ThrowIfDeleted();
 
-        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, pollingConfiguration, this.Logger, cancellationToken);
+        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(OpenAIAssistantAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
+    {
+        agent.ThrowIfDeleted();
+
+        return AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -39,4 +48,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     {
         return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    protected override Task ResetAsync(CancellationToken cancellationToken = default) =>
+        this._client.DeleteThreadAsync(this._threadId, cancellationToken);
 }

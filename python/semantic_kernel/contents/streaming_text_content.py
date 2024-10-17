@@ -31,7 +31,12 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
     def __add__(self, other: TextContent) -> "StreamingTextContent":
         """When combining two StreamingTextContent instances, the text fields are combined.
 
-        The inner_content of the first one is used, choice_index, ai_model_id and encoding should be the same.
+        The addition should follow these rules:
+            1. The inner_content of the two will be combined. If they are not lists, they will be converted to lists.
+            2. ai_model_id should be the same.
+            3. encoding should be the same.
+            4. choice_index should be the same.
+            5. Metadata will be combined.
         """
         if isinstance(other, StreamingTextContent) and self.choice_index != other.choice_index:
             raise ContentAdditionException("Cannot add StreamingTextContent with different choice_index")
@@ -39,9 +44,10 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
             raise ContentAdditionException("Cannot add StreamingTextContent from different ai_model_id")
         if self.encoding != other.encoding:
             raise ContentAdditionException("Cannot add StreamingTextContent with different encoding")
+
         return StreamingTextContent(
             choice_index=self.choice_index,
-            inner_content=self.inner_content,
+            inner_content=self._merge_inner_contents(other.inner_content),
             ai_model_id=self.ai_model_id,
             metadata=self.metadata,
             text=(self.text or "") + (other.text or ""),

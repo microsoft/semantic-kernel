@@ -19,7 +19,7 @@ public class AnnotationContentTests
     {
         AnnotationContent definition = new();
 
-        Assert.Null(definition.Quote);
+        Assert.Empty(definition.Quote);
         Assert.Equal(0, definition.StartIndex);
         Assert.Equal(0, definition.EndIndex);
         Assert.Null(definition.FileId);

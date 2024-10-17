@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
@@ -62,6 +62,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         max_prompt_tokens: int | None = None,
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
+        token_endpoint: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an Azure OpenAI Assistant Agent.
@@ -95,6 +96,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             max_prompt_tokens: The maximum prompt tokens. (optional)
             parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
             truncation_message_count: The truncation message count. (optional)
+            token_endpoint: The Azure AD token endpoint. (optional)
             **kwargs: Additional keyword arguments.
 
         Raises:
@@ -107,22 +109,35 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             api_version=api_version,
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
+            token_endpoint=token_endpoint,
         )
 
         if not azure_openai_settings.chat_deployment_name:
-            raise AgentInitializationError("The Azure OpenAI chat_deployment_name is required.")
+            raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
 
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise AgentInitializationError("Please provide either api_key, ad_token or ad_token_provider.")
+        if (
+            client is None
+            and azure_openai_settings.api_key is None
+            and ad_token_provider is None
+            and ad_token is None
+            and azure_openai_settings.token_endpoint
+        ):
+            ad_token = azure_openai_settings.get_azure_openai_auth_token(
+                token_endpoint=azure_openai_settings.token_endpoint
+            )
 
-        client = self._create_client(
-            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
-            endpoint=azure_openai_settings.endpoint,
-            api_version=azure_openai_settings.api_version,
-            ad_token=ad_token,
-            ad_token_provider=ad_token_provider,
-            default_headers=default_headers,
-        )
+        if not client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+            raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
+
+        if not client:
+            client = self._create_client(
+                api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
+                endpoint=azure_openai_settings.endpoint,
+                api_version=azure_openai_settings.api_version,
+                ad_token=ad_token,
+                ad_token_provider=ad_token_provider,
+                default_headers=default_headers,
+            )
         service_id = service_id if service_id else DEFAULT_SERVICE_NAME
 
         args: dict[str, Any] = {
@@ -176,9 +191,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         instructions: str | None = None,
         name: str | None = None,
         enable_code_interpreter: bool | None = None,
+        code_interpreter_filenames: list[str] | None = None,
         enable_file_search: bool | None = None,
+        vector_store_filenames: list[str] | None = None,
         enable_json_response: bool | None = None,
-        file_ids: list[str] | None = [],
         temperature: float | None = None,
         top_p: float | None = None,
         vector_store_id: str | None = None,
@@ -209,9 +225,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             instructions: The Agent instructions. (optional)
             name: The Agent name. (optional)
             enable_code_interpreter: Enable the code interpreter. (optional)
+            code_interpreter_filenames: The filenames/paths to use with the code interpreter. (optional)
             enable_file_search: Enable the file search. (optional)
+            vector_store_filenames: The filenames/paths for files to use with file search. (optional)
             enable_json_response: Enable the JSON response. (optional)
-            file_ids: The file IDs. (optional)
             temperature: The temperature. (optional)
             top_p: The top p. (optional)
             vector_store_id: The vector store ID. (optional)
@@ -245,7 +262,6 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             enable_code_interpreter=enable_code_interpreter,
             enable_file_search=enable_file_search,
             enable_json_response=enable_json_response,
-            file_ids=file_ids,
             temperature=temperature,
             top_p=top_p,
             vector_store_id=vector_store_id,
@@ -256,7 +272,40 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             truncation_message_count=truncation_message_count,
             **kwargs,
         )
-        agent.assistant = await agent.create_assistant()
+
+        assistant_create_kwargs: dict[str, Any] = {}
+
+        if code_interpreter_filenames is not None:
+            code_interpreter_file_ids: list[str] = []
+            for file_path in code_interpreter_filenames:
+                try:
+                    file_id = await agent.add_file(file_path=file_path, purpose="assistants")
+                    code_interpreter_file_ids.append(file_id)
+                except FileNotFoundError as ex:
+                    logger.error(
+                        f"Failed to upload code interpreter file with path: `{file_path}` with exception: {ex}"
+                    )
+                    raise AgentInitializationException("Failed to upload code interpreter files.", ex) from ex
+            agent.code_interpreter_file_ids = code_interpreter_file_ids
+            assistant_create_kwargs["code_interpreter_file_ids"] = code_interpreter_file_ids
+
+        if vector_store_filenames is not None:
+            file_search_file_ids: list[str] = []
+            for file_path in vector_store_filenames:
+                try:
+                    file_id = await agent.add_file(file_path=file_path, purpose="assistants")
+                    file_search_file_ids.append(file_id)
+                except FileNotFoundError as ex:
+                    logger.error(f"Failed to upload file search file with path: `{file_path}` with exception: {ex}")
+                    raise AgentInitializationException("Failed to upload file search files.", ex) from ex
+
+            if enable_file_search or agent.enable_file_search:
+                vector_store_id = await agent.create_vector_store(file_ids=file_search_file_ids)
+                agent.file_search_file_ids = file_search_file_ids
+                agent.vector_store_id = vector_store_id
+                assistant_create_kwargs["vector_store_id"] = vector_store_id
+
+        agent.assistant = await agent.create_assistant(**assistant_create_kwargs)
         return agent
 
     @staticmethod
@@ -287,11 +336,11 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
         if not api_key and not ad_token and not ad_token_provider:
-            raise AgentInitializationError(
+            raise AgentInitializationException(
                 "Please provide either AzureOpenAI api_key, an ad_token or an ad_token_provider or a client."
             )
         if not endpoint:
-            raise AgentInitializationError("Please provide an AzureOpenAI endpoint.")
+            raise AgentInitializationException("Please provide an AzureOpenAI endpoint.")
         return AsyncAzureOpenAI(
             azure_endpoint=str(endpoint),
             api_version=api_version,
@@ -309,6 +358,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         api_version: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        token_endpoint: str | None = None,
     ) -> AzureOpenAISettings:
         """Create the Azure OpenAI settings.
 
@@ -319,6 +369,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             api_version: The Azure OpenAI API version.
             env_file_path: The environment file path.
             env_file_encoding: The environment file encoding.
+            token_endpoint: The Azure AD token endpoint.
 
         Returns:
             An instance of the AzureOpenAISettings.
@@ -331,9 +382,10 @@ class AzureAssistantAgent(OpenAIAssistantBase):
                 api_version=api_version,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as ex:
-            raise AgentInitializationError("Failed to create Azure OpenAI settings.", ex) from ex
+            raise AgentInitializationException("Failed to create Azure OpenAI settings.", ex) from ex
 
         return azure_openai_settings
 
@@ -345,7 +397,7 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         """
         assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
-            yield self._create_open_ai_assistant_definition(assistant)
+            yield OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
 
     @classmethod
     async def retrieve(
@@ -390,9 +442,9 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         )
 
         if not azure_openai_settings.chat_deployment_name:
-            raise AgentInitializationError("The Azure OpenAI chat_deployment_name is required.")
+            raise AgentInitializationException("The Azure OpenAI chat_deployment_name is required.")
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise AgentInitializationError("Please provide either api_key, ad_token or ad_token_provider.")
+            raise AgentInitializationException("Please provide either api_key, ad_token or ad_token_provider.")
 
         if not client:
             client = AzureAssistantAgent._create_client(
@@ -405,6 +457,6 @@ class AzureAssistantAgent(OpenAIAssistantBase):
             )
         assistant = await client.beta.assistants.retrieve(id)
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
-        return AzureAssistantAgent(kernel=kernel, **assistant_definition)
+        return AzureAssistantAgent(kernel=kernel, assistant=assistant, **assistant_definition)
 
     # endregion

@@ -10,7 +10,7 @@ internal sealed class PromptyModelParameters
 {
     /// <summary>Specify the format for model output (e.g., JSON mode).</summary>
     [YamlMember(Alias = "response_format")]
-    public string? ResponseFormat { get; set; }
+    public PromptyResponseFormat? ResponseFormat { get; set; }
 
     /// <summary>Seed for deterministic sampling (Beta feature).</summary>
     [YamlMember(Alias = "seed")]

@@ -37,7 +37,7 @@ public abstract class KernelFunction
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
         name: "semantic_kernel.function.invocation.duration",
         unit: "s",
-        description: "Measures the duration of a function’s execution");
+        description: "Measures the duration of a function's execution");
 
     /// <summary><see cref="Histogram{T}"/> to record function streaming duration.</summary>
     /// <remarks>
@@ -47,7 +47,7 @@ public abstract class KernelFunction
     private static readonly Histogram<double> s_streamingDuration = s_meter.CreateHistogram<double>(
         name: "semantic_kernel.function.streaming.duration",
         unit: "s",
-        description: "Measures the duration of a function’s streaming execution");
+        description: "Measures the duration of a function's streaming execution");
 
     /// <summary>
     /// Gets the name of the function.
@@ -158,7 +158,7 @@ public abstract class KernelFunction
         Verify.NotNull(kernel);
 
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
+        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction)) ?? NullLogger.Instance;
 
         // Ensure arguments are initialized.
         arguments ??= [];

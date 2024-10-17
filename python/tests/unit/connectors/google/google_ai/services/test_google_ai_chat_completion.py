@@ -189,10 +189,6 @@ async def test_google_ai_chat_completion_with_function_choice_behavior_no_tool_c
         kernel=kernel,
     )
 
-    # Remove the latest message since the response from the model will be added to the chat history
-    # even when the model doesn't return a tool call
-    chat_history.remove_message(chat_history[-1])
-
     mock_google_ai_model_generate_content_async.assert_awaited_once_with(
         contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
         generation_config=GenerationConfig(**settings.prepare_settings_dict()),

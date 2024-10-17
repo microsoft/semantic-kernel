@@ -25,6 +25,8 @@ from semantic_kernel.kernel import Kernel
 def setup_kernel():
     """Set up the kernel with AI services."""
     kernel = Kernel()
+    
+    # Add multiple AI services to the kernel
     kernel.add_service(
         AzureAIInferenceChatCompletion(
             ai_model_id="Llama3-8b",
@@ -47,14 +49,21 @@ def setup_kernel():
         )
     )
 
-    # Add the plugin
+    # Add the plugin to the kernel
     kernel.add_plugin(MMLUPlugin(), "MMLUPlugin")
 
     return kernel
 
 
 def load_mmlu_dataset(subjects: list[str]) -> dict[str, Dataset]:
-    """Load a dataset."""
+    """Load the MMLU dataset for given subjects.
+    
+    Args:
+        subjects (list[str]): List of subjects to load the dataset for.
+    
+    Returns:
+        dict[str, Dataset]: A dictionary with subjects as keys and corresponding datasets as values.
+    """
     login()
 
     datasets = {}
@@ -86,7 +95,7 @@ class MMLUPlugin:
         """Run a sample and return if the answer was correct.
 
         Args:
-            sample (str): The sample containing the question and the correct answer.
+            sample (dict): The sample containing the question and the correct answer.
             subject (str): The subject of the sample.
             kernel (Kernel): The kernel.
             service_id (str): The service id.
@@ -94,7 +103,10 @@ class MMLUPlugin:
         Returns:
             bool: Whether the answer was correct.
         """
+        # Initialize chat history with a system message
         chat_history = ChatHistory(system_message=formatted_system_message(subject))
+        
+        # Add the user message to the chat history
         chat_history.add_user_message(
             formatted_question(
                 sample["question"],
@@ -105,7 +117,10 @@ class MMLUPlugin:
             ),
         )
 
+        # Determine the correct answer
         correct_answer = expected_answer_to_letter(sample["answer"])
+        
+        # Get the chat response from the AI service
         response = await kernel.get_service(service_id).get_chat_message_content(
             chat_history,
             settings=kernel.get_prompt_execution_settings_from_service_id(service_id),
@@ -114,10 +129,12 @@ class MMLUPlugin:
         if not response:
             return False
 
+        # Compare the AI response with the correct answer
         return response.content.strip() == correct_answer
 
 
 async def main():
+    # Load the MMLU dataset for specified subjects
     datasets = load_mmlu_dataset(
         [
             "college_computer_science",
@@ -129,17 +146,21 @@ async def main():
             # See here for a full list of subjects: https://huggingface.co/datasets/cais/mmlu/viewer
         ]
     )
+    
+    # Set up the kernel with AI services
     kernel = setup_kernel()
     ai_services = kernel.get_services_by_type(ChatCompletionClientBase).keys()
 
-    # Total number of samples
+    # Calculate total number of samples
     totals = sum([datasets[subject].num_rows for subject in datasets])
-    # Total number of correct answers by each AI service
+    
+    # Initialize counters for correct answers by each AI service
     total_corrects = {ai_service: 0.0 for ai_service in ai_services}
     for subject in datasets:
-        # Number of correct answers by each AI service for this subject
         corrects = {ai_service: 0.0 for ai_service in ai_services}
         print(f"Evaluating {subject}...")
+        
+        # Evaluate each sample in the dataset
         for sample in tqdm(datasets[subject]):
             for ai_service in ai_services:
                 kernel_arguments = KernelArguments(
@@ -156,10 +177,13 @@ async def main():
                     corrects[ai_service] += 1
 
         print(f"Finished evaluating {subject}.")
+        
+        # Print accuracy for each AI service
         for ai_service in ai_services:
             total_corrects[ai_service] += corrects[ai_service]
             print(f"Accuracy of {ai_service}: {corrects[ai_service] / datasets[subject].num_rows * 100:.2f}%.")
 
+    # Print overall results
     print("Overall results:")
     for ai_service in ai_services:
         print(f"Overall Accuracy of {ai_service}: {total_corrects[ai_service] / totals * 100:.2f}%.")

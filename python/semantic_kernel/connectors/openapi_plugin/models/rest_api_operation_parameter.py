@@ -28,7 +28,7 @@ class RestApiOperationParameter:
         description: str | None = None,
         is_required: bool = False,
         default_value: Any | None = None,
-        schema: str | None = None,
+        schema: str | dict | None = None,
         response: RestApiOperationExpectedResponse | None = None,
     ):
         """Initialize the RestApiOperationParameter."""

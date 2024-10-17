@@ -6,15 +6,16 @@ from typing import Any
 
 from google.generativeai.protos import Blob, Candidate, FunctionCall, FunctionResponse, Part
 
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionCallChoiceConfiguration, FunctionChoiceType
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.google.shared_utils import (
     FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE,
-    format_function_result_content_name_to_gemini_function_name,
-    format_kernel_function_fully_qualified_name_to_gemini_function_name,
+    GEMINI_FUNCTION_NAME_SEPARATOR,
 )
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -117,14 +118,14 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
     parts: list[Part] = []
     for item in message.items:
         if isinstance(item, FunctionResultContent):
-            gemini_function_name = format_function_result_content_name_to_gemini_function_name(item)
+            gemini_function_name = item.custom_fully_qualified_name(GEMINI_FUNCTION_NAME_SEPARATOR)
             parts.append(
                 Part(
                     function_response=FunctionResponse(
                         name=gemini_function_name,
                         response={
                             "name": gemini_function_name,
-                            "content": item.result,
+                            "content": str(item.result),
                         },
                     )
                 )
@@ -136,7 +137,7 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
 def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
     """Convert the kernel function metadata to function calling format."""
     return {
-        "name": format_kernel_function_fully_qualified_name_to_gemini_function_name(metadata),
+        "name": metadata.custom_fully_qualified_name(GEMINI_FUNCTION_NAME_SEPARATOR),
         "description": metadata.description or "",
         "parameters": {
             "type": "object",
@@ -148,10 +149,12 @@ def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelF
 
 def update_settings_from_function_choice_configuration(
     function_choice_configuration: FunctionCallChoiceConfiguration,
-    settings: GoogleAIChatPromptExecutionSettings,
+    settings: PromptExecutionSettings,
     type: FunctionChoiceType,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
+    assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
+
     if function_choice_configuration.available_functions:
         settings.tool_config = {
             "function_calling_config": {

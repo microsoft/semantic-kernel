@@ -43,3 +43,9 @@ class KernelArguments(dict):
             else:
                 settings_dict = {settings.service_id or DEFAULT_SERVICE_NAME: settings}
         self.execution_settings: dict[str, "PromptExecutionSettings"] | None = settings_dict
+
+    def __bool__(self) -> bool:
+        """Returns True if the arguments have any values."""
+        has_arguments = self.__len__() > 0
+        has_execution_settings = self.execution_settings is not None and len(self.execution_settings) > 0
+        return has_arguments or has_execution_settings

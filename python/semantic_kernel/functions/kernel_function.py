@@ -1,17 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import time
 from abc import abstractmethod
 from collections.abc import AsyncGenerator, Callable
 from copy import copy, deepcopy
 from inspect import isasyncgen, isgenerator
 from typing import TYPE_CHECKING, Any
 
+from opentelemetry import metrics, trace
+from opentelemetry.semconv.attributes.error_attributes import ERROR_TYPE
+
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.filters.kernel_filters_extension import _rebuild_function_invocation_context
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_log_messages import KernelFunctionLogMessages
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -34,8 +39,11 @@ if TYPE_CHECKING:
     from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
+# Logger, tracer and meter for observability
 logger: logging.Logger = logging.getLogger(__name__)
-
+tracer: trace.Tracer = trace.get_tracer(__name__)
+meter: metrics.Meter = metrics.get_meter_provider().get_meter(__name__)
+MEASUREMENT_FUNCTION_TAG_NAME: str = "semantic_kernel.function.name"
 
 TEMPLATE_FORMAT_MAP = {
     KERNEL_TEMPLATE_FORMAT_NAME: KernelPromptTemplate,
@@ -66,6 +74,17 @@ class KernelFunction(KernelBaseModel):
     # some attributes are now properties, still listed here for documentation purposes
 
     metadata: KernelFunctionMetadata
+
+    invocation_duration_histogram: metrics.Histogram = meter.create_histogram(
+        "semantic_kernel.function.invocation.duration",
+        unit="s",
+        description="Measures the duration of a function's execution",
+    )
+    streaming_duration_histogram: metrics.Histogram = meter.create_histogram(
+        "semantic_kernel.function.streaming.duration",
+        unit="s",
+        description="Measures the duration of a function's streaming execution",
+    )
 
     @classmethod
     def from_prompt(
@@ -204,13 +223,30 @@ class KernelFunction(KernelBaseModel):
         _rebuild_function_invocation_context()
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 
-        stack = kernel.construct_call_stack(
-            filter_type=FilterTypes.FUNCTION_INVOCATION,
-            inner_function=self._invoke_internal,
-        )
-        await stack(function_context)
+        with tracer.start_as_current_span(self.fully_qualified_name) as current_span:
+            KernelFunctionLogMessages.log_function_invoking(logger, self.fully_qualified_name)
+            KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
-        return function_context.result
+            attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
+            starting_time_stamp = time.perf_counter()
+            try:
+                stack = kernel.construct_call_stack(
+                    filter_type=FilterTypes.FUNCTION_INVOCATION,
+                    inner_function=self._invoke_internal,
+                )
+                await stack(function_context)
+
+                KernelFunctionLogMessages.log_function_invoked_success(logger, self.fully_qualified_name)
+                KernelFunctionLogMessages.log_function_result_value(logger, function_context.result)
+
+                return function_context.result
+            except Exception as e:
+                self._handle_exception(current_span, e, attributes)
+                raise e
+            finally:
+                duration = time.perf_counter() - starting_time_stamp
+                self.invocation_duration_histogram.record(duration, attributes)
+                KernelFunctionLogMessages.log_function_completed(logger, duration)
 
     @abstractmethod
     async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
@@ -247,21 +283,35 @@ class KernelFunction(KernelBaseModel):
         _rebuild_function_invocation_context()
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 
-        stack = kernel.construct_call_stack(
-            filter_type=FilterTypes.FUNCTION_INVOCATION,
-            inner_function=self._invoke_internal_stream,
-        )
-        await stack(function_context)
+        with tracer.start_as_current_span(self.fully_qualified_name) as current_span:
+            KernelFunctionLogMessages.log_function_streaming_invoking(logger, self.fully_qualified_name)
+            KernelFunctionLogMessages.log_function_arguments(logger, arguments)
 
-        if function_context.result is not None:
-            if isasyncgen(function_context.result.value):
-                async for partial in function_context.result.value:
-                    yield partial
-            elif isgenerator(function_context.result.value):
-                for partial in function_context.result.value:
-                    yield partial
-            else:
-                yield function_context.result
+            attributes = {MEASUREMENT_FUNCTION_TAG_NAME: self.fully_qualified_name}
+            starting_time_stamp = time.perf_counter()
+            try:
+                stack = kernel.construct_call_stack(
+                    filter_type=FilterTypes.FUNCTION_INVOCATION,
+                    inner_function=self._invoke_internal_stream,
+                )
+                await stack(function_context)
+
+                if function_context.result is not None:
+                    if isasyncgen(function_context.result.value):
+                        async for partial in function_context.result.value:
+                            yield partial
+                    elif isgenerator(function_context.result.value):
+                        for partial in function_context.result.value:
+                            yield partial
+                    else:
+                        yield function_context.result
+            except Exception as e:
+                self._handle_exception(current_span, e, attributes)
+                raise e
+            finally:
+                duration = time.perf_counter() - starting_time_stamp
+                self.streaming_duration_histogram.record(duration, attributes)
+                KernelFunctionLogMessages.log_function_streaming_completed(logger, duration)
 
     def function_copy(self, plugin_name: str | None = None) -> "KernelFunction":
         """Copy the function, can also override the plugin_name.
@@ -277,3 +327,19 @@ class KernelFunction(KernelBaseModel):
         if plugin_name:
             cop.metadata.plugin_name = plugin_name
         return cop
+
+    def _handle_exception(self, current_span: trace.Span, exception: Exception, attributes: dict[str, str]) -> None:
+        """Handle the exception.
+
+        Args:
+            current_span (trace.Span): The current span.
+            exception (Exception): The exception.
+            attributes (Attributes): The attributes to be modified.
+        """
+        attributes[ERROR_TYPE] = type(exception).__name__
+
+        current_span.record_exception(exception)
+        current_span.set_attribute(ERROR_TYPE, type(exception).__name__)
+        current_span.set_status(trace.StatusCode.ERROR, description=str(exception))
+
+        KernelFunctionLogMessages.log_function_error(logger, exception)

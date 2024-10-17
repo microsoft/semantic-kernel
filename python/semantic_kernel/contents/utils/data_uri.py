@@ -10,7 +10,7 @@ from typing import Any, TypeVar
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
 else:
-    from typing import Self  # pragma: no cover
+    from typing import Self  # type: ignore # pragma: no cover
 
 from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_core import Url
