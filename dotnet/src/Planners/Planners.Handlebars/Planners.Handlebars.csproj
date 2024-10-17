@@ -22,9 +22,9 @@
     <EmbeddedResource Include="Handlebars\CreatePlanPrompt.handlebars">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-  <EmbeddedResource Include="Handlebars\CreatePlanPromptPartials\**\*.handlebars">  
-    <CopyToOutputDirectory>Always</CopyToOutputDirectory>  
-  </EmbeddedResource>  
+  <EmbeddedResource Include="Handlebars\CreatePlanPromptPartials\**\*.handlebars">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -38,5 +38,9 @@
 
   <ItemGroup>
     <PackageReference Include="Handlebars.Net" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Bcl.HashCode" />
   </ItemGroup>
 </Project>

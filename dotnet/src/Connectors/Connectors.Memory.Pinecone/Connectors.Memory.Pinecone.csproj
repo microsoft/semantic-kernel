@@ -18,9 +18,11 @@
     <Description>Pinecone connector for Semantic Kernel plugins and semantic memory</Description>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Pinecone.NET" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
