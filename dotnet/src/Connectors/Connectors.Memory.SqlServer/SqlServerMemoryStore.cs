@@ -26,7 +26,7 @@ public class SqlServerMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connectionString">Database connection string.</param>
     /// <param name="schema">Database schema of collection tables.</param>
-    /// <param name="embeddingDimensionsCount">Number of dimensions that stored embeedings will use</param>
+    /// <param name="embeddingDimensionsCount">Number of dimensions that stored embeddings will use</param>
     public SqlServerMemoryStore(string connectionString, string schema = DefaultSchema, int embeddingDimensionsCount = DefaultEmbeddingDimensionsCount)
     {
         this._connection = new SqlConnection(connectionString);
@@ -38,7 +38,7 @@ public class SqlServerMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connection">Database connection.</param>
     /// <param name="schema">Database schema of collection tables.</param>
-    /// <param name="embeddingDimensionsCount">Number of dimensions that stored embeedings will use</param>
+    /// <param name="embeddingDimensionsCount">Number of dimensions that stored embeddings will use</param>
     public SqlServerMemoryStore(SqlConnection connection, string schema = DefaultSchema, int embeddingDimensionsCount = DefaultEmbeddingDimensionsCount)
         : this(new SqlServerClient(connection, schema, embeddingDimensionsCount))
     { }
