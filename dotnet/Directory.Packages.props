@@ -6,6 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.1" />
+    <PackageVersion Include="Dapr.Actors" Version="1.14.0" />
+    <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.14.0" />
+    <PackageVersion Include="Dapr.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.11.20" />
     <PackageVersion Include="OpenAI" Version="[2.1.0-beta.1]" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
