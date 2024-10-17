@@ -125,11 +125,9 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
             .RunOperationAsync(OperationName, () => command.ExecuteScalarAsync(cancellationToken))
             .ConfigureAwait(false);
 
-        long? count = result is not null ? (long)result : null;
+        long count = result is not null ? (long)result : 0;
 
-        var collectionExists = count > 0;
-
-        return collectionExists;
+        return count > 0;
     }
 
     /// <inheritdoc />
@@ -145,16 +143,14 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        List<Task> tasks = [this.DropTableAsync(this._dataTableName, cancellationToken)];
+        await this.DropTableAsync(this._dataTableName, cancellationToken).ConfigureAwait(false);
 
         if (this._vectorPropertiesExist)
         {
-            tasks.Add(this.DropTableAsync(this._vectorTableName, cancellationToken));
+            await this.DropTableAsync(this._vectorTableName, cancellationToken).ConfigureAwait(false);
         }
-
-        return Task.WhenAll(tasks);
     }
 
     /// <inheritdoc />
@@ -408,7 +404,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
             TableName = this._dataTableName
         };
 
-        return await this.InternalGetBatchAsync([key], condition, options, cancellationToken)
+        return await this.InternalGetBatchAsync(condition, options, cancellationToken)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
@@ -418,22 +414,25 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         GetRecordOptions? options,
         CancellationToken cancellationToken)
     {
-        var condition = new SqliteWhereInCondition(this._propertyReader.KeyPropertyStoragePropertyName, keys.Cast<object>().ToList())
+        Verify.NotNull(keys);
+
+        var keysList = keys.Cast<object>().ToList();
+
+        Verify.True(keysList.Count > 0, "Number of provided keys should be greater than zero.");
+
+        var condition = new SqliteWhereInCondition(this._propertyReader.KeyPropertyStoragePropertyName, keysList)
         {
             TableName = this._dataTableName
         };
 
-        return this.InternalGetBatchAsync(keys, condition, options, cancellationToken);
+        return this.InternalGetBatchAsync(condition, options, cancellationToken);
     }
 
-    private async IAsyncEnumerable<TRecord> InternalGetBatchAsync<TKey>(
-        IEnumerable<TKey> keys,
+    private async IAsyncEnumerable<TRecord> InternalGetBatchAsync(
         SqliteWhereCondition condition,
         GetRecordOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        Verify.NotNull(keys);
-
         const string OperationName = "Select";
 
         bool includeVectors = options?.IncludeVectors is true && this._vectorPropertiesExist;
@@ -523,12 +522,13 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     private async IAsyncEnumerable<TKey> InternalUpsertBatchAsync<TKey>(
-        IReadOnlyList<Dictionary<string, object?>> storageModels,
+        List<Dictionary<string, object?>> storageModels,
         SqliteWhereCondition condition,
         UpsertRecordOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(storageModels);
+        Verify.True(storageModels.Count > 0, "Number of provided records should be greater than zero.");
 
         if (this._vectorPropertiesExist)
         {
@@ -580,7 +580,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
         var condition = new SqliteWhereEqualsCondition(this._propertyReader.KeyPropertyStoragePropertyName, key);
 
-        return this.InternalDeleteBatchAsync([key], condition, options, cancellationToken);
+        return this.InternalDeleteBatchAsync(condition, options, cancellationToken);
     }
 
     private Task InternalDeleteBatchAsync<TKey>(
@@ -588,15 +588,20 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         DeleteRecordOptions? options,
         CancellationToken cancellationToken)
     {
+        Verify.NotNull(keys);
+
+        var keysList = keys.Cast<object>().ToList();
+
+        Verify.True(keysList.Count > 0, "Number of provided keys should be greater than zero.");
+
         var condition = new SqliteWhereInCondition(
             this._propertyReader.KeyPropertyStoragePropertyName,
-            keys.Cast<object>().ToList());
+            keysList);
 
-        return this.InternalDeleteBatchAsync(keys, condition, options, cancellationToken);
+        return this.InternalDeleteBatchAsync(condition, options, cancellationToken);
     }
 
-    private Task InternalDeleteBatchAsync<TKey>(
-        IEnumerable<TKey> keys,
+    private Task InternalDeleteBatchAsync(
         SqliteWhereCondition condition,
         DeleteRecordOptions? options,
         CancellationToken cancellationToken)
@@ -604,7 +609,6 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "Delete";
 
         var tasks = new List<Task>();
-        var keysList = keys.Select(key => (object)key!).ToList();
 
         if (this._vectorPropertiesExist)
         {
