@@ -173,10 +173,13 @@ async def collection_and_data(store, collection_details):
         "weaviate_local",
         pytest.param(
             "weaviate_embedded",
-            marks=pytest.mark.skipif(
-                platform.system() == "Windows",
-                reason="Weaviate embedded is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315",
-            ),
+            marks=[
+                pytest.mark.skipif(
+                    platform.system() == "Windows",
+                    reason="Weaviate embedded is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315",
+                ),
+                pytest.mark.xfail(reason="Weaviate embedded is an experimental feature and it's unstable"),
+            ],
         ),
     ],
     indirect=True,
