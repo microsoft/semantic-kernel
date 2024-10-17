@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -290,6 +292,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(message);
 
         // Assert
+        var requestBody = this._multiMessageHandlerStub.GetRequestContentAsString(0);
         var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._multiMessageHandlerStub.RequestContents[0]);
         Assert.NotNull(requestPayload);
         Assert.NotNull(requestPayload.Options);
@@ -320,7 +323,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task GetChatMessageContentsWhenModelHasToolCallShouldTriggerToolAsync()
+    public async Task GetChatMessageContentsShouldAdvertiseAndTriggerToolAsync()
     {
         //Arrange
         var targetModel = "llama3.2";
@@ -391,6 +394,107 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(innerContent);
         Assert.True(innerContent.Done);
         Assert.Equal("stop", innerContent.DoneReason);
+    }
+
+    [Fact]
+    public void GetChatMessageContentsRequiredToolChoiceShouldThrow()
+    {
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() => new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required() });
+    }
+
+    [Fact]
+    public void GetChatMessageContentsNoneToolChoiceShouldThrow()
+    {
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() => new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.None() });
+    }
+
+    [Fact]
+    public async Task ItDoesNotChangeDefaultsForToolsAndChoiceIfNeitherOfFunctionCallingConfigurationsSetAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+
+        var targetModel = "llama3.2";
+        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt"))
+        };
+
+        this._multiMessageHandlerStub.ResponsesToReturn = [response];
+
+        var sut = new OllamaChatCompletionService(
+            targetModel,
+            httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var executionSettings = new OllamaPromptExecutionSettings(); // Neither ToolCallBehavior nor FunctionChoiceBehavior is set.
+
+        // Act
+        await sut.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = this._multiMessageHandlerStub.GetRequestContentAsString(0);
+        Assert.NotNull(actualRequestContent);
+
+        Assert.DoesNotContain("\"tools\":[", actualRequestContent);
+        Assert.DoesNotContain("\"tool_calls\":[", actualRequestContent);
+        Assert.DoesNotContain("\"images\":[", actualRequestContent);
+    }
+
+    [Fact]
+    public async Task FunctionResultsCanBeProvidedToLLMAsManyResultsInOneChatMessageAsync()
+    {
+        // Arrange
+        Kernel kernel = new();
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt"))
+        };
+        this._multiMessageHandlerStub.ResponsesToReturn = [responseMessage];
+
+        var sut = new OllamaChatCompletionService("any", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.Tool,
+            [
+                new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
+                new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
+            ])
+        };
+
+        var settings = new OllamaPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        var actualRequestContent = this._multiMessageHandlerStub.GetRequestContentAsString(0);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(2, messages.GetArrayLength());
+
+        var toolMessage1 = messages[0];
+        var toolMessage2 = messages[1];
+
+        Assert.Equal("tool", toolMessage1.GetProperty("role").GetString());
+        Assert.Equal("tool", toolMessage2.GetProperty("role").GetString());
+
+        var toolMessage1Content = toolMessage1.GetProperty("content").GetString();
+        var toolMessage2Content = toolMessage2.GetProperty("content").GetString();
+
+        Assert.Contains("\"result\":\"rainy\"", toolMessage1Content);
+        Assert.Contains("\"tool_call_id\":\"1\"", toolMessage1Content);
+
+        Assert.Contains("\"result\":\"sunny\"", toolMessage2Content);
+        Assert.Contains("\"tool_call_id\":\"2\"", toolMessage2Content);
     }
 
     public void Dispose()

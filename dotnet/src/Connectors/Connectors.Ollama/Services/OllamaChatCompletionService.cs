@@ -193,7 +193,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
             var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
-            var request = CreateChatRequest(chatHistory, chatExecutionSettings, this._client.SelectedModel, toolCallingConfig);
+            var request = CreateChatRequest(chatForRequest, chatHistory, chatExecutionSettings, this._client.SelectedModel, toolCallingConfig);
             request.Stream = false;
 
             var chatMessageContent = new ChatMessageContent();
@@ -639,14 +639,14 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
 
     private static List<Message> CreateChatCompletionMessages(OllamaPromptExecutionSettings executionSettings, ChatHistory chatHistory)
     {
-        List<Message> messages = [];
+        List<Message> ollamaMessages = [];
 
-        foreach (var message in chatHistory)
+        foreach (var chatMessageContent in chatHistory)
         {
-            messages.AddRange(CreateRequestMessages(message));
+            ollamaMessages.AddRange(CreateRequestMessages(chatMessageContent));
         }
 
-        return messages;
+        return ollamaMessages;
     }
 
     private static List<Message> CreateRequestMessages(ChatMessageContent message)
@@ -692,7 +692,12 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                     continue;
                 }
 
-                var stringResult = FunctionCalling.FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty);
+                var stringResult = JsonSerializer.Serialize(
+                    new
+                    {
+                        tool_call_id = resultContent.CallId,
+                        result = FunctionCallsProcessor.ProcessFunctionResult(resultContent.Result ?? string.Empty)
+                    });
 
                 toolMessages.Add(new Message(ChatRole.Tool,
                     // resultContent.CallId , (No support for tool identifier see: https://github.com/awaescher/OllamaSharp/issues/97)
@@ -803,34 +808,8 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         _ => new AuthorRole(role.ToString()!)
     };
 
-    private static ChatRequest CreateChatRequest(ChatHistory chatHistory, OllamaPromptExecutionSettings settings, string selectedModel, ToolCallingConfig toolCallingConfig)
+    private static ChatRequest CreateChatRequest(List<Message> chatForRequest, ChatHistory chatHistory, OllamaPromptExecutionSettings settings, string selectedModel, ToolCallingConfig toolCallingConfig)
     {
-        var messages = new List<Message>();
-        foreach (var chatHistoryMessage in chatHistory)
-        {
-            if (chatHistoryMessage.InnerContent is Message innerMessage && innerMessage is not null)
-            {
-                messages.Add(innerMessage);
-                continue;
-            }
-
-            ChatRole role = ChatRole.User;
-            if (chatHistoryMessage.Role == AuthorRole.System)
-            {
-                role = ChatRole.System;
-            }
-            else if (chatHistoryMessage.Role == AuthorRole.Assistant)
-            {
-                role = ChatRole.Assistant;
-            }
-            else if (chatHistoryMessage.Role == AuthorRole.Tool)
-            {
-                role = ChatRole.Tool;
-            }
-
-            messages.Add(new Message(role, chatHistoryMessage.Content!));
-        }
-
         var request = new ChatRequest
         {
             Options = new()
@@ -840,7 +819,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                 TopK = settings.TopK,
                 Stop = settings.Stop?.ToArray()
             },
-            Messages = messages,
+            Messages = chatForRequest,
             Model = selectedModel,
             Stream = true
         };
