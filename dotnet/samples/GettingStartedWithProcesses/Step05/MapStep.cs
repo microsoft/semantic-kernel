@@ -96,11 +96,11 @@ public sealed class MapStep<TValue> : KernelProcessStep
 
     private sealed class CaptureStep : KernelProcessStep<CaptureState>
     {
-        private readonly CaptureState _capture = new();
+        private CaptureState? _capture;
 
         public override ValueTask ActivateAsync(KernelProcessStepState<CaptureState> state)
         {
-            state.State = this._capture;
+            this._capture = state.State;
             return default;
         }
 

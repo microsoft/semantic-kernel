@@ -19,12 +19,12 @@ internal sealed record MapResultState<TValue>
 /// </summary>
 internal sealed class MapResultStep<TValue> : KernelProcessStep<MapResultState<TValue>>
 {
-    private readonly MapResultState<TValue> _capture = new();
+    private MapResultState<TValue>? _capture;
 
     /// <inheritdoc/>
     public override ValueTask ActivateAsync(KernelProcessStepState<MapResultState<TValue>> state)
     {
-        state.State = this._capture;
+        this._capture = state.State;
         return default;
     }
 

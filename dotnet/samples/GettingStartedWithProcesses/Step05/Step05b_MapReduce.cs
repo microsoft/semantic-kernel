@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 
-namespace Step04;
+namespace Step05;
 
 /// <summary>
 /// %%% TBD

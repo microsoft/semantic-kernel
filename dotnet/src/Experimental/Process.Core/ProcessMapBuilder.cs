@@ -13,7 +13,7 @@ public abstract class ProcessMapBuilder : ProcessStepBuilder
     /// <summary>
     /// %%% COMMENT
     /// </summary>
-    protected readonly ProcessStepBuilder _transformStep;
+    protected readonly ProcessStepBuilder _transformStep; // %%% SCOPE
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessMapBuilder{TValue}"/> class.

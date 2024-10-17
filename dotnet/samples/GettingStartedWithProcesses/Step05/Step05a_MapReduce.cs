@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 
-namespace Step04;
+namespace Step05;
 
 /// <summary>
 /// %%% TBD
@@ -134,11 +134,11 @@ public class Step04a_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         private sealed class CaptureStep : KernelProcessStep<CaptureState>
         {
-            private readonly CaptureState _capture = new();
+            private CaptureState? _capture;
 
             public override ValueTask ActivateAsync(KernelProcessStepState<CaptureState> state)
             {
-                state.State = this._capture;
+                this._capture = state.State;
                 return ValueTask.CompletedTask;
             }
 
