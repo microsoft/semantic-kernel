@@ -9,11 +9,11 @@ internal class BaseTest
 {
     protected static async Task AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(Kernel kernel, KernelFunction function)
     {
-        // Assert parameter type schema
-        Assert.AreEqual("{\"type\":\"object\",\"properties\":{\"Country\":{\"type\":\"string\"},\"City\":{\"type\":\"string\"}},\"required\":[\"Country\",\"City\"]}", function.Metadata.Parameters.Single().Schema!.ToString());
+        // Assert input parameter schema  
+        Assert.AreEqual("""{"type":"object","properties":{"Country":{"type":"string"},"City":{"type":"string"}},"required":["Country","City"]}""", function.Metadata.Parameters.Single().Schema!.ToString());
 
-        // Assert return type schema
-        Assert.AreEqual("{\"type\":\"object\",\"properties\":{\"Temperature\":{\"type\":[\"integer\",\"null\"]},\"Condition\":{\"type\":[\"string\",\"null\"]}}}", function.Metadata.ReturnParameter.Schema!.ToString());
+        // Assert return type schema  
+        Assert.AreEqual("""{"type":"object","properties":{"Temperature":{"type":["integer","null"]},"Condition":{"type":["string","null"]}}}""", function.Metadata.ReturnParameter.Schema!.ToString());
 
         // Assert the function is invocable
         KernelArguments arguments = new() { ["location"] = new Location("USA", "Boston") };
