@@ -41,7 +41,7 @@ internal sealed class SqlServerClient : ISqlServerClient
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
             using var cmd = this._connection.CreateCommand();
-            cmd.CommandText = "select count(*) from sys.types where (system_type_id = 244 and user_type_id = 244) or (system_type_id = 165 and user_type_id = 255)";
+            cmd.CommandText = "select count(*) from sys.types where (system_type_id = 244 and user_type_id = 244) or (system_type_id = 165 and schema_id = 4 and [name] = 'vector')";
             var typesCount = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             if (typesCount == null || typesCount.Equals(DBNull.Value) || Convert.ToInt32(typesCount) != 2)
             {
