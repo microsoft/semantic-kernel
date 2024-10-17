@@ -18,3 +18,4 @@ class DistanceFunction(str, Enum):
     DOT_PROD = "dot_prod"
     EUCLIDEAN = "euclidean"
     MANHATTAN = "manhattan"
+    HAMMING = "hamming"
