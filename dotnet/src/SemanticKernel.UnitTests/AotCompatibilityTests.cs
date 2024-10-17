@@ -22,19 +22,21 @@ public class AotCompatibilityTests(ITestOutputHelper outputHelper)
     [Fact]
     public void EnsureAotCompatibility()
     {
-        string testAppPath = Path.Combine("..", "..", "..", "..", "..", "samples", "Demos", "AotCompatibility.TestApp");
+        string workingDirectory = Path.Combine("..", "..", "..", "..", "..", "samples", "Demos", "AotCompatibility.TestApp");
 
-        this.PublishAotCompatibilityTestApp(testAppPath);
+        string publishDirectory = Path.Combine("bin", "Debug", "net8.0", "publish");
 
-        this.RunAotCompatibilityTestApp(testAppPath);
+        this.PublishAotCompatibilityTestApp(workingDirectory, publishDirectory);
+
+        this.RunAotCompatibilityTestApp(workingDirectory, publishDirectory);
     }
 
-    private void PublishAotCompatibilityTestApp(string testAppPath)
+    private void PublishAotCompatibilityTestApp(string workingDirectory, string publishDirectory)
     {
-        outputHelper.WriteLine($"Publishing the AotCompatibility.TestApp app from {testAppPath}");
+        outputHelper.WriteLine($"Publishing the AotCompatibility.TestApp app from {workingDirectory}");
 
         // Ensure we run a clean publish every time
-        DirectoryInfo testObjDir = new(Path.Combine(testAppPath, "obj"));
+        DirectoryInfo testObjDir = new(Path.Combine(workingDirectory, "obj"));
         if (testObjDir.Exists)
         {
             testObjDir.Delete(recursive: true);
@@ -46,7 +48,7 @@ public class AotCompatibilityTests(ITestOutputHelper outputHelper)
         try
         {
             // Using debug configuration to prevent source code formatting kicks in and fix warnings including AOT related ones.
-            (process, processOutput) = this.RunProcess(testAppPath, "dotnet", "publish -c Debug");
+            (process, processOutput) = this.RunProcess(workingDirectory, "dotnet", $"publish -c Debug -o .\\{publishDirectory}");
 
             Assert.True(process.ExitCode == 0, "Publishing the AotCompatibility.TestApp app failed. See output for more details.");
 
@@ -58,20 +60,22 @@ public class AotCompatibilityTests(ITestOutputHelper outputHelper)
         }
     }
 
-    private void RunAotCompatibilityTestApp(string testAppPath)
+    private void RunAotCompatibilityTestApp(string workingDirectory, string publishDirectory)
     {
-        string publishedAppPath = Path.Combine(testAppPath, "bin", "Debug", "net8.0", "win-x64", "publish", "AotCompatibility.TestApp.exe");
+        string fullPublishDirectory = Path.Combine(workingDirectory, publishDirectory);
+        string appPath = Path.Combine(fullPublishDirectory, "AotCompatibility.TestApp.exe");
+
         outputHelper.WriteLine(string.Empty);
-        outputHelper.WriteLine($"Running the {publishedAppPath} app");
+        outputHelper.WriteLine($"Running the {appPath} app");
 
         Process? process = null;
         string? processOutput = null;
 
         try
         {
-            (process, processOutput) = this.RunProcess(testAppPath, publishedAppPath, "-tests");
+            (process, processOutput) = this.RunProcess(fullPublishDirectory, appPath, "-tests");
 
-            Assert.True(process.ExitCode == 0, $"Running the {publishedAppPath} app failed. See output for more details.");
+            Assert.True(process.ExitCode == 0, $"Running the {appPath} app failed. See output for more details.");
         }
         finally
         {

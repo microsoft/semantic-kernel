@@ -17,25 +17,27 @@ internal sealed class KernelBuilderPluginsExtensionsTests : BaseTest
 
     public static async Task AddFromType(IConfigurationRoot _)
     {
-        // Act
+        // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
         kernelBuilder.Plugins.AddFromType<WeatherPlugin>(s_jsonSerializerOptions, "weather_utils");
 
-        Kernel kernel = kernelBuilder.Build();
-
         // Assert
+        Kernel kernel = kernelBuilder.Build();
         await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 
     public static async Task AddFromObject(IConfigurationRoot _)
     {
-        // Act
+        // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
         kernelBuilder.Plugins.AddFromObject(new WeatherPlugin(), s_jsonSerializerOptions, "weather_utils");
 
-        Kernel kernel = kernelBuilder.Build();
-
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
+        Kernel kernel = kernelBuilder.Build();
+        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernelBuilder.Build(), kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 }
