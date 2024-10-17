@@ -9,8 +9,9 @@ namespace SharedSteps;
 /// A step that elicits user input.
 ///
 /// Step used in the Processes Samples:
-/// - Step_01_Processes.cs
-/// - Step_02_AccountOpening.cs
+/// - Step01_Processes.cs
+/// - Step02_AccountOpening.cs
+/// - Step04_AgentOrchestration
 /// </summary>
 public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
 {
@@ -18,6 +19,8 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     {
         public const string GetUserInput = nameof(GetUserInput);
     }
+
+    protected bool SuppressOutput { get; init; }
 
     /// <summary>
     /// The state object for the user input step. This object holds the user inputs and the current input index.
