@@ -36,7 +36,7 @@ internal sealed class SqlServerClient : ISqlServerClient
         this._embeddingsDimensionsCount = embeddingsDimensionsCount;
     }
 
-    private async Task CheckFormRequiredNativeTypesAsync(CancellationToken cancellationToken = default)
+    private async Task CheckForRequiredNativeTypesAsync(CancellationToken cancellationToken = default)
     {
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -53,7 +53,7 @@ internal sealed class SqlServerClient : ISqlServerClient
     /// <inheritdoc/>
     public async Task CreateTableAsync(string tableName, CancellationToken cancellationToken = default)
     {
-        await this.CheckFormRequiredNativeTypesAsync(cancellationToken).ConfigureAwait(false);
+        await this.CheckForRequiredNativeTypesAsync(cancellationToken).ConfigureAwait(false);
 
         var fullTableName = this.GetSanitizedFullTableName(tableName);
 
