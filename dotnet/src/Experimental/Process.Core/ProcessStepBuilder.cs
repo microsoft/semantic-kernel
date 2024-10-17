@@ -257,8 +257,7 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
     /// <inheritdoc/>
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
-        // TODO: Should not have to create a new instance of the step to get the functions metadata.
-        var functions = KernelPluginFactory.CreateFromType<TStep>();
-        return functions.ToDictionary(f => f.Name, f => f.Metadata);
+        var metadata = KernelFunctionMetadataFactory.CreateFromType(typeof(TStep));
+        return metadata.ToDictionary(m => m.Name, m => m);
     }
 }
