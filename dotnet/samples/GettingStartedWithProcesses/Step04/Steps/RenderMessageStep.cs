@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -40,10 +41,11 @@ public class RenderMessageStep : KernelProcessStep
     /// Render exception
     /// </summary>
     [KernelFunction]
-    public void RenderError(Exception exception)
+    public void RenderError(Exception exception, ILogger logger)
     {
         string message = string.IsNullOrWhiteSpace(exception.Message) ? "Unexpected failure" : exception.Message;
         Render($"ERROR: {message} [{exception.GetType().Name}]{Environment.NewLine}{exception.StackTrace}");
+        logger.LogError(exception, "Unexpected failure.");
     }
 
     /// <summary>
