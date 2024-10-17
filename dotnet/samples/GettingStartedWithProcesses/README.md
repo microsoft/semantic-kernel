@@ -25,6 +25,7 @@ Example|Description
 [Step02_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02_AccountOpening.cs)|Showcasing processes cycles, fan in, fan out for opening an account.
 [Step03a_FoodPreparation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03a_FoodPreparation.cs)|Showcasing reuse of steps, creation of processes, spawning of multiple events with food preparation samples.
 [Step03b_FoodOrdering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03b_FoodOrdering.cs)|Showcasing use of subprocesses as steps, spawning of multiple events conditionally reusing the food preparation samples. 
+[Step04_AgentOrchestration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step04/Step04_AgentOrchestration.cs)|Showcasing use of process steps in conjunction with the _Agent Framework_. 
 
 ### Step01_Processes
 
@@ -163,6 +164,27 @@ graph TD
     DispatchOrderStep -->|Prepare Fish & Chips| FishAndChipsStep -->|Fish & Chips Ready| SingleOrderReadyEvent
 
     SingleOrderReadyEvent-->PackFoodStep --> OrderPackedEvent
+```
+
+### Step04_AgentOrchestration
+
+This tutorial demonstrates integrating the _Agent Framework_ with processes.
+This includes both direct _agent_ interaction as well as making use of _AgentGroupChat_.
+
+```mermaid
+flowchart RL
+    O --> A
+    O((Start))
+    A[User] -->|input| B[ManagerAgent]
+    A --> F((Done))
+    B --> |response|A
+    B --> |delegate| G
+    G --> |response|B
+    subgraph G[GroupChat]
+        direction LR
+        D[Agent1] --> E
+        E[Agent2] --> D
+    end
 ```
 
 ## Running Examples with Filters
