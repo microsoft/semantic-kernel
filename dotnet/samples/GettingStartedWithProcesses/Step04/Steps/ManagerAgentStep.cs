@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using Events;
+using Json.Schema;
+using Json.Schema.Generation;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -113,32 +113,15 @@ public class ManagerAgentStep : KernelProcessStep
         return intent;
     }
 
+    private static readonly string s_intentResponseSchema = new JsonSchemaBuilder().FromType<IntentResult>().Build().AsJson();
+
     private static readonly ChatResponseFormat s_intentResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
         jsonSchemaFormatName: "intent_result",
-        jsonSchema: BinaryData.FromString(
-        """
-        {
-            "type": "object",
-            "properties": {
-                "IsRequestingUserInput": {
-                    "type": "boolean",
-                    "description": "True if user input is requested or solicited.  Addressing the user with no specific request is False.  Asking a question to the user is True."
-                },
-                "IsWorking": {
-                    "type": "boolean",
-                    "description": "True if the user request is being worked on."
-                },
-                "Rationale": {
-                    "type": "string",
-                    "description": "Rationale for the value assigned to IsRequestingUserInput"
-                }
-            },
-            "required": ["IsRequestingUserInput", "IsWorking", "Rationale"],
-            "additionalProperties": false
-        }
-        """),
+        jsonSchema: BinaryData.FromString(s_intentResponseSchema),
         jsonSchemaIsStrict: true);
 
+    [Title("Intent Result")]
+    [AdditionalProperties(false)]
     private sealed class IntentResult
     {
         [Required]
