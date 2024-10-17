@@ -9,10 +9,7 @@ import pytest
 from semantic_kernel.contents import AuthorRole, ChatHistory, ChatMessageContent, ImageContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.kernel import Kernel
-from tests.unit.connectors.onnx.conftest import (
-    gen_ai_config,
-    gen_ai_config_vision,
-)
+from tests.unit.connectors.ai.onnx.conftest import gen_ai_config, gen_ai_config_vision
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:

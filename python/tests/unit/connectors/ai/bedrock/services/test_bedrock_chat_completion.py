@@ -21,7 +21,7 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInvalidRequestError,
     ServiceInvalidResponseError,
 )
-from tests.unit.connectors.bedrock.conftest import MockBedrockClient, MockBedrockRuntimeClient
+from tests.unit.connectors.ai.bedrock.conftest import MockBedrockClient, MockBedrockRuntimeClient
 
 # region init
 
