@@ -40,9 +40,9 @@ internal sealed class WeatherPlugin
 
     private static WeatherForecast GenerateForecast(string date, string location)
     {
-        var highTemp = Random.Shared.Next(49, 96);
-        var lowTemp = highTemp - Random.Shared.Next(12, 20);
-        var precip = Random.Shared.Next(0, 80);
+        int highTemp = Random.Shared.Next(49, 96);
+        int lowTemp = highTemp - Random.Shared.Next(12, 20);
+        int precip = Random.Shared.Next(0, 80);
 
         return
             new WeatherForecast(
