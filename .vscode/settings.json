@@ -72,7 +72,8 @@
     "SKEXP",
     "superstep",
     "Supersteps",
-    "typeref"
+    "typeref",
+    "uninstantiated"
   ],
   "[java]": {
     "editor.formatOnSave": false,
