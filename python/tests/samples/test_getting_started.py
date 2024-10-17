@@ -26,7 +26,7 @@ def run_notebook(notebook_name: str):
         "02-running-prompts-from-file.ipynb",
         "03-prompt-function-inline.ipynb",
         "04-kernel-arguments-chat.ipynb",
-        "05-using-the-planner.ipynb",
+        # "05-using-the-planner.ipynb", # Sample is known to be blocked by Azure OpenAI content policy.",
         "06-memory-and-embeddings.ipynb",
         "07-hugging-face-for-plugins.ipynb",
         "08-native-function-inline.ipynb",
