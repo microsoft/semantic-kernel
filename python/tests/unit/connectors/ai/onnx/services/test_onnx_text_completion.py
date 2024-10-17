@@ -7,7 +7,7 @@ import pytest
 
 from semantic_kernel.contents import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError
-from tests.unit.connectors.onnx.conftest import gen_ai_config
+from tests.unit.connectors.ai.onnx.conftest import gen_ai_config
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:

@@ -15,7 +15,7 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
-from tests.unit.connectors.bedrock.conftest import MockBedrockClient, MockBedrockRuntimeClient
+from tests.unit.connectors.ai.bedrock.conftest import MockBedrockClient, MockBedrockRuntimeClient
 
 # region init
 

@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_s
 )
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import VertexAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from tests.unit.connectors.google.vertex_ai.conftest import MockTextEmbeddingModel
+from tests.unit.connectors.ai.google.vertex_ai.conftest import MockTextEmbeddingModel
 
 
 # region init
