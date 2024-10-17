@@ -31,6 +31,17 @@ dotnet user-secrets set "Onnx:ModelId" "phi-3"
 dotnet user-secrets set "Onnx:ModelPath" "C:\path\to\huggingface\Phi-3-mini-4k-instruct-onnx\cpu_and_mobile\cpu-int4-rtn-block-32" 
 ```
 
+### AOT Compatibility
+At the moment, the following Semantic Kernel packages are AOT compatible:
+
+| Package                   | AOT compatible |  
+|--------------------------|----------------|  
+| SemanticKernel.Abstractions | ✔️              |  
+| SemanticKernel.Core         | ✔️              |  
+| Connectors.Onnx            | ✔️              |  
+
+Other packages are not AOT compatible yet, but we plan to make them compatible in the future.
+
 ### Known Issues
 #### 1. KernelFunction JSON Schema
 Semantic Kernel uses System.Text.Json (STJ) v8 to generate JSON schemas for the parameters and return types of kernel plugin functions. 
