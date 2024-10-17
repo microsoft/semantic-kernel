@@ -211,6 +211,26 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
+    public async Task<VectorlessSearchResults<TRecord>> VectorlessSearchAsync(VectorlessSearchOptions? options = null, CancellationToken cancellationToken = default)
+#pragma warning restore CS1998
+    {
+        var internalOptions = options ?? new VectorlessSearchOptions();
+
+        var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter?.FilterClauses, this.GetCollectionDictionary().Values);
+
+        long? count = null;
+        if (internalOptions.IncludeTotalCount)
+        {
+            count = filteredRecords.Count();
+        }
+
+        var resultsPage = filteredRecords.Skip(internalOptions.Skip).Take(internalOptions.Top);
+
+        return new VectorlessSearchResults<TRecord>(resultsPage.Cast<TRecord>().ToAsyncEnumerable()) { TotalCount = count };
+    }
+
+    /// <inheritdoc />
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
     public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
 #pragma warning restore CS1998
     {
@@ -236,7 +256,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         // Filter records using the provided filter before doing the vector comparison.
-        var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter, this.GetCollectionDictionary().Values);
+        var filteredRecords = VolatileVectorStoreCollectionSearchMapping.FilterRecords(internalOptions.Filter?.FilterClauses, this.GetCollectionDictionary().Values);
 
         // Compare each vector in the filtered results with the provided vector.
         var results = filteredRecords.Select<object, (object record, float score)?>((record) =>

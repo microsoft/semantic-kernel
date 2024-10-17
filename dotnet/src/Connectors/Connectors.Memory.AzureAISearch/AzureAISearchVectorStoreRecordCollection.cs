@@ -314,6 +314,36 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
     /// <inheritdoc />
+    public async Task<VectorlessSearchResults<TRecord>> VectorlessSearchAsync(VectorlessSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        // Resolve options.
+        var internalOptions = options ?? new VectorlessSearchOptions();
+
+        // Configure search settings.
+        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter?.FilterClauses, this._propertyReader.JsonPropertyNamesMap);
+
+        // Build search options.
+        var searchOptions = new SearchOptions
+        {
+            VectorSearch = new(),
+            Size = internalOptions.Top,
+            Skip = internalOptions.Skip,
+            Filter = filterString,
+            IncludeTotalCount = internalOptions.IncludeTotalCount,
+        };
+
+        // Filter out vector fields if requested.
+        if (!internalOptions.IncludeVectors)
+        {
+            searchOptions.Select.Add(this._propertyReader.KeyPropertyJsonName);
+            searchOptions.Select.AddRange(this._propertyReader.DataPropertyJsonNames);
+        }
+
+        var vectorSearchResults = await this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken).ConfigureAwait(false);
+        return VectorStoreSearchResultMapping.ConvertToVectorlessSearchResults(vectorSearchResults, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorData.VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
@@ -335,7 +365,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
         vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
-        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._propertyReader.JsonPropertyNamesMap);
+        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter?.FilterClauses, this._propertyReader.JsonPropertyNamesMap);
 
         // Build search options.
         var searchOptions = new SearchOptions
@@ -375,7 +405,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
         vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
-        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter, this._propertyReader.JsonPropertyNamesMap);
+        var filterString = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(internalOptions.Filter?.FilterClauses, this._propertyReader.JsonPropertyNamesMap);
 
         // Build search options.
         var searchOptions = new SearchOptions

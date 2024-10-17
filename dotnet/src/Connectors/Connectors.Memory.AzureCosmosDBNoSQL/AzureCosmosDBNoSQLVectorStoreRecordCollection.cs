@@ -362,6 +362,18 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
+    public async Task<VectorlessSearchResults<TRecord>> VectorlessSearchAsync(VectorlessSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        // TODO: Switch to non-vector search to improve performance.
+        var dimensions = this._propertyReader.VectorProperty?.Dimensions ?? throw new InvalidOperationException("The collection does not have any vector properties, so simulated vectorless search is not possible.");
+        var vectorSearchResults = await this.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[dimensions]),
+            VectorSearchOptions.FromVectorlessSearchOptions(options),
+            cancellationToken).ConfigureAwait(false);
+        return VectorStoreSearchResultMapping.ConvertToVectorlessSearchResults(vectorSearchResults, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         VectorSearchOptions? options = null,

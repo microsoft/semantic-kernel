@@ -275,6 +275,40 @@ public class InMemoryVectorStoreRecordCollectionTests
     [InlineData(true, TestRecordIntKey1, TestRecordIntKey2)]
     [InlineData(false, TestRecordKey1, TestRecordKey2)]
     [InlineData(false, TestRecordIntKey1, TestRecordIntKey2)]
+    public async Task CanSearchWithoutVectorAsync<TKey>(bool useDefinition, TKey testKey1, TKey testKey2)
+        where TKey : notnull
+    {
+        // Arrange
+        var record1 = CreateModel(testKey1, withVectors: true, new float[] { 1, 1, 1, 1 });
+        var record2 = CreateModel(testKey2, withVectors: true, new float[] { -1, -1, -1, -1 });
+
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(testKey1, record1);
+        collection.TryAdd(testKey2, record2);
+
+        this._collectionStore.TryAdd(TestCollectionName, collection);
+
+        var sut = this.CreateRecordCollection<TKey>(useDefinition);
+
+        // Act
+        var filter = new VectorlessSearchFilter().EqualTo("Data", $"data {testKey2}");
+        var actual = await sut.VectorlessSearchAsync(
+            new VectorlessSearchOptions { IncludeVectors = true, Filter = filter },
+            this._testCancellationToken);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Null(actual.TotalCount);
+        var actualResults = await actual.Results.ToListAsync();
+        Assert.Single(actualResults);
+        Assert.Contains(actualResults, x => x.Key!.Equals(testKey2));
+    }
+
+    [Theory]
+    [InlineData(true, TestRecordKey1, TestRecordKey2)]
+    [InlineData(true, TestRecordIntKey1, TestRecordIntKey2)]
+    [InlineData(false, TestRecordKey1, TestRecordKey2)]
+    [InlineData(false, TestRecordIntKey1, TestRecordIntKey2)]
     public async Task CanSearchWithVectorAsync<TKey>(bool useDefinition, TKey testKey1, TKey testKey2)
         where TKey : notnull
     {
