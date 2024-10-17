@@ -6,61 +6,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
+using SemanticKernel.IntegrationTests.Data;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Data;
+namespace SemanticKernel.IntegrationTests.Connectors.Memory.InMemory;
 
 /// <summary>
 /// Integration tests for using <see cref="InMemoryVectorStore"/> with <see cref="ITextSearch"/>.
 /// </summary>
 public class InMemoryVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
 {
-    // If null, all tests will be enabled
-    private const string SkipReason = "Failing in integration test pipeline so disabling while investigating a fix (issue 9168)";
-
-    [Fact(Skip = SkipReason)]
-    public override async Task CanSearchAsync()
-    {
-        await base.CanSearchAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task CanGetTextSearchResultsAsync()
-    {
-        await base.CanGetTextSearchResultsAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task CanGetSearchResultsAsync()
-    {
-        await base.CanGetSearchResultsAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task UsingTextSearchWithAFilterAsync()
-    {
-        await base.UsingTextSearchWithAFilterAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task FunctionCallingUsingCreateWithSearchAsync()
-    {
-        await base.FunctionCallingUsingCreateWithSearchAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task FunctionCallingUsingCreateWithGetSearchResultsAsync()
-    {
-        await base.FunctionCallingUsingCreateWithGetSearchResultsAsync();
-    }
-
-    [Fact(Skip = SkipReason)]
-    public override async Task FunctionCallingUsingGetTextSearchResultsAsync()
-    {
-        await base.FunctionCallingUsingGetTextSearchResultsAsync();
-    }
-
     /// <inheritdoc/>
     public async override Task<ITextSearch> CreateTextSearchAsync()
     {
@@ -68,8 +24,8 @@ public class InMemoryVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
         {
             OpenAIConfiguration? openAIConfiguration = this.Configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
             Assert.NotNull(openAIConfiguration);
-            Assert.NotEmpty(openAIConfiguration.ModelId);
-            Assert.NotEmpty(openAIConfiguration.ApiKey);
+            Assert.NotNull(openAIConfiguration.ModelId);
+            Assert.NotNull(openAIConfiguration.ApiKey);
             this.EmbeddingGenerator = new OpenAITextEmbeddingGenerationService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
 
             // Delegate which will create a record.

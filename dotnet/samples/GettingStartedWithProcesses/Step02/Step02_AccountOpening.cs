@@ -47,6 +47,10 @@ public class Step02_AccountOpening(ITestOutputHelper output) : BaseTest(output, 
             .OnEvent(CommonEvents.UserInputReceived)
             .SendEventTo(new ProcessFunctionTargetBuilder(newCustomerFormStep, CompleteNewCustomerFormStep.Functions.NewAccountProcessUserInfo, "userMessage"));
 
+        userInputStep
+            .OnEvent(CommonEvents.Exit)
+            .StopProcess();
+
         // When the newCustomerForm step emits needs more details, send message to displayAssistantMessage step
         newCustomerFormStep
             .OnEvent(AccountOpeningEvents.NewCustomerFormNeedsMoreDetails)

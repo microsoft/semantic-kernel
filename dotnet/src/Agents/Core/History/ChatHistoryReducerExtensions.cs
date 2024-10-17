@@ -95,7 +95,7 @@ internal static class ChatHistoryReducerExtensions
         if (thresholdIndex <= offsetCount)
         {
             // History is too short to truncate
-            return 0;
+            return -1;
         }
 
         // Compute the index of truncation target
