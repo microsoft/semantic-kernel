@@ -45,6 +45,14 @@
       "request": "launch",
       "projectPath": "${workspaceFolder}\\dotnet\\samples\\GettingStarted\\GettingStarted.csproj",
       "launchConfigurationId": "TargetFramework=;GettingStarted"
+    },
+    {
+      "name": "C#: Process with Dapr",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}\\dotnet\\samples\\Demos\\ProcessWithDapr\\ProcessWithDapr.csproj",
+      "preLaunchTask": "daprd-debug",
+      "postDebugTask": "dapr-down"
     }
   ]
 }

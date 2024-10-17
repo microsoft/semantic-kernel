@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// An abstract class that represents a channel for emitting messages from a step.
+/// An interface that provides a channel for emitting messages from a step.
 /// </summary>
-public abstract class KernelProcessMessageChannel
+public interface IKernelProcessMessageChannel
 {
     /// <summary>
     /// Emits the specified event from the step.
