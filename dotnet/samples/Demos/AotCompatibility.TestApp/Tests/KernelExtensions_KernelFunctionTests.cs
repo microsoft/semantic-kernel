@@ -43,7 +43,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
 
     public static async Task CreateFromStringPrompt(IConfigurationRoot _)
     {
-        //Arrange
+        // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton<IChatCompletionService>(new PromptEchoChatCompletionService());
         kernelBuilder.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>(s_jsonSerializerOptions, "weather_utils"));
@@ -62,7 +62,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
 
     public static async Task CreateFromPromptTemplate(IConfigurationRoot _)
     {
-        //Arrange
+        // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton<IChatCompletionService>(new PromptEchoChatCompletionService());
         kernelBuilder.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>(s_jsonSerializerOptions, "weather_utils"));

@@ -21,7 +21,7 @@ internal sealed class KernelExtensions_InvokePromptTests : BaseTest
 
     public static async Task InvokePromptAsync(IConfigurationRoot _)
     {
-        //Arrange
+        // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton<IChatCompletionService>(new PromptEchoChatCompletionService());
         kernelBuilder.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>(s_jsonSerializerOptions, "weather_utils"));
@@ -41,7 +41,7 @@ internal sealed class KernelExtensions_InvokePromptTests : BaseTest
 
     public static async Task InvokePromptStreamingAsync(IConfigurationRoot _)
     {
-        //Arrange
+        // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton<IChatCompletionService>(new PromptEchoChatCompletionService());
         kernelBuilder.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>(s_jsonSerializerOptions, "weather_utils"));
