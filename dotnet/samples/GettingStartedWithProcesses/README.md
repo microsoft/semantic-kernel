@@ -76,7 +76,7 @@ The following recipes for preparation of Order Items are defined as SK Processes
 
 #### Product Preparation Processes
 
-##### Stateless Product Preparation Processess
+##### Stateless Product Preparation Processes
 
 ###### Potato Fries Preparation Process
 
@@ -138,7 +138,7 @@ flowchart LR
     AddCondiments -->|Condiments Added| FishAndChipsReadyEvent
 ```
 
-##### Stateful Product Preparation Processess
+##### Stateful Product Preparation Processes
 
 The processes in this subsection contain the following modifications/additions to previously used food preparation processes:
 
@@ -164,7 +164,7 @@ flowchart LR
     FryStep[Fry Food <br/> Step]
 
     subgraph GatherIngredientsStep[Gather Ingredients Step]
-        GatherIngredientsFunction[Gather Potato <br/> Funtion]
+        GatherIngredientsFunction[Gather Potato <br/> Function]
         IngredientsState[(Ingredients <br/> Stock <br/> State)]
     end
     subgraph CutStep ["Cut Food Step"]
@@ -199,7 +199,7 @@ flowchart LR
     FryStep[Fry Food <br/> Step]
 
     subgraph GatherIngredientsStep[Gather Ingredients Step]
-        GatherIngredientsFunction[Gather Fish <br/> Funtion]
+        GatherIngredientsFunction[Gather Fish <br/> Function]
         IngredientsState[(Ingredients <br/> Stock <br/> State)]
     end
     subgraph CutStep ["Cut Food Step"]

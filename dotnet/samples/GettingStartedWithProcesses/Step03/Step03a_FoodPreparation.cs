@@ -65,7 +65,7 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
     }
 
     /// <summary>
-    /// Test case that showcase when the same process is build once and used multple times, it will have share the state
+    /// Test case that showcase when the same process is build once and used multiple times, it will have share the state
     /// and the state of the steps will become the initial state of the next running process
     /// </summary>
     /// <returns></returns>
