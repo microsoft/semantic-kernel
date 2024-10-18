@@ -19,7 +19,7 @@ public class AotCompatibilityTests(ITestOutputHelper outputHelper)
     ///
     /// You can also 'dotnet publish -c Debug' the 'AotCompatibility.TestApp' as well to get the errors.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "To be replaced by PS1 script")]
     public void EnsureAotCompatibility()
     {
         string workingDirectory = Path.Combine("..", "..", "..", "..", "..", "samples", "Demos", "AotCompatibility.TestApp");
