@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using OllamaSharp;
@@ -21,6 +22,11 @@ public abstract class ServiceBase
     internal Dictionary<string, object?> AttributesInternal { get; } = [];
 
     /// <summary>
+    /// Logger instance
+    /// </summary>
+    protected internal ILogger? Logger { get; init; }
+
+    /// <summary>
     /// Internal Ollama Sharp client.
     /// </summary>
     internal readonly OllamaApiClient _client;
@@ -28,10 +34,11 @@ public abstract class ServiceBase
     internal ServiceBase(string model,
         Uri? endpoint,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(model);
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        this.Logger = logger ?? NullLogger.Instance;
 
         if (httpClient is not null)
         {
@@ -53,9 +60,10 @@ public abstract class ServiceBase
 
     internal ServiceBase(string model,
         OllamaApiClient ollamaClient,
-        ILoggerFactory? loggerFactory = null)
+        ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(model);
+        this.Logger = logger ?? NullLogger.Instance;
         this._client = ollamaClient;
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
