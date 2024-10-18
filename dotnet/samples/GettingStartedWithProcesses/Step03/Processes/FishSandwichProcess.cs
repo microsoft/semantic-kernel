@@ -8,7 +8,7 @@ namespace Step03.Processes;
 
 /// <summary>
 /// Sample process that showcases how to create a process with sequential steps and use of existing processes as steps.<br/>
-/// Visual reference of this process can be found in the <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#Fish_Sandwich_Preparation_Process" >diagram</see>
+/// Visual reference of this process can be found in the <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#fish-sandwich-preparation-process" >diagram</see>
 /// </summary>
 public static class FishSandwichProcess
 {
