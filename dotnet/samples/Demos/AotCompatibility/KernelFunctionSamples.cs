@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using AotCompatibility.TestApp.JsonSerializerContexts;
-using AotCompatibility.TestApp.Plugins;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using SemanticKernel.AotCompatibility.JsonSerializerContexts;
+using SemanticKernel.AotCompatibility.Plugins;
 
-namespace AotCompatibility.TestApp.Samples;
+namespace SemanticKernel.AotCompatibility;
 
 /// <summary>
 /// This class contains samples of how to create and invoke kernel functions in AOT applications.

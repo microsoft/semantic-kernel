@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
-using AotCompatibility.TestApp.Plugins;
+using SemanticKernel.AotCompatibility.Plugins;
 
-namespace AotCompatibility.TestApp.JsonSerializerContexts;
+namespace SemanticKernel.AotCompatibility.JsonSerializerContexts;
 
 [JsonSerializable(typeof(Weather))]
 internal sealed partial class WeatherJsonSerializerContext : JsonSerializerContext

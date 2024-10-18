@@ -2,13 +2,12 @@
 
 #pragma warning disable SKEXP0070
 
-using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Onnx;
 
-namespace AotCompatibility.TestApp.Samples;
+namespace SemanticKernel.AotCompatibility;
 
 /// <summary>
 /// This class contains samples of how to use ONNX chat completion service in AOT applications.
@@ -74,15 +73,11 @@ internal static class OnnxChatCompletionSamples
             TopP = 0.9f // Limits token choice diversity
         };
 
-        StringBuilder contentBuilder = new();
-
         // Prompt the ONNX model
         await foreach (StreamingChatMessageContent messageContent in chatService.GetStreamingChatMessageContentsAsync(prompt, executionSettings))
         {
-            contentBuilder.Append(messageContent);
+            // Display the result
+            Console.WriteLine(messageContent);
         }
-
-        // Display the result
-        Console.WriteLine(contentBuilder.ToString());
     }
 }

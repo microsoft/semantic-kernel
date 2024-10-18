@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using AotCompatibility.TestApp.JsonSerializerContexts;
-using AotCompatibility.TestApp.Plugins;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using SemanticKernel.AotTests.JsonSerializerContexts;
+using SemanticKernel.AotTests.Plugins;
 
-namespace AotCompatibility.TestApp.Tests;
+namespace SemanticKernel.AotTests.UnitTests;
 
 internal sealed class KernelFunctionFactoryTests : BaseTest
 {
@@ -21,7 +20,7 @@ internal sealed class KernelFunctionFactoryTests : BaseTest
         TypeInfoResolverChain = { WeatherJsonSerializerContext.Default, LocationJsonSerializerContext.Default }
     };
 
-    public static async Task CreateFromLambda(IConfigurationRoot _)
+    public static async Task CreateFromLambda()
     {
         // Act
         KernelFunction function = KernelFunctionFactory.CreateFromMethod(s_lambda, s_jsonSerializerOptions);
@@ -30,7 +29,7 @@ internal sealed class KernelFunctionFactoryTests : BaseTest
         await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, function);
     }
 
-    public static async Task CreateFromMethod(IConfigurationRoot _)
+    public static async Task CreateFromMethod()
     {
         // Act
         KernelFunction function = KernelFunctionFactory.CreateFromMethod(GetWeather, s_jsonSerializerOptions);
@@ -39,7 +38,7 @@ internal sealed class KernelFunctionFactoryTests : BaseTest
         await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, function);
     }
 
-    public static async Task CreateFromStringPrompt(IConfigurationRoot _)
+    public static async Task CreateFromStringPrompt()
     {
         // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -55,7 +54,7 @@ internal sealed class KernelFunctionFactoryTests : BaseTest
         await AssertPromptFunctionSchemaAndInvocationResult(kernelBuilder.Build(), function);
     }
 
-    public static async Task CreateFromPromptTemplate(IConfigurationRoot _)
+    public static async Task CreateFromPromptTemplate()
     {
         // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();

@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using AotCompatibility.TestApp.JsonSerializerContexts;
-using AotCompatibility.TestApp.Plugins;
-using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using SemanticKernel.AotTests.JsonSerializerContexts;
+using SemanticKernel.AotTests.Plugins;
 
-namespace AotCompatibility.TestApp.Tests;
+namespace SemanticKernel.AotTests.UnitTests;
 
 internal sealed class KernelPluginExtensionsTests : BaseTest
 {
@@ -15,7 +14,7 @@ internal sealed class KernelPluginExtensionsTests : BaseTest
         TypeInfoResolverChain = { WeatherJsonSerializerContext.Default, LocationJsonSerializerContext.Default }
     };
 
-    public static async Task AddFromType(IConfigurationRoot _)
+    public static async Task AddFromType()
     {
         // Arrange
         Kernel kernel = new();
@@ -27,7 +26,7 @@ internal sealed class KernelPluginExtensionsTests : BaseTest
         await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 
-    public static async Task AddFromObject(IConfigurationRoot _)
+    public static async Task AddFromObject()
     {
         // Arrange
         Kernel kernel = new();

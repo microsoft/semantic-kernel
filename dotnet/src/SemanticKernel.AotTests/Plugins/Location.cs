@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace AotCompatibility.TestApp.Plugins;
+namespace SemanticKernel.AotTests.Plugins;
 
 internal sealed class Location
 {

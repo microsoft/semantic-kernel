@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using AotCompatibility.TestApp.JsonSerializerContexts;
-using AotCompatibility.TestApp.Plugins;
-using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using SemanticKernel.AotTests.JsonSerializerContexts;
+using SemanticKernel.AotTests.Plugins;
 
-namespace AotCompatibility.TestApp.Tests;
+namespace SemanticKernel.AotTests.UnitTests;
 
 internal sealed class KernelExtensions_KernelPluginTests : BaseTest
 {
@@ -15,7 +14,7 @@ internal sealed class KernelExtensions_KernelPluginTests : BaseTest
         TypeInfoResolverChain = { WeatherJsonSerializerContext.Default, LocationJsonSerializerContext.Default }
     };
 
-    public static async Task CreateFromType(IConfigurationRoot _)
+    public static async Task CreateFromType()
     {
         // Arrange
         Kernel kernel = new();
@@ -27,7 +26,7 @@ internal sealed class KernelExtensions_KernelPluginTests : BaseTest
         await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, plugin["GetCurrentWeather"]);
     }
 
-    public static async Task CreateFromObject(IConfigurationRoot _)
+    public static async Task CreateFromObject()
     {
         // Arrange
         Kernel kernel = new();
@@ -39,7 +38,7 @@ internal sealed class KernelExtensions_KernelPluginTests : BaseTest
         await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, plugin["GetCurrentWeather"]);
     }
 
-    public static async Task ImportFromType(IConfigurationRoot _)
+    public static async Task ImportFromType()
     {
         // Arrange
         Kernel kernel = new();
@@ -51,7 +50,7 @@ internal sealed class KernelExtensions_KernelPluginTests : BaseTest
         await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 
-    public static async Task ImportFromObject(IConfigurationRoot _)
+    public static async Task ImportFromObject()
     {
         // Arrange
         Kernel kernel = new();

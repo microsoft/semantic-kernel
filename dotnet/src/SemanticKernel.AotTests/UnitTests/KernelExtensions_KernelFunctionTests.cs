@@ -2,15 +2,14 @@
 
 using System.Text;
 using System.Text.Json;
-using AotCompatibility.TestApp.JsonSerializerContexts;
-using AotCompatibility.TestApp.Plugins;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SemanticKernel.AotTests.JsonSerializerContexts;
+using SemanticKernel.AotTests.Plugins;
 
-namespace AotCompatibility.TestApp.Tests;
+namespace SemanticKernel.AotTests.UnitTests;
 
 internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
 {
@@ -23,7 +22,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
         TypeInfoResolverChain = { WeatherJsonSerializerContext.Default, LocationJsonSerializerContext.Default }
     };
 
-    public static async Task CreateFromLambda(IConfigurationRoot _)
+    public static async Task CreateFromLambda()
     {
         // Act
         KernelFunction function = s_kernel.CreateFunctionFromMethod(s_lambda, s_jsonSerializerOptions);
@@ -32,7 +31,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
         await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, function);
     }
 
-    public static async Task CreateFromMethod(IConfigurationRoot _)
+    public static async Task CreateFromMethod()
     {
         // Act
         KernelFunction function = s_kernel.CreateFunctionFromMethod(GetWeather, s_jsonSerializerOptions);
@@ -41,7 +40,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
         await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, function);
     }
 
-    public static async Task CreateFromStringPrompt(IConfigurationRoot _)
+    public static async Task CreateFromStringPrompt()
     {
         // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -60,7 +59,7 @@ internal sealed class KernelExtensions_KernelFunctionTests : BaseTest
         await AssertPromptFunctionSchemaAndStreamedInvocationResult(kernel, function);
     }
 
-    public static async Task CreateFromPromptTemplate(IConfigurationRoot _)
+    public static async Task CreateFromPromptTemplate()
     {
         // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();

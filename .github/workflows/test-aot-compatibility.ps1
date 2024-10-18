@@ -4,9 +4,9 @@ $targetNetFramework = "net$targetNetFramework"
 
 $rootDirectory = Get-Location
 
-Write-Host "Publishing the AotCompatibility.TestApp application."
+Write-Host "Publishing the SemanticKernel.AotTests application."
 
-dotnet publish $rootDirectory/dotnet/samples/Demos/AotCompatibility.TestApp/AotCompatibility.TestApp.csproj --framework $targetNetFramework | Tee-Object -Variable publishOutput
+dotnet publish $rootDirectory/dotnet/src/SemanticKernel.AotTests/SemanticKernel.AotTests.csproj --framework $targetNetFramework | Tee-Object -Variable publishOutput
 
 $warningFound = $false
 
@@ -25,15 +25,15 @@ Write-Host "The application was published successfully."
 
 $runtime = $IsWindows ? "win-x64" : "linux-x64"
 
-$appPublishDirectory = Join-Path -Path $rootDirectory -ChildPath dotnet/samples/Demos/AotCompatibility.TestApp/bin/Release/$targetNetFramework/$runtime/publish
+$appPublishDirectory = Join-Path -Path $rootDirectory -ChildPath dotnet/src/SemanticKernel.AotTests/bin/Release/$targetNetFramework/$runtime/publish
 
-$appFileName = $IsWindows ? "AotCompatibility.TestApp.exe" : "AotCompatibility.TestApp"
+$appFileName = $IsWindows ? "SemanticKernel.AotTests.exe" : "SemanticKernel.AotTests"
 
 $app = Join-Path -Path $appPublishDirectory -ChildPath $appFileName
 
-Write-Host "Executing the AotCompatibility.TestApp application."
+Write-Host "Executing the SemanticKernel.AotTests application."
 
-& $app -tests
+& $app
 
 if ($LastExitCode -ne 0)
 {

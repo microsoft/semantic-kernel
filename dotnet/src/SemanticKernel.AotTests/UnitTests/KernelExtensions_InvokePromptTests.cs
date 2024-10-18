@@ -2,15 +2,14 @@
 
 using System.Text;
 using System.Text.Json;
-using AotCompatibility.TestApp.JsonSerializerContexts;
-using AotCompatibility.TestApp.Plugins;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SemanticKernel.AotTests.JsonSerializerContexts;
+using SemanticKernel.AotTests.Plugins;
 
-namespace AotCompatibility.TestApp.Tests;
+namespace SemanticKernel.AotTests.UnitTests;
 
 internal sealed class KernelExtensions_InvokePromptTests : BaseTest
 {
@@ -19,7 +18,7 @@ internal sealed class KernelExtensions_InvokePromptTests : BaseTest
         TypeInfoResolverChain = { WeatherJsonSerializerContext.Default, LocationJsonSerializerContext.Default }
     };
 
-    public static async Task InvokePromptAsync(IConfigurationRoot _)
+    public static async Task InvokePromptAsync()
     {
         // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -39,7 +38,7 @@ internal sealed class KernelExtensions_InvokePromptTests : BaseTest
         Assert.AreEqual("Is it suitable for hiking today? - Current weather(temperature: 61F, condition: rainy)", functionResult.ToString());
     }
 
-    public static async Task InvokePromptStreamingAsync(IConfigurationRoot _)
+    public static async Task InvokePromptStreamingAsync()
     {
         // Arrange
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();

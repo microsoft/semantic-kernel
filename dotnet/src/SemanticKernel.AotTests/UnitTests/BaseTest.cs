@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using AotCompatibility.TestApp.Plugins;
 using Microsoft.SemanticKernel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SemanticKernel.AotTests.Plugins;
 
-namespace AotCompatibility.TestApp.Tests;
+namespace SemanticKernel.AotTests.UnitTests;
 internal class BaseTest
 {
     protected static async Task AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(Kernel kernel, KernelFunction function)

@@ -3,7 +3,7 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 
-namespace AotCompatibility.TestApp.Plugins;
+namespace SemanticKernel.AotCompatibility.Plugins;
 internal sealed class WeatherPlugin
 {
     [KernelFunction]

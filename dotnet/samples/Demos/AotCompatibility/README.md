@@ -1,19 +1,15 @@
-﻿# Native-AOT Samples and Tests
-This application demonstrates how to use the Semantic Kernel Native-AOT compatible API in a Native-AOT application and at the same time
-it serves as a test application analyzing the API using AOT compiler and running tests against the API.
+﻿# Native-AOT Samples
+This application demonstrates how to use the Semantic Kernel Native-AOT compatible API in a Native-AOT application.
 
-## Running Samples and Tests
-Both samples and test can be run either in a debug mode by just setting a break point and pressing `F5` in Visual Studio (make sure the `AotCompatibility.TestApp` project is set as the startup project) in 
-which case they are run in a regular CoreCLR application and not in Native-AOT one. This might be useful to understand how the API works and how to use it.
+## Running Samples
+The samples be run either in a debug mode by just setting a break point and pressing `F5` in Visual Studio (make sure the `AotCompatibility` project is set as the startup project) in which case they are run in a regular CoreCLR application and not in Native-AOT one. This might be useful to understand how the API works and how to use it.
 
-To run the samples in a Native-AOT application, first publish it using the following command: `dotnet publish -r win-x64`. Then, execute the application by running the following command in the terminal: `.\bin\Release\net8.0\win-x64\publish\AotCompatibility.TestApp.exe`.  
-   
-To run the tests in Native-AOT mode, publish the app in the same way as above, and then run it with the `-tests` argument: `.\bin\Release\net8.0\win-x64\publish\AotCompatibility.TestApp.exe -tests`.
+To run the samples in a Native-AOT application, first publish it using the following command: `dotnet publish -r win-x64`. Then, execute the application by running the following command in the terminal: `.\bin\Release\net8.0\win-x64\publish\AotCompatibility.exe`.  
 
 ## Samples
 Most of the samples don't require any additional setup, and can be run as is. However, some of them might require additional configuration.
 
-### 1. [ONNX Chat Completion Service](./Samples/OnnxChatCompletionSamples.cs)
+### 1. [ONNX Chat Completion Service](./OnnxChatCompletionSamples.cs)
 To configure the sample, you need to download the ONNX model from the Hugging Face repository. Go to a directory of your choice where the model should be downloaded and run the following command:
 ```powershell
 git clone https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx

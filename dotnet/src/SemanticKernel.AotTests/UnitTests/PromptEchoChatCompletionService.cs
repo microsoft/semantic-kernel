@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace AotCompatibility.TestApp.Tests;
+namespace SemanticKernel.AotTests.UnitTests;
+
 internal sealed class PromptEchoChatCompletionService : IChatCompletionService
 {
     public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
@@ -14,7 +15,9 @@ internal sealed class PromptEchoChatCompletionService : IChatCompletionService
         return Task.FromResult<IReadOnlyList<ChatMessageContent>>([new(AuthorRole.Assistant, chatHistory.First().Content)]);
     }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
         yield return new StreamingChatMessageContent(AuthorRole.Assistant, chatHistory.First().Content);
     }
