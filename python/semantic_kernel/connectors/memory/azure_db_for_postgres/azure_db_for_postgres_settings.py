@@ -2,17 +2,21 @@
 import sys
 from typing import Any
 
+from psycopg.conninfo import conninfo_to_dict
+from psycopg_pool import AsyncConnectionPool
+
+from semantic_kernel.connectors.memory.azure_db_for_postgres.entra_connection import AsyncEntraConnection
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+
 if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
+    pass  # pragma: no cover
 else:
-    from typing_extensions import override  # pragma: no cover
+    pass  # pragma: no cover
 
 from azure.core.credentials import TokenCredential
 from azure.core.credentials_async import AsyncTokenCredential
-from azure.identity import DefaultAzureCredential
-from psycopg.conninfo import conninfo_to_dict
 
-from semantic_kernel.connectors.memory.azure_db_for_postgres.utils import get_entra_token, get_entra_token_aysnc
+from semantic_kernel import __version__
 from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 
 
@@ -26,18 +30,59 @@ class AzureDBForPostgresSettings(PostgresSettings):
 
     credential: AsyncTokenCredential | TokenCredential | None = None
 
-    @override
     def get_connection_args(self, **kwargs) -> dict[str, Any]:
-        """Get connection arguments."""
-        password: Any = self.password.get_secret_value() if self.password else None
-        if not password and self.connection_string:
-            password = conninfo_to_dict(self.connection_string.get_secret_value()).get("password")
+        """Get connection arguments.
 
-        if not password:
-            self.credential = self.credential or DefaultAzureCredential()
-            if isinstance(self.credential, AsyncTokenCredential):
-                password = get_entra_token_aysnc(self.credential)
-            else:
-                password = get_entra_token(self.credential)
+        Args:
+            kwargs: dict[str, Any] - Additional arguments
+                Use this to override any connection arguments.
 
-        return super().get_connection_args(password=password)
+        Returns:
+            dict[str, Any]: Connection arguments that can be passed to psycopg.connect
+        """
+        result = conninfo_to_dict(self.connection_string.get_secret_value()) if self.connection_string else {}
+
+        if self.host:
+            result["host"] = self.host
+        if self.port:
+            result["port"] = self.port
+        if self.dbname:
+            result["dbname"] = self.dbname
+        if self.user:
+            result["user"] = self.user
+        if self.password:
+            result["password"] = self.password.get_secret_value()
+
+        result = {**result, **kwargs}
+
+        # Ensure required values
+        if "host" not in result:
+            raise MemoryConnectorInitializationError("host is required. Please set PGHOST or connection_string.")
+        if "dbname" not in result:
+            raise MemoryConnectorInitializationError(
+                "database is required. Please set PGDATABASE or connection_string."
+            )
+
+        return result
+
+    async def create_connection_pool(self) -> AsyncConnectionPool:
+        """Creates a connection pool based off of settings.
+
+        Uses AsyncEntraConnection as the connection class, which
+        can set the user and password based on a Entra token.
+        """
+        pool: AsyncConnectionPool = AsyncConnectionPool(
+            min_size=self.min_pool,
+            max_size=self.max_pool,
+            open=False,
+            kwargs={
+                **self.get_connection_args(),
+                **{
+                    "credential": self.credential,
+                    "application_name": f"semantic_kernel (python) v{__version__}",
+                },
+            },
+            connection_class=AsyncEntraConnection,
+        )
+        await pool.open()
+        return pool

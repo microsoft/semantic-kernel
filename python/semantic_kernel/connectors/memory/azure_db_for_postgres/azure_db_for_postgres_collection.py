@@ -32,12 +32,12 @@ class AzureDBForPostgresCollection(PostgresCollection[TKey, TModel]):
 
         Args:
             collection_name: The name of the collection, which corresponds to the table name.
-            data_model_type (type[TModel]): The type of the data model.
+            data_model_type: The type of the data model.
             data_model_definition: The data model definition.
             connection_pool: The connection pool.
             db_schema: The database schema.
-            env_file_path (str): Use the environment settings file as a fallback to environment variables.
-            env_file_encoding (str): The encoding of the environment settings file.
+            env_file_path: Use the environment settings file as a fallback to environment variables.
+            env_file_encoding: The encoding of the environment settings file.
             settings: The settings for the Azure DB for Postgres connection. If not provided, the settings will be
                 created from the environment.
         """
