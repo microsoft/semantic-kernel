@@ -40,4 +40,30 @@ internal static partial class OpenAIAssistantAgentLogMessages
         string methodName,
         string channelType,
         string threadId);
+
+    /// <summary>
+    /// Logs <see cref="OpenAIAssistantAgent"/> restoring serialized channel (started).
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Debug,
+        Message = "[{MethodName}] Restoring assistant channel for {ChannelType}: #{ThreadId}.")]
+    public static partial void LogOpenAIAssistantAgentRestoringChannel(
+        this ILogger logger,
+        string methodName,
+        string channelType,
+        string threadId);
+
+    /// <summary>
+    /// Logs <see cref="OpenAIAssistantAgent"/> restored serialized channel (complete).
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Information,
+        Message = "[{MethodName}] Restored assistant channel for {ChannelType}: #{ThreadId}.")]
+    public static partial void LogOpenAIAssistantAgentRestoredChannel(
+        this ILogger logger,
+        string methodName,
+        string channelType,
+        string threadId);
 }

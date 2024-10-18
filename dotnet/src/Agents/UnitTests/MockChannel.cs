@@ -65,4 +65,9 @@ internal sealed class MockChannel : AgentChannel<MockAgent>
     {
         throw new NotImplementedException();
     }
+
+    protected internal override string Serialize()
+    {
+        throw new NotImplementedException();
+    }
 }
