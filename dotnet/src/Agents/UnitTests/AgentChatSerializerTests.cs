@@ -174,7 +174,7 @@ public class AgentChatSerializerTests
     public async Task VerifyDeserializedChatWithAggregatorAsync()
     {
         // Create chat
-        TestChat chat = new(new AggregatorAgent(() => new TestChat(CreateMockAgent())));
+        TestChat chat = new(new AggregatorAgent(() => new TestChat(CreateMockAgent())) { Name = "Group" });
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
         ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
 
@@ -182,7 +182,7 @@ public class AgentChatSerializerTests
         AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
         Assert.Single(serializer.Participants);
 
-        TestChat copy = new(new AggregatorAgent(() => new TestChat(CreateMockAgent())));
+        TestChat copy = new(new AggregatorAgent(() => new TestChat(CreateMockAgent())) { Name = "Group" });
 
         await serializer.DeserializeAsync(copy);
 

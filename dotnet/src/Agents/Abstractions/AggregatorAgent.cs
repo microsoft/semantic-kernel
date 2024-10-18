@@ -45,7 +45,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     protected internal override IEnumerable<string> GetChannelKeys()
     {
         yield return typeof(AggregatorChannel).FullName!;
-        yield return this.GetHashCode().ToString();
+        yield return this.Name ?? this.Id;
     }
 
     /// <inheritdoc/>
