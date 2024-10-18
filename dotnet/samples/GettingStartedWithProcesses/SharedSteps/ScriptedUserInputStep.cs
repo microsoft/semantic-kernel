@@ -9,8 +9,9 @@ namespace SharedSteps;
 /// A step that elicits user input.
 ///
 /// Step used in the Processes Samples:
-/// - Step_01_Processes.cs
-/// - Step_02_AccountOpening.cs
+/// - Step01_Processes.cs
+/// - Step02_AccountOpening.cs
+/// - Step04_AgentOrchestration
 /// </summary>
 public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
 {
@@ -18,6 +19,8 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     {
         public const string GetUserInput = nameof(GetUserInput);
     }
+
+    protected bool SuppressOutput { get; init; }
 
     /// <summary>
     /// The state object for the user input step. This object holds the user inputs and the current input index.
@@ -41,31 +44,49 @@ public class ScriptedUserInputStep : KernelProcessStep<UserInputState>
     /// <returns>A <see cref="ValueTask"/></returns>
     public override ValueTask ActivateAsync(KernelProcessStepState<UserInputState> state)
     {
-        state.State ??= new();
         _state = state.State;
 
-        PopulateUserInputs(_state);
+        PopulateUserInputs(_state!);
 
         return ValueTask.CompletedTask;
     }
 
+    internal string GetNextUserMessage()
+    {
+        if (_state != null && _state.CurrentInputIndex >= 0 && _state.CurrentInputIndex < this._state.UserInputs.Count)
+        {
+            var userMessage = this._state!.UserInputs[_state.CurrentInputIndex];
+            _state.CurrentInputIndex++;
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"USER: {userMessage}");
+            Console.ResetColor();
+
+            return userMessage;
+        }
+
+        Console.WriteLine("SCRIPTED_USER_INPUT: No more scripted user messages defined, returning empty string as user message");
+        return string.Empty;
+    }
+
     /// <summary>
     /// Gets the user input.
+    /// Could be overridden to customize the output events to be emitted
     /// </summary>
     /// <param name="context">An instance of <see cref="KernelProcessStepContext"/> which can be
     /// used to emit events from within a KernelFunction.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
     [KernelFunction(Functions.GetUserInput)]
-    public async ValueTask GetUserInputAsync(KernelProcessStepContext context)
+    public virtual async ValueTask GetUserInputAsync(KernelProcessStepContext context)
     {
-        var userMessage = _state!.UserInputs[_state.CurrentInputIndex];
-        _state.CurrentInputIndex++;
-
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"USER: {userMessage}");
-        Console.ResetColor();
-
+        var userMessage = this.GetNextUserMessage();
         // Emit the user input
+        if (string.IsNullOrEmpty(userMessage))
+        {
+            await context.EmitEventAsync(new() { Id = CommonEvents.Exit });
+            return;
+        }
+
         await context.EmitEventAsync(new() { Id = CommonEvents.UserInputReceived, Data = userMessage });
     }
 }
