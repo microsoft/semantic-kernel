@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using Events;
 using Microsoft.Extensions.Logging;
@@ -115,42 +114,16 @@ public class ManagerAgentStep : KernelProcessStep
 
     private static readonly ChatResponseFormat s_intentResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
         jsonSchemaFormatName: "intent_result",
-        jsonSchema: BinaryData.FromString(
-        """
-        {
-            "type": "object",
-            "properties": {
-                "IsRequestingUserInput": {
-                    "type": "boolean",
-                    "description": "True if user input is requested or solicited.  Addressing the user with no specific request is False.  Asking a question to the user is True."
-                },
-                "IsWorking": {
-                    "type": "boolean",
-                    "description": "True if the user request is being worked on."
-                },
-                "Rationale": {
-                    "type": "string",
-                    "description": "Rationale for the value assigned to IsRequestingUserInput"
-                }
-            },
-            "required": ["IsRequestingUserInput", "IsWorking", "Rationale"],
-            "additionalProperties": false
-        }
-        """),
+        jsonSchema: BinaryData.FromString(JsonSchemaGenerator.FromType<IntentResult>()),
         jsonSchemaIsStrict: true);
 
-    private sealed class IntentResult
-    {
-        [Required]
-        [Description("True if user input is requested or solicited.  Addressing the user with no specific request is False.  Asking a question to the user is True.")]
-        public bool IsRequestingUserInput { get; set; }
-
-        [Required]
-        [Description("True if the user request is being worked on.")]
-        public bool IsWorking { get; set; }
-
-        [Required]
-        [Description("Rationale for the value assigned to IsRequestingUserInput")]
-        public string Rationale { get; set; }
-    }
+    [DisplayName("IntentResult")]
+    [Description("this is the result description")]
+    public sealed record IntentResult(
+        [property:Description("True if user input is requested or solicited.  Addressing the user with no specific request is False.  Asking a question to the user is True.")]
+        bool IsRequestingUserInput,
+        [property:Description("True if the user request is being worked on.")]
+        bool IsWorking,
+        [property:Description("Rationale for the value assigned to IsRequestingUserInput")]
+        string Rationale);
 }
