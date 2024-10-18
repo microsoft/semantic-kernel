@@ -11,6 +11,10 @@ from azure.ai.inference.aio import ChatCompletionsClient
 from azure.identity import DefaultAzureCredential
 from openai import AsyncAzureOpenAI
 
+from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
+    AnthropicChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -68,8 +72,7 @@ ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"])
 onnx_setup: bool = is_service_setup_for_testing(["ONNX_GEN_AI_CHAT_MODEL_FOLDER"])
-# TODO: Add the missing environment variables for the following services
-anthropic_setup: bool = is_service_setup_for_testing(["ANTHROPIC_API_KEY"])
+anthropic_setup: bool = is_service_setup_for_testing(["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"])
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:
@@ -127,6 +130,7 @@ class ChatCompletionTestBase(CompletionTestBase):
             "azure": (AzureChatCompletion(), AzureChatPromptExecutionSettings),
             "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
             "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
+            "anthropic": (AnthropicChatCompletion() if anthropic_setup else None, AnthropicChatPromptExecutionSettings),
             "mistral_ai": (
                 MistralAIChatCompletion() if mistral_ai_setup else None,
                 MistralAIChatPromptExecutionSettings,
