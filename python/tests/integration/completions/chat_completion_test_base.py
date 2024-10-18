@@ -51,20 +51,25 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.completions.test_utils import is_service_setup_for_testing
+from tests.integration.test_utils import is_service_setup_for_testing
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-# This can later also be simplified as map probably
-mistral_ai_setup: bool = is_service_setup_for_testing("MISTRALAI_API_KEY")
-ollama_setup: bool = is_service_setup_for_testing("OLLAMA_MODEL")
-google_ai_setup: bool = is_service_setup_for_testing("GOOGLE_AI_API_KEY")
-vertex_ai_setup: bool = is_service_setup_for_testing("VERTEX_AI_PROJECT_ID")
-anthropic_setup: bool = is_service_setup_for_testing("ANTHROPIC_API_KEY")
-onnx_setup: bool = is_service_setup_for_testing("ONNX_GEN_AI_CHAT_MODEL_FOLDER")
+# Make sure all services are setup for before running the tests
+# The following exceptions apply:
+# 1. OpenAI and Azure OpenAI services are always setup for testing.
+# 2. Bedrock services don't use API keys and model providers are tested individually,
+#    so no environment variables are required.
+mistral_ai_setup: bool = is_service_setup_for_testing(["MISTRALAI_API_KEY", "MISTRALAI_CHAT_MODEL_ID"])
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"])
+google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"])
+onnx_setup: bool = is_service_setup_for_testing(["ONNX_GEN_AI_CHAT_MODEL_FOLDER"])
+# TODO: Add the missing environment variables for the following services
+anthropic_setup: bool = is_service_setup_for_testing(["ANTHROPIC_API_KEY"])
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:
