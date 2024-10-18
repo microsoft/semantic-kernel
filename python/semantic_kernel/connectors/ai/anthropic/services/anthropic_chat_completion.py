@@ -65,7 +65,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class AnthropicChatCompletion(ChatCompletionClientBase):
-    """Antropic ChatCompletion class."""
+    """Anthropic ChatCompletion class."""
 
     MODEL_PROVIDER_NAME: ClassVar[str] = "anthropic"
     SUPPORTS_FUNCTION_CALLING: ClassVar[bool] = True

@@ -47,13 +47,15 @@ def default_options() -> dict:
 
 
 @pytest.fixture()
-def ollama_unit_test_env(monkeypatch, model_id, host, exclude_list):
+def ollama_unit_test_env(monkeypatch, host, exclude_list):
     """Fixture to set environment variables for OllamaSettings."""
     if exclude_list is None:
         exclude_list = []
 
     env_vars = {
-        "OLLAMA_MODEL": model_id,
+        "OLLAMA_CHAT_MODEL_ID": "test_chat_model_id",
+        "OLLAMA_TEXT_MODEL_ID": "test_text_model_id",
+        "OLLAMA_EMBEDDING_MODEL_ID": "test_embedding_model_id",
         "OLLAMA_HOST": host,
     }
 

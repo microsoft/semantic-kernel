@@ -34,7 +34,7 @@ def test_custom_client(model_id, custom_client):
     assert ollama.client == custom_client
 
 
-@pytest.mark.parametrize("exclude_list", [["OLLAMA_MODEL"]], indirect=True)
+@pytest.mark.parametrize("exclude_list", [["OLLAMA_CHAT_MODEL_ID"]], indirect=True)
 def test_init_empty_model_id_in_env(ollama_unit_test_env):
     """Test that the service initializes incorrectly with an empty model id."""
     with pytest.raises(ServiceInitializationError):
