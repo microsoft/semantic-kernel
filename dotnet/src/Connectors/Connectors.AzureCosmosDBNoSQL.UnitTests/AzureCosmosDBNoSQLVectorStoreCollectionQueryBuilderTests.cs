@@ -28,11 +28,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     {
         // Arrange
         const string ExpectedQueryText =
-            "SELECT x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore " +
-            "FROM x " +
-            "WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1) " +
-            "ORDER BY VectorDistance(x.test_property_1, @vector) " +
-            "OFFSET @offset LIMIT @limit ";
+            "SELECT x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore\r\n" +
+            "FROM x\r\n" +
+            "WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1)\r\n" +
+            "ORDER BY VectorDistance(x.test_property_1, @vector)\r\n" +
+            "OFFSET @offset LIMIT @limit\r\n";
 
         var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
         var vectorPropertyName = "test_property_1";
@@ -73,6 +73,54 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 
         Assert.Equal("@cv1", queryParameters[4].Name);
         Assert.Equal("test-value-3", queryParameters[4].Value);
+    }
+
+    [Fact]
+    public void BuildSearchQueryWithoutOffsetReturnsQueryDefinitionWithTopParameter()
+    {
+        // Arrange
+        const string ExpectedQueryText =
+            "SELECT TOP @top x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore\r\n" +
+            "FROM x\r\n" +
+            "WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1)\r\n" +
+            "ORDER BY VectorDistance(x.test_property_1, @vector)\r\n";
+
+        var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
+        var vectorPropertyName = "test_property_1";
+        var fields = this._storagePropertyNames.Values.ToList();
+
+        var filter = new VectorSearchFilter()
+            .EqualTo("TestProperty2", "test-value-2")
+            .AnyTagEqualTo("TestProperty3", "test-value-3");
+
+        var searchOptions = new VectorSearchOptions { Filter = filter, Top = 10 };
+
+        // Act
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+            vector,
+            fields,
+            this._storagePropertyNames,
+            vectorPropertyName,
+            ScorePropertyName,
+            searchOptions);
+
+        var queryText = queryDefinition.QueryText;
+        var queryParameters = queryDefinition.GetQueryParameters();
+
+        // Assert
+        Assert.Equal(ExpectedQueryText, queryText);
+
+        Assert.Equal("@vector", queryParameters[0].Name);
+        Assert.Equal(vector, queryParameters[0].Value);
+
+        Assert.Equal("@top", queryParameters[1].Name);
+        Assert.Equal(10, queryParameters[1].Value);
+
+        Assert.Equal("@cv0", queryParameters[2].Name);
+        Assert.Equal("test-value-2", queryParameters[2].Value);
+
+        Assert.Equal("@cv1", queryParameters[3].Name);
+        Assert.Equal("test-value-3", queryParameters[3].Value);
     }
 
     [Fact]
