@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -61,5 +62,47 @@ public class OllamaPromptExecutionSettingsTests
         Assert.Equal(0.5f, ollamaExecutionSettings.Temperature);
         Assert.Equal(0.9f, ollamaExecutionSettings.TopP!.Value, 0.1f);
         Assert.Equal(100, ollamaExecutionSettings.TopK);
+    }
+
+    [Fact]
+    public void SupportedAutoFunctionChoiceBehaviorWorksAsExpected()
+    {
+        // Arrange
+        string configPayload = """
+        {
+            "model_id": "llama3.2",
+            "service_id": "service-1",
+            "function_choice_behavior": {
+                "type": "<type>",
+                "functions": ["p1.f1"]
+            }
+        }
+        """;
+
+        // Act & Assert
+        _ = JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(configPayload.Replace("<type>", "auto"));
+        _ = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+    }
+
+    [Fact]
+    public void NotSupportedChoiceBehaviorsThrowsAsExpected()
+    {
+        // Arrange
+        string configPayload = """
+        {
+            "model_id": "llama3.2",
+            "service_id": "service-1",
+            "function_choice_behavior": {
+                "type": "<type>",
+                "functions": ["p1.f1"]
+            }
+        }
+        """;
+
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() => new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required() });
+        Assert.Throws<NotSupportedException>(() => JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(configPayload.Replace("<type>", "required")));
+        Assert.Throws<NotSupportedException>(() => new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.None() });
+        Assert.Throws<NotSupportedException>(() => JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(configPayload.Replace("<type>", "none")));
     }
 }

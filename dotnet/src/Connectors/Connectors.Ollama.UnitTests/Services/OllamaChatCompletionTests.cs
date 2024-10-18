@@ -27,7 +27,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
     {
         this._defaultResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response_stream.txt"))
+            Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response.txt"))
         };
 
         this._multiMessageHandlerStub = new()
@@ -82,8 +82,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
     public async Task GetChatMessageContentsShouldHaveModelAndInnerContentAsync()
     {
         //Arrange
+        var expectedModel = "llama3.2";
         var sut = new OllamaChatCompletionService(
-            "phi3",
+            expectedModel,
             httpClient: this._httpClient);
 
         var chat = new ChatHistory();
@@ -107,27 +108,23 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Null(requestPayload.Options.TopP);
 
         Assert.NotNull(message.ModelId);
-        Assert.Equal("phi3", message.ModelId);
+        Assert.Equal(expectedModel, message.ModelId);
 
         // Ollama Sharp always perform streaming even for non-streaming calls,
         // The inner content in this case is the full list of chunks returned by the Ollama Client.
         Assert.NotNull(message.InnerContent);
-        Assert.IsType<List<ChatResponseStream>>(message.InnerContent);
-        var innerContentList = message.InnerContent as List<ChatResponseStream>;
-        Assert.NotNull(innerContentList);
-        Assert.NotEmpty(innerContentList);
-        var lastMessage = innerContentList.Last();
-        var doneMessageChunk = lastMessage as ChatDoneResponseStream;
-        Assert.NotNull(doneMessageChunk);
-        Assert.True(doneMessageChunk.Done);
-        Assert.Equal("stop", doneMessageChunk.DoneReason);
+        Assert.IsType<ChatDoneResponseStream>(message.InnerContent);
+        var doneMessage = message.InnerContent as ChatDoneResponseStream;
+        Assert.NotNull(doneMessage);
+        Assert.True(doneMessage.Done);
+        Assert.Equal("stop", doneMessage.DoneReason);
     }
 
     [Fact]
     public async Task GetStreamingChatMessageContentsShouldHaveModelAndInnerContentAsync()
     {
         //Arrange
-        var expectedModel = "phi3";
+        var expectedModel = "llama3.2";
         var sut = new OllamaChatCompletionService(
             expectedModel,
             httpClient: this._httpClient);
@@ -397,20 +394,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public void GetChatMessageContentsRequiredToolChoiceShouldThrow()
-    {
-        // Act & Assert
-        Assert.Throws<NotSupportedException>(() => new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required() });
-    }
-
-    [Fact]
-    public void GetChatMessageContentsNoneToolChoiceShouldThrow()
-    {
-        // Act & Assert
-        Assert.Throws<NotSupportedException>(() => new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.None() });
-    }
-
-    [Fact]
     public async Task ItDoesNotChangeDefaultsForToolsAndChoiceIfNeitherOfFunctionCallingConfigurationsSetAsync()
     {
         // Arrange
@@ -431,7 +414,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Fake prompt");
 
-        var executionSettings = new OllamaPromptExecutionSettings(); // Neither ToolCallBehavior nor FunctionChoiceBehavior is set.
+        var executionSettings = new OllamaPromptExecutionSettings(); // FunctionChoiceBehavior is not set.
 
         // Act
         await sut.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);

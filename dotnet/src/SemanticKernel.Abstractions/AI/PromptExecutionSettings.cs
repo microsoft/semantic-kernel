@@ -91,20 +91,13 @@ public class PromptExecutionSettings
     /// </remarks>
     [JsonPropertyName("function_choice_behavior")]
     [Experimental("SKEXP0001")]
-    public FunctionChoiceBehavior? FunctionChoiceBehavior
+    public virtual FunctionChoiceBehavior? FunctionChoiceBehavior
     {
         get => this._functionChoiceBehavior;
 
         set
         {
             this.ThrowIfFrozen();
-            if (value is not AutoFunctionChoiceBehavior)
-            {
-                throw new NotSupportedException(
-    "Currently, Ollama does not support different call choices. " +
-    "See Ollama docs at https://github.com/ollama/ollama/blob/55ea963/docs/openai.md#supported-request-fields to see whether support has since been added.");
-
-            }
             this._functionChoiceBehavior = value;
         }
     }
