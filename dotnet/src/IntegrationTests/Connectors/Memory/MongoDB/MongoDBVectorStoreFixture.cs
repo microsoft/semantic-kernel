@@ -3,8 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Docker.DotNet.Models;
 using Docker.DotNet;
+using Docker.DotNet.Models;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
 using Xunit;
