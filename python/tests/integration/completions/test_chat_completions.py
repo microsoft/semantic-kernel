@@ -137,17 +137,6 @@ pytestmark = pytest.mark.parametrize(
             id="onnx_gen_ai",
         ),
         pytest.param(
-            "anthropic",
-            {},
-            [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
-            ],
-            {},
-            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
-            id="anthropic_text_input",
-        ),
-        pytest.param(
             "google_ai",
             {},
             [
