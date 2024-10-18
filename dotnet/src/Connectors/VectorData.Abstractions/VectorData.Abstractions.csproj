@@ -10,6 +10,7 @@
 
   <PropertyGroup>
     <PackageVersion>9.0.0-preview.1.24515.1</PackageVersion>
+    <AssemblyVersion>9.0.0.0</AssemblyVersion>
     <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
     <PackageId>$(AssemblyName)</PackageId>
     <PackageDescription>Abstractions for vector database access.
