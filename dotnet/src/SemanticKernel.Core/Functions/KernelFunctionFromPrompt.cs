@@ -611,10 +611,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             jsonObject.TryGetProperty("CompletionTokens", out var completionTokensJson) &&
             completionTokensJson.TryGetInt32(out int completionTokens))
         {
-            logger.LogInformation(
-                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
-                promptTokens, completionTokens);
-
             TagList tags = new() {
                 { MeasurementFunctionTagName, this.Name },
                 { MeasurementModelTagName, modelId }
@@ -622,6 +618,19 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
             s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
             s_invocationTokenUsageCompletion.Record(completionTokens, in tags);
+        }
+        else if (jsonObject.TryGetProperty("InputTokenCount", out var inputTokensJson) &&
+            inputTokensJson.TryGetInt32(out int inputTokens) &&
+            jsonObject.TryGetProperty("OutputTokenCount", out var outputTokensJson) &&
+            outputTokensJson.TryGetInt32(out int outputTokens))
+        {
+            TagList tags = new() {
+                { MeasurementFunctionTagName, this.Name },
+                { MeasurementModelTagName, modelId }
+            };
+
+            s_invocationTokenUsagePrompt.Record(inputTokens, in tags);
+            s_invocationTokenUsageCompletion.Record(outputTokens, in tags);
         }
         else
         {

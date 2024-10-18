@@ -3,7 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Contains options for <see cref="VectorStoreRecordPropertyReader"/>.

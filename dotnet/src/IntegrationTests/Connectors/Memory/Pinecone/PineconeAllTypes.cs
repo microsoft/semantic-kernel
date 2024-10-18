@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone;
 
@@ -59,6 +59,6 @@ public record PineconeAllTypes()
     [VectorStoreRecordData]
     public IEnumerable<string> Enumerable { get; set; }
 
-    [VectorStoreRecordVector(Dimensions: 8, IndexKind: null, DistanceFunction: DistanceFunction.DotProductSimilarity)]
+    [VectorStoreRecordVector(Dimensions: 8, DistanceFunction: DistanceFunction.DotProductSimilarity)]
     public ReadOnlyMemory<float>? Embedding { get; set; }
 }

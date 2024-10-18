@@ -15,6 +15,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     google_ai_setup,
+    onnx_setup,
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
@@ -102,6 +103,25 @@ pytestmark = pytest.mark.parametrize(
             id="azure_image_input_file",
         ),
         pytest.param(
+            "onnx_gen_ai",
+            {},
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+            ],
+            {},
+            marks=pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
+            id="onnx_gen_ai_image_input_file",
+        ),
+        pytest.param(
             "azure_ai_inference",
             {
                 "max_tokens": 256,
@@ -184,6 +204,24 @@ pytestmark = pytest.mark.parametrize(
             {},
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_image_input_file",
+        ),
+        pytest.param(
+            "bedrock_anthropic_claude",
+            {},
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+            ],
+            {},
+            id="bedrock_anthropic_claude_image_input_file",
         ),
     ],
 )

@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 from opentelemetry import metrics, trace
 from opentelemetry.semconv.attributes.error_attributes import ERROR_TYPE
+from pydantic import Field
 
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
@@ -52,6 +53,22 @@ TEMPLATE_FORMAT_MAP = {
 }
 
 
+def _create_function_duration_histogram():
+    return meter.create_histogram(
+        "semantic_kernel.function.invocation.duration",
+        unit="s",
+        description="Measures the duration of a function's execution",
+    )
+
+
+def _create_function_streaming_duration_histogram():
+    return meter.create_histogram(
+        "semantic_kernel.function.streaming.duration",
+        unit="s",
+        description="Measures the duration of a function's streaming execution",
+    )
+
+
 class KernelFunction(KernelBaseModel):
     """Semantic Kernel function.
 
@@ -75,15 +92,9 @@ class KernelFunction(KernelBaseModel):
 
     metadata: KernelFunctionMetadata
 
-    invocation_duration_histogram: metrics.Histogram = meter.create_histogram(
-        "semantic_kernel.function.invocation.duration",
-        unit="s",
-        description="Measures the duration of a function's execution",
-    )
-    streaming_duration_histogram: metrics.Histogram = meter.create_histogram(
-        "semantic_kernel.function.streaming.duration",
-        unit="s",
-        description="Measures the duration of a function's streaming execution",
+    invocation_duration_histogram: metrics.Histogram = Field(default_factory=_create_function_duration_histogram)
+    streaming_duration_histogram: metrics.Histogram = Field(
+        default_factory=_create_function_streaming_duration_histogram
     )
 
     @classmethod

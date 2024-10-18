@@ -74,13 +74,13 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
-        if (truncationIndex > 0)
+        if (truncationIndex >= 0)
         {
             // Second pass to extract history for summarization
             IEnumerable<ChatMessageContent> summarizedHistory =
                 history.Extract(
                     this.UseSingleSummary ? 0 : insertionPoint,
-                    truncationIndex - 1,
+                    truncationIndex,
                     (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
 
             try

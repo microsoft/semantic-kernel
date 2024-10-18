@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
@@ -10,66 +10,73 @@ namespace SemanticKernel.UnitTests.Functions;
 
 public class KernelPluginFactoryTests
 {
-    private readonly Kernel _kernel = new();
-
-    [Theory]
-    [ClassData(typeof(TestJsonSerializerOptionsForTestParameterAndReturnTypes))]
-    public async Task ItShouldCreatePluginFromType(JsonSerializerOptions? jsos)
-    {
-        // Arrange & Act
-        KernelPlugin plugin = jsos is not null ?
-            plugin = KernelPluginFactory.CreateFromType<MyPlugin>(jsonSerializerOptions: jsos, pluginName: "p1") :
-            plugin = KernelPluginFactory.CreateFromType<MyPlugin>(pluginName: "p1");
-
-        // Assert
-        await AssertPluginWithSingleFunction(this._kernel, plugin);
-    }
-
-    [Theory]
-    [ClassData(typeof(TestJsonSerializerOptionsForTestParameterAndReturnTypes))]
-    public async Task ItShouldCreatePluginFromObject(JsonSerializerOptions? jsos)
+    [Fact]
+    public async Task ItCanCreateFromObjectAsync()
     {
         // Arrange
-        var myPlugin = new MyPlugin();
+        var kernel = new Kernel();
+        var args = new KernelArguments { { "param1", "value1" } };
+        var target = new MyKernelFunctions();
 
         // Act
-        KernelPlugin plugin = jsos is not null ?
-            plugin = KernelPluginFactory.CreateFromObject(myPlugin, jsonSerializerOptions: jsos, pluginName: "p1") :
-            plugin = KernelPluginFactory.CreateFromObject(myPlugin, pluginName: "p1");
+        var plugin = KernelPluginFactory.CreateFromObject(target);
+        FunctionResult result = await plugin["Function1"].InvokeAsync(kernel, args);
 
         // Assert
-        await AssertPluginWithSingleFunction(this._kernel, plugin);
+        Assert.NotNull(plugin);
+        Assert.Equal(3, plugin.FunctionCount);
+        Assert.Equal("Function1: value1", result.Value);
     }
 
-    private static async Task AssertPluginWithSingleFunction(Kernel kernel, KernelPlugin plugin)
+    [Fact]
+    public async Task ItCanCreateFromTypeUsingGenericsAsync()
     {
-        // Assert plugin properties
-        Assert.Equal("p1", plugin.Name);
-        Assert.Single(plugin);
+        // Arrange
+        var kernel = new Kernel();
+        var args = new KernelArguments { { "param1", "value1" } };
 
-        // Assert function prperties
-        KernelFunction function = plugin["MyMethod"];
+        // Act
+        var plugin = KernelPluginFactory.CreateFromType<MyKernelFunctions>();
+        FunctionResult result = await plugin["Function1"].InvokeAsync(kernel, args);
 
-        Assert.NotEmpty(function.Metadata.Parameters);
-        Assert.NotNull(function.Metadata.Parameters[0].Schema);
-        Assert.Equal("{\"type\":\"object\",\"properties\":{\"Value\":{\"type\":[\"string\",\"null\"]}}}", function.Metadata.Parameters[0].Schema!.ToString());
-
-        Assert.NotNull(function.Metadata.ReturnParameter);
-        Assert.NotNull(function.Metadata.ReturnParameter.Schema);
-        Assert.Equal("{\"type\":\"object\",\"properties\":{\"Result\":{\"type\":\"integer\"}}}", function.Metadata.ReturnParameter.Schema!.ToString());
-
-        // Assert function invocation
-        var invokeResult = await function.InvokeAsync(kernel, new() { ["p1"] = """{"Value": "34"}""" }); // Check marshaling logic that deserialize JSON into target type using JSOs
-        var result = invokeResult?.GetValue<TestReturnType>();
-        Assert.Equal(34, result?.Result);
+        // Assert
+        Assert.NotNull(plugin);
+        Assert.Equal(3, plugin.FunctionCount);
+        Assert.Equal("Function1: value1", result.Value);
     }
 
-    private sealed class MyPlugin
+    [Fact]
+    public async Task ItCanCreateFromTypeAsync()
     {
-        [KernelFunction]
-        private TestReturnType MyMethod(TestParameterType p1)
-        {
-            return new TestReturnType() { Result = int.Parse(p1.Value!) };
-        }
+        // Arrange
+        var kernel = new Kernel();
+        var args = new KernelArguments { { "param1", "value1" } };
+        var instanceType = typeof(MyKernelFunctions);
+
+        // Act
+        var plugin = KernelPluginFactory.CreateFromType(instanceType);
+        FunctionResult result = await plugin["Function1"].InvokeAsync(kernel, args);
+
+        // Assert
+        Assert.NotNull(plugin);
+        Assert.Equal(3, plugin.FunctionCount);
+        Assert.Equal("Function1: value1", result.Value);
     }
+
+    #region private
+    private sealed class MyKernelFunctions
+    {
+        [KernelFunction("Function1")]
+        [Description("Description for function 1.")]
+        public string Function1([Description("Description for parameter 1")] string param1) => $"Function1: {param1}";
+
+        [KernelFunction("Function2")]
+        [Description("Description for function 2.")]
+        public string Function2([Description("Description for parameter 1")] string param1) => $"Function2: {param1}";
+
+        [KernelFunction("Function3")]
+        [Description("Description for function 3.")]
+        public string Function3([Description("Description for parameter 1")] string param1) => $"Function3: {param1}";
+    }
+    #endregion
 }

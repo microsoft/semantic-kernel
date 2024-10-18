@@ -65,7 +65,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         KernelProcess kernelProcess = process.Build();
 
         // Start the process with an initial external event
-        var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
+        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
     }
 
     /// <summary>
@@ -88,16 +88,29 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
     /// </summary>
     private sealed class ChatUserInputStep : ScriptedUserInputStep
     {
-        public override void PopulateUserInputs()
+        public override void PopulateUserInputs(UserInputState state)
         {
-            if (_state != null)
+            state.UserInputs.Add("Hello");
+            state.UserInputs.Add("How tall is the tallest mountain?");
+            state.UserInputs.Add("How low is the lowest valley?");
+            state.UserInputs.Add("How wide is the widest river?");
+            state.UserInputs.Add("exit");
+            state.UserInputs.Add("This text will be ignored because exit process condition was already met at this point.");
+        }
+
+        public override async ValueTask GetUserInputAsync(KernelProcessStepContext context)
+        {
+            var userMessage = this.GetNextUserMessage();
+
+            if (string.Equals(userMessage, "exit", StringComparison.OrdinalIgnoreCase))
             {
-                _state.UserInputs.Add("Hello");
-                _state.UserInputs.Add("How tall is the tallest mountain?");
-                _state.UserInputs.Add("How low is the lowest valley?");
-                _state.UserInputs.Add("How wide is the widest river?");
-                _state.UserInputs.Add("exit");
+                // exit condition met, emitting exit event
+                await context.EmitEventAsync(new() { Id = ChatBotEvents.Exit, Data = userMessage });
+                return;
             }
+
+            // emitting userInputReceived event
+            await context.EmitEventAsync(new() { Id = CommonEvents.UserInputReceived, Data = userMessage });
         }
     }
 
@@ -124,7 +137,6 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         public override ValueTask ActivateAsync(KernelProcessStepState<ChatBotState> state)
         {
             _state = state.State ?? new();
-            _state.ChatMessages ??= new();
             return ValueTask.CompletedTask;
         }
 
@@ -147,9 +159,8 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
             }
 
             System.Console.ForegroundColor = ConsoleColor.Yellow;
-            System.Console.Write("Assistant: ");
+            System.Console.WriteLine($"ASSISTANT: {response.Content}");
             System.Console.ResetColor();
-            System.Console.WriteLine(response.Content);
 
             // Update state with the response
             _state.ChatMessages.Add(response);
@@ -164,7 +175,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
     /// </summary>
     private sealed class ChatBotState
     {
-        internal ChatHistory ChatMessages { get; set; } = new();
+        internal ChatHistory ChatMessages { get; } = new();
     }
 
     /// <summary>
