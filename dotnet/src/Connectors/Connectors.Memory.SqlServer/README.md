@@ -45,10 +45,10 @@ const string AzureOpenAIEndpoint = "https://.openai.azure.com/";
 const string AzureOpenAIApiKey = "";
 
 // Replace with your Azure OpenAI embedding deployment name
-const string EmbeddingModelDeploymentName = "embeddings";
+const string EmbeddingModelDeploymentName = "text-embedding-3-small";
 
 // Replace with your Azure OpenAI chat completion deployment name
-const string ChatModelDeploymentName = "gpt-35";
+const string ChatModelDeploymentName = "gpt-4";
 
 // Complete with your Azure SQL connection string
 const string ConnectionString = "Data Source=.database.windows.net;Initial Catalog=;Authentication=Active Directory Default;Connection Timeout=30";
@@ -62,7 +62,7 @@ var kernel = Kernel.CreateBuilder()
     .Build();
 
 var memory = new MemoryBuilder()
-    .WithSqlServerMemoryStore(ConnectionString)
+    .WithSqlServerMemoryStore(ConnectionString, 1536)
     .WithAzureOpenAITextEmbeddingGeneration(EmbeddingModelDeploymentName, AzureOpenAIEndpoint, AzureOpenAIApiKey)
     .Build();
 

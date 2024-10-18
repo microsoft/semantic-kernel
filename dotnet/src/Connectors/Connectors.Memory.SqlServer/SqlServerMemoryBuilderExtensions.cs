@@ -15,12 +15,14 @@ public static class SqlServerMemoryBuilderExtensions
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance.</param>
     /// <param name="connectionString">Database connection string.</param>
     /// <param name="schema">Schema of collection tables.</param>
+    /// <param name="embeddingDimensionsCount">Number of dimensions that stored embeddings will use</param>
     /// <returns>Updated Memory builder including Postgres memory connector.</returns>
     public static MemoryBuilder WithSqlServerMemoryStore(
         this MemoryBuilder builder,
         string connectionString,
-        string schema = SqlServerMemoryStore.DefaultSchema)
+        string schema = SqlServerMemoryStore.DefaultSchema,
+        int embeddingDimensionsCount = SqlServerMemoryStore.DefaultEmbeddingDimensionsCount)
     {
-        return builder.WithMemoryStore(_ => new SqlServerMemoryStore(connectionString, schema));
+        return builder.WithMemoryStore(_ => new SqlServerMemoryStore(connectionString, schema, embeddingDimensionsCount));
     }
 }
