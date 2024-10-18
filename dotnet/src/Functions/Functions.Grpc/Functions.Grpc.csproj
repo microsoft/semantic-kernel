@@ -25,6 +25,9 @@
     <PackageReference Include="Grpc.Net.Client" />
     <PackageReference Include="protobuf-net" />
     <PackageReference Include="protobuf-net.Reflection" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
