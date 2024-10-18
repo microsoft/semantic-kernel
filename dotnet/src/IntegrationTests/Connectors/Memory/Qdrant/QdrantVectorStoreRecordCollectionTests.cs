@@ -377,6 +377,48 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     [InlineData(false, "singleVectorHotels", false, "tagContains")]
     [InlineData(true, "namedVectorsHotels", true, "tagContains")]
     [InlineData(false, "namedVectorsHotels", true, "tagContains")]
+    public async Task ItCanSearchWithoutVectorAndWithFilterAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors, string filterType)
+    {
+        // Arrange.
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        {
+            HasNamedVectors = hasNamedVectors,
+            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+        };
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
+
+        // Act.
+        var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
+        var filter = filterType == "equality" ? new VectorlessSearchFilter().EqualTo("HotelName", "My Hotel 11") : new VectorlessSearchFilter().AnyTagEqualTo("Tags", "t1");
+        var actual = await sut.VectorlessSearchAsync(
+            new()
+            {
+                Filter = filter
+            });
+
+        // Assert.
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+
+        var searchResultRecord = searchResults.First();
+        Assert.Equal(11ul, searchResultRecord?.HotelId);
+        Assert.Equal("My Hotel 11", searchResultRecord?.HotelName);
+        Assert.Equal(11, searchResultRecord?.HotelCode);
+        Assert.Equal(4.5f, searchResultRecord?.HotelRating);
+        Assert.Equal(true, searchResultRecord?.ParkingIncluded);
+        Assert.Equal(new string[] { "t1", "t2" }, searchResultRecord?.Tags.ToArray());
+        Assert.Equal("This is a great hotel.", searchResultRecord?.Description);
+    }
+
+    [Theory]
+    [InlineData(true, "singleVectorHotels", false, "equality")]
+    [InlineData(false, "singleVectorHotels", false, "equality")]
+    [InlineData(true, "namedVectorsHotels", true, "equality")]
+    [InlineData(false, "namedVectorsHotels", true, "equality")]
+    [InlineData(true, "singleVectorHotels", false, "tagContains")]
+    [InlineData(false, "singleVectorHotels", false, "tagContains")]
+    [InlineData(true, "namedVectorsHotels", true, "tagContains")]
+    [InlineData(false, "namedVectorsHotels", true, "tagContains")]
     public async Task ItCanSearchWithFilterAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors, string filterType)
     {
         // Arrange.
