@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
@@ -34,7 +34,7 @@ public class RedisJsonGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -66,7 +66,7 @@ public class RedisJsonGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsNullValues()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -98,7 +98,7 @@ public class RedisJsonGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsAllSupportedTypes()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
         var storageModel = new JsonObject();
         storageModel.Add("storage_string_data", "data 1");
         storageModel.Add("IntData", 1);
@@ -122,7 +122,7 @@ public class RedisJsonGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsNullValues()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
         var storageModel = new JsonObject();
         storageModel.Add("storage_string_data", null);
         storageModel.Add("IntData", null);
@@ -146,7 +146,7 @@ public class RedisJsonGenericDataModelMapperTests
     public void MapFromDataToStorageModelSkipsMissingProperties()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data = { },
@@ -167,7 +167,7 @@ public class RedisJsonGenericDataModelMapperTests
         // Arrange.
         var storageModel = new JsonObject();
 
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
 
         // Act.
         var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });

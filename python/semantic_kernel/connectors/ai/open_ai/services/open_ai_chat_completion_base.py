@@ -102,6 +102,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
 
         settings.stream = True
+        settings.stream_options = {"include_usage": True}
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 
@@ -109,13 +110,30 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         if not isinstance(response, AsyncStream):
             raise ServiceInvalidResponseError("Expected an AsyncStream[ChatCompletionChunk] response.")
         async for chunk in response:
-            if len(chunk.choices) == 0:
+            if len(chunk.choices) == 0 and chunk.usage is None:
                 continue
+
             assert isinstance(chunk, ChatCompletionChunk)  # nosec
             chunk_metadata = self._get_metadata_from_streaming_chat_response(chunk)
-            yield [
-                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
-            ]
+            if chunk.usage is not None:
+                # Usage is contained in the last chunk where the choices are empty
+                # We are duplicating the usage metadata to all the choices in the response
+                yield [
+                    StreamingChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        content="",
+                        choice_index=i,
+                        inner_content=chunk,
+                        ai_model_id=settings.ai_model_id,
+                        metadata=chunk_metadata,
+                    )
+                    for i in range(settings.number_of_responses or 1)
+                ]
+            else:
+                yield [
+                    self._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
+                    for choice in chunk.choices
+                ]
 
     @override
     def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
@@ -155,6 +173,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         items.extend(self._get_function_call_from_chat_choice(choice))
         if choice.message.content:
             items.append(TextContent(text=choice.message.content))
+        elif hasattr(choice.message, "refusal") and choice.message.refusal:
+            items.append(TextContent(text=choice.message.refusal))
 
         return ChatMessageContent(
             inner_content=response,
@@ -204,6 +224,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             "id": response.id,
             "created": response.created,
             "system_fingerprint": response.system_fingerprint,
+            "usage": CompletionUsage.from_openai(response.usage) if response.usage is not None else None,
         }
 
     def _get_metadata_from_chat_choice(self, choice: Choice | ChunkChoice) -> dict[str, Any]:

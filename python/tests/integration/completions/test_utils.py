@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -19,3 +20,7 @@ async def retry(func, retries=20):
                 raise
             await asyncio.sleep(max(min(i, max_delay), min_delay))
     return None
+
+
+def is_service_setup_for_testing(env_var_name: str) -> bool:
+    return env_var_name in os.environ and os.environ[env_var_name]

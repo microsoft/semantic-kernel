@@ -1,22 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
-/// A mapper that maps between the generic semantic kernel data model and the model that the data is stored in in Qdrant.
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Qdrant.
 /// </summary>
 internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, PointStruct>, IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>
 {
-    /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+    /// <summary>A helper to access property information for the current data model and record definition.</summary>
+    private readonly VectorStoreRecordPropertyReader _propertyReader;
 
     /// <summary>A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</summary>
     private readonly bool _hasNamedVectors;
@@ -24,21 +22,20 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantGenericDataModelMapper"/> class.
     /// </summary>
-    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
+    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
     /// <param name="hasNamedVectors">A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</param>
     public QdrantGenericDataModelMapper(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition,
+        VectorStoreRecordPropertyReader propertyReader,
         bool hasNamedVectors)
     {
-        Verify.NotNull(vectorStoreRecordDefinition);
+        Verify.NotNull(propertyReader);
 
         // Validate property types.
-        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify("VectorStoreGenericDataModel", vectorStoreRecordDefinition, supportsMultipleVectors: hasNamedVectors, requiresAtLeastOneVector: !hasNamedVectors);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.DataProperties, QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes, "Vector");
+        propertyReader.VerifyDataProperties(QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, supportEnumerable: true);
+        propertyReader.VerifyVectorProperties(QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes);
 
         // Assign.
-        this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
+        this._propertyReader = propertyReader;
         this._hasNamedVectors = hasNamedVectors;
     }
 
@@ -55,7 +52,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 
         // Loop through all properties and map each from the data model to the storage model.
         MapProperties(
-            this._vectorStoreRecordDefinition.Properties,
+            this._propertyReader.Properties,
             dataModel.Data,
             dataModel.Vectors,
             pointStruct,
@@ -68,7 +65,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
     public VectorStoreGenericDataModel<ulong> MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         var dataModel = new VectorStoreGenericDataModel<ulong>(storageModel.Id.Num);
-        MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+        MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
         return dataModel;
     }
 
@@ -85,7 +82,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
 
         // Loop through all properties and map each from the data model to the storage model.
         MapProperties(
-            this._vectorStoreRecordDefinition.Properties,
+            this._propertyReader.Properties,
             dataModel.Data,
             dataModel.Vectors,
             pointStruct,
@@ -98,7 +95,7 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
     VectorStoreGenericDataModel<Guid> IVectorStoreRecordMapper<VectorStoreGenericDataModel<Guid>, PointStruct>.MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         var dataModel = new VectorStoreGenericDataModel<Guid>(new Guid(storageModel.Id.Uuid));
-        MapProperties(this._vectorStoreRecordDefinition.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
+        MapProperties(this._propertyReader.Properties, storageModel, dataModel.Data, dataModel.Vectors, this._hasNamedVectors);
         return dataModel;
     }
 
@@ -189,34 +186,9 @@ internal class QdrantGenericDataModelMapper : IVectorStoreRecordMapper<VectorSto
                     // Shortcut any null handling here so we don't have to check for it for each case.
                     dataProperties[dataProperty.DataModelPropertyName] = null;
                 }
-                else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType))
-                {
-                    // Using json deserialization to convert lists back into the correct enumerable type.
-                    // There are many different possible enumerable types and this makes it easy to
-                    // support all that System.Text.Json supports.
-                    var jsonNode = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToJsonNode(propertyValue);
-                    var targetObject = jsonNode.Deserialize(dataProperty.PropertyType);
-                    dataProperties[dataProperty.DataModelPropertyName] = targetObject;
-                }
-                else if (dataProperty.PropertyType == typeof(int) || dataProperty.PropertyType == typeof(int?))
-                {
-                    // The Qdrant sdk only returns long values for integers, so we need to convert them
-                    // manually to the type of our data model.
-                    var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValue(propertyValue);
-                    convertedValue = Convert.ToInt32(convertedValue);
-                    dataProperties[dataProperty.DataModelPropertyName] = convertedValue;
-                }
-                else if (dataProperty.PropertyType == typeof(float) || dataProperty.PropertyType == typeof(float?))
-                {
-                    // The Qdrant sdk only returns double values for floats, so we need to convert them
-                    // manually to the type of our data model.
-                    var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValue(propertyValue);
-                    convertedValue = Convert.ToSingle(convertedValue);
-                    dataProperties[dataProperty.DataModelPropertyName] = convertedValue;
-                }
                 else
                 {
-                    var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValue(propertyValue);
+                    var convertedValue = QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType(propertyValue, dataProperty.PropertyType);
                     dataProperties[dataProperty.DataModelPropertyName] = convertedValue;
                 }
             }

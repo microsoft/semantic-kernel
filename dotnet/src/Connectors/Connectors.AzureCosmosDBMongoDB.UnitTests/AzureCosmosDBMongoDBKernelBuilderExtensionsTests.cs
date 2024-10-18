@@ -2,9 +2,9 @@
 
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
 using MongoDB.Driver;
 using Moq;
@@ -51,5 +51,49 @@ public sealed class AzureCosmosDBMongoDBKernelBuilderExtensionsTests
 
         var database = (IMongoDatabase)vectorStore.GetType().GetField("_mongoDatabase", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(vectorStore)!;
         Assert.Equal(HttpHeaderConstant.Values.UserAgent, database.Client.Settings.ApplicationName);
+    }
+
+    [Fact]
+    public void AddVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange
+        this._kernelBuilder.Services.AddSingleton<IMongoDatabase>(Mock.Of<IMongoDatabase>());
+
+        // Act
+        this._kernelBuilder.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TestRecord>("testcollection");
+
+        // Assert
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    [Fact]
+    public void AddVectorStoreRecordCollectionWithConnectionStringRegistersClass()
+    {
+        // Act
+        this._kernelBuilder.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TestRecord>("testcollection", "mongodb://localhost:27017", "mydb");
+
+        // Assert
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    private void AssertVectorStoreRecordCollectionCreated()
+    {
+        var kernel = this._kernelBuilder.Build();
+
+        var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<AzureCosmosDBMongoDBVectorStoreRecordCollection<TestRecord>>(collection);
+
+        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        Assert.NotNull(vectorizedSearch);
+        Assert.IsType<AzureCosmosDBMongoDBVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestRecord
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = string.Empty;
     }
 }

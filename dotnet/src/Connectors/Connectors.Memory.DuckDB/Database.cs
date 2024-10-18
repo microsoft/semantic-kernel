@@ -118,7 +118,7 @@ internal sealed class Database(int? vectorSize)
 
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-            SELECT key, metadata, timestamp, embedding, (embedding <=> {embeddingArrayString}) as score FROM {TableName}
+            SELECT key, metadata, timestamp, embedding, list_cosine_similarity(embedding, {embeddingArrayString}) as score FROM {TableName}
             WHERE collection=${nameof(collectionName)} AND len(embedding) > 0 AND score >= {minRelevanceScore.ToString("F12", CultureInfo.InvariantCulture)}
             ORDER BY score DESC
             LIMIT ${nameof(limit)};";

@@ -95,7 +95,7 @@ internal static class ChatHistoryReducerExtensions
         if (thresholdIndex <= offsetCount)
         {
             // History is too short to truncate
-            return 0;
+            return -1;
         }
 
         // Compute the index of truncation target
@@ -162,5 +162,22 @@ internal static class ChatHistoryReducerExtensions
         history.AddRange(reduced);
 
         return true;
+    }
+
+    /// <summary>
+    /// Reduce the history using the provided reducer without mutating the source history.
+    /// </summary>
+    /// <param name="history">The source history</param>
+    /// <param name="reducer">The target reducer</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task<IReadOnlyList<ChatMessageContent>> ReduceAsync(this IReadOnlyList<ChatMessageContent> history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
+    {
+        if (reducer != null)
+        {
+            IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
+            history = reducedHistory?.ToArray() ?? history;
+        }
+
+        return history;
     }
 }

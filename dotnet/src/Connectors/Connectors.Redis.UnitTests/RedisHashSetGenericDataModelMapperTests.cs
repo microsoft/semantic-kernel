@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using StackExchange.Redis;
 using Xunit;
 
@@ -20,7 +20,7 @@ public class RedisHashSetGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange.
-        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -84,7 +84,7 @@ public class RedisHashSetGenericDataModelMapperTests
             },
         };
 
-        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -108,7 +108,7 @@ public class RedisHashSetGenericDataModelMapperTests
         // Arrange.
         var hashSet = RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet();
 
-        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 
         // Act.
         var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), new() { IncludeVectors = true });
@@ -156,7 +156,7 @@ public class RedisHashSetGenericDataModelMapperTests
             new("FloatVector", RedisValue.Null),
         };
 
-        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), new() { IncludeVectors = true });
@@ -172,7 +172,7 @@ public class RedisHashSetGenericDataModelMapperTests
     public void MapFromDataToStorageModelSkipsMissingProperties()
     {
         // Arrange.
-        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data = { },
@@ -193,7 +193,7 @@ public class RedisHashSetGenericDataModelMapperTests
         // Arrange.
         var hashSet = Array.Empty<HashEntry>();
 
-        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
+        var sut = new RedisHashSetGenericDataModelMapper(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition.Properties);
 
         // Act.
         var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), new() { IncludeVectors = true });
