@@ -50,10 +50,20 @@ public interface IPostgresVectorStoreCollectionSqlBuilder
     /// </summary>
     /// <param name="schema">The schema of the table.</param>
     /// <param name="tableName">The name of the table.</param>
-    /// <param name="row">The row to upsert.</param>
     /// <param name="keyColumn">The key column of the table.</param>
+    /// <param name="row">The row to upsert.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildUpsertCommand(string schema, string tableName, Dictionary<string, object?> row, string keyColumn);
+    PostgresSqlCommandInfo BuildUpsertCommand(string schema, string tableName, string keyColumn, Dictionary<string, object?> row);
+
+    /// <summary>
+    /// Builds a SQL command to upsert a batch of records in the Postgres vector store.
+    /// </summary>
+    /// <param name="schema">The schema of the table.</param>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="keyColumn">The key column of the table.</param>
+    /// <param name="rows">The rows to upsert.</param>
+    /// <returns>The built SQL command info.</returns>
+    PostgresSqlCommandInfo BuildUpsertBatchCommand(string schema, string tableName, string keyColumn, List<Dictionary<string, object?>> rows);
 
     /// <summary>
     /// Builds a SQL command to get a record from the Postgres vector store.
@@ -65,4 +75,35 @@ public interface IPostgresVectorStoreCollectionSqlBuilder
     /// <param name="includeVectors">Specifies whether to include vectors in the record.</param>
     /// <returns>The built SQL command info.</returns>
     PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, VectorStoreRecordDefinition recordDefinition, TKey key, bool includeVectors = false) where TKey : notnull;
+
+    /// <summary>
+    /// Builds a SQL command to get a batch of records from the Postgres vector store.
+    /// </summary>
+    /// <param name="schema">The schema of the table.</param>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="recordDefinition">The record definition of the table.</param>
+    /// <param name="keys">The keys of the records to get.</param>
+    /// <param name="includeVectors">Specifies whether to include vectors in the records.</param>
+    /// <returns>The built SQL command info.</returns>
+    PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, VectorStoreRecordDefinition recordDefinition, List<TKey> keys, bool includeVectors = false) where TKey : notnull;
+
+    /// <summary>
+    /// Builds a SQL command to delete a record from the Postgres vector store.
+    /// </summary>
+    /// <param name="schema">The schema of the table.</param>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="keyColumn">The key column of the table.</param>
+    /// <param name="key">The key of the record to delete.</param>
+    /// <returns>The built SQL command info.</returns>
+    PostgresSqlCommandInfo BuildDeleteCommand<TKey>(string schema, string tableName, string keyColumn, TKey key);
+
+    /// <summary>
+    /// Builds a SQL command to delete a batch of records from the Postgres vector store.
+    /// </summary>
+    /// <param name="schema">The schema of the table.</param>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="keyColumn">The key column of the table.</param>
+    /// <param name="keys">The keys of the records to delete.</param>
+    /// <returns>The built SQL command info.</returns>
+    PostgresSqlCommandInfo BuildDeleteBatchCommand<TKey>(string schema, string tableName, string keyColumn, List<TKey> keys);
 }

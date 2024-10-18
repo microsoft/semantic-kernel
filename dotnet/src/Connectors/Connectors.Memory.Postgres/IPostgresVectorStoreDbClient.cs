@@ -54,6 +54,16 @@ public interface IPostgresVectorStoreDbClient
     Task UpsertAsync(string tableName, Dictionary<string, object?> row, string keyColumn, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Upsert multiple entries into a table.
+    /// </summary>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
+    /// <param name="rows">The rows to upsert into the table.</param>
+    /// <param name="keyColumn">The key column of the table.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    Task UpsertBatchAsync(string tableName, IEnumerable<Dictionary<string, object?>> rows, string keyColumn, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Get a entry by its key.
     /// </summary>
     /// <param name="tableName">The name assigned to a table of entries.</param>
@@ -64,6 +74,38 @@ public interface IPostgresVectorStoreDbClient
     /// <returns>The row if the key is found, otherwise null.</returns>
     Task<Dictionary<string, object?>?> GetAsync<TKey>(string tableName, TKey key, VectorStoreRecordDefinition recordDefinition, bool includeVectors = false, CancellationToken cancellationToken = default)
         where TKey : notnull;
+
+    /// <summary>
+    /// Get multiple entries by their keys.
+    /// </summary>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
+    /// <param name="keys">The keys of the entries to get.</param>
+    /// <param name="recordDefinition">The record definition of the table.</param>
+    /// <param name="includeVectors">If true, the vectors will be included in the entries.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The rows that match the given keys.</returns>
+    IAsyncEnumerable<Dictionary<string, object?>> GetBatchAsync<TKey>(string tableName, IEnumerable<TKey> keys, VectorStoreRecordDefinition recordDefinition, bool includeVectors = false, CancellationToken cancellationToken = default)
+        where TKey : notnull;
+
+    /// <summary>
+    /// Delete a entry by its key.
+    /// </summary>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
+    /// <param name="keyColumn">The name of the key column.</param>
+    /// <param name="key">The key of the entry to delete.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    Task DeleteAsync<TKey>(string tableName, string keyColumn, TKey key, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete multiple entries by their keys.
+    /// </summary>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
+    /// <param name="keyColumn">The name of the key column.</param>
+    /// <param name="keys">The keys of the entries to delete.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    Task DeleteBatchAsync<TKey>(string tableName, string keyColumn, IEnumerable<TKey> keys, CancellationToken cancellationToken = default);
 
     // /// <summary>
     // /// Gets the nearest matches to the <see cref="Vector"/>.

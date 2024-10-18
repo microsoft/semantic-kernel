@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.VectorData;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -88,14 +89,14 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
         createTableCommand.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : "")}{schema}.\"{tableName}\" (");
 
         // Add the key column
-        var keyPgTypeInfo = GetPostgresTypeName(keyProperty.PropertyType);
+        var keyPgTypeInfo = PostgresVectorStoreRecordPropertyMapping.GetPostgresTypeName(keyProperty.PropertyType);
         createTableCommand.AppendLine($"    \"{keyName}\" {keyPgTypeInfo.PgType} {(keyPgTypeInfo.IsNullable ? "" : "NOT NULL")},");
 
         // Add the data columns
         foreach (var dataProperty in dataProperties)
         {
             string columnName = dataProperty.StoragePropertyName ?? dataProperty.DataModelPropertyName;
-            var dataPgTypeInfo = GetPostgresTypeName(dataProperty.PropertyType);
+            var dataPgTypeInfo = PostgresVectorStoreRecordPropertyMapping.GetPostgresTypeName(dataProperty.PropertyType);
             createTableCommand.AppendLine($"    \"{columnName}\" {dataPgTypeInfo.PgType} {(dataPgTypeInfo.IsNullable ? "" : "NOT NULL")},");
         }
 
@@ -103,7 +104,7 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
         foreach (var vectorProperty in vectorProperties)
         {
             string columnName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
-            var vectorPgTypeInfo = GetPgVectorTypeName(vectorProperty);
+            var vectorPgTypeInfo = PostgresVectorStoreRecordPropertyMapping.GetPgVectorTypeName(vectorProperty);
             createTableCommand.AppendLine($"    \"{columnName}\" {vectorPgTypeInfo.PgType} {(vectorPgTypeInfo.IsNullable ? "" : "NOT NULL")},");
         }
 
@@ -123,7 +124,7 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
     }
 
     /// <inheritdoc/>
-    public PostgresSqlCommandInfo BuildUpsertCommand(string schema, string tableName, Dictionary<string, object?> row, string keyColumn)
+    public PostgresSqlCommandInfo BuildUpsertCommand(string schema, string tableName, string keyColumn, Dictionary<string, object?> row)
     {
         var columns = row.Keys.ToList();
         var columnNames = string.Join(", ", columns.Select(k => $"\"{k}\""));
@@ -144,72 +145,47 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
         };
     }
 
-    /// <summary>
-    /// Maps a .NET type to a PostgreSQL type name.
-    /// </summary>
-    /// <param name="propertyType">The .NET type.</param>
-    /// <returns>Tuple of the the PostgreSQL type name and whether it can be NULL</returns>
-    private static (string PgType, bool IsNullable) GetPostgresTypeName(Type propertyType)
+    /// <inheritdoc />
+    public PostgresSqlCommandInfo BuildUpsertBatchCommand(string schema, string tableName, string keyColumn, List<Dictionary<string, object?>> rows)
     {
-        var (pgType, isNullable) = propertyType switch
+        if (rows == null || rows.Count == 0)
         {
-            Type t when t == typeof(int) => ("INTEGER", false),
-            Type t when t == typeof(string) => ("TEXT", true),
-            Type t when t == typeof(bool) => ("BOOLEAN", false),
-            Type t when t == typeof(DateTime) => ("TIMESTAMP", false),
-            Type t when t == typeof(double) => ("DOUBLE PRECISION", false),
-            Type t when t == typeof(decimal) => ("NUMERIC", false),
-            Type t when t == typeof(float) => ("REAL", false),
-            Type t when t == typeof(byte[]) => ("BYTEA", true),
-            Type t when t == typeof(Guid) => ("UUID", false),
-            Type t when t == typeof(short) => ("SMALLINT", false),
-            Type t when t == typeof(long) => ("BIGINT", false),
-            _ => (null, false)
-        };
-
-        if (pgType != null)
-        {
-            return (pgType, isNullable);
+            throw new ArgumentException("Rows cannot be null or empty", nameof(rows));
         }
 
-        // Handle lists and arrays (PostgreSQL supports array types for most types)
-        if (propertyType.IsArray)
-        {
-            Type elementType = propertyType.GetElementType() ?? throw new ArgumentException("Array type must have an element type.");
-            var underlyingPgType = GetPostgresTypeName(elementType);
-            return (underlyingPgType.PgType + "[]", true);
-        }
-        else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
-        {
-            Type elementType = propertyType.GetGenericArguments()[0];
-            var underlyingPgType = GetPostgresTypeName(elementType);
-            return (underlyingPgType.PgType + "[]", true);
-        }
+        var firstRow = rows[0];
+        var columns = firstRow.Keys.ToList();
 
-        // Handle nullable types (e.g. Nullable<int>)
-        if (Nullable.GetUnderlyingType(propertyType) != null)
-        {
-            Type underlyingType = Nullable.GetUnderlyingType(propertyType) ?? throw new ArgumentException("Nullable type must have an underlying type.");
-            var underlyingPgType = GetPostgresTypeName(underlyingType);
-            return (underlyingPgType.PgType, true);
-        }
+        // Generate column names and parameter placeholders
+        var columnNames = string.Join(", ", columns.Select(c => $"\"{c}\""));
+        var valuePlaceholders = string.Join(", ", columns.Select((c, i) => $"${i + 1}"));
+        var valuesRows = string.Join(", ", rows.Select((row, rowIndex) => $"({string.Join(", ", columns.Select((c, colIndex) => $"${rowIndex * columns.Count + colIndex + 1}"))})"));
 
-        throw new NotSupportedException($"Type {propertyType.Name} is not supported by this store.");
-    }
+        // Generate the update set clause
+        var updateSetClause = string.Join(", ", columns.Where(c => c != keyColumn).Select(c => $"\"{c}\" = EXCLUDED.\"{c}\""));
 
-    /// <summary>
-    /// Gets the PostgreSQL vector type name based on the dimensions of the vector property.
-    /// </summary>
-    /// <param name="vectorProperty">The vector property.</param>
-    /// <returns>The PostgreSQL vector type name.</returns>
-    private static (string PgType, bool IsNullable) GetPgVectorTypeName(VectorStoreRecordVectorProperty vectorProperty)
-    {
-        if (vectorProperty.Dimensions <= 0)
+        // Generate the SQL command
+        var commandText = $@"
+            INSERT INTO {schema}.""{tableName}"" ({columnNames})
+            VALUES {valuesRows}
+        ON CONFLICT(""{keyColumn}"")
+            DO UPDATE SET {updateSetClause}; ";
+
+        // Generate the parameters
+        var parameters = new List<NpgsqlParameter>();
+        for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
         {
-            throw new ArgumentException("Vector property must have a positive number of dimensions.");
+            var row = rows[rowIndex];
+            foreach (var column in columns)
+            {
+                parameters.Add(new NpgsqlParameter()
+                {
+                    Value = row[column] ?? DBNull.Value
+                });
+            }
         }
 
-        return ($"VECTOR({vectorProperty.Dimensions})", Nullable.GetUnderlyingType(vectorProperty.PropertyType) != null);
+        return new PostgresSqlCommandInfo(commandText, parameters);
     }
 
     /// <inheritdoc />
@@ -253,5 +229,78 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
                 WHERE ""{keyColumn}"" = ${1};",
             parameters: [new NpgsqlParameter() { Value = key }]
         );
+    }
+
+    /// <inheritdoc />
+    public PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, VectorStoreRecordDefinition recordDefinition, List<TKey> keys, bool includeVectors = false)
+        where TKey : notnull
+    {
+        NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
+
+        if (keys == null || keys.Count == 0)
+        {
+            throw new ArgumentException("Keys cannot be null or empty", nameof(keys));
+        }
+
+        var keyProperty = recordDefinition.Properties.OfType<VectorStoreRecordKeyProperty>().FirstOrDefault() ?? throw new ArgumentException("Record definition must contain a key property", nameof(recordDefinition));
+        var keyColumn = keyProperty.StoragePropertyName ?? keyProperty.DataModelPropertyName;
+
+        // Generate the column names
+        var columns = recordDefinition.Properties
+            .Where(p => includeVectors || p is not VectorStoreRecordVectorProperty)
+            .Select(p => p.StoragePropertyName ?? p.DataModelPropertyName)
+            .ToList();
+
+        var columnNames = string.Join(", ", columns.Select(c => $"\"{c}\""));
+        var keyParams = string.Join(", ", keys.Select((k, i) => $"${i + 1}"));
+
+        // Generate the SQL command
+        var commandText = $@"
+            SELECT {columnNames}
+            FROM {schema}.""{tableName}""
+            WHERE ""{keyColumn}"" = ANY($1);";
+
+        return new PostgresSqlCommandInfo(commandText)
+        {
+            Parameters = [new NpgsqlParameter() { Value = keys.ToArray(), NpgsqlDbType = NpgsqlDbType.Array | keyType.Value }]
+        };
+    }
+
+    /// <inheritdoc />
+    public PostgresSqlCommandInfo BuildDeleteCommand<TKey>(string schema, string tableName, string keyColumn, TKey key)
+    {
+        return new PostgresSqlCommandInfo(
+            commandText: $@"
+                DELETE FROM {schema}.""{tableName}""
+                WHERE ""{keyColumn}"" = ${1};",
+            parameters: [new NpgsqlParameter() { Value = key }]
+        );
+    }
+
+    /// <inheritdoc />
+    public PostgresSqlCommandInfo BuildDeleteBatchCommand<TKey>(string schema, string tableName, string keyColumn, List<TKey> keys)
+    {
+        NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
+        if (keys == null || keys.Count == 0)
+        {
+            throw new ArgumentException("Keys cannot be null or empty", nameof(keys));
+        }
+
+        for (int i = 0; i < keys.Count; i++)
+        {
+            if (keys[i] == null)
+            {
+                throw new ArgumentException("Keys cannot contain null values", nameof(keys));
+            }
+        }
+
+        var commandText = $@"
+            DELETE FROM {schema}.""{tableName}""
+            WHERE ""{keyColumn}"" = ANY($1);";
+
+        return new PostgresSqlCommandInfo(commandText)
+        {
+            Parameters = [new NpgsqlParameter() { Value = keys, NpgsqlDbType = NpgsqlDbType.Array | keyType.Value }]
+        };
     }
 }

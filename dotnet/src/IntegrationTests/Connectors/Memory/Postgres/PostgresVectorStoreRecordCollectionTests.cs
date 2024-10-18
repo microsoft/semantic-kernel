@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -91,5 +92,73 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             // Cleanup
             await sut.DeleteCollectionAsync();
         }
+    }
+
+    [Fact]
+    public async Task ItCanGetAndDeleteRecordAsync()
+    {
+        // Arrange
+        const int HotelId = 5;
+        var sut = fixture.GetCollection<int, PostgresHotel>("DeleteRecord");
+
+        await sut.CreateCollectionAsync();
+
+        try
+        {
+            var record = new PostgresHotel { HotelId = HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
+
+            var upsertResult = await sut.UpsertAsync(record);
+            var getResult = await sut.GetAsync(HotelId);
+
+            Assert.Equal(HotelId, upsertResult);
+            Assert.NotNull(getResult);
+
+            // Act
+            await sut.DeleteAsync(HotelId);
+
+            getResult = await sut.GetAsync(HotelId);
+
+            // Assert
+            Assert.Null(getResult);
+        }
+        finally
+        {
+            // Cleanup
+            await sut.DeleteCollectionAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ItCanGetUpsertDeleteBatchAsync()
+    {
+        // Arrange
+        const int HotelId1 = 1;
+        const int HotelId2 = 2;
+        const int HotelId3 = 3;
+
+        var sut = fixture.GetCollection<int, PostgresHotel>("GetUpsertDeleteBatch");
+
+        await sut.CreateCollectionAsync();
+
+        var record1 = new PostgresHotel { HotelId = HotelId1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
+        var record2 = new PostgresHotel { HotelId = HotelId2, HotelName = "Hotel 2", HotelCode = 1, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag3"] };
+        var record3 = new PostgresHotel { HotelId = HotelId3, HotelName = "Hotel 3", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag4"] };
+
+        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
+        var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+
+        Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
+
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId2));
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId3));
+
+        // Act
+        await sut.DeleteBatchAsync([HotelId1, HotelId2, HotelId3]);
+
+        getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+
+        // Assert
+        Assert.Empty(getResults);
     }
 }

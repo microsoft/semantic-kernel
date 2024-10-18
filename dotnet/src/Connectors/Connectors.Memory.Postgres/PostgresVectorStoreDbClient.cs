@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,7 +102,20 @@ public class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string sch
 
         await using (connection)
         {
-            var commandInfo = this._sqlBuilder.BuildUpsertCommand(this._schema, tableName, row, keyColumn);
+            var commandInfo = this._sqlBuilder.BuildUpsertCommand(this._schema, tableName, keyColumn, row);
+            using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
+            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UpsertBatchAsync(string tableName, IEnumerable<Dictionary<string, object?>> rows, string keyColumn, CancellationToken cancellationToken = default)
+    {
+        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        await using (connection)
+        {
+            var commandInfo = this._sqlBuilder.BuildUpsertBatchCommand(this._schema, tableName, keyColumn, rows.ToList());
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -123,6 +137,50 @@ public class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string sch
             }
 
             return null;
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<Dictionary<string, object?>> GetBatchAsync<TKey>(string tableName, IEnumerable<TKey> keys, VectorStoreRecordDefinition recordDefinition, bool includeVectors = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TKey : notnull
+    {
+        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        await using (connection)
+        {
+            var commandInfo = this._sqlBuilder.BuildGetBatchCommand(this._schema, tableName, recordDefinition, keys.ToList(), includeVectors);
+            using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
+            using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                yield return this.GetRecord(dataReader, recordDefinition.Properties, includeVectors);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteAsync<TKey>(string tableName, string keyColumn, TKey key, CancellationToken cancellationToken = default)
+    {
+        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        await using (connection)
+        {
+            var commandInfo = this._sqlBuilder.BuildDeleteCommand(this._schema, tableName, keyColumn, key);
+            using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
+            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteBatchAsync<TKey>(string tableName, string keyColumn, IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    {
+        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        await using (connection)
+        {
+            var commandInfo = this._sqlBuilder.BuildDeleteBatchCommand(this._schema, tableName, keyColumn, keys.ToList());
+            using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
+            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 

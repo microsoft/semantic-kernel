@@ -85,7 +85,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         var keyColumn = "id";
 
-        var cmdInfo = builder.BuildUpsertCommand("public", "testcollection", row, keyColumn);
+        var cmdInfo = builder.BuildUpsertCommand("public", "testcollection", keyColumn, row);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("INSERT INTO public.\"testcollection\" (", cmdInfo.CommandText);
@@ -138,6 +138,45 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         // Act
         var cmdInfo = builder.BuildGetCommand("public", "testcollection", recordDefinition, key, includeVectors: true);
+
+        // Assert
+        Assert.Contains("SELECT", cmdInfo.CommandText);
+
+        // Output
+        this._output.WriteLine(cmdInfo.CommandText);
+    }
+
+    [Fact]
+    public void TestBuildGetBatchCommand()
+    {
+        // Arrange
+        var builder = new PostgresVectorStoreCollectionSqlBuilder();
+
+        var recordDefinition = new VectorStoreRecordDefinition()
+        {
+            Properties = [
+                new VectorStoreRecordKeyProperty("id", typeof(long)),
+                new VectorStoreRecordDataProperty("name", typeof(string)),
+                new VectorStoreRecordDataProperty("code", typeof(int)),
+                new VectorStoreRecordDataProperty("rating", typeof(float?)),
+                new VectorStoreRecordDataProperty("description", typeof(string)),
+                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
+                new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
+                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>)) {
+                    Dimensions = 10,
+                    IndexKind = "hnsw",
+                },
+                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?)) {
+                    Dimensions = 10,
+                    IndexKind = "hnsw",
+                }
+            ]
+        };
+
+        var keys = new List<long> { 123, 456, 789 };
+
+        // Act
+        var cmdInfo = builder.BuildGetBatchCommand("public", "testcollection", recordDefinition, keys, includeVectors: true);
 
         // Assert
         Assert.Contains("SELECT", cmdInfo.CommandText);
