@@ -30,7 +30,7 @@ public sealed class OllamaAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         this._chatCompletionService = this._kernel.GetRequiredService<IChatCompletionService>();
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -58,7 +58,7 @@ public sealed class OllamaAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyAsync()
     {
         // Arrange
@@ -93,7 +93,7 @@ public sealed class OllamaAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Contains("GetCurrentDate", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyAsync()
     {
         // Arrange
@@ -129,7 +129,7 @@ public sealed class OllamaAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Equal("GetCurrentDate", functionCall.FunctionName);
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingShouldThrowAsync()
     {
         // Arrange
@@ -160,7 +160,7 @@ public sealed class OllamaAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         });
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionAutomaticallyForStreamingShouldThrowAsync()
     {
         // Arrange
@@ -198,7 +198,7 @@ public sealed class OllamaAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         });
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionManuallyForStreamingShouldThrowAsync()
     {
         // Arrange
@@ -232,7 +232,7 @@ public sealed class OllamaAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         });
     }
 
-    [Fact]
+    [Fact(Skip = "For manual verification only")]
     public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyAsync()
     {
         // Arrange
