@@ -480,6 +480,124 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Contains("\"tool_call_id\":\"2\"", toolMessage2Content);
     }
 
+    [Fact]
+    public async Task FunctionResultsCanBeProvidedToLLMAsOneResultPerChatMessageAsync()
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt"))
+        };
+        this._multiMessageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        var sut = new OllamaChatCompletionService("any", httpClient: this._httpClient);
+
+        ChatHistory chatHistory =
+        [
+            new ChatMessageContent(AuthorRole.Tool,
+            [
+                new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
+            ]),
+            new ChatMessageContent(AuthorRole.Tool,
+            [
+                new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
+            ])
+        ];
+
+        var settings = new OllamaPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, settings, new());
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._multiMessageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(2, messages.GetArrayLength());
+
+        var toolMessage1 = messages[0];
+        var toolMessage2 = messages[1];
+
+        Assert.Equal("tool", toolMessage1.GetProperty("role").GetString());
+        Assert.Equal("tool", toolMessage2.GetProperty("role").GetString());
+
+        var toolMessage1Content = toolMessage1.GetProperty("content").GetString();
+        var toolMessage2Content = toolMessage2.GetProperty("content").GetString();
+
+        Assert.Contains("\"result\":\"rainy\"", toolMessage1Content);
+        Assert.Contains("\"tool_call_id\":\"1\"", toolMessage1Content);
+
+        Assert.Contains("\"result\":\"sunny\"", toolMessage2Content);
+        Assert.Contains("\"tool_call_id\":\"2\"", toolMessage2Content);
+    }
+
+    [Fact]
+    public async Task FunctionCallsShouldBePropagatedToCallersViaChatMessageItemsOfTypeFunctionCallContentAsync()
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_multiple_function_calls_test_response.txt"))
+        };
+        using var assistantResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt"))
+        };
+        this._multiMessageHandlerStub.ResponsesToReturn = [responseMessage, assistantResponseMessage];
+
+        var sut = new OllamaChatCompletionService("any", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var settings = new OllamaPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, new());
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(5, result.Items.Count);
+
+        var getCurrentWeatherFunctionCall = result.Items[0] as FunctionCallContent;
+        Assert.NotNull(getCurrentWeatherFunctionCall);
+        Assert.Equal("GetCurrentWeather", getCurrentWeatherFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", getCurrentWeatherFunctionCall.PluginName);
+        Assert.NotNull(getCurrentWeatherFunctionCall.Id);
+        Assert.Equal("Boston, MA", getCurrentWeatherFunctionCall.Arguments?["location"]?.ToString());
+
+        var functionWithExceptionFunctionCall = result.Items[1] as FunctionCallContent;
+        Assert.NotNull(functionWithExceptionFunctionCall);
+        Assert.Equal("FunctionWithException", functionWithExceptionFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", functionWithExceptionFunctionCall.PluginName);
+        Assert.NotNull(functionWithExceptionFunctionCall.Id);
+        Assert.Equal("value", functionWithExceptionFunctionCall.Arguments?["argument"]?.ToString());
+
+        var nonExistentFunctionCall = result.Items[2] as FunctionCallContent;
+        Assert.NotNull(nonExistentFunctionCall);
+        Assert.Equal("NonExistentFunction", nonExistentFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", nonExistentFunctionCall.PluginName);
+        Assert.NotNull(nonExistentFunctionCall.Id);
+        Assert.Equal("value", nonExistentFunctionCall.Arguments?["argument"]?.ToString());
+
+        var nullArgumentsFunctionCall = result.Items[3] as FunctionCallContent;
+        Assert.NotNull(nullArgumentsFunctionCall);
+        Assert.Equal("InvalidArguments", nullArgumentsFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", nullArgumentsFunctionCall.PluginName);
+        Assert.NotNull(nullArgumentsFunctionCall.Id);
+        Assert.Null(nullArgumentsFunctionCall.Arguments);
+
+        var intArgumentsFunctionCall = result.Items[4] as FunctionCallContent;
+        Assert.NotNull(intArgumentsFunctionCall);
+        Assert.Equal("IntArguments", intArgumentsFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", intArgumentsFunctionCall.PluginName);
+        Assert.NotNull(intArgumentsFunctionCall.Id);
+        Assert.Equal("36", intArgumentsFunctionCall.Arguments?["age"]?.ToString());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

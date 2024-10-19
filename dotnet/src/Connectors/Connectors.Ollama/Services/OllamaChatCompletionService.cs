@@ -230,8 +230,9 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                 activity?.SetCompletionResponse([chatMessageContent], singleDoneChunk.PromptEvalCount, singleDoneChunk.EvalCount);
             }
 
+            var toolCallsCount = singleDoneChunk!.Message.ToolCalls?.Count() ?? 0;
             // If we don't want to attempt to invoke any functions or there is nothing to call, just return the result.
-            if (!toolCallingConfig.AutoInvoke || !(singleDoneChunk!.Message.ToolCalls?.Any() ?? false))
+            if (!toolCallingConfig.AutoInvoke || toolCallsCount == 0)
             {
                 return [chatMessageContent];
             }
@@ -257,12 +258,17 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     {
         var message = new ChatMessageContent(
             role: GetAuthorRole(completion.Message.Role)!.Value,
-            content: completion.Message.Content)
+            items: new ChatMessageContentItemCollection())
         {
             ModelId = completion.Model,
             InnerContent = completion,
             Metadata = GetChatCompletionMetadata(completion)
         };
+
+        if (!string.IsNullOrEmpty(completion.Message.Content))
+        {
+            message.Content = completion.Message.Content ?? string.Empty;
+        }
 
         message.Items.AddRange(this.GetFunctionCallContents(completion.Message.ToolCalls));
 
