@@ -8,7 +8,7 @@ $coverageBelowThreshold = $false
 
 $nonExperimentalAssemblies = [System.Collections.Generic.HashSet[string]]::new()
 
-$nonExperimentalAssemblies.UnionWith(@(
+$assembliesCollection = @(
     'Microsoft.SemanticKernel.Abstractions'
     'Microsoft.SemanticKernel.Core'
     'Microsoft.SemanticKernel.PromptTemplates.Handlebars'
@@ -18,7 +18,11 @@ $nonExperimentalAssemblies.UnionWith(@(
     'Microsoft.SemanticKernel.Agents.Abstractions'
     'Microsoft.SemanticKernel.Agents.Core'
     'Microsoft.SemanticKernel.Agents.OpenAI'
-))
+)
+
+foreach ($assembly in $assembliesCollection) {
+    $nonExperimentalAssemblies.Add($assembly)
+}
 
 function Get-FormattedValue {
     param (
