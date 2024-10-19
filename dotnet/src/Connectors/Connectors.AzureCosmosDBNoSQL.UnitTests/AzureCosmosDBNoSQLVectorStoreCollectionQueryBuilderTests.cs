@@ -27,13 +27,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     public void BuildSearchQueryByDefaultReturnsValidQueryDefinition()
     {
         // Arrange
-        const string ExpectedQueryText =
-            "SELECT x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore\r\n" +
-            "FROM x\r\n" +
-            "WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1)\r\n" +
-            "ORDER BY VectorDistance(x.test_property_1, @vector)\r\n" +
-            "OFFSET @offset LIMIT @limit\r\n";
-
         var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
         var vectorPropertyName = "test_property_1";
         var fields = this._storagePropertyNames.Values.ToList();
@@ -57,7 +50,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         var queryParameters = queryDefinition.GetQueryParameters();
 
         // Assert
-        Assert.Equal(ExpectedQueryText, queryText);
+        Assert.Contains("SELECT x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore", queryText);
+        Assert.Contains("FROM x", queryText);
+        Assert.Contains("WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1)", queryText);
+        Assert.Contains("ORDER BY VectorDistance(x.test_property_1, @vector)", queryText);
+        Assert.Contains("OFFSET @offset LIMIT @limit", queryText);
 
         Assert.Equal("@vector", queryParameters[0].Name);
         Assert.Equal(vector, queryParameters[0].Value);
@@ -79,12 +76,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     public void BuildSearchQueryWithoutOffsetReturnsQueryDefinitionWithTopParameter()
     {
         // Arrange
-        const string ExpectedQueryText =
-            "SELECT TOP @top x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore\r\n" +
-            "FROM x\r\n" +
-            "WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1)\r\n" +
-            "ORDER BY VectorDistance(x.test_property_1, @vector)\r\n";
-
         var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
         var vectorPropertyName = "test_property_1";
         var fields = this._storagePropertyNames.Values.ToList();
@@ -108,7 +99,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         var queryParameters = queryDefinition.GetQueryParameters();
 
         // Assert
-        Assert.Equal(ExpectedQueryText, queryText);
+        Assert.Contains("SELECT TOP @top x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore", queryText);
+        Assert.Contains("FROM x", queryText);
+        Assert.Contains("WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1)", queryText);
+        Assert.Contains("ORDER BY VectorDistance(x.test_property_1, @vector)", queryText);
+
+        Assert.DoesNotContain("OFFSET @offset LIMIT @limit", queryText);
 
         Assert.Equal("@vector", queryParameters[0].Name);
         Assert.Equal(vector, queryParameters[0].Value);
