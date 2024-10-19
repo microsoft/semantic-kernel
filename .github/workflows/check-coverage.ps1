@@ -68,7 +68,7 @@ foreach ($assembly in $jsonContent.coverage.assemblies) {
 
 $sortedTable = $assemblyTableData | Sort-Object {
     $nonExperimentalAssemblies -contains $_.'Assembly Name'
-}
+} -Descending
 
 $sortedTable | Format-Table -AutoSize
 
