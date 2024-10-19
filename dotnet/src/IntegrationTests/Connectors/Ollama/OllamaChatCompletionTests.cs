@@ -17,7 +17,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Ollama;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposable
+public sealed class OllamaChatCompletionTests(ITestOutputHelper output) : IDisposable
 {
     private const string InputParameterName = "input";
     private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
@@ -25,7 +25,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<OllamaCompletionTests>()
+        .AddUserSecrets<OllamaChatCompletionTests>()
         .Build();
 
     [Theory(Skip = "For manual verification only")]
