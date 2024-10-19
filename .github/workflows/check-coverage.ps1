@@ -6,7 +6,9 @@ param (
 $jsonContent = Get-Content $JsonReportPath -Raw | ConvertFrom-Json
 $coverageBelowThreshold = $false
 
-$nonExperimentalAssemblies = [System.Collections.Generic.HashSet[string]]::new(@(
+$nonExperimentalAssemblies = [System.Collections.Generic.HashSet[string]]::new()
+
+$nonExperimentalAssemblies.UnionWith(@(
     'Microsoft.SemanticKernel.Abstractions'
     'Microsoft.SemanticKernel.Core'
     'Microsoft.SemanticKernel.PromptTemplates.Handlebars'
