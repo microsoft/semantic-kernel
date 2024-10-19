@@ -72,8 +72,8 @@ foreach ($assembly in $jsonContent.coverage.assemblies) {
 $sortedTable = $assemblyTableData | Sort-Object {
     $isNonExperimentalAssembly = $nonExperimentalAssemblies -contains $_.'Assembly Name'
     
-    $lineCoverageNumeric = [float]($_.'Line' -replace '%.*', '')
-    $branchCoverageNumeric = [float]($_.'Branch' -replace '%.*', '')
+    $lineCoverageNumeric = [float]($_.'Line' -replace '%|[^0-9\.]', '')
+    $branchCoverageNumeric = [float]($_.'Branch' -replace '%|[^0-9\.]', '')
 
     $isNonExperimentalAssembly, $lineCoverageNumeric, $branchCoverageNumeric
 } -Descending
