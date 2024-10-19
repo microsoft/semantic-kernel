@@ -227,7 +227,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                 }
 
                 chatMessageContent = this.CreateChatMessageContent(singleDoneChunk!);
-                activity?.SetCompletionResponse([chatMessageContent], singleDoneChunk.PromptEvalCount, singleDoneChunk.EvalCount);
+                activity?.SetCompletionResponse([chatMessageContent], singleDoneChunk!.PromptEvalCount, singleDoneChunk.EvalCount);
             }
 
             var toolCallsCount = singleDoneChunk!.Message.ToolCalls?.Count() ?? 0;
