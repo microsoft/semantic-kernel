@@ -450,7 +450,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
             ])
         };
 
-        var settings = new OllamaPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        var settings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Act
         await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
@@ -504,7 +504,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
             ])
         ];
 
-        var settings = new OllamaPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        var settings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Act
         await sut.GetChatMessageContentAsync(chatHistory, settings, new());
@@ -550,10 +550,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
         var sut = new OllamaChatCompletionService("any", httpClient: this._httpClient);
 
-        var chatHistory = new ChatHistory();
+        ChatHistory chatHistory = [];
         chatHistory.AddUserMessage("Fake prompt");
 
-        var settings = new OllamaPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
+        var settings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
 
         // Act
         var result = await sut.GetChatMessageContentAsync(chatHistory, settings, new());
@@ -598,10 +598,185 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Equal("36", intArgumentsFunctionCall.Arguments?["age"]?.ToString());
     }
 
+    [Fact]
+    public async Task GetChatMessageContentsWithFunctionCallAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function1 = KernelFunctionFactory.CreateFromMethod((string location) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetCurrentWeather");
+
+        var function2 = KernelFunctionFactory.CreateFromMethod((string argument) =>
+        {
+            functionCallCount++;
+            throw new ArgumentException("Some exception");
+        }, "FunctionWithException");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]));
+
+        var service = new OllamaChatCompletionService("any", httpClient: this._httpClient);
+        var settings = new OllamaPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/chat_completion_multiple_function_calls_test_response.txt")) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt")) };
+
+        this._multiMessageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(new ChatHistory("System message"), settings, kernel);
+
+        // Assert
+        Assert.True(result.Count > 0);
+        Assert.Equal("This is test completion response", result[0].Content);
+
+        Assert.Equal(2, functionCallCount);
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
+    {
+        // Arrange
+        const int DefaultMaximumAutoInvokeAttempts = 128;
+        const int ModelResponsesCount = 129;
+
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function = KernelFunctionFactory.CreateFromMethod((string testInput) =>
+        {
+            functionCallCount++;
+            return "Some output";
+        }, "TestFunction");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("TestPlugin", [function]));
+
+        var service = new OllamaChatCompletionService("any", httpClient: this._httpClient);
+        var settings = new OllamaPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+
+        var responses = new List<HttpResponseMessage>();
+
+        try
+        {
+            for (var i = 0; i < ModelResponsesCount; i++)
+            {
+                responses.Add(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/chat_completion_function_call_response.txt")) });
+            }
+
+            this._multiMessageHandlerStub.ResponsesToReturn = responses;
+
+            // Act
+            var result = await service.GetChatMessageContentsAsync(new ChatHistory("System message"), settings, kernel);
+
+            // Assert
+            Assert.Equal(DefaultMaximumAutoInvokeAttempts, functionCallCount);
+        }
+        finally
+        {
+            responses.ForEach(r => r.Dispose());
+        }
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentShouldSendMutatedChatHistoryToLLMAsync()
+    {
+        // Arrange
+        static void MutateChatHistory(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        {
+            // Remove the function call messages from the chat history to reduce token count.
+            context.ChatHistory.RemoveRange(1, 2); // Remove the `Date` function call and function result messages.
+
+            next(context);
+        }
+
+        var kernel = new Kernel();
+        kernel.ImportPluginFromFunctions("TestPlugin", [KernelFunctionFactory.CreateFromMethod(() => "rainy", "TestFunction")]);
+        kernel.AutoFunctionInvocationFilters.Add(new AutoFunctionInvocationFilter(MutateChatHistory));
+        this._multiMessageHandlerStub.ResponsesToReturn.Clear();
+        this._defaultResponseMessage.Dispose();
+
+        using var firstResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_function_call_response.txt")) };
+        using var secondResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response.txt")) };
+        this._multiMessageHandlerStub.ResponsesToReturn = [firstResponse, secondResponse];
+
+        var sut = new OllamaChatCompletionService("any", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What time is it?"),
+            new ChatMessageContent(AuthorRole.Assistant, [
+                new FunctionCallContent("Date", "TestPlugin", "2")
+            ]),
+            new ChatMessageContent(AuthorRole.Tool, [
+                new FunctionResultContent("Date",  "TestPlugin", "2", "rainy")
+            ]),
+            new ChatMessageContent(AuthorRole.Assistant, "08/06/2024 00:00:00"),
+            new ChatMessageContent(AuthorRole.User, "Given the current time of day and weather, what is the likely color of the sky in Boston?")
+        };
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, new OllamaPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._multiMessageHandlerStub.RequestContents[1]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(5, messages.GetArrayLength());
+
+        var userFirstPrompt = messages[0];
+        Assert.Equal("user", userFirstPrompt.GetProperty("role").GetString());
+        Assert.Equal("What time is it?", userFirstPrompt.GetProperty("content").ToString());
+
+        var assistantFirstResponse = messages[1];
+        Assert.Equal("assistant", assistantFirstResponse.GetProperty("role").GetString());
+        Assert.Equal("08/06/2024 00:00:00", assistantFirstResponse.GetProperty("content").GetString());
+
+        var userSecondPrompt = messages[2];
+        Assert.Equal("user", userSecondPrompt.GetProperty("role").GetString());
+        Assert.Equal("Given the current time of day and weather, what is the likely color of the sky in Boston?", userSecondPrompt.GetProperty("content").ToString());
+
+        var assistantSecondResponse = messages[3];
+        Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
+        Assert.Equal("TestPlugin-TestFunction", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
+
+        var functionResult = messages[4];
+        Assert.Equal("tool", functionResult.GetProperty("role").GetString());
+        Assert.Contains("\"result\":\"rainy\"", functionResult.GetProperty("content").GetString());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._multiMessageHandlerStub.Dispose();
         this._defaultResponseMessage.Dispose();
+    }
+
+    private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
+    {
+        private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> _callback;
+
+        public AutoFunctionInvocationFilter(Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> callback)
+        {
+            Verify.NotNull(callback, nameof(callback));
+            this._callback = callback;
+        }
+
+        public AutoFunctionInvocationFilter(Action<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>> callback)
+        {
+            Verify.NotNull(callback, nameof(callback));
+            this._callback = (c, n) => { callback(c, n); return Task.CompletedTask; };
+        }
+
+        public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        {
+            await this._callback(context, next);
+        }
     }
 }

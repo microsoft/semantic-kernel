@@ -737,14 +737,12 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                     Function = new Message.Function
                     {
                         Name = FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OllamaChatCompletionService.FunctionNameSeparator),
-                        Arguments = new Dictionary<string, string>(),
+                        Arguments = [],
                     },
                 };
 
                 if (callRequest.Arguments is not null)
                 {
-                    // Adapt to provide the call_id as an argument to the tool call
-                    callRequest.Arguments.Add("call_id", callRequest.Id);
                     foreach (var callArgument in callRequest.Arguments)
                     {
                         toolCallRequest.Function.Arguments.Add(callArgument.Key, callArgument.Value?.ToString() ?? string.Empty);
