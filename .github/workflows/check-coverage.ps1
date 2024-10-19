@@ -61,8 +61,8 @@ foreach ($assembly in $jsonContent.coverage.assemblies) {
 
     $assemblyTableData += [PSCustomObject]@{
         'Assembly Name' = $assemblyName
-        'Line'          = Get-FormattedValue -Coverage $assemblyLineCoverage -UseIcon $isNonExperimentalAssembly
-        'Branch'        = Get-FormattedValue -Coverage $assemblyBranchCoverage -UseIcon $isNonExperimentalAssembly
+        'Line'          = $assemblyLineCoverage
+        'Branch'        = $assemblyBranchCoverage
     }
 }
 
@@ -71,14 +71,21 @@ foreach ($assembly in $jsonContent.coverage.assemblies) {
 # Then experimental assemblies, sorted by line and then by branch coverage.
 $sortedTable = $assemblyTableData | Sort-Object {
     $isNonExperimentalAssembly = $nonExperimentalAssemblies -contains $_.'Assembly Name'
-    
-    $lineCoverageNumeric = [float]($_.'Line' -replace '%|[^0-9\.]', '')
-    $branchCoverageNumeric = [float]($_.'Branch' -replace '%|[^0-9\.]', '')
 
-    $isNonExperimentalAssembly, $lineCoverageNumeric, $branchCoverageNumeric
+    $isNonExperimentalAssembly, $_.'Line', $_.'Branch'
 } -Descending
 
-$sortedTable | Format-Table -AutoSize
+$formattedOutput = $sortedTable | ForEach-Object {
+    $isNonExperimentalAssembly = $nonExperimentalAssemblies -contains $_.'Assembly Name'
+    
+    [PSCustomObject]@{
+        'Assembly Name' = $_.'Assembly Name'
+        'Line'          = Get-FormattedValue -Coverage $_.'Line' -UseIcon $isNonExperimentalAssembly
+        'Branch '       = Get-FormattedValue -Coverage $_.'Branch' -UseIcon $isNonExperimentalAssembly
+    }
+}
+
+$formattedOutput | Format-Table -AutoSize
 
 if ($coverageBelowThreshold) {
     Write-Host "Code coverage is lower than defined threshold: $CoverageThreshold. Stopping the task."
