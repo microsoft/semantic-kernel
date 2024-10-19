@@ -9,7 +9,7 @@ namespace Step03.Processes;
 
 /// <summary>
 /// Sample process that showcases how to create a selecting fan out process
-/// For a visual reference of the FriedFishProcess check this <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#Single_Order_Preparation_Process" >diagram</see>
+/// For a visual reference of the FriedFishProcess check this <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#single-order-preparation-process" >diagram</see>
 /// </summary>
 public static class SingleFoodItemProcess
 {

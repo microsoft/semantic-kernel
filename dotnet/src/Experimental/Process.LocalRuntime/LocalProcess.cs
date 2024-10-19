@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
-    private const string EndProcessId = "END";
+    private const string EndProcessId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
@@ -304,7 +304,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
     /// <summary>
     /// Processes external events that have been sent to the process, translates them to <see cref="LocalMessage"/>s, and enqueues
-    /// them to the provided message channel so that they can be processesed in the next superstep.
+    /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
     private void EnqueueExternalMessages(Queue<LocalMessage> messageChannel)
@@ -324,7 +324,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
     /// <summary>
     /// Processes events emitted by the given step in the last superstep, translates them to <see cref="LocalMessage"/>s, and enqueues
-    /// them to the provided message channel so that they can be processesed in the next superstep.
+    /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     /// <param name="step">The step containing outgoing events to process.</param>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
