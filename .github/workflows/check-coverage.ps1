@@ -66,7 +66,11 @@ foreach ($assembly in $jsonContent.coverage.assemblies) {
     }
 }
 
-$assemblyTableData | Format-Table -AutoSize
+$sortedTable = $assemblyTableData | Sort-Object {
+    $nonExperimentalAssemblies -contains $_.'Assembly Name'
+}
+
+$sortedTable | Format-Table -AutoSize
 
 if ($coverageBelowThreshold) {
     Write-Host "Code coverage is lower than defined threshold: $CoverageThreshold. Stopping the task."
