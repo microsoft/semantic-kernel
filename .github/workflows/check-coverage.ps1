@@ -72,7 +72,10 @@ foreach ($assembly in $jsonContent.coverage.assemblies) {
 $sortedTable = $assemblyTableData | Sort-Object {
     $isNonExperimentalAssembly = $nonExperimentalAssemblies -contains $_.'Assembly Name'
     
-    $isNonExperimentalAssembly, $_.'Line', $_.'Branch'
+    $lineCoverageNumeric = [float]($_.'Line' -replace '%.*', '')
+    $branchCoverageNumeric = [float]($_.'Branch' -replace '%.*', '')
+
+    $isNonExperimentalAssembly, $lineCoverageNumeric, $branchCoverageNumeric
 } -Descending
 
 $sortedTable | Format-Table -AutoSize
