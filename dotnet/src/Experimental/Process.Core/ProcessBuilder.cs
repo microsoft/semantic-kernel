@@ -36,7 +36,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <exception cref="InvalidOperationException"></exception>
     internal override KernelProcessFunctionTarget ResolveFunctionTarget(string? functionName, string? parameterName)
     {
-        Console.WriteLine($"PROCESS BUILDER {this.Name} - RESOLVE FUNCTION TARGET");
         // Try to resolve the function target on each of the registered entry points.
         var targets = new List<KernelProcessFunctionTarget>();
         foreach (var step in this._entrySteps)
@@ -67,7 +66,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <inheritdoc/>
     internal override void LinkTo(string eventId, ProcessStepEdgeBuilder edgeBuilder)
     {
-        Console.WriteLine($"PROCESS BUILDER {this.Name} - LINK TO {eventId}");
         Verify.NotNull(edgeBuilder?.Source, nameof(edgeBuilder.Source));
         Verify.NotNull(edgeBuilder?.Target, nameof(edgeBuilder.Target));
 
@@ -80,7 +78,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <inheritdoc/>
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap() // %%% BEN: WHEN IS THIS CALLED?
     {
-        Console.WriteLine($"PROCESS BUILDER {this.Name} - GET FUNCTION METADATA MAP");
         // The process has no kernel functions of its own, but it does expose the functions from its entry steps.
         // Merge the function metadata map from each of the entry steps.
         return this._entrySteps.SelectMany(step => step.GetFunctionMetadataMap())
@@ -258,11 +255,9 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     {
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
-        Console.WriteLine($"PROCESS BUILDER {this.Name} - EDGES:\n\t{string.Join("\n\t", this.Edges.Select(e => $"{e.Key}: {string.Join(",", e.Value.Select(e => $"{e.Source.Name}/{e.Target?.FunctionName ?? "???"}"))}"))}");
 
         // Build the steps
         var builtSteps = this._steps.Select(step => step.BuildStep()).ToList();
-        Console.WriteLine($"PROCESS BUILDER {this.Name} - STEPS: {string.Join(",", builtSteps.Select(e => $"{e.InnerStepType.Name}"))}");
 
         // Create the process
         var state = new KernelProcessState(this.Name, id: this.HasParentProcess ? this.Id : null);
