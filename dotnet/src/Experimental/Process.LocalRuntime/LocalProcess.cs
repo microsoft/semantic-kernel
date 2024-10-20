@@ -169,8 +169,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <returns>A <see cref="Task"/></returns>
     private ValueTask InitializeProcessAsync()
     {
-        Console.Write($"\tPROCESS INIT - {this.Name}: ({this.Name}) {this.Id}");
-
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
 
@@ -218,8 +216,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     parentProcessId: this.Id,
                     loggerFactory: this.LoggerFactory);
             }
-
-            Console.Write($"\tPROCESS INIT - {this.Name}: {step.InnerStepType.Name}({step.State.Name}) {step.State.Id}");
 
             this._steps.Add(localStep);
         }
@@ -273,13 +269,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     }
                 }
 
-                Console.WriteLine($"\tSTEPS [{this._steps.Count}]: {string.Join(",", this._steps.Select(s => s.Id))}");
-                Console.WriteLine($"\tSTEPS [{this._steps.Count}]: {string.Join(",", this._steps.Select(s => s.Name))}");
-
                 List<Task> messageTasks = [];
                 foreach (var message in messagesToProcess)
                 {
-                    Console.WriteLine($"\tDESTINATION: D:{message.DestinationId}, S:{message.SourceId}, E:{message.TargetEventId}, F():{message.FunctionName}");
                     // Check for end condition
                     if (message.DestinationId.Equals(EndProcessId, StringComparison.OrdinalIgnoreCase))
                     {
