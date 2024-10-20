@@ -58,7 +58,7 @@ public abstract class ProcessStepBuilder
 
     #endregion
 
-    ///// <summary>The namespace for events that are scoped to this step.</summary>
+    /// <summary>The namespace for events that are scoped to this step.</summary>
     private readonly string _eventNamespace;
 
     /// <summary>
