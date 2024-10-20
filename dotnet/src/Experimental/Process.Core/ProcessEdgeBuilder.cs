@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -45,10 +47,10 @@ public sealed class ProcessEdgeBuilder
     /// <summary>
     /// Sends the output of the source step to the specified target when the associated event fires.
     /// </summary>
-    public ProcessEdgeBuilder SendEventTo(ProcessBuilder targetProcess, string? targetEventId = null)
+    /// <param name="target">The output target.</param>
+    /// <returns>A fresh builder instance for fluid definition</returns>
+    public ProcessEdgeBuilder SendEventTo(ProcessMapBuilder target)
     {
-        var target = targetProcess.WhereInputEventIs(targetEventId ?? this.EventId);
-
-        return this.SendEventTo(target);
+        return this.SendEventTo(target.TargetFunction);
     }
 }

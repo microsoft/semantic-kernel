@@ -25,7 +25,9 @@ internal sealed class LocalMap : LocalStep
     internal LocalMap(KernelProcessMap map, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
         : base(map, kernel, parentProcessId, loggerFactory)
     {
-        Verify.NotNull(map.TransformStep);
+        Verify.NotNull(map.MapStep);
+
+        Console.WriteLine($"LOCAL MAP: [{map.MapStep.Steps.Count}] {string.Join(",", map.MapStep.Steps.Select(s => s.InnerStepType.Name))} - {this.Id} [{parentProcessId ?? "-"}]");
 
         this._map = map;
         this._logger = this.LoggerFactory?.CreateLogger(this.Name) ?? new NullLogger<LocalMap>();
@@ -41,48 +43,59 @@ internal sealed class LocalMap : LocalStep
             throw new KernelException(errorMessage);
         }
 
-        var values = message.Values["values"];
-        Type valueType = values?.GetType() ?? typeof(object);
+        if (!message.Values.TryGetValue(this._map.InputParameterName, out object? values))
+        {
+            throw new KernelException($"Internal Map Error: Input parameter not present - {this._map.InputParameterName}");
+        }
 
-        IEnumerable enumerable = values == null ? new DiscreteEnumerable() : typeof(IEnumerable).IsAssignableFrom(valueType) ? (IEnumerable)values : new DiscreteEnumerable(values);
-
-        Console.WriteLine(this._map.TransformStep.GetType());
+        Type valueType = values!.GetType();
+        if (!typeof(IEnumerable).IsAssignableFrom(valueType) || !valueType.HasElementType)
+        {
+            throw new KernelException($"Internal Map Error: Input parameter is not enumerable - {this._map.InputParameterName} [{valueType.FullName}]");
+        }
 
         int index = 0;
         List<Task<LocalKernelProcessContext>> runningProcesses = [];
-        foreach (var value in enumerable)
+        foreach (var value in (IEnumerable)values)
         {
             ++index;
             Console.WriteLine($"#{index}: {value}");
             runningProcesses.Add(
-                this._map.TransformStep.StartAsync(
+                this._map.MapStep.StartAsync(
                     this._kernel,
                     new KernelProcessEvent
                     {
-                        Id = "Start", // %%% MORE this._map.StartId,
+                        Id = message.TargetEventId,
                         Data = value
                     }));
         }
 
         await Task.WhenAll(runningProcesses).ConfigureAwait(false);
 
-        //return Task.CompletedTask; // %%% TODO - BIG!
-    }
+        Array? results = null;
 
-    private class DiscreteEnumerable(object? value = null) : IEnumerable
-    {
-        public IEnumerator GetEnumerator() => new DiscreteEnumerator(value);
-    }
+        for (index = 0; index < runningProcesses.Count; ++index)
+        {
+            var processInfo = await runningProcesses[index].Result.GetStateAsync().ConfigureAwait(false);
+            KernelProcessStepState state =
+                processInfo.Steps
+                    .Where(step => step.Edges.Count == 0)
+                    .Single()
+                    .State;
+            object resultState = state.GetType().GetProperty("State")!.GetValue(state)!; // %%% NULLABLE / TYPE ASSUMPTION
+            object result = resultState!.GetType().GetProperty("Value")!.GetValue(resultState)!; // %%% NULLABLE / TYPE ASSUMPTION
+            if (results == null)
+            {
+                Type elementType = result.GetType();
+                results = Array.CreateInstance(elementType, runningProcesses.Count);
+            }
 
-    private class DiscreteEnumerator(object? value) : IEnumerator
-    {
-        private int _index = 0;
+            results.SetValue(result, index);
+        }
 
-        public object Current => this._index == 0 && value != null ? value : throw new InvalidOperationException();
+        Console.WriteLine($"LOCAL MAP: OUTPUT: {string.Join(",", [.. results])}");
 
-        public bool MoveNext() => !(value == null || this._index == 0);
-
-        public void Reset() { this._index = 0; }
+        await this.EmitEventAsync(new() { Id = this._map.CompleteEventId, Data = results, Visibility = KernelProcessEventVisibility.Public }).ConfigureAwait(false);
     }
 
     #region Private Methods

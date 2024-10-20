@@ -65,12 +65,21 @@ public sealed class ProcessStepEdgeBuilder
     }
 
     /// <summary>
-    /// Sends the output of the source step to the specified target when the associated event fires.
+    /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
     /// </summary>
-    public ProcessStepEdgeBuilder SendEventTo(ProcessBuilder targetProcess, string? targetEventId = null)
+    /// <param name="target">The output target.</param>
+    /// <returns>A fresh builder instance for fluid definition</returns>
+    public ProcessStepEdgeBuilder SendEventTo(ProcessMapBuilder target)
     {
-        var target = targetProcess.WhereInputEventIs(targetEventId ?? this.EventId);
-        return this.SendEventTo(target);
+        if (this.Target is not null)
+        {
+            throw new InvalidOperationException("An output target has already been set.");
+        }
+
+        this.Target = target.TargetFunction;
+        this.Source.LinkTo(this.EventId, this);
+
+        return new ProcessStepEdgeBuilder(this.Source, this.EventId);
     }
 
     /// <summary>

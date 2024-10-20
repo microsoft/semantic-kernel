@@ -58,8 +58,8 @@ public abstract class ProcessStepBuilder
 
     #endregion
 
-    /// <summary>The namespace for events that are scoped to this step.</summary>
-    private readonly string _eventNamespace;
+    ///// <summary>The namespace for events that are scoped to this step.</summary>
+    //private readonly string _eventNamespace;
 
     /// <summary>
     /// A mapping of function names to the functions themselves.
@@ -170,7 +170,8 @@ public abstract class ProcessStepBuilder
     protected string GetScopedEventId(string eventId)
     {
         // Scope the event to this instance of this step by prefixing the event Id with the step's namespace.
-        return $"{this._eventNamespace}.{eventId}";
+        //return $"{this._eventNamespace}.{eventId}";
+        return $"{this.Name}_{this.Id}.{eventId}";
     }
 
     /// <summary>
@@ -184,7 +185,7 @@ public abstract class ProcessStepBuilder
 
         this.FunctionsDict = [];
         this.Id = Guid.NewGuid().ToString("n");
-        this._eventNamespace = $"{this.Name}_{this.Id}";
+        //this._eventNamespace = $"{this.Name}_{this.Id}";
         this.Edges = new Dictionary<string, List<ProcessStepEdgeBuilder>>(StringComparer.OrdinalIgnoreCase);
     }
 }

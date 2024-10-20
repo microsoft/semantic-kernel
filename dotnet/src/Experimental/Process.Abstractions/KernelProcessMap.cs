@@ -1,7 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -10,22 +7,35 @@ namespace Microsoft.SemanticKernel;
 public sealed record KernelProcessMap : KernelProcessStepInfo
 {
     /// <summary>
-    /// The collection of Steps in the Process.
+    /// The discrete map operation.
     /// </summary>
-    public KernelProcess TransformStep { get; }
+    public KernelProcess MapStep { get; }
+
+    /// <summary>
+    /// The event that signals the completion of the map operation.
+    /// </summary>
+    public string CompleteEventId { get; }
+
+    /// <summary>
+    /// The name of the input parameter for the map operation.
+    /// </summary>
+    public string InputParameterName { get; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="KernelProcess"/> class.
     /// </summary>
     /// <param name="state">The process state.</param>
-    /// <param name="step">The steps of the process.</param>
-    /// <param name="edges">The edges of the process.</param>
-    public KernelProcessMap(KernelProcessStepState state, KernelProcess step, Dictionary<string, List<KernelProcessEdge>>? edges = null)
-        : base(typeof(KernelProcessMap), state, edges ?? [])
+    /// <param name="step">The discrete map operation.</param>
+    /// <param name="completeEventId">The event that signals the completion of the map operation.</param>
+    /// <param name="inputParameter">name of the input parameter for the map operation.</param>
+    public KernelProcessMap(KernelProcessMapState state, KernelProcess step/*, string startEventId*/, string completeEventId, string inputParameter)
+        : base(typeof(KernelProcessMap), state, [])
     {
         Verify.NotNull(step);
         Verify.NotNullOrWhiteSpace(state.Name);
 
-        this.TransformStep = step;
+        this.MapStep = step;
+        this.CompleteEventId = completeEventId;
+        this.InputParameterName = inputParameter;
     }
 }

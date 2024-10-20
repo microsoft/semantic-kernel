@@ -36,6 +36,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <exception cref="InvalidOperationException"></exception>
     internal override KernelProcessFunctionTarget ResolveFunctionTarget(string? functionName, string? parameterName)
     {
+        Console.WriteLine($"PROCESS BUILDER {this.Name} - RESOLVE FUNCTION TARGET");
         // Try to resolve the function target on each of the registered entry points.
         var targets = new List<KernelProcessFunctionTarget>();
         foreach (var step in this._entrySteps)
@@ -66,6 +67,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <inheritdoc/>
     internal override void LinkTo(string eventId, ProcessStepEdgeBuilder edgeBuilder)
     {
+        Console.WriteLine($"PROCESS BUILDER {this.Name} - LINK TO {eventId}");
         Verify.NotNull(edgeBuilder?.Source, nameof(edgeBuilder.Source));
         Verify.NotNull(edgeBuilder?.Target, nameof(edgeBuilder.Target));
 
@@ -76,8 +78,9 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <inheritdoc/>
-    internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
+    internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap() // %%% BEN: WHEN IS THIS CALLED?
     {
+        Console.WriteLine($"PROCESS BUILDER {this.Name} - GET FUNCTION METADATA MAP");
         // The process has no kernel functions of its own, but it does expose the functions from its entry steps.
         // Merge the function metadata map from each of the entry steps.
         return this._entrySteps.SelectMany(step => step.GetFunctionMetadataMap())
@@ -92,6 +95,17 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     {
         // The process is a step so we can return the step info directly.
         return this.Build();
+    }
+
+    /// <summary>
+    /// Add the provided step builder to the process.
+    /// </summary>
+    /// <remarks>
+    /// Utilized by <see cref="ProcessMapBuilder"/> only.
+    /// </remarks>
+    internal void AddStepFromBuilder(ProcessStepBuilder stepBuilder)
+    {
+        this._steps.Add(stepBuilder);
     }
 
     #region Public Interface
@@ -144,39 +158,61 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
-    /// Map a collection of values to individual steps to for parallel processing of each value.
-    /// Results are coalesced into a result collection of the same dimension as the source collection.
+    /// Adds a map operation to the process that accepts an enumerable input parameter and
+    /// processes each individual parameter value by the specified map operation (TStep).
+    /// Results are coalesced into a result set of the same dimension as the input set.
     /// </summary>
-    /// <typeparam name="TMap">The step type.</typeparam>
-    /// <typeparam name="TValue">The value type.</typeparam>
-    /// <param name="startEventId">// %%% COMMENT</param>
-    /// <param name="completeEventId">// %%% COMMENT</param>
+    /// <typeparam name="TStep">The step type of the map operation.</typeparam>
+    /// <param name="startEventId">The event that singles the map operation.</param>
+    /// <param name="completeEventId">The event that signals the completion of the map operation: "TStep".</param>
     /// <param name="name">The name of the step. This parameter is optional.</param>
-    /// <returns>An instance of <see cref="ProcessMapBuilder{TValue}"/></returns> // %%% TBD - Return `ProcessStepBuilder` base if not needed
-    public ProcessMapBuilder<TValue> AddMapFromType<TMap, TValue>(string startEventId, string completeEventId, string? name = null) where TMap : KernelProcessStep
+    /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
+    public ProcessMapBuilder AddMapFromType<TStep>(string startEventId, string completeEventId, string? name = null) where TStep : KernelProcessStep
     {
-        var stepBuilder = new ProcessStepBuilder<TMap>(name);
+        var stepBuilder = new ProcessStepBuilder<TStep>(name);
 
-        var mapBuilder = new ProcessMapBuilder<TValue>(stepBuilder, startEventId, completeEventId);
+        var mapBuilder = new ProcessMapBuilder(stepBuilder, startEventId, completeEventId);
         this._steps.Add(mapBuilder);
 
         return mapBuilder;
     }
 
     /// <summary>
-    /// Map a collection of values to individual steps to for parallel processing of each value.
-    /// Results are coalesced into a result collection of the same dimension as the source collection.
+    /// Adds a map operation to the process that accepts an enumerable input parameter and
+    /// processes each individual parameter value by the specified map operation (TStep).
+    /// Results are coalesced into a result set of the same dimension as the input set.
     /// </summary>
-    /// <typeparam name="TValue">The value type.</typeparam>
-    /// <param name="mapProcess">// %%% COMMENT</param>
-    /// <param name="startEventId">// %%% COMMENT</param>
-    /// <param name="completeEventId">// %%% COMMENT</param>
-    /// <returns>An instance of <see cref="ProcessMapBuilder{TValue}"/></returns> // %%% TBD - Return `ProcessStepBuilder` base if not needed
-    public ProcessMapBuilder<TValue> AddMapFromProcess<TValue>(ProcessBuilder mapProcess, string startEventId, string completeEventId)
+    /// <typeparam name="TStep">The step type of the map operation.</typeparam>
+    /// <typeparam name="TState">The state Type of the map operation.</typeparam>
+    /// <param name="initialState">The initial state of the map operation.</param>
+    /// <param name="startEventId">The event that singles the map operation.</param>
+    /// <param name="completeEventId">The event that signals the completion of the map operation: "TStep".</param>
+    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
+    public ProcessMapBuilder AddMapFromType<TStep, TState>(TState initialState, string startEventId, string completeEventId, string? name = null) where TStep : KernelProcessStep
+    {
+        var stepBuilder = new ProcessStepBuilder<TStep>(name, initialState);
+
+        var mapBuilder = new ProcessMapBuilder(stepBuilder, startEventId, completeEventId);
+        this._steps.Add(mapBuilder);
+
+        return mapBuilder;
+    }
+
+    /// <summary>
+    /// Adds a map operation to the process that accepts an enumerable input parameter and
+    /// processes each individual parameter value by the specified map operation (mapProcess).
+    /// Results are coalesced into a result set of the same dimension as the input set.
+    /// </summary>
+    /// <param name="mapProcess">The sub-process responsible for the map-operation</param>
+    /// <param name="startEventId">The event that singles the map operation.</param>
+    /// <param name="completeEventId">The event that signals the completion of the map operation: "TStep".</param>
+    /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
+    public ProcessMapBuilder AddMapFromProcess(ProcessBuilder mapProcess, string startEventId, string completeEventId)
     {
         mapProcess.HasParentProcess = true;
 
-        var mapBuilder = new ProcessMapBuilder<TValue>(mapProcess, startEventId, completeEventId);
+        var mapBuilder = new ProcessMapBuilder(mapProcess, startEventId, completeEventId);
         this._steps.Add(mapBuilder);
 
         return mapBuilder;
@@ -222,9 +258,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     {
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
+        Console.WriteLine($"PROCESS BUILDER {this.Name} - EDGES:\n\t{string.Join("\n\t", this.Edges.Select(e => $"{e.Key}: {string.Join(",", e.Value.Select(e => $"{e.Source.Name}/{e.Target?.FunctionName ?? "???"}"))}"))}");
 
         // Build the steps
         var builtSteps = this._steps.Select(step => step.BuildStep()).ToList();
+        Console.WriteLine($"PROCESS BUILDER {this.Name} - STEPS: {string.Join(",", builtSteps.Select(e => $"{e.InnerStepType.Name}"))}");
 
         // Create the process
         var state = new KernelProcessState(this.Name, id: this.HasParentProcess ? this.Id : null);

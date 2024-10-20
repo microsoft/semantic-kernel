@@ -26,14 +26,6 @@ public sealed record ProcessFunctionTargetBuilder
             return;
         }
 
-        // If the step is an MapStep, we don't need to resolve the function target.
-        if (step is ProcessMapBuilder)
-        {
-            this.FunctionName = "Map"; // %%% HACK
-            this.ParameterName = "values"; // %%% HACK
-            return;
-        }
-
         // Make sure the function target is valid.
         var target = step.ResolveFunctionTarget(functionName, parameterName);
         Verify.NotNull(target);

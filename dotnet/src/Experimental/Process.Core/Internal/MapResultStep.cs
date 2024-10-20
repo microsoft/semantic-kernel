@@ -1,40 +1,47 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// %%% COMMENT
+/// The step state for capturing the result of a map operation.
 /// </summary>
-internal sealed record MapResultState<TValue>
+internal sealed record MapResultState
 {
     /// <summary>
-    /// %%% COMMENT
+    /// The result of the map operation.
     /// </summary>
-    public TValue? Value { get; set; }
+    public object? Value { get; set; }
 };
 
 /// <summary>
-/// %%% COMMENT
+/// Step whose sole responsibility is to capture the result of a map operation.
 /// </summary>
-internal sealed class MapResultStep<TValue> : KernelProcessStep<MapResultState<TValue>>
+/// <remarks>
+/// Limits assumptions regarding the shape of the actual map operation.
+/// </remarks>
+internal sealed class MapResultStep : KernelProcessStep<MapResultState>
 {
-    private MapResultState<TValue>? _capture;
+    private MapResultState? _capture;
 
     /// <inheritdoc/>
-    public override ValueTask ActivateAsync(KernelProcessStepState<MapResultState<TValue>> state)
+    public override ValueTask ActivateAsync(KernelProcessStepState<MapResultState> state)
     {
         this._capture = state.State;
         return default;
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Function for capturing the result of a map operation.
     /// </summary>
-    /// <param name="value"></param>
     [KernelFunction]
-    public void Compute(TValue value)
+    public void Compute(object value)
     {
-        this._capture!.Value = value;
+        this._capture ??= new();
+
+        Console.WriteLine($"CAPTURE: {value}");
+
+        this._capture.Value = value;
     }
 }

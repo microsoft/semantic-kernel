@@ -12,7 +12,7 @@ public sealed record KernelProcess : KernelProcessStepInfo
     /// <summary>
     /// The collection of Steps in the Process.
     /// </summary>
-    public IList<KernelProcessStepInfo> Steps { get; }
+    public IList<KernelProcessStepInfo> Steps { get; } // %%% BEN: WHY NOT IN KernelProcessState ???
 
     /// <summary>
     /// Creates a new instance of the <see cref="KernelProcess"/> class.

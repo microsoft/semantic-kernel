@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
 using Microsoft.SemanticKernel;
 
 namespace Step05;
 
 /// <summary>
-/// %%% TBD
-/// For visual reference of the processes used here check the diagram in: https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#step04_mapreduce
+/// POC
 /// </summary>
-public class Step04a_MapReduce(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
+public class Step05a_MapReduce(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
 {
     // Target Open AI Services
     protected override bool ForceOpenAI => true;
 
     /// <summary>
-    /// %%% COMMENT
+    /// POC
     /// </summary>
     [Fact]
     public async Task MathMapReduceAsync()
@@ -79,21 +79,29 @@ public class Step04a_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
     private sealed class MapStep1 : KernelProcessStep
     {
         [KernelFunction]
-        public async ValueTask MapAsync(KernelProcessStepContext context, long[] values, Kernel kernel)
+        public async ValueTask MapAsync(KernelProcessStepContext context, IEnumerable values, Kernel kernel)
         {
-            System.Console.WriteLine($"MAP: {string.Join(", ", values)}");
+            Type inputType = values.GetType();
+            if (!inputType.HasElementType)
+            {
+                throw new KernelException("%%%"); // MESSAGE
+            }
+            Type elementType = inputType.GetElementType()!;
+            List<object> valueList = [.. values];
+            System.Console.WriteLine($"MAP: {string.Join(", ", valueList)} [{elementType.Name}]");
 
             List<Task<LocalKernelProcessContext>> runningProcesses = [];
             foreach (long value in values)
             {
-                var processBuilder = Step04a_MapReduce.ProcessFactory();
+                var processBuilder = Step05a_MapReduce.ProcessFactory();
 
                 ProcessBuilder mapBuilder = new("Map");
                 var externalProcessStep = mapBuilder.AddStepFromProcess(processBuilder);
                 var captureStep = mapBuilder.AddStepFromType<CaptureStep>();
                 mapBuilder
                     .OnInputEvent("Start")
-                    .SendEventTo(externalProcessStep);
+                    .SendEventTo(externalProcessStep.WhereInputEventIs("Start"));
+
                 externalProcessStep
                     .OnEvent("Complete")
                     .SendEventTo(new ProcessFunctionTargetBuilder(captureStep));
@@ -110,11 +118,16 @@ public class Step04a_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
             await Task.WhenAll(runningProcesses);
 
-            long[] results = new long[runningProcesses.Count];
+            Array results = Array.CreateInstance(elementType, runningProcesses.Count);
+            //Type listType = typeof(List<>);
+            //Type[] typeArgs = { elementType };
+            //Type genericListType = listType.MakeGenericType(typeArgs);
+            //IList results = (IList)(Activator.CreateInstance(genericListType) ?? throw new InvalidOperationException("Failed!!!"));
+
             for (int index = 0; index < runningProcesses.Count; ++index)
             {
                 var processInfo = await runningProcesses[index].Result.GetStateAsync();
-                results[index] =
+                var result =
                     processInfo.Steps
                         .Where(step => step.State.Name == nameof(CaptureStep))
                         .Select(step => step.State)
@@ -122,6 +135,8 @@ public class Step04a_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
                         .Single()
                         .State!
                         .Value;
+                results.SetValue(result, index);
+                //results.Add(result);
             }
 
             await context.EmitEventAsync(new() { Id = "Complete", Data = results });
@@ -129,7 +144,7 @@ public class Step04a_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         private sealed record CaptureState
         {
-            public long Value { get; set; }
+            public object Value { get; set; }
         };
 
         private sealed class CaptureStep : KernelProcessStep<CaptureState>
@@ -143,7 +158,7 @@ public class Step04a_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             }
 
             [KernelFunction]
-            public void Compute(long value)
+            public void Compute(object value)
             {
                 System.Console.WriteLine($"CAPTURE: {value}");
                 this._capture!.Value = value;
@@ -165,7 +180,14 @@ public class Step04a_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
     private sealed class UnionStep : KernelProcessStep
     {
         [KernelFunction]
-        public async ValueTask ComputeAsync(KernelProcessStepContext context, long[] values)
+        // NO: Forces one or the other
+        //public async ValueTask ComputeAsync(KernelProcessStepContext context, long[] values)
+        //public async ValueTask ComputeAsync(KernelProcessStepContext context, List<long> values)
+
+        // Yes: Allows either.
+        //public async ValueTask ComputeAsync(KernelProcessStepContext context, IList<long> values)
+        public async ValueTask ComputeAsync(KernelProcessStepContext context, IEnumerable<long> values)
+        //public async ValueTask ComputeAsync(KernelProcessStepContext context, IReadOnlyList<long> values)
         {
             System.Console.WriteLine($"UNION: {string.Join(", ", values)}");
             long sum = values.Sum();
