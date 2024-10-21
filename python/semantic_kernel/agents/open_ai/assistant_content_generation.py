@@ -180,8 +180,6 @@ def generate_streaming_message_content(
                         file_id=file_id,
                     )
                 )
-        elif delta_block.type == "tool_calls":
-            print("hello")
 
     return StreamingChatMessageContent(role=role, name=assistant_name, items=items, choice_index=0)  # type: ignore
 
