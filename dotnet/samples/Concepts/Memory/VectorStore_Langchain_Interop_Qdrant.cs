@@ -60,7 +60,7 @@ public class VectorStore_Langchain_Interop_Qdrant(ITestOutputHelper output) : Ba
     /// </summary>
     /// <remarks>
     /// Note that since we won't be using this data model to infer a schema from
-    /// for creating a new collection or to do data model to strorage model mapping with,
+    /// for creating a new collection or to do data model to storage model mapping with,
     /// we can just specify the most minimal of attributes.
     /// </remarks>
     private sealed class QdrantLangchainDocument
