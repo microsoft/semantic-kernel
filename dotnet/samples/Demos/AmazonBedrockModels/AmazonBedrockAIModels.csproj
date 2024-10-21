@@ -4,10 +4,10 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <RootNamespace>AmazonBedrockModels</RootNamespace>
+        <RootNamespace>AmazonBedrockAIModels</RootNamespace>
     </PropertyGroup>
     <PropertyGroup>
-      <NoWarn>$(NoWarn);SKEXP0001,SKEXP0070</NoWarn>
+      <NoWarn>$(NoWarn);SKEXP0001;SKEXP0070</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

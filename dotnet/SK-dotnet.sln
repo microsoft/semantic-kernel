@@ -315,7 +315,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Amazon", "src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj", "{E059E9B0-1302-474D-B1B5-10A6E0F1A769}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmazonBedrockModels", "samples\Demos\AmazonBedrockModels\AmazonBedrockModels.csproj", "{ABEAACCD-CF63-4850-8ED5-E01379DBFC46}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmazonBedrockAIModels", "samples\Demos\AmazonBedrockModels\AmazonBedrockAIModels.csproj", "{ABEAACCD-CF63-4850-8ED5-E01379DBFC46}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Amazon.UnitTests", "src\Connectors\Connectors.Amazon.UnitTests\Connectors.Amazon.UnitTests.csproj", "{CCC6DC57-2AC1-4C8E-A448-2CC0537A288E}"
 EndProject
