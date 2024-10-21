@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within MongoDB.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal sealed class MongoDBGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, BsonDocument>
 {
     /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>

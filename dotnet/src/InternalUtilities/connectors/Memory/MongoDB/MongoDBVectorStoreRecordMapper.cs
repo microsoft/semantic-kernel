@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
@@ -10,6 +11,7 @@ using MongoDB.Bson.Serialization.Conventions;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
+[ExcludeFromCodeCoverage]
 internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, BsonDocument>
 {
     /// <summary>A key property info of the data model.</summary>
