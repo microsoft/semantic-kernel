@@ -57,8 +57,15 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
     [Fact]
     public async Task RunMapReduceAsFirstStepAsync()
     {
-        KernelProcess process = SetupMapProcessAsFirstStep(nameof(RunMapReduceBasicAsync));
+        KernelProcess process = SetupProcessWithMapAsFirstStep(nameof(RunMapReduceAsFirstStepAsync));
         await RunProcessAsync(process, s_seedInput, "Start");
+    }
+
+    [Fact]
+    public async Task RunMapReduceWithProcessAsync()
+    {
+        KernelProcess process = SetupMapProcessWithSubProcess(nameof(RunMapReduceWithProcessAsync));
+        await RunProcessAsync(process, s_seedInput);
     }
 
     [Fact]
@@ -109,7 +116,42 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
         return process.Build();
     }
 
-    private KernelProcess SetupMapProcessAsFirstStep(string processName)
+    private KernelProcess SetupMapProcessWithSubProcess(string processName)
+    {
+        ProcessBuilder process = new(processName);
+
+        ProcessBuilder subProcess = new("MapSubprocess");
+
+        var initStep = process.AddStepFromType<InitialStep>();
+        process
+            .OnInputEvent("Init")
+            .SendEventTo(new ProcessFunctionTargetBuilder(initStep));
+
+        var discreteStep = subProcess.AddStepFromType<DiscreteStep>();
+        subProcess
+            .OnInputEvent("Start")
+            .SendEventTo(new ProcessFunctionTargetBuilder(discreteStep, "DiscreteSubprocess"));
+
+        var mapStep = process.AddMapFromProcess(subProcess, "Start", "Complete");
+
+        initStep
+            .OnEvent("Start")
+            .SendEventTo(mapStep);
+
+        var unionStep = process.AddStepFromType<UnionStep>();
+        mapStep
+            .OnEvent("Complete")
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
+
+        var resultStep = process.AddStepFromType<ResultStep>();
+        unionStep
+            .OnEvent("Complete")
+            .SendEventTo(new ProcessFunctionTargetBuilder(resultStep));
+
+        return process.Build();
+    }
+
+    private KernelProcess SetupProcessWithMapAsFirstStep(string processName)
     {
         ProcessBuilder process = new(processName);
 
@@ -296,6 +338,15 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             string transform = $"#{value}";
             System.Console.WriteLine($"DISCRETE OUTPUT: {transform}");
             await context.EmitEventAsync(new() { Id = "Complete", Data = transform });
+        }
+
+        [KernelFunction("DiscreteSubprocess")]
+        public async ValueTask ComputeVisibleAsync(KernelProcessStepContext context, long value)
+        {
+            System.Console.WriteLine($"DISCRETE INPUT: {value}");
+            string transform = $"#{value}";
+            System.Console.WriteLine($"DISCRETE OUTPUT: {transform}");
+            await context.EmitEventAsync(new() { Id = "Complete", Data = transform, Visibility = KernelProcessEventVisibility.Public }); // %%% VISIBILITY ???
         }
 
         [KernelFunction("DiscreteNoise")]
