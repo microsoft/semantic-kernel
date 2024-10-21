@@ -19,6 +19,11 @@ public abstract class AgentChannel
     public ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <summary>
+    /// Responsible for providing the serialized representation of the channel.
+    /// </summary>
+    protected internal abstract string Serialize();
+
+    /// <summary>
     /// Receive the conversation messages.  Used when joining a conversation and also during each agent interaction..
     /// </summary>
     /// <param name="history">The chat history at the point the channel is created.</param>
