@@ -14,7 +14,7 @@ public abstract class BaseTest : TextWriter
     /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
     /// If 'false', Azure takes precedence.
     /// </summary>
-    protected virtual bool ForceOpenAI { get; } = false;
+    protected virtual bool ForceOpenAI { get; } = true;
 
     protected ITestOutputHelper Output { get; }
 

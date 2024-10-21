@@ -399,10 +399,22 @@ internal static class AssistantThreadActions
                 }
                 else if (update is RunStepDetailsUpdate detailsUpdate)
                 {
-                    StreamingChatMessageContent? toolContent = GenerateStreamingCodeInterpreterContent(agent.GetName(), detailsUpdate);
-                    if (toolContent != null)
+                    if (detailsUpdate.UpdateKind == StreamingUpdateReason.RunStepUpdated && !string.IsNullOrEmpty(detailsUpdate.FunctionName))
                     {
-                        yield return toolContent;
+                        yield return
+                            new StreamingChatMessageContent(AuthorRole.Assistant, null)
+                            {
+                                AuthorName = agent.Name,
+                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments)]
+                            };
+                    }
+                    else
+                    {
+                        StreamingChatMessageContent? toolContent = GenerateStreamingCodeInterpreterContent(agent.GetName(), detailsUpdate);
+                        if (toolContent != null)
+                        {
+                            yield return toolContent;
+                        }
                     }
                 }
                 else if (update is RunStepUpdate stepUpdate)
