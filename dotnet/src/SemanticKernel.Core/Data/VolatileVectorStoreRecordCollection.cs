@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -18,7 +19,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 [Obsolete("This has been replaced by InMemoryVectorStoreRecordCollection in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class VolatileVectorStoreRecordCollection<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
 {
@@ -61,6 +62,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, [DynamicallyAccess
     /// </summary>
     /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [UnconditionalSuppressMessage("Trimming", "IL2087:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.", Justification = "This class is obsolete")]
     public VolatileVectorStoreRecordCollection(string collectionName, VolatileVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
     {
         // Verify.
@@ -296,6 +298,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, [DynamicallyAccess
     /// <param name="overrideVectorResolver">The override vector resolver if one was provided.</param>
     /// <param name="vectorProperties">A dictionary of vector properties from the record definition.</param>
     /// <returns>The <see cref="VolatileVectorStoreVectorResolver{TRecord}"/>.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2090:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.", Justification = "This class is obsolete")]
     private static VolatileVectorStoreVectorResolver<TRecord> CreateVectorResolver(VolatileVectorStoreVectorResolver<TRecord>? overrideVectorResolver, Dictionary<string, VectorStoreRecordVectorProperty> vectorProperties)
     {
         // Custom resolver.
@@ -346,6 +349,7 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, [DynamicallyAccess
     /// <param name="overrideKeyResolver">The override key resolver if one was provided.</param>
     /// <param name="keyProperty">They key property from the record definition.</param>
     /// <returns>The <see cref="VolatileVectorStoreKeyResolver{TKey, TRecord}"/>.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2090:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.", Justification = "This class is obsolete")]
     private static VolatileVectorStoreKeyResolver<TKey, TRecord> CreateKeyResolver(VolatileVectorStoreKeyResolver<TKey, TRecord>? overrideKeyResolver, VectorStoreRecordKeyProperty keyProperty)
     {
         // Custom resolver.
