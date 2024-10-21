@@ -3,8 +3,8 @@
 using System;
 using System.Collections.Generic;
 using Azure.Search.Documents.Indexes.Models;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Microsoft.SemanticKernel.Data;
 using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;

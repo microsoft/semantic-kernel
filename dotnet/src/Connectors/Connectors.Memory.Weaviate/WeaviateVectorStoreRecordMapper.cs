@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonObject> where TRecord : class
+internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonObject>
 {
     private readonly string _collectionName;
 
@@ -55,7 +55,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         // Transform data model to Weaviate object model.
         var weaviateObjectModel = new JsonObject
         {
-            { WeaviateConstants.ReservedCollectionPropertyName, JsonValue.Create(this._collectionName) },
+            { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
             { WeaviateConstants.ReservedKeyPropertyName, jsonNodeDataModel[this._keyProperty]!.DeepClone() },
             { WeaviateConstants.ReservedDataPropertyName, new JsonObject() },
             { WeaviateConstants.ReservedVectorPropertyName, new JsonObject() },

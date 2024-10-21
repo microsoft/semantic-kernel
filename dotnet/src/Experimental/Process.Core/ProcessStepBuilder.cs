@@ -29,7 +29,7 @@ public abstract class ProcessStepBuilder
     /// </summary>
     /// <param name="eventId">The Id of the event of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public virtual ProcessStepEdgeBuilder OnEvent(string eventId)
+    public ProcessStepEdgeBuilder OnEvent(string eventId)
     {
         // scope the event to this instance of this step
         var scopedEventId = this.GetScopedEventId(eventId);
@@ -41,9 +41,19 @@ public abstract class ProcessStepBuilder
     /// </summary>
     /// <param name="functionName">The name of the function of interest.</param>
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
-    public virtual ProcessStepEdgeBuilder OnFunctionResult(string functionName)
+    public ProcessStepEdgeBuilder OnFunctionResult(string functionName)
     {
         return this.OnEvent($"{functionName}.OnResult");
+    }
+
+    /// <summary>
+    /// Define the behavior of the step when the specified function has thrown an exception.
+    /// </summary>
+    /// <param name="functionName">The name of the function of interest.</param>
+    /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
+    public ProcessStepEdgeBuilder OnFunctionError(string functionName)
+    {
+        return this.OnEvent($"{functionName}.OnError");
     }
 
     #endregion
@@ -185,12 +195,20 @@ public abstract class ProcessStepBuilder
 public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : KernelProcessStep
 {
     /// <summary>
+    /// The initial state of the step. This may be null if the step does not have any state.
+    /// </summary>
+    private readonly object? _initialState;
+
+    /// <summary>
     /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
     /// </summary>
-    public ProcessStepBuilder(string? name = null)
+    /// <param name="name">Optional: The name of the step.</param>
+    /// <param name="initialState">Optional: The initial state of the step.</param>
+    internal ProcessStepBuilder(string? name = null, object? initialState = default)
         : base(name ?? typeof(TStep).Name)
     {
         this.FunctionsDict = this.GetFunctionMetadataMap();
+        this._initialState = initialState;
     }
 
     /// <summary>
@@ -211,7 +229,14 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
             var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             Verify.NotNull(stateType);
 
+            // If the step has a user-defined state then we need to validate that the initial state is of the correct type.
+            if (this._initialState is not null && this._initialState.GetType() != userStateType)
+            {
+                throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
+            }
+
             stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, this.Id);
+            stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, this._initialState);
         }
         else
         {
@@ -232,8 +257,7 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
     /// <inheritdoc/>
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
-        // TODO: Should not have to create a new instance of the step to get the functions metadata.
-        var functions = KernelPluginFactory.CreateFromType<TStep>();
-        return functions.ToDictionary(f => f.Name, f => f.Metadata);
+        var metadata = KernelFunctionMetadataFactory.CreateFromType(typeof(TStep));
+        return metadata.ToDictionary(m => m.Name, m => m);
     }
 }

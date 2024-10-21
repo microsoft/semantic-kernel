@@ -116,6 +116,22 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
+    /// Adds a step to the process and define it's initial user-defined state.
+    /// </summary>
+    /// <typeparam name="TStep">The step Type.</typeparam>
+    /// <typeparam name="TState">The state Type.</typeparam>
+    /// <param name="initialState">The initial state of the step.</param>
+    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
+    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? name = null) where TStep : KernelProcessStep<TState> where TState : class, new()
+    {
+        var stepBuilder = new ProcessStepBuilder<TStep>(name, initialState);
+        this._steps.Add(stepBuilder);
+
+        return stepBuilder;
+    }
+
+    /// <summary>
     /// Adds a sub process to the process.
     /// </summary>
     /// <param name="kernelProcess">The process to add as a step.</param>

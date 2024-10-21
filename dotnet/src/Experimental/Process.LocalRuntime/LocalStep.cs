@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a step in a process that is running in-process.
 /// </summary>
-internal class LocalStep : KernelProcessMessageChannel
+internal class LocalStep : IKernelProcessMessageChannel
 {
     /// <summary>
     /// The generic state type for a process step.
@@ -113,7 +113,7 @@ internal class LocalStep : KernelProcessMessageChannel
     /// </summary>
     /// <param name="processEvent">The event to emit.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public override ValueTask EmitEventAsync(KernelProcessEvent processEvent)
+    public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
         this.EmitEvent(LocalEvent.FromKernelProcessEvent(processEvent, this._eventNamespace));
         return default;
@@ -197,7 +197,7 @@ internal class LocalStep : KernelProcessMessageChannel
         {
             this._logger?.LogError("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             eventName = $"{targetFunction}.OnError";
-            eventValue = ex.Message;
+            eventValue = ex;
         }
         finally
         {
@@ -231,7 +231,7 @@ internal class LocalStep : KernelProcessMessageChannel
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
-        KernelProcessStepState? stateObject = null;
+        KernelProcessStepState stateObject = this._stepInfo.State;
         Type? stateType = null;
 
         if (TryGetSubtypeOfStatefulStep(this._stepInfo.InnerStepType, out Type? genericStepType) && genericStepType is not null)
@@ -254,13 +254,16 @@ internal class LocalStep : KernelProcessMessageChannel
                 throw new KernelException(errorMessage);
             }
 
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, this.Id);
+            var userState = stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.GetValue(stateObject);
+            if (userState is null)
+            {
+                stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, Activator.CreateInstance(userStateType));
+            }
         }
         else
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
             stateType = typeof(KernelProcessStepState);
-            stateObject = new KernelProcessStepState(this.Name, this.Id);
         }
 
         if (stateObject is null)

@@ -131,13 +131,17 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public void ShouldThrowIfNotEndpointIsProvided()
+    public async Task DefaultAddressShouldBeUsedAsync()
     {
-        // Act
         this._httpClient.BaseAddress = null;
+        //Arrange
+        var sut = new HuggingFaceChatCompletionService("fake-model", httpClient: this._httpClient);
+        var chatHistory = CreateSampleChatHistory();
+        //Act
+        await sut.GetChatMessageContentAsync(chatHistory);
 
-        // Assert
-        Assert.Throws<ArgumentNullException>(() => new HuggingFaceChatCompletionService("fake-model", httpClient: this._httpClient));
+        //Assert
+        Assert.StartsWith("https://api-inference.huggingface.co/", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
