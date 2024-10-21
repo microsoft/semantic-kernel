@@ -78,7 +78,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         )
         resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
-            service_id=service_id,
+            service_id=service_id or ai_model_id,
             ai_model_id=ai_model_id,
             task=task,
             device=resolved_device,
