@@ -414,12 +414,7 @@ public static class TextSearchExtensions
         {
             FunctionName = "Search",
             Description = "Perform a search for content related to the specified query and return string results",
-            Parameters =
-            [
-                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
-                new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
-            ],
+            Parameters = GetDefaultKernelParameterMetadata(),
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
         };
 
@@ -432,12 +427,7 @@ public static class TextSearchExtensions
         {
             FunctionName = "Search",
             Description = "Perform a search for content related to the specified query and return string results",
-            Parameters =
-            [
-                new KernelParameterMetadata("query", jsonSerializerOptions) { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count", jsonSerializerOptions) { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
-                new KernelParameterMetadata("skip", jsonSerializerOptions) { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
-            ],
+            Parameters = CreateDefaultKernelParameterMetadata(jsonSerializerOptions),
             ReturnParameter = new(jsonSerializerOptions) { ParameterType = typeof(KernelSearchResults<string>) },
         };
 
@@ -451,12 +441,7 @@ public static class TextSearchExtensions
         {
             FunctionName = "GetTextSearchResults",
             Description = "Perform a search for content related to the specified query. The search will return the name, value and link for the related content.",
-            Parameters =
-            [
-                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
-                new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
-            ],
+            Parameters = GetDefaultKernelParameterMetadata(),
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
         };
 
@@ -469,12 +454,7 @@ public static class TextSearchExtensions
         {
             FunctionName = "GetTextSearchResults",
             Description = "Perform a search for content related to the specified query. The search will return the name, value and link for the related content.",
-            Parameters =
-            [
-                new KernelParameterMetadata("query", jsonSerializerOptions) { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count", jsonSerializerOptions) { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
-                new KernelParameterMetadata("skip", jsonSerializerOptions) { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
-            ],
+            Parameters = CreateDefaultKernelParameterMetadata(jsonSerializerOptions),
             ReturnParameter = new(jsonSerializerOptions) { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
         };
 
@@ -488,12 +468,7 @@ public static class TextSearchExtensions
         {
             FunctionName = "GetSearchResults",
             Description = "Perform a search for content related to the specified query.",
-            Parameters =
-            [
-                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
-                new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
-            ],
+            Parameters = GetDefaultKernelParameterMetadata(),
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
         };
 
@@ -506,12 +481,7 @@ public static class TextSearchExtensions
         {
             FunctionName = "GetSearchResults",
             Description = "Perform a search for content related to the specified query.",
-            Parameters =
-            [
-                new KernelParameterMetadata("query", jsonSerializerOptions) { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count", jsonSerializerOptions) { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
-                new KernelParameterMetadata("skip", jsonSerializerOptions) { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
-            ],
+            Parameters = CreateDefaultKernelParameterMetadata(jsonSerializerOptions),
             ReturnParameter = new(jsonSerializerOptions) { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
         };
 
@@ -545,5 +515,28 @@ public static class TextSearchExtensions
 
         return filter;
     }
+
+    private static IEnumerable<KernelParameterMetadata> CreateDefaultKernelParameterMetadata(JsonSerializerOptions jsonSerializerOptions)
+    {
+        return [
+            new KernelParameterMetadata("query", jsonSerializerOptions) { Description = "What to search for", IsRequired = true },
+            new KernelParameterMetadata("count", jsonSerializerOptions) { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+            new KernelParameterMetadata("skip", jsonSerializerOptions) { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+        ];
+    }
+
+    [RequiresUnreferencedCode("Uses reflection for generating JSON schema for method parameters and return type, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection for generating JSON schema for method parameters and return type, making it incompatible with AOT scenarios.")]
+    private static IEnumerable<KernelParameterMetadata> GetDefaultKernelParameterMetadata()
+    {
+        return s_kernelParameterMetadata ??= [
+            new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+            new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+            new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
+        ];
+    }
+
+    private static IEnumerable<KernelParameterMetadata>? s_kernelParameterMetadata;
+
     #endregion
 }
