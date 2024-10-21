@@ -168,6 +168,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         foreach (var citation in citations)
         {
             Console.WriteLine($"Chunk ID: {citation.ChunkId}");
+            Console.WriteLine($"Title: {citation.Title}");
             Console.WriteLine($"File path: {citation.FilePath}");
             Console.WriteLine($"URI: {citation.Uri}");
             Console.WriteLine($"Content: {citation.Content}");
