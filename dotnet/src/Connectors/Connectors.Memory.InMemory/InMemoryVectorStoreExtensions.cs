@@ -32,7 +32,6 @@ public static class InMemoryVectorStoreExtensions
         Stream stream,
         JsonSerializerOptions? jsonSerializerOptions = null)
         where TKey : notnull
-        where TRecord : class
     {
         // Get collection and verify that it exists.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -60,7 +59,6 @@ public static class InMemoryVectorStoreExtensions
         this InMemoryVectorStore vectorStore,
         Stream stream)
         where TKey : notnull
-        where TRecord : class
     {
         IVectorStoreRecordCollection<TKey, TRecord>? collection = null;
 
@@ -92,7 +90,6 @@ public static class InMemoryVectorStoreExtensions
     /// <summary>Model class used when storing a <see cref="InMemoryVectorStoreRecordCollection{TKey, TRecord}" />.</summary>
     private sealed class InMemoryRecordCollection<TKey, TRecord>(string name, IDictionary<TKey, TRecord> records)
         where TKey : notnull
-        where TRecord : class
     {
         public string Name { get; init; } = name;
         public IDictionary<TKey, TRecord> Records { get; init; } = records;

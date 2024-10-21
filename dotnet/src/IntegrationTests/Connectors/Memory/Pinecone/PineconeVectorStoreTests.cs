@@ -48,7 +48,6 @@ public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture) : ICla
             string name,
             VectorStoreRecordDefinition? vectorStoreRecordDefinition)
             where TKey : notnull
-            where TRecord : class
         {
             if (typeof(TKey) != typeof(string))
             {

@@ -5,7 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Sqlite</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <VersionSuffix>alpha</VersionSuffix>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
@@ -27,6 +27,10 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.Sqlite.UnitTests" />
   </ItemGroup>
 
 </Project>

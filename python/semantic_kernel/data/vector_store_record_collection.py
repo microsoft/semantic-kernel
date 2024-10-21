@@ -9,9 +9,7 @@ from typing import Any, ClassVar, Generic, TypeVar
 
 from pydantic import model_validator
 
-from semantic_kernel.data.vector_store_model_definition import (
-    VectorStoreRecordDefinition,
-)
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_model_protocols import (
     VectorStoreModelFunctionSerdeProtocol,
     VectorStoreModelPydanticProtocol,

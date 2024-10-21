@@ -180,7 +180,6 @@ public static class KernelBuilderExtensions
         VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         builder.Services.AddVolatileVectorStoreTextSearch<TKey, TRecord>(collectionName, stringMapper, resultMapper, options, serviceId);
         return builder;
@@ -207,7 +206,6 @@ public static class KernelBuilderExtensions
         VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         builder.AddVolatileVectorStoreTextSearch<TKey, TRecord>(
             collectionName,

@@ -152,7 +152,6 @@ using MongoDB.Bson.Serialization.Conventions;
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, BsonDocument>
-    where TRecord : class
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =

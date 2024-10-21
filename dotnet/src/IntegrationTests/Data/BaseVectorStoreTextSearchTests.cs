@@ -52,7 +52,6 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecordFromString<TKey, TRecord> createRecord)
         where TKey : notnull
-        where TRecord : class
     {
         var lines = await File.ReadAllLinesAsync("./TestData/semantic-kernel-info.txt");
 
@@ -116,7 +115,6 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
     /// </summary>
     protected sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
-        where TRecord : class
     {
         /// <inheritdoc/>
 <<<<<<< HEAD

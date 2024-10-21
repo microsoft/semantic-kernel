@@ -726,7 +726,6 @@ public static class AzureAISearchServiceCollectionExtensions
         string collectionName,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-            where TRecord : class
     {
         // If we are not constructing the SearchIndexClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how SearchIndexClient is being managed.
@@ -768,7 +767,6 @@ public static class AzureAISearchServiceCollectionExtensions
         TokenCredential tokenCredential,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-            where TRecord : class
     {
         Verify.NotNull(endpoint);
         Verify.NotNull(tokenCredential);
@@ -813,7 +811,6 @@ public static class AzureAISearchServiceCollectionExtensions
         AzureKeyCredential credential,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-            where TRecord : class
     {
         Verify.NotNull(endpoint);
         Verify.NotNull(credential);
@@ -848,7 +845,6 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
-        where TRecord : class
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

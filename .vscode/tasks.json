@@ -9,6 +9,26 @@
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
+      "label": "setup (contributing-R#)",
+      "detail": "",
+      "group": "build",
+      "dependsOn": ["new tool-manifest", "# Setup"],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "new tool-manifest",
+      "detail": "Install ReSharper Global Tools",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["new", "tool-manifest"],
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet"
+      }
+    },
+    {
+      "label": "R# Setup",
+      "detail": "Install ReSharper Global Tools",
+      "command": "dotnet",
       "type": "process",
       "problemMatcher": "$msCompile",
       "options": {
@@ -45,6 +65,7 @@
         "/consoleloggerparameters:NoSummary"
       ],
       "type": "process",
+      "args": ["test", "SemanticKernel.UnitTests.csproj"],
       "problemMatcher": "$msCompile",
       "options": {
         "cwd": "${workspaceFolder}/samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions"
@@ -76,6 +97,84 @@
       "command": "host start",
       "isBackground": true,
       "problemMatcher": "$func-dotnet-watch"
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
+      }
+    },
+    // ****************
+    // Samples (dotnet)
+    // ****************
+    // Kernel Syntax Examples
+    {
+      "label": "build (Concepts)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "/property:DebugType=portable"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "watch (Concepts)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "run (Concepts)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
+        "${input:filter}"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "PR-Validate"
+      }
+    },
+    {
+      "label": "daprd-debug",
+      "type": "daprd",
+      "appId": "processwithdapr",
+      "logLevel": "debug",
+      "appPort": 5231,
+      "httpPort": 3500
+    },
+    {
+      "label": "dapr-down",
+      "type": "shell",
+      "command": ["dapr stop --app-id processwithdapr"],
+      "presentation": {
+        "clear": true,
+        "close": true,
+        "reveal": "never"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "filter",
+      "type": "promptString",
+      "default": "",
+      "description": "Enter a filter to pass as argument or filter"
     }
   ]
 }

@@ -3034,7 +3034,7 @@ internal static class AssistantThreadActions
 >>>>>>> Stashed changes
 >>>>>>> head
     {
-        ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
+        ChatMessageContent functionCallContent = new(AuthorRole.Assistant, content: null)
         {
             AuthorName = agentName
         };

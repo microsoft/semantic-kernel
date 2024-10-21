@@ -453,7 +453,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 >>>>>>> Stashed changes
 >>>>>>> head
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance, IndexKind: IndexKind.IvfFlat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 #pragma warning restore CS8618

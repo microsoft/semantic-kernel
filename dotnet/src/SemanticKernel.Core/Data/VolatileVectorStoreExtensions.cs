@@ -39,7 +39,6 @@ public static class VolatileVectorStoreExtensions
         Stream stream,
         JsonSerializerOptions? jsonSerializerOptions = null)
         where TKey : notnull
-        where TRecord : class
     {
         // Get collection and verify that it exists.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -67,7 +66,6 @@ public static class VolatileVectorStoreExtensions
         this VolatileVectorStore vectorStore,
         Stream stream)
         where TKey : notnull
-        where TRecord : class
     {
         IVectorStoreRecordCollection<TKey, TRecord>? collection = null;
 
@@ -99,7 +97,6 @@ public static class VolatileVectorStoreExtensions
     /// <summary>Model class used when storing a <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}" />.</summary>
     private sealed class VolatileRecordCollection<TKey, TRecord>(string name, IDictionary<TKey, TRecord> records)
         where TKey : notnull
-        where TRecord : class
     {
         public string Name { get; init; } = name;
         public IDictionary<TKey, TRecord> Records { get; init; } = records;

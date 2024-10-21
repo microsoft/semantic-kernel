@@ -115,6 +115,6 @@ public record AzureCosmosDBNoSQLHotel()
 >>>>>>> Stashed changes
 >>>>>>> head
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

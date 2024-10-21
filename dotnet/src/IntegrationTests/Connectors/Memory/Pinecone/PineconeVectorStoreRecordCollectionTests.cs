@@ -685,7 +685,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         [VectorStoreRecordData]
         public string? Name { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 5, IndexKind: null, DistanceFunction: "just eyeball it")]
+        [VectorStoreRecordVector(Dimensions: 5, DistanceFunction: "just eyeball it")]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 #pragma warning restore CA1812

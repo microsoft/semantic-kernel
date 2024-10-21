@@ -6,6 +6,52 @@
       "type": "coreclr",
       "request": "attach",
       "processId": "${command:azureFunctions.pickProcess}"
+      "request": "launch",
+      "preLaunchTask": "build (Concepts)",
+      // If you have changed target frameworks, make sure to update the program path.
+      "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
+      "args": [
+        /*"example0"*/
+      ],
+      "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
+      // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach"
+    },
+    {
+      "cwd": "${workspaceFolder}/python",
+      "name": "Python: Test Module",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${file}"]
+    },
+    {
+      "name": "C#: HuggingFaceImageToText Demo",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}\\dotnet\\samples\\Demos\\HuggingFaceImageToText.csproj",
+      "launchConfigurationId": "TargetFramework=;HuggingFaceImageToText"
+    },
+    {
+      "name": "C#: GettingStarted Samples",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}\\dotnet\\samples\\GettingStarted\\GettingStarted.csproj",
+      "launchConfigurationId": "TargetFramework=;GettingStarted"
+    },
+    {
+      "name": "C#: Process with Dapr",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}\\dotnet\\samples\\Demos\\ProcessWithDapr\\ProcessWithDapr.csproj",
+      "preLaunchTask": "daprd-debug",
+      "postDebugTask": "dapr-down"
     }
   ]
 }

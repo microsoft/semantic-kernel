@@ -85,7 +85,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<ulong, TRecord>, IVectorStoreRecordCollection<Guid, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TRecord : class
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =

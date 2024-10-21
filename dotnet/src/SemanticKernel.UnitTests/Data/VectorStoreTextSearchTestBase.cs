@@ -143,7 +143,6 @@ public class VectorStoreTextSearchTestBase
     /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
     /// </summary>
     public sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
-        where TRecord : class
     {
         /// <inheritdoc/>
 <<<<<<< HEAD

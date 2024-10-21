@@ -111,7 +111,6 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         string collectionName,
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         builder.Services.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
         return builder;
@@ -136,7 +135,6 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         string databaseName,
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         builder.Services.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(collectionName, connectionString, databaseName, options, serviceId);
         return builder;

@@ -74,7 +74,6 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// Options when creating a <see cref="RedisHashSetVectorStoreRecordCollectionOptions{TRecord}"/>.
 /// </summary>
 public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
-    where TRecord : class
 {
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the

@@ -259,7 +259,6 @@ public static class PineconeServiceCollectionExtensions
         string collectionName,
         PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-            where TRecord : class
     {
         // If we are not constructing the PineconeClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how PineconeClient is being managed.
@@ -298,7 +297,6 @@ public static class PineconeServiceCollectionExtensions
         string apiKey,
         PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-            where TRecord : class
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -325,7 +323,6 @@ public static class PineconeServiceCollectionExtensions
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
-        where TRecord : class
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

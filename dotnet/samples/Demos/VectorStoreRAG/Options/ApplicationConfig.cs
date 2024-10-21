@@ -11,6 +11,8 @@ internal sealed class ApplicationConfig
 {
     private readonly AzureOpenAIConfig _azureOpenAIConfig;
     private readonly AzureOpenAIEmbeddingsConfig _azureOpenAIEmbeddingsConfig = new();
+    private readonly OpenAIConfig _openAIConfig = new();
+    private readonly OpenAIEmbeddingsConfig _openAIEmbeddingsConfig = new();
     private readonly RagConfig _ragConfig = new();
     private readonly AzureAISearchConfig _azureAISearchConfig = new();
     private readonly AzureCosmosDBConfig _azureCosmosDBMongoDBConfig = new();
@@ -28,6 +30,12 @@ internal sealed class ApplicationConfig
         configurationManager
             .GetRequiredSection($"AIServices:{AzureOpenAIEmbeddingsConfig.ConfigSectionName}")
             .Bind(this._azureOpenAIEmbeddingsConfig);
+        configurationManager
+            .GetRequiredSection($"AIServices:{OpenAIConfig.ConfigSectionName}")
+            .Bind(this._openAIConfig);
+        configurationManager
+            .GetRequiredSection($"AIServices:{OpenAIEmbeddingsConfig.ConfigSectionName}")
+            .Bind(this._openAIEmbeddingsConfig);
         configurationManager
             .GetRequiredSection(RagConfig.ConfigSectionName)
             .Bind(this._ragConfig);
@@ -54,6 +62,10 @@ internal sealed class ApplicationConfig
     public AzureOpenAIConfig AzureOpenAIConfig => this._azureOpenAIConfig;
 
     public AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddingsConfig => this._azureOpenAIEmbeddingsConfig;
+
+    public OpenAIConfig OpenAIConfig => this._openAIConfig;
+
+    public OpenAIEmbeddingsConfig OpenAIEmbeddingsConfig => this._openAIEmbeddingsConfig;
 
     public RagConfig RagConfig => this._ragConfig;
 

@@ -7323,7 +7323,7 @@ requires-dist = [
     { name = "transformers", extras = ["torch"], marker = "extra == 'hugging-face'", specifier = "~=4.28" },
     { name = "types-redis", marker = "extra == 'redis'", specifier = "~=4.6.0.20240425" },
     { name = "usearch", marker = "extra == 'usearch'", specifier = "~=2.9" },
-    { name = "weaviate-client", marker = "extra == 'weaviate'", specifier = ">=3.18,<5.0" },
+    { name = "weaviate-client", marker = "extra == 'weaviate'", specifier = ">=4.7,<5.0" },
 ]
 
 [package.metadata.requires-dev]

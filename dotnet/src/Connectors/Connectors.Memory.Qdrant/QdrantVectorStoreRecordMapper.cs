@@ -128,7 +128,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, PointStruct>
-    where TRecord : class
 {
 <<<<<<< HEAD
 <<<<<<< div

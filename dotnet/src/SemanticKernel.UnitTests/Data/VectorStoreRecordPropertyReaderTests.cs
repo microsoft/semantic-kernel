@@ -1348,7 +1348,7 @@ public class VectorStoreRecordPropertyReaderTests
 >>>>>>> head
         public string Data2 { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4, IndexKind.Flat, DistanceFunction.DotProductSimilarity)]
+        [VectorStoreRecordVector(4, DistanceFunction.DotProductSimilarity, IndexKind.Flat)]
         public ReadOnlyMemory<float> Vector1 { get; set; }
 
 <<<<<<< HEAD

@@ -19,5 +19,4 @@ namespace Microsoft.SemanticKernel.Data;
 [Obsolete("This has been replaced by InMemoryVectorStoreKeyResolver in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 >>>>>>> main
 public delegate TKey? VolatileVectorStoreKeyResolver<TKey, TRecord>(TRecord record)
-    where TKey : notnull
-    where TRecord : class;
+    where TKey : notnull;

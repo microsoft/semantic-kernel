@@ -23,7 +23,9 @@ Example|Description
 ---|---
 [Step01_Processes](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step01/Step01_Processes.cs)|How to create a simple process with a loop and a conditional exit
 [Step02_AccountOpening](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step02/Step02_AccountOpening.cs)|Showcasing processes cycles, fan in, fan out for opening an account.
-[Step03_FoodPreparation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03_FoodPreparation.cs)|Showcasing reuse of steps, creation of processes, spawning of multiple events.
+[Step03a_FoodPreparation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03a_FoodPreparation.cs)|Showcasing reuse of steps, creation of processes, spawning of multiple events, use of stateful steps with food preparation samples.
+[Step03b_FoodOrdering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step03/Step03b_FoodOrdering.cs)|Showcasing use of subprocesses as steps, spawning of multiple events conditionally reusing the food preparation samples. 
+[Step04_AgentOrchestration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/Step04/Step04_AgentOrchestration.cs)|Showcasing use of process steps in conjunction with the _Agent Framework_. 
 
 ### Step01_Processes
 
@@ -67,7 +69,7 @@ flowchart LR
     Mailer -->|End of Interaction| User
 ```
 
-### Step03_FoodPreparation
+### Step03a_FoodPreparation
 
 This tutorial contains a set of food recipes associated with the Food Preparation Processes of a restaurant.
 
@@ -75,7 +77,9 @@ The following recipes for preparation of Order Items are defined as SK Processes
 
 #### Product Preparation Processes
 
-##### Potato Fries Preparation Process
+##### Stateless Product Preparation Processes
+
+###### Potato Fries Preparation Process
 
 ``` mermaid
 flowchart LR
@@ -90,7 +94,7 @@ flowchart LR
     FryStep -->|Fried Potato Ruined <br/> _Fried Food Ruined_| GatherIngredientsStep
 ```
 
-##### Fried Fish Preparation Process
+###### Fried Fish Preparation Process
 
 ``` mermaid
 flowchart LR
@@ -105,7 +109,7 @@ flowchart LR
     FryStep -->|**Fried Fish Ruined** <br/> _Fried Food Ruined_| GatherIngredientsStep
 ```
 
-##### Fish Sandwich Preparation Process
+###### Fish Sandwich Preparation Process
 
 ``` mermaid
 flowchart LR
@@ -119,7 +123,7 @@ flowchart LR
     PrepareFishSandwichEvent -->|Prepare Fried Fish| FriedFishStep -->|Fried Fish Ready| AddBunsStep --> |Buns Added  | AddSpecialSauceStep --> |Special Sauce Added | FishSandwichReadyEvent
 ```
 
-##### Fish And Chips Preparation Process
+###### Fish And Chips Preparation Process
 
 ``` mermaid
 flowchart LR
@@ -134,6 +138,90 @@ flowchart LR
     PrepareFishAndChipsEvent -->|Prepare Potato Fries| PotatoFriesStep -->|Potato Fries Ready| AddCondiments
     AddCondiments -->|Condiments Added| FishAndChipsReadyEvent
 ```
+
+##### Stateful Product Preparation Processes
+
+The processes in this subsection contain the following modifications/additions to previously used food preparation processes:
+
+- The `Gather Ingredients Step` is now stateful and has a predefined number of initial ingredients that are used as orders are prepared. When there are no ingredients left, it emits the `Out of Stock Event`.
+- The `Cut Food Step` is now a stateful component which has a `Knife Sharpness State` that tracks the Knife Sharpness.
+- As the `Slice Food` and `Chop Food` Functions get invoked, the Knife Sharpness deteriorates.
+- The `Cut Food Step` has an additional input function `Sharpen Knife Function`.
+- The new `Sharpen Knife Function` sharpens the knife and increases the Knife Sharpness - Knife Sharpness State.
+- From time to time, the `Cut Food Step`'s functions `SliceFood` and `ChopFood` will fail and emit a `Knife Needs Sharpening Event` that then triggers the `Sharpen Knife Function`.
+
+
+###### Potato Fries Preparation With Knife Sharpening and Ingredient Stock Process
+
+The following processes is a modification on the process [Potato Fries Preparation](#potato-fries-preparation-process) 
+with the the stateful steps mentioned previously.
+
+``` mermaid
+flowchart LR
+    PreparePotatoFriesEvent([Prepare Potato <br/> Fries Event])
+    PotatoFriesReadyEvent([Potato Fries <br/> Ready Event])
+    OutOfStock([Ingredients <br/> Out of Stock <br/> Event])
+
+    FryStep[Fry Food <br/> Step]
+
+    subgraph GatherIngredientsStep[Gather Ingredients Step]
+        GatherIngredientsFunction[Gather Potato <br/> Function]
+        IngredientsState[(Ingredients <br/> Stock <br/> State)]
+    end
+    subgraph CutStep ["Cut Food Step"]
+        direction LR
+        SliceFoodFunction[Slice Food <br/> Function]
+        SharpenKnifeFunction[Sharpen Knife <br/> Function]
+        CutState[(Knife <br/> Sharpness <br/> State)]
+    end
+    
+    CutStep --> |**Potato Sliced Ready** <br/> _Food Sliced Ready_ | FryStep --> |_Fried Food Ready_|PotatoFriesReadyEvent
+    FryStep -->|Fried Potato Ruined <br/> _Fried Food Ruined_| GatherIngredientsStep
+    GatherIngredientsStep --> OutOfStock
+    
+    SliceFoodFunction --> |Knife Needs Sharpening| SharpenKnifeFunction
+    SharpenKnifeFunction --> |Knife Sharpened| SliceFoodFunction
+
+    GatherIngredientsStep -->| Slice Potatoes <br/> _Ingredients Gathered_ | CutStep
+    PreparePotatoFriesEvent --> GatherIngredientsStep 
+```
+
+###### Fried Fish Preparation With Knife Sharpening and Ingredient Stock Process
+
+The following process is a modification on the process [Fried Fish Preparation](#fried-fish-preparation-process) 
+with the the stateful steps mentioned previously.
+
+``` mermaid
+flowchart LR
+    PrepareFriedFishEvent([Prepare Fried <br/> Fish Event])
+    FriedFishReadyEvent([Fried Fish <br/> Ready Event])
+    OutOfStock([Ingredients <br/> Out of Stock <br/> Event])
+
+    FryStep[Fry Food <br/> Step]
+
+    subgraph GatherIngredientsStep[Gather Ingredients Step]
+        GatherIngredientsFunction[Gather Fish <br/> Function]
+        IngredientsState[(Ingredients <br/> Stock <br/> State)]
+    end
+    subgraph CutStep ["Cut Food Step"]
+        direction LR
+        ChopFoodFunction[Chop Food <br/> Function]
+        SharpenKnifeFunction[Sharpen Knife <br/> Function]
+        CutState[(Knife <br/> Sharpness <br/> State)]
+    end
+    
+    CutStep --> |**Fish Chopped Ready** <br/> _Food Chopped Ready_| FryStep --> |_Fried Food Ready_|FriedFishReadyEvent
+    FryStep -->|**Fried Fish Ruined** <br/> _Fried Food Ruined_| GatherIngredientsStep
+    GatherIngredientsStep --> OutOfStock
+    
+    ChopFoodFunction --> |Knife Needs Sharpening| SharpenKnifeFunction
+    SharpenKnifeFunction --> |Knife Sharpened| ChopFoodFunction
+
+    GatherIngredientsStep -->| Chop Fish <br/> _Ingredients Gathered_ | CutStep
+    PrepareFriedFishEvent --> GatherIngredientsStep 
+```
+
+### Step03b_FoodOrdering
 
 #### Single Order Preparation Process
 
@@ -160,6 +248,27 @@ graph TD
     DispatchOrderStep -->|Prepare Fish & Chips| FishAndChipsStep -->|Fish & Chips Ready| SingleOrderReadyEvent
 
     SingleOrderReadyEvent-->PackFoodStep --> OrderPackedEvent
+```
+
+### Step04_AgentOrchestration
+
+This tutorial demonstrates integrating the _Agent Framework_ with processes.
+This includes both direct _agent_ interaction as well as making use of _AgentGroupChat_.
+
+```mermaid
+flowchart RL
+    O --> A
+    O((Start))
+    A[User] -->|input| B[ManagerAgent]
+    A --> F((Done))
+    B --> |response|A
+    B --> |delegate| G
+    G --> |response|B
+    subgraph G[GroupChat]
+        direction LR
+        D[Agent1] --> E
+        E[Agent2] --> D
+    end
 ```
 
 ## Running Examples with Filters

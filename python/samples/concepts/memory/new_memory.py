@@ -40,6 +40,7 @@ from semantic_kernel.connectors.memory.postgres.postgres_collection import Postg
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.volatile import VolatileCollection
+from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
 from semantic_kernel.data import (
     VectorStoreRecordCollection,
 >>>>>>> Stashed changes
@@ -118,6 +119,9 @@ MyDataModel = MyDataModelArray
 # - redis_hashset: Redis Hashset
 # - qdrant: Qdrant
 # - volatile: In-memory store
+# - weaviate: Weaviate
+#   Please either configure the weaviate settings via environment variables or provide them through the constructor.
+#   Note that embed mode is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315
 #
 # This is represented as a mapping from the store name to a
 # function which returns the store.
@@ -153,6 +157,10 @@ stores: dict[str, Callable[[], VectorStoreRecordCollection]] = {
 >>>>>>> upstream/main
     ),
     "volatile": lambda: VolatileCollection[MyDataModel](
+        data_model_type=MyDataModel,
+        collection_name=collection_name,
+    ),
+    "weaviate": lambda: WeaviateCollection[MyDataModel](
         data_model_type=MyDataModel,
         collection_name=collection_name,
     ),

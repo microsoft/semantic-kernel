@@ -97,7 +97,6 @@ namespace Microsoft.SemanticKernel.Data;
 public sealed class VolatileVectorStoreRecordCollection<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
-    where TRecord : class
 {
 <<<<<<< main
 <<<<<<< HEAD
@@ -982,10 +981,10 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, [DynamicallyAccess
 
         if (collectionDictionary.TryGetValue(key, out var record))
         {
-            return Task.FromResult<TRecord?>(record as TRecord);
+            return Task.FromResult<TRecord?>((TRecord?)record);
         }
 
-        return Task.FromResult<TRecord?>(null);
+        return Task.FromResult<TRecord?>(default);
     }
 
     /// <inheritdoc />
@@ -1027,6 +1026,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, [DynamicallyAccess
     /// <inheritdoc />
     public Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(record);
+
         var collectionDictionary = this.GetCollectionDictionary();
 
 <<<<<<< main

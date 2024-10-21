@@ -179,6 +179,13 @@ public abstract class BaseTest : TextWriter
     {
         var builder = Kernel.CreateBuilder();
 
+        AddChatCompletionToKernel(builder);
+
+        return builder.Build();
+    }
+
+    protected void AddChatCompletionToKernel(IKernelBuilder builder)
+    {
         if (this.UseOpenAIConfig)
         {
             builder.AddOpenAIChatCompletion(
@@ -192,8 +199,6 @@ public abstract class BaseTest : TextWriter
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
         }
-
-        return builder.Build();
     }
 
 <<<<<<< HEAD
