@@ -1,0 +1,164 @@
+{
+    "version": "0.2",
+    "languageSettings": [
+        {
+            "languageId": "py",
+            "allowCompoundWords": true,
+            "locale": "en-US"
+        }
+    ],
+    "language": "en-US",
+    "patterns": [
+        {
+            "name": "import",
+            "pattern": "import [a-zA-Z0-9_]+"
+        },
+        {
+            "name": "from import",
+            "pattern": "from [a-zA-Z0-9_]+ import [a-zA-Z0-9_]+"
+        }
+    ],
+    "ignorePaths": [
+        "samples/**",
+        "notebooks/**"
+    ],
+    "words": [
+        "aeiou",
+        "azuredocindex",
+        "azuredocs",
+        "boto",
+        "contentvector",
+        "dotenv",
+<<<<<<< main
+=======
+        "endregion",
+        "genai",
+        "generativeai",
+        "hnsw",
+        "httpx",
+        "huggingface",
+        "kernelfunction",
+>>>>>>> upstream/main
+        "logit",
+        "logprobs",
+        "mongocluster",
+        "ndarray",
+        "nopep",
+        "ollama",
+        "onyourdatatest",
+        "OPENAI",
+        "pydantic",
+        "retrywrites",
+        "kernelfunction",
+        "skprompt",
+        "templating",
+        "vectordb",
+<<<<<<< main
+        "generativeai",
+        "genai",
+        "protos",
+        "endregion",
+        "vertexai",
+        "aiplatform",
+        "serde",
+        "datamodel",
+        "vectorstoremodel",
+        "qdrant",
+        "huggingface",
+        "pytestmark",
+        "contoso",
+        "opentelemetry",
+        "SEMANTICKERNEL",
+<<<<<<< HEAD
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        "OTEL",
+        "mistralai"
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+<<<<<<< HEAD
+        "OTEL",
+        "mistralai"
+=======
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+        "OTEL",
+        "mistralai"
+=======
+>>>>>>> Stashed changes
+=======
+        "OTEL",
+        "mistralai"
+=======
+>>>>>>> Stashed changes
+>>>>>>> head
+<<<<<<< main
+        "OTEL",
+        "mistralai"
+        "vectorizable"
+=======
+        "OTEL"
+>>>>>>> ms/features/bugbash-prep
+<<<<<<< div
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> head
+<<<<<<< HEAD
+>>>>>>> main
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> eab985c52d058dc92abc75034bc790079131ce75
+<<<<<<< div
+=======
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+=======
+>>>>>>> main
+>>>>>>> Stashed changes
+>>>>>>> head
+=======
+        "vectorizer",
+        "vectorstoremodel",
+        "vertexai",
+        "Weaviate"
+>>>>>>> upstream/main
+    ]
+}
