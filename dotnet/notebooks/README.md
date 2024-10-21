@@ -63,7 +63,7 @@ For a quick dive, look at the [getting started notebook](00-getting-started.ipyn
 7. [Creating images with DALL-E 3](07-DALL-E-3.ipynb)
 8. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-3.ipynb)
 9. [Building Semantic Memory with Chroma](09-memory-with-chroma.ipynb)
-10. [BingSearch using Kernel](10-BingSearch-using-kernel.ipynb)
+10. [BingSearch using Kernel](10-RAG-with-BingSearch.ipynb)
 
 # Run notebooks in the browser with JupyterLab
 
