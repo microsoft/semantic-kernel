@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -82,8 +81,8 @@ internal sealed class LocalMap : LocalStep
                     .Where(step => step.Edges.Count == 0)
                     .Single()
                     .State;
-            object resultState = state.GetType().GetProperty("State")!.GetValue(state)!; // %%% NULLABLE / TYPE ASSUMPTION
-            object result = resultState!.GetType().GetProperty("Value")!.GetValue(resultState)!; // %%% NULLABLE / TYPE ASSUMPTION
+            object resultState = state.GetType().GetProperty("State")!.GetValue(state)!; // %%% NULLABLE / TYPE ASSUMPTION (CLEAN-UP)
+            object result = resultState.GetType().GetProperty("Value")!.GetValue(resultState)!; // %%% NULLABLE / TYPE ASSUMPTION (CLEAN-UP)
             if (results == null)
             {
                 Type elementType = result.GetType();
@@ -98,24 +97,11 @@ internal sealed class LocalMap : LocalStep
         await this.EmitEventAsync(new() { Id = this._map.CompleteEventId, Data = results, Visibility = KernelProcessEventVisibility.Public }).ConfigureAwait(false);
     }
 
-    #region Private Methods
-
-    /// <summary>
-    /// Loads the process and initializes the steps. Once this is complete the process can be started.
-    /// </summary>
-    /// <returns>A <see cref="Task"/></returns>
-    private ValueTask InitializeMapAsync()
-    {
-        return default;
-    }
-
     /// <inheritdoc/>
     protected override ValueTask InitializeStepAsync()
     {
-        // The process does not need any further initialization as it's already been initialized.
+        // The map does not need any further initialization as it's already been initialized.
         // Override the base method to prevent it from being called.
         return default;
     }
-
-    #endregion
 }
