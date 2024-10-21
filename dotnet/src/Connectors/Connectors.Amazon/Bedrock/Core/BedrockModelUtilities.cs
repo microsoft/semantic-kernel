@@ -103,8 +103,8 @@ internal static class BedrockModelUtilities
     /// <summary>
     /// Sets Prompt Execution Settings data if the value is not null.
     /// </summary>
-    /// <param name="getValue">Getter</param>
-    /// <param name="setValue">Setter</param>
+    /// <param name="getValue">Getter function delegate</param>
+    /// <param name="setValue">Setter function delegate</param>
     /// <typeparam name="T">Parameter type</typeparam>
     internal static void SetPropertyIfNotNull<T>(Func<T?> getValue, Action<T> setValue) where T : struct
     {

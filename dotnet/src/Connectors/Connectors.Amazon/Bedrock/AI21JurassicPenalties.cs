@@ -5,9 +5,10 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Amazon;
 
 /// <summary>
-/// Penalty struct for AI21 Jurassic. Accessed by both the execution settings and request object so must be kept public.
+/// Penalty for AI21 Jurassic.
+/// https://docs.ai21.com/reference/j2-complete-ref
 /// </summary>
-public class AI21JurassicPenalties
+public sealed class AI21JurassicPenalties
 {
     /// <summary>
     /// Scale of the penalty.

@@ -13,7 +13,7 @@ internal static class AI21JambaResponse
     /// <summary>
     /// AI21 Text Generation Response object (from Invoke).
     /// </summary>
-    internal class AI21TextResponse
+    internal sealed class AI21TextResponse
     {
         /// <summary>
         /// A unique ID for the request (not the message). Repeated identical requests get different IDs. However, for a streaming response, the ID will be the same for all responses in the stream.
@@ -37,7 +37,7 @@ internal static class AI21JambaResponse
     /// <summary>
     /// The members for the Choice class as required by AI21 Labs Jamba.
     /// </summary>
-    internal class Choice
+    internal sealed class Choice
     {
         /// <summary>
         /// Zero-based index of the message in the list of messages. Note that this might not correspond with the position in the response list.
@@ -63,7 +63,7 @@ internal static class AI21JambaResponse
     /// <summary>
     /// Message object for the model with role and content as required.
     /// </summary>
-    internal class Message
+    internal sealed class Message
     {
         /// <summary>
         /// The role of the message author. One of the following values:
@@ -84,7 +84,7 @@ internal static class AI21JambaResponse
     /// <summary>
     /// The token counts for this request. Per-token billing is based on the prompt token and completion token counts and rates.
     /// </summary>
-    internal class JambaUsage
+    internal sealed class JambaUsage
     {
         /// <summary>
         /// Number of tokens in the prompt for this request. Note that the prompt token includes the entire message history, plus extra tokens needed by the system when combining the list of prompt messages into a single message, as required by the model. The number of extra tokens is typically proportional to the number of messages in the thread, and should be relatively small.
@@ -99,7 +99,7 @@ internal static class AI21JambaResponse
         public int CompletionTokens { get; set; }
 
         /// <summary>
-        /// prompt_tokens + completion_tokens.
+        /// Total tokens in the response message
         /// </summary>
         [JsonPropertyName("total_tokens")]
         public int TotalTokens { get; set; }

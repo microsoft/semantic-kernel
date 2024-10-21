@@ -3,8 +3,9 @@
 using System;
 using System.Diagnostics;
 using System.Net;
-using System.Reflection;
+using Amazon.Runtime;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
@@ -13,9 +14,6 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// </summary>
 internal sealed class BedrockClientUtilities
 {
-    public const string UserAgentHeader = "User-Agent";
-    public static readonly string UserAgentString = $"lib/semantic-kernel#{Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty}";
-
     /// <summary>
     /// Convert the Http Status Code in Converse Response to the Activity Status Code for Semantic Kernel activity.
     /// </summary>
@@ -52,5 +50,15 @@ internal sealed class BedrockClientUtilities
             "SYSTEM" => AuthorRole.System,
             _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
         };
+    }
+
+    internal static void AWSServiceClient_BeforeServiceRequest(object sender, RequestEventArgs e)
+    {
+        if (e is not WebServiceRequestEventArgs args || !args.Headers.TryGetValue("User-Agent", out string? value) || value.Contains(HttpHeaderConstant.Values.UserAgent))
+        {
+            return;
+        }
+        args.Headers["User-Agent"] = $"{value} {HttpHeaderConstant.Values.UserAgent}";
+        args.Headers[HttpHeaderConstant.Names.SemanticKernelVersion] = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BedrockClientUtilities));
     }
 }

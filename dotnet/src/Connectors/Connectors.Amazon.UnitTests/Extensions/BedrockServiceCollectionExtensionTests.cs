@@ -4,6 +4,7 @@ using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
@@ -64,7 +65,7 @@ public class BedrockServiceCollectionExtensionTests
         var requestEventArgs = new Mock<RequestEventArgs>();
 
         // Act
-        BedrockServiceCollectionExtensions.AWSServiceClient_BeforeServiceRequest(null!, requestEventArgs.Object);
+        BedrockClientUtilities.AWSServiceClient_BeforeServiceRequest(null!, requestEventArgs.Object);
 
         // Assert
         // No exceptions should be thrown

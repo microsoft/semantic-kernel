@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Mistral Text Response body.
 /// </summary>
-public class MistralResponse
+public sealed class MistralResponse
 {
     /// <summary>
     /// A list of outputs from the model.
@@ -19,7 +19,7 @@ public class MistralResponse
     /// <summary>
     /// Output parameters for the list of outputs of the text response.
     /// </summary>
-    public class Output
+    public sealed class Output
     {
         /// <summary>
         /// The text that the model generated.

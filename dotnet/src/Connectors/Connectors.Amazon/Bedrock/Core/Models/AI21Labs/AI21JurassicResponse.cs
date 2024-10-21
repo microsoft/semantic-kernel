@@ -124,7 +124,7 @@ internal sealed class AI21JurassicResponse
         public JurassicData? Data { get; set; }
 
         /// <summary>
-        /// This nested data structure explains why the generation process was halted for a specific completion.
+        /// This nested data structure explains the reason of the generation ending.
         /// </summary>
         [JsonPropertyName("finishReason")]
         public FinishReason? FinishReason { get; set; }

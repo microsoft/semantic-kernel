@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Amazon.BedrockRuntime;
-using Amazon.Runtime;
-using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 namespace Microsoft.SemanticKernel;
 
@@ -51,14 +49,5 @@ public static class BedrockKernelBuilderExtensions
         builder.Services.AddBedrockTextGenerationService(modelId, bedrockRuntime, serviceId);
 
         return builder;
-    }
-
-    internal static void AWSServiceClient_BeforeServiceRequest(object sender, RequestEventArgs e)
-    {
-        if (e is not WebServiceRequestEventArgs args || !args.Headers.TryGetValue(BedrockClientUtilities.UserAgentHeader, out string? value) || value.Contains(BedrockClientUtilities.UserAgentString))
-        {
-            return;
-        }
-        args.Headers[BedrockClientUtilities.UserAgentHeader] = $"{value} {BedrockClientUtilities.UserAgentString}";
     }
 }

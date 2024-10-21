@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Text generation response object for Meta Llama.
 /// </summary>
-internal class LlamaResponse
+internal sealed class LlamaResponse
 {
     /// <summary>
     /// The generated text.

@@ -49,7 +49,7 @@ public static class BedrockServiceCollectionExtensions
                 if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
                 {
                     // Cast to AmazonServiceClient and subscribe to the event
-                    ((AmazonServiceClient)runtime).BeforeRequestEvent += AWSServiceClient_BeforeServiceRequest;
+                    ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.AWSServiceClient_BeforeServiceRequest;
                 }
                 return new BedrockChatCompletionService(modelId, runtime, logger);
             }
@@ -91,7 +91,7 @@ public static class BedrockServiceCollectionExtensions
                 if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
                 {
                     // Cast to AmazonServiceClient and subscribe to the event
-                    ((AmazonServiceClient)runtime).BeforeRequestEvent += AWSServiceClient_BeforeServiceRequest;
+                    ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.AWSServiceClient_BeforeServiceRequest;
                 }
                 return new BedrockTextGenerationService(modelId, runtime, logger);
             }
@@ -102,14 +102,5 @@ public static class BedrockServiceCollectionExtensions
         });
 
         return services;
-    }
-
-    internal static void AWSServiceClient_BeforeServiceRequest(object sender, RequestEventArgs e)
-    {
-        if (e is not WebServiceRequestEventArgs args || !args.Headers.TryGetValue(BedrockClientUtilities.UserAgentHeader, out string? value) || value.Contains(BedrockClientUtilities.UserAgentString))
-        {
-            return;
-        }
-        args.Headers[BedrockClientUtilities.UserAgentHeader] = $"{value} {BedrockClientUtilities.UserAgentString}";
     }
 }

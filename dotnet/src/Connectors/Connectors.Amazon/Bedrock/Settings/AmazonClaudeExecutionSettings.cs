@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon;
 /// Prompt execution settings for Anthropic Claude Text Generation
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-public class AmazonClaudeExecutionSettings : PromptExecutionSettings
+public sealed class AmazonClaudeExecutionSettings : PromptExecutionSettings
 {
     private int _maxTokensToSample;
     private List<string>? _stopSequences;

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// The Amazon Titan Text response object when deserialized from Invoke Model call.
 /// </summary>
-internal class TitanTextResponse
+internal sealed class TitanTextResponse
 {
     /// <summary>
     /// The number of tokens in the prompt.
@@ -25,7 +25,7 @@ internal class TitanTextResponse
     /// <summary>
     /// The result object.
     /// </summary>
-    internal class Result
+    internal sealed class Result
     {
         /// <summary>
         /// The number of tokens in the prompt.

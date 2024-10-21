@@ -29,7 +29,7 @@ internal static class TitanRequest
     /// <summary>
     /// Amazon Titan Text Generation Configurations.
     /// </summary>
-    internal class AmazonTitanTextGenerationConfig
+    internal sealed class AmazonTitanTextGenerationConfig
     {
         /// <summary>
         /// Top P controls token choices, based on the probability of the potential choices. The range is 0 to 1. The default is 1.

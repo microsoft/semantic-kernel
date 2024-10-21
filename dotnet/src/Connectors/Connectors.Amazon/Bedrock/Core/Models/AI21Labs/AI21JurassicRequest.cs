@@ -13,7 +13,7 @@ internal static class AI21JurassicRequest
     /// <summary>
     /// The AI21 Labs Jurassic Text Generation request object.
     /// </summary>
-    internal class AI21JurassicTextGenerationRequest
+    internal sealed class AI21JurassicTextGenerationRequest
     {
         /// <summary>
         /// The input prompt as required by AI21 Labs Jurassic.

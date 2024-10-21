@@ -182,6 +182,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
         Assert.Equal(executionSettings.ExtensionData.TryGetValue("stopSequences", out var extensionStopSequences) ? extensionStopSequences : executionSettings.StopSequences, stopSequences);
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Amazon Titan. Inserts execution settings data both ways to test.
     /// </summary>
@@ -372,6 +373,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.True(requestBodyRoot.TryGetProperty("presence_penalty", out var presencePenaltyProperty));
         Assert.Equal(executionSettings.ExtensionData.TryGetValue("presence_penalty", out var extensionPresencePenalty) ? extensionPresencePenalty : executionSettings.PresencePenalty, presencePenaltyProperty.GetDouble());
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with AI21 Labs Jamba. Inserts execution settings data both ways to test.
     /// </summary>
@@ -717,6 +719,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
         Assert.Equal(executionSettings.ExtensionData["stop_sequences"], stopSequences);
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Cohere Command.
     /// </summary>
@@ -868,6 +871,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], maxTokensProperty.GetInt32());
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Mistral.
     /// </summary>

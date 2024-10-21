@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// The Command Text Generation Response body.
 /// </summary>
-internal class CommandResponse
+internal sealed class CommandResponse
 {
     /// <summary>
     /// A list of generated results along with the likelihoods for tokens requested. (Always returned).
@@ -31,7 +31,7 @@ internal class CommandResponse
     /// <summary>
     /// A list of generated results along with the likelihoods for tokens requested. (Always returned). Each generation object in the list contains the following fields.
     /// </summary>
-    internal class Generation
+    internal sealed class Generation
     {
         /// <summary>
         /// The reason why the model finished generating tokens. COMPLETE - the model sent back a finished reply. MAX_TOKENS – the reply was cut off because the model reached the maximum number of tokens for its context length. ERROR – something went wrong when generating the reply. ERROR_TOXIC – the model generated a reply that was deemed toxic. finish_reason is returned only when is_finished=true. (Not always returned).
@@ -79,7 +79,7 @@ internal class CommandResponse
     /// <summary>
     /// An array of per token likelihoods. Returned if you specify the return_likelihoods input parameter.
     /// </summary>
-    internal class TokenLikelihood
+    internal sealed class TokenLikelihood
     {
         /// <summary>
         /// Token likelihood.
