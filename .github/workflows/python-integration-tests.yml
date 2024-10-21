@@ -108,9 +108,17 @@ jobs:
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+      - name: Setup Weaviate docker deployment
+        run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
@@ -236,9 +244,17 @@ jobs:
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+      - name: Setup Weaviate docker deployment
+        run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2

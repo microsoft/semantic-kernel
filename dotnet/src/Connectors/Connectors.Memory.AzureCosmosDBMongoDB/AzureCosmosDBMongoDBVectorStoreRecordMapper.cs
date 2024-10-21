@@ -2,15 +2,15 @@
 
 using System;
 using System.Reflection;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Conventions;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, BsonDocument>
-    where TRecord : class
 {
     /// <summary>A key property info of the data model.</summary>
     private readonly PropertyInfo _keyProperty;
@@ -30,6 +30,16 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
 
         this._keyPropertyName = propertyReader.KeyPropertyName;
         this._keyProperty = propertyReader.KeyPropertyInfo;
+
+        var conventionPack = new ConventionPack
+        {
+            new IgnoreExtraElementsConvention(ignoreExtraElements: true)
+        };
+
+        ConventionRegistry.Register(
+            nameof(AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>),
+            conventionPack,
+            type => type == typeof(TRecord));
     }
 
     public BsonDocument MapFromDataToStorageModel(TRecord dataModel)

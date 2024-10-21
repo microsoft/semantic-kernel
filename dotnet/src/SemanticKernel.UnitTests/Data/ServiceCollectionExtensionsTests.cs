@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
@@ -8,7 +10,7 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Data;
 
 /// <summary>
-/// Contains tests for the <see cref="ServiceCollectionExtensions"/> class.
+/// Contains tests for the ServiceCollectionExtensions class.
 /// </summary>
 public class ServiceCollectionExtensionsTests
 {
@@ -19,6 +21,7 @@ public class ServiceCollectionExtensionsTests
         this._serviceCollection = new ServiceCollection();
     }
 
+    [Obsolete("The VolatileVectorStore is obsolete so this test is as well.")]
     [Fact]
     public void AddVectorStoreRegistersClass()
     {

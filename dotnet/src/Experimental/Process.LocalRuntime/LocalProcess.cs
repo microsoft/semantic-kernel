@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
-    private const string EndProcessId = "END";
+    private const string EndProcessId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
@@ -155,15 +155,12 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         string eventId = message.TargetEventId!;
         if (this._outputEdges!.TryGetValue(eventId, out List<KernelProcessEdge>? edges) && edges is not null)
         {
-            foreach (var edge in edges)
-            {
-                // Create the external event that will be used to start the nested process. Since this event came
-                // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
-                var nestedEvent = new KernelProcessEvent() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
+            // Create the external event that will be used to start the nested process. Since this event came
+            // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
+            var nestedEvent = new KernelProcessEvent() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
 
-                // Run the nested process completely within a single superstep.
-                await this.RunOnceAsync(nestedEvent, this._kernel).ConfigureAwait(false);
-            }
+            // Run the nested process completely within a single superstep.
+            await this.RunOnceAsync(nestedEvent, this._kernel).ConfigureAwait(false);
         }
     }
 
@@ -307,7 +304,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
     /// <summary>
     /// Processes external events that have been sent to the process, translates them to <see cref="LocalMessage"/>s, and enqueues
-    /// them to the provided message channel so that they can be processesed in the next superstep.
+    /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
     private void EnqueueExternalMessages(Queue<LocalMessage> messageChannel)
@@ -327,7 +324,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
     /// <summary>
     /// Processes events emitted by the given step in the last superstep, translates them to <see cref="LocalMessage"/>s, and enqueues
-    /// them to the provided message channel so that they can be processesed in the next superstep.
+    /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     /// <param name="step">The step containing outgoing events to process.</param>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>

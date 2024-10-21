@@ -6,8 +6,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Microsoft.SemanticKernel.Data;
 using Pinecone;
 using SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone.Xunit;
 using Xunit;
@@ -555,7 +555,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         [VectorStoreRecordData]
         public string? Name { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 5, IndexKind: null, DistanceFunction: "just eyeball it")]
+        [VectorStoreRecordVector(Dimensions: 5, DistanceFunction: "just eyeball it")]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 #pragma warning restore CA1812

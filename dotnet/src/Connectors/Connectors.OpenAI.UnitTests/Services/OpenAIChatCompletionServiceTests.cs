@@ -448,6 +448,44 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetStreamingChatMessageContentsWithFunctionCallAndEmptyArgumentsDoNotThrowAsync()
+    {
+        // Arrange
+        int functionCallCount = 0;
+
+        var kernel = Kernel.CreateBuilder().Build();
+        var function = KernelFunctionFactory.CreateFromMethod((string addressCode) =>
+        {
+            functionCallCount++;
+            return "Some weather";
+        }, "GetWeather");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("WeatherPlugin", [function]));
+        using var multiHttpClient = new HttpClient(this._multiMessageHandlerStub, false);
+        var service = new OpenAIChatCompletionService("model-id", "api-key", httpClient: multiHttpClient, loggerFactory: this._mockLoggerFactory.Object);
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        this._multiMessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_single_function_call_empty_assistance_response.txt"))
+            });
+
+        this._multiMessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt"))
+            });
+
+        // Act & Assert
+        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([], settings, kernel))
+        {
+        }
+
+        Assert.Equal(1, functionCallCount);
+    }
+
+    [Fact]
     public async Task GetStreamingChatMessageContentsWithRequiredFunctionCallAsync()
     {
         // Arrange
@@ -1357,6 +1395,47 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
         Assert.False(optionsJson.TryGetProperty("tools", out var _));
         Assert.False(optionsJson.TryGetProperty("tool_choice", out var _));
+    }
+
+    [Fact]
+    public async Task ItSendsEmptyStringWhenAssistantMessageContentIsNull()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        List<ChatToolCall> assistantToolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", BinaryData.FromString("args"))];
+
+        var chatHistory = new ChatHistory()
+        {
+            new ChatMessageContent(role: AuthorRole.User, content: "User content", modelId: "any"),
+            new ChatMessageContent(role: AuthorRole.Assistant, content: null, modelId: "any", metadata: new Dictionary<string, object?>
+            {
+                ["ChatResponseMessage.FunctionToolCalls"] = assistantToolCalls
+            }),
+            new ChatMessageContent(role: AuthorRole.Tool, content: null, modelId: "any")
+            {
+                Items = [new FunctionResultContent("FunctionName", "PluginName", "CallId", "Function result")]
+            },
+        };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, this._executionSettings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var requestContent = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        var messages = requestContent.GetProperty("messages").EnumerateArray().ToList();
+
+        var assistantMessage = messages.First(message => message.GetProperty("role").GetString() == "assistant");
+        var assistantMessageContent = assistantMessage.GetProperty("content").GetString();
+
+        Assert.Equal(string.Empty, assistantMessageContent);
     }
 
     public void Dispose()

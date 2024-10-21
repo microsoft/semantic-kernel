@@ -2,7 +2,7 @@
 
 using Xunit;
 
-namespace Microsoft.SemanticKernel.UnitTests;
+namespace Microsoft.SemanticKernel.Process.UnitTests;
 
 /// <summary>
 /// Unit tests for the ProcessBuilder class.

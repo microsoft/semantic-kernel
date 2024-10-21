@@ -7,12 +7,12 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using Microsoft.SemanticKernel.Data;
 using Moq;
 using Xunit;
-using DistanceFunction = Microsoft.SemanticKernel.Data.DistanceFunction;
-using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
+using DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
+using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 
@@ -547,6 +547,87 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("Name from mapper", result.HotelName);
     }
 
+    [Fact]
+    public async Task VectorizedSearchReturnsValidRecordAsync()
+    {
+        // Arrange
+        const string RecordKey = "key";
+        const double ExpectedScore = 0.99;
+
+        var jsonObject = new JsonObject
+        {
+            ["id"] = RecordKey,
+            ["HotelName"] = "Test Name",
+            ["SimilarityScore"] = ExpectedScore
+        };
+
+        var mockFeedResponse = new Mock<FeedResponse<JsonObject>>();
+        mockFeedResponse
+            .Setup(l => l.Resource)
+            .Returns([jsonObject]);
+
+        var mockFeedIterator = new Mock<FeedIterator<JsonObject>>();
+        mockFeedIterator
+            .SetupSequence(l => l.HasMoreResults)
+            .Returns(true)
+            .Returns(false);
+
+        mockFeedIterator
+            .Setup(l => l.ReadNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockFeedResponse.Object);
+
+        this._mockContainer
+            .Setup(l => l.GetItemQueryIterator<JsonObject>(
+                It.IsAny<QueryDefinition>(),
+                It.IsAny<string>(),
+                It.IsAny<QueryRequestOptions>()))
+            .Returns(mockFeedIterator.Object);
+
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]));
+
+        var results = await actual.Results.ToListAsync();
+        var result = results[0];
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(RecordKey, result.Record.HotelId);
+        Assert.Equal("Test Name", result.Record.HotelName);
+        Assert.Equal(ExpectedScore, result.Score);
+    }
+
+    [Fact]
+    public async Task VectorizedSearchWithUnsupportedVectorTypeThrowsExceptionAsync()
+    {
+        // Arrange
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<NotSupportedException>(async () =>
+            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]))).Results.ToListAsync());
+    }
+
+    [Fact]
+    public async Task VectorizedSearchWithNonExistentVectorPropertyNameThrowsExceptionAsync()
+    {
+        // Arrange
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        var searchOptions = new VectorSearchOptions { VectorPropertyName = "non-existent-property" };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions)).Results.ToListAsync());
+    }
+
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()
     {
         { ["collection-2"], "collection-2", true },
@@ -620,16 +701,16 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public string? Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 1, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 1, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
         public ReadOnlyMemory<Half>? DescriptionEmbedding1 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 2, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 2, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 3, IndexKind: IndexKind.QuantizedFlat, DistanceFunction: DistanceFunction.DotProductSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 3, DistanceFunction: DistanceFunction.DotProductSimilarity, IndexKind: IndexKind.QuantizedFlat)]
         public ReadOnlyMemory<byte>? DescriptionEmbedding3 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.DiskAnn, DistanceFunction: DistanceFunction.EuclideanDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance, IndexKind: IndexKind.DiskAnn)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
 
         [VectorStoreRecordData(IsFilterable = true)]

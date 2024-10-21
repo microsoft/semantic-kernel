@@ -37,9 +37,13 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     public AggregatorMode Mode { get; init; } = AggregatorMode.Flat;
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// Different <see cref="AggregatorAgent"/> will never share the same channel.
+    /// </remarks>
     protected internal override IEnumerable<string> GetChannelKeys()
     {
         yield return typeof(AggregatorChannel).FullName!;
+        yield return this.GetHashCode().ToString();
     }
 
     /// <inheritdoc/>
