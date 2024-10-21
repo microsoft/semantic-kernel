@@ -81,6 +81,12 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         {
             if (string.IsNullOrEmpty(response.Content))
             {
+                StreamingFunctionCallUpdateContent? functionCall = response.Items.OfType<StreamingFunctionCallUpdateContent>().SingleOrDefault();
+                if (!string.IsNullOrEmpty(functionCall?.Name))
+                {
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}: FUNCTION CALL - {functionCall.Name}");
+                }
+
                 continue;
             }
 
