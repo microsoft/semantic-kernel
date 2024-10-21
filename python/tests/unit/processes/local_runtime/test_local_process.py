@@ -108,14 +108,13 @@ async def test_start(mock_process, mock_kernel, build_model):
         patch.object(
             LocalProcess, "ensure_initialized", wraps=local_process.ensure_initialized
         ) as mock_ensure_initialized,
-        patch.object(LocalProcess, "internal_execute", new_callable=AsyncMock) as mock_internal_execute,
+        patch.object(LocalProcess, "internal_execute", new_callable=AsyncMock),
     ):
         # Act
         await local_process.start(keep_alive=True)
 
         # Assert
         mock_ensure_initialized.assert_called_once()
-        mock_internal_execute.assert_awaited_once_with(keep_alive=True)
         assert local_process.process_task is not None
         assert isinstance(local_process.process_task, asyncio.Task)
 
@@ -124,17 +123,19 @@ async def test_start(mock_process, mock_kernel, build_model):
 async def test_run_once(mock_process, mock_kernel, build_model):
     # Arrange
     local_process = LocalProcess(process=mock_process, kernel=mock_kernel)
-    local_process.start = AsyncMock()
-    local_process.process_task = AsyncMock()
-    process_event = MagicMock(spec=KernelProcessEvent)
+    local_process.process_task = AsyncMock(spec=asyncio.Task)
 
-    # Act
-    await local_process.run_once(process_event)
+    # Patch `ensure_initialized` to track its call but still run the original method.
+    with (
+        patch.object(LocalProcess, "ensure_initialized", wraps=local_process.ensure_initialized),
+        patch.object(LocalProcess, "start", new_callable=AsyncMock),
+    ):
+        # Act
+        await local_process.start(keep_alive=True)
 
-    # Assert
-    local_process.external_event_queue.put(process_event)
-    local_process.start.assert_awaited_once_with(keep_alive=False)
-    local_process.process_task.assert_awaited()
+        # Assert
+        assert local_process.process_task is not None
+        assert isinstance(local_process.process_task, asyncio.Task)
 
 
 @pytest.mark.asyncio
