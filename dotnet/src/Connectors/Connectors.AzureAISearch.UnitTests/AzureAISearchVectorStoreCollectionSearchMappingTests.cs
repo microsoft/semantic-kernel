@@ -21,7 +21,7 @@ public class AzureAISearchVectorStoreCollectionSearchMappingTests
         var filter = new VectorSearchFilter().EqualTo(fieldName, fieldValue!);
 
         // Act.
-        var actual = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(filter, new Dictionary<string, string> { { fieldName, "storage_" + fieldName } });
+        var actual = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(filter.FilterClauses, new Dictionary<string, string> { { fieldName, "storage_" + fieldName } });
 
         // Assert.
         Assert.Equal(expected, actual);
@@ -34,7 +34,7 @@ public class AzureAISearchVectorStoreCollectionSearchMappingTests
         var filter = new VectorSearchFilter().AnyTagEqualTo("Tags", "mytag");
 
         // Act.
-        var actual = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(filter, new Dictionary<string, string> { { "Tags", "storage_tags" } });
+        var actual = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(filter.FilterClauses, new Dictionary<string, string> { { "Tags", "storage_tags" } });
 
         // Assert.
         Assert.Equal("storage_tags/any(t: t eq 'mytag')", actual);
@@ -47,7 +47,7 @@ public class AzureAISearchVectorStoreCollectionSearchMappingTests
         var filter = new VectorSearchFilter().EqualTo("intField", 5).AnyTagEqualTo("Tags", "mytag");
 
         // Act.
-        var actual = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(filter, new Dictionary<string, string> { { "Tags", "storage_tags" }, { "intField", "storage_intField" } });
+        var actual = AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(filter.FilterClauses, new Dictionary<string, string> { { "Tags", "storage_tags" }, { "intField", "storage_intField" } });
 
         // Assert.
         Assert.Equal("storage_intField eq 5 and storage_tags/any(t: t eq 'mytag')", actual);
@@ -57,8 +57,8 @@ public class AzureAISearchVectorStoreCollectionSearchMappingTests
     public void BuildFilterStringThrowsForUnknownPropertyName()
     {
         // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(new VectorSearchFilter().EqualTo("unknown", "value"), new Dictionary<string, string>()));
-        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(new VectorSearchFilter().AnyTagEqualTo("unknown", "value"), new Dictionary<string, string>()));
+        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(new VectorSearchFilter().EqualTo("unknown", "value").FilterClauses, new Dictionary<string, string>()));
+        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionSearchMapping.BuildFilterString(new VectorSearchFilter().AnyTagEqualTo("unknown", "value").FilterClauses, new Dictionary<string, string>()));
     }
 
     public static IEnumerable<object[]> DataTypeMappingOptions()
