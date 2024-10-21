@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.UnitTests;
 public class BedrockServiceCollectionExtensionTests
 {
     /// <summary>
-    /// Ensures that AddBedrockChatCompletionService registers the IChatCompletionService with the correct implementation.
+    /// Ensures that IServiceCollection.AddBedrockChatCompletionService registers the <see cref="IChatCompletionService"/> with the correct implementation.
     /// </summary>
     [Fact]
     public void AddBedrockChatCompletionServiceRegistersCorrectService()
@@ -37,7 +37,7 @@ public class BedrockServiceCollectionExtensionTests
     }
 
     /// <summary>
-    /// Ensures that AddBedrockTextGenerationService registers the ITextGenerationService with the correct implementation.
+    /// Ensures that IServiceCollection.AddBedrockTextGenerationService registers the <see cref="ITextGenerationService"/> with the correct implementation.
     /// </summary>
     [Fact]
     public void AddBedrockTextGenerationServiceRegistersCorrectService()
@@ -57,9 +57,6 @@ public class BedrockServiceCollectionExtensionTests
         Assert.IsType<BedrockTextGenerationService>(textGenerationService);
     }
 
-    /// <summary>
-    /// Makes sure AWSServiceClient created BeforeServiceRequest DoesNothingForNonWebServiceRequestEventArgs
-    /// </summary>
     [Fact]
     public void AwsServiceClientBeforeServiceRequestDoesNothingForNonWebServiceRequestEventArgs()
     {

@@ -52,9 +52,6 @@ public class BedrockKernelBuilderExtensionTests
         Assert.IsType<BedrockChatCompletionService>(service);
     }
 
-    /// <summary>
-    /// Makes sure AWSServiceClient created BeforeServiceRequest DoesNothingForNonWebServiceRequestEventArgs
-    /// </summary>
     [Fact]
     public void AwsServiceClientBeforeServiceRequestDoesNothingForNonWebServiceRequestEventArgs()
     {
