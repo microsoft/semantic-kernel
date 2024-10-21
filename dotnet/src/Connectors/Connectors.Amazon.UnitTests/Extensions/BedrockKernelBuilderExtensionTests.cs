@@ -30,8 +30,6 @@ public class BedrockKernelBuilderExtensionTests
         var service = kernel.GetRequiredService<ITextGenerationService>();
 
         // Assert
-        Assert.NotNull(kernel);
-        Assert.NotNull(service);
         Assert.IsType<BedrockTextGenerationService>(service);
     }
 
@@ -51,8 +49,6 @@ public class BedrockKernelBuilderExtensionTests
         var service = kernel.GetRequiredService<IChatCompletionService>();
 
         // Assert
-        Assert.NotNull(kernel);
-        Assert.NotNull(service);
         Assert.IsType<BedrockChatCompletionService>(service);
     }
 
