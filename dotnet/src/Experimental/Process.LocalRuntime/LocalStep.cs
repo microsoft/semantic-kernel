@@ -27,7 +27,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     private readonly Lazy<ValueTask> _initializeTask;
     private readonly KernelProcessStepInfo _stepInfo;
     private readonly string _eventNamespace;
-    private readonly ILogger? _logger;
+    private readonly ILogger _logger;
 
     protected KernelProcessStepState _stepState;
     protected Dictionary<string, Dictionary<string, object?>?>? _inputs = [];
