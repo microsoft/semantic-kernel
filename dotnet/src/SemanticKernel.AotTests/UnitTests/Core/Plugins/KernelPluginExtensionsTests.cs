@@ -5,9 +5,9 @@ using Microsoft.SemanticKernel;
 using SemanticKernel.AotTests.JsonSerializerContexts;
 using SemanticKernel.AotTests.Plugins;
 
-namespace SemanticKernel.AotTests.UnitTests;
+namespace SemanticKernel.AotTests.UnitTests.Core.Plugins;
 
-internal sealed class KernelPluginExtensionsTests : BaseTest
+internal sealed class KernelPluginExtensionsTests
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
@@ -23,7 +23,7 @@ internal sealed class KernelPluginExtensionsTests : BaseTest
         kernel.Plugins.AddFromType<WeatherPlugin>(s_jsonSerializerOptions, "weather_utils");
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 
     public static async Task AddFromObject()
@@ -35,6 +35,6 @@ internal sealed class KernelPluginExtensionsTests : BaseTest
         kernel.Plugins.AddFromObject(new WeatherPlugin(), s_jsonSerializerOptions, "weather_utils");
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 }

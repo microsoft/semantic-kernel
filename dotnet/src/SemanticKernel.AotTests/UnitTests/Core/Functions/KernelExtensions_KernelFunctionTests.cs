@@ -7,9 +7,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.AotTests.JsonSerializerContexts;
 using SemanticKernel.AotTests.Plugins;
 
-namespace SemanticKernel.AotTests.UnitTests;
+namespace SemanticKernel.AotTests.UnitTests.Core.Functions;
 
-internal sealed class KernelFunctionFactoryTests : BaseTest
+internal sealed class KernelExtensions_KernelFunctionTests
 {
     private static readonly Kernel s_kernel = new();
 
@@ -23,19 +23,19 @@ internal sealed class KernelFunctionFactoryTests : BaseTest
     public static async Task CreateFromLambda()
     {
         // Act
-        KernelFunction function = KernelFunctionFactory.CreateFromMethod(s_lambda, s_jsonSerializerOptions);
+        KernelFunction function = s_kernel.CreateFunctionFromMethod(s_lambda, s_jsonSerializerOptions);
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, function);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, function);
     }
 
     public static async Task CreateFromMethod()
     {
         // Act
-        KernelFunction function = KernelFunctionFactory.CreateFromMethod(GetWeather, s_jsonSerializerOptions);
+        KernelFunction function = s_kernel.CreateFunctionFromMethod(GetWeather, s_jsonSerializerOptions);
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, function);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, function);
     }
 
     public static async Task CreateFromStringPrompt()
@@ -48,10 +48,13 @@ internal sealed class KernelFunctionFactoryTests : BaseTest
         string prompt = "Is it suitable for hiking today? - {{weather_utils.GetCurrentWeather location=$location}}";
 
         // Act
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(prompt, s_jsonSerializerOptions);
+        KernelFunction function = s_kernel.CreateFunctionFromPrompt(prompt, s_jsonSerializerOptions);
 
         // Assert
-        await AssertPromptFunctionSchemaAndInvocationResult(kernelBuilder.Build(), function);
+        Kernel kernel = kernelBuilder.Build();
+
+        await GetWeatherFunctionAsserts.AssertPromptFunctionSchemaAndInvocationResult(kernel, function);
+        await GetWeatherFunctionAsserts.AssertPromptFunctionSchemaAndStreamedInvocationResult(kernel, function);
     }
 
     public static async Task CreateFromPromptTemplate()
@@ -64,10 +67,13 @@ internal sealed class KernelFunctionFactoryTests : BaseTest
         PromptTemplateConfig promptTemplateConfig = new("Is it suitable for hiking today? - {{weather_utils.GetCurrentWeather location=$location}}");
 
         // Act
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig, s_jsonSerializerOptions);
+        KernelFunction function = s_kernel.CreateFunctionFromPrompt(promptTemplateConfig, s_jsonSerializerOptions);
 
         // Assert
-        await AssertPromptFunctionSchemaAndInvocationResult(kernelBuilder.Build(), function);
+        Kernel kernel = kernelBuilder.Build();
+
+        await GetWeatherFunctionAsserts.AssertPromptFunctionSchemaAndInvocationResult(kernel, function);
+        await GetWeatherFunctionAsserts.AssertPromptFunctionSchemaAndStreamedInvocationResult(kernel, function);
     }
 
     private static Weather GetWeather(Location location)

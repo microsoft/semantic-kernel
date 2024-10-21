@@ -5,9 +5,9 @@ using Microsoft.SemanticKernel;
 using SemanticKernel.AotTests.JsonSerializerContexts;
 using SemanticKernel.AotTests.Plugins;
 
-namespace SemanticKernel.AotTests.UnitTests;
+namespace SemanticKernel.AotTests.UnitTests.Core.Plugins;
 
-internal sealed class KernelPluginFactoryTests : BaseTest
+internal sealed class KernelPluginFactoryTests
 {
     private static readonly Kernel s_kernel = new();
 
@@ -16,13 +16,22 @@ internal sealed class KernelPluginFactoryTests : BaseTest
         TypeInfoResolverChain = { WeatherJsonSerializerContext.Default, LocationJsonSerializerContext.Default }
     };
 
-    public static async Task CreateFromType()
+    public static async Task CreateFromGenericParameterType()
     {
         // Act
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<WeatherPlugin>(s_jsonSerializerOptions);
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, plugin["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, plugin["GetCurrentWeather"]);
+    }
+
+    public static async Task CreateFromType()
+    {
+        // Act
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType(typeof(WeatherPlugin), s_jsonSerializerOptions);
+
+        // Assert
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, plugin["GetCurrentWeather"]);
     }
 
     public static async Task CreateFromObject()
@@ -31,6 +40,6 @@ internal sealed class KernelPluginFactoryTests : BaseTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new WeatherPlugin(), s_jsonSerializerOptions);
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, plugin["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(s_kernel, plugin["GetCurrentWeather"]);
     }
 }
