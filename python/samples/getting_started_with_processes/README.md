@@ -35,7 +35,7 @@ flowchart LR
 ## Configuring the Kernel
 
 Similar to the Semantic Kernel Python concept samples, it is necessary to configure the secrets
-and keys used by the kernel. See the follow "Configuring the Kernel" [guide](../concepts/README.md#configuring-the-kernell) for
+and keys used by the kernel. See the follow "Configuring the Kernel" [guide](../concepts/README.md#configuring-the-kernel) for
 more information.
 
 ## Running Concept Samples
