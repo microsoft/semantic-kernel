@@ -289,7 +289,6 @@
       "label": "daprd-debug",
       "type": "daprd",
       "appId": "processwithdapr",
-      "config": "./dotnet/samples/Demos/ProcessWithDapr/tracing-config.yaml",
       "logLevel": "debug",
       "appPort": 5000,
       "httpPort": 3500,

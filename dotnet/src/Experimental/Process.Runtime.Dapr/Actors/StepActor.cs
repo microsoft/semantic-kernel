@@ -103,7 +103,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         if (this._innerStepType is null)
         {
             var errorMessage = $"Could not load the inner step type '{stepInfo.InnerStepDotnetType}'.";
-            this._logger?.LogError(errorMessage);
+            this._logger?.LogError("{ErrorMessage}", errorMessage);
             throw new KernelException(errorMessage);
         }
 
