@@ -30,5 +30,9 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
     <ProjectReference Include="..\Connectors.Amazon\Connectors.Amazon.csproj"/>
   </ItemGroup>
-
+  <ItemGroup>
+    <None Update="TestData\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

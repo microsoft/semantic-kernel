@@ -182,7 +182,7 @@ public class BedrockTextGenerationServiceTests
         // Arrange
         string modelId = "amazon.titan-text-premier-v1:0";
         string prompt = "Write a short greeting.";
-        var content = this.GetTextResponseAsBytes("invoke_stream_response");
+        var content = this.GetTextResponseAsBytes("invoke_stream_binary_response.bin");
 
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelWithResponseStreamRequest>()))
@@ -304,6 +304,6 @@ public class BedrockTextGenerationServiceTests
 
     private byte[] GetTextResponseAsBytes(string fileName)
     {
-        return File.ReadAllBytes($"../../../TestData/{fileName}");
+        return File.ReadAllBytes($"TestData/{fileName}");
     }
 }

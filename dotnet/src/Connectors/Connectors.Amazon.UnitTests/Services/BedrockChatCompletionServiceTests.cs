@@ -131,7 +131,7 @@ public sealed class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
 
-        var content = this.GetTestResponseAsBytes("converse_stream_response");
+        var content = this.GetTestResponseAsBytes("converse_stream_binary_response.bin");
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseStreamRequest>()))
             .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
@@ -387,7 +387,7 @@ public sealed class BedrockChatCompletionServiceTests
 
     private byte[] GetTestResponseAsBytes(string fileName)
     {
-        return File.ReadAllBytes($"../../../TestData/{fileName}");
+        return File.ReadAllBytes($"TestData/{fileName}");
     }
 
     private ConverseResponse CreateConverseResponse(string text, ConversationRole role)
