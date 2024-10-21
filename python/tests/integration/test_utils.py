@@ -23,7 +23,7 @@ async def retry(func, retries=20):
     return None
 
 
-def is_service_setup_for_testing(env_var_names: list[str], raise_if_not_set: bool = True) -> bool:
+def is_service_setup_for_testing(env_var_names: list[str], raise_if_not_set: bool = False) -> bool:
     """Check if the environment variables are set and not empty.
 
     By default, this function raises an exception if the environment variable is not set.
