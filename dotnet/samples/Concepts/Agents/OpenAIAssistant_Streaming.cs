@@ -120,6 +120,12 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         {
             if (string.IsNullOrEmpty(response.Content))
             {
+                StreamingFunctionCallUpdateContent? functionCall = response.Items.OfType<StreamingFunctionCallUpdateContent>().SingleOrDefault();
+                if (functionCall != null)
+                {
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}: FUNCTION CALL - {functionCall.Name}");
+                }
+
                 continue;
             }
 
