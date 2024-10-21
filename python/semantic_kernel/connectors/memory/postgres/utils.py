@@ -7,7 +7,10 @@ from typing import Any
 from psycopg_pool import AsyncConnectionPool
 
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordField, VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
+    VectorStoreRecordField,
+    VectorStoreRecordVectorField,
+)
 
 
 def python_type_to_postgres(python_type_str: str) -> str | None:
