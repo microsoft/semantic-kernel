@@ -15,6 +15,7 @@ from openai.types.beta.assistant_stream_event import (
     ThreadRunFailed,
     ThreadRunRequiresAction,
     ThreadRunStepCompleted,
+    ThreadRunStepDelta,
 )
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.function_tool import FunctionDefinition, FunctionTool
@@ -34,16 +35,25 @@ from openai.types.beta.threads.run import (
     RequiredActionSubmitToolOutputs,
     TruncationStrategy,
 )
-from openai.types.beta.threads.runs import RunStep
+from openai.types.beta.threads.runs import (
+    FunctionToolCallDelta,
+    RunStep,
+    RunStepDelta,
+    RunStepDeltaEvent,
+    ToolCallDeltaObject,
+    ToolCallsStepDetails,
+)
 from openai.types.beta.threads.runs.code_interpreter_tool_call import (
     CodeInterpreter,
     CodeInterpreterToolCall,
 )
+from openai.types.beta.threads.runs.code_interpreter_tool_call_delta import CodeInterpreter as CodeInterpreterDelta
+from openai.types.beta.threads.runs.code_interpreter_tool_call_delta import CodeInterpreterToolCallDelta
 from openai.types.beta.threads.runs.function_tool_call import Function as RunsFunction
 from openai.types.beta.threads.runs.function_tool_call import FunctionToolCall
+from openai.types.beta.threads.runs.function_tool_call_delta import Function as FunctionForToolCallDelta
 from openai.types.beta.threads.runs.message_creation_step_details import MessageCreation, MessageCreationStepDetails
 from openai.types.beta.threads.runs.run_step import Usage
-from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.shared.response_format_json_object import ResponseFormatJSONObject
@@ -422,6 +432,24 @@ def create_thread_message_delta_mock():
         ),
         event="thread.message.delta",
     )
+
+
+def create_thread_run_step_delta_mock():
+    function = FunctionForToolCallDelta(name="math-Add", arguments="", output=None)
+    function_tool_call = FunctionToolCallDelta(
+        index=0, type="function", id="call_RcvYVzsppjjnUZcC47fAlwTW", function=function
+    )
+    code = CodeInterpreterDelta(input="import os")
+    code_tool_call = CodeInterpreterToolCallDelta(
+        index=1, type="code_interpreter", id="call_RcvYVzsppjjnUZcC47fAlwTW", code_interpreter=code
+    )
+
+    step_details = ToolCallDeltaObject(type="tool_calls", tool_calls=[function_tool_call, code_tool_call])
+    delta = RunStepDelta(step_details=step_details)
+    run_step_delta_event = RunStepDeltaEvent(
+        id="step_FXzQ44kRmoeHOPUstkEI1UL5", delta=delta, object="thread.run.step.delta"
+    )
+    return ThreadRunStepDelta(data=run_step_delta_event, event="thread.run.step.delta")
 
 
 def mock_thread_requires_action_run():
@@ -1187,6 +1215,32 @@ async def test_invoke_stream(
             assert content is not None
 
         assert len(messages) > 0
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_with_function_call(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    mock_thread_messages,
+    azure_openai_unit_test_env,
+):
+    events = [create_thread_run_step_delta_mock()]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+
+        mock_client.beta.threads.messages.retrieve = AsyncMock(side_effect=mock_thread_messages)
+
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+
+        async for content in azure_openai_assistant_agent.invoke_stream("thread_id"):
+            assert content is not None
 
 
 @pytest.mark.asyncio
