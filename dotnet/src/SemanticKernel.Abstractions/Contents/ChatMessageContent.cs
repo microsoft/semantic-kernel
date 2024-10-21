@@ -54,12 +54,12 @@ public class ChatMessageContent : KernelContent
             {
                 this.Items.Add(new TextContent(
                     text: value,
-                ////modelId: this.ModelId, // %%% REDUNDANT
-                ////innerContent: this.InnerContent, // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION / MUTATION RISK (IGNORED FOR SERIALIZATION)
-                    encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (IGNORED FOR SERIALIZATION)
-                ////metadata: this.Metadata, // %%% CARDINALITY MISMATCH / MUTATION RISK
+                    modelId: this.ModelId,
+                    innerContent: this.InnerContent,
+                    encoding: this.Encoding,
+                    metadata: this.Metadata
                 )
-                { MimeType = this.MimeType }); // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION
+                { MimeType = this.MimeType });
             }
         }
     }
