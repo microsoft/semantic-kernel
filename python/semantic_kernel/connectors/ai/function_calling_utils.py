@@ -46,8 +46,10 @@ def kernel_function_metadata_to_function_call_format(
             "description": metadata.description or "",
             "parameters": {
                 "type": "object",
-                "properties": {param.name: param.schema_data for param in metadata.parameters},
-                "required": [p.name for p in metadata.parameters if p.is_required],
+                "properties": {
+                    param.name: param.schema_data for param in metadata.parameters if param.include_in_function_choices
+                },
+                "required": [p.name for p in metadata.parameters if p.is_required and p.include_in_function_choices],
             },
         },
     }

@@ -24,9 +24,12 @@ from semantic_kernel.connectors.memory.postgres.utils import (
     python_type_to_postgres,
 )
 from semantic_kernel.data.const import IndexKind
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordKeyField, VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
+    VectorStoreRecordKeyField,
+    VectorStoreRecordVectorField,
+)
+from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     VectorStoreModelValidationError,

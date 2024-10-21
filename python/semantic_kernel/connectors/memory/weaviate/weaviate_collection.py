@@ -27,9 +27,9 @@ from semantic_kernel.connectors.memory.weaviate.utils import (
     extract_vectors_from_weaviate_object_based_on_data_model_definition,
 )
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
+from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,

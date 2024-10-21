@@ -14,8 +14,8 @@ from redis.commands.search.field import NumericField, TagField, TextField, Vecto
 
 from semantic_kernel.connectors.memory.azure_ai_search.const import DISTANCE_FUNCTION_MAP
 from semantic_kernel.connectors.memory.redis.const import TYPE_MAPPER_VECTOR, RedisCollectionTypes
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
