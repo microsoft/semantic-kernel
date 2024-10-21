@@ -91,7 +91,7 @@ public class PromptExecutionSettings
     /// </remarks>
     [JsonPropertyName("function_choice_behavior")]
     [Experimental("SKEXP0001")]
-    public FunctionChoiceBehavior? FunctionChoiceBehavior
+    public virtual FunctionChoiceBehavior? FunctionChoiceBehavior
     {
         get => this._functionChoiceBehavior;
 
