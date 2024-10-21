@@ -10,5 +10,6 @@
     "ms-semantic-kernel.semantic-kernel",
     "emeraldwalk.RunOnSave",
     "ms-java.vscode-java-pack",
+    "ms-azuretools.vscode-dapr"
   ]
 }
