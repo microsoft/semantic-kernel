@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
 
@@ -23,7 +23,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     private static readonly Type s_genericType = typeof(KernelProcessStep<>);
 
     private readonly Kernel _kernel;
-    private readonly Queue<LocalEvent> _outgoingEventQueue = new();
+    private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
     private readonly KernelProcessStepInfo _stepInfo;
     private readonly string _eventNamespace;
@@ -81,7 +81,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// Retrieves all events that have been emitted by this step in the previous superstep.
     /// </summary>
     /// <returns>An <see cref="IEnumerable{T}"/> where T is <see cref="KernelProcessEvent"/></returns>
-    internal IEnumerable<LocalEvent> GetAllEvents()
+    internal IEnumerable<ProcessEvent> GetAllEvents()
     {
         var allEvents = this._outgoingEventQueue.ToArray();
         this._outgoingEventQueue.Clear();
@@ -115,17 +115,17 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
-        this.EmitEvent(LocalEvent.FromKernelProcessEvent(processEvent, this._eventNamespace));
+        this.EmitEvent(ProcessEvent.FromKernelProcessEvent(processEvent, this._eventNamespace));
         return default;
     }
 
     /// <summary>
-    /// Handles a <see cref="LocalMessage"/> that has been sent to the step.
+    /// Handles a <see cref="ProcessMessage"/> that has been sent to the step.
     /// </summary>
     /// <param name="message">The message to process.</param>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    internal virtual async Task HandleMessageAsync(LocalMessage message)
+    internal virtual async Task HandleMessageAsync(ProcessMessage message)
     {
         Verify.NotNull(message);
 
@@ -385,7 +385,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// Emits an event from the step.
     /// </summary>
     /// <param name="localEvent">The event to emit.</param>
-    protected void EmitEvent(LocalEvent localEvent)
+    protected void EmitEvent(ProcessEvent localEvent)
     {
         var scopedEvent = this.ScopedEvent(localEvent);
         this._outgoingEventQueue.Enqueue(scopedEvent);
@@ -395,8 +395,8 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// Generates a scoped event for the step.
     /// </summary>
     /// <param name="localEvent">The event.</param>
-    /// <returns>A <see cref="LocalEvent"/> with the correctly scoped namespace.</returns>
-    protected LocalEvent ScopedEvent(LocalEvent localEvent)
+    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
+    protected ProcessEvent ScopedEvent(ProcessEvent localEvent)
     {
         Verify.NotNull(localEvent);
         return localEvent with { Namespace = $"{this.Name}_{this.Id}" };
@@ -406,10 +406,10 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// Generates a scoped event for the step.
     /// </summary>
     /// <param name="processEvent">The event.</param>
-    /// <returns>A <see cref="LocalEvent"/> with the correctly scoped namespace.</returns>
-    protected LocalEvent ScopedEvent(KernelProcessEvent processEvent)
+    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
+    protected ProcessEvent ScopedEvent(KernelProcessEvent processEvent)
     {
         Verify.NotNull(processEvent);
-        return LocalEvent.FromKernelProcessEvent(processEvent, $"{this.Name}_{this.Id}");
+        return ProcessEvent.FromKernelProcessEvent(processEvent, $"{this.Name}_{this.Id}");
     }
 }
