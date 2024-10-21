@@ -19,7 +19,7 @@ internal static class BedrockModelUtilities
     /// </summary>
     /// <param name="role">The AuthorRole to be converted to ConversationRole</param>
     /// <returns>The corresponding ConversationRole</returns>
-    /// <exception cref="ArgumentException">Thrown if invalid role.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if invalid role.</exception>
     internal static ConversationRole MapAuthorRoleToConversationRole(AuthorRole role)
     {
         if (role == AuthorRole.User)
@@ -32,7 +32,7 @@ internal static class BedrockModelUtilities
             return ConversationRole.Assistant;
         }
 
-        throw new ArgumentException($"Invalid role: {role}");
+        throw new ArgumentOutOfRangeException($"Invalid role: {role}");
     }
 
     /// <summary>

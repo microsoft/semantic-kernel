@@ -317,7 +317,7 @@ public sealed class BedrockChatCompletionServiceTests
         var chatHistory = CreateSampleChatHistory();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.GetChatMessageContentsAsync(chatHistory)).ConfigureAwait(true);
     }
 

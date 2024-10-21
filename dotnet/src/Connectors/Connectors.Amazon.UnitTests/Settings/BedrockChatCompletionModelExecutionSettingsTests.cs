@@ -44,7 +44,7 @@ public class BedrockChatCompletionModelExecutionSettingsTests
         var chatHistory = CreateSampleChatHistory();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.GetChatMessageContentsAsync(chatHistory, invalidSettings)).ConfigureAwait(true);
     }
     /// <summary>

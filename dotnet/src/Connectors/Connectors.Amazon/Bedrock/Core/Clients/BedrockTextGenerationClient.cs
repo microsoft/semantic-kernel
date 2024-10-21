@@ -34,7 +34,7 @@ internal sealed class BedrockTextGenerationClient
     /// Builds the client object and registers the model input-output service given the user's passed in model ID.
     /// </summary>
     /// <param name="modelId">The model to be used for text generation. </param>
-    /// <param name="bedrockRuntime">The IAmazonBedrockRuntime object to be used for Bedrock runtime actions.</param>
+    /// <param name="bedrockRuntime">The <see cref="IAmazonBedrockRuntime"/> instance to be used for Bedrock runtime actions.</param>
     /// <param name="loggerFactory">Logger for error output.</param>
     internal BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
@@ -47,19 +47,27 @@ internal sealed class BedrockTextGenerationClient
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
+    /// <summary>
+    /// Generates a chat message based on the provided chat history and execution settings.
+    /// </summary>
+    /// <param name="prompt">The prompt for generating the text.</param>
+    /// <param name="executionSettings">The execution settings for the text generation.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The generated text.</returns>///
+    /// <exception cref="ArgumentNullException">Thrown when the chat history is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when the chat is empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when response content is not available.</exception>
     internal async Task<IReadOnlyList<TextContent>> InvokeBedrockModelAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(prompt);
-        var requestBody = this._ioTextService.GetInvokeModelRequestBody(this._modelId, prompt, executionSettings);
         var invokeRequest = new InvokeModelRequest
         {
             ModelId = this._modelId,
             Accept = "*/*",
             ContentType = "application/json",
-            Body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody))
         };
         var regionEndpoint = this._bedrockRuntime.DetermineServiceOperationEndpoint(invokeRequest).URL;
         this._textGenerationEndpoint = new Uri(regionEndpoint);
@@ -69,6 +77,10 @@ internal sealed class BedrockTextGenerationClient
         ActivityStatusCode activityStatus;
         try
         {
+            var requestBody = this._ioTextService.GetInvokeModelRequestBody(this._modelId, prompt, executionSettings);
+            using var requestBodyStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody));
+            invokeRequest.Body = requestBodyStream;
+
             response = await this._bedrockRuntime.InvokeModelAsync(invokeRequest, cancellationToken).ConfigureAwait(false);
             if (activity is not null)
             {

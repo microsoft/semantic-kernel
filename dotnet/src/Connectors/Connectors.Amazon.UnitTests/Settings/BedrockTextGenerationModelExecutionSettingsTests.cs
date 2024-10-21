@@ -29,6 +29,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task ExecutionSettingsExtensionDataOverridesPropertiesAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "meta.llama3-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonLlama3ExecutionSettings()
@@ -50,6 +51,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LlamaResponse
@@ -81,7 +93,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("Hello! This is a mock Llama response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
 
@@ -105,6 +118,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task TitanExecutionSettingsExtensionDataSetsProperlyAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "amazon.titan-text-lite-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonTitanExecutionSettings()
@@ -124,6 +138,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new TitanTextResponse
@@ -160,7 +185,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("This is a mock output.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
         Assert.True(requestBodyRoot.TryGetProperty("textGenerationConfig", out var textGenerationConfig));
@@ -190,6 +216,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task TitanExecutionSettingsPropertySetsProperlyAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "amazon.titan-text-lite-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonTitanExecutionSettings()
@@ -206,6 +233,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new TitanTextResponse
@@ -242,7 +280,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("This is a mock output.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
         Assert.True(requestBodyRoot.TryGetProperty("textGenerationConfig", out var textGenerationConfig));
@@ -272,6 +311,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task JambaExecutionSettingsExtensionDataSetsProperlyAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "ai21.jamba-instruct-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonJambaExecutionSettings()
@@ -294,6 +334,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JambaResponse.AI21TextResponse
@@ -340,7 +391,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("Hello! This is a mock AI21 response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
 
@@ -381,6 +433,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task JambaExecutionSettingsPropertySetsProperlyAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "ai21.jamba-instruct-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonJambaExecutionSettings()
@@ -400,6 +453,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JambaResponse.AI21TextResponse
@@ -446,7 +510,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("Hello! This is a mock AI21 response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
 
@@ -487,6 +552,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task JurassicExecutionSettingsExtensionDataSetsProperlyAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "ai21.j2-ultra-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonJurassicExecutionSettings()
@@ -506,6 +572,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JurassicResponse
@@ -543,7 +620,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("Hello! This is a mock AI21 response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
 
@@ -572,6 +650,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task ClaudeExecutionSettingsSetsExtensionDataAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "anthropic.claude-text-generation.model-id-only-needs-proper-prefix";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new PromptExecutionSettings()
@@ -591,6 +670,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new ClaudeResponse
@@ -621,7 +711,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("Hello! This is a mock Claude response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
         Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
@@ -645,6 +736,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task CommandExecutionSettingsSetsExtensionDataAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "cohere.command-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonCommandExecutionSettings()
@@ -664,6 +756,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new CommandResponse
@@ -702,7 +805,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("Hello! This is a mock Cohere Command response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
 
@@ -727,6 +831,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task CommandExecutionSettingsPropertySetsProperlyAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "cohere.command-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonCommandExecutionSettings()
@@ -743,6 +848,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new CommandResponse
@@ -781,7 +897,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("Hello! This is a mock Cohere Command response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
 
@@ -806,6 +923,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task MistralExecutionSettingsSetExtensionDataAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "mistral.mistral-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonMistralExecutionSettings()
@@ -824,6 +942,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MistralResponse
@@ -858,7 +987,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("Hello! This is a mock Mistral response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
 
@@ -879,6 +1009,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     public async Task MistralExecutionSettingsPropertiesSetAsync()
     {
         // Arrange
+        MemoryStream? requestedBody = null;
         string modelId = "mistral.mistral-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonMistralExecutionSettings()
@@ -894,6 +1025,17 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<InvokeModelRequest, CancellationToken>((request, cancellationToken) =>
+            {
+                // Copy the MemoryStream from the request body to avoid (disposal during assertion)
+                if (request.Body != null)
+                {
+                    requestedBody = new MemoryStream();
+                    request.Body.CopyTo(requestedBody);
+                    requestedBody.Position = 0; // Reset position to the beginning
+                    request.Body.Position = 0; // Reset position to the beginning
+                }
+            })
             .ReturnsAsync(new InvokeModelResponse
             {
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MistralResponse
@@ -928,7 +1070,8 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.Equal("Hello! This is a mock Mistral response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
-        using var requestBodyStream = invokeModelRequest.Body;
+        Assert.NotNull(requestedBody);
+        using var requestBodyStream = requestedBody;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
 

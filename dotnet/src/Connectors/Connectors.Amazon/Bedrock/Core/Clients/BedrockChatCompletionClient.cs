@@ -33,7 +33,7 @@ internal sealed class BedrockChatCompletionClient
     /// Builds the client object and registers the model input-output service given the user's passed in model ID.
     /// </summary>
     /// <param name="modelId">The model ID for the client.</param>
-    /// <param name="bedrockRuntime">The IAmazonBedrockRuntime object to be used for Bedrock runtime actions.</param>
+    /// <param name="bedrockRuntime">The <see cref="IAmazonBedrockRuntime"/> instance to be used for Bedrock runtime actions.</param>
     /// <param name="loggerFactory">Logger for error output.</param>
     internal BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
@@ -50,11 +50,13 @@ internal sealed class BedrockChatCompletionClient
     /// Generates a chat message based on the provided chat history and execution settings.
     /// </summary>
     /// <param name="chatHistory">The chat history to use for generating the chat message.</param>
-    /// <param name="executionSettings">The execution settings for the chat generation.</param>
+    /// <param name="executionSettings">The execution settings for the chat completion.</param>
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The generated chat message.</returns>
-    /// <exception cref="ArgumentException">Thrown when the chat history is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when the chat history is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when the chat is empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when response content is not available.</exception>
     internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
@@ -103,7 +105,7 @@ internal sealed class BedrockChatCompletionClient
         }
         if ((response == null) || response.Output == null || response.Output.Message == null)
         {
-            throw new ArgumentException("Response failed");
+            throw new InvalidOperationException("Response failed");
         }
         IReadOnlyList<ChatMessageContent> chatMessages = this.ConvertToMessageContent(response).ToList();
         activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
@@ -133,6 +135,7 @@ internal sealed class BedrockChatCompletionClient
             }
         ];
     }
+
     private static ChatMessageContentItemCollection CreateChatMessageContentItemCollection(List<ContentBlock> contentBlocks)
     {
         var itemCollection = new ChatMessageContentItemCollection();
