@@ -1,0 +1,210 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import asyncio
+from typing import Generic, TypeVar
+
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
+from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
+from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
+from semantic_kernel.processes.process_builder import ProcessBuilder
+from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
+
+
+class CommonEvents:
+    UserInputReceived = "UserInputReceived"
+    AssistantResponseGenerated = "AssistantResponseGenerated"
+
+
+class ChatBotEvents:
+    StartProcess = "startProcess"
+    IntroComplete = "introComplete"
+    AssistantResponseGenerated = "assistantResponseGenerated"
+    Exit = "exit"
+
+
+class UserInputState(KernelBaseModel):
+    user_inputs: list[str] = []
+    current_input_index: int = 0
+
+
+# Create a type variable for the generic state
+TState = TypeVar("TState", bound=KernelBaseModel)
+
+
+class KernelProcessStep(Generic[TState]):
+    def __init__(self):
+        self._state: TState | None = None
+
+    async def activate(self, state: "KernelProcessStepState[TState]"):
+        """Activates the step and sets the state."""
+        pass
+
+    def create_default_state(self) -> TState:
+        """Creates the default state object."""
+        return None
+
+    async def on_activate(self):
+        """To be overridden by subclasses if needed."""
+        pass
+
+
+class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
+    class Functions:
+        GetUserInput = "get_user_input"
+
+    def create_default_state(self) -> "UserInputState":
+        """Creates the default UserInputState."""
+        return UserInputState()
+
+    def populate_user_inputs(self):
+        """Method to be overridden by the user to populate with custom user messages."""
+        pass
+
+    async def on_activate(self):
+        """This is called during the activation of the process step."""
+        self.populate_user_inputs()
+
+    async def activate(self, state: "KernelProcessStepState[TState]"):
+        """Activates the step and sets the state."""
+        state.state = state.state or self.create_default_state()
+        self._state = state.state
+        self.populate_user_inputs()
+        pass
+
+    @kernel_function(name=Functions.GetUserInput)
+    async def get_user_input(self, context: KernelProcessStepContext):
+        """Gets the user input."""
+        if not self._state:
+            raise ValueError("State has not been initialized")
+
+        user_message = self._state.user_inputs[self._state.current_input_index]
+
+        print(f"USER: {user_message}")
+
+        if "exit" in user_message:
+            await context.emit_event(KernelProcessEvent(id=ChatBotEvents.Exit, data=None))
+            return
+
+        self._state.current_input_index += 1
+
+        # Emit the user input event
+        await context.emit_event({"id": CommonEvents.UserInputReceived, "data": user_message})
+
+
+class ChatUserInputStep(ScriptedUserInputStep):
+    def populate_user_inputs(self):
+        """Override the method to populate user inputs for the chat step."""
+        if self._state is not None:
+            self._state.user_inputs.append("Hello")
+            self._state.user_inputs.append("How tall is the tallest mountain?")
+            self._state.user_inputs.append("How low is the lowest valley?")
+            self._state.user_inputs.append("How wide is the widest river?")
+            self._state.user_inputs.append("exit")
+
+
+class IntroStep(KernelProcessStep):
+    @kernel_function
+    async def print_intro_message(self):
+        print("Welcome to Processes in Semantic Kernel.\n")
+
+
+class ChatBotState(KernelBaseModel):
+    """The state object for ChatBotResponseStep."""
+
+    chat_messages: list = []
+
+
+SERVICE_ID = "default"
+
+
+class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
+    class Functions:
+        GetChatResponse = "get_chat_response"
+
+    def __init__(self):
+        self.state: ChatBotState | None = None
+
+    async def activate(self, state: "KernelProcessStepState[ChatBotState]"):
+        """Activates the step and initializes the state object."""
+        self.state = state.state or ChatBotState()
+        self.state.chat_messages = self.state.chat_messages or []
+
+    @kernel_function(name=Functions.GetChatResponse)
+    async def get_chat_response(self, context: "KernelProcessStepContext", user_message: str, kernel: "Kernel"):
+        """Generates a response from the chat completion service."""
+        # Add user message to the state
+        self.state.chat_messages.append({"role": "user", "message": user_message})
+
+        # Get chat completion service and generate a response
+        chat_service: ChatCompletionClientBase = kernel.get_service(service_id=SERVICE_ID)
+        settings = chat_service.instantiate_prompt_execution_settings(service_id=SERVICE_ID)
+
+        chat_history = ChatHistory()
+        chat_history.add_user_message(user_message)
+        response = await chat_service.get_chat_message_contents(chat_history=chat_history, settings=settings)
+
+        if response is None:
+            raise ValueError("Failed to get a response from the chat completion service.")
+
+        answer = response[0].content
+
+        print(f"ASSISTANT: {answer}")
+
+        # Update state with the response
+        self.state.chat_messages.append(answer)
+
+        # Emit an event: assistantResponse
+        await context.emit_event(
+            process_event=KernelProcessEvent(id=ChatBotEvents.AssistantResponseGenerated, data=answer)
+        )
+
+
+kernel = Kernel()
+
+
+async def step01_processes():
+    kernel.add_service(OpenAIChatCompletion(service_id="default"))
+
+    process = ProcessBuilder(name="ChatBot")
+
+    # Define the steps on the process builder based on their types, not concrete objects
+    intro_step = process.add_step_from_type(IntroStep)
+    user_input_step = process.add_step_from_type(ChatUserInputStep)
+    response_step = process.add_step_from_type(ChatBotResponseStep)
+
+    # Define the input event that starts the process and where to send it
+    process.on_input_event(event_id=ChatBotEvents.StartProcess).send_event_to(
+        target=ProcessFunctionTargetBuilder(step=intro_step)
+    )
+    # Define the event that triggers the next step in the process
+    intro_step.on_function_result(function_name=IntroStep.print_intro_message.__name__).send_event_to(
+        target=ProcessFunctionTargetBuilder(step=user_input_step)
+    )
+    # Define the event that triggers the process to stop
+    user_input_step.on_event(event_id=ChatBotEvents.Exit).stop_process()
+    # For the user step, send the user input to the response step
+    user_input_step.on_event(event_id=CommonEvents.UserInputReceived).send_event_to(
+        target=ProcessFunctionTargetBuilder(step=response_step, parameter_name="user_message")
+    )
+    # For the response step, send the response back to the user input step
+    response_step.on_event(event_id=ChatBotEvents.AssistantResponseGenerated).send_event_to(
+        target=ProcessFunctionTargetBuilder(step=user_input_step)
+    )
+
+    # Build the kernel process
+    kernel_process = process.build()
+
+    # Start the process
+    await kernel_process.start(
+        kernel=kernel, initial_event=KernelProcessEvent(id=ChatBotEvents.StartProcess, data=None)
+    )
+
+
+if __name__ == "__main__":
+    asyncio.run(step01_processes())

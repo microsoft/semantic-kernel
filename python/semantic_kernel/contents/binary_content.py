@@ -85,7 +85,12 @@ class BinaryContent(KernelContent):
                     data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                 )
         if uri is not None:
-            uri = FilePath(uri) if os.path.exists(uri) else Url(uri)
+            # If it's a string and exists locally, convert to a FilePath, but store as a string
+            if isinstance(uri, str) and os.path.exists(uri):
+                uri = str(FilePath(uri))
+            # Otherwise, if it's a string, attempt to parse it as a URL
+            elif isinstance(uri, str):
+                uri = Url(uri)
 
         super().__init__(uri=uri, **kwargs)
         self._data_uri = _data_uri
