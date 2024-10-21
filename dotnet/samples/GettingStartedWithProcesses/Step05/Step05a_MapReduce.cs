@@ -119,10 +119,6 @@ public class Step05a_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             await Task.WhenAll(runningProcesses);
 
             Array results = Array.CreateInstance(elementType, runningProcesses.Count);
-            //Type listType = typeof(List<>);
-            //Type[] typeArgs = { elementType };
-            //Type genericListType = listType.MakeGenericType(typeArgs);
-            //IList results = (IList)(Activator.CreateInstance(genericListType) ?? throw new InvalidOperationException("Failed!!!"));
 
             for (int index = 0; index < runningProcesses.Count; ++index)
             {
@@ -136,7 +132,6 @@ public class Step05a_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
                         .State!
                         .Value;
                 results.SetValue(result, index);
-                //results.Add(result);
             }
 
             await context.EmitEventAsync(new() { Id = "Complete", Data = results });
