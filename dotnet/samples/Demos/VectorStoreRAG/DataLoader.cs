@@ -201,7 +201,7 @@ internal sealed class DataLoader<TKey>(
     /// <summary>
     /// Private model for returning the content items from a PDF file.
     /// </summary>
-    private class RawContent
+    private sealed class RawContent
     {
         public string? Text { get; init; }
 
