@@ -13,24 +13,26 @@ using Microsoft.SemanticKernel.TextGeneration;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Extensions for adding Bedrock services to the application.
+/// Extensions for adding Bedrock modality services to the service collection.
 /// </summary>
 public static class BedrockServiceCollectionExtensions
 {
     /// <summary>
-    /// Add Amazon Bedrock Chat Completion service to the kernel builder using IAmazonBedrockRuntime object.
+    /// Add Amazon Bedrock Chat Completion service to the <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="service">The kernel builder.</param>
+    /// <param name="service">The service collection.</param>
     /// <param name="modelId">The model for chat completion.</param>
-    /// <param name="bedrockRuntime">The IAmazonBedrockRuntime to run inference using the respective model.</param>
+    /// <param name="bedrockRuntime">The optional <see cref="IAmazonBedrockRuntime" /> to use. If not provided will be retrieved from the Service Collection.</param>
     /// <param name="serviceId">The optional service ID.</param>
-    /// <returns><see cref="IKernelBuilder"/> object.</returns>
+    /// <returns>Returns back <see cref="IServiceCollection"/> with a configured service.</returns>
     public static IServiceCollection AddBedrockChatCompletionService(
         this IServiceCollection service,
         string modelId,
         IAmazonBedrockRuntime? bedrockRuntime = null,
         string? serviceId = null)
     {
+        Verify.NotNull(service);
+
         if (bedrockRuntime == null)
         {
             // Add IAmazonBedrockRuntime service client to the DI container
@@ -61,13 +63,13 @@ public static class BedrockServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add Amazon Bedrock Text Generation service to the kernel builder using IAmazonBedrockRuntime object.
+    /// Add Amazon Bedrock Text Generation service to the <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The kernel builder.</param>
+    /// <param name="services">The service collection.</param>
     /// <param name="modelId">The model for text generation.</param>
-    /// <param name="bedrockRuntime">The IAmazonBedrockRuntime to run inference using the respective model.</param>
+    /// <param name="bedrockRuntime">The optional <see cref="IAmazonBedrockRuntime" /> to use. If not provided will be retrieved from the Service Collection.</param>
     /// <param name="serviceId">The optional service ID.</param>
-    /// <returns><see cref="IKernelBuilder"/> object.</returns>
+    /// <returns>Returns back <see cref="IServiceCollection"/> with a configured service.</returns>
     public static IServiceCollection AddBedrockTextGenerationService(
         this IServiceCollection services,
         string modelId,
