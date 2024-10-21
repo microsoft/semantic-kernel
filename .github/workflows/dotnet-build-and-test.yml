@@ -37,7 +37,8 @@ jobs:
             dotnet:
               - 'dotnet/**'
               - '**/dotnet/**'
-              - 'samples/skills/**'
+              - '.github/workflows/check-coverage.ps1'
+              - '.github/workflows/dotnet-build-and-test.yml'
       # run only if 'dotnet' files were changed
       - name: dotnet tests
         if: steps.filter.outputs.dotnet == 'true'

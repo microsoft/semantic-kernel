@@ -151,12 +151,27 @@
       }
     },
     {
+      "label": "build (ProcessWithDapr)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/dotnet/samples/Demos/ProcessWithDapr/ProcessWithDapr.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "/property:DebugType=portable"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
       "label": "daprd-debug",
       "type": "daprd",
       "appId": "processwithdapr",
       "logLevel": "debug",
-      "appPort": 5231,
-      "httpPort": 3500
+      "appPort": 5000,
+      "httpPort": 3500,
+      "dependsOn":["build (ProcessWithDapr)"]
     },
     {
       "label": "dapr-down",

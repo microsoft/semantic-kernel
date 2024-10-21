@@ -47,11 +47,14 @@
     },
     {
       "name": "C#: Process with Dapr",
-      "type": "dotnet",
+      "type": "coreclr",
       "request": "launch",
-      "projectPath": "${workspaceFolder}\\dotnet\\samples\\Demos\\ProcessWithDapr\\ProcessWithDapr.csproj",
+      "program": "${workspaceFolder}\\dotnet\\samples\\Demos\\ProcessWithDapr\\bin\\Debug\\net8.0\\ProcessWithDapr.dll",
       "preLaunchTask": "daprd-debug",
-      "postDebugTask": "dapr-down"
+      "postDebugTask": "dapr-down",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT" : "Development"
+      }
     }
   ]
 }
