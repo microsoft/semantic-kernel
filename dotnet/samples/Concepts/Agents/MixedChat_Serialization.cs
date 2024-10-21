@@ -10,18 +10,19 @@ namespace Agents;
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
-public class MixedChat_Serialization(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string TranslatorName = "Translator";
     private const string TranslatorInstructions =
         """
-        Spell the very last number in chat as a word in english and spanish
+        Spell the last number in chat as a word in english and spanish on a single line without any line breaks.
         """;
 
     private const string CounterName = "Counter";
     private const string CounterInstructions =
         """
-        Add 1 to the very last number in the chat.
+        Increment the last number from your most recent response.
+        Never repeat the same number.
         
         Only respond with a single number that is the result of your calculation without explanation.
         """;
@@ -41,23 +42,28 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseTest(output
         OpenAIAssistantAgent agentCounter =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                definition: new()
+                clientProvider: this.GetClientProvider(),
+                definition: new(this.Model)
                 {
                     Instructions = CounterInstructions,
                     Name = CounterName,
-                    ModelId = this.Model,
                 });
 
         AgentGroupChat chat = CreateGroupChat();
 
         // Invoke chat and display messages.
-        string input = "1";
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
-        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+        ChatMessageContent input = new(AuthorRole.User, "1");
+        chat.AddChatMessage(input);
+        this.WriteAgentChatMessage(input);
 
         Console.WriteLine("============= Source Chat ==============");
         await InvokeAgents(chat);
+
+        Console.WriteLine("============= Counter Thread ==============");
+        await foreach (ChatMessageContent content in chat.GetChatMessagesAsync(agentCounter))
+        {
+            this.WriteAgentChatMessage(content);
+        }
 
         AgentGroupChat copy = CreateGroupChat();
         Console.WriteLine("\n=========== Serialized Chat ============");
@@ -69,14 +75,14 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseTest(output
         Console.WriteLine("\n============ Full History ==============");
         await foreach (ChatMessageContent content in copy.GetChatMessagesAsync())
         {
-            Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteAgentChatMessage(content);
         }
 
         async Task InvokeAgents(AgentGroupChat chat)
         {
             await foreach (ChatMessageContent content in chat.InvokeAsync())
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteAgentChatMessage(content);
             }
         }
 
