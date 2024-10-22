@@ -5,9 +5,9 @@ using Microsoft.SemanticKernel;
 using SemanticKernel.AotTests.JsonSerializerContexts;
 using SemanticKernel.AotTests.Plugins;
 
-namespace SemanticKernel.AotTests.UnitTests;
+namespace SemanticKernel.AotTests.UnitTests.Core.Plugins;
 
-internal sealed class KernelExtensions_KernelPluginTests : BaseTest
+internal sealed class KernelExtensions_KernelPluginTests
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
@@ -23,7 +23,7 @@ internal sealed class KernelExtensions_KernelPluginTests : BaseTest
         KernelPlugin plugin = kernel.CreatePluginFromType<WeatherPlugin>(s_jsonSerializerOptions);
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, plugin["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, plugin["GetCurrentWeather"]);
     }
 
     public static async Task CreateFromObject()
@@ -35,7 +35,7 @@ internal sealed class KernelExtensions_KernelPluginTests : BaseTest
         KernelPlugin plugin = kernel.CreatePluginFromObject(new WeatherPlugin(), s_jsonSerializerOptions);
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, plugin["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, plugin["GetCurrentWeather"]);
     }
 
     public static async Task ImportFromType()
@@ -47,7 +47,7 @@ internal sealed class KernelExtensions_KernelPluginTests : BaseTest
         kernel.ImportPluginFromType<WeatherPlugin>(s_jsonSerializerOptions, "weather_utils");
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 
     public static async Task ImportFromObject()
@@ -59,6 +59,6 @@ internal sealed class KernelExtensions_KernelPluginTests : BaseTest
         kernel.ImportPluginFromObject(new WeatherPlugin(), s_jsonSerializerOptions, "weather_utils");
 
         // Assert
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 }

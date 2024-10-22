@@ -5,9 +5,9 @@ using Microsoft.SemanticKernel;
 using SemanticKernel.AotTests.JsonSerializerContexts;
 using SemanticKernel.AotTests.Plugins;
 
-namespace SemanticKernel.AotTests.UnitTests;
+namespace SemanticKernel.AotTests.UnitTests.Core.Plugins;
 
-internal sealed class KernelBuilderPluginsExtensionsTests : BaseTest
+internal sealed class KernelBuilderPluginsExtensionsTests
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
@@ -24,7 +24,7 @@ internal sealed class KernelBuilderPluginsExtensionsTests : BaseTest
 
         // Assert
         Kernel kernel = kernelBuilder.Build();
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernel, kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 
     public static async Task AddFromObject()
@@ -37,6 +37,6 @@ internal sealed class KernelBuilderPluginsExtensionsTests : BaseTest
 
         // Assert
         Kernel kernel = kernelBuilder.Build();
-        await AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernelBuilder.Build(), kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
+        await GetWeatherFunctionAsserts.AssertGetCurrentWeatherFunctionSchemaAndInvocationResult(kernelBuilder.Build(), kernel.Plugins["weather_utils"]["GetCurrentWeather"]);
     }
 }

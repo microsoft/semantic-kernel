@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SemanticKernel.AotTests.UnitTests;
+using SemanticKernel.AotTests.UnitTests.Core.Functions;
+using SemanticKernel.AotTests.UnitTests.Core.Plugins;
+using SemanticKernel.AotTests.UnitTests.Search;
 
 namespace SemanticKernel.AotTests;
 
@@ -20,6 +22,11 @@ internal sealed class Program
     private static readonly Func<Task>[] s_unitTests =
     [
         // Tests for functions
+        KernelFunctionFromMethodTests.CreateUsingOverloadWithFunctionDetails,
+        KernelFunctionFromMethodTests.CreateUsingOverloadWithOptions,
+        KernelFunctionFromMethodTests.CreateMetadataUsingOverloadWithFunctionDetails,
+        KernelFunctionFromMethodTests.CreateMetadataUsingOverloadWithOptions,
+
         KernelFunctionFactoryTests.CreateFromLambda,
         KernelFunctionFactoryTests.CreateFromMethod,
         KernelFunctionFactoryTests.CreateFromStringPrompt,
@@ -30,11 +37,13 @@ internal sealed class Program
         KernelExtensions_KernelFunctionTests.CreateFromStringPrompt,
         KernelExtensions_KernelFunctionTests.CreateFromPromptTemplate,
 
-        KernelExtensions_InvokePromptTests.InvokePromptAsync,
-        KernelExtensions_InvokePromptTests.InvokePromptStreamingAsync,
+        KernelExtensions_InvokePromptTests.InvokePrompt,
+        KernelExtensions_InvokePromptTests.InvokePromptStreaming,
+
+        KernelFunctionMetadataFactoryTests.CreateFromType,
 
         // Tests for plugins
-        KernelPluginFactoryTests.CreateFromType,
+        KernelPluginFactoryTests.CreateFromGenericParameterType,
         KernelPluginFactoryTests.CreateFromObject,
 
         KernelExtensions_KernelPluginTests.CreateFromType,
@@ -47,6 +56,9 @@ internal sealed class Program
 
         KernelBuilderPluginsExtensionsTests.AddFromType,
         KernelBuilderPluginsExtensionsTests.AddFromObject,
+
+        // Tests for text search
+        VectorStoreTextSearchTests.GetTextSearchResultsAsync,
     ];
 
     private static async Task<bool> RunUnitTestsAsync(IEnumerable<Func<Task>> functionsToRun)
