@@ -8,23 +8,22 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
-/// Service for storing and retrieving vector records, that uses Azure CosmosDB MongoDB as the underlying storage.
+/// Service for storing and retrieving vector records, that uses MongoDB as the underlying storage.
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "AzureCosmosDBMongoDB";
+    private const string DatabaseName = "MongoDB";
 
     /// <summary>Property name to be used for search similarity score value.</summary>
     private const string ScorePropertyName = "similarityScore";
@@ -35,14 +34,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
-    /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
+    /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
-    /// <summary>Azure CosmosDB MongoDB collection to perform record operations.</summary>
+    /// <summary>MongoDB collection to perform record operations.</summary>
     private readonly IMongoCollection<BsonDocument> _mongoCollection;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
+    private readonly MongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
@@ -60,15 +59,15 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     public string CollectionName { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="MongoDBVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
-    /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="MongoDBVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public AzureCosmosDBMongoDBVectorStoreRecordCollection(
+    public MongoDBVectorStoreRecordCollection(
         IMongoDatabase mongoDatabase,
         string collectionName,
-        AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default)
+        MongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
@@ -80,7 +79,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(collectionName);
         this.CollectionName = collectionName;
-        this._options = options ?? new AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>();
+        this._options = options ?? new MongoDBVectorStoreRecordCollectionOptions<TRecord>();
         this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new() { RequiresAtLeastOneVector = false, SupportsMultipleKeys = false, SupportsMultipleVectors = true });
 
         this._storagePropertyNames = GetStoragePropertyNames(this._propertyReader.Properties, typeof(TRecord));
@@ -103,8 +102,12 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         await this.RunOperationAsync("CreateCollection",
             () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        await this.RunOperationAsync("CreateIndexes",
-            () => this.CreateIndexesAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+        await this.RunOperationWithRetryAsync(
+            "CreateIndexes",
+            this._options.MaxRetries,
+            this._options.DelayInMilliseconds,
+            () => this.CreateIndexesAsync(this.CollectionName, cancellationToken),
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -257,7 +260,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
             ReadOnlyMemory<double> memoryDouble => memoryDouble.ToArray(),
             _ => throw new NotSupportedException(
-                $"The provided vector type {vector.GetType().FullName} is not supported by the Azure CosmosDB for MongoDB connector. " +
+                $"The provided vector type {vector.GetType().FullName} is not supported by the MongoDB connector. " +
                 $"Supported types are: {string.Join(", ", [
                     typeof(ReadOnlyMemory<float>).FullName,
                     typeof(ReadOnlyMemory<double>).FullName])}")
@@ -273,7 +276,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
-        var filter = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(
+        var filter = MongoDBVectorStoreCollectionSearchMapping.BuildFilter(
             searchOptions.Filter,
             this._storagePropertyNames);
 
@@ -281,37 +284,35 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // to perform skip logic locally, since skip option is not part of API. 
         var itemsAmount = searchOptions.Skip + searchOptions.Top;
 
-        var vectorPropertyIndexKind = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetVectorPropertyIndexKind(vectorProperty.IndexKind);
+        var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
 
-        var searchQuery = vectorPropertyIndexKind switch
-        {
-            IndexKind.Hnsw => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForHnswIndex(
-                vectorArray,
-                vectorPropertyName,
-                itemsAmount,
-                this._options.EfSearch,
-                filter),
-            IndexKind.IvfFlat => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetSearchQueryForIvfIndex(
-                vectorArray,
-                vectorPropertyName,
-                itemsAmount,
-                filter),
-            _ => throw new InvalidOperationException(
-                $"Index kind '{vectorProperty.IndexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore. " +
-                $"Supported index kinds are: {string.Join(", ", [IndexKind.Hnsw, IndexKind.IvfFlat])}")
-        };
+        var searchQuery = MongoDBVectorStoreCollectionSearchMapping.GetSearchQuery(
+            vectorArray,
+            this._options.VectorIndexName,
+            vectorPropertyName,
+            itemsAmount,
+            numCandidates,
+            filter);
 
-        var projectionQuery = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetProjectionQuery(
+        var projectionQuery = MongoDBVectorStoreCollectionSearchMapping.GetProjectionQuery(
             ScorePropertyName,
             DocumentPropertyName);
 
         BsonDocument[] pipeline = [searchQuery, projectionQuery];
 
-        var cursor = await this._mongoCollection
-            .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        return await this.RunOperationWithRetryAsync(
+            "VectorizedSearch",
+            this._options.MaxRetries,
+            this._options.DelayInMilliseconds,
+            async () =>
+            {
+                var cursor = await this._mongoCollection
+                    .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
 
-        return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken));
+                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken));
+            },
+            cancellationToken).ConfigureAwait(false);
     }
 
     #region private
@@ -320,27 +321,38 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     {
         var indexCursor = await this._mongoCollection.Indexes.ListAsync(cancellationToken).ConfigureAwait(false);
         var indexes = indexCursor.ToList(cancellationToken).Select(index => index["name"].ToString()) ?? [];
-        var uniqueIndexes = new HashSet<string?>(indexes);
 
-        var indexArray = new BsonArray();
-
-        indexArray.AddRange(AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping.GetVectorIndexes(
-            this._propertyReader.VectorProperties,
-            this._storagePropertyNames,
-            uniqueIndexes,
-            this._options.NumLists,
-            this._options.EfConstruction));
-
-        indexArray.AddRange(AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexes(
-            this._propertyReader.DataProperties,
-            this._storagePropertyNames,
-            uniqueIndexes));
-
-        if (indexArray.Count > 0)
+        if (indexes.Contains(this._options.VectorIndexName))
         {
+            // Vector index already exists.
+            return;
+        }
+
+        var fieldsArray = new BsonArray();
+
+        fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetVectorIndexFields(
+            this._propertyReader.VectorProperties,
+            this._storagePropertyNames));
+
+        fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexFields(
+            this._propertyReader.DataProperties,
+            this._storagePropertyNames));
+
+        if (fieldsArray.Count > 0)
+        {
+            var indexArray = new BsonArray
+            {
+                new BsonDocument
+                {
+                    { "name", this._options.VectorIndexName },
+                    { "type", "vectorSearch" },
+                    { "definition", new BsonDocument { ["fields"] = fieldsArray } },
+                }
+            };
+
             var createIndexCommand = new BsonDocument
             {
-                { "createIndexes", collectionName },
+                { "createSearchIndexes", collectionName },
                 { "indexes", indexArray }
             };
 
@@ -392,7 +404,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                         DatabaseName,
                         this.CollectionName,
                         OperationName,
-                        () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
+                        () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new() { IncludeVectors = searchOptions.IncludeVectors }));
 
                     yield return new VectorSearchResult<TRecord>(record, score);
                 }
@@ -450,6 +462,77 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                 OperationName = operationName
             };
         }
+    }
+
+    private async Task RunOperationWithRetryAsync(
+        string operationName,
+        int maxRetries,
+        int delayInMilliseconds,
+        Func<Task> operation,
+        CancellationToken cancellationToken)
+    {
+        var retries = 0;
+
+        while (retries < maxRetries)
+        {
+            try
+            {
+                await operation.Invoke().ConfigureAwait(false);
+                return;
+            }
+            catch (Exception ex)
+            {
+                retries++;
+
+                if (retries >= maxRetries)
+                {
+                    throw new VectorStoreOperationException("Call to vector store failed.", ex)
+                    {
+                        VectorStoreType = DatabaseName,
+                        CollectionName = this.CollectionName,
+                        OperationName = operationName
+                    };
+                }
+
+                await Task.Delay(delayInMilliseconds, cancellationToken).ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async Task<T> RunOperationWithRetryAsync<T>(
+        string operationName,
+        int maxRetries,
+        int delayInMilliseconds,
+        Func<Task<T>> operation,
+        CancellationToken cancellationToken)
+    {
+        var retries = 0;
+
+        while (retries < maxRetries)
+        {
+            try
+            {
+                return await operation.Invoke().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                retries++;
+
+                if (retries >= maxRetries)
+                {
+                    throw new VectorStoreOperationException("Call to vector store failed.", ex)
+                    {
+                        VectorStoreType = DatabaseName,
+                        CollectionName = this.CollectionName,
+                        OperationName = operationName
+                    };
+                }
+
+                await Task.Delay(delayInMilliseconds, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        throw new VectorStoreOperationException("Retry logic failed.");
     }
 
     /// <summary>
