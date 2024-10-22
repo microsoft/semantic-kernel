@@ -10,7 +10,7 @@ else:
 import logging
 
 from mistralai.async_client import MistralAsyncClient
-from mistralai.models.embeddings import EmbeddingResponse
+from mistralai.models import EmbeddingResponse
 from numpy import array, ndarray
 from pydantic import ValidationError
 
