@@ -4,26 +4,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
-/// Contains mapping helpers to use when searching for documents using Azure CosmosDB MongoDB.
+/// Contains mapping helpers to use when searching for documents using MongoDB.
 /// </summary>
-internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
+internal static class MongoDBVectorStoreCollectionSearchMapping
 {
-    /// <summary>Returns index kind specified on vector property or default <see cref="MongoDBConstants.DefaultIndexKind"/>.</summary>
-    public static string GetVectorPropertyIndexKind(string? indexKind) => !string.IsNullOrWhiteSpace(indexKind) ? indexKind! : MongoDBConstants.DefaultIndexKind;
-
     /// <summary>Returns distance function specified on vector property or default <see cref="MongoDBConstants.DefaultDistanceFunction"/>.</summary>
     public static string GetVectorPropertyDistanceFunction(string? distanceFunction) => !string.IsNullOrWhiteSpace(distanceFunction) ? distanceFunction! : MongoDBConstants.DefaultDistanceFunction;
 
     /// <summary>
-    /// Build Azure CosmosDB MongoDB filter from the provided <see cref="VectorSearchFilter"/>.
+    /// Build MongoDB filter from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>
-    /// <param name="vectorSearchFilter">The <see cref="VectorSearchFilter"/> to build Azure CosmosDB MongoDB filter from.</param>
+    /// <param name="vectorSearchFilter">The <see cref="VectorSearchFilter"/> to build MongoDB filter from.</param>
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
     /// <exception cref="NotSupportedException">Thrown when the provided filter type is unsupported.</exception>
     /// <exception cref="InvalidOperationException">Thrown when property name specified in filter doesn't exist.</exception>
@@ -87,20 +83,22 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
         return filter;
     }
 
-    /// <summary>Returns search part of the search query for <see cref="IndexKind.Hnsw"/> index kind.</summary>
-    public static BsonDocument GetSearchQueryForHnswIndex<TVector>(
+    /// <summary>Returns search part of the search query.</summary>
+    public static BsonDocument GetSearchQuery<TVector>(
         TVector vector,
+        string indexName,
         string vectorPropertyName,
         int limit,
-        int efSearch,
+        int numCandidates,
         BsonDocument? filter)
     {
         var searchQuery = new BsonDocument
         {
-            { "vector", BsonArray.Create(vector) },
+            { "index", indexName },
+            { "queryVector", BsonArray.Create(vector) },
             { "path", vectorPropertyName },
-            { "k", limit },
-            { "efSearch", efSearch }
+            { "limit", limit },
+            { "numCandidates", numCandidates },
         };
 
         if (filter is not null)
@@ -110,43 +108,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
 
         return new BsonDocument
         {
-            { "$search",
-                new BsonDocument
-                {
-                    { "cosmosSearch", searchQuery }
-                }
-            }
-        };
-    }
-
-    /// <summary>Returns search part of the search query for <see cref="IndexKind.IvfFlat"/> index kind.</summary>
-    public static BsonDocument GetSearchQueryForIvfIndex<TVector>(
-        TVector vector,
-        string vectorPropertyName,
-        int limit,
-        BsonDocument? filter)
-    {
-        var searchQuery = new BsonDocument
-        {
-            { "vector", BsonArray.Create(vector) },
-            { "path", vectorPropertyName },
-            { "k", limit },
-        };
-
-        if (filter is not null)
-        {
-            searchQuery["filter"] = filter;
-        }
-
-        return new BsonDocument
-        {
-            { "$search",
-                new BsonDocument
-                {
-                    { "cosmosSearch", searchQuery },
-                    { "returnStoredSource", true }
-                }
-            }
+            { "$vectorSearch", searchQuery }
         };
     }
 
@@ -158,7 +120,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
             { "$project",
                 new BsonDocument
                 {
-                    { scorePropertyName, new BsonDocument { { "$meta", "searchScore" } } },
+                    { scorePropertyName, new BsonDocument { { "$meta", "vectorSearchScore" } } },
                     { documentPropertyName, "$$ROOT" }
                 }
             }
