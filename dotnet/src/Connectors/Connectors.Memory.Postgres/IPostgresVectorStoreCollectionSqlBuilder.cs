@@ -1,7 +1,8 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -32,10 +33,10 @@ public interface IPostgresVectorStoreCollectionSqlBuilder
     /// </summary>
     /// <param name="schema">The schema of the table.</param>
     /// <param name="tableName">The name of the table.</param>
-    /// <param name="recordDefinition">The record definition of the table.</param>
+    /// <param name="properties">The properties of the table.</param>
     /// <param name="ifNotExists">Specifies whether to include IF NOT EXISTS in the command.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, VectorStoreRecordDefinition recordDefinition, bool ifNotExists = true);
+    PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, bool ifNotExists = true);
 
     /// <summary>
     /// Builds a SQL command to drop a table in the Postgres vector store.
@@ -70,22 +71,22 @@ public interface IPostgresVectorStoreCollectionSqlBuilder
     /// </summary>
     /// <param name="schema">The schema of the table.</param>
     /// <param name="tableName">The name of the table.</param>
-    /// <param name="recordDefinition">The record definition of the table.</param>
+    /// <param name="properties">The properties of the table.</param>
     /// <param name="key">The key of the record to get.</param>
     /// <param name="includeVectors">Specifies whether to include vectors in the record.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, VectorStoreRecordDefinition recordDefinition, TKey key, bool includeVectors = false) where TKey : notnull;
+    PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, TKey key, bool includeVectors = false) where TKey : notnull;
 
     /// <summary>
     /// Builds a SQL command to get a batch of records from the Postgres vector store.
     /// </summary>
     /// <param name="schema">The schema of the table.</param>
     /// <param name="tableName">The name of the table.</param>
-    /// <param name="recordDefinition">The record definition of the table.</param>
+    /// <param name="properties">The properties of the table.</param>
     /// <param name="keys">The keys of the records to get.</param>
     /// <param name="includeVectors">Specifies whether to include vectors in the records.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, VectorStoreRecordDefinition recordDefinition, List<TKey> keys, bool includeVectors = false) where TKey : notnull;
+    PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, List<TKey> keys, bool includeVectors = false) where TKey : notnull;
 
     /// <summary>
     /// Builds a SQL command to delete a record from the Postgres vector store.
@@ -106,4 +107,19 @@ public interface IPostgresVectorStoreCollectionSqlBuilder
     /// <param name="keys">The keys of the records to delete.</param>
     /// <returns>The built SQL command info.</returns>
     PostgresSqlCommandInfo BuildDeleteBatchCommand<TKey>(string schema, string tableName, string keyColumn, List<TKey> keys);
+
+    /// <summary>
+    /// Builds a SQL command to get the nearest match from the Postgres vector store.
+    /// </summary>
+    /// <param name="schema">The schema of the table.</param>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="properties">The properties of the table.</param>
+    /// <param name="vectorProperty">The property which the vectors to compare are stored in.</param>
+    /// <param name="vectorValue">The vector to match.</param>
+    /// <param name="filter">The filter conditions for the query.</param>
+    /// <param name="skip">The number of records to skip.</param>
+    /// <param name="withEmbeddings">Specifies whether to include embeddings in the result.</param>
+    /// <param name="limit">The maximum number of records to return.</param>
+    /// <returns>The built SQL command info.</returns>
+    PostgresSqlCommandInfo BuildGetNearestMatchCommand(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, VectorSearchFilter? filter, int? skip, bool withEmbeddings, int limit);
 }

@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <typeparam name="TKey">The type of the key.</typeparam>
 /// <typeparam name="TRecord">The type of the record.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>, IVectorizableTextSearch<TRecord>
+public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
 {
@@ -37,6 +37,9 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
+
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -79,9 +82,9 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         {
             this._mapper = this._options.DictionaryCustomMapper;
         }
-        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>) || typeof(TRecord) == typeof(VectorStoreGenericDataModel<ulong>))
+        else if (typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
         {
-            this._mapper = (new PostgresGenericDataModelMapper(this._propertyReader) as IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>)!;
+            this._mapper = (new PostgresGenericDataModelMapper<TKey>(this._propertyReader) as IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>)!;
         }
         else
         {
@@ -161,7 +164,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         bool includeVectors = options?.IncludeVectors is true;
 
-        var row = await this._client.GetAsync(this.CollectionName, key, this._propertyReader.RecordDefinition, includeVectors, cancellationToken).ConfigureAwait(false);
+        var row = await this._client.GetAsync(this.CollectionName, key, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken).ConfigureAwait(false);
 
         if (row is null) { return default; }
 
@@ -181,7 +184,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         bool includeVectors = options?.IncludeVectors is true;
 
-        await foreach (var row in this._client.GetBatchAsync(this.CollectionName, keys, this._propertyReader.RecordDefinition, includeVectors, cancellationToken).ConfigureAwait(false))
+        await foreach (var row in this._client.GetBatchAsync(this.CollectionName, keys, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken).ConfigureAwait(false))
         {
             yield return VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
@@ -203,15 +206,81 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         return this._client.DeleteBatchAsync(this.CollectionName, this._propertyReader.KeyPropertyStoragePropertyName, keys, cancellationToken);
     }
 
-    /// <inheritdoc/>
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(vector);
+
+        var vectorType = vector.GetType();
+
+        if (!PostgresConstants.SupportedVectorTypes.Contains(vectorType))
+        {
+            throw new NotSupportedException(
+                $"The provided vector type {vectorType.FullName} is not supported by the SQLite connector. " +
+                $"Supported types are: {string.Join(", ", PostgresConstants.SupportedVectorTypes.Select(l => l.FullName))}");
+        }
+
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
+
+        if (vectorProperty is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
+        }
+
+        var pgVector = PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
+
+        Verify.NotNull(pgVector);
+
+        // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
+        // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
+        var limit = searchOptions.Top + searchOptions.Skip;
+
+        var results = this._client.GetNearestMatchesAsync(
+            this.CollectionName,
+            this._propertyReader.RecordDefinition.Properties,
+            vectorProperty,
+            pgVector,
+            searchOptions.Top,
+            options.Filter,
+            searchOptions.Skip,
+            searchOptions.IncludeVectors,
+            cancellationToken
+            ).Select(result =>
+            {
+                var record = this._mapper.MapFromStorageToDataModel(
+                    result.Row, new StorageToDataModelMapperOptions() { IncludeVectors = searchOptions.IncludeVectors });
+
+                return new VectorSearchResult<TRecord>(record, result.Distance);
+            }, cancellationToken);
+
+        return new VectorSearchResults<TRecord>(results);
     }
 
-    /// <inheritdoc/>
-    public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Get vector property to use for a search by using the storage name for the field name from options
+    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
+    /// </summary>
+    /// <param name="vectorFieldName">The vector field name.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
+    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? vectorFieldName)
     {
-        throw new NotImplementedException();
+        // If vector property name is provided in options, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(vectorFieldName))
+        {
+            // Check vector properties by data model property name.
+            var vectorProperty = this._propertyReader.VectorProperties
+                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
+
+            if (vectorProperty is not null)
+            {
+                return vectorProperty;
+            }
+
+            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{vectorFieldName}'.");
+        }
+
+        // If vector property is not provided in options, return first vector property from schema.
+        return this._propertyReader.VectorProperty;
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections;
@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
 using Npgsql;
 using NpgsqlTypes;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -17,6 +18,33 @@ internal static class PostgresVectorStoreRecordPropertyMapping
         array.Count == array.Array!.Length ?
             array.Array :
             memory.ToArray();
+
+    public static Vector? MapVectorForStorageModel<TVector>(TVector vector)
+    {
+        if (vector == null)
+        {
+            return null;
+        }
+
+        if (vector is ReadOnlyMemory<float> floatMemory)
+        {
+            var vecArray = MemoryMarshal.TryGetArray(floatMemory, out ArraySegment<float> array) &&
+                array.Count == array.Array!.Length ?
+                        array.Array :
+                        floatMemory.ToArray();
+            return new Vector(vecArray);
+        }
+
+        throw new NotSupportedException($"Mapping for type {typeof(TVector).FullName} to a vector is not supported.");
+    }
+
+    public static ReadOnlyMemory<float>? MapVectorForDataModel(object? vector)
+    {
+        var pgVector = vector is Vector pgv ? pgv : null;
+        if (pgVector == null) { return null; }
+        var vecArray = pgVector.ToArray();
+        return vecArray != null && vecArray.Length != 0 ? (ReadOnlyMemory<float>)vecArray : null;
+    }
 
     public static TPropertyType? GetPropertyValue<TPropertyType>(NpgsqlDataReader reader, string propertyName)
     {
@@ -50,16 +78,17 @@ internal static class PostgresVectorStoreRecordPropertyMapping
 
         return propertyType switch
         {
+            Type t when t == typeof(bool) || t == typeof(bool?) => reader.GetBoolean(propertyIndex),
+            Type t when t == typeof(short) || t == typeof(short?) => reader.GetInt16(propertyIndex),
             Type t when t == typeof(int) || t == typeof(int?) => reader.GetInt32(propertyIndex),
             Type t when t == typeof(long) || t == typeof(long?) => reader.GetInt64(propertyIndex),
-            Type t when t == typeof(ulong) || t == typeof(ulong?) => (ulong)reader.GetInt64(propertyIndex),
-            Type t when t == typeof(short) || t == typeof(short?) => reader.GetInt16(propertyIndex),
-            Type t when t == typeof(ushort) || t == typeof(ushort?) => (ushort)reader.GetInt16(propertyIndex),
-            Type t when t == typeof(bool) || t == typeof(bool?) => reader.GetBoolean(propertyIndex),
             Type t when t == typeof(float) || t == typeof(float?) => reader.GetFloat(propertyIndex),
             Type t when t == typeof(double) || t == typeof(double?) => reader.GetDouble(propertyIndex),
             Type t when t == typeof(decimal) || t == typeof(decimal?) => reader.GetDecimal(propertyIndex),
             Type t when t == typeof(string) => reader.GetString(propertyIndex),
+            Type t when t == typeof(byte[]) => reader.GetFieldValue<byte[]>(propertyIndex),
+            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => reader.GetDateTime(propertyIndex),
+            Type t when t == typeof(Guid) => reader.GetFieldValue<Guid>(propertyIndex),
             _ => reader.GetValue(propertyIndex)
         };
     }
@@ -67,18 +96,16 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     public static NpgsqlDbType? GetNpgsqlDbType(Type propertyType) =>
         propertyType switch
         {
+            Type t when t == typeof(bool) || t == typeof(bool?) => NpgsqlDbType.Boolean,
+            Type t when t == typeof(short) || t == typeof(short?) => NpgsqlDbType.Smallint,
             Type t when t == typeof(int) || t == typeof(int?) => NpgsqlDbType.Integer,
             Type t when t == typeof(long) || t == typeof(long?) => NpgsqlDbType.Bigint,
-            Type t when t == typeof(ulong) || t == typeof(ulong?) => NpgsqlDbType.Bigint,
-            Type t when t == typeof(short) || t == typeof(short?) => NpgsqlDbType.Smallint,
-            Type t when t == typeof(ushort) || t == typeof(ushort?) => NpgsqlDbType.Smallint,
-            Type t when t == typeof(bool) || t == typeof(bool?) => NpgsqlDbType.Boolean,
             Type t when t == typeof(float) || t == typeof(float?) => NpgsqlDbType.Real,
             Type t when t == typeof(double) || t == typeof(double?) => NpgsqlDbType.Double,
             Type t when t == typeof(decimal) || t == typeof(decimal?) => NpgsqlDbType.Numeric,
             Type t when t == typeof(string) => NpgsqlDbType.Text,
-            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => NpgsqlDbType.Timestamp,
             Type t when t == typeof(byte[]) => NpgsqlDbType.Bytea,
+            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => NpgsqlDbType.Timestamp,
             Type t when t == typeof(Guid) => NpgsqlDbType.Uuid,
             _ => null
         };
@@ -92,17 +119,17 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     {
         var (pgType, isNullable) = propertyType switch
         {
-            Type t when t == typeof(int) => ("INTEGER", false),
-            Type t when t == typeof(string) => ("TEXT", true),
             Type t when t == typeof(bool) => ("BOOLEAN", false),
-            Type t when t == typeof(DateTime) => ("TIMESTAMP", false),
+            Type t when t == typeof(short) => ("SMALLINT", false),
+            Type t when t == typeof(int) => ("INTEGER", false),
+            Type t when t == typeof(long) => ("BIGINT", false),
+            Type t when t == typeof(float) => ("REAL", false),
             Type t when t == typeof(double) => ("DOUBLE PRECISION", false),
             Type t when t == typeof(decimal) => ("NUMERIC", false),
-            Type t when t == typeof(float) => ("REAL", false),
+            Type t when t == typeof(string) => ("TEXT", true),
             Type t when t == typeof(byte[]) => ("BYTEA", true),
+            Type t when t == typeof(DateTime) => ("TIMESTAMP", false),
             Type t when t == typeof(Guid) => ("UUID", false),
-            Type t when t == typeof(short) => ("SMALLINT", false),
-            Type t when t == typeof(long) => ("BIGINT", false),
             _ => (null, false)
         };
 
@@ -111,14 +138,8 @@ internal static class PostgresVectorStoreRecordPropertyMapping
             return (pgType, isNullable);
         }
 
-        // Handle lists and arrays (PostgreSQL supports array types for most types)
-        if (propertyType.IsArray)
-        {
-            Type elementType = propertyType.GetElementType() ?? throw new ArgumentException("Array type must have an element type.");
-            var underlyingPgType = GetPostgresTypeName(elementType);
-            return (underlyingPgType.PgType + "[]", true);
-        }
-        else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
+        // Handle lists
+        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
         {
             Type elementType = propertyType.GetGenericArguments()[0];
             var underlyingPgType = GetPostgresTypeName(elementType);

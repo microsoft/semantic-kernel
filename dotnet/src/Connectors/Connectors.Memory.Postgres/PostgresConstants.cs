@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -13,9 +13,7 @@ internal static class PostgresConstants
         typeof(string),
         typeof(int),
         typeof(long),
-        typeof(ulong),
         typeof(short),
-        typeof(ushort),
     ];
 
     /// <summary>A <see cref="HashSet{T}"/> of types that data properties on the provided model may have.</summary>
@@ -25,16 +23,10 @@ internal static class PostgresConstants
         typeof(bool?),
         typeof(short),
         typeof(short?),
-        typeof(ushort),
-        typeof(ushort?),
         typeof(int),
         typeof(int?),
-        typeof(uint),
-        typeof(uint?),
         typeof(long),
         typeof(long?),
-        typeof(ulong),
-        typeof(ulong?),
         typeof(float),
         typeof(float?),
         typeof(double),
@@ -47,28 +39,13 @@ internal static class PostgresConstants
         typeof(byte[]),
         typeof(List<bool>),
         typeof(List<short>),
-        typeof(List<ushort>),
         typeof(List<int>),
-        typeof(List<uint>),
         typeof(List<long>),
-        typeof(List<ulong>),
         typeof(List<float>),
         typeof(List<double>),
         typeof(List<decimal>),
         typeof(List<string>),
         typeof(List<DateTimeOffset>),
-        typeof(bool[]),
-        typeof(short[]),
-        typeof(ushort[]),
-        typeof(int[]),
-        typeof(uint[]),
-        typeof(long[]),
-        typeof(ulong[]),
-        typeof(float[]),
-        typeof(double[]),
-        typeof(decimal[]),
-        typeof(string[]),
-        typeof(DateTimeOffset[]),
     ];
 
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>
@@ -77,4 +54,8 @@ internal static class PostgresConstants
         typeof(ReadOnlyMemory<float>),
         typeof(ReadOnlyMemory<float>?)
     ];
+
+    /// <summary>The name of the column that returns distance value in the database.</summary>
+    /// <remarks>It is used in the similarity search query. Must not conflict with model property.</remarks>
+    public const string DistanceColumnName = "sk_pg_distance";
 }

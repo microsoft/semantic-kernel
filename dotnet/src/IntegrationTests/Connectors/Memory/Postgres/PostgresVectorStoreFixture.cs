@@ -90,7 +90,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <returns>An async task.</returns>
     public async Task InitializeAsync()
     {
-        this._containerId = await SetupPostgresContainerAsync(this._client);
+        //this._containerId = await SetupPostgresContainerAsync(this._client);
         this._connectionString = "Host=localhost;Port=5432;Username=postgres;Password=example;Database=postgres;";
         this._databaseName = $"sk_it_{Guid.NewGuid():N}";
 
@@ -144,106 +144,6 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
 
         // Create the table.
         await this.CreateTableAsync();
-
-        // await this.PostgresClient.CreateCollectionAsync(
-        //     "singleVectorHotels",
-        //     new VectorParams { Size = 4, Distance = Distance.Cosine });
-
-        // await this.PostgresClient.CreateCollectionAsync(
-        //     "singleVectorGuidIdHotels",
-        //     new VectorParams { Size = 4, Distance = Distance.Cosine });
-
-        // // Create test data common to both named and unnamed vectors.
-        // var tags = new ListValue();
-        // tags.Values.Add("t1");
-        // tags.Values.Add("t2");
-        // var tagsValue = new Value();
-        // tagsValue.ListValue = tags;
-
-        // // Create some test data using named vectors.
-        // var embedding = new[] { 30f, 31f, 32f, 33f };
-
-        // var namedVectors1 = new NamedVectors();
-        // var namedVectors2 = new NamedVectors();
-        // var namedVectors3 = new NamedVectors();
-
-        // namedVectors1.Vectors.Add("DescriptionEmbedding", embedding);
-        // namedVectors2.Vectors.Add("DescriptionEmbedding", embedding);
-        // namedVectors3.Vectors.Add("DescriptionEmbedding", embedding);
-
-        // List<PointStruct> namedVectorPoints =
-        // [
-        //     new PointStruct
-        //     {
-        //         Id = 11,
-        //         Vectors = new Vectors { Vectors_ = namedVectors1 },
-        //         Payload = { ["HotelName"] = "My Hotel 11", ["HotelCode"] = 11, ["parking_is_included"] = true, ["Tags"] = tagsValue, ["HotelRating"] = 4.5f, ["Description"] = "This is a great hotel." }
-        //     },
-        //     new PointStruct
-        //     {
-        //         Id = 12,
-        //         Vectors = new Vectors { Vectors_ = namedVectors2 },
-        //         Payload = { ["HotelName"] = "My Hotel 12", ["HotelCode"] = 12, ["parking_is_included"] = false, ["Description"] = "This is a great hotel." }
-        //     },
-        //     new PointStruct
-        //     {
-        //         Id = 13,
-        //         Vectors = new Vectors { Vectors_ = namedVectors3 },
-        //         Payload = { ["HotelName"] = "My Hotel 13", ["HotelCode"] = 13, ["parking_is_included"] = false, ["Description"] = "This is a great hotel." }
-        //     },
-        // ];
-
-        // await this.PostgresClient.UpsertAsync("namedVectorsHotels", namedVectorPoints);
-
-        // // Create some test data using a single unnamed vector.
-        // List<PointStruct> unnamedVectorPoints =
-        // [
-        //     new PointStruct
-        //     {
-        //         Id = 11,
-        //         Vectors = embedding,
-        //         Payload = { ["HotelName"] = "My Hotel 11", ["HotelCode"] = 11, ["parking_is_included"] = true, ["Tags"] = tagsValue, ["HotelRating"] = 4.5f, ["Description"] = "This is a great hotel." }
-        //     },
-        //     new PointStruct
-        //     {
-        //         Id = 12,
-        //         Vectors = embedding,
-        //         Payload = { ["HotelName"] = "My Hotel 12", ["HotelCode"] = 12, ["parking_is_included"] = false, ["Description"] = "This is a great hotel." }
-        //     },
-        //     new PointStruct
-        //     {
-        //         Id = 13,
-        //         Vectors = embedding,
-        //         Payload = { ["HotelName"] = "My Hotel 13", ["HotelCode"] = 13, ["parking_is_included"] = false, ["Description"] = "This is a great hotel." }
-        //     },
-        // ];
-
-        // await this.PostgresClient.UpsertAsync("singleVectorHotels", unnamedVectorPoints);
-
-        // // Create some test data using a single unnamed vector and a guid id.
-        // List<PointStruct> unnamedVectorGuidIdPoints =
-        // [
-        //     new PointStruct
-        //     {
-        //         Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-        //         Vectors = embedding,
-        //         Payload = { ["HotelName"] = "My Hotel 11", ["Description"] = "This is a great hotel." }
-        //     },
-        //     new PointStruct
-        //     {
-        //         Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-        //         Vectors = embedding,
-        //         Payload = { ["HotelName"] = "My Hotel 12", ["Description"] = "This is a great hotel." }
-        //     },
-        //     new PointStruct
-        //     {
-        //         Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-        //         Vectors = embedding,
-        //         Payload = { ["HotelName"] = "My Hotel 13", ["Description"] = "This is a great hotel." }
-        //     },
-        // ];
-
-        // await this.PostgresClient.UpsertAsync("singleVectorGuidIdHotels", unnamedVectorGuidIdPoints);
     }
 
     private async Task CreateTableAsync()
@@ -278,6 +178,8 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
         {
             this._dataSource.Dispose();
         }
+
+        await this.DropDatabaseAsync();
 
         if (this._containerId != null)
         {

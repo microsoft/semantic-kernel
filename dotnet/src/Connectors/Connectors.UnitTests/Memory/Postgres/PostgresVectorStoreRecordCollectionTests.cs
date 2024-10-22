@@ -31,7 +31,7 @@ public class PostgresVectorStoreRecordCollectionTests
         var recordDefinition = new VectorStoreRecordDefinition
         {
             Properties = [
-                new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
+                new VectorStoreRecordKeyProperty("HotelId", typeof(int)),
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
                 new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
@@ -41,11 +41,11 @@ public class PostgresVectorStoreRecordCollectionTests
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 100, DistanceFunction = DistanceFunction.ManhattanDistance }
             ]
         };
-        var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<ulong>>()
+        var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<int>>()
         {
             VectorStoreRecordDefinition = recordDefinition
         };
-        var sut = new PostgresVectorStoreRecordCollection<ulong, VectorStoreGenericDataModel<ulong>>(this._postgresClientMock.Object, TestCollectionName, options);
+        var sut = new PostgresVectorStoreRecordCollection<ulong, VectorStoreGenericDataModel<int>>(this._postgresClientMock.Object, TestCollectionName, options);
         this._postgresClientMock.Setup(x => x.DoesTableExistsAsync(TestCollectionName, this._testCancellationToken)).ReturnsAsync(false);
 
         // Act
@@ -53,6 +53,26 @@ public class PostgresVectorStoreRecordCollectionTests
 
         // Assert.
         Assert.False(exists);
+    }
+
+    [Fact]
+    public void ThrowsForUnsupportedType()
+    {
+        // Arrange
+        var recordDefinition = new VectorStoreRecordDefinition
+        {
+            Properties = [
+                new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
+            ]
+        };
+        var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<ulong>>()
+        {
+            VectorStoreRecordDefinition = recordDefinition
+        };
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => new PostgresVectorStoreRecordCollection<ulong, VectorStoreGenericDataModel<ulong>>(this._postgresClientMock.Object, TestCollectionName, options));
     }
 
     [Fact]

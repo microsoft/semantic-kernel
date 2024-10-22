@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.Extensions.VectorData;
 using Npgsql;
 using NpgsqlTypes;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -43,7 +44,7 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, VectorStoreRecordDefinition recordDefinition, bool ifNotExists = true)
+    public PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, bool ifNotExists = true)
     {
         if (string.IsNullOrWhiteSpace(tableName))
         {
@@ -54,7 +55,7 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
         List<VectorStoreRecordDataProperty> dataProperties = new();
         List<VectorStoreRecordVectorProperty> vectorProperties = new();
 
-        foreach (var property in recordDefinition.Properties)
+        foreach (var property in properties)
         {
             if (property is VectorStoreRecordKeyProperty keyProp)
             {
@@ -168,7 +169,7 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
         var commandText = $@"
             INSERT INTO {schema}.""{tableName}"" ({columnNames})
             VALUES {valuesRows}
-        ON CONFLICT(""{keyColumn}"")
+            ON CONFLICT(""{keyColumn}"")
             DO UPDATE SET {updateSetClause}; ";
 
         // Generate the parameters
@@ -189,13 +190,13 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, VectorStoreRecordDefinition recordDefinition, TKey key, bool includeVectors = false)
+    public PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, TKey key, bool includeVectors = false)
         where TKey : notnull
     {
         List<string> queryColumns = new();
         string? keyColumn = null;
 
-        foreach (var property in recordDefinition.Properties)
+        foreach (var property in properties)
         {
             if (property is VectorStoreRecordKeyProperty keyProperty)
             {
@@ -232,7 +233,7 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, VectorStoreRecordDefinition recordDefinition, List<TKey> keys, bool includeVectors = false)
+    public PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, List<TKey> keys, bool includeVectors = false)
         where TKey : notnull
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
@@ -242,11 +243,11 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
             throw new ArgumentException("Keys cannot be null or empty", nameof(keys));
         }
 
-        var keyProperty = recordDefinition.Properties.OfType<VectorStoreRecordKeyProperty>().FirstOrDefault() ?? throw new ArgumentException("Record definition must contain a key property", nameof(recordDefinition));
+        var keyProperty = properties.OfType<VectorStoreRecordKeyProperty>().FirstOrDefault() ?? throw new ArgumentException("Properties must contain a key property", nameof(properties));
         var keyColumn = keyProperty.StoragePropertyName ?? keyProperty.DataModelPropertyName;
 
         // Generate the column names
-        var columns = recordDefinition.Properties
+        var columns = properties
             .Where(p => includeVectors || p is not VectorStoreRecordVectorProperty)
             .Select(p => p.StoragePropertyName ?? p.DataModelPropertyName)
             .ToList();
@@ -302,5 +303,90 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
         {
             Parameters = [new NpgsqlParameter() { Value = keys, NpgsqlDbType = NpgsqlDbType.Array | keyType.Value }]
         };
+    }
+
+    /// <inheritdoc />
+    public PostgresSqlCommandInfo BuildGetNearestMatchCommand(
+        string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue,
+        VectorSearchFilter? filter, int? skip, bool withEmbeddings, int limit)
+    {
+        var columns = string.Join(" ,",
+            properties
+                .Select(property => property.StoragePropertyName ?? property.DataModelPropertyName)
+                .Select(column => $"\"{column}\"")
+        );
+
+        var distanceOp = vectorProperty.DistanceFunction switch
+        {
+            DistanceFunction.CosineSimilarity => "<=>",
+            DistanceFunction.EuclideanDistance => "<->",
+            DistanceFunction.ManhattanDistance => "<+>",
+            DistanceFunction.DotProductSimilarity => "<#>",
+            _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
+        };
+
+        var vectorColumn = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
+        // Start where clause params at 2, vector takes param 1.
+        var where = GenerateWhereClause(schema, tableName, properties, filter, startParamIndex: 2);
+
+        var commandText = $@"
+            SELECT {columns}, ""{vectorColumn}"" {distanceOp} $1 AS ""{PostgresConstants.DistanceColumnName}""
+            FROM {schema}.""{tableName}"" {where.Clause}
+            ORDER BY {PostgresConstants.DistanceColumnName}
+            LIMIT {limit}";
+
+        if (skip.HasValue) { commandText += $" OFFSET {skip.Value}"; }
+
+        return new PostgresSqlCommandInfo(commandText)
+        {
+            Parameters = [new NpgsqlParameter() { Value = vectorValue }, .. where.Parameters.Select(p => new NpgsqlParameter() { Value = p })]
+        };
+    }
+
+    internal static (string Clause, List<object> Parameters) GenerateWhereClause(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorSearchFilter? filter, int startParamIndex)
+    {
+        if (filter == null) { return (string.Empty, new List<object>()); }
+
+        var whereClause = new StringBuilder("WHERE ");
+        var filterClauses = new List<string>();
+        var parameters = new List<object>();
+
+        var paramIndex = startParamIndex;
+
+        foreach (var filterClause in filter.FilterClauses)
+        {
+            if (filterClause is EqualToFilterClause equalTo)
+            {
+                var property = properties.FirstOrDefault(p => p.DataModelPropertyName == equalTo.FieldName || p.StoragePropertyName == equalTo.FieldName);
+                if (property == null) { throw new ArgumentException($"Property {equalTo.FieldName} not found in record definition."); }
+
+                var columnName = property.StoragePropertyName ?? property.DataModelPropertyName;
+                filterClauses.Add($"\"{columnName}\" = ${paramIndex}");
+                parameters.Add(equalTo.Value);
+                paramIndex++;
+            }
+            else if (filterClause is AnyTagEqualToFilterClause anyTagEqualTo)
+            {
+                var property = properties.FirstOrDefault(p => p.DataModelPropertyName == anyTagEqualTo.FieldName || p.StoragePropertyName == anyTagEqualTo.FieldName);
+                if (property == null) { throw new ArgumentException($"Property {anyTagEqualTo.FieldName} not found in record definition."); }
+
+                if (property.PropertyType != typeof(List<string>))
+                {
+                    throw new ArgumentException($"Property {anyTagEqualTo.FieldName} must be of type List<string> to use AnyTagEqualTo filter.");
+                }
+
+                var columnName = property.StoragePropertyName ?? property.DataModelPropertyName;
+                filterClauses.Add($"\"{columnName}\" @> ARRAY[${paramIndex}::TEXT]");
+                parameters.Add(anyTagEqualTo.Value);
+                paramIndex++;
+            }
+            else
+            {
+                throw new NotSupportedException($"Filter clause type {filterClause.GetType().Name} is not supported.");
+            }
+        }
+
+        whereClause.Append(string.Join(" AND ", filterClauses));
+        return (whereClause.ToString(), parameters);
     }
 }

@@ -1,21 +1,19 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
-using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
-internal sealed class PostgresGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, Dictionary<string, object?>>,
-    IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, Dictionary<string, object?>>
+internal sealed class PostgresGenericDataModelMapper<TKey> : IVectorStoreRecordMapper<VectorStoreGenericDataModel<TKey>, Dictionary<string, object?>>
+    where TKey : notnull
 {
     /// <summary><see cref="VectorStoreRecordPropertyReader"/> with helpers for reading vector store model properties and their attributes.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PostgresGenericDataModelMapper"/> class.
-    /// </summary>
+    /// Initializes a new instance of the <see cref="PostgresGenericDataModelMapper{TKey}"/> class.
+    /// /// </summary>
     /// <param name="propertyReader">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
     public PostgresGenericDataModelMapper(VectorStoreRecordPropertyReader propertyReader)
     {
@@ -27,28 +25,7 @@ internal sealed class PostgresGenericDataModelMapper : IVectorStoreRecordMapper<
         this._propertyReader.VerifyDataProperties(PostgresConstants.SupportedDataTypes, supportEnumerable: false);
         this._propertyReader.VerifyVectorProperties(PostgresConstants.SupportedVectorTypes);
     }
-    public Dictionary<string, object?> MapFromDataToStorageModel(VectorStoreGenericDataModel<ulong> dataModel)
-    {
-        return this.InternalMapFromDataToStorageModel(dataModel);
-    }
-
-    VectorStoreGenericDataModel<string> IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, Dictionary<string, object?>>.MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
-    {
-        return this.InternalMapFromStorageToDataModel<string>(storageModel, options);
-    }
-
-    public Dictionary<string, object?> MapFromDataToStorageModel(VectorStoreGenericDataModel<string> dataModel)
-    {
-        return this.InternalMapFromDataToStorageModel(dataModel);
-    }
-
-    VectorStoreGenericDataModel<ulong> IVectorStoreRecordMapper<VectorStoreGenericDataModel<ulong>, Dictionary<string, object?>>.MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
-    {
-        return this.InternalMapFromStorageToDataModel<ulong>(storageModel, options);
-    }
-
-    private Dictionary<string, object?> InternalMapFromDataToStorageModel<TKey>(VectorStoreGenericDataModel<TKey> dataModel)
-        where TKey : notnull
+    public Dictionary<string, object?> MapFromDataToStorageModel(VectorStoreGenericDataModel<TKey> dataModel)
     {
         var properties = new Dictionary<string, object?>
         {
@@ -75,14 +52,7 @@ internal sealed class PostgresGenericDataModelMapper : IVectorStoreRecordMapper<
             {
                 if (dataModel.Vectors.TryGetValue(property.DataModelPropertyName, out var vectorValue))
                 {
-                    object? result = null;
-
-                    if (vectorValue is not null)
-                    {
-                        var vector = (ReadOnlyMemory<float>)vectorValue;
-                        result = new Vector(PostgresVectorStoreRecordPropertyMapping.GetOrCreateArray(vector));
-                    }
-
+                    var result = PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vectorValue);
                     properties.Add(this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName), result);
                 }
             }
@@ -91,8 +61,7 @@ internal sealed class PostgresGenericDataModelMapper : IVectorStoreRecordMapper<
         return properties;
     }
 
-    private VectorStoreGenericDataModel<TKey> InternalMapFromStorageToDataModel<TKey>(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
-        where TKey : notnull
+    VectorStoreGenericDataModel<TKey> IVectorStoreRecordMapper<VectorStoreGenericDataModel<TKey>, Dictionary<string, object?>>.MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
     {
         TKey key;
         var dataProperties = new Dictionary<string, object?>();
@@ -124,14 +93,7 @@ internal sealed class PostgresGenericDataModelMapper : IVectorStoreRecordMapper<
             {
                 if (storageModel.TryGetValue(this._propertyReader.GetStoragePropertyName(property.DataModelPropertyName), out var vectorValue))
                 {
-                    if (vectorValue is null)
-                    {
-                        vectorProperties.Add(property.DataModelPropertyName, ReadOnlyMemory<float>.Empty);
-                    }
-                    else if (vectorValue is Vector pgVector)
-                    {
-                        vectorProperties.Add(property.DataModelPropertyName, pgVector.ToArray());
-                    }
+                    vectorProperties.Add(property.DataModelPropertyName, PostgresVectorStoreRecordPropertyMapping.MapVectorForDataModel(vectorValue));
                 }
             }
         }

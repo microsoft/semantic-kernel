@@ -1,11 +1,11 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.VectorData;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;

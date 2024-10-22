@@ -1,9 +1,8 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
-using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -11,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// A mapper class that handles the conversion between data models and storage models for Postgres vector store.
 /// </summary>
 /// <typeparam name="TRecord">The type of the data model record.</typeparam>
-internal class PostgresVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>
+internal sealed class PostgresVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>
 {
     /// <summary><see cref="VectorStoreRecordPropertyReader"/> with helpers for reading vector store model properties and their attributes.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
@@ -50,14 +49,8 @@ internal class PostgresVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapp
         // Add vector properties
         foreach (var property in this._propertyReader.VectorPropertiesInfo)
         {
-            object? result = null;
             var propertyValue = property.GetValue(dataModel);
-
-            if (propertyValue is not null)
-            {
-                var vector = (ReadOnlyMemory<float>)propertyValue;
-                result = new Vector(PostgresVectorStoreRecordPropertyMapping.GetOrCreateArray(vector));
-            }
+            var result = PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(propertyValue);
 
             properties.Add(this._propertyReader.GetStoragePropertyName(property.Name), result);
         }
@@ -91,8 +84,10 @@ internal class PostgresVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapp
                 this._propertyReader.VectorPropertiesInfo,
                 this._propertyReader.StoragePropertyNamesMap,
                 storageModel,
-                (object? vector, Type type) => vector is Vector pgVector ?
-                    pgVector.ToArray() : null);
+                (object? vector, Type type) =>
+                {
+                    return PostgresVectorStoreRecordPropertyMapping.MapVectorForDataModel(vector);
+                });
 
             VectorStoreRecordMapping.SetPropertiesOnRecord(record, vectorPropertiesInfoWithValues);
         }

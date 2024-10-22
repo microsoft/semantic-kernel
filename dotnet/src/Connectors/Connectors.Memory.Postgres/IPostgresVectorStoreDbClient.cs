@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -68,11 +69,11 @@ public interface IPostgresVectorStoreDbClient
     /// </summary>
     /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="key">The key of the entry to get.</param>
-    /// <param name="recordDefinition">The record definition of the table.</param>
+    /// <param name="properties">The properties to include in the entry.</param>
     /// <param name="includeVectors">If true, the vectors will be included in the entry.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The row if the key is found, otherwise null.</returns>
-    Task<Dictionary<string, object?>?> GetAsync<TKey>(string tableName, TKey key, VectorStoreRecordDefinition recordDefinition, bool includeVectors = false, CancellationToken cancellationToken = default)
+    Task<Dictionary<string, object?>?> GetAsync<TKey>(string tableName, TKey key, IReadOnlyList<VectorStoreRecordProperty> properties, bool includeVectors = false, CancellationToken cancellationToken = default)
         where TKey : notnull;
 
     /// <summary>
@@ -80,11 +81,11 @@ public interface IPostgresVectorStoreDbClient
     /// </summary>
     /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="keys">The keys of the entries to get.</param>
-    /// <param name="recordDefinition">The record definition of the table.</param>
+    /// <param name="properties">The properties of the table.</param>
     /// <param name="includeVectors">If true, the vectors will be included in the entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The rows that match the given keys.</returns>
-    IAsyncEnumerable<Dictionary<string, object?>> GetBatchAsync<TKey>(string tableName, IEnumerable<TKey> keys, VectorStoreRecordDefinition recordDefinition, bool includeVectors = false, CancellationToken cancellationToken = default)
+    IAsyncEnumerable<Dictionary<string, object?>> GetBatchAsync<TKey>(string tableName, IEnumerable<TKey> keys, IReadOnlyList<VectorStoreRecordProperty> properties, bool includeVectors = false, CancellationToken cancellationToken = default)
         where TKey : notnull;
 
     /// <summary>
@@ -107,17 +108,21 @@ public interface IPostgresVectorStoreDbClient
     /// <returns></returns>
     Task DeleteBatchAsync<TKey>(string tableName, string keyColumn, IEnumerable<TKey> keys, CancellationToken cancellationToken = default);
 
-    // /// <summary>
-    // /// Gets the nearest matches to the <see cref="Vector"/>.
-    // /// </summary>
-    // /// <param name="tableName">The name assigned to a table of entries.</param>
-    // /// <param name="embedding">The <see cref="Vector"/> to compare the table's embeddings with.</param>
-    // /// <param name="limit">The maximum number of similarity results to return.</param>
-    // /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
-    // /// <param name="withEmbeddings">If true, the embeddings will be returned in the entries.</param>
-    // /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    // /// <returns>An asynchronous stream of <see cref="PostgresMemoryEntry"/> objects that the nearest matches to the <see cref="Vector"/>.</returns>
-    // IAsyncEnumerable<(PostgresMemoryEntry, double)> GetNearestMatchesAsync(string tableName, Vector embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Gets the nearest matches to the <see cref="Vector"/>.
+    /// </summary>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
+    /// <param name="properties">The properties to retrieve.</param>
+    /// <param name="vectorProperty">The property which the vectors to compare are stored in.</param>
+    /// <param name="vectorValue">The <see cref="Vector"/> to compare the table's vector with.</param>
+    /// <param name="limit">The maximum number of similarity results to return.</param>
+    /// <param name="filter">Optional conditions to filter the results.</param>
+    /// <param name="skip">The number of entries to skip.</param>
+    /// <param name="includeVectors">If true, the vectors will be returned in the entries.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An asynchronous stream of <see cref="PostgresMemoryEntry"/> objects that the nearest matches to the <see cref="Vector"/>.</returns>
+    IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync(string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, int limit,
+        VectorSearchFilter? filter = default, int? skip = default, bool includeVectors = false, CancellationToken cancellationToken = default);
 
     // /// <summary>
     // /// Read a entry by its key.
