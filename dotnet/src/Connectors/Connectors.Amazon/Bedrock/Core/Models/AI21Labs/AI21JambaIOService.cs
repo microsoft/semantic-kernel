@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
@@ -20,7 +19,7 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
     /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
-        var exec = AmazonJambaExecutionSettings.FromExecutionSettings(executionSettings);
+        var settings = AmazonJambaExecutionSettings.FromExecutionSettings(executionSettings);
         List<AI21JambaRequest.AI21TextGenerationRequest.JambaMessage> messages = new()
         {
             new AI21JambaRequest.AI21TextGenerationRequest.JambaMessage()
@@ -34,13 +33,13 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
         var requestBody = new AI21JambaRequest.AI21TextGenerationRequest()
         {
             Messages = messages,
-            Temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(exec.ExtensionData, "temperature") ?? exec.Temperature,
-            TopP = BedrockModelUtilities.GetExtensionDataValue<float?>(exec.ExtensionData, "top_p") ?? exec.TopP,
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(exec.ExtensionData, "max_tokens") ?? exec.MaxTokens,
-            Stop = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(exec.ExtensionData, "stop") ?? exec.Stop,
-            NumberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(exec.ExtensionData, "n") ?? exec.NumberOfResponses,
-            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(exec.ExtensionData, "frequency_penalty") ?? exec.FrequencyPenalty,
-            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(exec.ExtensionData, "presence_penalty") ?? exec.PresencePenalty
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(settings.ExtensionData, "temperature") ?? settings.Temperature,
+            TopP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings.ExtensionData, "top_p") ?? settings.TopP,
+            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings.ExtensionData, "max_tokens") ?? settings.MaxTokens,
+            Stop = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(settings.ExtensionData, "stop") ?? settings.Stop,
+            NumberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(settings.ExtensionData, "n") ?? settings.NumberOfResponses,
+            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings.ExtensionData, "frequency_penalty") ?? settings.FrequencyPenalty,
+            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings.ExtensionData, "presence_penalty") ?? settings.PresencePenalty
         };
 
         return requestBody;
@@ -66,25 +65,25 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
 
-        var exec = AmazonJambaExecutionSettings.FromExecutionSettings(settings);
-        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? exec.Temperature;
-        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p") ?? exec.TopP;
-        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens") ?? exec.MaxTokens;
-        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences") ?? exec.Stop;
-        var n = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "n") ?? exec.NumberOfResponses;
-        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "frequency_penalty") ?? exec.FrequencyPenalty;
-        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "presence_penalty") ?? exec.PresencePenalty;
+        var executionSettings = AmazonJambaExecutionSettings.FromExecutionSettings(settings);
+        var temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? executionSettings.Temperature;
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p") ?? executionSettings.TopP;
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens") ?? executionSettings.MaxTokens;
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences") ?? executionSettings.Stop;
+        var numberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "n") ?? executionSettings.NumberOfResponses;
+        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "frequency_penalty") ?? executionSettings.FrequencyPenalty;
+        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "presence_penalty") ?? executionSettings.PresencePenalty;
 
         var inferenceConfig = new InferenceConfiguration();
-        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temperature, value => inferenceConfig.Temperature = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
         BedrockModelUtilities.SetStopSequenceIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
 
         var additionalModelRequestFields = new Document();
-        if (n.HasValue)
+        if (numberOfResponses.HasValue)
         {
-            additionalModelRequestFields.Add("n", n.Value);
+            additionalModelRequestFields.Add("n", numberOfResponses.Value);
         }
         if (frequencyPenalty.HasValue)
         {
@@ -111,11 +110,10 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
     /// <inheritdoc/>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
-        var buffer = new StringBuilder();
-        if (chunk["choices"]?[0]?["delta"]?["content"] != null)
+        var choiceDeltaContent = chunk["choices"]?[0]?["delta"]?["content"];
+        if (choiceDeltaContent is not null)
         {
-            buffer.Append(chunk["choices"]?[0]?["delta"]?["content"]);
-            yield return buffer.ToString();
+            yield return choiceDeltaContent.ToString();
         }
     }
 
@@ -125,25 +123,25 @@ internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBed
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
 
-        var exec = AmazonJambaExecutionSettings.FromExecutionSettings(settings);
-        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? exec.Temperature;
-        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p") ?? exec.TopP;
-        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens") ?? exec.MaxTokens;
-        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences") ?? exec.Stop;
-        var n = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "n") ?? exec.NumberOfResponses;
-        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "frequency_penalty") ?? exec.FrequencyPenalty;
-        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "presence_penalty") ?? exec.PresencePenalty;
+        var executionSettings = AmazonJambaExecutionSettings.FromExecutionSettings(settings);
+        var temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? executionSettings.Temperature;
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p") ?? executionSettings.TopP;
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens") ?? executionSettings.MaxTokens;
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences") ?? executionSettings.Stop;
+        var numberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "n") ?? executionSettings.NumberOfResponses;
+        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "frequency_penalty") ?? executionSettings.FrequencyPenalty;
+        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "presence_penalty") ?? executionSettings.PresencePenalty;
 
         var inferenceConfig = new InferenceConfiguration();
-        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temperature, value => inferenceConfig.Temperature = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
         BedrockModelUtilities.SetStopSequenceIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
 
         var additionalModelRequestFields = new Document();
-        if (n.HasValue)
+        if (numberOfResponses.HasValue)
         {
-            additionalModelRequestFields.Add("n", n.Value);
+            additionalModelRequestFields.Add("n", numberOfResponses.Value);
         }
         if (frequencyPenalty.HasValue)
         {

@@ -22,7 +22,7 @@ public sealed class AmazonClaudeExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Default max tokens for a text generation.
     /// </summary>
-    public static int DefaultTextMaxTokens { get; } = 200;
+    private const int DefaultTextMaxTokens = 200;
 
     /// <summary>
     /// (Required) The maximum number of tokens to generate before stopping. We recommend a limit of 4,000 tokens for optimal performance.

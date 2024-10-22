@@ -60,7 +60,7 @@ public class BedrockKernelBuilderExtensionTests
         var requestEventArgs = new Mock<RequestEventArgs>();
 
         // Act
-        BedrockClientUtilities.AWSServiceClient_BeforeServiceRequest(null!, requestEventArgs.Object);
+        BedrockClientUtilities.BedrockServiceClientRequestHandler(null!, requestEventArgs.Object);
 
         // Assert
         // No exceptions should be thrown

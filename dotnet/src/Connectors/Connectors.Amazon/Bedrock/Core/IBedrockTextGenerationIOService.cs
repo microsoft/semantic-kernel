@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 internal interface IBedrockTextGenerationIOService
 {
     /// <summary>
-    /// Builds InvokeModelRequest Body parameter to be serialized. Object itself dependent on model request parameter requirements.
+    /// Returns the specialized <see cref="InvokeModelRequest"/> instance for request.
     /// </summary>
     /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
@@ -21,16 +21,16 @@ internal interface IBedrockTextGenerationIOService
     internal object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null);
 
     /// <summary>
-    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API. Must be deserialized into the model's specific response object first.
+    /// Extracts the text contents from the <see cref="InvokeModelResponse"/>.
     /// </summary>
-    /// <param name="response">The InvokeModelResponse object returned from the InvokeAsync Bedrock call. </param>
+    /// <param name="response">The <see cref="InvokeModelResponse"/> instance to be returned from the InvokeAsync Bedrock call.</param>
     /// <returns>The list of TextContent objects for the Semantic Kernel output.</returns>
     internal IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response);
 
     /// <summary>
-    /// Converts the Json output from the streaming text generation into IEnumerable strings for output.
+    /// Converts the streaming JSON into <see cref="IEnumerable{String}"/> for output.
     /// </summary>
-    /// <param name="chunk">The payloadPart bytes outputted from the streaming response.</param>
-    /// <returns>An enumerable string.</returns>
+    /// <param name="chunk">The payloadPart bytes provided from the streaming response.</param>
+    /// <returns><see cref="IEnumerable{String}"/> output strings.</returns>
     internal IEnumerable<string> GetTextStreamOutput(JsonNode chunk);
 }

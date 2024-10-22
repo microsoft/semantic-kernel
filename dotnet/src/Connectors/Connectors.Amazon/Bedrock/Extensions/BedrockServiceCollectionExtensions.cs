@@ -49,7 +49,7 @@ public static class BedrockServiceCollectionExtensions
                 if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
                 {
                     // Cast to AmazonServiceClient and subscribe to the event
-                    ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.AWSServiceClient_BeforeServiceRequest;
+                    ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.BedrockServiceClientRequestHandler;
                 }
                 return new BedrockChatCompletionService(modelId, runtime, logger);
             }
@@ -91,7 +91,7 @@ public static class BedrockServiceCollectionExtensions
                 if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
                 {
                     // Cast to AmazonServiceClient and subscribe to the event
-                    ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.AWSServiceClient_BeforeServiceRequest;
+                    ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.BedrockServiceClientRequestHandler;
                 }
                 return new BedrockTextGenerationService(modelId, runtime, logger);
             }

@@ -20,11 +20,11 @@ public class BedrockTextGenerationService : ITextGenerationService
     private readonly BedrockTextGenerationClient _textGenerationClient;
 
     /// <summary>
-    /// Initializes an instance of the BedrockTextGenerationService using an IAmazonBedrockRuntime object passed in by the user.
+    /// Initializes an instance of the <see cref="BedrockTextGenerationService" /> using an <see cref="IAmazonBedrockRuntime" />.
     /// </summary>
-    /// <param name="modelId">The model to be used for the text generation service.</param>
-    /// <param name="bedrockRuntime">The runtime object for the service.</param>
-    /// <param name="loggerFactory">The logger for error logging.</param>
+    /// <param name="modelId">Bedrock model id, see https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html</param>
+    /// <param name="bedrockRuntime">The <see cref=IAmazonBedrockRuntime"/> instance to be used.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public BedrockTextGenerationService(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
         this._textGenerationClient = new BedrockTextGenerationClient(modelId, bedrockRuntime, loggerFactory);

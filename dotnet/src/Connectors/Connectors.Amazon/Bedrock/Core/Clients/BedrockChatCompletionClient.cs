@@ -34,7 +34,7 @@ internal sealed class BedrockChatCompletionClient
     /// </summary>
     /// <param name="modelId">The model ID for the client.</param>
     /// <param name="bedrockRuntime">The <see cref="IAmazonBedrockRuntime"/> instance to be used for Bedrock runtime actions.</param>
-    /// <param name="loggerFactory">Logger for error output.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
         var clientService = new BedrockClientIOService();

@@ -52,7 +52,7 @@ internal sealed class BedrockClientUtilities
         };
     }
 
-    internal static void AWSServiceClient_BeforeServiceRequest(object sender, RequestEventArgs e)
+    internal static void BedrockServiceClientRequestHandler(object sender, RequestEventArgs e)
     {
         if (e is not WebServiceRequestEventArgs args || !args.Headers.TryGetValue("User-Agent", out string? value) || value.Contains(HttpHeaderConstant.Values.UserAgent))
         {

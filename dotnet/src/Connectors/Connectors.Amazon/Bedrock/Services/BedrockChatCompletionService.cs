@@ -20,14 +20,14 @@ public class BedrockChatCompletionService : IChatCompletionService
     private readonly BedrockChatCompletionClient _chatCompletionClient;
 
     /// <summary>
-    /// Initializes an instance of the BedrockChatCompletionService using an IAmazonBedrockRuntime object passed in by the user.
+    /// Initializes an instance of the <see cref="BedrockChatCompletionService" /> using an <see cref="IAmazonBedrockRuntime" />.
     /// </summary>
-    /// <param name="modelId">The model to be used for chat completion.</param>
-    /// <param name="bedrockApi">The IAmazonBedrockRuntime object to be used for DI.</param>
-    /// <param name="loggerFactory">Logger.</param>
-    public BedrockChatCompletionService(string modelId, IAmazonBedrockRuntime bedrockApi, ILoggerFactory? loggerFactory = null)
+    /// <param name="modelId">Bedrock model id, see https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html</param>
+    /// <param name="bedrockRuntime">The <see cref=IAmazonBedrockRuntime"/> instance to be used.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public BedrockChatCompletionService(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
-        this._chatCompletionClient = new BedrockChatCompletionClient(modelId, bedrockApi, loggerFactory);
+        this._chatCompletionClient = new BedrockChatCompletionClient(modelId, bedrockRuntime, loggerFactory);
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 
