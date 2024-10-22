@@ -10,80 +10,82 @@ namespace ProcessWithDapr.Controllers;
 /// A controller for chatbot.
 /// </summary>
 [ApiController]
-public class ChatBotController : ControllerBase
+public class ProcessController : ControllerBase
 {
-    private readonly Dictionary<string, KernelProcess> _processMap = [];
     private readonly Kernel _kernel;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatBotController"/> class.
+    /// Initializes a new instance of the <see cref="ProcessController"/> class.
     /// </summary>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    public ChatBotController(Kernel kernel)
+    public ProcessController(Kernel kernel)
     {
         this._kernel = kernel;
     }
 
     /// <summary>
-    /// Post a message to a chat bot.
+    /// Start and run a process.
     /// </summary>
-    /// <param name="chatBotId">The Id of the chat bot.</param>
-    /// <param name="message">The message to send.</param>
+    /// <param name="processId">The Id of the process.</param>
     /// <returns></returns>
-    [HttpGet("chatbots/{chatBotId}/{message}")]
-    public async Task<IActionResult> PostAsync(string chatBotId, string message)
+    [HttpGet("processes/{processId}")]
+    public async Task<IActionResult> PostAsync(string processId)
     {
-        var process = this.GetProcess(chatBotId);
-        var processContext = await process.StartAsync(this._kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" }, processId: chatBotId);
+        var process = this.GetProcess();
+        var processContext = await process.StartAsync(this._kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess }, processId: processId);
         var finalState = await processContext.GetStateAsync();
 
-        return this.Ok(chatBotId);
+        return this.Ok(processId);
     }
 
-    private KernelProcess GetProcess(string processId)
+    private KernelProcess GetProcess()
     {
-        if (this._processMap.TryGetValue(processId, out var process))
-        {
-            return process;
-        }
+        // Create the process builder.
+        ProcessBuilder processBuilder = new("ProcessWithDapr");
 
-        ProcessBuilder processBuilder = new("Test Process");
-
+        // Add some steps to the process.
         var kickoffStep = processBuilder.AddStepFromType<KickoffStep>();
         var myAStep = processBuilder.AddStepFromType<AStep>();
         var myBStep = processBuilder.AddStepFromType<BStep>();
+
+        // ########## Configuring initial state on steps in a process ###########
+        // For demonstration purposes, we add the CStep and configure its initial state with a CurrentCycle of 1.
+        // Initializing state in a step can be useful for when you need a step to start out with a predetermines
+        // configuration that is not easily accomplished with dependency injection.
         var myCStep = processBuilder.AddStepFromType<CStep, CStepState>(initialState: new() { CurrentCycle = 1 });
 
+        // Setup the input event that can trigger the process to run and specify which step and function it should be routed to.
         processBuilder
             .OnInputEvent(CommonEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(kickoffStep));
 
+        // When the kickoff step is finished, trigger both AStep and BStep.
         kickoffStep
             .OnEvent(CommonEvents.StartARequested)
-            .SendEventTo(new ProcessFunctionTargetBuilder(myAStep));
-
-        kickoffStep
-            .OnEvent(CommonEvents.StartBRequested)
+            .SendEventTo(new ProcessFunctionTargetBuilder(myAStep))
             .SendEventTo(new ProcessFunctionTargetBuilder(myBStep));
 
+        // When AStep finishes, send its output to CStep.
         myAStep
             .OnEvent(CommonEvents.AStepDone)
             .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "astepdata"));
 
+        // When BStep finishes, send its output to CStep also.
         myBStep
             .OnEvent(CommonEvents.BStepDone)
             .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "bstepdata"));
 
+        // When CStep has finished without requesting an exit, activate the Kickoff step to start again.
         myCStep
             .OnEvent(CommonEvents.CStepDone)
             .SendEventTo(new ProcessFunctionTargetBuilder(kickoffStep));
 
+        // When the CStep has finished by requesting an exit, stop the process.
         myCStep
             .OnEvent(CommonEvents.ExitRequested)
             .StopProcess();
 
-        process = processBuilder.Build();
-        this._processMap[processId] = process;
+        var process = processBuilder.Build();
         return process;
     }
 
@@ -104,8 +106,7 @@ public class ChatBotController : ControllerBase
         public async ValueTask PrintWelcomeMessageAsync(KernelProcessStepContext context)
         {
             Console.WriteLine("##### Kickoff ran.");
-            await context.EmitEventAsync(new() { Id = CommonEvents.StartARequested, Data = "Get Going A" });
-            await context.EmitEventAsync(new() { Id = CommonEvents.StartBRequested, Data = "Get Going B" });
+            await context.EmitEventAsync(new() { Id = CommonEvents.StartARequested, Data = "Get Going" });
         }
     }
 
@@ -138,15 +139,20 @@ public class ChatBotController : ControllerBase
     }
 
     /// <summary>
-    /// A step in the process.
+    /// A stateful step in the process. This step uses <see cref="CStepState"/> as the persisted
+    /// state object and overrides the ActivateAsync method to initialize the state when activated.
     /// </summary>
     private sealed class CStep : KernelProcessStep<CStepState>
     {
-        private CStepState _state = new();
+        private CStepState? _state;
 
+        // ################ Using persisted state #################
+        // CStep has state that we want to be persisted in the process. To ensure that the step always
+        // starts with the previously persisted or configured state, we need to override the ActivateAsync
+        // method and use the state object it provides.
         public override ValueTask ActivateAsync(KernelProcessStepState<CStepState> state)
         {
-            this._state = state.State ?? new CStepState();
+            this._state = state.State!;
             Console.WriteLine($"##### CStep activated with Cycle = '{state.State?.CurrentCycle}'.");
             return base.ActivateAsync(state);
         }
@@ -154,7 +160,8 @@ public class ChatBotController : ControllerBase
         [KernelFunction]
         public async ValueTask DoItAsync(KernelProcessStepContext context, string astepdata, string bstepdata)
         {
-            this._state.CurrentCycle++;
+            // ########### This method will restart the process in a loop until CurrentCycle >= 3 ###########
+            this._state!.CurrentCycle++;
             if (this._state.CurrentCycle >= 3)
             {
                 // Exit the processes
