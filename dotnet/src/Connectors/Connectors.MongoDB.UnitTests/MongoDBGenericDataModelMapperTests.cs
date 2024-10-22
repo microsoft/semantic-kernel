@@ -4,16 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using Xunit;
 
-namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
+namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="AzureCosmosDBMongoDBGenericDataModelMapper"/> class.
+/// Unit tests for <see cref="MongoDBGenericDataModelMapper"/> class.
 /// </summary>
-public sealed class AzureCosmosDBMongoDBGenericDataModelMapperTests
+public sealed class MongoDBGenericDataModelMapperTests
 {
     private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
     {
@@ -51,7 +51,7 @@ public sealed class AzureCosmosDBMongoDBGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new AzureCosmosDBMongoDBGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(s_vectorStoreRecordDefinition);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -137,7 +137,7 @@ public sealed class AzureCosmosDBMongoDBGenericDataModelMapperTests
             },
         };
 
-        var sut = new AzureCosmosDBMongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -152,7 +152,7 @@ public sealed class AzureCosmosDBMongoDBGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new AzureCosmosDBMongoDBGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(s_vectorStoreRecordDefinition);
         var storageModel = new BsonDocument
         {
             ["_id"] = "key",
@@ -228,7 +228,7 @@ public sealed class AzureCosmosDBMongoDBGenericDataModelMapperTests
             ["NullableFloatVector"] = BsonNull.Value
         };
 
-        var sut = new AzureCosmosDBMongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
@@ -244,7 +244,7 @@ public sealed class AzureCosmosDBMongoDBGenericDataModelMapperTests
     public void MapFromStorageToDataModelThrowsForMissingKey()
     {
         // Arrange
-        var sut = new AzureCosmosDBMongoDBGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(s_vectorStoreRecordDefinition);
         var storageModel = new BsonDocument();
 
         // Act & Assert
@@ -267,7 +267,7 @@ public sealed class AzureCosmosDBMongoDBGenericDataModelMapperTests
         };
 
         var dataModel = new VectorStoreGenericDataModel<string>("key");
-        var sut = new AzureCosmosDBMongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -297,7 +297,7 @@ public sealed class AzureCosmosDBMongoDBGenericDataModelMapperTests
             ["_id"] = "key"
         };
 
-        var sut = new AzureCosmosDBMongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });

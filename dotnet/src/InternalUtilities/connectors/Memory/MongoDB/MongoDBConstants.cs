@@ -2,22 +2,30 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.VectorData;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
-/// Constants for Azure CosmosDB MongoDB vector store implementation.
+/// Constants for MongoDB vector store implementation.
 /// </summary>
-internal static class AzureCosmosDBMongoDBConstants
+[ExcludeFromCodeCoverage]
+internal static class MongoDBConstants
 {
+    /// <summary>Default ratio of number of nearest neighbors to number of documents to return.</summary>
+    internal const int DefaultNumCandidatesRatio = 10;
+
+    /// <summary>Default vector index name.</summary>
+    internal const string DefaultVectorIndexName = "vector_index";
+
     /// <summary>Default index kind for vector search.</summary>
     internal const string DefaultIndexKind = IndexKind.IvfFlat;
 
     /// <summary>Default distance function for vector search.</summary>
     internal const string DefaultDistanceFunction = DistanceFunction.CosineDistance;
 
-    /// <summary>Reserved key property name in Azure CosmosDB MongoDB.</summary>
+    /// <summary>Reserved key property name in MongoDB.</summary>
     internal const string MongoReservedKeyPropertyName = "_id";
 
     /// <summary>Reserved key property name in data model.</summary>

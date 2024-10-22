@@ -85,12 +85,13 @@ class BinaryContent(KernelContent):
                     data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                 )
 
-        parsed_uri = None
-        if uri:
-            uri_str = str(uri)
-            parsed_uri = FilePath(uri_str) if os.path.exists(uri_str) else Url(uri_str)
+        if uri is not None:
+            if isinstance(uri, str) and os.path.exists(uri):
+                uri = str(FilePath(uri))
+            elif isinstance(uri, str):
+                uri = Url(uri)
 
-        super().__init__(uri=parsed_uri, **kwargs)
+        super().__init__(uri=uri, **kwargs)
         self._data_uri = _data_uri
 
     @computed_field  # type: ignore
