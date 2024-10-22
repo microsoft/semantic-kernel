@@ -470,7 +470,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // Add a plugin with some helper functions we want to allow the model to call.
         kernel.ImportPluginFromFunctions("HelperFunctions",
         [
-            kernel.CreateFunctionFromMethod(() => new List<string>{"Squirrel Steals Show", "Dog Wins Lottery" } , "GetLatestNewsTitles", "Retrieves latest news titles."),
+            kernel.CreateFunctionFromMethod(() => new List<string> { "Squirrel Steals Show", "Dog Wins Lottery" }, "GetLatestNewsTitles", "Retrieves latest news titles."),
             kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcDateTime", "Retrieves the current date time in UTC."),
             kernel.CreateFunctionFromMethod((string cityName, string currentDateTime) =>
                 cityName switch
