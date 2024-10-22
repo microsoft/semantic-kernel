@@ -17,7 +17,7 @@ internal static class PineconeVectorStoreCollectionSearchMapping
     /// </summary>
     /// <param name="filterClauses">The filter clauses to build the Pinecone <see cref="MetadataMap"/> from.</param>
     /// <param name="storagePropertyNamesMap">A mapping from property name to the name under which the property would be stored.</param>
-    /// <returns>The Pinecone <see cref="MetadataMap"/.</returns>
+    /// <returns>The Pinecone <see cref="MetadataMap"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown for invalid property names, value types or filter clause types.</exception>
     public static MetadataMap BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, IReadOnlyDictionary<string, string> storagePropertyNamesMap)
     {
