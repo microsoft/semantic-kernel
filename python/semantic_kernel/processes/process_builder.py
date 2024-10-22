@@ -2,6 +2,7 @@
 
 import contextlib
 import inspect
+from copy import copy
 from typing import TYPE_CHECKING
 
 from pydantic import Field
@@ -49,6 +50,12 @@ class ProcessBuilder(ProcessStepBuilder):
 
         return process_step_builder
 
+    def add_step_from_process(self, kernel_process: "ProcessBuilder") -> "ProcessBuilder":
+        """Adds a step from the given process."""
+        kernel_process.has_parent_process = True
+        self.steps.append(kernel_process)
+        return kernel_process
+
     def resolve_function_target(
         self, function_name: str | None, parameter_name: str | None
     ) -> KernelProcessFunctionTarget:
@@ -64,6 +71,17 @@ class ProcessBuilder(ProcessStepBuilder):
             raise ValueError(f"Multiple targets found for function '{function_name}.{parameter_name}'")
 
         return targets[0]
+
+    def where_input_event_is(self, event_id: str) -> "ProcessFunctionTargetBuilder":
+        """Filters the input event."""
+        if event_id not in self.external_event_target_map:
+            raise ValueError(f"The process named '{self.name}' does not expose an event with Id '{event_id}'")
+
+        target = self.external_event_target_map[event_id]
+        target = copy(target)
+        target.step = self
+        target.target_event_id = event_id
+        return target
 
     def on_input_event(self, event_id: str) -> "ProcessEdgeBuilder":  # type: ignore
         """Creates a new ProcessEdgeBuilder for the input event."""

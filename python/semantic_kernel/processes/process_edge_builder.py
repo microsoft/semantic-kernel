@@ -28,6 +28,9 @@ class ProcessEdgeBuilder(KernelBaseModel):
         self, target: ProcessFunctionTargetBuilder | ProcessStepBuilder, **kwargs
     ) -> "ProcessEdgeBuilder":
         """Sends the event to the target."""
+        if target is None:
+            raise TypeError("Target cannot be None")
+
         if isinstance(target, ProcessStepBuilder):
             target = ProcessFunctionTargetBuilder(step=target, parameter_name=kwargs.get("parameter_name", None))
 
