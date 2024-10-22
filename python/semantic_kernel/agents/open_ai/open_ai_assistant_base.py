@@ -1120,12 +1120,9 @@ class OpenAIAssistantBase(Agent):
             )
         except asyncio.TimeoutError:
             timeout_duration = self.polling_options.run_polling_timeout
-            logger.error(
-                f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
-            )
-            raise AgentInvokeException(
-                f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
-            )
+            error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
+            logger.error(error_message)
+            raise AgentInvokeException(error_message)
 
         logger.info(f"Polled run status: {run.status}, {run.id}, threadId: {thread_id}")
         return run
