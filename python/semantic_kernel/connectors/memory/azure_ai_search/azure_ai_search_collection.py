@@ -23,12 +23,12 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_index_client,
 )
 from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
 from semantic_kernel.data.vector_search import (
-    VectorSearch,
+    VectorizableTextSearch,
     VectorSearchFilter,
     VectorSearchOptions,
-    VectorSearchQueryTypes,
 )
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
@@ -40,7 +40,7 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
+class AzureAISearchCollection(VectorizableTextSearch[str, TModel], Generic[TModel]):
     """Azure AI Search collection implementation."""
 
     search_client: SearchClient
@@ -113,18 +113,18 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
 
         try:
             azure_ai_search_settings = AzureAISearchSettings.create(
-                env_file_path=kwargs.get("env_file_path", None),
-                endpoint=kwargs.get("search_endpoint", None),
-                api_key=kwargs.get("api_key", None),
-                env_file_encoding=kwargs.get("env_file_encoding", None),
+                env_file_path=kwargs.get("env_file_path"),
+                endpoint=kwargs.get("search_endpoint"),
+                api_key=kwargs.get("api_key"),
+                env_file_encoding=kwargs.get("env_file_encoding"),
                 index_name=collection_name,
             )
         except ValidationError as exc:
             raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
         search_index_client = get_search_index_client(
             azure_ai_search_settings=azure_ai_search_settings,
-            azure_credential=kwargs.get("azure_credentials", None),
-            token_credential=kwargs.get("token_credentials", None),
+            azure_credential=kwargs.get("azure_credentials"),
+            token_credential=kwargs.get("token_credentials"),
         )
         if not azure_ai_search_settings.index_name:
             raise MemoryConnectorInitializationError("Collection name is required.")
@@ -224,26 +224,25 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
     async def _inner_search(
         self,
         options: VectorSearchOptions,
-    ) -> Sequence[Any] | None:
+        search_text: str | None = None,
+        vector: list[float | int] | None = None,
+    ) -> KernelSearchResults[Any]:
         search_args: dict[str, Any] = {
-            "top": options.count,
-            "skip": options.offset,
+            "top": options.top,
+            "skip": options.skip,
+            "include_total_count": options.include_total_count,
         }
         if options.filter:
             search_args["filter"] = self._build_filter_string(options.filter)
-        if options.query_type == VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY and options.vector:
-            search_args["search_text"] = "*"
+        search_args["search_text"] = search_text if search_text else "*"
+        if vector is not None:
             search_args["vector_queries"] = [
                 VectorizedQuery(
-                    vector=options.vector,
-                    k_nearest_neighbors=options.count,
+                    vector=vector,
+                    k_nearest_neighbors=options.top,
                     fields=options.vector_field_name,
                 )
             ]
-        if options.query_type == VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY and options.query:
-            search_args["search_text"] = options.query
-        if options.select_fields:
-            search_args["select"] = options.select_fields
         else:
             if options.include_vectors:
                 search_args["select"] = ["*"]
@@ -253,8 +252,11 @@ class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
                     for name, field in self.data_model_definition.fields.items()
                     if not isinstance(field, VectorStoreRecordVectorField)
                 ]
-
-        return [res async for res in await self.search_client.search(**search_args)]
+        raw_results = await self.search_client.search(**search_args)
+        return KernelSearchResults(
+            results=self._get_vector_search_results_from_results(raw_results),
+            total_count=await raw_results.get_count() if options.include_total_count else None,
+        )
 
     def _build_filter_string(self, search_filter: VectorSearchFilter) -> str:
         filter_string = ""

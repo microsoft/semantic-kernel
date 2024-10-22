@@ -46,7 +46,7 @@ class SimpleDataModel(BaseModel):
         VectorStoreRecordVectorField(
             index_kind=IndexKind.HNSW,
             dimensions=3,
-            distance_function=DistanceFunction.COSINE,
+            distance_function=DistanceFunction.COSINE_SIMILARITY,
         ),
     ]
     data: Annotated[
