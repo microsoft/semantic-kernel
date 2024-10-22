@@ -174,9 +174,9 @@ async def step01_processes():
     process = ProcessBuilder(name="ChatBot")
 
     # Define the steps on the process builder based on their types, not concrete objects
-    intro_step = process.add_step_from_type(IntroStep)
-    user_input_step = process.add_step_from_type(ChatUserInputStep)
-    response_step = process.add_step_from_type(ChatBotResponseStep)
+    intro_step = process.add_step(IntroStep)
+    user_input_step = process.add_step(ChatUserInputStep)
+    response_step = process.add_step(ChatBotResponseStep)
 
     # Define the input event that starts the process and where to send it
     process.on_input_event(event_id=ChatBotEvents.StartProcess).send_event_to(

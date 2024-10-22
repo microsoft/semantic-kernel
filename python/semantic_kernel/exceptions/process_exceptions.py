@@ -10,6 +10,12 @@ class ProcessException(KernelException):
     pass
 
 
+class ProcessInvalidConfigurationException(ProcessException):
+    """An invalid configuration was provided for the process."""
+
+    pass
+
+
 class ProcessTargetFunctionNameMismatchException(ProcessException):
     """A message targeting a function has resulted in a different function becoming invocable."""
 

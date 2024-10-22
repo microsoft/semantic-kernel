@@ -2,6 +2,7 @@
 
 from typing import TYPE_CHECKING
 
+from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.process_end_step import EndStep
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
@@ -24,10 +25,15 @@ class ProcessStepEdgeBuilder:
         self.source = source
         self.event_id = event_id
 
-    def send_event_to(self, target: ProcessFunctionTargetBuilder) -> None:
+    def send_event_to(self, target: ProcessFunctionTargetBuilder, **kwargs) -> None:
         """Sends the event to the target."""
         if self.target is not None:
-            raise Exception("An output target has already been set.")
+            raise ProcessInvalidConfigurationException(
+                "An output target has already been set part of the ProcessStepEdgeBuilder."
+            )
+
+        if not isinstance(target, ProcessFunctionTargetBuilder):
+            target = ProcessFunctionTargetBuilder(step=target, parameter_name=kwargs.get("parameter_name", None))
 
         self.target = target
         self.source.link_to(self.event_id, self)
@@ -35,7 +41,9 @@ class ProcessStepEdgeBuilder:
     def stop_process(self):
         """Stops the process."""
         if self.target is not None:
-            raise Exception("An output target has already been set.")
+            raise ProcessInvalidConfigurationException(
+                "An output target has already been set part of the ProcessStepEdgeBuilder."
+            )
         output_target = ProcessFunctionTargetBuilder(EndStep.get_instance())
         self.target = output_target
         self.source.link_to("END", self)

@@ -1,10 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import contextlib
+import inspect
 from typing import TYPE_CHECKING
 
 from pydantic import Field
 
+from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
 from semantic_kernel.processes.kernel_process.kernel_process_function_target import KernelProcessFunctionTarget
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.process_edge_builder import ProcessEdgeBuilder
@@ -28,7 +30,7 @@ class ProcessBuilder(ProcessStepBuilder):
 
     steps: list["ProcessStepBuilder"] = Field(default_factory=list)
 
-    def add_step_from_type(
+    def add_step(
         self,
         step_type: type[TStep],
         name: str | None = None,
@@ -36,6 +38,11 @@ class ProcessBuilder(ProcessStepBuilder):
         **kwargs,
     ) -> ProcessStepBuilder[TState, TStep]:
         """Register a step type with optional constructor arguments."""
+        if not inspect.isclass(step_type):
+            raise ProcessInvalidConfigurationException(
+                f"Expected a class type, but got an instance of {type(step_type).__name__}"
+            )
+
         name = name or step_type.__name__
         process_step_builder = ProcessStepBuilder(type=step_type, name=name, initial_state=initial_state, **kwargs)
         self.steps.append(process_step_builder)

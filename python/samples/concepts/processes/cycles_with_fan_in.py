@@ -13,7 +13,6 @@ from semantic_kernel.processes.kernel_process.kernel_process_step_context import
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 from semantic_kernel.processes.process_types import TState
 
 logging.basicConfig(level=logging.WARNING)
@@ -87,36 +86,27 @@ async def cycles_with_fan_in():
 
     process = ProcessBuilder(name="Test Process")
 
-    kickoff_step = process.add_step_from_type(step_type=KickOffStep)
-    myAStep = process.add_step_from_type(step_type=AStep)
-    myBStep = process.add_step_from_type(step_type=BStep)
-    myCStep = process.add_step_from_type(step_type=CStep, initial_state=CStepState())
+    kickoff_step = process.add_step(step_type=KickOffStep)
+    myAStep = process.add_step(step_type=AStep)
+    myBStep = process.add_step(step_type=BStep)
+    myCStep = process.add_step(step_type=CStep, initial_state=CStepState())
 
-    process.on_input_event(event_id=CommonEvents.StartProcess).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=kickoff_step)
-    )
-    kickoff_step.on_event(event_id=CommonEvents.StartARequested).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=myAStep)
-    )
-    kickoff_step.on_event(event_id=CommonEvents.StartBRequested).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=myBStep)
-    )
-    myAStep.on_event(event_id=CommonEvents.AStepDone).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=myCStep, parameter_name="astepdata")
-    )
-    myBStep.on_event(event_id=CommonEvents.BStepDone).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=myCStep, parameter_name="bstepdata")
-    )
-    myCStep.on_event(event_id=CommonEvents.CStepDone).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=kickoff_step)
-    )
+    # Define the input event and where to send it to
+    process.on_input_event(event_id=CommonEvents.StartProcess).send_event_to(target=kickoff_step)
+
+    # Define the process flow
+    kickoff_step.on_event(event_id=CommonEvents.StartARequested).send_event_to(target=myAStep)
+    kickoff_step.on_event(event_id=CommonEvents.StartBRequested).send_event_to(target=myBStep)
+    myAStep.on_event(event_id=CommonEvents.AStepDone).send_event_to(target=myCStep, parameter_name="astepdata")
+
+    # Define the fan in behavior once both AStep and BStep are done
+    myBStep.on_event(event_id=CommonEvents.BStepDone).send_event_to(target=myCStep, parameter_name="bstepdata")
+    myCStep.on_event(event_id=CommonEvents.CStepDone).send_event_to(target=kickoff_step)
     myCStep.on_event(event_id=CommonEvents.ExitRequested).stop_process()
 
     kernel_process = process.build()
 
-    process_context = await kernel_process.start(
-        kernel=kernel, initial_event=KernelProcessEvent(id=CommonEvents.StartProcess, data="foo")
-    )
+    process_context = await kernel_process.start(kernel=kernel, initial_event=CommonEvents.StartProcess, data="foo")
 
     process_state = await process_context.get_state()
     c_step_state: KernelProcessStepState[CStepState] = next(

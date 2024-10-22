@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
+from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
 from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -23,8 +24,13 @@ class ProcessEdgeBuilder(KernelBaseModel):
         """Initializes a new instance of ProcessEdgeBuilder."""
         super().__init__(source=source, event_id=event_id)  # type: ignore
 
-    def send_event_to(self, target: ProcessFunctionTargetBuilder) -> "ProcessEdgeBuilder":
+    def send_event_to(
+        self, target: ProcessFunctionTargetBuilder | ProcessStepBuilder, **kwargs
+    ) -> "ProcessEdgeBuilder":
         """Sends the event to the target."""
+        if isinstance(target, ProcessStepBuilder):
+            target = ProcessFunctionTargetBuilder(step=target, parameter_name=kwargs.get("parameter_name", None))
+
         self.target = target
         edge_builder = ProcessStepEdgeBuilder(source=self.source, event_id=self.event_id)
         edge_builder.target = self.target
