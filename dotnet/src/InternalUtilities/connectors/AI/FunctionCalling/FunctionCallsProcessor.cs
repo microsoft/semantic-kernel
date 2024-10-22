@@ -257,6 +257,8 @@ internal sealed class FunctionCallsProcessor
         // If concurrent invocation is enabled, join with all the tasks now.
         if (functionTasks is not null)
         {
+            bool terminationRequested = false;
+
             // Wait for all of the function invocations to complete, then add the results to the chat, but stop when we hit a
             // function for which termination was requested.
             await Task.WhenAll(functionTasks).ConfigureAwait(false);
@@ -264,12 +266,17 @@ internal sealed class FunctionCallsProcessor
             {
                 this.AddFunctionCallResultToChatHistory(chatHistory, functionTask.Result.FunctionCall, functionTask.Result.Result, functionTask.Result.ErrorMessage);
 
-                // If filter requested termination, return last chat history message.
                 if (functionTask.Result.Terminate)
                 {
-                    this._logger.LogDebug("Filter requested termination of automatic function invocation.");
-                    return chatHistory.Last();
+                    terminationRequested = true;
                 }
+            }
+
+            // If filter requested termination, return last chat history message.
+            if (terminationRequested)
+            {
+                this._logger.LogDebug("Filter requested termination of automatic function invocation.");
+                return chatHistory.Last();
             }
         }
 

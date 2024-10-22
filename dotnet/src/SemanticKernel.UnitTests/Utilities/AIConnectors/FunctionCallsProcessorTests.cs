@@ -644,7 +644,6 @@ public class FunctionCallsProcessorTests
 
         int firstFunctionInvocations = 0;
         int secondFunctionInvocations = 0;
-        ConcurrentBag<int> functionSequenceNumbers = [];
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
         var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
@@ -652,8 +651,6 @@ public class FunctionCallsProcessorTests
 
         var kernel = CreateKernel(plugin, async (context, next) =>
         {
-            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
-
             await next(context);
 
             context.Terminate = true;
@@ -676,22 +673,31 @@ public class FunctionCallsProcessorTests
                 cancellationToken: CancellationToken.None);
 
         // Assert
-        Assert.Equal(2, chatHistory.Count);
-
-        var functionResult = chatHistory[1].Items.OfType<FunctionResultContent>().Single();
-
         if (invokeConcurrently)
         {
-            Assert.True(functionResult.FunctionName == "Function1" || functionResult.FunctionName == "Function2");
-            Assert.True(functionResult.Result?.ToString() == "function1-result" || functionResult.Result?.ToString() == "function2-result");
+            Assert.Equal(3, chatHistory.Count); // Result of all functions should be added to chat history
+
+            var functionResults = chatHistory.SelectMany(x => x.Items).OfType<FunctionResultContent>().ToList();
+            Assert.Equal(2, functionResults.Count);
+
+            Assert.Contains(functionResults, x => x.FunctionName == "Function1" && x.Result?.ToString() == "function1-result");
+            Assert.Contains(functionResults, x => x.FunctionName == "Function2" && x.Result?.ToString() == "function2-result");
+
+            Assert.Equal(1, firstFunctionInvocations);
+            Assert.Equal(1, secondFunctionInvocations);
         }
         else
         {
+            Assert.Equal(2, chatHistory.Count); // Result of only first function should be added to chat history
+
+            var functionResults = chatHistory.SelectMany(x => x.Items).OfType<FunctionResultContent>().ToList();
+            var functionResult = Assert.Single(functionResults);
+
+            Assert.Equal("Function1", functionResult.FunctionName);
+            Assert.Equal("function1-result", functionResult.Result);
+
             Assert.Equal(1, firstFunctionInvocations);
             Assert.Equal(0, secondFunctionInvocations);
-            Assert.Equal([0], functionSequenceNumbers);
-
-            Assert.Equal("function1-result", functionResult.Result);
         }
     }
 
