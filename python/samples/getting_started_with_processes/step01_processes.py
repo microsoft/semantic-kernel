@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import Generic, TypeVar
+from enum import Enum
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -9,6 +9,7 @@ from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
@@ -16,12 +17,12 @@ from semantic_kernel.processes.process_builder import ProcessBuilder
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 
 
-class CommonEvents:
+class CommonEvents(Enum):
     UserInputReceived = "UserInputReceived"
     AssistantResponseGenerated = "AssistantResponseGenerated"
 
 
-class ChatBotEvents:
+class ChatBotEvents(Enum):
     StartProcess = "startProcess"
     IntroComplete = "introComplete"
     AssistantResponseGenerated = "assistantResponseGenerated"
@@ -31,27 +32,6 @@ class ChatBotEvents:
 class UserInputState(KernelBaseModel):
     user_inputs: list[str] = []
     current_input_index: int = 0
-
-
-# Create a type variable for the generic state
-TState = TypeVar("TState", bound=KernelBaseModel)
-
-
-class KernelProcessStep(Generic[TState]):
-    def __init__(self):
-        self._state: TState | None = None
-
-    async def activate(self, state: "KernelProcessStepState[TState]"):
-        """Activates the step and sets the state."""
-        pass
-
-    def create_default_state(self) -> TState:
-        """Creates the default state object."""
-        return None
-
-    async def on_activate(self):
-        """To be overridden by subclasses if needed."""
-        pass
 
 
 class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
@@ -70,42 +50,42 @@ class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
         """This is called during the activation of the process step."""
         self.populate_user_inputs()
 
-    async def activate(self, state: "KernelProcessStepState[TState]"):
+    async def activate(self, state: KernelProcessStepState[UserInputState]):
         """Activates the step and sets the state."""
         state.state = state.state or self.create_default_state()
-        self._state = state.state
+        self.state = state.state
         self.populate_user_inputs()
         pass
 
     @kernel_function(name=Functions.GetUserInput)
     async def get_user_input(self, context: KernelProcessStepContext):
         """Gets the user input."""
-        if not self._state:
+        if not self.state:
             raise ValueError("State has not been initialized")
 
-        user_message = self._state.user_inputs[self._state.current_input_index]
+        user_message = self.state.user_inputs[self.state.current_input_index]
 
         print(f"USER: {user_message}")
 
         if "exit" in user_message:
-            await context.emit_event(KernelProcessEvent(id=ChatBotEvents.Exit, data=None))
+            await context.emit_event(KernelProcessEvent(id=ChatBotEvents.Exit.value, data=None))
             return
 
-        self._state.current_input_index += 1
+        self.state.current_input_index += 1
 
         # Emit the user input event
-        await context.emit_event({"id": CommonEvents.UserInputReceived, "data": user_message})
+        await context.emit_event({"id": CommonEvents.UserInputReceived.value, "data": user_message})
 
 
 class ChatUserInputStep(ScriptedUserInputStep):
     def populate_user_inputs(self):
         """Override the method to populate user inputs for the chat step."""
-        if self._state is not None:
-            self._state.user_inputs.append("Hello")
-            self._state.user_inputs.append("How tall is the tallest mountain?")
-            self._state.user_inputs.append("How low is the lowest valley?")
-            self._state.user_inputs.append("How wide is the widest river?")
-            self._state.user_inputs.append("exit")
+        if self.state is not None:
+            self.state.user_inputs.append("Hello")
+            self.state.user_inputs.append("How tall is the tallest mountain?")
+            self.state.user_inputs.append("How low is the lowest valley?")
+            self.state.user_inputs.append("How wide is the widest river?")
+            self.state.user_inputs.append("exit")
 
 
 class IntroStep(KernelProcessStep):
@@ -127,8 +107,7 @@ class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
     class Functions:
         GetChatResponse = "get_chat_response"
 
-    def __init__(self):
-        self.state: ChatBotState | None = None
+    state: ChatBotState | None = None
 
     async def activate(self, state: "KernelProcessStepState[ChatBotState]"):
         """Activates the step and initializes the state object."""
@@ -161,7 +140,7 @@ class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
 
         # Emit an event: assistantResponse
         await context.emit_event(
-            process_event=KernelProcessEvent(id=ChatBotEvents.AssistantResponseGenerated, data=answer)
+            process_event=KernelProcessEvent(id=ChatBotEvents.AssistantResponseGenerated.value, data=answer)
         )
 
 
@@ -179,7 +158,7 @@ async def step01_processes():
     response_step = process.add_step(ChatBotResponseStep)
 
     # Define the input event that starts the process and where to send it
-    process.on_input_event(event_id=ChatBotEvents.StartProcess).send_event_to(
+    process.on_input_event(event_id=ChatBotEvents.StartProcess.value).send_event_to(
         target=ProcessFunctionTargetBuilder(step=intro_step)
     )
     # Define the event that triggers the next step in the process
@@ -187,13 +166,13 @@ async def step01_processes():
         target=ProcessFunctionTargetBuilder(step=user_input_step)
     )
     # Define the event that triggers the process to stop
-    user_input_step.on_event(event_id=ChatBotEvents.Exit).stop_process()
+    user_input_step.on_event(event_id=ChatBotEvents.Exit.value).stop_process()
     # For the user step, send the user input to the response step
-    user_input_step.on_event(event_id=CommonEvents.UserInputReceived).send_event_to(
+    user_input_step.on_event(event_id=CommonEvents.UserInputReceived.value).send_event_to(
         target=ProcessFunctionTargetBuilder(step=response_step, parameter_name="user_message")
     )
     # For the response step, send the response back to the user input step
-    response_step.on_event(event_id=ChatBotEvents.AssistantResponseGenerated).send_event_to(
+    response_step.on_event(event_id=ChatBotEvents.AssistantResponseGenerated.value).send_event_to(
         target=ProcessFunctionTargetBuilder(step=user_input_step)
     )
 
@@ -202,7 +181,7 @@ async def step01_processes():
 
     # Start the process
     await kernel_process.start(
-        kernel=kernel, initial_event=KernelProcessEvent(id=ChatBotEvents.StartProcess, data=None)
+        kernel=kernel, initial_event=KernelProcessEvent(id=ChatBotEvents.StartProcess.value, data=None)
     )
 
 
