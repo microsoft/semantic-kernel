@@ -129,6 +129,7 @@ internal sealed class FunctionCallsProcessor
     /// <param name="chatHistory">The chat history to add function invocation results to.</param>
     /// <param name="requestIndex">AI model function(s) call request sequence index.</param>
     /// <param name="checkIfFunctionAdvertised">Callback to check if a function was advertised to AI model or not.</param>
+    /// <param name="options">Function choice behavior options.</param>
     /// <param name="kernel">The <see cref="Kernel"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Last chat history message if function invocation filter requested processing termination, otherwise null.</returns>
@@ -137,6 +138,7 @@ internal sealed class FunctionCallsProcessor
         ChatHistory chatHistory,
         int requestIndex,
         Func<FunctionCallContent, bool> checkIfFunctionAdvertised,
+        FunctionChoiceBehaviorOptions options,
         Kernel? kernel,
         CancellationToken cancellationToken)
     {
@@ -162,12 +164,12 @@ internal sealed class FunctionCallsProcessor
         // this is required for AI model to understand the function results.
         chatHistory.Add(chatMessageContent);
 
-        // We must send back a result for every function call, regardless of whether we successfully executed it or not.
-        // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-        bool concurrentInvocation = true; // TODO: How do we access FunctionChoiceBehaviorOptions here?
-        var functionTasks = concurrentInvocation && functionCalls.Count > 1 ?
+        var functionTasks = options.AllowConcurrentInvocation && functionCalls.Count > 1 ?
             new List<Task<(string? Result, string? ErrorMessage, FunctionCallContent FunctionCall, bool Terminate)>>(functionCalls.Count) :
             null;
+
+        // We must send back a result for every function call, regardless of whether we successfully executed it or not.
+        // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
         for (int functionCallIndex = 0; functionCallIndex < functionCalls.Count; functionCallIndex++)
         {
             FunctionCallContent functionCall = functionCalls[functionCallIndex];
