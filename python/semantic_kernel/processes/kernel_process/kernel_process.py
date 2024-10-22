@@ -55,6 +55,6 @@ class KernelProcess(KernelProcessStepInfo):
         if isinstance(initial_event, str):
             initial_event = KernelProcessEvent(id=initial_event, data=kwargs.get("data", None))
 
-        async with LocalKernelProcessContext(self, kernel) as process_context:
-            await process_context.start_with_event(initial_event)
-            return process_context
+        process_context = LocalKernelProcessContext(self, kernel)
+        await process_context.start_with_event(initial_event)
+        return process_context

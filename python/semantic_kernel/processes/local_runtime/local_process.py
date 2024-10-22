@@ -12,6 +12,7 @@ from pydantic import Field
 from semantic_kernel.exceptions import KernelException
 from semantic_kernel.exceptions.process_exceptions import ProcessEventUndefinedException
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.processes.const import END_PROCESS_ID
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent, KernelProcessEventVisibility
@@ -29,8 +30,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 @experimental_class
 class LocalProcess(LocalStep):
     """A local process that contains a collection of steps."""
-
-    _end_process_id: str = "END"
 
     kernel: Kernel
     steps: list[LocalStep] = Field(default_factory=list)
@@ -170,7 +169,7 @@ class LocalProcess(LocalStep):
 
                 message_tasks = []
                 for message in messages_to_process:
-                    if message.destination_id == self._end_process_id:
+                    if message.destination_id == END_PROCESS_ID:
                         break
 
                     destination_step = next(step for step in self.steps if step.id == message.destination_id)
