@@ -165,8 +165,7 @@ plugin = kernel.add_functions(
             function_name="get_details",
             description="Get details about a hotel, by ID, use the overview function to get the ID.",
             options=VectorSearchOptions(
-                query="*",
-                count=1,
+                top=1,
             ),
             parameters=[
                 KernelParameterMetadata(

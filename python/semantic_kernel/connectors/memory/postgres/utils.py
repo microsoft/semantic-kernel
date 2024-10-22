@@ -109,7 +109,7 @@ def get_vector_index_ops_str(distance_function: DistanceFunction) -> str:
         >>> get_vector_index_ops_str(DistanceFunction.COSINE)
         'vector_cosine_ops'
     """
-    if distance_function == DistanceFunction.COSINE:
+    if distance_function == DistanceFunction.COSINE_SIMILARITY:
         return "vector_cosine_ops"
     if distance_function == DistanceFunction.DOT_PROD:
         return "vector_ip_ops"

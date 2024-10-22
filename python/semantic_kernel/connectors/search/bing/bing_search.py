@@ -20,6 +20,7 @@ from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.kernel_search_result import KernelSearchResults
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.text_search import TextSearch
 from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
@@ -72,7 +73,9 @@ class BingSearch(KernelBaseModel, TextSearch):
 
         super().__init__(settings=settings)
 
-    async def search(self, options: TextSearchOptions | None = None, **kwargs: Any) -> "KernelSearchResults[str]":
+    async def search(
+        self, search_text: str, options: TextSearchOptions | None = None, **kwargs: Any
+    ) -> "KernelSearchResults[str]":
         """Search for text, returning a KernelSearchResult with a list of strings."""
         options = self._get_options(options, **kwargs)
         results = await self._inner_search(options=options)
@@ -155,7 +158,7 @@ class BingSearch(KernelBaseModel, TextSearch):
 
         logger.info(
             f"Received request for bing web search with \
-                params:\nquery: {options.query}\nnum_results: {options.count}\noffset: {options.offset}"
+                params:\nquery: {options.query}\nnum_results: {options.top}\noffset: {options.skip}"
         )
 
         url = self._get_url()
@@ -183,7 +186,7 @@ class BingSearch(KernelBaseModel, TextSearch):
             raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex
 
     def _validate_options(self, options: TextSearchOptions) -> None:
-        if options.count >= 50:
+        if options.top >= 50:
             raise ServiceInvalidRequestError("count value must be less than 50.")
         if not options.query:
             raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
@@ -194,7 +197,7 @@ class BingSearch(KernelBaseModel, TextSearch):
         return f"{DEFAULT_CUSTOM_URL}&customConfig={self.settings.custom_config}"
 
     def _build_request_parameters(self, options: TextSearchOptions) -> dict[str, str | int]:
-        params: dict[str, str | int] = {"count": options.count, "offset": options.offset}
+        params: dict[str, str | int] = {"count": options.top, "offset": options.skip}
         if not options.filter:
             params["q"] = options.query or ""
             return params

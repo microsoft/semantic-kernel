@@ -5,7 +5,7 @@ from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from semantic_kernel.data.kernel_search_result import KernelSearchResults
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.search_base import SearchBase
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
@@ -25,10 +25,13 @@ class TextSearch(SearchBase):
     """The base class for all text searches."""
 
     @abstractmethod
-    async def search(self, options: "SearchOptions | None" = None, **kwargs: Any) -> "KernelSearchResults[str]":
+    async def search(
+        self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
+    ) -> "KernelSearchResults[str]":
         """Search for text, returning a KernelSearchResult with a list of strings.
 
         Args:
+            query: The query to search for.
             options: The search options.
             **kwargs: If options is None, the search options can be passed as keyword arguments.
                 They are then used to create a search options object.
@@ -37,17 +40,17 @@ class TextSearch(SearchBase):
         ...
 
     @abstractmethod
-    async def get_search_result(
-        self, options: "SearchOptions | None" = None, **kwargs: Any
-    ) -> "KernelSearchResults[Any]":
-        """Search for text, returning a KernelSearchResult with the results directly from the service."""
+    async def get_text_search_result(
+        self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
+    ) -> "KernelSearchResults[TextSearchResult]":
+        """Search for text, returning a KernelSearchResult with TextSearchResults."""
         ...
 
     @abstractmethod
-    async def get_text_search_result(
-        self, options: "SearchOptions | None" = None, **kwargs: Any
-    ) -> "KernelSearchResults[TextSearchResult]":
-        """Search for text, returning a KernelSearchResult with TextSearchResults."""
+    async def get_search_result(
+        self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
+    ) -> "KernelSearchResults[Any]":
+        """Search for text, returning a KernelSearchResult with the results directly from the service."""
         ...
 
     @property
@@ -83,7 +86,7 @@ class TextSearch(SearchBase):
                 type_object=str,
             ),
             KernelParameterMetadata(
-                name="count",
+                name="top",
                 description="Number of results to return.",
                 type="int",
                 is_required=False,

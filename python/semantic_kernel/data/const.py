@@ -6,7 +6,7 @@ from typing import Final
 DEFAULT_DESCRIPTION: Final[str] = (
     "Perform a search for content related to the specified query and return string results"
 )
-DEFAULT_COUNT: Final[int] = 5
+DEFAULT_TOP: Final[int] = 5
 
 
 class IndexKind(str, Enum):
@@ -19,7 +19,8 @@ class IndexKind(str, Enum):
 class DistanceFunction(str, Enum):
     """Distance functions for similarity search."""
 
-    COSINE = "cosine"
+    COSINE_SIMILARITY = "cosine_similarity"
+    COSINE_DISTANCE = "cosine_distance"
     DOT_PROD = "dot_prod"
     EUCLIDEAN = "euclidean"
     MANHATTAN = "manhattan"

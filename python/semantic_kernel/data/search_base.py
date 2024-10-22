@@ -10,7 +10,7 @@ from typing import Any, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION
-from semantic_kernel.data.kernel_search_result import KernelSearchResults
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.search_options_base import SearchOptions
 from semantic_kernel.exceptions.search_exceptions import SearchResultEmptyError
 from semantic_kernel.functions import kernel_function
@@ -60,14 +60,22 @@ class SearchBase(ABC):
 
         @kernel_function(name=function_name, description=description)
         async def search_wrapper(**kwargs: Any) -> Sequence[str]:
+            search_text = kwargs.get("search_text") or kwargs.get("query")
+            query = search_text
+            vector = kwargs.get("vector")
             inner_options = self._create_options(deepcopy(options), **kwargs)
             if update_options_function:
                 inner_options = update_options_function(inner_options, kwargs)
             try:
-                results = await search_func(options=inner_options)
+                results = await search_func(
+                    search_text=search_text,
+                    query=query,
+                    vector=vector,
+                    options=inner_options,
+                )
             except SearchResultEmptyError:
                 return ["No results found for this query"]
-            return self._map_result_to_strings(results, map_function)
+            return await self._map_result_to_strings(results, map_function)
 
         return KernelFunctionFromMethod(
             method=search_wrapper,
@@ -93,13 +101,13 @@ class SearchBase(ABC):
         except ValidationError:
             return self._get_options_class()
 
-    def _map_result_to_strings(
+    async def _map_result_to_strings(
         self, results: KernelSearchResults[TMapInput], map_function: Callable[[TMapInput], str] | None = None
     ) -> list[str]:
         """Map search results to strings."""
         if not map_function:
             map_function = self._default_map_to_string
-        return [map_function(result) for result in results.results]
+        return [map_function(result) async for result in results.results]
 
     @staticmethod
     def _default_map_to_string(result: Any) -> str:

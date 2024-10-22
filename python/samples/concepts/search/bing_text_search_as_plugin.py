@@ -36,7 +36,7 @@ kernel.add_functions(
                 filter=TextSearchFilter.equal_to(
                     "site", "https://github.com/microsoft/semantic-kernel/tree/main/python"
                 ),
-                count=6,
+                top=6,
             ),
         )
     ],
