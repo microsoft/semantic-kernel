@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Pinecone;
+namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
 public class PineconeMemoryStoreTests
 {

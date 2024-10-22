@@ -8,18 +8,18 @@ using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Xunit;
 using Sdk = Pinecone;
 
-namespace SemanticKernel.Connectors.UnitTests.Pinecone;
+namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
 /// <summary>
-/// Tests for the <see cref="PineconeKernelBuilderExtensions"/> class.
+/// Tests for the <see cref="PineconeServiceCollectionExtensions"/> class.
 /// </summary>
-public class PineconeKernelBuilderExtensionsTests
+public class PineconeServiceCollectionExtensionsTests
 {
-    private readonly IKernelBuilder _kernelBuilder;
+    private readonly IServiceCollection _serviceCollection;
 
-    public PineconeKernelBuilderExtensionsTests()
+    public PineconeServiceCollectionExtensionsTests()
     {
-        this._kernelBuilder = Kernel.CreateBuilder();
+        this._serviceCollection = new ServiceCollection();
     }
 
     [Fact]
@@ -27,10 +27,10 @@ public class PineconeKernelBuilderExtensionsTests
     {
         // Arrange.
         using var client = new Sdk.PineconeClient("fake api key");
-        this._kernelBuilder.Services.AddSingleton<Sdk.PineconeClient>(client);
+        this._serviceCollection.AddSingleton<Sdk.PineconeClient>(client);
 
         // Act.
-        this._kernelBuilder.AddPineconeVectorStore();
+        this._serviceCollection.AddPineconeVectorStore();
 
         // Assert.
         this.AssertVectorStoreCreated();
@@ -40,21 +40,20 @@ public class PineconeKernelBuilderExtensionsTests
     public void AddVectorStoreWithApiKeyRegistersClass()
     {
         // Act.
-        this._kernelBuilder.AddPineconeVectorStore("fake api key");
+        this._serviceCollection.AddPineconeVectorStore("fake api key");
 
         // Assert.
         this.AssertVectorStoreCreated();
     }
-
     [Fact]
     public void AddVectorStoreRecordCollectionRegistersClass()
     {
         // Arrange.
         using var client = new Sdk.PineconeClient("fake api key");
-        this._kernelBuilder.Services.AddSingleton<Sdk.PineconeClient>(client);
+        this._serviceCollection.AddSingleton<Sdk.PineconeClient>(client);
 
         // Act.
-        this._kernelBuilder.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection");
+        this._serviceCollection.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection");
 
         // Assert.
         this.AssertVectorStoreRecordCollectionCreated();
@@ -64,7 +63,7 @@ public class PineconeKernelBuilderExtensionsTests
     public void AddVectorStoreRecordCollectionWithApiKeyRegistersClass()
     {
         // Act.
-        this._kernelBuilder.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection", "fake api key");
+        this._serviceCollection.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection", "fake api key");
 
         // Assert.
         this.AssertVectorStoreRecordCollectionCreated();
@@ -72,21 +71,21 @@ public class PineconeKernelBuilderExtensionsTests
 
     private void AssertVectorStoreCreated()
     {
-        var kernel = this._kernelBuilder.Build();
-        var vectorStore = kernel.Services.GetRequiredService<IVectorStore>();
+        var serviceProvider = this._serviceCollection.BuildServiceProvider();
+        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
         Assert.NotNull(vectorStore);
         Assert.IsType<PineconeVectorStore>(vectorStore);
     }
 
     private void AssertVectorStoreRecordCollectionCreated()
     {
-        var kernel = this._kernelBuilder.Build();
+        var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<PineconeVectorStoreRecordCollection<TestRecord>>(collection);
 
-        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<PineconeVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
     }

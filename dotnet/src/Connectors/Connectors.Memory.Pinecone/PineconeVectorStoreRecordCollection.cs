@@ -51,6 +51,9 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     public PineconeVectorStoreRecordCollection(Sdk.PineconeClient pineconeClient, string collectionName, PineconeVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         Verify.NotNull(pineconeClient);
+        Verify.NotNullOrWhiteSpace(collectionName);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.VectorCustomMapper is not null, PineconeVectorStoreRecordFieldMapping.s_supportedKeyTypes);
+        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         this._pineconeClient = pineconeClient;
         this.CollectionName = collectionName;
