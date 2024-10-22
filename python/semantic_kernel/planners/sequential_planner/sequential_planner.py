@@ -32,6 +32,8 @@ def read_file(file_path: str) -> str:
 
 
 class SequentialPlanner:
+    """Sequential planner class."""
+
     RESTRICTED_PLUGIN_NAME = "SequentialPlanner_Excluded"
 
     config: SequentialPlannerConfig

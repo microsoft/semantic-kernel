@@ -67,6 +67,104 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
     [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationOnlyAssistantMessagesReturnsValidResponseAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddAssistantMessage("I'm Brandon, I'm very thirsty");
+        chatHistory.AddAssistantMessage("Could you help me get some...");
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(response.Content);
+        this.Output.WriteLine(response.Content);
+        string[] resultWords = ["drink", "water", "tea", "coffee", "juice", "soda"];
+        Assert.Contains(resultWords, word => response.Content.Contains(word, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatStreamingOnlyAssistantMessagesReturnsValidResponseAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddAssistantMessage("I'm Brandon, I'm very thirsty");
+        chatHistory.AddAssistantMessage("Could you help me get some...");
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var response =
+            await sut.GetStreamingChatMessageContentsAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.NotEmpty(response);
+        Assert.True(response.Count > 1);
+        var message = string.Concat(response.Select(c => c.Content));
+        this.Output.WriteLine(message);
+        string[] resultWords = ["drink", "water", "tea", "coffee", "juice", "soda"];
+        Assert.Contains(resultWords, word => message.Contains(word, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationWithSystemMessagesAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory("You are helpful assistant. Your name is Roger.");
+        chatHistory.AddSystemMessage("You know ACDD equals 1520");
+        chatHistory.AddUserMessage("Hello, I'm Brandon, how are you?");
+        chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
+        chatHistory.AddUserMessage("Tell me your name and the value of ACDD.");
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        Assert.NotNull(response.Content);
+        this.Output.WriteLine(response.Content);
+        Assert.Contains("1520", response.Content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Roger", response.Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatStreamingWithSystemMessagesAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory("You are helpful assistant. Your name is Roger.");
+        chatHistory.AddSystemMessage("You know ACDD equals 1520");
+        chatHistory.AddUserMessage("Hello, I'm Brandon, how are you?");
+        chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
+        chatHistory.AddUserMessage("Tell me your name and the value of ACDD.");
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var response =
+            await sut.GetStreamingChatMessageContentsAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.NotEmpty(response);
+        Assert.True(response.Count > 1);
+        var message = string.Concat(response.Select(c => c.Content));
+        this.Output.WriteLine(message);
+        Assert.Contains("1520", message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Roger", message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationVisionBinaryDataAsync(ServiceType serviceType)
     {
         // Arrange

@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -63,9 +63,7 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
-    )
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["weather", "time"]})
 
     print(
         await kernel.invoke_prompt(
@@ -81,9 +79,7 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
-    )
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["weather", "time"]})
 
     result = kernel.invoke_prompt_stream(
         function_name="prompt_test",
@@ -104,7 +100,7 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
         auto_invoke=False, filters={"included_plugins": ["weather", "time"]}
     )
     chat_history.add_user_message(
@@ -131,7 +127,7 @@ async def main():
                 arguments=KernelArguments(),
                 function_call_count=1,
                 request_index=0,
-                function_call_behavior=settings.function_call_behavior,
+                function_call_behavior=settings.function_choice_behavior,
             )
 
 

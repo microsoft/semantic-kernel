@@ -155,7 +155,7 @@ public partial class SessionsPythonPlugin
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}python/uploadFile?identifier={this._settings.SessionId}&api-version={ApiVersion}")
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}files/upload?identifier={this._settings.SessionId}&api-version={ApiVersion}")
         {
             Content = new MultipartFormDataContent
             {
@@ -173,7 +173,7 @@ public partial class SessionsPythonPlugin
 
         var JsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
-        return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(JsonElementResult.GetProperty("$values")[0].GetRawText())!;
+        return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(JsonElementResult.GetProperty("value")[0].GetProperty("properties").GetRawText())!;
     }
 
     /// <summary>
@@ -230,7 +230,7 @@ public partial class SessionsPythonPlugin
         using var httpClient = this._httpClientFactory.CreateClient();
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/files?identifier={this._settings.SessionId}&api-version={ApiVersion}")).ConfigureAwait(false);
+        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}/files?identifier={this._settings.SessionId}&api-version={ApiVersion}")).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -239,13 +239,13 @@ public partial class SessionsPythonPlugin
 
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
-        var files = jsonElementResult.GetProperty("$values");
+        var files = jsonElementResult.GetProperty("value");
 
         var result = new SessionsRemoteFileMetadata[files.GetArrayLength()];
 
         for (var i = 0; i < result.Length; i++)
         {
-            result[i] = JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(files[i].GetRawText())!;
+            result[i] = JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(files[i].GetProperty("properties").GetRawText())!;
         }
 
         return result;

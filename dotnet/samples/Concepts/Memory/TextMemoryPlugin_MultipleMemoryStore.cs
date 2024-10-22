@@ -84,7 +84,7 @@ public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : Ba
 
     private async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
     {
-        IMemoryStore store = await DuckDBMemoryStore.ConnectAsync("memories.duckdb");
+        IMemoryStore store = await DuckDBMemoryStore.ConnectAsync("memories.duckdb", 1536);
         return store;
     }
 

@@ -8,6 +8,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class MemoryQueryResult:
+    """The memory query result."""
+
     is_reference: bool
     external_source_name: str | None
     id: str

@@ -15,6 +15,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PlannerFunctionExtension:
+    """Function extension for the planner."""
+
     @staticmethod
     def to_manual_string(function: KernelFunctionMetadata):
         """Convert the function to a string that can be used in the manual."""
@@ -34,6 +36,8 @@ class PlannerFunctionExtension:
 
 
 class PlannerKernelExtension:
+    """Kernel extension for the planner."""
+
     PLANNER_MEMORY_COLLECTION_NAME = " Planning.KernelFunctionManual"
     PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED = "Planning.KernelFunctionsAreRemembered"
 

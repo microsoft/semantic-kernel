@@ -16,13 +16,12 @@ async def main():
     kernel.add_service(
         OpenAIChatCompletion(
             service_id=service_id,
-            ai_model_id="gpt-3.5-turbo",
         ),
     )
 
     plugin_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
-        "resources", 
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        "resources",
     )
     kernel.add_plugin(parent_directory=plugin_path, plugin_name="email_plugin")
     kernel.add_plugins({"MathPlugin": MathPlugin(), "TimePlugin": TimePlugin()})

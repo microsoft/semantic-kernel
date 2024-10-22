@@ -20,8 +20,7 @@ public class AnnotationContent : KernelContent
     /// <summary>
     /// The citation.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Quote { get; init; }
+    public string Quote { get; init; } = string.Empty;
 
     /// <summary>
     /// Start index of the citation.
@@ -43,13 +42,17 @@ public class AnnotationContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
     /// </summary>
+    /// <param name="quote">The source text being referenced.</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
-    /// <param name="innerContent">Inner content,</param>
+    /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
     public AnnotationContent(
+        string quote,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
-    { }
+    {
+        this.Quote = quote;
+    }
 }

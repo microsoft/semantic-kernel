@@ -19,10 +19,12 @@ public class ChatHistoryExtensionsTests
     [Fact]
     public void VerifyChatHistoryOrdering()
     {
+        // Arrange
         ChatHistory history = [];
         history.AddUserMessage("Hi");
         history.AddAssistantMessage("Hi");
 
+        // Act and Assert
         VerifyRole(AuthorRole.User, history.First());
         VerifyRole(AuthorRole.Assistant, history.Last());
 
@@ -36,10 +38,12 @@ public class ChatHistoryExtensionsTests
     [Fact]
     public async Task VerifyChatHistoryOrderingAsync()
     {
+        // Arrange
         ChatHistory history = [];
         history.AddUserMessage("Hi");
         history.AddAssistantMessage("Hi");
 
+        // Act and Assert
         VerifyRole(AuthorRole.User, history.First());
         VerifyRole(AuthorRole.Assistant, history.Last());
 

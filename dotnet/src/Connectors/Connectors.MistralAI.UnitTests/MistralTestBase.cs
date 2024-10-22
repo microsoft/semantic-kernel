@@ -81,10 +81,10 @@ public abstract class MistralTestBase : IDisposable
             this._responseStringArray = responseStringArray;
         }
 
-        internal AssertingDelegatingHandler(string requestUri, params byte[][] responseBytesArray)
+        internal AssertingDelegatingHandler(string requestUri, bool stream = true, params byte[][] responseBytesArray)
         {
             this.RequestUri = new Uri(requestUri);
-            this.RequestHeaders = GetDefaultRequestHeaders("key", true);
+            this.RequestHeaders = GetDefaultRequestHeaders("key", stream);
             this._responseBytesArray = responseBytesArray;
         }
 

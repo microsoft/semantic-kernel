@@ -104,6 +104,8 @@ class FieldMapper:
 
 @experimental_class
 class WeaviateMemoryStore(MemoryStoreBase):
+    """A memory store that uses Weaviate as the backend."""
+
     def __init__(
         self,
         url: str | None = None,
@@ -219,13 +221,11 @@ class WeaviateMemoryStore(MemoryStoreBase):
     def _build_multi_get_query(self, collection_name: str, keys: list[str], with_embedding: bool):
         queries = []
         for i, key in enumerate(keys):
-            query = self.client.query.get(collection_name, ALL_PROPERTIES).with_where(
-                {
-                    "path": ["key"],
-                    "operator": "Equal",
-                    "valueString": key,
-                }
-            )
+            query = self.client.query.get(collection_name, ALL_PROPERTIES).with_where({
+                "path": ["key"],
+                "operator": "Equal",
+                "valueString": key,
+            })
             if with_embedding:
                 query = query.with_additional("vector")
 

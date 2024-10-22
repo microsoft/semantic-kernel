@@ -4,10 +4,14 @@
     <AssemblyName>Microsoft.SemanticKernel.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0001;NU5104</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
+    <VersionSuffix>rc</VersionSuffix>
+  </PropertyGroup>
+  
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
@@ -16,6 +20,10 @@
     <Title>Semantic Kernel - Abstractions</Title>
     <Description>Semantic Kernel interfaces and abstractions. This package is automatically installed by Semantic Kernel packages if needed.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Connectors\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />

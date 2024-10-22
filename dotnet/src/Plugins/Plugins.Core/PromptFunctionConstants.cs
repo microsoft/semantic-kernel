@@ -10,7 +10,7 @@ internal static class PromptFunctionConstants
 
 END CONTENT TO SUMMARIZE.
 
-Summarize the conversation in 'CONTENT TO SUMMARIZE', identifying main points of discussion and any conclusions that were reached.
+Summarize the conversation in 'CONTENT TO SUMMARIZE', identifying main points of discussion and any conclusions that were reached, in the language that best fits the content.
 Do not incorporate other general knowledge.
 Summary is in plain text, in complete sentences, with no markup or tags.
 

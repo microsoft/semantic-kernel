@@ -23,6 +23,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [function-call]  ::= [function-id] | [function-id] [parameter]
 # [parameter]      ::= [variable] | [value]
 class CodeTokenizer:
+    """Tokenize the code text into blocks."""
+
     @staticmethod
     def tokenize(text: str) -> list[Block]:
         """Tokenize the code text into blocks."""

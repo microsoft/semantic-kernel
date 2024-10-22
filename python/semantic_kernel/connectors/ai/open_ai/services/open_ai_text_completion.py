@@ -3,6 +3,7 @@
 import json
 import logging
 from collections.abc import Mapping
+from typing import Any
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -66,11 +67,11 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             org_id=openai_settings.org_id,
             ai_model_type=OpenAIModelTypes.TEXT,
             default_headers=default_headers,
-            async_client=async_client,
+            client=async_client,
         )
 
     @classmethod
-    def from_dict(cls, settings: dict[str, str]) -> "OpenAITextCompletion":
+    def from_dict(cls, settings: dict[str, Any]) -> "OpenAITextCompletion":
         """Initialize an Open AI service from a dictionary of settings.
 
         Args:

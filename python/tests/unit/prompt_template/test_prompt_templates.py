@@ -3,9 +3,11 @@
 
 import json
 
+import yaml
 from pytest import raises
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -256,3 +258,77 @@ def test_from_json_validate_fail():
                 }
             )
         )
+
+
+def test_from_json_with_function_choice_behavior():
+    config_string = json.dumps(
+        {
+            "name": "Test Config",
+            "description": "Test Description",
+            "template": "Example template",
+            "template_format": "semantic-kernel",
+            "input_variables": [
+                {
+                    "name": "var1",
+                    "description": "A variable",
+                    "default": "default_val",
+                    "is_required": True,
+                    "json_schema": "string",
+                }
+            ],
+            "execution_settings": {
+                "settings1": {"function_choice_behavior": {"type": "auto", "functions": ["p1.f1"]}},
+            },
+        }
+    )
+    config = PromptTemplateConfig.from_json(config_string)
+
+    expected_execution_settings = PromptExecutionSettings(
+        function_choice_behavior={"type": "auto", "functions": ["p1.f1"]}
+    )
+
+    assert config.name == "Test Config"
+    assert config.description == "Test Description"
+    assert config.template == "Example template"
+    assert config.template_format == "semantic-kernel"
+    assert len(config.input_variables) == 1
+    assert config.execution_settings["settings1"] == expected_execution_settings
+
+
+def test_from_yaml_with_function_choice_behavior():
+    yaml_payload = """
+    name: Test Config
+    description: Test Description
+    template: Example template
+    template_format: semantic-kernel
+    input_variables:
+      - name: var1
+        description: A variable
+        default: default_val
+        is_required: true
+        json_schema: string
+    execution_settings:
+      settings1:
+        function_choice_behavior:
+          type: auto
+          functions:
+            - p1.f1
+    """
+    yaml_data = yaml.safe_load(yaml_payload)
+    config = PromptTemplateConfig(**yaml_data)
+
+    expected_execution_settings = PromptExecutionSettings(
+        function_choice_behavior={"type": "auto", "functions": ["p1.f1"]}
+    )
+
+    assert config.name == "Test Config"
+    assert config.description == "Test Description"
+    assert config.template == "Example template"
+    assert config.template_format == "semantic-kernel"
+    assert len(config.input_variables) == 1
+    assert config.execution_settings["settings1"] == expected_execution_settings
+
+
+def test_multiple_param_in_prompt():
+    func = KernelFunctionFromPrompt("test", prompt="{{$param}}{{$param}}")
+    assert len(func.parameters) == 1

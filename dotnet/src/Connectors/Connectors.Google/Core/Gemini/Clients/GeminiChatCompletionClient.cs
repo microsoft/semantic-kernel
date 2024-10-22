@@ -164,11 +164,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            GeminiResponse geminiResponse;
             List<GeminiChatMessageContent> chatResponses;
             using (var activity = ModelDiagnostics.StartCompletionActivity(
                 this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
+                GeminiResponse geminiResponse;
                 try
                 {
                     geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
@@ -297,8 +297,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Kernel? kernel,
         PromptExecutionSettings? executionSettings)
     {
-        var chatHistoryCopy = new ChatHistory(chatHistory);
-        ValidateAndPrepareChatHistory(chatHistoryCopy);
+        ValidateChatHistory(chatHistory);
 
         var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
@@ -315,7 +314,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             AutoInvoke = CheckAutoInvokeCondition(kernel, geminiExecutionSettings),
             ChatHistory = chatHistory,
             ExecutionSettings = geminiExecutionSettings,
-            GeminiRequest = CreateRequest(chatHistoryCopy, geminiExecutionSettings, kernel),
+            GeminiRequest = CreateRequest(chatHistory, geminiExecutionSettings, kernel),
             Kernel = kernel! // not null if auto-invoke is true
         };
     }
@@ -517,61 +516,12 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         return autoInvoke;
     }
 
-    private static void ValidateAndPrepareChatHistory(ChatHistory chatHistory)
+    private static void ValidateChatHistory(ChatHistory chatHistory)
     {
         Verify.NotNullOrEmpty(chatHistory);
-
-        if (chatHistory.Where(message => message.Role == AuthorRole.System).ToList() is { Count: > 0 } systemMessages)
+        if (chatHistory.All(message => message.Role == AuthorRole.System))
         {
-            if (chatHistory.Count == systemMessages.Count)
-            {
-                throw new InvalidOperationException("Chat history can't contain only system messages.");
-            }
-
-            if (systemMessages.Count > 1)
-            {
-                throw new InvalidOperationException("Chat history can't contain more than one system message. " +
-                                                    "Only the first system message will be processed but will be converted to the user message before sending to the Gemini api.");
-            }
-
-            ConvertSystemMessageToUserMessageInChatHistory(chatHistory, systemMessages[0]);
-        }
-
-        ValidateChatHistoryMessagesOrder(chatHistory);
-    }
-
-    private static void ConvertSystemMessageToUserMessageInChatHistory(ChatHistory chatHistory, ChatMessageContent systemMessage)
-    {
-        // TODO: This solution is needed due to the fact that Gemini API doesn't support system messages. Maybe in the future we will be able to remove it.
-        chatHistory.Remove(systemMessage);
-        if (!string.IsNullOrWhiteSpace(systemMessage.Content))
-        {
-            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.User, systemMessage.Content));
-            chatHistory.Insert(1, new ChatMessageContent(AuthorRole.Assistant, "OK"));
-        }
-    }
-
-    private static void ValidateChatHistoryMessagesOrder(ChatHistory chatHistory)
-    {
-        bool incorrectOrder = false;
-        // Exclude tool calls from the validation
-        ChatHistory chatHistoryCopy = new(chatHistory
-            .Where(message => message.Role != AuthorRole.Tool && (message is not GeminiChatMessageContent { ToolCalls: not null })));
-        for (int i = 0; i < chatHistoryCopy.Count; i++)
-        {
-            if (chatHistoryCopy[i].Role != (i % 2 == 0 ? AuthorRole.User : AuthorRole.Assistant) ||
-                (i == chatHistoryCopy.Count - 1 && chatHistoryCopy[i].Role != AuthorRole.User))
-            {
-                incorrectOrder = true;
-                break;
-            }
-        }
-
-        if (incorrectOrder)
-        {
-            throw new NotSupportedException(
-                "Gemini API support only chat history with order of messages alternates between the user and the assistant. " +
-                "Last message have to be User message.");
+            throw new InvalidOperationException("Chat history can't contain only system messages.");
         }
     }
 
@@ -609,15 +559,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
-        if (geminiResponse.Candidates is null || geminiResponse.Candidates.Count == 0)
+        if (geminiResponse.PromptFeedback?.BlockReason is not null)
         {
-            if (geminiResponse.PromptFeedback?.BlockReason is not null)
-            {
-                // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
-                throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
-            }
-
-            throw new KernelException("Gemini API doesn't return any data.");
+            // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
+            throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
         }
     }
 
@@ -646,7 +591,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     }
 
     private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
-        => geminiResponse.Candidates!.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
+        => geminiResponse.Candidates == null ?
+            [new GeminiChatMessageContent(role: AuthorRole.Assistant, content: string.Empty, modelId: this._modelId)]
+            : geminiResponse.Candidates.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
@@ -680,7 +627,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 modelId: this._modelId,
                 calledToolResult: message.CalledToolResult,
                 metadata: message.Metadata,
-                choiceIndex: message.Metadata!.Index);
+                choiceIndex: message.Metadata?.Index ?? 0);
         }
 
         if (message.ToolCalls is not null)
@@ -691,14 +638,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 modelId: this._modelId,
                 toolCalls: message.ToolCalls,
                 metadata: message.Metadata,
-                choiceIndex: message.Metadata!.Index);
+                choiceIndex: message.Metadata?.Index ?? 0);
         }
 
         return new GeminiStreamingChatMessageContent(
             role: message.Role,
             content: message.Content,
             modelId: this._modelId,
-            choiceIndex: message.Metadata!.Index,
+            choiceIndex: message.Metadata?.Index ?? 0,
             metadata: message.Metadata);
     }
 

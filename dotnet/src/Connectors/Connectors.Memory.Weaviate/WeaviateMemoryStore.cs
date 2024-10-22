@@ -17,7 +17,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -53,7 +52,6 @@ public partial class WeaviateMemoryStore : IMemoryStore
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { JsonOptionsCache.ReadOnlyMemoryConverter }
     };
 
     private readonly HttpClient _httpClient;

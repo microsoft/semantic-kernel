@@ -172,14 +172,15 @@ internal static partial class RestApiOperationExtensions
             if (!property.Properties.Any())
             {
                 parameters.Add(new RestApiOperationParameter(
-                    parameterName,
-                    property.Type,
-                    property.IsRequired,
+                    name: parameterName,
+                    type: property.Type,
+                    isRequired: property.IsRequired,
                     expand: false,
-                    RestApiOperationParameterLocation.Body,
-                    RestApiOperationParameterStyle.Simple,
+                    location: RestApiOperationParameterLocation.Body,
+                    style: RestApiOperationParameterStyle.Simple,
                     defaultValue: property.DefaultValue,
                     description: property.Description,
+                    format: property.Format,
                     schema: property.Schema));
             }
 
