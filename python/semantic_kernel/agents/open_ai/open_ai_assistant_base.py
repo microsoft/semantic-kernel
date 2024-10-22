@@ -24,8 +24,9 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_function_call_content,
     generate_function_result_content,
     generate_message_content,
+    generate_streaming_code_interpreter_content,
+    generate_streaming_function_content,
     generate_streaming_message_content,
-    generate_streaming_tools_content,
     get_function_call_contents,
     get_message_contents,
 )
@@ -921,10 +922,22 @@ class OpenAIAssistantBase(Agent):
                             message_id = event.data.step_details.message_creation.message_id
                             if message_id not in active_messages:
                                 active_messages[message_id] = event.data
-                        elif hasattr(event.data.step_details, "tool_calls"):
-                            tool_content = generate_streaming_tools_content(self.name, event.data.step_details)
-                            if tool_content:
-                                yield tool_content
+                    elif event.event == "thread.run.step.delta":
+                        step_details = event.data.delta.step_details
+                        if (
+                            step_details is not None
+                            and hasattr(step_details, "tool_calls")
+                            and step_details.tool_calls is not None
+                            and isinstance(step_details.tool_calls, list)
+                        ):
+                            for tool_call in step_details.tool_calls:
+                                tool_content = None
+                                if tool_call.type == "function":
+                                    tool_content = generate_streaming_function_content(self.name, step_details)
+                                elif tool_call.type == "code_interpreter":
+                                    tool_content = generate_streaming_code_interpreter_content(self.name, step_details)
+                                if tool_content:
+                                    yield tool_content
                     elif event.event == "thread.run.requires_action":
                         run = event.data
                         function_action_result = await self._handle_streaming_requires_action(run, function_steps)
@@ -933,8 +946,12 @@ class OpenAIAssistantBase(Agent):
                                 f"Function call required but no function steps found for agent `{self.name}` "
                                 f"thread: {thread_id}."
                             )
-                        if function_action_result.function_result_content and messages is not None:
-                            messages.append(function_action_result.function_result_content)
+                        if function_action_result.function_result_content:
+                            # Yield the function result content to the caller
+                            yield function_action_result.function_result_content
+                            if messages is not None:
+                                # Add the function result content to the messages list, if it exists
+                                messages.append(function_action_result.function_result_content)
                         if function_action_result.function_call_content:
                             if messages is not None:
                                 messages.append(function_action_result.function_call_content)
