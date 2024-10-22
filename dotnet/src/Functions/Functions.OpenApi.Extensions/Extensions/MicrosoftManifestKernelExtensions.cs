@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Plugins.Manifest;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Services;
+using Microsoft.Plugins.Manifest;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
