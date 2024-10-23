@@ -17,17 +17,11 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class LocalStep : IKernelProcessMessageChannel
 {
-    /// <summary>
-    /// The generic state type for a process step.
-    /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
-
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
     private readonly KernelProcessStepInfo _stepInfo;
     private readonly string _eventNamespace;
     private readonly ILogger _logger;
-    private readonly string _id = Guid.NewGuid().ToString("n"); // %%% VERIFY WHY
 
     protected readonly Kernel _kernel;
     protected KernelProcessStepState _stepState;
@@ -288,7 +282,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <param name="localEvent">The event to emit.</param>
     protected void EmitEvent(ProcessEvent localEvent)
     {
-        var scopedEvent = this.ScopedEvent(ProcessEvent);
+        var scopedEvent = this.ScopedEvent(localEvent);
         //Console.WriteLine($"\tLOCAL EMIT: {scopedEvent.Id}");
         this._outgoingEventQueue.Enqueue(scopedEvent);
     }
@@ -300,8 +294,8 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
     protected ProcessEvent ScopedEvent(ProcessEvent localEvent)
     {
-        Verify.NotNull(ProcessEvent);
-        return ProcessEvent with { Namespace = $"{this.Name}_{this.Id}" };
+        Verify.NotNull(localEvent);
+        return localEvent with { Namespace = $"{this.Name}_{this.Id}" };
     }
 
     /// <summary>

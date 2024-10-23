@@ -418,10 +418,10 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="daprEvent">The event to emit.</param>
     internal async ValueTask EmitEventAsync(ProcessEvent daprEvent)
     {
-        var scopedEvent = this.ScopedEvent(ProcessEvent);
+        var scopedEvent = this.ScopedEvent(daprEvent);
 
         // Emit the event out of the process (this one) if it's visibility is public.
-        if (ProcessEvent.Visibility == KernelProcessEventVisibility.Public)
+        if (daprEvent.Visibility == KernelProcessEventVisibility.Public)
         {
             if (this.ParentProcessId is not null)
             {
@@ -432,7 +432,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Get the edges for the event and queue up the messages to be sent to the next steps.
-        foreach (var edge in this.GetEdgeForEvent(ProcessEvent.Id!))
+        foreach (var edge in this.GetEdgeForEvent(daprEvent.Id!))
         {
             ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
             var scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
@@ -448,8 +448,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
     internal ProcessEvent ScopedEvent(ProcessEvent daprEvent)
     {
-        Verify.NotNull(ProcessEvent);
-        return ProcessEvent with { Namespace = $"{this.Name}_{this.Id}" };
+        Verify.NotNull(daprEvent);
+        return daprEvent with { Namespace = $"{this.Name}_{this.Id}" };
     }
 
     /// <summary>
