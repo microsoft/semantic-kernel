@@ -186,7 +186,7 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
         # Instantiate an instance of the inner step object
         step_cls = self.step_info.inner_step_type
 
-        step_instance: KernelProcessStep = step_cls()
+        step_instance: KernelProcessStep = step_cls()  # type: ignore
 
         kernel_plugin = self.kernel.add_plugin(
             step_instance, self.step_info.state.name if self.step_info.state else "default_name"
