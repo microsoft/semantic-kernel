@@ -59,6 +59,8 @@ public static class SqliteServiceCollectionExtensions
                 var connection = new SqliteConnection(connectionString);
                 var extensionName = GetExtensionName(options?.VectorSearchExtensionName);
 
+                connection.Open();
+
                 connection.LoadExtension(extensionName);
 
                 var selectedOptions = options ?? sp.GetService<SqliteVectorStoreOptions>();
