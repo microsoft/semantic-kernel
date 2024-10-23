@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
 from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
+from tests.integration.test_utils import retry
 
 astradb_installed: bool
 try:
@@ -18,16 +19,6 @@ except KeyError:
 
 
 pytestmark = pytest.mark.skipif(not astradb_installed, reason="astradb is not installed")
-
-
-async def retry(func, retries=1):
-    for i in range(retries):
-        try:
-            return await func()
-        except Exception as e:
-            print(e)
-            time.sleep(i * 2)
-    return None
 
 
 @pytest.fixture(autouse=True, scope="module")
