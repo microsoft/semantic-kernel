@@ -25,7 +25,6 @@ internal sealed class BedrockChatCompletionClient
     private readonly string _modelProvider;
     private readonly IAmazonBedrockRuntime _bedrockRuntime;
     private readonly IBedrockChatCompletionService _ioChatService;
-    private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _chatGenerationEndpoint;
     private readonly ILogger _logger;
 
@@ -37,12 +36,11 @@ internal sealed class BedrockChatCompletionClient
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
-        var clientService = new BedrockClientService();
+        var serviceFactory = new BedrockServiceFactory();
         this._modelId = modelId;
         this._bedrockRuntime = bedrockRuntime;
-        this._ioChatService = clientService.GetChatService(modelId);
-        this._modelProvider = clientService.GetModelProviderAndName(modelId).modelProvider;
-        this._clientUtilities = new BedrockClientUtilities();
+        this._ioChatService = serviceFactory.CreateChatCompletionService(modelId);
+        this._modelProvider = serviceFactory.GetModelProviderAndName(modelId).modelProvider;
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
@@ -76,7 +74,7 @@ internal sealed class BedrockChatCompletionClient
             response = await this._bedrockRuntime.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(false);
             if (activity is not null)
             {
-                activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                 activity.SetStatus(activityStatus);
                 activity.SetPromptTokenUsage(response.Usage.InputTokens);
                 activity.SetCompletionTokenUsage(response.Usage.OutputTokens);
@@ -90,7 +88,7 @@ internal sealed class BedrockChatCompletionClient
                 activity.SetError(ex);
                 if (response != null)
                 {
-                    activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                    activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                     activity.SetStatus(activityStatus);
                     activity.SetPromptTokenUsage(response.Usage.InputTokens);
                     activity.SetCompletionTokenUsage(response.Usage.OutputTokens);
@@ -108,7 +106,7 @@ internal sealed class BedrockChatCompletionClient
             throw new InvalidOperationException("Response failed");
         }
         IReadOnlyList<ChatMessageContent> chatMessages = this.ConvertToMessageContent(response).ToList();
-        activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+        activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
         activity?.SetStatus(activityStatus);
         activity?.SetCompletionResponse(chatMessages, response.Usage.InputTokens, response.Usage.OutputTokens);
         return chatMessages;
@@ -130,7 +128,7 @@ internal sealed class BedrockChatCompletionClient
         [
             new ChatMessageContent
             {
-                Role = this._clientUtilities.MapConversationRoleToAuthorRole(message.Role.Value),
+                Role = BedrockClientUtilities.MapConversationRoleToAuthorRole(message.Role.Value),
                 Items = CreateChatMessageContentItemCollection(message.Content)
             }
         ];
@@ -168,7 +166,7 @@ internal sealed class BedrockChatCompletionClient
             response = await this._bedrockRuntime.ConverseStreamAsync(converseStreamRequest, cancellationToken).ConfigureAwait(false);
             if (activity is not null)
             {
-                activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                 activity.SetStatus(activityStatus);
             }
         }
@@ -180,7 +178,7 @@ internal sealed class BedrockChatCompletionClient
                 activity.SetError(ex);
                 if (response != null)
                 {
-                    activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                    activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                     activity.SetStatus(activityStatus);
                 }
                 else
@@ -205,7 +203,7 @@ internal sealed class BedrockChatCompletionClient
         }
 
         // End streaming activity with kernel
-        activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+        activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
         activity?.SetStatus(activityStatus);
         activity?.EndStreaming(streamedContents);
     }

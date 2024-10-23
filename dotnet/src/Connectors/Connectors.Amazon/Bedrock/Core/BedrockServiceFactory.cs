@@ -5,9 +5,9 @@ using System;
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
-/// Utilities to get the model service and model provider. Used by Bedrock service clients.
+/// Factory class for creating services for different models, providers and modalities.
 /// </summary>
-internal sealed class BedrockClientService
+internal sealed class BedrockServiceFactory
 {
     /// <summary>
     /// Gets the model service for body conversion.
@@ -15,7 +15,7 @@ internal sealed class BedrockClientService
     /// <param name="modelId">The model to be used for the service.</param>
     /// <returns><see cref="IBedrockTextGenerationService"/> instance</returns>
     /// <exception cref="NotSupportedException">Thrown if provider or model is not supported for text generation.</exception>
-    internal IBedrockTextGenerationService GetTextService(string modelId)
+    internal IBedrockTextGenerationService CreateTextGenerationService(string modelId)
     {
         (string modelProvider, string modelName) = this.GetModelProviderAndName(modelId);
 
@@ -77,7 +77,7 @@ internal sealed class BedrockClientService
     /// <param name="modelId">The model to get the service for.</param>
     /// <returns><see cref="IBedrockChatCompletionService"/> object</returns>
     /// <exception cref="NotSupportedException">Thrown if provider or model is not supported for chat completion.</exception>
-    internal IBedrockChatCompletionService GetChatService(string modelId)
+    internal IBedrockChatCompletionService CreateChatCompletionService(string modelId)
     {
         (string modelProvider, string modelName) = this.GetModelProviderAndName(modelId);
 

@@ -19,7 +19,7 @@ internal sealed class BedrockClientUtilities
     /// </summary>
     /// <param name="httpStatusCode">The status code</param>
     /// <returns>The ActivityStatusCode for the Semantic Kernel</returns>
-    internal ActivityStatusCode ConvertHttpStatusCodeToActivityStatusCode(HttpStatusCode httpStatusCode)
+    internal static ActivityStatusCode ConvertHttpStatusCodeToActivityStatusCode(HttpStatusCode httpStatusCode)
     {
         if ((int)httpStatusCode >= 200 && (int)httpStatusCode < 300)
         {
@@ -41,7 +41,7 @@ internal sealed class BedrockClientUtilities
     /// <param name="role">The ConversationRole in string form to convert to AuthorRole</param>
     /// <returns>The corresponding AuthorRole.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if invalid role</exception>
-    internal AuthorRole MapConversationRoleToAuthorRole(string role)
+    internal static AuthorRole MapConversationRoleToAuthorRole(string role)
     {
         return role.ToUpperInvariant() switch
         {

@@ -26,7 +26,6 @@ internal sealed class BedrockTextGenerationClient
     private readonly string _modelProvider;
     private readonly IAmazonBedrockRuntime _bedrockRuntime;
     private readonly IBedrockTextGenerationService _ioTextService;
-    private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _textGenerationEndpoint;
     private readonly ILogger _logger;
 
@@ -38,12 +37,11 @@ internal sealed class BedrockTextGenerationClient
     /// <param name="loggerFactory">Logger for error output.</param>
     internal BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
-        var clientService = new BedrockClientService();
+        var serviceFactory = new BedrockServiceFactory();
         this._modelId = modelId;
         this._bedrockRuntime = bedrockRuntime;
-        this._ioTextService = clientService.GetTextService(modelId);
-        this._modelProvider = clientService.GetModelProviderAndName(modelId).modelProvider;
-        this._clientUtilities = new BedrockClientUtilities();
+        this._ioTextService = serviceFactory.CreateTextGenerationService(modelId);
+        this._modelProvider = serviceFactory.GetModelProviderAndName(modelId).modelProvider;
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
@@ -84,7 +82,7 @@ internal sealed class BedrockTextGenerationClient
             response = await this._bedrockRuntime.InvokeModelAsync(invokeRequest, cancellationToken).ConfigureAwait(false);
             if (activity is not null)
             {
-                activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                 activity.SetStatus(activityStatus);
             }
         }
@@ -96,7 +94,7 @@ internal sealed class BedrockTextGenerationClient
                 activity.SetError(ex);
                 if (response != null)
                 {
-                    activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                    activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                     activity.SetStatus(activityStatus);
                 }
                 else
@@ -111,7 +109,7 @@ internal sealed class BedrockTextGenerationClient
         {
             throw new ArgumentException("Response is null");
         }
-        activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+        activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
         activity?.SetStatus(activityStatus);
         IReadOnlyList<TextContent> textResponse = this._ioTextService.GetInvokeResponseBody(response);
         activity?.SetCompletionResponse(textResponse);
@@ -144,7 +142,7 @@ internal sealed class BedrockTextGenerationClient
             streamingResponse = await this._bedrockRuntime.InvokeModelWithResponseStreamAsync(invokeRequest, cancellationToken).ConfigureAwait(false);
             if (activity is not null)
             {
-                activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode);
+                activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode);
                 activity.SetStatus(activityStatus);
             }
         }
@@ -156,7 +154,7 @@ internal sealed class BedrockTextGenerationClient
                 activity.SetError(ex);
                 if (streamingResponse != null)
                 {
-                    activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode);
+                    activityStatus = BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode);
                     activity.SetStatus(activityStatus);
                 }
                 else
@@ -188,7 +186,7 @@ internal sealed class BedrockTextGenerationClient
                 yield return new StreamingTextContent(text);
             }
         }
-        activity?.SetStatus(this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode));
+        activity?.SetStatus(BedrockClientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode));
         activity?.EndStreaming(streamedContents);
     }
 }
