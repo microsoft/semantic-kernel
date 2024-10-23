@@ -390,6 +390,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MongoDB", "MongoDB", "{AF7F
 		src\InternalUtilities\connectors\Memory\MongoDB\MongoDBVectorStoreRecordMapper.cs = src\InternalUtilities\connectors\Memory\MongoDB\MongoDBVectorStoreRecordMapper.cs
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Process.IntegrationTestRunner.Dapr", "src\Experimental\Process.IntegrationTestRunner.Dapr\Process.IntegrationTestRunner.Dapr.csproj", "{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Process.IntegrationTests.Shared", "src\Experimental\Process.IntegrationTests.Shared\Process.IntegrationTests.Shared.csproj", "{24CFE182-3342-4EB6-B0A7-91B211454BE9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1009,6 +1013,18 @@ Global
 		{6F591D05-5F7F-4211-9042-42D8BCE60415}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{6F591D05-5F7F-4211-9042-42D8BCE60415}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F591D05-5F7F-4211-9042-42D8BCE60415}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24CFE182-3342-4EB6-B0A7-91B211454BE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24CFE182-3342-4EB6-B0A7-91B211454BE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24CFE182-3342-4EB6-B0A7-91B211454BE9}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{24CFE182-3342-4EB6-B0A7-91B211454BE9}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{24CFE182-3342-4EB6-B0A7-91B211454BE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24CFE182-3342-4EB6-B0A7-91B211454BE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1149,6 +1165,8 @@ Global
 		{6F591D05-5F7F-4211-9042-42D8BCE60415} = {5A7028A7-4DDF-4E4F-84A9-37CE8F8D7E89}
 		{077928EA-2C61-4667-82FC-6A5120B7AC45} = {314A2705-0F70-44B6-8988-C6DF77BDFD42}
 		{AF7F68FD-ADB0-4941-90AE-88EAAB53BEEB} = {077928EA-2C61-4667-82FC-6A5120B7AC45}
+		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
+		{24CFE182-3342-4EB6-B0A7-91B211454BE9} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
