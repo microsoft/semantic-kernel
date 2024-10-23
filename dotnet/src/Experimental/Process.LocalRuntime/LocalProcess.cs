@@ -238,8 +238,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         Kernel localKernel = kernel ?? this._kernel;
         Queue<ProcessMessage> messageChannel = new();
 
-
-        //Console.WriteLine($"\tLOCAL PROCESS STEPS [{this._steps.Count}]: {string.Join(",", this._steps.Select(s => s.Id))}");
+        //Console.WriteLine($"\tLOCAL PROCESS STEPS [{this._steps.Count}]: {string.Join(",", this._steps.Select(s => s.Id))}"); // %%% REMOVE
         //Console.WriteLine($"\tLOCAL PROCESS STEPS [{this._steps.Count}]: {string.Join(",", this._steps.Select(s => s.Name))}");
 
         try
