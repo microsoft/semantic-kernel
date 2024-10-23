@@ -37,7 +37,7 @@ internal static class StepExtensions
     // Exposed for testing
     public static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType)
     {
-        KernelProcessStepState newState = (KernelProcessStepState)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id)!; // $$$ EXCEPTION / NULL RESULT
+        KernelProcessStepState newState = (KernelProcessStepState)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id)!; // %%% EXCEPTION / NULL RESULT
         if (userStateType != null)
         {
             newState.InitializeUserState(stateType, userStateType);
@@ -97,7 +97,7 @@ internal static class StepExtensions
     /// Some types such as KernelProcessStepContext are special and need to be injected into
     /// the function parameter. Those objects are instantiated at this point.
     /// </summary>
-    /// <param name="channel">/// %%% COMMENT</param>
+    /// <param name="channel">The source channel to evaluate</param>
     /// <param name="functions">A dictionary of KernelFunction instances.</param>
     /// <param name="logger">An instance of <see cref="ILogger"/>.</param>
     /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
@@ -146,7 +146,7 @@ internal static class StepExtensions
     /// <param name="genericStateType">The matching type if found, otherwise null.</param>
     /// <returns>True if a match is found, false otherwise.</returns>
     /// TODO: Move this to a share process utilities project.
-    public static bool TryGetSubtypeOfStatefulStep(this Type? type, out Type? genericStateType) // %%% PRIVATE AFTER DAPR REFACTORING
+    private static bool TryGetSubtypeOfStatefulStep(this Type? type, out Type? genericStateType)
     {
         while (type != null && type != typeof(object))
         {
