@@ -10,10 +10,11 @@ internal static class PostgresConstants
     /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
     public static readonly HashSet<Type> SupportedKeyTypes =
     [
-        typeof(string),
+        typeof(short),
         typeof(int),
         typeof(long),
-        typeof(short),
+        typeof(string),
+        typeof(Guid),
     ];
 
     /// <summary>A <see cref="HashSet{T}"/> of types that data properties on the provided model may have.</summary>
@@ -36,6 +37,8 @@ internal static class PostgresConstants
         typeof(string),
         typeof(DateTimeOffset),
         typeof(DateTimeOffset?),
+        typeof(Guid),
+        typeof(Guid?),
         typeof(byte[]),
         typeof(List<bool>),
         typeof(List<short>),

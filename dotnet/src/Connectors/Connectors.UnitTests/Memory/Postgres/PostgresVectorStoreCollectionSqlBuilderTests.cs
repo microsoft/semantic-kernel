@@ -46,7 +46,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
             ]
         };
 
-        var cmdInfo = builder.BuildCreateTableCommand("public", "testcollection", recordDefinition, ifNotExists: true);
+        var cmdInfo = builder.BuildCreateTableCommand("public", "testcollection", recordDefinition.Properties, ifNotExists: true);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("public.\"testcollection\" (", cmdInfo.CommandText);
@@ -137,49 +137,12 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         var key = 123;
 
         // Act
-        var cmdInfo = builder.BuildGetCommand("public", "testcollection", recordDefinition, key, includeVectors: true);
+        var cmdInfo = builder.BuildGetCommand("public", "testcollection", recordDefinition.Properties, key, includeVectors: true);
 
         // Assert
         Assert.Contains("SELECT", cmdInfo.CommandText);
-
-        // Output
-        this._output.WriteLine(cmdInfo.CommandText);
-    }
-
-    [Fact]
-    public void TestBuildGetBatchCommand()
-    {
-        // Arrange
-        var builder = new PostgresVectorStoreCollectionSqlBuilder();
-
-        var recordDefinition = new VectorStoreRecordDefinition()
-        {
-            Properties = [
-                new VectorStoreRecordKeyProperty("id", typeof(long)),
-                new VectorStoreRecordDataProperty("name", typeof(string)),
-                new VectorStoreRecordDataProperty("code", typeof(int)),
-                new VectorStoreRecordDataProperty("rating", typeof(float?)),
-                new VectorStoreRecordDataProperty("description", typeof(string)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
-                new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>)) {
-                    Dimensions = 10,
-                    IndexKind = "hnsw",
-                },
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?)) {
-                    Dimensions = 10,
-                    IndexKind = "hnsw",
-                }
-            ]
-        };
-
-        var keys = new List<long> { 123, 456, 789 };
-
-        // Act
-        var cmdInfo = builder.BuildGetBatchCommand("public", "testcollection", recordDefinition, keys, includeVectors: true);
-
-        // Assert
-        Assert.Contains("SELECT", cmdInfo.CommandText);
+        Assert.Contains("FROM public.\"testcollection\"", cmdInfo.CommandText);
+        Assert.Contains("WHERE \"id\" = $1", cmdInfo.CommandText);
 
         // Output
         this._output.WriteLine(cmdInfo.CommandText);

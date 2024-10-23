@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -18,7 +19,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     public async Task CollectionExistsReturnsCollectionStateAsync(bool createCollection)
     {
         // Arrange
-        var sut = fixture.GetCollection<int, PostgresHotel>("CollectionExists");
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>("CollectionExists");
 
         if (createCollection)
         {
@@ -47,7 +48,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     public async Task CollectionCanUpsertAndGetAsync()
     {
         // Arrange
-        var sut = fixture.GetCollection<int, PostgresHotel>("CollectionCanUpsertAndGet");
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>("CollectionCanUpsertAndGet");
         if (await sut.CollectionExistsAsync())
         {
             await sut.DeleteCollectionAsync();
@@ -58,8 +59,8 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         try
         {
             // Act
-            await sut.UpsertAsync(new PostgresHotel { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] });
-            await sut.UpsertAsync(new PostgresHotel { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, ListInts = [1, 2] });
+            await sut.UpsertAsync(new PostgresHotel<int> { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] });
+            await sut.UpsertAsync(new PostgresHotel<int> { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, ListInts = [1, 2] });
 
             var hotel1 = await sut.GetAsync(1);
             var hotel2 = await sut.GetAsync(2);
@@ -97,29 +98,39 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         }
     }
 
-    [Fact]
-    public async Task ItCanGetAndDeleteRecordAsync()
+    [Theory]
+    [InlineData(typeof(short), (short)3)]
+    [InlineData(typeof(int), 5)]
+    [InlineData(typeof(long), 7L)]
+    [InlineData(typeof(string), "key1")]
+    [InlineData(typeof(Guid), null)]
+    public async Task ItCanGetAndDeleteRecordAsync(Type idType, object? key)
     {
+        if (idType == typeof(Guid))
+        {
+            key = Guid.NewGuid();
+        }
+
         // Arrange
-        const int HotelId = 5;
-        var sut = fixture.GetCollection<int, PostgresHotel>("DeleteRecord");
+        var collectionName = "DeleteRecord";
+        dynamic sut = this.GetCollection(idType, collectionName);
 
         await sut.CreateCollectionAsync();
 
         try
         {
-            var record = new PostgresHotel { HotelId = HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
-
+            dynamic record = this.CreateRecord(idType, key!);
+            dynamic recordKey = record.HotelId;
             var upsertResult = await sut.UpsertAsync(record);
-            var getResult = await sut.GetAsync(HotelId);
+            var getResult = await sut.GetAsync(recordKey);
 
-            Assert.Equal(HotelId, upsertResult);
+            Assert.Equal(key, upsertResult);
             Assert.NotNull(getResult);
 
             // Act
-            await sut.DeleteAsync(HotelId);
+            await sut.DeleteAsync(recordKey);
 
-            getResult = await sut.GetAsync(HotelId);
+            getResult = await sut.GetAsync(recordKey);
 
             // Assert
             Assert.Null(getResult);
@@ -139,13 +150,13 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         const int HotelId2 = 2;
         const int HotelId3 = 3;
 
-        var sut = fixture.GetCollection<int, PostgresHotel>("GetUpsertDeleteBatch");
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>("GetUpsertDeleteBatch");
 
         await sut.CreateCollectionAsync();
 
-        var record1 = new PostgresHotel { HotelId = HotelId1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
-        var record2 = new PostgresHotel { HotelId = HotelId2, HotelName = "Hotel 2", HotelCode = 1, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag3"] };
-        var record3 = new PostgresHotel { HotelId = HotelId3, HotelName = "Hotel 3", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag4"] };
+        var record1 = new PostgresHotel<int> { HotelId = HotelId1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
+        var record2 = new PostgresHotel<int> { HotelId = HotelId2, HotelName = "Hotel 2", HotelCode = 1, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag3"] };
+        var record3 = new PostgresHotel<int> { HotelId = HotelId3, HotelName = "Hotel 3", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag4"] };
 
         var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
         var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
@@ -170,11 +181,11 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     {
         // Arrange
         const int HotelId = 5;
-        var sut = fixture.GetCollection<int, PostgresHotel>("UpsertRecord");
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>("UpsertRecord");
 
         await sut.CreateCollectionAsync();
 
-        var record = new PostgresHotel { HotelId = HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
+        var record = new PostgresHotel<int> { HotelId = HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
 
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = true });
@@ -214,7 +225,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        var record = new PostgresHotel { HotelId = (int)HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
+        var record = new PostgresHotel<int> { HotelId = (int)HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
 
         // Act
         var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<int>(HotelId)
@@ -271,24 +282,31 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync(bool includeVectors)
+    [InlineData(true, DistanceFunction.CosineDistance)]
+    [InlineData(false, DistanceFunction.CosineDistance)]
+    [InlineData(false, DistanceFunction.CosineSimilarity)]
+    [InlineData(false, DistanceFunction.EuclideanDistance)]
+    [InlineData(false, DistanceFunction.ManhattanDistance)]
+    [InlineData(false, DistanceFunction.DotProductSimilarity)]
+    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync(bool includeVectors, string distanceFunction)
     {
         // Arrange
-        var hotel1 = new PostgresHotel { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"], DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f } };
-        var hotel2 = new PostgresHotel { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, Tags = ["tag1", "tag3"], DescriptionEmbedding = new[] { 10f, 10f, 10f, 10f } };
-        var hotel3 = new PostgresHotel { HotelId = 3, HotelName = "Hotel 3", HotelCode = 3, ParkingIncluded = true, HotelRating = 3.5f, Tags = ["tag1", "tag4"], DescriptionEmbedding = new[] { 20f, 20f, 20f, 20f } };
-        var hotel4 = new PostgresHotel { HotelId = 4, HotelName = "Hotel 4", HotelCode = 4, ParkingIncluded = false, HotelRating = 1.5f, Tags = ["tag1", "tag5"], DescriptionEmbedding = new[] { 40f, 40f, 40f, 40f } };
+        var hotel1 = new PostgresHotel<int> { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"], DescriptionEmbedding = new[] { 1f, 0f, 0f, 0f } };
+        var hotel2 = new PostgresHotel<int> { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, Tags = ["tag1", "tag3"], DescriptionEmbedding = new[] { 0f, 1f, 0f, 0f } };
+        var hotel3 = new PostgresHotel<int> { HotelId = 3, HotelName = "Hotel 3", HotelCode = 3, ParkingIncluded = true, HotelRating = 3.5f, Tags = ["tag1", "tag4"], DescriptionEmbedding = new[] { 0f, 0f, 1f, 0f } };
+        var hotel4 = new PostgresHotel<int> { HotelId = 4, HotelName = "Hotel 4", HotelCode = 4, ParkingIncluded = false, HotelRating = 1.5f, Tags = ["tag1", "tag5"], DescriptionEmbedding = new[] { 0f, 0f, 0f, 1f } };
 
-        var sut = fixture.GetCollection<int, PostgresHotel>($"VectorizedSearch_{includeVectors}");
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>($"VectorizedSearch_{includeVectors}_{distanceFunction}", new()
+        {
+            VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<int>(distanceFunction)
+        });
 
         await sut.CreateCollectionAsync();
 
         await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), new()
         {
             IncludeVectors = includeVectors
         });
@@ -305,7 +323,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         // Default limit is 3
         Assert.DoesNotContain(2, ids);
 
-        Assert.Equal(0, results.First(l => l.Record.HotelId == 1).Score);
+        Assert.True(0 < results.First(l => l.Record.HotelId == 1).Score);
 
         Assert.Equal(includeVectors, results.All(result => result.Record.DescriptionEmbedding is not null));
     }
@@ -314,12 +332,12 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     public async Task VectorizedSearchWithEqualToFilterReturnsValidResultsAsync()
     {
         // Arrange
-        var hotel1 = new PostgresHotel { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag2"], DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f } };
-        var hotel2 = new PostgresHotel { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, Tags = ["tag1", "tag3"], DescriptionEmbedding = new[] { 10f, 10f, 10f, 10f } };
-        var hotel3 = new PostgresHotel { HotelId = 3, HotelName = "Hotel 3", HotelCode = 3, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag4"], DescriptionEmbedding = new[] { 20f, 20f, 20f, 20f } };
-        var hotel4 = new PostgresHotel { HotelId = 4, HotelName = "Hotel 4", HotelCode = 4, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag5"], DescriptionEmbedding = new[] { 40f, 40f, 40f, 40f } };
+        var hotel1 = new PostgresHotel<int> { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag2"], DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f } };
+        var hotel2 = new PostgresHotel<int> { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, Tags = ["tag1", "tag3"], DescriptionEmbedding = new[] { 10f, 10f, 10f, 10f } };
+        var hotel3 = new PostgresHotel<int> { HotelId = 3, HotelName = "Hotel 3", HotelCode = 3, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag4"], DescriptionEmbedding = new[] { 20f, 20f, 20f, 20f } };
+        var hotel4 = new PostgresHotel<int> { HotelId = 4, HotelName = "Hotel 4", HotelCode = 4, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag5"], DescriptionEmbedding = new[] { 40f, 40f, 40f, 40f } };
 
-        var sut = fixture.GetCollection<int, PostgresHotel>("VectorizedSearchWithEqualToFilter");
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>("VectorizedSearchWithEqualToFilter");
 
         await sut.CreateCollectionAsync();
 
@@ -347,12 +365,12 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     public async Task VectorizedSearchWithAnyTagFilterReturnsValidResultsAsync()
     {
         // Arrange
-        var hotel1 = new PostgresHotel { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag2"], DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f } };
-        var hotel2 = new PostgresHotel { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, Tags = ["tag1", "tag3"], DescriptionEmbedding = new[] { 10f, 10f, 10f, 10f } };
-        var hotel3 = new PostgresHotel { HotelId = 3, HotelName = "Hotel 3", HotelCode = 3, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag2", "tag4"], DescriptionEmbedding = new[] { 20f, 20f, 20f, 20f } };
-        var hotel4 = new PostgresHotel { HotelId = 4, HotelName = "Hotel 4", HotelCode = 4, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag5"], DescriptionEmbedding = new[] { 40f, 40f, 40f, 40f } };
+        var hotel1 = new PostgresHotel<int> { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag2"], DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f } };
+        var hotel2 = new PostgresHotel<int> { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, Tags = ["tag1", "tag3"], DescriptionEmbedding = new[] { 10f, 10f, 10f, 10f } };
+        var hotel3 = new PostgresHotel<int> { HotelId = 3, HotelName = "Hotel 3", HotelCode = 3, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag2", "tag4"], DescriptionEmbedding = new[] { 20f, 20f, 20f, 20f } };
+        var hotel4 = new PostgresHotel<int> { HotelId = 4, HotelName = "Hotel 4", HotelCode = 4, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag5"], DescriptionEmbedding = new[] { 40f, 40f, 40f, 40f } };
 
-        var sut = fixture.GetCollection<int, PostgresHotel>("VectorizedSearchWithEqualToFilter");
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>("VectorizedSearchWithAnyTagEqualToFilter");
 
         await sut.CreateCollectionAsync();
 
@@ -378,19 +396,40 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
     #region private ==================================================================================
 
-    private static VectorStoreRecordDefinition GetVectorStoreRecordDefinition<TKey>() => new()
+    private static VectorStoreRecordDefinition GetVectorStoreRecordDefinition<TKey>(string distanceFunction = DistanceFunction.CosineDistance) => new()
     {
         Properties =
         [
             new VectorStoreRecordKeyProperty("HotelId", typeof(TKey)),
             new VectorStoreRecordDataProperty("HotelName", typeof(string)),
             new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
+            new VectorStoreRecordDataProperty("HotelRating", typeof(float?)),
             new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
-            new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
+            new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+            new VectorStoreRecordDataProperty("ListInts", typeof(List<int>)),
             new VectorStoreRecordDataProperty("Description", typeof(string)),
-            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
+            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = distanceFunction }
         ]
     };
+
+    private dynamic GetCollection(Type idType, string collectionName)
+    {
+        var method = typeof(PostgresVectorStoreFixture).GetMethod("GetCollection");
+        var genericMethod = method!.MakeGenericMethod(idType, typeof(PostgresHotel<>).MakeGenericType(idType));
+        return genericMethod.Invoke(fixture, [collectionName, null])!;
+    }
+
+    private dynamic CreateRecord(Type idType, object key)
+    {
+        var recordType = typeof(PostgresHotel<>).MakeGenericType(idType);
+        dynamic record = Activator.CreateInstance(recordType, key)!;
+        record.HotelName = "Hotel 1";
+        record.HotelCode = 1;
+        record.ParkingIncluded = true;
+        record.HotelRating = 4.5f;
+        record.Tags = new List<string> { "tag1", "tag2" };
+        return record;
+    }
 
     #endregion
 

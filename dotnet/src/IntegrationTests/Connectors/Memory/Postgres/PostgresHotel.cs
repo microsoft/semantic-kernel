@@ -11,11 +11,11 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
 /// <summary>
 /// A test model for the postgres vector store.
 /// </summary>
-public record PostgresHotel()
+public record PostgresHotel<T>()
 {
     /// <summary>The key of the record.</summary>
     [VectorStoreRecordKey]
-    public int HotelId { get; init; }
+    public T HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
     [VectorStoreRecordData()]
@@ -46,6 +46,11 @@ public record PostgresHotel()
     /// <summary>A vector field.</summary>
     [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance, IndexKind: IndexKind.Hnsw)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
+
+    public PostgresHotel(T key) : this()
+    {
+        this.HotelId = key;
+    }
 }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
