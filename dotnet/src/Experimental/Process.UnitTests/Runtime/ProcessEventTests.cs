@@ -45,6 +45,6 @@ public class ProcessEventTests
 
         // Assert
         Assert.NotNull(copy1);
-        Assert.Equal(source, copy1); // record type evalutes logical equality
+        Assert.Equal(source, copy1); // record type evaluates logical equality
     }
 }
