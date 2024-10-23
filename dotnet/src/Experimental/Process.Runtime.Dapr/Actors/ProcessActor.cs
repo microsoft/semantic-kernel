@@ -208,7 +208,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// When the process is used as a step within another process, this method will be called
     /// rather than ToKernelProcessAsync when extracting the state.
     /// </summary>
-    /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
+    /// <returns>A <see cref="Task{DaprStepInfo}"/></returns>
     public override async Task<DaprStepInfo> ToDaprStepInfoAsync()
     {
         return await this.ToDaprProcessInfoAsync().ConfigureAwait(false);
@@ -237,8 +237,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// entire sub-process should be executed within a single superstep.
     /// </summary>
     /// <param name="message">The message to process.</param>
-    /// <returns>A <see cref="Task"/></returns>
-    /// <exception cref="KernelException"></exception>
     internal override async Task HandleMessageAsync(DaprMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.TargetEventId))
@@ -268,8 +266,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <summary>
     /// Initializes this process as a step within another process.
     /// </summary>
-    /// <returns>A <see cref="ValueTask"/></returns>
-    /// <exception cref="KernelException"></exception>
     protected override ValueTask ActivateStepAsync()
     {
         // The process does not need any further initialization as it's already been initialized.
