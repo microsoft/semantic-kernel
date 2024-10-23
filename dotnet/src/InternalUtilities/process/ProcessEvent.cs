@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Runtime.Serialization;
 
 namespace Microsoft.SemanticKernel.Process.Runtime;
 
@@ -7,7 +8,10 @@ namespace Microsoft.SemanticKernel.Process.Runtime;
 /// </summary>
 /// <param name="Namespace">The namespace of the event.</param>
 /// <param name="InnerEvent">The instance of <see cref="KernelProcessEvent"/> that this <see cref="ProcessEvent"/> came from.</param>
-public record ProcessEvent(string? Namespace, KernelProcessEvent InnerEvent)
+[DataContract]
+public record ProcessEvent(
+    [property: DataMember] string? Namespace,
+    [property: DataMember] KernelProcessEvent InnerEvent)
 {
     /// <summary>
     /// The Id of the event.
