@@ -61,6 +61,11 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine($"Response: {response}");
+
+        var citations = GetCitations(chatMessage);
+
+        OutputCitations(citations);
+
         Console.WriteLine();
 
         // Chat history maintenance
@@ -78,6 +83,10 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         {
             Console.Write(word);
         }
+
+        citations = GetCitations(chatMessage);
+
+        OutputCitations(citations);
 
         Console.WriteLine(Environment.NewLine);
     }
@@ -137,5 +146,34 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
             IndexName = TestConfiguration.AzureAISearch.IndexName
         };
     }
+
+    /// <summary>
+    /// Returns a collection of <see cref="ChatCitation"/>.
+    /// </summary>
+    private static IReadOnlyList<ChatCitation> GetCitations(ChatMessageContent chatMessageContent)
+    {
+        var message = chatMessageContent.InnerContent as OpenAI.Chat.ChatCompletion;
+        var messageContext = message.GetMessageContext();
+
+        return messageContext.Citations;
+    }
+
+    /// <summary>
+    /// Outputs a collection of <see cref="ChatCitation"/>.
+    /// </summary>
+    private void OutputCitations(IReadOnlyList<ChatCitation> citations)
+    {
+        Console.WriteLine("Citations:");
+
+        foreach (var citation in citations)
+        {
+            Console.WriteLine($"Chunk ID: {citation.ChunkId}");
+            Console.WriteLine($"Title: {citation.Title}");
+            Console.WriteLine($"File path: {citation.FilePath}");
+            Console.WriteLine($"URI: {citation.Uri}");
+            Console.WriteLine($"Content: {citation.Content}");
+        }
+    }
+
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 }
