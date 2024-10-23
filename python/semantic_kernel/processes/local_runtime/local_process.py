@@ -199,6 +199,10 @@ class LocalProcess(LocalStep):
         steps = await asyncio.gather(*step_tasks)
         return KernelProcess(state=process_state, steps=steps, edges=self.output_edges)
 
+    async def to_kernel_process_step_info(self) -> "KernelProcessStepInfo":
+        """Extracts the current state of the step and returns it as a KernelProcessStepInfo."""
+        return await self.to_kernel_process()
+
     def enqueue_external_messages(self, message_channel: Queue[LocalMessage]):
         """Processes external events that have been sent to the process."""
         while not self.external_event_queue.empty():

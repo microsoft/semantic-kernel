@@ -9,6 +9,7 @@ from pydantic import Field
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.functions import kernel_function
+from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEventVisibility
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
@@ -58,12 +59,12 @@ class RepeatStep(KernelProcessStep[StepState]):
         self.state.last_message = output
         print(f"[REPEAT] {output}")
 
-        await context.emit_event(
+        context.emit_event(
             process_event=KernelProcessEvent(
                 id=ProcessEvents.OutputReadyPublic.value, data=output, visibility=KernelProcessEventVisibility.Public
             )
         )
-        await context.emit_event(
+        context.emit_event(
             process_event=KernelProcessEvent(
                 id=ProcessEvents.OutputReadyInternal.value,
                 data=output,
@@ -109,8 +110,10 @@ async def nested_process():
     process_handle = await process.start(kernel=kernel, initial_event=ProcessEvents.StartProcess.value, data=test_input)
     process_info = await process_handle.get_state()
 
+    inner_process: KernelProcess = next((s for s in process_info.steps if s.state.name == "Inner"), None)
+
     repeat_step_state: KernelProcessStepState[StepState] = next(
-        (s.state for s in process_info.steps if s.state.name == "RepeatStep"), None
+        (s.state for s in inner_process.steps if s.state.name == "RepeatStep"), None
     )
     assert repeat_step_state.state  # nosec
     assert repeat_step_state.state.last_message == "Test Test Test Test"  # nosec
