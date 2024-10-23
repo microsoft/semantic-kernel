@@ -11,6 +11,8 @@ from semantic_kernel.data.vector_store import VectorStore
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from tests.integration.memory.vector_stores.data_records import (
     PANDAS_RECORD_DEFINITION,
+    RAW_RECORD_ARRAY,
+    RAW_RECORD_LIST,
     TestDataModelArray,
     TestDataModelList,
 )
@@ -25,7 +27,7 @@ class TestVectorStore(VectorStoreTestBase):
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
-        "store_id, collection_name, collection_options, data_model_type, data_model_definition",
+        "store_id, collection_name, collection_options, data_model_type, data_model_definition, record",
         [
             # region Redis
             pytest.param(
@@ -34,6 +36,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {"collection_type": RedisCollectionTypes.JSON},
                 TestDataModelArray,
                 None,
+                RAW_RECORD_ARRAY,
                 id="redis_json_array_data_model",
             ),
             pytest.param(
@@ -42,6 +45,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {"collection_type": RedisCollectionTypes.JSON},
                 TestDataModelList,
                 None,
+                RAW_RECORD_LIST,
                 id="redis_json_list_data_model",
             ),
             pytest.param(
@@ -50,6 +54,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {"collection_type": RedisCollectionTypes.JSON},
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION,
+                RAW_RECORD_LIST,
                 id="redis_json_pandas_data_model",
             ),
             pytest.param(
@@ -58,6 +63,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {"collection_type": RedisCollectionTypes.HASHSET},
                 TestDataModelArray,
                 None,
+                RAW_RECORD_ARRAY,
                 id="redis_hashset_array_data_model",
             ),
             pytest.param(
@@ -66,6 +72,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {"collection_type": RedisCollectionTypes.HASHSET},
                 TestDataModelList,
                 None,
+                RAW_RECORD_LIST,
                 id="redis_hashset_list_data_model",
             ),
             pytest.param(
@@ -74,6 +81,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {"collection_type": RedisCollectionTypes.HASHSET},
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION,
+                RAW_RECORD_LIST,
                 id="redis_hashset_pandas_data_model",
             ),
             # endregion
@@ -84,6 +92,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelArray,
                 None,
+                RAW_RECORD_ARRAY,
                 id="azure_ai_search_array_data_model",
             ),
             pytest.param(
@@ -92,6 +101,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelList,
                 None,
+                RAW_RECORD_LIST,
                 id="azure_ai_search_list_data_model",
             ),
             pytest.param(
@@ -100,6 +110,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION,
+                RAW_RECORD_LIST,
                 id="azure_ai_search_pandas_data_model",
             ),
             # endregion
@@ -110,6 +121,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelArray,
                 None,
+                RAW_RECORD_ARRAY,
                 id="qdrant_array_data_model",
             ),
             pytest.param(
@@ -118,6 +130,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelList,
                 None,
+                RAW_RECORD_LIST,
                 id="qdrant_list_data_model",
             ),
             pytest.param(
@@ -126,6 +139,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION,
+                RAW_RECORD_LIST,
                 id="qdrant_pandas_data_model",
             ),
             pytest.param(
@@ -134,6 +148,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelArray,
                 None,
+                RAW_RECORD_ARRAY,
                 id="qdrant_in_memory_array_data_model",
             ),
             pytest.param(
@@ -142,6 +157,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelList,
                 None,
+                RAW_RECORD_LIST,
                 id="qdrant_in_memory_list_data_model",
             ),
             pytest.param(
@@ -150,6 +166,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION,
+                RAW_RECORD_LIST,
                 id="qdrant_in_memory_pandas_data_model",
             ),
             pytest.param(
@@ -158,6 +175,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {"prefer_grpc": True},
                 TestDataModelArray,
                 None,
+                RAW_RECORD_ARRAY,
                 id="qdrant_grpc_array_data_model",
             ),
             pytest.param(
@@ -166,6 +184,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {"prefer_grpc": True},
                 TestDataModelList,
                 None,
+                RAW_RECORD_LIST,
                 id="qdrant_grpc_list_data_model",
             ),
             pytest.param(
@@ -174,6 +193,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {"prefer_grpc": True},
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION,
+                RAW_RECORD_LIST,
                 id="qdrant_grpc_pandas_data_model",
             ),
             # endregion
@@ -184,6 +204,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelArray,
                 None,
+                RAW_RECORD_ARRAY,
                 id="weaviate_local_array_data_model",
             ),
             pytest.param(
@@ -192,6 +213,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelList,
                 None,
+                RAW_RECORD_LIST,
                 id="weaviate_local_list_data_model",
             ),
             pytest.param(
@@ -200,6 +222,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION,
+                RAW_RECORD_LIST,
                 id="weaviate_local_pandas_data_model",
             ),
             pytest.param(
@@ -208,6 +231,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelArray,
                 None,
+                RAW_RECORD_ARRAY,
                 id="weaviate_embedded_array_data_model",
                 marks=[
                     pytest.mark.skipif(
@@ -223,6 +247,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 TestDataModelList,
                 None,
+                RAW_RECORD_LIST,
                 id="weaviate_embedded_list_data_model",
                 marks=[
                     pytest.mark.skipif(
@@ -238,6 +263,7 @@ class TestVectorStore(VectorStoreTestBase):
                 {},
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION,
+                RAW_RECORD_LIST,
                 id="weaviate_embedded_pandas_data_model",
                 marks=[
                     pytest.mark.skipif(
@@ -258,7 +284,7 @@ class TestVectorStore(VectorStoreTestBase):
         collection_options: dict[str, Any],
         data_model_type: type,
         data_model_definition: VectorStoreRecordDefinition | None,
-        record,
+        record: dict[str, Any],
     ):
         vector_store = stores[store_id]
         collection = vector_store.get_collection(
@@ -270,17 +296,17 @@ class TestVectorStore(VectorStoreTestBase):
         except Exception as exc:
             pytest.fail(f"Failed to create collection: {exc}")
 
-        gt_record = record()
-
         # Upsert record
-        await collection.upsert(data_model_type(**record()))
+        await collection.upsert(
+            data_model_type([record]) if data_model_type == pd.DataFrame else data_model_type(**record)
+        )
         # Get record
-        result = await collection.get(gt_record["id"])
+        result = await collection.get(record["id"])
         assert result is not None
         # Delete record
-        await collection.delete(gt_record["id"])
+        await collection.delete(record["id"])
         # Get record again, expect None
-        result = await collection.get(gt_record["id"])
+        result = await collection.get(record["id"])
         assert result is None
 
         try:

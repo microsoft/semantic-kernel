@@ -45,7 +45,9 @@ from tests.integration.test_utils import is_service_setup_for_testing, retry
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
-onnx_setup: bool = is_service_setup_for_testing(["ONNX_GEN_AI_TEXT_MODEL_FOLDER"])
+onnx_setup: bool = is_service_setup_for_testing(
+    ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
+)  # Tests are optional for ONNX
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:

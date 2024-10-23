@@ -67,11 +67,15 @@ else:
 # 1. OpenAI and Azure OpenAI services are always setup for testing.
 # 2. Bedrock services don't use API keys and model providers are tested individually,
 #    so no environment variables are required.
-mistral_ai_setup: bool = is_service_setup_for_testing(["MISTRALAI_API_KEY", "MISTRALAI_CHAT_MODEL_ID"])
+mistral_ai_setup: bool = is_service_setup_for_testing(
+    ["MISTRALAI_API_KEY", "MISTRALAI_CHAT_MODEL_ID"], raise_if_not_set=False
+)  # We don't have a MistralAI deployment
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"])
-onnx_setup: bool = is_service_setup_for_testing(["ONNX_GEN_AI_CHAT_MODEL_FOLDER"])
+onnx_setup: bool = is_service_setup_for_testing(
+    ["ONNX_GEN_AI_CHAT_MODEL_FOLDER"], raise_if_not_set=False
+)  # Tests are optional for ONNX
 anthropic_setup: bool = is_service_setup_for_testing(["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"])
 
 skip_on_mac_available = platform.system() == "Darwin"

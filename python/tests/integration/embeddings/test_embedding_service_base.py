@@ -44,10 +44,9 @@ from tests.integration.test_utils import is_service_setup_for_testing
 # 2. The current Hugging Face service don't require any environment variables.
 # 3. Bedrock services don't use API keys and model providers are tested individually,
 #    so no environment variables are required.
-mistral_ai_setup: bool = is_service_setup_for_testing([
-    "MISSING_MISTRALAI_API_KEY",
-    "MISSING_MISTRALAI_EMBEDDING_MODEL_ID",
-])
+mistral_ai_setup: bool = is_service_setup_for_testing(
+    ["MISTRALAI_API_KEY", "MISTRALAI_EMBEDDING_MODEL_ID"], raise_if_not_set=False
+)  # We don't have a MistralAI deployment
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_EMBEDDING_MODEL_ID"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_EMBEDDING_MODEL_ID"])
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_EMBEDDING_MODEL_ID"])
