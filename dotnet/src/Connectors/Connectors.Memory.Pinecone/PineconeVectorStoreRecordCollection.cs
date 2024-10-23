@@ -68,13 +68,20 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 SupportsMultipleVectors = false,
             });
 
-        if (this._options.VectorCustomMapper is null)
+        if (this._options.VectorCustomMapper is not null)
         {
-            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._propertyReader);
+            // Custom Mapper.
+            this._mapper = this._options.VectorCustomMapper;
+        }
+        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+        {
+            // Generic data model mapper.
+            this._mapper = (new PineconeGenericDataModelMapper(this._propertyReader) as IVectorStoreRecordMapper<TRecord, Sdk.Vector>)!;
         }
         else
         {
-            this._mapper = this._options.VectorCustomMapper;
+            // Default Mapper.
+            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._propertyReader);
         }
     }
 

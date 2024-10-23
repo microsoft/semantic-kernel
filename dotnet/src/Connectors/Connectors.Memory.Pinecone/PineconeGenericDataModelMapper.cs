@@ -89,7 +89,7 @@ internal sealed class PineconeGenericDataModelMapper : IVectorStoreRecordMapper<
                 var propertyStorageName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
                 if (storageModel.Metadata.TryGetValue(propertyStorageName, out var propertyValue))
                 {
-                    dataModel.Data[propertyStorageName] = PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType(
+                    dataModel.Data[dataProperty.DataModelPropertyName] = PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType(
                         propertyValue,
                         dataProperty.PropertyType);
                 }

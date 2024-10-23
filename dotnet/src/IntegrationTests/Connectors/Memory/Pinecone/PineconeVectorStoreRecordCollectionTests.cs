@@ -312,6 +312,55 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
     }
 
     [PineconeFact]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    {
+        var merryYacht = new VectorStoreGenericDataModel<string>("merry-yacht")
+        {
+            Data =
+            {
+                ["HotelName"] = "Merry Yacht Hotel",
+                ["Description"] = "Stay afloat at the Merry Yacht Hotel",
+                ["HotelCode"] = 101,
+                ["HotelRating"] = 4.2f,
+                ["ParkingIncluded"] = true,
+                ["Tags"] = new[] { "wi-fi", "breakfast", "gym" }
+            },
+            Vectors =
+            {
+                ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f])
+            }
+        };
+
+        var stats = await this.Fixture.Index.DescribeStats();
+        var vectorCountBefore = stats.TotalVectorCount;
+
+        var hotelRecordCollection = this.Fixture.HotelRecordCollectionWithGenericDataModel;
+
+        // insert
+        await hotelRecordCollection.UpsertAsync(merryYacht);
+
+        vectorCountBefore = await this.Fixture.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: 1);
+
+        var inserted = await hotelRecordCollection.GetAsync("merry-yacht", new GetRecordOptions { IncludeVectors = true });
+
+        Assert.NotNull(inserted);
+        Assert.Equal(merryYacht.Data["HotelName"], inserted.Data["HotelName"]);
+        Assert.Equal(merryYacht.Data["Description"], inserted.Data["Description"]);
+        Assert.Equal(merryYacht.Data["HotelCode"], inserted.Data["HotelCode"]);
+        Assert.Equal(merryYacht.Data["HotelRating"], inserted.Data["HotelRating"]);
+        Assert.Equal(merryYacht.Data["ParkingIncluded"], inserted.Data["ParkingIncluded"]);
+        Assert.Equal(merryYacht.Data["Tags"], inserted.Data["Tags"]);
+        Assert.Equal(
+            ((ReadOnlyMemory<float>)merryYacht.Vectors["DescriptionEmbedding"]!).ToArray(),
+            ((ReadOnlyMemory<float>)inserted.Vectors["DescriptionEmbedding"]!).ToArray());
+
+        // delete
+        await hotelRecordCollection.DeleteAsync("merry-yacht");
+
+        await this.Fixture.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: -1);
+    }
+
+    [PineconeFact]
     public async Task UseCollectionExistsOnNonExistingStoreReturnsFalseAsync()
     {
         var incorrectRecordStore = new PineconeVectorStoreRecordCollection<PineconeHotel>(
