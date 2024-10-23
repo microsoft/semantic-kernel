@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapr.Actors.Runtime;
+using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
 
@@ -12,8 +13,8 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class MessageBufferActor : Actor, IMessageBuffer
 {
-    private const string EventQueueState = "DaprMessageBufferState";
-    private Queue<DaprMessage>? _queue = new();
+    private const string EventQueueState = "ProcessMessageBufferState";
+    private Queue<ProcessMessage>? _queue = new();
 
     /// <summary>
     /// Required constructor for Dapr Actor.
@@ -26,8 +27,8 @@ internal class MessageBufferActor : Actor, IMessageBuffer
     /// <summary>
     /// Dequeues an event.
     /// </summary>
-    /// <returns>A <see cref="List{T}"/> where T is <see cref="DaprEvent"/></returns>
-    public async Task<List<DaprMessage>> DequeueAllAsync()
+    /// <returns>A <see cref="List{T}"/> where T is <see cref="ProcessEvent"/></returns>
+    public async Task<List<ProcessMessage>> DequeueAllAsync()
     {
         // Dequeue and clear the queue.
         var items = this._queue!.ToList();
@@ -40,7 +41,7 @@ internal class MessageBufferActor : Actor, IMessageBuffer
         return items;
     }
 
-    public async Task EnqueueAsync(DaprMessage message)
+    public async Task EnqueueAsync(ProcessMessage message)
     {
         this._queue!.Enqueue(message);
 
@@ -55,14 +56,14 @@ internal class MessageBufferActor : Actor, IMessageBuffer
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var eventQueueState = await this.StateManager.TryGetStateAsync<Queue<DaprMessage>>(EventQueueState).ConfigureAwait(false);
+        var eventQueueState = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(EventQueueState).ConfigureAwait(false);
         if (eventQueueState.HasValue)
         {
             this._queue = eventQueueState.Value;
         }
         else
         {
-            this._queue = new Queue<DaprMessage>();
+            this._queue = new Queue<ProcessMessage>();
         }
     }
 }
