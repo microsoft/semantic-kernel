@@ -373,11 +373,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.InMemory.UnitTes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStartedWithTextSearch", "samples\GettingStartedWithTextSearch\GettingStartedWithTextSearch.csproj", "{16AFA226-E417-490D-9311-9F2099A1EEC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorStoreRAG", "samples\Demos\VectorStoreRAG\VectorStoreRAG.csproj", "{28DFAF27-8FF3-4373-AAA4-2A6969C86246}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VectorStoreRAG", "samples\Demos\VectorStoreRAG\VectorStoreRAG.csproj", "{28DFAF27-8FF3-4373-AAA4-2A6969C86246}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.Runtime.Dapr", "src\Experimental\Process.Runtime.Dapr\Process.Runtime.Dapr.csproj", "{9D5B4B53-0E97-42D9-B37E-CD263B6A1892}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessWithDapr", "samples\Demos\ProcessWithDapr\ProcessWithDapr.csproj", "{95163AA2-1ED5-412A-990B-C40B81934BFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessWithDapr", "samples\Demos\ProcessWithDapr\ProcessWithDapr.csproj", "{95163AA2-1ED5-412A-990B-C40B81934BFD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "process", "process", "{9636CD39-808C-40DA-A2B3-4169E5F09ADA}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\process\RuntimeUtilities.props = src\InternalUtilities\process\RuntimeUtilities.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1129,6 +1134,7 @@ Global
 		{28DFAF27-8FF3-4373-AAA4-2A6969C86246} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{9D5B4B53-0E97-42D9-B37E-CD263B6A1892} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{95163AA2-1ED5-412A-990B-C40B81934BFD} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
+		{9636CD39-808C-40DA-A2B3-4169E5F09ADA} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

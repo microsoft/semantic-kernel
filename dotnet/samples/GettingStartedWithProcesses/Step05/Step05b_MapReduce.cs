@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections;
+using System.Text;
 using Microsoft.SemanticKernel;
 
 namespace Step05;
@@ -97,7 +98,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             .OnInputEvent("Init")
             .SendEventTo(new ProcessFunctionTargetBuilder(initStep));
 
-        var mapStep = process.AddMapFromType<BasicDiscreteStep>("Start", "Complete");
+        var mapStep = process.AddMapFromType<BasicDiscreteStep>("Complete"); // %%% COULD HAVE MULTIPLE EVENTS / RUNTIME LISTENS TO ALL EVENTS
 
         initStep
             .OnEvent("Start")
@@ -105,7 +106,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var unionStep = process.AddStepFromType<UnionStep>();
         mapStep
-            .OnEvent("Complete")
+            .OnEvent("Complete22")
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
 
         var resultStep = process.AddStepFromType<ResultStep>();
@@ -132,7 +133,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             .OnInputEvent("Start")
             .SendEventTo(new ProcessFunctionTargetBuilder(discreteStep, "DiscreteSubprocess"));
 
-        var mapStep = process.AddMapFromProcess(subProcess, "Start", "Complete");
+        var mapStep = process.AddMapFromProcess(subProcess, "Complete");
 
         initStep
             .OnEvent("Start")
@@ -155,7 +156,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
     {
         ProcessBuilder process = new(processName);
 
-        var mapStep = process.AddMapFromType<BasicDiscreteStep>("Start", "Complete");
+        var mapStep = process.AddMapFromType<BasicDiscreteStep>("Complete");
 
         process
             .OnInputEvent("Start")
@@ -185,7 +186,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var mapStep =
             process
-                .AddMapFromType<DiscreteStep>("Start", "Complete") // %%% TODO - Process
+                .AddMapFromType<DiscreteStep>("Complete")
                 .ForTarget("DiscreteCompute");
 
         initStep
@@ -216,7 +217,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var mapStep =
             process
-                .AddMapFromType<DiscreteStep>("Start", "Complete") // %%% TODO - Process
+                .AddMapFromType<DiscreteStep>("Complete")
                 .ForTarget("DiscreteTransform");
 
         initStep
@@ -303,7 +304,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
         [KernelFunction("ProcessInit")]
         public async ValueTask InitAsync(KernelProcessStepContext context, object values)
         {
-            System.Console.WriteLine($"PROCESS INPUT: {string.Join(", ", values)}");
+            System.Console.WriteLine($"PROCESS INPUT: {FormatList(", ", values)}");
             await context.EmitEventAsync(new() { Id = "Start", Data = values });
         }
     }
@@ -316,7 +317,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             System.Console.WriteLine($"DISCRETE INPUT: {value}");
             long square = value * value;
             System.Console.WriteLine($"DISCRETE OUTPUT: {square}");
-            await context.EmitEventAsync(new() { Id = "Complete", Data = square });
+            await context.EmitEventAsync(new() { Id = "Complete22", Data = square });
         }
     }
 
@@ -344,9 +345,9 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
         public async ValueTask ComputeVisibleAsync(KernelProcessStepContext context, long value)
         {
             System.Console.WriteLine($"DISCRETE INPUT: {value}");
-            string transform = $"#{value}";
-            System.Console.WriteLine($"DISCRETE OUTPUT: {transform}");
-            await context.EmitEventAsync(new() { Id = "Complete", Data = transform, Visibility = KernelProcessEventVisibility.Public }); // %%% VISIBILITY ???
+            long square = value * value;
+            System.Console.WriteLine($"DISCRETE OUTPUT: {square}");
+            await context.EmitEventAsync(new() { Id = "Complete", Data = square, Visibility = KernelProcessEventVisibility.Public }); // %%% VALIDATE WITH SUBPROCESS
         }
 
         [KernelFunction("DiscreteNoise")]
@@ -406,7 +407,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
         public async ValueTask TransformAsync(KernelProcessStepContext context, IList<string> values)
         {
             System.Console.WriteLine($"UNION INPUT: {string.Join(", ", values)}");
-            string list = string.Join(",", values);
+            string list = string.Join("/", values);
             System.Console.WriteLine($"UNION OUTPUT: {list}");
             await context.EmitEventAsync(new() { Id = "Complete", Data = list });
         }
@@ -420,5 +421,22 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             System.Console.WriteLine($"RESULT INPUT: {value}");
         }
     }
+
+    private static string FormatList(string separator, object values)
+    {
+        if (values is not IEnumerable enumerable)
+        {
+            return $"{values}";
+        }
+
+        StringBuilder builder = new();
+        foreach (object value in enumerable)
+        {
+            builder.Append(value);
+            builder.Append(separator);
+        }
+        builder.Length -= separator.Length;
+
+        return builder.ToString();
+    }
 }
-;

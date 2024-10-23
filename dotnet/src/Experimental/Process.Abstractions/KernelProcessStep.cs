@@ -25,6 +25,6 @@ public class KernelProcessStep<TState> : KernelProcessStep where TState : class,
     /// <inheritdoc/>
     public virtual ValueTask ActivateAsync(KernelProcessStepState<TState> state)
     {
-        return default;
+        return base.ActivateAsync(state);
     }
 }

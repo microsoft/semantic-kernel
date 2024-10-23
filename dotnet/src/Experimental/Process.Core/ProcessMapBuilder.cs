@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.SemanticKernel; // %%% BEN: NEGATIVE VALUE IN SEPARATION FROM ABSTRACTIONS _also_ NAMESPACE
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides functionality to define a step that maps an enumerable input for parallel processing
@@ -14,30 +14,26 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
 {
     private readonly ProcessStepBuilder _transformStep;
 
+    private ProcessStepBuilder? _mapOperation;
+
     private string? _targetFunction;
     private string? _targetParameter;
     private ProcessBuilder? _mapProcess;
+    private readonly List<string> _proxyEvents = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessMapBuilder"/> class.
     /// </summary>
     /// <param name="transformStep">The step or process that defines the map operation.</param>
-    /// <param name="startEventId">The event that singles the map operation.</param>
     /// <param name="completeEventId">The event that signals the completion of "transformStep".</param>
-    internal ProcessMapBuilder(ProcessStepBuilder transformStep, string startEventId, string completeEventId)
+    internal ProcessMapBuilder(ProcessStepBuilder transformStep, string completeEventId)
         : base($"Map{transformStep.Name}")
     {
         this._transformStep = transformStep;
-        this.StartEventId = startEventId;
         this.CompleteEventId = completeEventId;
     }
 
     #region Public Interface
-
-    /// <summary>
-    /// The event that singles the map operation.
-    /// </summary>
-    public string StartEventId { get; }
 
     /// <summary>
     /// The event that signals the completion of map operation.
@@ -52,7 +48,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     /// <remarks>
     /// No impact when transform step is sub-process.
     /// </remarks>
-    public ProcessMapBuilder ForTarget(string functionName, string? parameterName = null) // %%% BEN: REVIEW NAME
+    public ProcessMapBuilder ForTarget(string functionName, string? parameterName = null)
     {
         this._targetFunction = functionName;
         this._targetParameter = parameterName;
@@ -75,7 +71,10 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     internal override void LinkTo(string eventId, ProcessStepEdgeBuilder edgeBuilder)
     {
         // Proxy edge to the map operation.
-        this.MapProcess.LinkTo(eventId, edgeBuilder);
+        //this.MapProcess.LinkTo(eventId, edgeBuilder);
+        string rawEventId = eventId.Split('.').Last(); // %%% RAW
+        this._proxyEvents.Add(rawEventId);
+        base.LinkTo(eventId, edgeBuilder);
     }
 
     /// <inheritdoc/>
@@ -94,15 +93,34 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         {
             throw new KernelException("The target function must have a parameter name.");
         }
-        KernelProcess map = this.BuildMapProcess();
-        KernelProcessMapState state = new(this.Name, this.MapProcess.Id);
-        return new KernelProcessMap(state, map, this.CompleteEventId, this.TargetFunction.ParameterName!);
+
+        // Build the edges first
+        //var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
+        //Console.WriteLine($"\tMAP BUILDER: {this.Id}");
+        //Console.WriteLine($"\tMAP PROCESS: {this.MapProcess.Id}");
+        var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
+        //Console.WriteLine($"\tMAP EDGE KEY: {builtEdges.First().Key} {builtEdges.First().Value.First().OutputTarget.TargetEventId}");
+        //Console.WriteLine($"\tMAP SOURCE STEP: {builtEdges.First().Value.First().SourceStepId}");
+        //Console.WriteLine($"\tMAP STEP ID: {builtEdges.First().Value.First().OutputTarget.StepId}");
+        //Console.WriteLine($"\tMAP TARGET ID: {builtEdges.First().Value.First().OutputTarget.TargetEventId}");
+        //Console.WriteLine($"\tMAP TARGET ID: {builtEdges.First().Value.First().OutputTarget.TargetEventId}");
+        var mapEdges = builtEdges.ToDictionary(kvp => kvp.Key.Replace(this.Id!, this.MapProcess.Id), kvp => kvp.Value.Select(e => new KernelProcessEdge(this.MapProcess.Id!, e.OutputTarget)).ToList());
+
+        ProcessBuilder mapProcess = this.MapProcess;
+        var captureStep = mapProcess.AddStepFromType<MapResultStep>();
+        string completeEvent = this._proxyEvents.Single();// %%% HACK
+        this._mapOperation! // %%% NULLABLE
+            .OnEvent(completeEvent) // %%% HACK
+            .SendEventTo(new ProcessFunctionTargetBuilder(captureStep));
+
+        KernelProcessMapState state = new(this.Name, mapProcess.Id);
+        return new KernelProcessMap(state, mapProcess.Build(), completeEvent, this.TargetFunction.ParameterName!, mapEdges);
     }
 
     /// <summary>
     /// Provides the entry-point to the map operation.
     /// </summary>
-    internal ProcessFunctionTargetBuilder TargetFunction => this.MapProcess.WhereInputEventIs(this.StartEventId);
+    internal ProcessFunctionTargetBuilder TargetFunction => this.MapProcess.WhereInputEventIs(KernelProcessMap.MapEventId);
 
     /// <summary>
     /// Safe accessor for the map operation (ensures not-null).
@@ -127,16 +145,14 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         // Build the steps
         ProcessBuilder transformBuilder = new($"One{this._transformStep.Name}");
 
-        var captureStep = transformBuilder.AddStepFromType<MapResultStep>();
-
         ProcessStepBuilder transformStep;
         if (this._transformStep is ProcessBuilder builder)
         {
             // If external step is process, initialize appropriately
             var transformProcess = transformBuilder.AddStepFromProcess(builder);
             transformBuilder
-                .OnInputEvent(this.StartEventId)
-                .SendEventTo(transformProcess.WhereInputEventIs(this.StartEventId));
+                .OnInputEvent(KernelProcessMap.MapEventId)
+                .SendEventTo(transformProcess.WhereInputEventIs("BROKE")); // %%% VALIDATE WITH SUBPROCESS - FUNCTION TARGET
             transformStep = transformProcess;
         }
         else
@@ -145,13 +161,15 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
             transformStep = this._transformStep;
             transformBuilder.AddStepFromBuilder(transformStep);
             transformBuilder
-                .OnInputEvent(this.StartEventId)
+                .OnInputEvent(KernelProcessMap.MapEventId)
                 .SendEventTo(new ProcessFunctionTargetBuilder(transformStep, this._targetFunction, this._targetParameter));
         }
 
-        transformStep
-            .OnEvent(this.CompleteEventId)
-            .SendEventTo(new ProcessFunctionTargetBuilder(captureStep));
+        this._mapOperation = transformStep;
+        //var captureStep = transformBuilder.AddStepFromType<MapResultStep>();
+        //transformStep // %%% DEFER TO FINAL BUILD
+        //    .OnEvent(this.CompleteEventId)
+        //    .SendEventTo(new ProcessFunctionTargetBuilder(captureStep));
 
         return transformBuilder;
     }

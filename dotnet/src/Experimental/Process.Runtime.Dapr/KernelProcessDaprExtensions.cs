@@ -16,10 +16,11 @@ public static class KernelProcessDaprExtensions
     public static void AddProcessActors(this ActorRuntimeOptions actorOptions)
     {
         // Register actor types and configure actor settings
-        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.ProcessActor>();
-        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.StepActor>();
-        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.EventBufferActor>();
-        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.MessageBufferActor>();
-        actorOptions.Actors.RegisterActor<Microsoft.SemanticKernel.ExternalEventBufferActor>();
+        actorOptions.Actors.RegisterActor<ProcessActor>();
+        actorOptions.Actors.RegisterActor<StepActor>();
+        actorOptions.Actors.RegisterActor<MapActor>();
+        actorOptions.Actors.RegisterActor<EventBufferActor>();
+        actorOptions.Actors.RegisterActor<MessageBufferActor>();
+        actorOptions.Actors.RegisterActor<ExternalEventBufferActor>();
     }
 }

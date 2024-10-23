@@ -76,7 +76,8 @@ public sealed class ProcessStepEdgeBuilder
             throw new InvalidOperationException("An output target has already been set.");
         }
 
-        this.Target = target.TargetFunction;
+        //this.Target = new ProcessFunctionTargetBuilder(target); // %%% REVISIT
+        this.Target = target.TargetFunction; // %%% PRAY ???
         this.Source.LinkTo(this.EventId, this);
 
         return new ProcessStepEdgeBuilder(this.Source, this.EventId);

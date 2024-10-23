@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
@@ -38,6 +39,8 @@ internal sealed class MapResultStep : KernelProcessStep<MapResultState>
     public void Compute(object value)
     {
         this._capture ??= new();
+
+        Console.WriteLine($"CAPTURE: {value}");
 
         this._capture.Value = value;
     }

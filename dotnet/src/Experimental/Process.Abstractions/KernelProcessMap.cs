@@ -1,4 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
+using System.Collections.Generic;
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -6,6 +9,11 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed record KernelProcessMap : KernelProcessStepInfo
 {
+    /// <summary>
+    /// Event Id used internally to initiate the map operation.
+    /// </summary>
+    public const string MapEventId = "Map";
+
     /// <summary>
     /// The discrete map operation.
     /// </summary>
@@ -28,11 +36,14 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
     /// <param name="step">The discrete map operation.</param>
     /// <param name="completeEventId">The event that signals the completion of the map operation.</param>
     /// <param name="inputParameter">name of the input parameter for the map operation.</param>
-    public KernelProcessMap(KernelProcessMapState state, KernelProcess step/*, string startEventId*/, string completeEventId, string inputParameter)
-        : base(typeof(KernelProcessMap), state, [])
+    /// <param name="edges">// %%% COMMENT</param>
+    public KernelProcessMap(KernelProcessMapState state, KernelProcess step, string completeEventId, string inputParameter, Dictionary<string, List<KernelProcessEdge>> edges)
+        : base(typeof(KernelProcessMap), state, edges)
     {
         Verify.NotNull(step);
         Verify.NotNullOrWhiteSpace(state.Name);
+
+        //Console.WriteLine($"\nPROCESS MAP: {state.Id}");
 
         this.MapStep = step;
         this.CompleteEventId = completeEventId;

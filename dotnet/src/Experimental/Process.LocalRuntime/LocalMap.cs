@@ -2,10 +2,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
 
@@ -26,45 +26,29 @@ internal sealed class LocalMap : LocalStep
     {
         Verify.NotNull(map.MapStep);
 
-        Console.WriteLine($"LOCAL MAP: [{map.MapStep.Steps.Count}] {string.Join(",", map.MapStep.Steps.Select(s => s.InnerStepType.Name))} - {this.Id} [{parentProcessId ?? "-"}]");
+        //Console.WriteLine($"\tLOCAL MAP: {map.State.Id}");
 
         this._map = map;
-        this._logger = this.LoggerFactory?.CreateLogger(this.Name) ?? new NullLogger<LocalMap>();
+        this._logger = this.LoggerFactory?.CreateLogger<LocalMap>() ?? new NullLogger<LocalMap>();
     }
 
     /// <inheritdoc/>
-    internal override async Task HandleMessageAsync(LocalMessage message)
+    internal override async Task HandleMessageAsync(ProcessMessage message)
     {
-        if (string.IsNullOrWhiteSpace(message.TargetEventId))
-        {
-            string errorMessage = "Internal Map Error: The target event id must be specified when sending a message to a step.";
-            this._logger.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
-        }
-
-        if (!message.Values.TryGetValue(this._map.InputParameterName, out object? values))
-        {
-            throw new KernelException($"Internal Map Error: Input parameter not present - {this._map.InputParameterName}");
-        }
-
-        Type valueType = values!.GetType();
-        if (!typeof(IEnumerable).IsAssignableFrom(valueType) || !valueType.HasElementType)
-        {
-            throw new KernelException($"Internal Map Error: Input parameter is not enumerable - {this._map.InputParameterName} [{valueType.FullName}]");
-        }
+        IEnumerable values = message.GetMapInput(this._map.InputParameterName, this._logger);
 
         int index = 0;
         List<Task<LocalKernelProcessContext>> runningProcesses = [];
-        foreach (var value in (IEnumerable)values)
+        foreach (var value in values)
         {
             ++index;
             Console.WriteLine($"#{index}: {value}");
             runningProcesses.Add(
-                this._map.MapStep.StartAsync(
+                this._map.MapStep.CloneProcess(this._logger).StartAsync(
                     this._kernel,
                     new KernelProcessEvent
                     {
-                        Id = message.TargetEventId,
+                        Id = KernelProcessMap.MapEventId,
                         Data = value
                     }));
         }
@@ -75,26 +59,21 @@ internal sealed class LocalMap : LocalStep
 
         for (index = 0; index < runningProcesses.Count; ++index)
         {
-            var processInfo = await runningProcesses[index].Result.GetStateAsync().ConfigureAwait(false);
-            KernelProcessStepState state =
-                processInfo.Steps
-                    .Where(step => step.Edges.Count == 0)
-                    .Single()
-                    .State;
-            object resultState = state.GetType().GetProperty("State")!.GetValue(state)!; // %%% NULLABLE / TYPE ASSUMPTION (CLEAN-UP)
-            object result = resultState.GetType().GetProperty("Value")!.GetValue(resultState)!; // %%% NULLABLE / TYPE ASSUMPTION (CLEAN-UP)
+            KernelProcess mapProcess = await runningProcesses[index].Result.GetStateAsync().ConfigureAwait(false);
+            object result = mapProcess.GetMapOutput();
+
             if (results == null)
             {
-                Type elementType = result.GetType();
-                results = Array.CreateInstance(elementType, runningProcesses.Count);
+                Type elementType = result.GetType(); // %%% NO RESULT ON FAILURE
+                results = Array.CreateInstance(elementType, runningProcesses.Count); // %%% CONSTRAINS RECIEVING SIGNATURE (NOT List<T>)
             }
 
             results.SetValue(result, index);
         }
 
-        Console.WriteLine($"LOCAL MAP: OUTPUT: {string.Join(",", [.. results])}");
+        //Console.WriteLine($"LOCAL MAP: OUTPUT: {string.Join(",", [.. results])}");
 
-        await this.EmitEventAsync(new() { Id = this._map.CompleteEventId, Data = results, Visibility = KernelProcessEventVisibility.Public }).ConfigureAwait(false);
+        await this.EmitEventAsync(new() { Id = this._map.CompleteEventId, Data = results }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

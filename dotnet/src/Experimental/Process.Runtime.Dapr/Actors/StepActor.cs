@@ -11,20 +11,16 @@ using Dapr.Actors.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 {
-    private const string DaprStepInfoStateName = "DaprStepInfo";
+    private const string DaprStepInfoStateName = nameof(DaprStepInfo);
     private const string StepStateJson = "kernelStepStateJson";
     private const string StepStateType = "kernelStepStateType";
     private const string StepParentProcessId = "parentProcessId";
     private const string StepIncomingMessagesState = "incomingMessagesState";
-
-    /// <summary>
-    /// The generic state type for a process step.
-    /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
 
     private readonly Kernel _kernel;
     private readonly Lazy<ValueTask> _activateTask;
@@ -36,7 +32,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
     private bool _isInitialized;
 
-    internal Queue<DaprMessage> _incomingMessages = new();
+    internal Queue<ProcessMessage> _incomingMessages = new();
     internal KernelProcessStepState? _stepState;
     internal Type? _stepStateType;
     internal readonly ILoggerFactory? LoggerFactory;
@@ -181,7 +177,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.Int_InitializeStepAsync(existingStepInfo.Value, parentProcessId).ConfigureAwait(false);
 
             // Load the persisted incoming messages
-            var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<DaprMessage>>(StepIncomingMessagesState).ConfigureAwait(false);
+            var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(StepIncomingMessagesState).ConfigureAwait(false);
             if (incomingMessages.HasValue)
             {
                 this._incomingMessages = incomingMessages.Value;
@@ -203,16 +199,16 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
-        return this.EmitEventAsync(DaprEvent.FromKernelProcessEvent(processEvent, this._eventNamespace!));
+        return this.EmitEventAsync(ProcessEvent.FromKernelProcessEvent(processEvent, this._eventNamespace!));
     }
 
     /// <summary>
-    /// Handles a <see cref="DaprMessage"/> that has been sent to the step.
+    /// Handles a <see cref="ProcessMessage"/> that has been sent to the step.
     /// </summary>
     /// <param name="message">The message to process.</param>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    internal virtual async Task HandleMessageAsync(DaprMessage message)
+    internal virtual async Task HandleMessageAsync(ProcessMessage message)
     {
         Verify.NotNull(message);
 
@@ -329,7 +325,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels();
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
@@ -347,7 +343,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         else
         {
             stateObject = this._stepInfo.State;
-            if (TryGetSubtypeOfStatefulStep(this._innerStepType, out Type? genericStepType) && genericStepType is not null)
+            if (this._innerStepType.TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
             {
                 // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
                 // and create an instance of the corresponding KernelProcessStepState<>.
@@ -402,74 +398,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     }
 
     /// <summary>
-    /// Examines the KernelFunction for the step and creates a dictionary of input channels.
-    /// Some types such as KernelProcessStepContext are special and need to be injected into
-    /// the function parameter. Those objects are instantiated at this point.
-    /// </summary>
-    /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    private Dictionary<string, Dictionary<string, object?>?> FindInputChannels()
-    {
-        if (this._functions is null)
-        {
-            var errorMessage = "Internal Error: The step has not been initialized.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
-        }
-
-        Dictionary<string, Dictionary<string, object?>?> inputs = new();
-        foreach (var kvp in this._functions)
-        {
-            inputs[kvp.Key] = new();
-            foreach (var param in kvp.Value.Metadata.Parameters)
-            {
-                // Optional parameters are should not be added to the input dictionary.
-                if (!param.IsRequired)
-                {
-                    continue;
-                }
-
-                // Parameters of type KernelProcessStepContext are injected by the process
-                // and are instantiated here.
-                if (param.ParameterType == typeof(KernelProcessStepContext))
-                {
-                    inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(this);
-                }
-                else
-                {
-                    inputs[kvp.Key]![param.Name] = null;
-                }
-            }
-        }
-
-        return inputs;
-    }
-
-    /// <summary>
-    /// Attempts to find an instance of <![CDATA['KernelProcessStep<>']]> within the provided types hierarchy.
-    /// </summary>
-    /// <param name="type">The type to examine.</param>
-    /// <param name="genericStateType">The matching type if found, otherwise null.</param>
-    /// <returns>True if a match is found, false otherwise.</returns>
-    /// TODO: Move this to a share process utilities project.
-    private static bool TryGetSubtypeOfStatefulStep(Type? type, out Type? genericStateType)
-    {
-        while (type != null && type != typeof(object))
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == s_genericType)
-            {
-                genericStateType = type;
-                return true;
-            }
-
-            type = type.BaseType;
-        }
-
-        genericStateType = null;
-        return false;
-    }
-
-    /// <summary>
     /// Invokes the provides function with the provided kernel and arguments.
     /// </summary>
     /// <param name="function">The function to invoke.</param>
@@ -484,13 +412,13 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <summary>
     /// Emits an event from the step.
     /// </summary>
-    /// <param name="daprEvent">The event to emit.</param>
-    internal async ValueTask EmitEventAsync(DaprEvent daprEvent)
+    /// <param name="ProcessEvent">The event to emit.</param>
+    internal async ValueTask EmitEventAsync(ProcessEvent ProcessEvent)
     {
-        var scopedEvent = this.ScopedEvent(daprEvent);
+        var scopedEvent = this.ScopedEvent(ProcessEvent);
 
         // Emit the event out of the process (this one) if it's visibility is public.
-        if (daprEvent.Visibility == KernelProcessEventVisibility.Public)
+        if (ProcessEvent.Visibility == KernelProcessEventVisibility.Public)
         {
             if (this.ParentProcessId is not null)
             {
@@ -501,9 +429,9 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Get the edges for the event and queue up the messages to be sent to the next steps.
-        foreach (var edge in this.GetEdgeForEvent(daprEvent.Id!))
+        foreach (var edge in this.GetEdgeForEvent(ProcessEvent.Id!))
         {
-            DaprMessage message = DaprMessageFactory.CreateFromEdge(edge, daprEvent.Data);
+            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, ProcessEvent.Data);
             var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(edge.OutputTarget.StepId), nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message).ConfigureAwait(false);
         }
@@ -512,23 +440,23 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <summary>
     /// Generates a scoped event for the step.
     /// </summary>
-    /// <param name="daprEvent">The event.</param>
-    /// <returns>A <see cref="DaprEvent"/> with the correctly scoped namespace.</returns>
-    internal DaprEvent ScopedEvent(DaprEvent daprEvent)
+    /// <param name="ProcessEvent">The event.</param>
+    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
+    internal ProcessEvent ScopedEvent(ProcessEvent ProcessEvent)
     {
-        Verify.NotNull(daprEvent);
-        return daprEvent with { Namespace = $"{this.Name}_{this.Id}" };
+        Verify.NotNull(ProcessEvent);
+        return ProcessEvent with { Namespace = $"{this.Name}_{this.Id}" };
     }
 
     /// <summary>
     /// Generates a scoped event for the step.
     /// </summary>
     /// <param name="processEvent">The event.</param>
-    /// <returns>A <see cref="DaprEvent"/> with the correctly scoped namespace.</returns>
-    internal DaprEvent ScopedEvent(KernelProcessEvent processEvent)
+    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
+    internal ProcessEvent ScopedEvent(KernelProcessEvent processEvent)
     {
         Verify.NotNull(processEvent);
-        return DaprEvent.FromKernelProcessEvent(processEvent, $"{this.Name}_{this.Id}");
+        return ProcessEvent.FromKernelProcessEvent(processEvent, $"{this.Name}_{this.Id}");
     }
 
     /// <summary>
