@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Input-output service for Amazon Titan model.
 /// </summary>
-internal sealed class AmazonIOService : IBedrockTextGenerationIOService, IBedrockChatCompletionIOService
+internal sealed class AmazonService : IBedrockTextGenerationService, IBedrockChatCompletionService
 {
     /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)

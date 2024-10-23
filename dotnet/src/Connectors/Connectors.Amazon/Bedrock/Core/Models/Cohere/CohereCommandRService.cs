@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// Input-output service for Cohere Command R.
 /// </summary>
 // ReSharper disable InconsistentNaming
-internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService, IBedrockChatCompletionIOService
+internal sealed class CohereCommandRService : IBedrockTextGenerationService, IBedrockChatCompletionService
 // ReSharper restore InconsistentNaming
 {
     /// <inheritdoc/>

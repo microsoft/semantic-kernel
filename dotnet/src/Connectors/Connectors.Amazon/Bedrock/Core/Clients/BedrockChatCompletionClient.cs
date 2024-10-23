@@ -24,7 +24,7 @@ internal sealed class BedrockChatCompletionClient
     private readonly string _modelId;
     private readonly string _modelProvider;
     private readonly IAmazonBedrockRuntime _bedrockRuntime;
-    private readonly IBedrockChatCompletionIOService _ioChatService;
+    private readonly IBedrockChatCompletionService _ioChatService;
     private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _chatGenerationEndpoint;
     private readonly ILogger _logger;
@@ -37,10 +37,10 @@ internal sealed class BedrockChatCompletionClient
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
-        var clientService = new BedrockClientIOService();
+        var clientService = new BedrockClientService();
         this._modelId = modelId;
         this._bedrockRuntime = bedrockRuntime;
-        this._ioChatService = clientService.GetChatIOService(modelId);
+        this._ioChatService = clientService.GetChatService(modelId);
         this._modelProvider = clientService.GetModelProviderAndName(modelId).modelProvider;
         this._clientUtilities = new BedrockClientUtilities();
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;

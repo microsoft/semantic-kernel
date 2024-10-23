@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Input-output service for Cohere Command.
 /// </summary>
-internal sealed class CohereCommandIOService : IBedrockTextGenerationIOService
+internal sealed class CohereCommandService : IBedrockTextGenerationService
 {
     /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)

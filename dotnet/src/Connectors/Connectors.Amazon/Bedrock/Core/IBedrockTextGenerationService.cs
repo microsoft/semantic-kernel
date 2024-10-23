@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Bedrock input-output service to build the request and response bodies as required by the given model.
 /// </summary>
-internal interface IBedrockTextGenerationIOService
+internal interface IBedrockTextGenerationService
 {
     /// <summary>
     /// Returns the specialized <see cref="InvokeModelRequest"/> instance for request.

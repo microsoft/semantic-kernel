@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Input-output service for Anthropic Claude model.
 /// </summary>
-internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBedrockChatCompletionIOService
+internal sealed class AnthropicService : IBedrockTextGenerationService, IBedrockChatCompletionService
 {
     /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)

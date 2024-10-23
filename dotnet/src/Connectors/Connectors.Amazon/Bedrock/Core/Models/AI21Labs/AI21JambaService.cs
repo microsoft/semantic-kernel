@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Input-output service for AI21 Labs Jamba model.
 /// </summary>
-internal sealed class AI21JambaIOService : IBedrockTextGenerationIOService, IBedrockChatCompletionIOService
+internal sealed class AI21JambaService : IBedrockTextGenerationService, IBedrockChatCompletionService
 {
     /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)

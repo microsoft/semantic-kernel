@@ -5,17 +5,17 @@ using System;
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
-/// Utilities to get the model IO service and model provider. Used by Bedrock service clients.
+/// Utilities to get the model service and model provider. Used by Bedrock service clients.
 /// </summary>
-internal sealed class BedrockClientIOService
+internal sealed class BedrockClientService
 {
     /// <summary>
-    /// Gets the model IO service for body conversion.
+    /// Gets the model service for body conversion.
     /// </summary>
-    /// <param name="modelId">The model to be used for the IO service.</param>
-    /// <returns><see cref="IBedrockTextGenerationIOService"/> instance</returns>
+    /// <param name="modelId">The model to be used for the service.</param>
+    /// <returns><see cref="IBedrockTextGenerationService"/> instance</returns>
     /// <exception cref="NotSupportedException">Thrown if provider or model is not supported for text generation.</exception>
-    internal IBedrockTextGenerationIOService GetTextIOService(string modelId)
+    internal IBedrockTextGenerationService GetTextService(string modelId)
     {
         (string modelProvider, string modelName) = this.GetModelProviderAndName(modelId);
 
@@ -24,46 +24,46 @@ internal sealed class BedrockClientIOService
             case "AI21":
                 if (modelName.StartsWith("jamba", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AI21JambaIOService();
+                    return new AI21JambaService();
                 }
                 if (modelName.StartsWith("j2-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AI21JurassicIOService();
+                    return new AI21JurassicService();
                 }
                 throw new NotSupportedException($"Unsupported AI21 model: {modelId}");
             case "AMAZON":
                 if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AmazonIOService();
+                    return new AmazonService();
                 }
                 throw new NotSupportedException($"Unsupported Amazon model: {modelId}");
             case "ANTHROPIC":
                 if (modelName.StartsWith("claude-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AnthropicIOService();
+                    return new AnthropicService();
                 }
                 throw new NotSupportedException($"Unsupported Anthropic model: {modelId}");
             case "COHERE":
                 if (modelName.StartsWith("command-r", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new CohereCommandRIOService();
+                    return new CohereCommandRService();
                 }
                 if (modelName.StartsWith("command-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new CohereCommandIOService();
+                    return new CohereCommandService();
                 }
                 throw new NotSupportedException($"Unsupported Cohere model: {modelId}");
             case "META":
                 if (modelName.StartsWith("llama3-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MetaIOService();
+                    return new MetaService();
                 }
                 throw new NotSupportedException($"Unsupported Meta model: {modelId}");
             case "MISTRAL":
                 if (modelName.StartsWith("mistral-", StringComparison.OrdinalIgnoreCase)
                     || modelName.StartsWith("mixtral-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MistralIOService();
+                    return new MistralService();
                 }
                 throw new NotSupportedException($"Unsupported Mistral model: {modelId}");
             default:
@@ -72,12 +72,12 @@ internal sealed class BedrockClientIOService
     }
 
     /// <summary>
-    /// Gets the model IO service for body conversion.
+    /// Gets the model service for body conversion.
     /// </summary>
-    /// <param name="modelId">The model to get the IO service for.</param>
-    /// <returns><see cref="IBedrockChatCompletionIOService"/> object</returns>
+    /// <param name="modelId">The model to get the service for.</param>
+    /// <returns><see cref="IBedrockChatCompletionService"/> object</returns>
     /// <exception cref="NotSupportedException">Thrown if provider or model is not supported for chat completion.</exception>
-    internal IBedrockChatCompletionIOService GetChatIOService(string modelId)
+    internal IBedrockChatCompletionService GetChatService(string modelId)
     {
         (string modelProvider, string modelName) = this.GetModelProviderAndName(modelId);
 
@@ -86,38 +86,38 @@ internal sealed class BedrockClientIOService
             case "AI21":
                 if (modelName.StartsWith("jamba", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AI21JambaIOService();
+                    return new AI21JambaService();
                 }
                 throw new NotSupportedException($"Unsupported AI21 model: {modelId}");
             case "AMAZON":
                 if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AmazonIOService();
+                    return new AmazonService();
                 }
                 throw new NotSupportedException($"Unsupported Amazon model: {modelId}");
             case "ANTHROPIC":
                 if (modelName.StartsWith("claude-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AnthropicIOService();
+                    return new AnthropicService();
                 }
                 throw new NotSupportedException($"Unsupported Anthropic model: {modelId}");
             case "COHERE":
                 if (modelName.StartsWith("command-r", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new CohereCommandRIOService();
+                    return new CohereCommandRService();
                 }
                 throw new NotSupportedException($"Unsupported Cohere model: {modelId}");
             case "META":
                 if (modelName.StartsWith("llama3-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MetaIOService();
+                    return new MetaService();
                 }
                 throw new NotSupportedException($"Unsupported Meta model: {modelId}");
             case "MISTRAL":
                 if (modelName.StartsWith("mistral-", StringComparison.OrdinalIgnoreCase)
                     || modelName.StartsWith("mixtral-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MistralIOService();
+                    return new MistralService();
                 }
                 throw new NotSupportedException($"Unsupported Mistral model: {modelId}");
             default:

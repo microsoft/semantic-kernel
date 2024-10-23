@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
-internal interface IBedrockChatCompletionIOService
+internal interface IBedrockChatCompletionService
 {
     /// <summary>
     /// Builds the converse request given the chat history and model ID passed in by the user.

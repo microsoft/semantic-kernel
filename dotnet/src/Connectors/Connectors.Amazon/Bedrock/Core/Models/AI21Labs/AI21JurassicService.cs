@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Input-output service for AI21 Labs Jurassic.
 /// </summary>
-internal sealed class AI21JurassicIOService : IBedrockTextGenerationIOService
+internal sealed class AI21JurassicService : IBedrockTextGenerationService
 {
     /// <inheritdoc/>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)

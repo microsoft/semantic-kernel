@@ -25,7 +25,7 @@ internal sealed class BedrockTextGenerationClient
     private readonly string _modelId;
     private readonly string _modelProvider;
     private readonly IAmazonBedrockRuntime _bedrockRuntime;
-    private readonly IBedrockTextGenerationIOService _ioTextService;
+    private readonly IBedrockTextGenerationService _ioTextService;
     private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _textGenerationEndpoint;
     private readonly ILogger _logger;
@@ -38,10 +38,10 @@ internal sealed class BedrockTextGenerationClient
     /// <param name="loggerFactory">Logger for error output.</param>
     internal BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
-        var clientService = new BedrockClientIOService();
+        var clientService = new BedrockClientService();
         this._modelId = modelId;
         this._bedrockRuntime = bedrockRuntime;
-        this._ioTextService = clientService.GetTextIOService(modelId);
+        this._ioTextService = clientService.GetTextService(modelId);
         this._modelProvider = clientService.GetModelProviderAndName(modelId).modelProvider;
         this._clientUtilities = new BedrockClientUtilities();
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
