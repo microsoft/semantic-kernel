@@ -39,6 +39,15 @@ public interface IPostgresVectorStoreCollectionSqlBuilder
     PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, bool ifNotExists = true);
 
     /// <summary>
+    /// Builds a SQL command to create a vector index in the Postgres vector store.
+    /// </summary>
+    /// <param name="schema">The schema of the table.</param>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="vectorProperty">The vector property to create an index for.</param>
+    /// <returns>The built SQL command info.</returns>
+    PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, VectorStoreRecordVectorProperty vectorProperty);
+
+    /// <summary>
     /// Builds a SQL command to drop a table in the Postgres vector store.
     /// </summary>
     /// <param name="schema">The schema of the table.</param>

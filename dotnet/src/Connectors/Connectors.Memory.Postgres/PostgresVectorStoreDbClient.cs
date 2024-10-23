@@ -84,6 +84,24 @@ public class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string sch
     }
 
     /// <inheritdoc />
+    public async Task CreateVectorIndexAsync(string tableName, VectorStoreRecordVectorProperty vectorProperty, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(vectorProperty.IndexKind))
+        {
+            return;
+        }
+
+        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        await using (connection)
+        {
+            var commandInfo = this._sqlBuilder.BuildCreateVectorIndexCommand(this._schema, tableName, vectorProperty);
+            using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
+            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
     public async Task DeleteTableAsync(string tableName, CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);

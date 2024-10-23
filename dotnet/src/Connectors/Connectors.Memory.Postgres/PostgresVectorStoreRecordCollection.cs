@@ -99,9 +99,14 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition, false, cancellationToken);
+        await this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition, false, cancellationToken).ConfigureAwait(false);
+        // Create indexes for vector properties.
+        foreach (var vectorProperty in this._propertyReader.VectorProperties)
+        {
+            await this._client.CreateVectorIndexAsync(this.CollectionName, vectorProperty, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc/>
@@ -207,7 +212,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
 
@@ -242,7 +247,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             vectorProperty,
             pgVector,
             searchOptions.Top,
-            options.Filter,
+            searchOptions.Filter,
             searchOptions.Skip,
             searchOptions.IncludeVectors,
             cancellationToken
@@ -254,7 +259,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                 return new VectorSearchResult<TRecord>(record, result.Distance);
             }, cancellationToken);
 
-        return new VectorSearchResults<TRecord>(results);
+        return Task.FromResult(new VectorSearchResults<TRecord>(results));
     }
 
     /// <summary>

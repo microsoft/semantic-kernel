@@ -117,6 +117,36 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
     }
 
     /// <inheritdoc />
+    public PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, VectorStoreRecordVectorProperty vectorProperty)
+    {
+        var vectorColumnName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
+        // Only support creating HNSW index creation through the connector.
+        var indexTypeName = vectorProperty.IndexKind switch
+        {
+            IndexKind.Hnsw => "hnsw",
+            _ => throw new NotSupportedException($"Index kind '{vectorProperty.IndexKind}' is not supported for table creation. If you need to create an index of this type, please do so manually. Only HNSW indexes are supported through the vector store.")
+        };
+
+        var indexOps = vectorProperty.DistanceFunction switch
+        {
+            DistanceFunction.CosineDistance => "vector_cosine_ops",
+            DistanceFunction.CosineSimilarity => "vector_cosine_ops",
+            DistanceFunction.DotProductSimilarity => "vector_ip_ops",
+            DistanceFunction.EuclideanDistance => "vector_l2_ops",
+            DistanceFunction.ManhattanDistance => "vector_l1_ops",
+            null => throw new ArgumentException("Distance function must be specified for HNSW index."),
+            _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
+        };
+
+        var indexName = $"{tableName}_{vectorColumnName}_index";
+
+        return new PostgresSqlCommandInfo(
+            commandText: $@"
+                CREATE INDEX {indexName} ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
+        );
+    }
+
+    /// <inheritdoc />
     public PostgresSqlCommandInfo BuildDropTableCommand(string schema, string tableName)
     {
         return new PostgresSqlCommandInfo(
@@ -318,6 +348,7 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
 
         var distanceOp = vectorProperty.DistanceFunction switch
         {
+            DistanceFunction.CosineDistance => "<=>",
             DistanceFunction.CosineSimilarity => "<=>",
             DistanceFunction.EuclideanDistance => "<->",
             DistanceFunction.ManhattanDistance => "<+>",
@@ -336,6 +367,26 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
             LIMIT {limit}";
 
         if (skip.HasValue) { commandText += $" OFFSET {skip.Value}"; }
+
+        // For cosine similarity, we need to take 1 - cosine distance.
+        // However, we can't use an expression in the ORDER BY clause or else the index won't be used.
+        // Instead we'll wrap the query in a subquery and modify the distance in the outer query.
+        if (vectorProperty.DistanceFunction == DistanceFunction.CosineSimilarity)
+        {
+            commandText = $@"
+                SELECT {columns}, 1 - ""{PostgresConstants.DistanceColumnName}"" AS ""{PostgresConstants.DistanceColumnName}""
+                FROM ({commandText}) AS subquery";
+        }
+
+        // For inner product, we need to take -1 * inner product.
+        // However, we can't use an expression in the ORDER BY clause or else the index won't be used.
+        // Instead we'll wrap the query in a subquery and modify the distance in the outer query.
+        if (vectorProperty.DistanceFunction == DistanceFunction.DotProductSimilarity)
+        {
+            commandText = $@"
+                SELECT {columns}, -1 * ""{PostgresConstants.DistanceColumnName}"" AS ""{PostgresConstants.DistanceColumnName}""
+                FROM ({commandText}) AS subquery";
+        }
 
         return new PostgresSqlCommandInfo(commandText)
         {

@@ -38,6 +38,14 @@ public interface IPostgresVectorStoreDbClient
     Task CreateTableAsync(string tableName, VectorStoreRecordDefinition recordDefinition, bool ifNotExists = true, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Create a vector index.
+    /// </summary>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
+    /// <param name="vectorProperty">The vector property to create an index for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    Task CreateVectorIndexAsync(string tableName, VectorStoreRecordVectorProperty vectorProperty, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Drop a table.
     /// </summary>
     /// <param name="tableName">The name assigned to a table of entries.</param>
@@ -123,42 +131,4 @@ public interface IPostgresVectorStoreDbClient
     /// <returns>An asynchronous stream of <see cref="PostgresMemoryEntry"/> objects that the nearest matches to the <see cref="Vector"/>.</returns>
     IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync(string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, int limit,
         VectorSearchFilter? filter = default, int? skip = default, bool includeVectors = false, CancellationToken cancellationToken = default);
-
-    // /// <summary>
-    // /// Read a entry by its key.
-    // /// </summary>
-    // /// <param name="tableName">The name assigned to a table of entries.</param>
-    // /// <param name="key">The key of the entry to read.</param>
-    // /// <param name="withEmbeddings">If true, the embeddings will be returned in the entry.</param>
-    // /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    // /// <returns></returns>
-    // Task<PostgresMemoryEntry?> ReadAsync(string tableName, string key, bool withEmbeddings = false, CancellationToken cancellationToken = default);
-
-    // /// <summary>
-    // /// Read multiple entries by their keys.
-    // /// </summary>
-    // /// <param name="tableName">The name assigned to a table of entries.</param>
-    // /// <param name="keys">The keys of the entries to read.</param>
-    // /// <param name="withEmbeddings">If true, the embeddings will be returned in the entries.</param>
-    // /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    // /// <returns>An asynchronous stream of <see cref="PostgresMemoryEntry"/> objects that match the given keys.</returns>
-    // IAsyncEnumerable<PostgresMemoryEntry> ReadBatchAsync(string tableName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancellationToken = default);
-
-    // /// <summary>
-    // /// Delete a entry by its key.
-    // /// </summary>
-    // /// <param name="tableName">The name assigned to a table of entries.</param>
-    // /// <param name="key">The key of the entry to delete.</param>
-    // /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    // /// <returns></returns>
-    // Task DeleteAsync(string tableName, string key, CancellationToken cancellationToken = default);
-
-    // /// <summary>
-    // /// Delete multiple entries by their key.
-    // /// </summary>
-    // /// <param name="tableName">The name assigned to a table of entries.</param>
-    // /// <param name="keys">The keys of the entries to delete.</param>
-    // /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    // /// <returns></returns>
-    // Task DeleteBatchAsync(string tableName, IEnumerable<string> keys, CancellationToken cancellationToken = default);
 }
