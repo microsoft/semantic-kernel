@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapr.Actors.Runtime;
+using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
 
@@ -26,7 +27,7 @@ internal class ExternalEventBufferActor : Actor, IExternalEventBuffer
     /// <summary>
     /// Dequeues an event.
     /// </summary>
-    /// <returns>A <see cref="List{T}"/> where T is <see cref="DaprEvent"/></returns>
+    /// <returns>A <see cref="List{T}"/> where T is <see cref="ProcessEvent"/></returns>
     public async Task<List<KernelProcessEvent>> DequeueAllAsync()
     {
         // Dequeue and clear the queue.
