@@ -17,11 +17,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class LocalStep : IKernelProcessMessageChannel
 {
-    /// <summary>
-    /// The generic state type for a process step.
-    /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
-
     private readonly Kernel _kernel;
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
@@ -227,44 +222,13 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels();
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
+        Type stateType = this._stepInfo.InnerStepType.InspectStateType(out Type? userStateType, this._logger);
         KernelProcessStepState stateObject = this._stepInfo.State;
-        Type? stateType = null;
-
-        if (TryGetSubtypeOfStatefulStep(this._stepInfo.InnerStepType, out Type? genericStepType) && genericStepType is not null)
-        {
-            // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
-            // and create an instance of the corresponding KernelProcessStepState<>.
-            var userStateType = genericStepType.GetGenericArguments()[0];
-            if (userStateType is null)
-            {
-                var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                this._logger.LogError("{ErrorMessage}", errorMessage);
-                throw new KernelException(errorMessage);
-            }
-
-            stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
-            if (stateType is null)
-            {
-                var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                this._logger.LogError("{ErrorMessage}", errorMessage);
-                throw new KernelException(errorMessage);
-            }
-
-            var userState = stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.GetValue(stateObject);
-            if (userState is null)
-            {
-                stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, Activator.CreateInstance(userStateType));
-            }
-        }
-        else
-        {
-            // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-            stateType = typeof(KernelProcessStepState);
-        }
+        stateObject.InitializeUserState(stateType, userStateType);
 
         if (stateObject is null)
         {
@@ -283,76 +247,17 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         this._stepState = stateObject;
-        methodInfo.Invoke(stepInstance, [stateObject]);
-        await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
-    }
 
-    /// <summary>
-    /// Examines the KernelFunction for the step and creates a dictionary of input channels.
-    /// Some types such as KernelProcessStepContext are special and need to be injected into
-    /// the function parameter. Those objects are instantiated at this point.
-    /// </summary>
-    /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    private Dictionary<string, Dictionary<string, object?>?> FindInputChannels()
-    {
-        if (this._functions is null)
+        ValueTask? activateTask = (ValueTask?)methodInfo.Invoke(stepInstance, [stateObject]);
+        if (activateTask == null)
         {
-            var errorMessage = "Internal Error: The step has not been initialized.";
+            var errorMessage = "The ActivateAsync method failed to complete.";
             this._logger.LogError("{ErrorMessage}", errorMessage);
             throw new KernelException(errorMessage);
         }
 
-        Dictionary<string, Dictionary<string, object?>?> inputs = new();
-        foreach (var kvp in this._functions)
-        {
-            inputs[kvp.Key] = new();
-            foreach (var param in kvp.Value.Metadata.Parameters)
-            {
-                // Optional parameters are should not be added to the input dictionary.
-                if (!param.IsRequired)
-                {
-                    continue;
-                }
-
-                // Parameters of type KernelProcessStepContext are injected by the process
-                // and are instantiated here.
-                if (param.ParameterType == typeof(KernelProcessStepContext))
-                {
-                    inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(this);
-                }
-                else
-                {
-                    inputs[kvp.Key]![param.Name] = null;
-                }
-            }
-        }
-
-        return inputs;
-    }
-
-    /// <summary>
-    /// Attempts to find an instance of <![CDATA['KernelProcessStep<>']]> within the provided types hierarchy.
-    /// </summary>
-    /// <param name="type">The type to examine.</param>
-    /// <param name="genericStateType">The matching type if found, otherwise null.</param>
-    /// <returns>True if a match is found, false otherwise.</returns>
-    /// TODO: Move this to a share process utilities project.
-    private static bool TryGetSubtypeOfStatefulStep(Type? type, out Type? genericStateType)
-    {
-        while (type != null && type != typeof(object))
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == s_genericType)
-            {
-                genericStateType = type;
-                return true;
-            }
-
-            type = type.BaseType;
-        }
-
-        genericStateType = null;
-        return false;
+        await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
+        await activateTask.Value.ConfigureAwait(false);
     }
 
     /// <summary>
