@@ -737,7 +737,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.NON_AUTO},
-            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_cohere_command_tool_call_non_auto",
         ),
         pytest.param(
@@ -769,7 +769,7 @@ pytestmark = pytest.mark.parametrize(
                 ],
             ],
             {"test_type": FunctionChoiceTestTypes.FLOW},
-            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_cohere_command_tool_call_flow",
         ),
         pytest.param(
@@ -788,7 +788,7 @@ pytestmark = pytest.mark.parametrize(
                 ]
             ],
             {"test_type": FunctionChoiceTestTypes.AUTO},
-            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_cohere_command_tool_call_auto_complex_return_type",
         ),
         # endregion

@@ -176,7 +176,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_ai21labs_text_input",
         ),
         pytest.param(
@@ -187,7 +187,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_anthropic_claude_text_input",
         ),
         pytest.param(
@@ -198,7 +198,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_cohere_command_text_input",
         ),
         pytest.param(
@@ -209,7 +209,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_meta_llama_text_input",
         ),
         pytest.param(
@@ -220,7 +220,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
-            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_mistralai_text_input",
         ),
     ],
