@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class MessageBufferActor : Actor, IMessageBuffer
 {
-    private const string EventQueueState = "DaprMessageBufferState";
     private Queue<ProcessMessage>? _queue = new();
 
     /// <summary>
@@ -35,7 +34,7 @@ internal class MessageBufferActor : Actor, IMessageBuffer
         this._queue!.Clear();
 
         // Save the state.
-        await this.StateManager.SetStateAsync(EventQueueState, this._queue).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.MessageQueueState, this._queue).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return items;
@@ -46,7 +45,7 @@ internal class MessageBufferActor : Actor, IMessageBuffer
         this._queue!.Enqueue(message);
 
         // Save the state.
-        await this.StateManager.SetStateAsync(EventQueueState, this._queue).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.MessageQueueState, this._queue).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -56,7 +55,7 @@ internal class MessageBufferActor : Actor, IMessageBuffer
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var eventQueueState = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(EventQueueState).ConfigureAwait(false);
+        var eventQueueState = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(ActorStateKeys.MessageQueueState).ConfigureAwait(false);
         if (eventQueueState.HasValue)
         {
             this._queue = eventQueueState.Value;

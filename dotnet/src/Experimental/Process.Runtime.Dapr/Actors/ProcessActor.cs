@@ -17,8 +17,6 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 {
-    private const string DaprProcessInfoStateName = nameof(DaprProcessInfo);
-    private const string StepStateActivated = "kernelStepActivated";
     private const string EndStepId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
@@ -65,9 +63,9 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         await this.InitializeProcessActorAsync(processInfo, parentProcessId).ConfigureAwait(false);
 
         // Save the state
-        await this.StateManager.AddStateAsync(DaprProcessInfoStateName, processInfo).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync(StepParentProcessId, parentProcessId).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync(StepStateActivated, true).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.ProcessInfoState, processInfo).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepActivatedState, true).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -217,10 +215,10 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     protected override async Task OnActivateAsync()
     {
-        var existingProcessInfo = await this.StateManager.TryGetStateAsync<DaprProcessInfo>(DaprProcessInfoStateName).ConfigureAwait(false);
+        var existingProcessInfo = await this.StateManager.TryGetStateAsync<DaprProcessInfo>(ActorStateKeys.ProcessInfoState).ConfigureAwait(false);
         if (existingProcessInfo.HasValue)
         {
-            this.ParentProcessId = await this.StateManager.GetStateAsync<string>(StepParentProcessId).ConfigureAwait(false);
+            this.ParentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
             await this.InitializeProcessActorAsync(existingProcessInfo.Value, this.ParentProcessId).ConfigureAwait(false);
         }
     }
