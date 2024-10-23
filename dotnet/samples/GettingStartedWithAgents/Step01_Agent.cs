@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Resources;
 
 namespace GettingStarted;
 
@@ -17,6 +18,8 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     [Fact]
     public async Task UseSingleChatCompletionAgentAsync()
     {
+        Kernel kernel = this.CreateKernelWithChatCompletion();
+
         // Define the agent
         ChatCompletionAgent agent =
             new()
@@ -46,6 +49,51 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
                 chat.Add(response);
 
                 this.WriteAgentChatMessage(response);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UseTemplateForChatCompletionAgentAsync()
+    {
+        // Define the agent
+        string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
+        PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
+
+        // Instructions, Name and Description properties defined via the config.
+        ChatCompletionAgent agent =
+            new(templateConfig, new KernelPromptTemplateFactory())
+            {
+                Kernel = this.CreateKernelWithChatCompletion(),
+                Arguments = new KernelArguments()
+                {
+                    { "topic", "Dog" },
+                    { "length", "3" },
+                }
+            };
+
+        /// Create the chat history to capture the agent interaction.
+        ChatHistory chat = [];
+
+        // Invoke the agent with the default arguments.
+        await InvokeAgentAsync();
+
+        // Invoke the agent with the override arguments.
+        await InvokeAgentAsync(
+            new()
+            {
+                { "topic", "Cat" },
+                { "length", "3" },
+            });
+
+        // Local function to invoke agent and display the conversation messages.
+        async Task InvokeAgentAsync(KernelArguments? arguments = null)
+        {
+            await foreach (ChatMessageContent content in agent.InvokeAsync(chat, arguments))
+            {
+                chat.Add(content);
+
+                WriteAgentChatMessage(content);
             }
         }
     }

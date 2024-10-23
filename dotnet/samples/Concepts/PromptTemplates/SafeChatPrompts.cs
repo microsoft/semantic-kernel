@@ -4,11 +4,12 @@ using Microsoft.SemanticKernel;
 
 namespace PromptTemplates;
 
-public sealed class SafeChatPrompts : BaseTest, IDisposable
+public sealed class SafeChatPrompts : BaseTest
 {
     private readonly LoggingHandler _handler;
     private readonly HttpClient _httpClient;
     private readonly Kernel _kernel;
+    private bool _isDisposed;
 
     public SafeChatPrompts(ITestOutputHelper output) : base(output)
     {
@@ -25,10 +26,19 @@ public sealed class SafeChatPrompts : BaseTest, IDisposable
             .Build();
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        this._handler.Dispose();
-        this._httpClient.Dispose();
+        if (!this._isDisposed)
+        {
+            if (disposing)
+            {
+                this._handler.Dispose();
+                this._httpClient.Dispose();
+            }
+
+            this._isDisposed = true;
+        }
+        base.Dispose(disposing);
     }
 
     /// <summary>

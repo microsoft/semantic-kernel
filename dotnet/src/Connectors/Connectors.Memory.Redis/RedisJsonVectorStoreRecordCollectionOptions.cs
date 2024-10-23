@@ -2,7 +2,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -10,7 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// Options when creating a <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
 public sealed class RedisJsonVectorStoreRecordCollectionOptions<TRecord>
-    where TRecord : class
 {
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the

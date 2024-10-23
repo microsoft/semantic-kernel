@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Microsoft.SemanticKernel.Data;
 using Moq;
 using Xunit;
 using Sdk = Pinecone;

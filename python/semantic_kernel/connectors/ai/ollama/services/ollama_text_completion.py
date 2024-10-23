@@ -68,6 +68,9 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
 
+        if not ollama_settings.model:
+            raise ServiceInitializationError("Please provide ai_model_id or OLLAMA_MODEL env variable is required")
+
         super().__init__(
             service_id=service_id or ollama_settings.model,
             ai_model_id=ollama_settings.model,

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel;
 using System.ClientModel.Primitives;
 using Microsoft.SemanticKernel;
 using OpenAI;
@@ -28,7 +29,7 @@ public sealed class OpenAI_CustomClient(ITestOutputHelper output) : BaseTest(out
             RetryPolicy = new ClientRetryPolicy()
         };
 
-        var customClient = new OpenAIClient(TestConfiguration.OpenAI.ApiKey, clientOptions);
+        var customClient = new OpenAIClient(new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), clientOptions);
 
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, customClient)
