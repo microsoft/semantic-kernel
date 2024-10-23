@@ -85,7 +85,10 @@ class BinaryContent(KernelContent):
                     data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                 )
         if uri is not None:
-            uri = FilePath(uri) if os.path.exists(uri) else Url(uri)
+            if isinstance(uri, str) and os.path.exists(uri):
+                uri = str(FilePath(uri))
+            elif isinstance(uri, str):
+                uri = Url(uri)
 
         super().__init__(uri=uri, **kwargs)
         self._data_uri = _data_uri
