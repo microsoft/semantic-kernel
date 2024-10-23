@@ -127,7 +127,6 @@ class LocalProcess(LocalStep):
                     parent_process_id=self.id,
                 )
 
-                # Start the process (we await the start for lazy initialization)
                 local_step = process
             else:
                 # The current step should already have an Id.
