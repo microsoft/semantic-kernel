@@ -22,13 +22,13 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// </summary>
     private static readonly Type s_genericType = typeof(KernelProcessStep<>);
 
-    private readonly Kernel _kernel;
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
     private readonly KernelProcessStepInfo _stepInfo;
     private readonly string _eventNamespace;
     private readonly ILogger _logger;
 
+    protected readonly Kernel _kernel;
     protected KernelProcessStepState _stepState;
     protected Dictionary<string, Dictionary<string, object?>?>? _inputs = [];
     protected Dictionary<string, Dictionary<string, object?>?>? _initialInputs = [];
