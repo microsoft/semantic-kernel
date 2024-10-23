@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using SemanticKernel.IntegrationTests.Agents;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using System.Linq;
 
 namespace SemanticKernel.IntegrationTests.Processes;
 
