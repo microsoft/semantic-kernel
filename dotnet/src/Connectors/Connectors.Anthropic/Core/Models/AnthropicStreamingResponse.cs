@@ -34,11 +34,11 @@ internal sealed class AnthropicStreamingResponse
 #pragma warning disable CS0649 // Field is assigned via reflection
     [JsonPropertyName("content_block")]
     [JsonInclude]
-    private readonly AnthropicContent? _contentBlock;
+    private AnthropicContent? _contentBlock;
 
     [JsonPropertyName("delta")]
     [JsonInclude]
-    private readonly JsonNode? _delta;
+    private JsonNode? _delta;
 #pragma warning restore CS0649
 
     /// <summary>
