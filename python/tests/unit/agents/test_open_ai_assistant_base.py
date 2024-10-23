@@ -281,6 +281,58 @@ def mock_run_completed():
 
 
 @pytest.fixture
+def mock_run_incomplete():
+    return Run(
+        id="run_id",
+        status="incomplete",
+        assistant_id="assistant_id",
+        created_at=123456789,
+        instructions="instructions",
+        model="model",
+        object="thread.run",
+        thread_id="thread_id",
+        tools=[],
+        required_action=RequiredAction(
+            type="submit_tool_outputs",
+            submit_tool_outputs=RequiredActionSubmitToolOutputs(
+                tool_calls=[
+                    RequiredActionFunctionToolCall(
+                        id="tool_call_id", type="function", function=Function(arguments="{}", name="function_name")
+                    )
+                ]
+            ),
+        ),
+        parallel_tool_calls=True,
+    )
+
+
+@pytest.fixture
+def mock_run_cancelled():
+    return Run(
+        id="run_id",
+        status="cancelled",
+        assistant_id="assistant_id",
+        created_at=123456789,
+        instructions="instructions",
+        model="model",
+        object="thread.run",
+        thread_id="thread_id",
+        tools=[],
+        required_action=RequiredAction(
+            type="submit_tool_outputs",
+            submit_tool_outputs=RequiredActionSubmitToolOutputs(
+                tool_calls=[
+                    RequiredActionFunctionToolCall(
+                        id="tool_call_id", type="function", function=Function(arguments="{}", name="function_name")
+                    )
+                ]
+            ),
+        ),
+        parallel_tool_calls=True,
+    )
+
+
+@pytest.fixture
 def mock_function_call_content():
     return FunctionCallContent(id="function_call_id", name="function_name", arguments={})
 
@@ -1522,10 +1574,57 @@ async def test_poll_run_status(
 
         mock_client.beta.threads.runs.retrieve = AsyncMock(return_value=mock_run_completed)
 
+        # Test successful polling
         run = await azure_openai_assistant_agent._poll_run_status(
             run=mock_run_required_action, thread_id="test_thread_id"
         )
-        assert run.status == "completed"
+        assert run.status == "completed", f"Expected status 'completed', but got '{run.status}'"
+
+        # Test timeout scenario
+        mock_client.beta.threads.runs.retrieve = AsyncMock(side_effect=TimeoutError)
+        azure_openai_assistant_agent.polling_options.run_polling_timeout = timedelta(milliseconds=10)
+
+        with pytest.raises(AgentInvokeException) as excinfo:
+            await azure_openai_assistant_agent._poll_run_status(
+                run=mock_run_required_action, thread_id="test_thread_id"
+            )
+
+        assert "Polling timed out" in str(excinfo.value)
+        assert f"after waiting {azure_openai_assistant_agent.polling_options.run_polling_timeout}" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_poll_run_status_incomplete(
+    azure_openai_assistant_agent, mock_run_required_action, mock_run_incomplete, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+
+        mock_client.beta.threads.runs.retrieve = AsyncMock(return_value=mock_run_incomplete)
+
+        run = await azure_openai_assistant_agent._poll_run_status(
+            run=mock_run_required_action, thread_id="test_thread_id"
+        )
+
+        assert run.status in azure_openai_assistant_agent.error_message_states
+
+
+@pytest.mark.asyncio
+async def test_poll_run_status_cancelled(
+    azure_openai_assistant_agent, mock_run_required_action, mock_run_cancelled, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+
+        mock_client.beta.threads.runs.retrieve = AsyncMock(return_value=mock_run_cancelled)
+
+        run = await azure_openai_assistant_agent._poll_run_status(
+            run=mock_run_required_action, thread_id="test_thread_id"
+        )
+
+        assert run.status in azure_openai_assistant_agent.error_message_states
 
 
 @pytest.mark.asyncio

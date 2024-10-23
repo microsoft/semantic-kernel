@@ -8,7 +8,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
@@ -136,14 +136,14 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     }
 
     /// <summary>
-    /// Handles a <see cref="LocalMessage"/> that has been sent to the process. This happens only in the case
+    /// Handles a <see cref="ProcessMessage"/> that has been sent to the process. This happens only in the case
     /// of a process (this one) running as a step within another process (this one's parent). In this case the
     /// entire sub-process should be executed within a single superstep.
     /// </summary>
     /// <param name="message">The message to process.</param>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    internal override async Task HandleMessageAsync(LocalMessage message)
+    internal override async Task HandleMessageAsync(ProcessMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.TargetEventId))
         {
@@ -233,7 +233,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
     {
         Kernel localKernel = kernel ?? this._kernel;
-        Queue<LocalMessage> messageChannel = new();
+        Queue<ProcessMessage> messageChannel = new();
 
         try
         {
@@ -303,11 +303,11 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     }
 
     /// <summary>
-    /// Processes external events that have been sent to the process, translates them to <see cref="LocalMessage"/>s, and enqueues
+    /// Processes external events that have been sent to the process, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
-    private void EnqueueExternalMessages(Queue<LocalMessage> messageChannel)
+    private void EnqueueExternalMessages(Queue<ProcessMessage> messageChannel)
     {
         while (this._externalEventChannel.Reader.TryRead(out var externalEvent))
         {
@@ -315,7 +315,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             {
                 foreach (var edge in edges)
                 {
-                    LocalMessage message = LocalMessageFactory.CreateFromEdge(edge, externalEvent.Data);
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
                     messageChannel.Enqueue(message);
                 }
             }
@@ -323,12 +323,12 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     }
 
     /// <summary>
-    /// Processes events emitted by the given step in the last superstep, translates them to <see cref="LocalMessage"/>s, and enqueues
+    /// Processes events emitted by the given step in the last superstep, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     /// <param name="step">The step containing outgoing events to process.</param>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
-    private void EnqueueStepMessages(LocalStep step, Queue<LocalMessage> messageChannel)
+    private void EnqueueStepMessages(LocalStep step, Queue<ProcessMessage> messageChannel)
     {
         var allStepEvents = step.GetAllEvents();
         foreach (var stepEvent in allStepEvents)
@@ -342,7 +342,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             // Get the edges for the event and queue up the messages to be sent to the next steps.
             foreach (var edge in step.GetEdgeForEvent(stepEvent.Id!))
             {
-                LocalMessage message = LocalMessageFactory.CreateFromEdge(edge, stepEvent.Data);
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
                 messageChannel.Enqueue(message);
             }
         }
