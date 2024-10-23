@@ -29,11 +29,11 @@ public record ProcessMessage(
     /// The Id of the target event. This may be null if the message is not targeting a sub-process.
     /// </summary>
     [DataMember]
-    internal string? TargetEventId { get; init; }
+    public string? TargetEventId { get; init; }
 
     /// <summary>
     /// The data associated with the target event. This may be null if the message is not targeting a sub-process.
     /// </summary>
     [DataMember]
-    internal object? TargetEventData { get; init; }
+    public object? TargetEventData { get; init; }
 }
