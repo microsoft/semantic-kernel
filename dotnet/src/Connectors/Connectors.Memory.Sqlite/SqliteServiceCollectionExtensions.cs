@@ -14,7 +14,8 @@ public static class SqliteServiceCollectionExtensions
 {
     /// <summary>
     /// Register a SQLite <see cref="IVectorStore"/> with the specified service ID
-    /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container.
+    /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container,
+    /// assuming the connection is already opened and vector search extension is already loaded.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
@@ -40,6 +41,7 @@ public static class SqliteServiceCollectionExtensions
 
     /// <summary>
     /// Register a SQLite <see cref="IVectorStore"/> with the specified service ID.
+    /// <see cref="SqliteConnection"/> instance will be initialized, connection will be opened and vector search extension with be loaded.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
@@ -72,7 +74,8 @@ public static class SqliteServiceCollectionExtensions
 
     /// <summary>
     /// Register a SQLite <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container.
+    /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container,
+    /// assuming the connection is already opened and vector search extension is already loaded.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
@@ -105,6 +108,7 @@ public static class SqliteServiceCollectionExtensions
 
     /// <summary>
     /// Register a SQLite <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID.
+    /// <see cref="SqliteConnection"/> instance will be initialized, connection will be opened and vector search extension with be loaded.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
@@ -128,6 +132,8 @@ public static class SqliteServiceCollectionExtensions
             {
                 var connection = new SqliteConnection(connectionString);
                 var extensionName = GetExtensionName(options?.VectorSearchExtensionName);
+
+                connection.Open();
 
                 connection.LoadExtension(extensionName);
 
