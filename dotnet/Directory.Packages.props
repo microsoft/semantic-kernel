@@ -25,7 +25,7 @@
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
-    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.6" />
+    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.7" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
@@ -41,7 +41,7 @@
     <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
-    <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
+    <PackageVersion Include="System.Memory.Data" Version="8.0.1" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
     <PackageVersion Include="OllamaSharp" Version="3.0.12" />
