@@ -76,7 +76,9 @@ vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "V
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_CHAT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
-anthropic_setup: bool = is_service_setup_for_testing(["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"])
+anthropic_setup: bool = is_service_setup_for_testing(
+    ["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"], raise_if_not_set=False
+)  # We don't have an Anthropic deployment
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import platform
 from typing import Any
 
 import pandas as pd
@@ -224,54 +223,6 @@ class TestVectorStore(VectorStoreTestBase):
                 PANDAS_RECORD_DEFINITION,
                 RAW_RECORD_LIST,
                 id="weaviate_local_pandas_data_model",
-            ),
-            pytest.param(
-                "weaviate_embedded",
-                "weaviate_embedded_array_data_model",
-                {},
-                TestDataModelArray,
-                None,
-                RAW_RECORD_ARRAY,
-                id="weaviate_embedded_array_data_model",
-                marks=[
-                    pytest.mark.skipif(
-                        platform.system() == "Windows",
-                        reason="Weaviate embedded is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315",
-                    ),
-                    pytest.mark.xfail(reason="Weaviate embedded is an experimental feature and it's unstable"),
-                ],
-            ),
-            pytest.param(
-                "weaviate_embedded",
-                "weaviate_embedded_list_data_model",
-                {},
-                TestDataModelList,
-                None,
-                RAW_RECORD_LIST,
-                id="weaviate_embedded_list_data_model",
-                marks=[
-                    pytest.mark.skipif(
-                        platform.system() == "Windows",
-                        reason="Weaviate embedded is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315",
-                    ),
-                    pytest.mark.xfail(reason="Weaviate embedded is an experimental feature and it's unstable"),
-                ],
-            ),
-            pytest.param(
-                "weaviate_embedded",
-                "weaviate_embedded_pandas_data_model",
-                {},
-                pd.DataFrame,
-                PANDAS_RECORD_DEFINITION,
-                RAW_RECORD_LIST,
-                id="weaviate_embedded_pandas_data_model",
-                marks=[
-                    pytest.mark.skipif(
-                        platform.system() == "Windows",
-                        reason="Weaviate embedded is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315",
-                    ),
-                    pytest.mark.xfail(reason="Weaviate embedded is an experimental feature and it's unstable"),
-                ],
             ),
             # endregion
         ],

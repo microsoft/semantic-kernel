@@ -19,5 +19,4 @@ class VectorStoreTestBase:
             "qdrant": QdrantStore(),
             "qdrant_in_memory": QdrantStore(location=":memory:"),
             "weaviate_local": WeaviateStore(local_host="localhost"),
-            "weaviate_embedded": WeaviateStore(use_embed=True),
         }
