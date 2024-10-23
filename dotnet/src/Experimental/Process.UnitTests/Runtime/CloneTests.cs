@@ -126,7 +126,7 @@ public class CloneTests
             }
         };
 
-    private record TestState
+    private sealed record TestState
     {
         public Guid Value { get; set; }
     };
