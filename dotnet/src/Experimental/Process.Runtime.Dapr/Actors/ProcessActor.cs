@@ -10,9 +10,11 @@ using Dapr.Actors;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
+
 internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 {
     private const string DaprProcessInfoStateName = "DaprProcessInfo";
@@ -100,18 +102,18 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 }
 
                 // Initialize the step as a process.
-                var processId = new ActorId(kernelStep.State.Id!);
-                var processActor = this.ProxyFactory.CreateActorProxy<IProcess>(processId, nameof(ProcessActor));
+                var scopedProcessId = this.ScopedActorId(new ActorId(kernelStep.State.Id!));
+                var processActor = this.ProxyFactory.CreateActorProxy<IProcess>(scopedProcessId, nameof(ProcessActor));
                 await processActor.InitializeProcessAsync(kernelStep, this.Id.GetId()).ConfigureAwait(false);
-                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(processId, nameof(ProcessActor));
+                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProcessId, nameof(ProcessActor));
             }
             else
             {
                 // The current step should already have an Id.
                 Verify.NotNull(step.State?.Id);
 
-                var stepId = new ActorId(step.State.Id!);
-                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(stepId, nameof(StepActor));
+                var scopedStepId = this.ScopedActorId(new ActorId(step.State.Id!));
+                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedStepId, nameof(StepActor));
                 await stepActor.InitializeStepAsync(step, this.Id.GetId()).ConfigureAwait(false);
             }
 
@@ -232,14 +234,14 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     #endregion
 
     /// <summary>
-    /// Handles a <see cref="DaprMessage"/> that has been sent to the process. This happens only in the case
+    /// Handles a <see cref="ProcessMessage"/> that has been sent to the process. This happens only in the case
     /// of a process (this one) running as a step within another process (this one's parent). In this case the
     /// entire sub-process should be executed within a single superstep.
     /// </summary>
     /// <param name="message">The message to process.</param>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    internal override async Task HandleMessageAsync(DaprMessage message)
+    internal override async Task HandleMessageAsync(ProcessMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.TargetEventId))
         {
@@ -280,7 +282,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
     {
         Kernel localKernel = kernel ?? this._kernel;
-        Queue<DaprMessage> messageChannel = new();
+        Queue<ProcessMessage> messageChannel = new();
 
         try
         {
@@ -339,7 +341,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     }
 
     /// <summary>
-    /// Processes external events that have been sent to the process, translates them to <see cref="DaprMessage"/>s, and enqueues
+    /// Processes external events that have been sent to the process, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     private async Task EnqueueExternalMessagesAsync()
@@ -353,8 +355,9 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             {
                 foreach (var edge in edges)
                 {
-                    DaprMessage message = DaprMessageFactory.CreateFromEdge(edge, externalEvent.Data);
-                    var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(edge.OutputTarget.StepId), nameof(MessageBufferActor));
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
+                    var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
+                    var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
                     await messageQueue.EnqueueAsync(message).ConfigureAwait(false);
                 }
             }
@@ -367,7 +370,8 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <returns>True if the end message has been sent, otherwise false.</returns>
     private async Task<bool> IsEndMessageSentAsync()
     {
-        var endMessageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(EndStepId), nameof(MessageBufferActor));
+        var scopedMessageBufferId = this.ScopedActorId(new ActorId(EndStepId));
+        var endMessageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
         var messages = await endMessageQueue.DequeueAllAsync().ConfigureAwait(false);
         return messages.Count > 0;
     }
@@ -383,6 +387,16 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         var stepTasks = this._steps.Select(step => step.ToDaprStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
         return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = steps.ToList() };
+    }
+
+    /// <summary>
+    /// Scopes the Id of a step within the process to the process.
+    /// </summary>
+    /// <param name="actorId">The actor Id to scope.</param>
+    /// <returns>A new <see cref="ActorId"/> which is scoped to the process.</returns>
+    private ActorId ScopedActorId(ActorId actorId)
+    {
+        return new ActorId($"{this.Id}.{actorId.GetId()}");
     }
 
     #endregion
