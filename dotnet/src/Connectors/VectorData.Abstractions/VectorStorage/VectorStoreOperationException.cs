@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.VectorData;
 /// <summary>
 /// Exception thrown when a vector store command fails, such as upserting a record or deleting a collection.
 /// </summary>
-public class VectorStoreOperationException : VectorStoreException
+public class VectorStoreOperationException : VectorStoreTestException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreOperationException"/> class.

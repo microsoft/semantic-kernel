@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.VectorData;
 /// <summary>
 /// Exception thrown when a failure occurs while trying to convert models for storage or retrieval.
 /// </summary>
-public class VectorStoreRecordMappingException : VectorStoreException
+public class VectorStoreRecordMappingException : VectorStoreTestException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordMappingException"/> class.
