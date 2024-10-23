@@ -13,12 +13,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel;
+
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 {
-    private const string DaprStepInfoStateName = "DaprStepInfo";
+    internal const string StepParentProcessId = "parentProcessId";
+
+    private const string DaprStepInfoStateName = nameof(DaprStepInfo);
     private const string StepStateJson = "kernelStepStateJson";
     private const string StepStateType = "kernelStepStateType";
-    private const string StepParentProcessId = "parentProcessId";
     private const string StepIncomingMessagesState = "incomingMessagesState";
 
     /// <summary>
@@ -26,7 +28,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     private static readonly Type s_genericType = typeof(KernelProcessStep<>);
 
-    private readonly Kernel _kernel;
     private readonly Lazy<ValueTask> _activateTask;
 
     private DaprStepInfo? _stepInfo;
@@ -35,6 +36,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     private Type? _innerStepType;
 
     private bool _isInitialized;
+
+    protected readonly Kernel _kernel;
 
     internal Queue<DaprMessage> _incomingMessages = new();
     internal KernelProcessStepState? _stepState;

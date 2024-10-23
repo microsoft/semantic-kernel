@@ -13,16 +13,17 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
+
 internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 {
-    private const string DaprProcessInfoStateName = "DaprProcessInfo";
+    private const string DaprProcessInfoStateName = nameof(DaprProcessInfo);
+    private const string StepStateActivated = "kernelStepActivated";
     private const string EndStepId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
 
     internal readonly List<IStep> _steps = [];
-    internal readonly Kernel _kernel;
 
     internal List<DaprStepInfo>? _stepsInfos;
     internal DaprProcessInfo? _process;
@@ -40,7 +41,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     public ProcessActor(ActorHost host, Kernel kernel, ILoggerFactory? loggerFactory)
         : base(host, kernel, loggerFactory)
     {
-        this._kernel = kernel;
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
@@ -61,16 +61,16 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         }
 
         // Initialize the process
-        await this.Int_InitializeProcessAsync(processInfo, parentProcessId).ConfigureAwait(false);
+        await this.InitializeProcessActorAsync(processInfo, parentProcessId).ConfigureAwait(false);
 
         // Save the state
         await this.StateManager.AddStateAsync(DaprProcessInfoStateName, processInfo).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync("parentProcessId", parentProcessId).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync("kernelStepActivated", true).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(StepParentProcessId, parentProcessId).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(StepStateActivated, true).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
-    public async Task Int_InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId)
+    private async Task InitializeProcessActorAsync(DaprProcessInfo processInfo, string? parentProcessId)
     {
         Verify.NotNull(processInfo);
         Verify.NotNull(processInfo.Steps);
@@ -78,7 +78,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         this.ParentProcessId = parentProcessId;
         this._process = processInfo;
         this._stepsInfos = new List<DaprStepInfo>(this._process.Steps);
-        this._logger = this.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<StepActor>();
+        this._logger = this.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<ProcessActor>();
 
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
@@ -219,8 +219,8 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         var existingProcessInfo = await this.StateManager.TryGetStateAsync<DaprProcessInfo>(DaprProcessInfoStateName).ConfigureAwait(false);
         if (existingProcessInfo.HasValue)
         {
-            this.ParentProcessId = await this.StateManager.GetStateAsync<string>("parentProcessId").ConfigureAwait(false);
-            await this.Int_InitializeProcessAsync(existingProcessInfo.Value, this.ParentProcessId).ConfigureAwait(false);
+            this.ParentProcessId = await this.StateManager.GetStateAsync<string>(StepParentProcessId).ConfigureAwait(false);
+            await this.InitializeProcessActorAsync(existingProcessInfo.Value, this.ParentProcessId).ConfigureAwait(false);
         }
     }
 
