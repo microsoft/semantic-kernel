@@ -65,7 +65,7 @@ internal sealed class LocalMap : LocalStep
             if (results == null)
             {
                 Type elementType = result.GetType(); // %%% NO RESULT ON FAILURE
-                results = Array.CreateInstance(elementType, runningProcesses.Count); // %%% CONSTRAINS RECIEVING SIGNATURE (NOT List<T>)
+                results = Array.CreateInstance(elementType, runningProcesses.Count); // %%% CONSTRAINS RECEIVING SIGNATURE (NOT List<T>)
             }
 
             results.SetValue(result, index);
