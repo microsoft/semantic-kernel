@@ -31,6 +31,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected readonly string? ParentProcessId;
     protected readonly ILoggerFactory? LoggerFactory;
     protected Dictionary<string, List<KernelProcessEdge>> _outputEdges;
+    private Func<ProcessEvent, bool>? _eventHandler;
 
     /// <summary>
     /// Represents a step in a process that is running in-process.
@@ -112,6 +113,18 @@ internal class LocalStep : IKernelProcessMessageChannel
     {
         this.EmitEvent(ProcessEvent.FromKernelProcessEvent(processEvent, this._eventNamespace));
         return default;
+    }
+
+    internal void InterceptEvent(Func<ProcessEvent, bool> handler)
+    {
+        if (this._eventHandler !=null)
+        {
+            var errorMessage = $"An event handler has already been set: {this.Name}/{this._stepInfo.InnerStepType.Name} [{this.Id}]";
+            this._logger.LogError("{ErrorMessage}", errorMessage);
+            throw new KernelException(errorMessage);
+        }
+
+        this._eventHandler = handler;
     }
 
     /// <summary>
@@ -283,7 +296,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected void EmitEvent(ProcessEvent localEvent)
     {
         var scopedEvent = this.ScopedEvent(localEvent);
-        //Console.WriteLine($"\tLOCAL EMIT: {scopedEvent.Id}");
+        Console.WriteLine($"\tLOCAL EMIT: {scopedEvent.Id} {localEvent.Id} {localEvent.Namespace}");
         this._outgoingEventQueue.Enqueue(scopedEvent);
     }
 
