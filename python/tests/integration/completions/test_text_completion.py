@@ -144,6 +144,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
+            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_anthropic_claude_text_completion",
         ),
         pytest.param(
@@ -151,6 +152,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
+            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_cohere_command_text_completion",
         ),
         pytest.param(
@@ -158,6 +160,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
+            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_ai21labs_text_completion",
         ),
         pytest.param(
@@ -165,6 +168,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
+            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_meta_llama_text_completion",
         ),
         pytest.param(
@@ -172,6 +176,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
+            pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_mistralai_text_completion",
         ),
     ],
