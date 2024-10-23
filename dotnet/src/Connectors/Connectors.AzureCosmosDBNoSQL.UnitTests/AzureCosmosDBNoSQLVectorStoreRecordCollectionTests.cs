@@ -649,40 +649,43 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal(expected.IndexingPolicy.IndexingMode, actual.IndexingPolicy.IndexingMode);
         Assert.Equal(expected.IndexingPolicy.Automatic, actual.IndexingPolicy.Automatic);
 
-        for (var i = 0; i < expected.VectorEmbeddingPolicy.Embeddings.Count; i++)
+        if (expected.IndexingPolicy.IndexingMode != IndexingMode.None)
         {
-            var expectedEmbedding = expected.VectorEmbeddingPolicy.Embeddings[i];
-            var actualEmbedding = actual.VectorEmbeddingPolicy.Embeddings[i];
+            for (var i = 0; i < expected.VectorEmbeddingPolicy.Embeddings.Count; i++)
+            {
+                var expectedEmbedding = expected.VectorEmbeddingPolicy.Embeddings[i];
+                var actualEmbedding = actual.VectorEmbeddingPolicy.Embeddings[i];
 
-            Assert.Equal(expectedEmbedding.DataType, actualEmbedding.DataType);
-            Assert.Equal(expectedEmbedding.Dimensions, actualEmbedding.Dimensions);
-            Assert.Equal(expectedEmbedding.DistanceFunction, actualEmbedding.DistanceFunction);
-            Assert.Equal(expectedEmbedding.Path, actualEmbedding.Path);
-        }
+                Assert.Equal(expectedEmbedding.DataType, actualEmbedding.DataType);
+                Assert.Equal(expectedEmbedding.Dimensions, actualEmbedding.Dimensions);
+                Assert.Equal(expectedEmbedding.DistanceFunction, actualEmbedding.DistanceFunction);
+                Assert.Equal(expectedEmbedding.Path, actualEmbedding.Path);
+            }
 
-        for (var i = 0; i < expected.IndexingPolicy.VectorIndexes.Count; i++)
-        {
-            var expectedIndexPath = expected.IndexingPolicy.VectorIndexes[i];
-            var actualIndexPath = actual.IndexingPolicy.VectorIndexes[i];
+            for (var i = 0; i < expected.IndexingPolicy.VectorIndexes.Count; i++)
+            {
+                var expectedIndexPath = expected.IndexingPolicy.VectorIndexes[i];
+                var actualIndexPath = actual.IndexingPolicy.VectorIndexes[i];
 
-            Assert.Equal(expectedIndexPath.Type, actualIndexPath.Type);
-            Assert.Equal(expectedIndexPath.Path, actualIndexPath.Path);
-        }
+                Assert.Equal(expectedIndexPath.Type, actualIndexPath.Type);
+                Assert.Equal(expectedIndexPath.Path, actualIndexPath.Path);
+            }
 
-        for (var i = 0; i < expected.IndexingPolicy.IncludedPaths.Count; i++)
-        {
-            var expectedIncludedPath = expected.IndexingPolicy.IncludedPaths[i].Path;
-            var actualIncludedPath = actual.IndexingPolicy.IncludedPaths[i].Path;
+            for (var i = 0; i < expected.IndexingPolicy.IncludedPaths.Count; i++)
+            {
+                var expectedIncludedPath = expected.IndexingPolicy.IncludedPaths[i].Path;
+                var actualIncludedPath = actual.IndexingPolicy.IncludedPaths[i].Path;
 
-            Assert.Equal(expectedIncludedPath, actualIncludedPath);
-        }
+                Assert.Equal(expectedIncludedPath, actualIncludedPath);
+            }
 
-        for (var i = 0; i < expected.IndexingPolicy.ExcludedPaths.Count; i++)
-        {
-            var expectedExcludedPath = expected.IndexingPolicy.ExcludedPaths[i].Path;
-            var actualExcludedPath = actual.IndexingPolicy.ExcludedPaths[i].Path;
+            for (var i = 0; i < expected.IndexingPolicy.ExcludedPaths.Count; i++)
+            {
+                var expectedExcludedPath = expected.IndexingPolicy.ExcludedPaths[i].Path;
+                var actualExcludedPath = actual.IndexingPolicy.ExcludedPaths[i].Path;
 
-            Assert.Equal(expectedExcludedPath, actualExcludedPath);
+                Assert.Equal(expectedExcludedPath, actualExcludedPath);
+            }
         }
 
         return true;

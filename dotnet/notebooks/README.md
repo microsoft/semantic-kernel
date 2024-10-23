@@ -58,12 +58,12 @@ For a quick dive, look at the [getting started notebook](00-getting-started.ipyn
 2. [Running AI prompts from file](02-running-prompts-from-file.ipynb)
 3. [Creating Semantic Functions at runtime (i.e. inline functions)](03-semantic-function-inline.ipynb)
 4. [Using Kernel Arguments to Build a Chat Experience](04-kernel-arguments-chat.ipynb)
-5. [Creating and Executing Plans](05-using-the-planner.ipynb)
+5. [Introduction to the Planning/Function Calling](05-using-function-calling.ipynb)
 6. [Building Memory with Embeddings](06-memory-and-embeddings.ipynb)
 7. [Creating images with DALL-E 3](07-DALL-E-3.ipynb)
 8. [Chatting with ChatGPT and Images](08-chatGPT-with-DALL-E-3.ipynb)
 9. [Building Semantic Memory with Chroma](09-memory-with-chroma.ipynb)
-10. [BingSearch using Kernel](10-BingSearch-using-kernel.ipynb)
+10. [BingSearch using Kernel](10-RAG-with-BingSearch.ipynb)
 
 # Run notebooks in the browser with JupyterLab
 
