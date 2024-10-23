@@ -508,7 +508,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         foreach (var edge in this.GetEdgeForEvent(daprEvent.Id!))
         {
             ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
-            var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(edge.OutputTarget.StepId), nameof(MessageBufferActor));
+            var scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
+            var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message).ConfigureAwait(false);
         }
     }
@@ -525,14 +526,13 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     }
 
     /// <summary>
-    /// Generates a scoped event for the step.
+    /// Scopes the Id of a step within the process to the process.
     /// </summary>
-    /// <param name="processEvent">The event.</param>
-    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
-    internal ProcessEvent ScopedEvent(KernelProcessEvent processEvent)
+    /// <param name="actorId">The actor Id to scope.</param>
+    /// <returns>A new <see cref="ActorId"/> which is scoped to the process.</returns>
+    private ActorId ScopedActorId(ActorId actorId)
     {
-        Verify.NotNull(processEvent);
-        return ProcessEvent.FromKernelProcessEvent(processEvent, $"{this.Name}_{this.Id}");
+        return new ActorId($"{this.ParentProcessId}.{actorId.GetId()}");
     }
 
     /// <summary>
