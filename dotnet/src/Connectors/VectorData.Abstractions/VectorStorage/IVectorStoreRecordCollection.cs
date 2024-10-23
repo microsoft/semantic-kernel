@@ -124,4 +124,18 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">Throw when mapping between the storage model and record data model fails.</exception>
     IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Search the vector store for records that match the given options.
+    /// </summary>
+    /// <remarks>
+    /// This is a regular search, without using a search vector, however for some vector stores, it may internally use
+    /// an artificial vector to perform the search, since not all vector stores support searching without a vector.
+    /// </remarks>
+    /// <param name="options">The options that control the behavior of the search.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The records found by the vector search, including their result scores.</returns>
+    Task<VectorlessSearchResults<TRecord>> VectorlessSearchAsync(
+        VectorlessSearchOptions? options = default,
+        CancellationToken cancellationToken = default);
 }

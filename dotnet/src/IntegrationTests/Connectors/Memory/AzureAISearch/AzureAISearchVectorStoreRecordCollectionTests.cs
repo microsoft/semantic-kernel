@@ -337,6 +337,46 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     [Theory(Skip = SkipReason)]
     [InlineData("equality", true)]
     [InlineData("tagContains", false)]
+    public async Task ItCanSearchWithoutVectorAndWithFiltersAsync(string option, bool includeVectors)
+    {
+        // Arrange.
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+
+        // Act.
+        var filter = option == "equality" ? new VectorlessSearchFilter().EqualTo("HotelName", "Hotel 3") : new VectorlessSearchFilter().AnyTagEqualTo("Tags", "bar");
+        var actual = await sut.VectorlessSearchAsync(
+            new()
+            {
+                IncludeVectors = includeVectors,
+                Filter = filter,
+            });
+
+        // Assert.
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResult = searchResults.First();
+        Assert.Equal("BaseSet-3", searchResult.HotelId);
+        Assert.Equal("Hotel 3", searchResult.HotelName);
+        Assert.Equal("This is a great hotel", searchResult.Description);
+        Assert.Equal(new[] { "air conditioning", "bar", "continental breakfast" }, searchResult.Tags);
+        Assert.True(searchResult.ParkingIncluded);
+        Assert.Equal(new DateTimeOffset(2015, 9, 20, 0, 0, 0, TimeSpan.Zero), searchResult.LastRenovationDate);
+        Assert.Equal(4.8, searchResult.Rating);
+        if (includeVectors)
+        {
+            Assert.NotNull(searchResult.DescriptionEmbedding);
+            var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
+            Assert.Equal(embedding, searchResult.DescriptionEmbedding!.Value.ToArray());
+        }
+        else
+        {
+            Assert.Null(searchResult.DescriptionEmbedding);
+        }
+    }
+
+    [Theory(Skip = SkipReason)]
+    [InlineData("equality", true)]
+    [InlineData("tagContains", false)]
     public async Task ItCanSearchWithVectorAndFiltersAsync(string option, bool includeVectors)
     {
         // Arrange.

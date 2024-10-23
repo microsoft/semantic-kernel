@@ -444,6 +444,17 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
+    public async Task<VectorlessSearchResults<TRecord>> VectorlessSearchAsync(VectorlessSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var dimensions = this._propertyReader.VectorProperty?.Dimensions ?? throw new InvalidOperationException("The collection does not have any vector properties, so simulated vectorless search is not possible.");
+        var vectorSearchResults = await this.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new float[dimensions]),
+            VectorSearchOptions.FromVectorlessSearchOptions(options),
+            cancellationToken).ConfigureAwait(false);
+        return VectorStoreSearchResultMapping.ConvertToVectorlessSearchResults(vectorSearchResults, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);

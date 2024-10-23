@@ -15,17 +15,17 @@ internal static class AzureAISearchVectorStoreCollectionSearchMapping
     /// <summary>
     /// Build an OData filter string from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>
-    /// <param name="basicVectorSearchFilter">The <see cref="VectorSearchFilter"/> to build an OData filter string from.</param>
+    /// <param name="filterClausees">The <see cref="FilterClause"/> objects to build an OData filter string from.</param>
     /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
     /// <returns>The OData filter string.</returns>
     /// <exception cref="InvalidOperationException">Thrown when a provided filter value is not supported.</exception>
-    public static string BuildFilterString(VectorSearchFilter? basicVectorSearchFilter, IReadOnlyDictionary<string, string> storagePropertyNames)
+    public static string BuildFilterString(IEnumerable<FilterClause>? filterClausees, IReadOnlyDictionary<string, string> storagePropertyNames)
     {
         var filterString = string.Empty;
-        if (basicVectorSearchFilter?.FilterClauses is not null)
+        if (filterClausees is not null)
         {
             // Map Equality clauses.
-            var filterStrings = basicVectorSearchFilter?.FilterClauses.OfType<EqualToFilterClause>().Select(x =>
+            var filterStrings = filterClausees.OfType<EqualToFilterClause>().Select(x =>
             {
                 string storageFieldName = GetStoragePropertyName(storagePropertyNames, x.FieldName);
 
@@ -46,7 +46,7 @@ internal static class AzureAISearchVectorStoreCollectionSearchMapping
             });
 
             // Map tag contains clauses.
-            var tagListContainsStrings = basicVectorSearchFilter?.FilterClauses
+            var tagListContainsStrings = filterClausees
                 .OfType<AnyTagEqualToFilterClause>()
                 .Select(x =>
                 {

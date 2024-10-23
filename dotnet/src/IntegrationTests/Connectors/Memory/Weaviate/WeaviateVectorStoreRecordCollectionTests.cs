@@ -207,6 +207,39 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     }
 
     [Theory]
+    [MemberData(nameof(VectorizedSearchWithFilterData))]
+    public async Task VectorlessSearchReturnsValidResultsWithFilterAsync(VectorSearchFilter filter, List<string> expectedIds)
+    {
+        // Arrange
+        var hotel1 = this.CreateTestHotel(hotelId: new Guid("11111111-1111-1111-1111-111111111111"), embedding: new[] { 30f, 31f, 32f, 33f });
+        var hotel2 = this.CreateTestHotel(hotelId: new Guid("22222222-2222-2222-2222-222222222222"), embedding: new[] { 31f, 32f, 33f, 34f });
+        var hotel3 = this.CreateTestHotel(hotelId: new Guid("33333333-3333-3333-3333-333333333333"), embedding: new[] { 20f, 20f, 20f, 20f });
+        var hotel4 = this.CreateTestHotel(hotelId: new Guid("44444444-4444-4444-4444-444444444444"), embedding: new[] { -1000f, -1000f, -1000f, -1000f });
+
+        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(fixture.HttpClient!, "VectorlessSearchWithFilter");
+
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+
+        // Act
+        var actual = await sut.VectorlessSearchAsync(new()
+        {
+            Filter = new VectorlessSearchFilter(filter.FilterClauses),
+            Top = 4,
+        });
+
+        // Assert
+        var searchResults = await actual.Results.ToListAsync();
+        var actualIds = searchResults.Select(l => l.HotelId.ToString()).ToList();
+
+        expectedIds.Sort();
+        actualIds.Sort();
+
+        Assert.Equal(expectedIds, actualIds);
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task VectorizedSearchReturnsValidResultsByDefaultAsync(bool includeVectors)

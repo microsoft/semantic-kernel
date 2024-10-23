@@ -305,6 +305,44 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     [Theory(Skip = SkipReason)]
     [InlineData("hotelCode", true)]
     [InlineData("hotelName", false)]
+    public async Task ItCanSearchWithoutVectorAndWithFilterAsync(string filterType, bool includeVectors)
+    {
+        // Arrange
+        var options = new RedisHashSetVectorStoreRecordCollectionOptions<BasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetVectorStoreRecordCollection<BasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var filter = filterType == "equality" ? new VectorlessSearchFilter().EqualTo("HotelCode", 1) : new VectorlessSearchFilter().EqualTo("HotelName", "My Hotel 1");
+
+        // Act
+        var actual = await sut.VectorlessSearchAsync(
+            new()
+            {
+                IncludeVectors = includeVectors,
+                Filter = filter
+            });
+
+        // Assert
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResult = searchResults.First();
+        Assert.Equal("HBaseSet-1", searchResult?.HotelId);
+        Assert.Equal("My Hotel 1", searchResult?.HotelName);
+        Assert.Equal(1, searchResult?.HotelCode);
+        Assert.True(searchResult?.ParkingIncluded);
+        Assert.Equal(3.6, searchResult?.Rating);
+        Assert.Equal("This is a great hotel.", searchResult?.Description);
+        if (includeVectors)
+        {
+            Assert.Equal(new[] { 30f, 31f, 32f, 33f }, searchResult?.DescriptionEmbedding?.ToArray());
+        }
+        else
+        {
+            Assert.Null(searchResult?.DescriptionEmbedding);
+        }
+    }
+
+    [Theory(Skip = SkipReason)]
+    [InlineData("hotelCode", true)]
+    [InlineData("hotelName", false)]
     public async Task ItCanSearchWithFloat32VectorAndFilterAsync(string filterType, bool includeVectors)
     {
         // Arrange

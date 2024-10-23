@@ -43,4 +43,27 @@ public class VectorSearchOptions
     /// count will be null even if requested via this option.
     /// </remarks>
     public bool IncludeTotalCount { get; init; } = false;
+
+    /// <summary>
+    /// Create a new <see cref="VectorSearchOptions"/> instance from a <see cref="VectorlessSearchOptions"/> instance
+    /// by copying all matching properties.
+    /// </summary>
+    /// <param name="options">The <see cref="VectorlessSearchOptions"/> instance to create the <see cref="VectorSearchOptions"/> instance from.</param>
+    /// <returns>The new <see cref="VectorSearchOptions"/> instance.</returns>
+    public static VectorSearchOptions FromVectorlessSearchOptions(VectorlessSearchOptions? options)
+    {
+        if (options is null)
+        {
+            return new VectorSearchOptions();
+        }
+
+        return new VectorSearchOptions()
+        {
+            Filter = options.Filter is not null ? new VectorSearchFilter(options.Filter.FilterClauses) : null,
+            Top = options.Top,
+            Skip = options.Skip,
+            IncludeVectors = options.IncludeVectors,
+            IncludeTotalCount = options.IncludeTotalCount
+        };
+    }
 }
