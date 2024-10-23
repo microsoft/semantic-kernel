@@ -17,7 +17,7 @@ internal static class ProcessMessageFactory
     /// <returns>An instance of <see cref="ProcessMessage"/></returns>
     internal static ProcessMessage CreateFromEdge(KernelProcessEdge edge, object? data)
     {
-        var target = edge.OutputTarget;
+        KernelProcessFunctionTarget target = edge.OutputTarget;
         Dictionary<string, object?> parameterValue = [];
         if (!string.IsNullOrWhiteSpace(target.ParameterName))
         {

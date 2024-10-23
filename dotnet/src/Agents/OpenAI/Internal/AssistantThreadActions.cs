@@ -404,6 +404,15 @@ internal static class AssistantThreadActions
                     {
                         yield return toolContent;
                     }
+                    else
+                    {
+                        yield return
+                            new StreamingChatMessageContent(AuthorRole.Assistant, null)
+                            {
+                                AuthorName = agent.Name,
+                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments)]
+                            };
+                    }
                 }
                 else if (update is RunStepUpdate stepUpdate)
                 {
@@ -493,15 +502,16 @@ internal static class AssistantThreadActions
                     {
                         foreach (RunStepToolCall toolCall in step.Details.ToolCalls)
                         {
-                            switch (toolCall.ToolKind)
+                            if (toolCall.ToolKind == RunStepToolCallKind.Function)
                             {
-                                case RunStepToolCallKind.CodeInterpreter:
-                                    messages?.Add(GenerateCodeInterpreterContent(agent.GetName(), toolCall.CodeInterpreterInput, step));
-                                    break;
-                                case RunStepToolCallKind.Function:
-                                    messages?.Add(GenerateFunctionResultContent(agent.GetName(), stepFunctionResults[step.Id], step));
-                                    stepFunctionResults.Remove(step.Id);
-                                    break;
+                                messages?.Add(GenerateFunctionResultContent(agent.GetName(), stepFunctionResults[step.Id], step));
+                                stepFunctionResults.Remove(step.Id);
+                                break;
+                            }
+
+                            if (toolCall.ToolKind == RunStepToolCallKind.CodeInterpreter)
+                            {
+                                messages?.Add(GenerateCodeInterpreterContent(agent.GetName(), toolCall.CodeInterpreterInput, step));
                             }
                         }
                     }

@@ -3,25 +3,27 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
-/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure CosmosDB MongoDB.
+/// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within MongoDB.
 /// </summary>
-internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, BsonDocument>
+[ExcludeFromCodeCoverage]
+internal sealed class MongoDBGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, BsonDocument>
 {
     /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBGenericDataModelMapper"/> class.
+    /// Initializes a new instance of the <see cref="MongoDBGenericDataModelMapper"/> class.
     /// </summary>
     /// <param name="vectorStoreRecordDefinition">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
-    public AzureCosmosDBMongoDBGenericDataModelMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public MongoDBGenericDataModelMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition)
     {
         Verify.NotNull(vectorStoreRecordDefinition);
 
@@ -42,7 +44,7 @@ internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreR
 
             if (property is VectorStoreRecordKeyProperty keyProperty)
             {
-                document[AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName] = dataModel.Key;
+                document[MongoDBConstants.MongoReservedKeyPropertyName] = dataModel.Key;
             }
             else if (property is VectorStoreRecordDataProperty dataProperty)
             {
@@ -80,7 +82,7 @@ internal sealed class AzureCosmosDBMongoDBGenericDataModelMapper : IVectorStoreR
 
             if (property is VectorStoreRecordKeyProperty keyProperty)
             {
-                if (storageModel.TryGetValue(AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName, out var keyValue))
+                if (storageModel.TryGetValue(MongoDBConstants.MongoReservedKeyPropertyName, out var keyValue))
                 {
                     key = keyValue.AsString;
                 }

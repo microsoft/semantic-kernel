@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class EventBufferActor : Actor, IEventBuffer
 {
-    private const string EventQueueState = "ProcessEventBufferState";
+    private const string EventQueueState = "DaprEventBufferState";
     private Queue<ProcessEvent>? _queue = new();
 
     /// <summary>

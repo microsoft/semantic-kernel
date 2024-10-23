@@ -17,12 +17,17 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class LocalStep : IKernelProcessMessageChannel
 {
+    /// <summary>
+    /// The generic state type for a process step.
+    /// </summary>
+    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
+
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
     private readonly KernelProcessStepInfo _stepInfo;
     private readonly string _eventNamespace;
     private readonly ILogger _logger;
-    private readonly string _id = Guid.NewGuid().ToString("n");
+    private readonly string _id = Guid.NewGuid().ToString("n"); // %%% VERIFY WHY
 
     protected readonly Kernel _kernel;
     protected KernelProcessStepState _stepState;
@@ -134,14 +139,14 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         string messageLogParameters = string.Join(", ", message.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
-        this._logger?.LogDebug("Received message from '{SourceId}' targeting function '{FunctionName}' and parameters '{Parameters}'.", message.SourceId, message.FunctionName, messageLogParameters);
+        this._logger.LogDebug("Received message from '{SourceId}' targeting function '{FunctionName}' and parameters '{Parameters}'.", message.SourceId, message.FunctionName, messageLogParameters);
 
         // Add the message values to the inputs for the function
         foreach (var kvp in message.Values)
         {
             if (this._inputs.TryGetValue(message.FunctionName, out Dictionary<string, object?>? functionName) && functionName != null && functionName.TryGetValue(kvp.Key, out object? parameterName) && parameterName != null)
             {
-                this._logger?.LogWarning("Step {StepName} already has input for {FunctionName}.{Key}, it is being overwritten with a message from Step named '{SourceId}'.", this.Name, message.FunctionName, kvp.Key, message.SourceId);
+                this._logger.LogWarning("Step {StepName} already has input for {FunctionName}.{Key}, it is being overwritten with a message from Step named '{SourceId}'.", this.Name, message.FunctionName, kvp.Key, message.SourceId);
             }
 
             if (!this._inputs.TryGetValue(message.FunctionName, out Dictionary<string, object?>? functionParameters))
@@ -160,7 +165,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         if (invocableFunctions.Count == 0)
         {
             string missingKeysLog() => string.Join(", ", missingKeys.Select(k => $"{k.Key}: {string.Join(", ", k.Value?.Where(v => v.Value == null).Select(v => v.Key) ?? [])}"));
-            this._logger?.LogDebug("No invocable functions, missing keys: {MissingKeys}", missingKeysLog());
+            this._logger.LogDebug("No invocable functions, missing keys: {MissingKeys}", missingKeysLog());
             return;
         }
 
@@ -168,7 +173,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         var targetFunction = invocableFunctions.FirstOrDefault((name) => name == message.FunctionName) ??
             throw new InvalidOperationException($"A message targeting function '{message.FunctionName}' has resulted in a function named '{invocableFunctions.First()}' becoming invocable. Are the function names configured correctly?");
 
-        this._logger?.LogDebug("Step with Id `{StepId}` received all required input for function [{TargetFunction}] and is executing.", this.Name, targetFunction);
+        this._logger.LogDebug("Step with Id `{StepId}` received all required input for function [{TargetFunction}] and is executing.", this.Name, targetFunction);
 
         // Concat all the inputs and run the function
         KernelArguments arguments = new(this._inputs[targetFunction]!);
@@ -191,7 +196,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
         catch (Exception ex)
         {
-            this._logger?.LogError("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
+            this._logger.LogError("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             eventName = $"{targetFunction}.OnError";
             eventValue = ex;
         }
@@ -234,7 +239,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         if (stateObject is null)
         {
             var errorMessage = "The state object for the KernelProcessStep could not be created.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
+            this._logger.LogError("{ErrorMessage}", errorMessage);
             throw new KernelException(errorMessage);
         }
 
@@ -242,7 +247,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         if (methodInfo is null)
         {
             var errorMessage = "The ActivateAsync method for the KernelProcessStep could not be found.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
+            this._logger.LogError("{ErrorMessage}", errorMessage);
             throw new KernelException(errorMessage);
         }
 
@@ -280,8 +285,8 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <summary>
     /// Emits an event from the step.
     /// </summary>
-    /// <param name="ProcessEvent">The event to emit.</param>
-    protected void EmitEvent(ProcessEvent ProcessEvent)
+    /// <param name="localEvent">The event to emit.</param>
+    protected void EmitEvent(ProcessEvent localEvent)
     {
         var scopedEvent = this.ScopedEvent(ProcessEvent);
         //Console.WriteLine($"\tLOCAL EMIT: {scopedEvent.Id}");
@@ -291,9 +296,9 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <summary>
     /// Generates a scoped event for the step.
     /// </summary>
-    /// <param name="ProcessEvent">The event.</param>
+    /// <param name="localEvent">The event.</param>
     /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
-    protected ProcessEvent ScopedEvent(ProcessEvent ProcessEvent)
+    protected ProcessEvent ScopedEvent(ProcessEvent localEvent)
     {
         Verify.NotNull(ProcessEvent);
         return ProcessEvent with { Namespace = $"{this.Name}_{this.Id}" };

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
@@ -8,9 +9,10 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Conventions;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
-internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, BsonDocument>
+[ExcludeFromCodeCoverage]
+internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, BsonDocument>
 {
     /// <summary>A key property info of the data model.</summary>
     private readonly PropertyInfo _keyProperty;
@@ -19,14 +21,14 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     private readonly string _keyPropertyName;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordMapper{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="MongoDBVectorStoreRecordMapper{TRecord}"/> class.
     /// </summary>
     /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
-    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordPropertyReader propertyReader)
+    public MongoDBVectorStoreRecordMapper(VectorStoreRecordPropertyReader propertyReader)
     {
-        propertyReader.VerifyKeyProperties(AzureCosmosDBMongoDBConstants.SupportedKeyTypes);
-        propertyReader.VerifyDataProperties(AzureCosmosDBMongoDBConstants.SupportedDataTypes, supportEnumerable: true);
-        propertyReader.VerifyVectorProperties(AzureCosmosDBMongoDBConstants.SupportedVectorTypes);
+        propertyReader.VerifyKeyProperties(MongoDBConstants.SupportedKeyTypes);
+        propertyReader.VerifyDataProperties(MongoDBConstants.SupportedDataTypes, supportEnumerable: true);
+        propertyReader.VerifyVectorProperties(MongoDBConstants.SupportedVectorTypes);
 
         this._keyPropertyName = propertyReader.KeyPropertyName;
         this._keyProperty = propertyReader.KeyPropertyInfo;
@@ -37,7 +39,7 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
         };
 
         ConventionRegistry.Register(
-            nameof(AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>),
+            nameof(MongoDBVectorStoreRecordMapper<TRecord>),
             conventionPack,
             type => type == typeof(TRecord));
     }
@@ -47,13 +49,13 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
         var document = dataModel.ToBsonDocument();
 
         // Handle key property mapping due to reserved key name in Mongo.
-        if (!document.Contains(AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName))
+        if (!document.Contains(MongoDBConstants.MongoReservedKeyPropertyName))
         {
             var value = document[this._keyPropertyName];
 
             document.Remove(this._keyPropertyName);
 
-            document[AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName] = value;
+            document[MongoDBConstants.MongoReservedKeyPropertyName] = value;
         }
 
         return document;
@@ -62,12 +64,12 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     public TRecord MapFromStorageToDataModel(BsonDocument storageModel, StorageToDataModelMapperOptions options)
     {
         // Handle key property mapping due to reserved key name in Mongo.
-        if (!this._keyPropertyName.Equals(AzureCosmosDBMongoDBConstants.DataModelReservedKeyPropertyName, StringComparison.OrdinalIgnoreCase) &&
+        if (!this._keyPropertyName.Equals(MongoDBConstants.DataModelReservedKeyPropertyName, StringComparison.OrdinalIgnoreCase) &&
             this._keyProperty.GetCustomAttribute<BsonIdAttribute>() is null)
         {
-            var value = storageModel[AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName];
+            var value = storageModel[MongoDBConstants.MongoReservedKeyPropertyName];
 
-            storageModel.Remove(AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName);
+            storageModel.Remove(MongoDBConstants.MongoReservedKeyPropertyName);
 
             storageModel[this._keyPropertyName] = value;
         }
