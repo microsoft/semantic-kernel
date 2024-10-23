@@ -60,7 +60,9 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.WithTrimmingChatHistoryReducer(1);
+
+        var truncatedSize = 2; // keep system message and last user message only
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new TruncatingChatHistoryReducer(truncatedSize));
 
         var chatHistory = new ChatHistory("You are a librarian and expert on books about cities");
 
@@ -101,7 +103,10 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.WithTrimmingChatHistoryReducer(1);
+
+        var truncatedSize = 2; // keep system message and last user message only
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new TruncatingChatHistoryReducer(truncatedSize));
+
 
         var chatHistory = new ChatHistory("You are a librarian and expert on books about cities");
 
@@ -147,7 +152,7 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.WithMaxTokensChatHistoryReducer(100);
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new MaxTokensChatHistoryReducer(100));
 
         var chatHistory = new ChatHistory();
         chatHistory.AddSystemMessageWithTokenCount("You are an expert on the best restaurants in the world. Keep responses short.");
@@ -197,10 +202,9 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         OpenAIChatCompletionService openAiChatService = new(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
-        var systemPrompt = "You are an expert on the best restaurants in every city. Answer for the city the user has asked about.";
-        IChatCompletionService chatService = openAiChatService.WithSummarizingChatHistoryReducer(Output, systemPrompt, summarizationPrompt, 1);
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new SummarizingChatHistoryReducer(openAiChatService, 2, 6));
 
-        var chatHistory = new ChatHistory();
+        var chatHistory = new ChatHistory("You are an expert on the best restaurants in every city. Answer for the city the user has asked about.");
 
         string[] userMessages = [
             "Recommend restaurants in Seattle",
