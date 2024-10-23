@@ -21,7 +21,7 @@ from tests.integration.completions.chat_completion_test_base import (
     anthropic_setup,
     google_ai_setup,
     mistral_ai_setup,
-    ollama_setup,
+    ollama_tool_call_setup,
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
@@ -652,7 +652,7 @@ pytestmark = pytest.mark.parametrize(
         # endregion
         # region Ollama
         pytest.param(
-            "ollama",
+            "ollama_tool_call",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
@@ -672,11 +672,11 @@ pytestmark = pytest.mark.parametrize(
                 "test_type": FunctionChoiceTestTypes.AUTO,
                 "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
             id="ollama_tool_call_auto",
         ),
         pytest.param(
-            "ollama",
+            "ollama_tool_call",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=False, filters={"excluded_plugins": ["task_plugin"]}
@@ -695,11 +695,11 @@ pytestmark = pytest.mark.parametrize(
                 "test_type": FunctionChoiceTestTypes.NON_AUTO,
                 "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
             id="ollama_tool_call_non_auto",
         ),
         pytest.param(
-            "ollama",
+            "ollama_tool_call",
             {},
             [
                 [
@@ -725,11 +725,11 @@ pytestmark = pytest.mark.parametrize(
                 "test_type": FunctionChoiceTestTypes.FLOW,
                 "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
             id="ollama_tool_call_flow",
         ),
         pytest.param(
-            "ollama",
+            "ollama_tool_call",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=True, filters={"excluded_plugins": ["task_plugin"]}
@@ -747,7 +747,7 @@ pytestmark = pytest.mark.parametrize(
                 "test_type": FunctionChoiceTestTypes.AUTO,
                 "streaming": False,  # Streaming tool calls are not supported by Ollama
             },
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=pytest.mark.skipif(not ollama_tool_call_setup, reason="Need local Ollama setup"),
             id="ollama_tool_call_auto_complex_return_type",
         ),
         # endregion

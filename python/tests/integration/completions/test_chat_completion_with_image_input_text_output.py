@@ -15,7 +15,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     google_ai_setup,
-    ollama_setup,
+    ollama_image_setup,
     onnx_setup,
     vertex_ai_setup,
 )
@@ -207,7 +207,7 @@ pytestmark = pytest.mark.parametrize(
             id="vertex_ai_image_input_file",
         ),
         pytest.param(
-            "ollama",
+            "ollama_image",
             {},
             [
                 ChatMessageContent(
@@ -225,7 +225,7 @@ pytestmark = pytest.mark.parametrize(
                 ),
             ],
             {},
-            marks=pytest.mark.skipif(not ollama_setup, reason="Ollama Environment Variables not set"),
+            marks=pytest.mark.skipif(not ollama_image_setup, reason="Ollama Environment Variables not set"),
             id="ollama_image_input_file",
         ),
         pytest.param(
