@@ -12,7 +12,7 @@ internal static class StepExtensions
     /// <summary>
     /// The generic state type for a process step.
     /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
+    private static readonly Type s_genericType = typeof(KernelProcessStepState<>);
 
     public static KernelProcessStepInfo Clone(this KernelProcessStepInfo step, ILogger logger)
     {
@@ -34,16 +34,14 @@ internal static class StepExtensions
         return copy;
     }
 
-    private static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType)
+    // Exposed for testing
+    public static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType)
     {
-        // If the userStateType is null, then the sourceState is a KernelProcessStepState.
-        if (userStateType == null)
+        KernelProcessStepState newState = (KernelProcessStepState)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id)!; // $$$ EXCEPTION / NULL RESULT
+        if (userStateType != null)
         {
-            return new KernelProcessStepState(sourceState.Name, sourceState.Id);
+            newState.InitializeUserState(stateType, userStateType);
         }
-
-        KernelProcessStepState newState = (KernelProcessStepState)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id)!; // $$$ EXCEPTION
-        newState.InitializeUserState(stateType, userStateType);
 
         return newState;
     }
