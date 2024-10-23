@@ -384,6 +384,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Memory", "Memory", "{077928EA-2C61-4667-82FC-6A5120B7AC45}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MongoDB", "MongoDB", "{AF7F68FD-ADB0-4941-90AE-88EAAB53BEEB}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\connectors\Memory\MongoDB\MongoDBConstants.cs = src\InternalUtilities\connectors\Memory\MongoDB\MongoDBConstants.cs
+		src\InternalUtilities\connectors\Memory\MongoDB\MongoDBGenericDataModelMapper.cs = src\InternalUtilities\connectors\Memory\MongoDB\MongoDBGenericDataModelMapper.cs
+		src\InternalUtilities\connectors\Memory\MongoDB\MongoDBVectorStoreRecordMapper.cs = src\InternalUtilities\connectors\Memory\MongoDB\MongoDBVectorStoreRecordMapper.cs
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Pinecone.UnitTests", "src\Connectors\Connectors.Pinecone.UnitTests\Connectors.Pinecone.UnitTests.csproj", "{E82B640C-1704-430D-8D71-FD8ED3695468}"
 EndProject
