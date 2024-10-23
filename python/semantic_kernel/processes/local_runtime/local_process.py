@@ -15,7 +15,11 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.processes.const import END_PROCESS_ID
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
-from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent, KernelProcessEventVisibility
+from semantic_kernel.processes.local_runtime.local_event import (
+    KernelProcessEvent,
+    KernelProcessEventVisibility,
+    LocalEvent,
+)
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
 from semantic_kernel.processes.local_runtime.local_message_factory import LocalMessageFactory
 from semantic_kernel.processes.local_runtime.local_step import LocalStep
@@ -81,6 +85,11 @@ class LocalProcess(LocalStep):
 
         with contextlib.suppress(asyncio.CancelledError):
             await self.process_task
+
+    async def initialize_step(self):
+        """Initializes the step."""
+        # The process does not need any further initialization
+        pass
 
     async def send_message(self, process_event: KernelProcessEvent):
         """Sends a message to the process."""
@@ -205,7 +214,10 @@ class LocalProcess(LocalStep):
         all_step_events = step.get_all_events()
         for step_event in all_step_events:
             if step_event.visibility == KernelProcessEventVisibility.Public:
-                await self.emit_event(step_event)  # type: ignore
+                if isinstance(step_event, KernelProcessEvent):
+                    self.emit_event(step_event)  # type: ignore
+                elif isinstance(step_event, LocalEvent):
+                    self.emit_local_event(step_event)  # type: ignore
 
             for edge in step.get_edge_for_event(step_event.id):
                 message = LocalMessageFactory.create_from_edge(edge, step_event.data)

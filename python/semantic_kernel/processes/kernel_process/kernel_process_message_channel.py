@@ -11,6 +11,6 @@ class KernelProcessMessageChannel(ABC):
     """Abstract base class for emitting events from a step."""
 
     @abstractmethod
-    async def emit_event(self, process_event: "KernelProcessEvent") -> None:
+    def emit_event(self, process_event: "KernelProcessEvent") -> None:
         """Emits the specified event from the step."""
         pass

@@ -25,7 +25,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_step_info import Ke
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.local_runtime.local_event import LocalEvent
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
-from semantic_kernel.processes.process_types import TState
+from semantic_kernel.processes.process_types import get_generic_state_type
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
         """Gets the ID of the step."""
         return self.step_info.state.id if self.step_info.state.id else ""
 
-    async def handle_message(self, message: "LocalMessage"):
+    async def handle_message(self, message: LocalMessage):
         """Handles a LocalMessage that has been sent to the step."""
         if message is None:
             raise ValueError("The message is None.")
@@ -163,7 +163,7 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
             event_name = f"{target_function}.OnError"
             event_value = str(ex)
         finally:
-            await self.emit_event(KernelProcessEvent(id=event_name, data=event_value))
+            self.emit_event(KernelProcessEvent(id=event_name, data=event_value))
 
             # Reset the inputs for the function that was just executed
             self.inputs[target_function] = self.initial_inputs.get(target_function, {}).copy()
@@ -172,7 +172,7 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
         """Invokes the function."""
         return await kernel.invoke(function, **arguments)
 
-    async def emit_event(self, process_event: KernelProcessEvent):
+    def emit_event(self, process_event: KernelProcessEvent):
         """Emits an event from the step."""
         self.emit_local_event(LocalEvent.from_kernel_process_event(process_event, self.event_namespace))
 
@@ -184,7 +184,10 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
     async def initialize_step(self):
         """Initializes the step."""
         # Instantiate an instance of the inner step object
-        step_instance: KernelProcessStep = self.step_info.inner_step_type()  # type: ignore
+        step_cls = self.step_info.inner_step_type
+
+        step_instance: KernelProcessStep = step_cls()
+
         kernel_plugin = self.kernel.add_plugin(
             step_instance, self.step_info.state.name if self.step_info.state else "default_name"
         )
@@ -200,22 +203,50 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
         # Use the existing state or create a new one if not provided
         state_object = self.step_info.state
 
-        # If no state is defined, create a new one
-        if state_object is None:
-            state_object = KernelProcessStepState[TState](
-                name=self.step_info.inner_step_type.__name__,
-                id=self.step_info.inner_step_type.__name__,
-                state=None,  # Or initialize with a default state object if desired
-            )
+        # Extract TState from inner_step_type
+        t_state = get_generic_state_type(step_cls)
 
-        activate_method = getattr(self.step_info.inner_step_type, "activate", None)
-        if activate_method is None:
-            error_message = "The Activate method for the KernelProcessStep could not be found."
+        if t_state is not None:
+            # Create state_type as KernelProcessStepState[TState]
+            state_type = KernelProcessStepState[t_state]
+
+            if state_object is None:
+                state_object = state_type(
+                    name=step_cls.__name__,
+                    id=step_cls.__name__,
+                    state=None,
+                )
+            else:
+                # Make sure state_object is an instance of state_type
+                if not isinstance(state_object, KernelProcessStepState):
+                    error_message = "State object is not of the expected type."
+                    raise KernelException(error_message)
+
+            # Make sure that state_object.state is not None
+            if state_object.state is None:
+                try:
+                    state_object.state = t_state()
+                except Exception as e:
+                    error_message = f"Cannot instantiate state of type {t_state}: {e}"
+                    raise KernelException(error_message)
+        else:
+            # The step has no user-defined state; use the base KernelProcessStepState
+            state_type = KernelProcessStepState
+
+            if state_object is None:
+                state_object = state_type(
+                    name=step_cls.__name__,
+                    id=step_cls.__name__,
+                    state=None,
+                )
+
+        if state_object is None:
+            error_message = "The state object for the KernelProcessStep could not be created."
             raise KernelException(error_message)
 
         # Set the step state and activate the step with the state object
         self.step_state = state_object
-        await activate_method(step_instance, state_object)
+        await step_instance.activate(state_object)
 
     def find_input_channels(self) -> dict[str, dict[str, Any | None]]:
         """Finds and creates input channels."""
@@ -237,17 +268,6 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
                     inputs[name][param.name] = None
 
         return inputs
-
-    def get_subtype_of_stateful_step(self, type_to_check):
-        """Check if the provided type is a subclass of a generic KernelProcessStep and return its generic type if so."""
-        while type_to_check is not None and type_to_check is not object:
-            if hasattr(type_to_check, "__orig_bases__"):
-                for base in type_to_check.__orig_bases__:
-                    if hasattr(base, "__origin__") and base.__origin__ == KernelProcessStep:
-                        return base  # Return the generic type itself
-            type_to_check = type_to_check.__base__
-
-        return None
 
     def get_all_events(self) -> list["LocalEvent"]:
         """Retrieves all events that have been emitted by this step in the previous superstep."""

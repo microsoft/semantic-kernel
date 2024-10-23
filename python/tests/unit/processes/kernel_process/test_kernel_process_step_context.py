@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -29,18 +29,18 @@ async def test_initialization():
 
 
 @pytest.mark.asyncio
-async def test_emit_event():
+def test_emit_event():
     # Arrange
     channel = MockKernelProcessMessageChannel()
-    channel.emit_event = AsyncMock()
+    channel.emit_event = MagicMock()
     context = KernelProcessStepContext(channel=channel)
     event = KernelProcessEvent(id="event_001", data={"key": "value"})
 
     # Act
-    await context.emit_event(event)
+    context.emit_event(event)
 
     # Assert
-    channel.emit_event.assert_awaited_once_with(event)
+    channel.emit_event.assert_called_once_with(event)
 
 
 @pytest.mark.asyncio

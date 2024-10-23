@@ -10,6 +10,7 @@ from pydantic import Field
 from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
 from semantic_kernel.processes.kernel_process.kernel_process_function_target import KernelProcessFunctionTarget
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
+from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.process_edge_builder import ProcessEdgeBuilder
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
@@ -97,6 +98,11 @@ class ProcessBuilder(ProcessStepBuilder):
         self.entry_steps.append(edge_builder.source)
         self.external_event_target_map[event_id] = edge_builder.target
         super().link_to(event_id, edge_builder)
+
+    def build_step(self) -> KernelProcessStepInfo:
+        """Builds the process step."""
+        # The process is a step so we can return the step info directly
+        return self.build()
 
     def build(self) -> "KernelProcess":
         """Builds the KernelProcess."""

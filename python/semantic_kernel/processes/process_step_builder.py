@@ -6,13 +6,16 @@ from typing import TYPE_CHECKING, Any, Generic
 
 from pydantic import Field
 
+from semantic_kernel.exceptions.kernel_exceptions import KernelException
+from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
 from semantic_kernel.functions import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_function_target import KernelProcessFunctionTarget
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
+from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
-from semantic_kernel.processes.process_types import TState, TStep
+from semantic_kernel.processes.process_types import TState, TStep, get_generic_state_type
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -78,15 +81,49 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
         self, function_name: str | None, parameter_name: str | None
     ) -> KernelProcessFunctionTarget:
         """Resolves the function target for the given function name and parameter name."""
+        verified_function_name = function_name
+        verified_parameter_name = parameter_name
+
         if not self.functions_dict:
-            raise ValueError(f"No functions found on step {self.name}")
+            raise KernelException(f"The target step {self.name} has no functions.")
 
-        if function_name is None:
+        # Handle null or whitespace function name
+        if not verified_function_name or verified_function_name.strip() == "":
             if len(self.functions_dict) > 1:
-                raise ValueError("Multiple functions available, function name must be provided")
-            function_name = next(iter(self.functions_dict))
+                raise KernelException(
+                    "The target step has more than one function, so a function name must be provided."
+                )
 
-        return KernelProcessFunctionTarget(step_id=self.id, function_name=function_name, parameter_name=parameter_name)
+            # Only one function is available; use its name
+            verified_function_name = next(iter(self.functions_dict.keys()))
+
+        # Verify that the target function exists
+        if verified_function_name not in self.functions_dict:
+            raise KernelException(f"The function {verified_function_name} does not exist on step {self.name}")
+
+        # Get function parameters using inspect
+        kernel_function_metadata = self.functions_dict[verified_function_name]
+
+        if verified_parameter_name is None:
+            # Exclude parameters of type KernelProcessStepContext
+            undetermined_parameters = [
+                p for p in kernel_function_metadata.parameters if p.type_ != KernelProcessStepContext
+            ]
+
+            if len(undetermined_parameters) > 1:
+                raise KernelException(
+                    f"The function {verified_function_name} on step {self.name} has more than one parameter, "
+                    "so a parameter name must be provided."
+                )
+
+            # We can infer the parameter name from the function metadata
+            if len(undetermined_parameters) == 1:
+                parameter_name = undetermined_parameters[0].name
+                verified_parameter_name = parameter_name
+
+        return KernelProcessFunctionTarget(
+            step_id=self.id, function_name=verified_function_name, parameter_name=verified_parameter_name
+        )
 
     def get_scoped_event_id(self, event_id: str) -> str:
         """Returns the scoped event ID."""
@@ -105,20 +142,49 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
 
     def build_step(self) -> "KernelProcessStepInfo":
         """Builds the process step."""
-        # Use the state attribute directly if it is set.
-        if self.initial_state is not None:
-            # Assume the state is already the correct type.
-            state_object = KernelProcessStepState[TState](name=self.name, id=self.id, state=self.initial_state)
+        from semantic_kernel.processes.process_builder import ProcessBuilder  # noqa: F401
+
+        # Determine the function type (the step class)
+        step_cls = self.function_type
+        if step_cls is None:
+            raise ProcessInvalidConfigurationException("function_type is not set.")
+
+        # Extract TState from step class
+        t_state = get_generic_state_type(step_cls)
+
+        if t_state is not None:
+            # The step is a subclass of KernelProcessStep[TState], so we need to create a KernelProcessStepState[TState]
+
+            # Validate that the initial state is of the correct type, if provided
+            if self.initial_state is not None and not isinstance(self.initial_state, t_state):
+                raise ProcessInvalidConfigurationException(
+                    f"The initial state provided for step {self.name} is not of the correct type. "
+                    f"The expected type is {t_state.__name__}."
+                )
+
+            # Create state_object as KernelProcessStepState[TState]
+            state_type = KernelProcessStepState[t_state]  # type: ignore
+
+            state_object = state_type(
+                name=self.name,
+                id=self.id,
+                state=self.initial_state,  # Can be None
+            )
         else:
-            # If no state is provided, initialize an empty state.
-            state_object = KernelProcessStepState[TState](name=self.name, id=self.id, state=None)
+            # The step has no user-defined state; use the base KernelProcessStepState
+            if self.initial_state is not None:
+                # Validate that the initial state is not provided for stateless steps
+                raise ProcessInvalidConfigurationException(
+                    f"An initial state was provided for step {self.name}, but the step does not accept a state."
+                )
+
+            state_object = KernelProcessStepState(name=self.name, id=self.id, state=None)
 
         # Build the edges based on the current step's edge definitions.
         built_edges = {event_id: [edge.build() for edge in edges] for event_id, edges in self.edges.items()}
 
         # Return an instance of KernelProcessStepInfo with the built state and edges.
-        assert self.function_type  # nosec
-        return KernelProcessStepInfo(inner_step_type=self.function_type, state=state_object, output_edges=built_edges)
+        return KernelProcessStepInfo(inner_step_type=step_cls, state=state_object, output_edges=built_edges)
 
     def on_function_result(self, function_name: str) -> "ProcessStepEdgeBuilder":
         """Creates a new ProcessStepEdgeBuilder for the function result."""

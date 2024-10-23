@@ -25,7 +25,7 @@ class ProcessStepEdgeBuilder:
         self.source = source
         self.event_id = event_id
 
-    def send_event_to(self, target: ProcessFunctionTargetBuilder, **kwargs) -> None:
+    def send_event_to(self, target: ProcessFunctionTargetBuilder, **kwargs) -> "ProcessStepEdgeBuilder":
         """Sends the event to the target."""
         if self.target is not None:
             raise ProcessInvalidConfigurationException(
@@ -37,6 +37,8 @@ class ProcessStepEdgeBuilder:
 
         self.target = target
         self.source.link_to(self.event_id, self)
+
+        return ProcessStepEdgeBuilder(source=self.source, event_id=self.event_id)
 
     def stop_process(self):
         """Stops the process."""

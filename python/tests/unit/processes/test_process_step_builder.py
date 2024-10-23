@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from semantic_kernel.exceptions.kernel_exceptions import KernelException
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.kernel_process.kernel_process_function_target import KernelProcessFunctionTarget
@@ -105,7 +106,9 @@ def test_resolve_function_target_with_multiple_functions():
     }
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Multiple functions available, function name must be provided"):
+    with pytest.raises(
+        KernelException, match="The target step has more than one function, so a function name must be provided."
+    ):
         step_builder.resolve_function_target(function_name=None, parameter_name="input_param")
 
 
@@ -125,8 +128,7 @@ def test_get_scoped_event_id():
 def test_build_step():
     # Arrange
     name = "test_step"
-    initial_state = MagicMock()
-    step_builder = ProcessStepBuilder(name=name, type=MockKernelProcessStep, initial_state=initial_state)
+    step_builder = ProcessStepBuilder(name=name, type=MockKernelProcessStep)
 
     edge = MagicMock(spec=KernelProcessEdge)
     built_edge = KernelProcessEdge(

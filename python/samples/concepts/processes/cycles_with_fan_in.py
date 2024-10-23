@@ -14,7 +14,6 @@ from semantic_kernel.processes.kernel_process.kernel_process_step_context import
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_types import TState
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -74,7 +73,7 @@ class CStep(KernelProcessStep[CStepState]):
     state: CStepState = Field(default_factory=CStepState)
 
     # The activate method overrides the base class method to set the state in the step.
-    async def activate(self, state: KernelProcessStepState[TState]):
+    async def activate(self, state: KernelProcessStepState[CStepState]):
         """Activates the step and sets the state."""
         self.state = state.state
 
@@ -101,7 +100,7 @@ async def cycles_with_fan_in():
     kickoff_step = process.add_step(step_type=KickOffStep)
     myAStep = process.add_step(step_type=AStep)
     myBStep = process.add_step(step_type=BStep)
-    myCStep = process.add_step(step_type=CStep, initial_state=CStepState())
+    myCStep = process.add_step(step_type=CStep)
 
     # Define the input event and where to send it to
     process.on_input_event(event_id=CommonEvents.StartProcess.value).send_event_to(target=kickoff_step)
@@ -128,7 +127,7 @@ async def cycles_with_fan_in():
         )
         assert c_step_state.state  # nosec
         assert c_step_state.state.current_cycle == 3  # nosec
-        print(f"CStepState current cycle: {c_step_state.state.current_cycle}")
+        print(f"Final State Check: CStepState current cycle: {c_step_state.state.current_cycle}")
 
 
 if __name__ == "__main__":
