@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class MessageBufferActor : Actor, IMessageBuffer
 {
-    private const string EventQueueState = "ProcessMessageBufferState";
+    private const string EventQueueState = "DaprMessageBufferState";
     private Queue<ProcessMessage>? _queue = new();
 
     /// <summary>
