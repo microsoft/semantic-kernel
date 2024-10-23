@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -35,11 +35,13 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
                 new VectorStoreRecordDataProperty("description", typeof(string)),
                 new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
                 new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>)) {
+                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+                {
                     Dimensions = 10,
                     IndexKind = "hnsw",
                 },
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?)) {
+                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?))
+                {
                     Dimensions = 10,
                     IndexKind = "hnsw",
                 }
@@ -123,11 +125,13 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
                 new VectorStoreRecordDataProperty("description", typeof(string)),
                 new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
                 new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>)) {
+                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+                {
                     Dimensions = 10,
                     IndexKind = "hnsw",
                 },
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?)) {
+                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?))
+                {
                     Dimensions = 10,
                     IndexKind = "hnsw",
                 }

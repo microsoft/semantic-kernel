@@ -1,12 +1,12 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
-using Microsoft.SemanticKernel.Connectors.Postgres;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.Postgres;
 using Npgsql;
 using Xunit;
 
