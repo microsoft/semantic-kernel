@@ -229,28 +229,6 @@ pytestmark = pytest.mark.parametrize(
             id="ollama_image_input_file",
         ),
         pytest.param(
-            "ollama",
-            {},
-            [
-                ChatMessageContent(
-                    role=AuthorRole.USER,
-                    items=[
-                        TextContent(text="What is in this image?"),
-                        ImageContent.from_image_path(
-                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
-                        ),
-                    ],
-                ),
-                ChatMessageContent(
-                    role=AuthorRole.USER,
-                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
-                ),
-            ],
-            {},
-            marks=pytest.mark.skipif(not ollama_setup, reason="Ollama Environment Variables not set"),
-            id="ollama_image_input_file",
-        ),
-        pytest.param(
             "bedrock_anthropic_claude",
             {},
             [
