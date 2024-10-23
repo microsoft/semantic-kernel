@@ -10,6 +10,7 @@ using Dapr.Actors;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
@@ -232,12 +233,12 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     #endregion
 
     /// <summary>
-    /// Handles a <see cref="DaprMessage"/> that has been sent to the process. This happens only in the case
+    /// Handles a <see cref="ProcessMessage"/> that has been sent to the process. This happens only in the case
     /// of a process (this one) running as a step within another process (this one's parent). In this case the
     /// entire sub-process should be executed within a single superstep.
     /// </summary>
     /// <param name="message">The message to process.</param>
-    internal override async Task HandleMessageAsync(DaprMessage message)
+    internal override async Task HandleMessageAsync(ProcessMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.TargetEventId))
         {
@@ -276,7 +277,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
     {
         Kernel localKernel = kernel ?? this._kernel;
-        Queue<DaprMessage> messageChannel = new();
+        Queue<ProcessMessage> messageChannel = new();
 
         try
         {
@@ -335,7 +336,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     }
 
     /// <summary>
-    /// Processes external events that have been sent to the process, translates them to <see cref="DaprMessage"/>s, and enqueues
+    /// Processes external events that have been sent to the process, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     private async Task EnqueueExternalMessagesAsync()
@@ -349,7 +350,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             {
                 foreach (var edge in edges)
                 {
-                    DaprMessage message = DaprMessageFactory.CreateFromEdge(edge, externalEvent.Data);
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
                     var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
                     var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
                     await messageQueue.EnqueueAsync(message).ConfigureAwait(false);
