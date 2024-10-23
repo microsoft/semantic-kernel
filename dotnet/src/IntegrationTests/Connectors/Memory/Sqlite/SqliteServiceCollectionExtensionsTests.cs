@@ -1,30 +1,27 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Sqlite.UnitTests;
+namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 
 /// <summary>
-/// Unit tests for <see cref="SqliteServiceCollectionExtensions"/> class.
+/// Integration tests for <see cref="SqliteServiceCollectionExtensions"/> class.
 /// </summary>
 public sealed class SqliteServiceCollectionExtensionsTests
 {
+    private const string? SkipReason = "SQLite vector search extension is required";
+
     private readonly IServiceCollection _serviceCollection = new ServiceCollection();
 
-    [Fact]
-    public void AddVectorStoreRegistersClass()
+    [Fact(Skip = SkipReason)]
+    public void AddVectorStoreWithSqliteConnectionRegistersClass()
     {
-        // Arrange
-        this._serviceCollection.AddSingleton<SqliteConnection>(Mock.Of<SqliteConnection>());
-
         // Act
-        this._serviceCollection.AddSqliteVectorStore();
+        this._serviceCollection.AddSqliteVectorStore("Data Source=:memory:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
         var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
@@ -34,14 +31,11 @@ public sealed class SqliteServiceCollectionExtensionsTests
         Assert.IsType<SqliteVectorStore>(vectorStore);
     }
 
-    [Fact]
-    public void AddVectorStoreRecordCollectionWithStringKeyRegistersClass()
+    [Fact(Skip = SkipReason)]
+    public void AddVectorStoreRecordCollectionWithStringKeyAndSqliteConnectionRegistersClass()
     {
-        // Arrange
-        this._serviceCollection.AddSingleton<SqliteConnection>(Mock.Of<SqliteConnection>());
-
         // Act
-        this._serviceCollection.AddSqliteVectorStoreRecordCollection<string, TestRecord>("testcollection");
+        this._serviceCollection.AddSqliteVectorStoreRecordCollection<string, TestRecord>("testcollection", "Data Source=:memory:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
@@ -55,14 +49,11 @@ public sealed class SqliteServiceCollectionExtensionsTests
         Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
     }
 
-    [Fact]
-    public void AddVectorStoreRecordCollectionWithNumericKeyRegistersClass()
+    [Fact(Skip = SkipReason)]
+    public void AddVectorStoreRecordCollectionWithNumericKeyAndSqliteConnectionRegistersClass()
     {
-        // Arrange
-        this._serviceCollection.AddSingleton<SqliteConnection>(Mock.Of<SqliteConnection>());
-
         // Act
-        this._serviceCollection.AddSqliteVectorStoreRecordCollection<ulong, TestRecord>("testcollection");
+        this._serviceCollection.AddSqliteVectorStoreRecordCollection<ulong, TestRecord>("testcollection", "Data Source=:memory:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
