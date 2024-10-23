@@ -86,7 +86,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
         BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
-        BedrockModelUtilities.SetStopSequenceIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+        BedrockModelUtilities.SetNullablePropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
 
         var additionalModelRequestFields = new Document();
         var k = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "k") ?? exec.TopK;
@@ -165,7 +165,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
         BedrockModelUtilities.SetPropertyIfNotNull(() => temperature, value => inferenceConfig.Temperature = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
-        BedrockModelUtilities.SetStopSequenceIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+        BedrockModelUtilities.SetNullablePropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
 
         var additionalModelRequestFields = new Document();
         var k = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "k") ?? executionSettings.TopK;

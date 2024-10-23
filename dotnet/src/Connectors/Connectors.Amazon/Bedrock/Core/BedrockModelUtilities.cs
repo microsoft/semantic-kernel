@@ -115,8 +115,13 @@ internal static class BedrockModelUtilities
         }
     }
 
-    // Same function as above but primarily for stop sequences.
-    internal static void SetStopSequenceIfNotNull<T>(Func<T?> getValue, Action<T?> setValue) where T : class
+    /// <summary>
+    /// Sets nullable property if the value is not null.
+    /// </summary>
+    /// <param name="getValue">Getter function delegate</param>
+    /// <param name="setValue">Setter function delegate</param>
+    /// <typeparam name="T">Parameter type</typeparam>
+    internal static void SetNullablePropertyIfNotNull<T>(Func<T?> getValue, Action<T?> setValue) where T : class
     {
         var value = getValue();
         setValue(value);

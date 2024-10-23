@@ -62,7 +62,7 @@ internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBed
         BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
         inferenceConfig.MaxTokens = maxTokens; // Max Token Count required (cannot be null).
-        BedrockModelUtilities.SetStopSequenceIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+        BedrockModelUtilities.SetNullablePropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
 
         var additionalModelRequestFields = new Document();
         List<ClaudeToolUse.ClaudeTool>? tools = null;
@@ -145,7 +145,7 @@ internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBed
         BedrockModelUtilities.SetPropertyIfNotNull(() => temperature, value => inferenceConfig.Temperature = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
         inferenceConfig.MaxTokens = maxTokens; // Max Token Count required (cannot be null).
-        BedrockModelUtilities.SetStopSequenceIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+        BedrockModelUtilities.SetNullablePropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
 
         var additionalModelRequestFields = new Document();
         List<ClaudeToolUse.ClaudeTool>? tools = null;

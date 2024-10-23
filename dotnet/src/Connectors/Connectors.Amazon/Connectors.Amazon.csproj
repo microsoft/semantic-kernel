@@ -18,9 +18,6 @@
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup"/>
     <PackageReference Include="AWSSDK.Core"/>
   </ItemGroup>
-  <ItemGroup>
-    <PackageVersion Include="AWSSDK.Core" Version="3.7.400"/>
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
