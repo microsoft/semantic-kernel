@@ -17,13 +17,11 @@ namespace Microsoft.SemanticKernel;
 
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 {
-    private const string DaprStepInfoStateName = nameof(DaprStepInfo);
-    private const string StepStateJson = "kernelStepStateJson";
-    private const string StepStateType = "kernelStepStateType";
-    private const string StepParentProcessId = "parentProcessId";
-    private const string StepIncomingMessagesState = "incomingMessagesState";
+    /// <summary>
+    /// The generic state type for a process step.
+    /// </summary>
+    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
 
-    private readonly Kernel _kernel;
     private readonly Lazy<ValueTask> _activateTask;
 
     private DaprStepInfo? _stepInfo;
@@ -32,6 +30,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     private Type? _innerStepType;
 
     private bool _isInitialized;
+
+    protected readonly Kernel _kernel;
 
     internal Queue<ProcessMessage> _incomingMessages = new();
     internal KernelProcessStepState? _stepState;
@@ -80,8 +80,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         await this.Int_InitializeStepAsync(stepInfo, parentProcessId).ConfigureAwait(false);
 
         // Save initial state
-        await this.StateManager.AddStateAsync(DaprStepInfoStateName, stepInfo).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync(StepParentProcessId, parentProcessId).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepInfoState, stepInfo).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -128,7 +128,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Save the incoming messages to state
-        await this.StateManager.SetStateAsync(StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return this._incomingMessages.Count;
@@ -147,7 +147,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.HandleMessageAsync(message).ConfigureAwait(false);
 
             // Save the incoming messages to state
-            await this.StateManager.SetStateAsync(StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
+            await this.StateManager.SetStateAsync(ActorStateKeys.StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
     }
@@ -172,15 +172,15 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var existingStepInfo = await this.StateManager.TryGetStateAsync<DaprStepInfo>(DaprStepInfoStateName).ConfigureAwait(false);
+        var existingStepInfo = await this.StateManager.TryGetStateAsync<DaprStepInfo>(ActorStateKeys.StepInfoState).ConfigureAwait(false);
         if (existingStepInfo.HasValue)
         {
             // Initialize the step from persisted state
-            var parentProcessId = await this.StateManager.GetStateAsync<string>(StepParentProcessId).ConfigureAwait(false);
+            var parentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
             await this.Int_InitializeStepAsync(existingStepInfo.Value, parentProcessId).ConfigureAwait(false);
 
             // Load the persisted incoming messages
-            var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(StepIncomingMessagesState).ConfigureAwait(false);
+            var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(ActorStateKeys.StepIncomingMessagesState).ConfigureAwait(false);
             if (incomingMessages.HasValue)
             {
                 this._incomingMessages = incomingMessages.Value;
@@ -284,7 +284,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
             // Persist the state after the function has been executed
             var stateJson = JsonSerializer.Serialize(this._stepState, this._stepStateType!);
-            await this.StateManager.SetStateAsync(StepStateJson, stateJson).ConfigureAwait(false);
+            await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -336,11 +336,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         Type? stateType = null;
 
         // Check if the state has already been persisted
-        var stepStateType = await this.StateManager.TryGetStateAsync<string>(StepStateType).ConfigureAwait(false);
+        var stepStateType = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.StepStateType).ConfigureAwait(false);
         if (stepStateType.HasValue)
         {
             stateType = Type.GetType(stepStateType.Value);
-            var stateObjectJson = await this.StateManager.GetStateAsync<string>(StepStateJson).ConfigureAwait(false);
+            var stateObjectJson = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepStateJson).ConfigureAwait(false);
             stateObject = JsonSerializer.Deserialize(stateObjectJson, stateType!) as KernelProcessStepState;
         }
         else
@@ -373,8 +373,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             }
 
             // Persist the state type and type object.
-            await this.StateManager.AddStateAsync(StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
-            await this.StateManager.AddStateAsync(StepStateJson, JsonSerializer.Serialize(stateObject)).ConfigureAwait(false);
+            await this.StateManager.AddStateAsync(ActorStateKeys.StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
+            await this.StateManager.AddStateAsync(ActorStateKeys.StepStateJson, JsonSerializer.Serialize(stateObject)).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
 

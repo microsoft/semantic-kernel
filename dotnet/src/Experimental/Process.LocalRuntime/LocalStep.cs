@@ -17,6 +17,11 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class LocalStep : IKernelProcessMessageChannel
 {
+    /// <summary>
+    /// The generic state type for a process step.
+    /// </summary>
+    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
+
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
     private readonly KernelProcessStepInfo _stepInfo;

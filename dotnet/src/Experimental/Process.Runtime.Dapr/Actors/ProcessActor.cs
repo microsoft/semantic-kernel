@@ -17,14 +17,12 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 {
-    private const string DaprProcessInfoStateName = nameof(DaprProcessInfo);
     private const string EndStepId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
 
     internal readonly List<IStep> _steps = [];
-    internal readonly Kernel _kernel;
 
     internal List<DaprStepInfo>? _stepsInfos;
     internal DaprProcessInfo? _process;
@@ -42,7 +40,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     public ProcessActor(ActorHost host, Kernel kernel, ILoggerFactory? loggerFactory)
         : base(host, kernel, loggerFactory)
     {
-        this._kernel = kernel;
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
@@ -63,64 +60,13 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         }
 
         // Initialize the process
-        await this.Int_InitializeProcessAsync(processInfo, parentProcessId).ConfigureAwait(false);
+        await this.InitializeProcessActorAsync(processInfo, parentProcessId).ConfigureAwait(false);
 
         // Save the state
-        await this.StateManager.AddStateAsync(DaprProcessInfoStateName, processInfo).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync("parentProcessId", parentProcessId).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync("kernelStepActivated", true).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.ProcessInfoState, processInfo).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepActivatedState, true).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
-    }
-
-    public async Task Int_InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId)
-    {
-        Verify.NotNull(processInfo);
-        Verify.NotNull(processInfo.Steps);
-
-        this.ParentProcessId = parentProcessId;
-        this._process = processInfo;
-        this._stepsInfos = new List<DaprStepInfo>(this._process.Steps);
-        this._logger = this.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<StepActor>();
-
-        // Initialize the input and output edges for the process
-        this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-
-        // Initialize the steps within this process
-        foreach (var step in this._stepsInfos)
-        {
-            IStep? stepActor = null;
-
-            // The current step should already have a name.
-            Verify.NotNull(step.State?.Name);
-
-            if (step is DaprProcessInfo kernelStep)
-            {
-                // The process will only have an Id if its already been executed.
-                if (string.IsNullOrWhiteSpace(kernelStep.State.Id))
-                {
-                    kernelStep = kernelStep with { State = kernelStep.State with { Id = Guid.NewGuid().ToString() } };
-                }
-
-                // Initialize the step as a process.
-                var scopedProcessId = this.ScopedActorId(new ActorId(kernelStep.State.Id!));
-                var processActor = this.ProxyFactory.CreateActorProxy<IProcess>(scopedProcessId, nameof(ProcessActor));
-                await processActor.InitializeProcessAsync(kernelStep, this.Id.GetId()).ConfigureAwait(false);
-                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProcessId, nameof(ProcessActor));
-            }
-            else
-            {
-                // The current step should already have an Id.
-                Verify.NotNull(step.State?.Id);
-
-                var scopedStepId = this.ScopedActorId(new ActorId(step.State.Id!));
-                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedStepId, nameof(StepActor));
-                await stepActor.InitializeStepAsync(step, this.Id.GetId()).ConfigureAwait(false);
-            }
-
-            this._steps.Add(stepActor);
-        }
-
-        this._isInitialized = true;
     }
 
     /// <summary>
@@ -210,7 +156,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// When the process is used as a step within another process, this method will be called
     /// rather than ToKernelProcessAsync when extracting the state.
     /// </summary>
-    /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
+    /// <returns>A <see cref="Task{DaprStepInfo}"/></returns>
     public override async Task<DaprStepInfo> ToDaprStepInfoAsync()
     {
         return await this.ToDaprProcessInfoAsync().ConfigureAwait(false);
@@ -218,11 +164,11 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     protected override async Task OnActivateAsync()
     {
-        var existingProcessInfo = await this.StateManager.TryGetStateAsync<DaprProcessInfo>(DaprProcessInfoStateName).ConfigureAwait(false);
+        var existingProcessInfo = await this.StateManager.TryGetStateAsync<DaprProcessInfo>(ActorStateKeys.ProcessInfoState).ConfigureAwait(false);
         if (existingProcessInfo.HasValue)
         {
-            this.ParentProcessId = await this.StateManager.GetStateAsync<string>("parentProcessId").ConfigureAwait(false);
-            await this.Int_InitializeProcessAsync(existingProcessInfo.Value, this.ParentProcessId).ConfigureAwait(false);
+            this.ParentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
+            await this.InitializeProcessActorAsync(existingProcessInfo.Value, this.ParentProcessId).ConfigureAwait(false);
         }
     }
 
@@ -239,8 +185,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// entire sub-process should be executed within a single superstep.
     /// </summary>
     /// <param name="message">The message to process.</param>
-    /// <returns>A <see cref="Task"/></returns>
-    /// <exception cref="KernelException"></exception>
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.TargetEventId))
@@ -270,13 +214,62 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <summary>
     /// Initializes this process as a step within another process.
     /// </summary>
-    /// <returns>A <see cref="ValueTask"/></returns>
-    /// <exception cref="KernelException"></exception>
     protected override ValueTask ActivateStepAsync()
     {
         // The process does not need any further initialization as it's already been initialized.
         // Override the base method to prevent it from being called.
         return default;
+    }
+
+    private async Task InitializeProcessActorAsync(DaprProcessInfo processInfo, string? parentProcessId)
+    {
+        Verify.NotNull(processInfo);
+        Verify.NotNull(processInfo.Steps);
+
+        this.ParentProcessId = parentProcessId;
+        this._process = processInfo;
+        this._stepsInfos = new List<DaprStepInfo>(this._process.Steps);
+        this._logger = this.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<ProcessActor>();
+
+        // Initialize the input and output edges for the process
+        this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
+
+        // Initialize the steps within this process
+        foreach (var step in this._stepsInfos)
+        {
+            IStep? stepActor = null;
+
+            // The current step should already have a name.
+            Verify.NotNull(step.State?.Name);
+
+            if (step is DaprProcessInfo kernelStep)
+            {
+                // The process will only have an Id if its already been executed.
+                if (string.IsNullOrWhiteSpace(kernelStep.State.Id))
+                {
+                    kernelStep = kernelStep with { State = kernelStep.State with { Id = Guid.NewGuid().ToString() } };
+                }
+
+                // Initialize the step as a process.
+                var scopedProcessId = this.ScopedActorId(new ActorId(kernelStep.State.Id!));
+                var processActor = this.ProxyFactory.CreateActorProxy<IProcess>(scopedProcessId, nameof(ProcessActor));
+                await processActor.InitializeProcessAsync(kernelStep, this.Id.GetId()).ConfigureAwait(false);
+                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProcessId, nameof(ProcessActor));
+            }
+            else
+            {
+                // The current step should already have an Id.
+                Verify.NotNull(step.State?.Id);
+
+                var scopedStepId = this.ScopedActorId(new ActorId(step.State.Id!));
+                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedStepId, nameof(StepActor));
+                await stepActor.InitializeStepAsync(step, this.Id.GetId()).ConfigureAwait(false);
+            }
+
+            this._steps.Add(stepActor);
+        }
+
+        this._isInitialized = true;
     }
 
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)

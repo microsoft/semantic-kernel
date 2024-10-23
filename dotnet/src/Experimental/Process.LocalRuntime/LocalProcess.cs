@@ -149,7 +149,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
 
         string eventId = message.TargetEventId!;
-        if (this._outputEdges!.TryGetValue(eventId, out List<KernelProcessEdge>? edges) && edges is not null)
+        if (this._outputEdges.TryGetValue(eventId, out List<KernelProcessEdge>? edges) && edges is not null)
         {
             // Create the external event that will be used to start the nested process. Since this event came
             // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
