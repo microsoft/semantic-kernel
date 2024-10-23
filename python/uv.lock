@@ -507,6 +507,34 @@ wheels = [
 ]
 
 [[package]]
+name = "boto3"
+version = "1.35.26"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "botocore", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "jmespath", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "s3transfer", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/63/c8/a63ed2623011775dbde551dc2706970afb6e12ab9eafd948f9b818ffa11f/boto3-1.35.26.tar.gz", hash = "sha256:b04087afd3570ba540fd293823c77270ec675672af23da9396bd5988a3f8128b", size = 110960 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/16/fb/dec2efbad7f3b246ed8884334d7e259a51c43a7bbabbcb900665fe1d0e36/boto3-1.35.26-py3-none-any.whl", hash = "sha256:c31db992655db233d98762612690cfe60723c9e1503b5709aad92c1c564877bb", size = 139142 },
+]
+
+[[package]]
+name = "botocore"
+version = "1.35.26"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jmespath", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "python-dateutil", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "urllib3", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bc/86/64687d39e88a7324fac123e2eba1cb77527331aaaf82d11cf34db5184d86/botocore-1.35.26.tar.gz", hash = "sha256:19efc3a22c9df77960712b4e203f912486f8bcd3794bff0fd7b2a0f5f1d5712d", size = 12782097 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/46/355f7345b6c5a9d95771bdf69d3860163ee5ac3c6ff5d0a652a3dc8e243c/botocore-1.35.26-py3-none-any.whl", hash = "sha256:0b9dee5e4a3314e251e103585837506b17fcc7485c3c8adb61a9a913f46da1e7", size = 12570363 },
+]
+
+[[package]]
 name = "build"
 version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1852,6 +1880,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/33/4f/9f23d79c0795e0a8e56e7988e8785c2dcda27e0ed37977256d50c77c6a19/jiter-0.5.0-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:ea189db75f8eca08807d02ae27929e890c7d47599ce3d0a6a5d41f2419ecf338", size = 493042 },
     { url = "https://files.pythonhosted.org/packages/df/67/8a4f975aa834b8aecdb6b131422390173928fd47f42f269dcc32034ab432/jiter-0.5.0-cp312-none-win32.whl", hash = "sha256:e3bbe3910c724b877846186c25fe3c802e105a2c1fc2b57d6688b9f8772026e4", size = 195405 },
     { url = "https://files.pythonhosted.org/packages/15/81/296b1e25c43db67848728cdab34ac3eb5c5cbb4955ceb3f51ae60d4a5e3d/jiter-0.5.0-cp312-none-win_amd64.whl", hash = "sha256:a586832f70c3f1481732919215f36d41c59ca080fa27a65cf23d9490e75b2ef5", size = 189720 },
+]
+
+[[package]]
+name = "jmespath"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/00/2a/e867e8531cf3e36b41201936b7fa7ba7b5702dbef42922193f05c8976cd6/jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe", size = 25843 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/31/b4/b9b800c45527aadd64d5b442f9b932b00648617eb5d63d2c7a6587b7cafc/jmespath-1.0.1-py3-none-any.whl", hash = "sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980", size = 20256 },
 ]
 
 [[package]]
@@ -4259,6 +4296,18 @@ wheels = [
 ]
 
 [[package]]
+name = "s3transfer"
+version = "0.10.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "botocore", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cb/67/94c6730ee4c34505b14d94040e2f31edf144c230b6b49e971b4f25ff8fab/s3transfer-0.10.2.tar.gz", hash = "sha256:0711534e9356d3cc692fdde846b4a1e4b0cb6519971860796e6bc4c7aea00ef6", size = 144095 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3c/4a/b221409913760d26cf4498b7b1741d510c82d3ad38381984a3ddc135ec66/s3transfer-0.10.2-py3-none-any.whl", hash = "sha256:eca1c20de70a39daee580aef4986996620f365c4e0fda6a86100231d62f1bf69", size = 82716 },
+]
+
+[[package]]
 name = "safetensors"
 version = "0.4.5"
 source = { registry = "https://pypi.org/simple" }
@@ -4421,6 +4470,9 @@ dependencies = [
 anthropic = [
     { name = "anthropic", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
+aws = [
+    { name = "boto3", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
 azure = [
     { name = "azure-ai-inference", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "azure-cosmos", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -4507,6 +4559,7 @@ requires-dist = [
     { name = "azure-identity", specifier = "~=1.13" },
     { name = "azure-identity", marker = "extra == 'azure'", specifier = "~=1.13" },
     { name = "azure-search-documents", marker = "extra == 'azure'", specifier = ">=11.6.0b4" },
+    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.28.57" },
     { name = "chromadb", marker = "extra == 'chroma'", specifier = ">=0.4,<0.6" },
     { name = "defusedxml", specifier = "~=0.7" },
     { name = "google-cloud-aiplatform", marker = "extra == 'google'", specifier = "~=1.60" },
@@ -4542,7 +4595,7 @@ requires-dist = [
     { name = "transformers", extras = ["torch"], marker = "extra == 'hugging-face'", specifier = "~=4.28" },
     { name = "types-redis", marker = "extra == 'redis'", specifier = "~=4.6.0.20240425" },
     { name = "usearch", marker = "extra == 'usearch'", specifier = "~=2.9" },
-    { name = "weaviate-client", marker = "extra == 'weaviate'", specifier = ">=3.18,<5.0" },
+    { name = "weaviate-client", marker = "extra == 'weaviate'", specifier = ">=4.7,<5.0" },
 ]
 
 [package.metadata.requires-dev]

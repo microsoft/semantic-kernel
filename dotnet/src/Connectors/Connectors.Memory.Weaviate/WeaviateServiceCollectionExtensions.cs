@@ -3,8 +3,8 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
@@ -64,7 +64,6 @@ public static class WeaviateServiceCollectionExtensions
         HttpClient? httpClient = default,
         WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<Guid, TRecord>>(
             serviceId,
@@ -88,7 +87,6 @@ public static class WeaviateServiceCollectionExtensions
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
-        where TRecord : class
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
-using System.Threading.Tasks;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel;
+using SemanticKernel.IntegrationTests.Agents;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using SemanticKernel.IntegrationTests.Agents;
 
 namespace SemanticKernel.IntegrationTests.Processes;
 
@@ -71,10 +72,13 @@ public sealed class ProcessCycleTests
             .StopProcess();
 
         KernelProcess kernelProcess = process.Build();
+        var processContext = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
 
-        Console.WriteLine("starting");
-        await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
-        Console.WriteLine("finished");
+        var processState = await processContext.GetStateAsync();
+        var cStepState = processState.Steps.Where(s => s.State.Name == "CStep").FirstOrDefault()?.State as KernelProcessStepState<CStepState>;
+
+        Assert.NotNull(cStepState?.State);
+        Assert.Equal(3, cStepState.State.CurrentCycle);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
@@ -107,7 +111,7 @@ public sealed class ProcessCycleTests
         public async ValueTask DoItAsync(KernelProcessStepContext context)
         {
             await Task.Delay(TimeSpan.FromSeconds(1));
-            await context.EmitEventAsync(new() { Id = CommonEvents.AStepDone });
+            await context.EmitEventAsync(new() { Id = CommonEvents.AStepDone, Data = "I did A" });
         }
     }
 
@@ -120,27 +124,28 @@ public sealed class ProcessCycleTests
         public async ValueTask DoItAsync(KernelProcessStepContext context)
         {
             await Task.Delay(TimeSpan.FromSeconds(2));
-            await context.EmitEventAsync(new() { Id = CommonEvents.BStepDone });
+            await context.EmitEventAsync(new() { Id = CommonEvents.BStepDone, Data = "I did B" });
         }
     }
 
     /// <summary>
     /// A step in the process.
     /// </summary>
-    private sealed class CStep : KernelProcessStep
+    private sealed class CStep : KernelProcessStep<CStepState>
     {
-        private int CurrentCycle { get; set; } = 0;
+        private CStepState? _state = new();
 
-        public CStep()
+        public override ValueTask ActivateAsync(KernelProcessStepState<CStepState> state)
         {
-            this.CurrentCycle = 0;
+            this._state = state.State;
+            return base.ActivateAsync(state);
         }
 
         [KernelFunction]
         public async ValueTask DoItAsync(KernelProcessStepContext context, string astepdata, string bstepdata)
         {
-            this.CurrentCycle++;
-            if (this.CurrentCycle == 3)
+            this._state!.CurrentCycle++;
+            if (this._state.CurrentCycle == 3)
             {
                 // Exit the processes
                 await context.EmitEventAsync(new() { Id = CommonEvents.ExitRequested });
@@ -150,6 +155,14 @@ public sealed class ProcessCycleTests
             // Cycle back to the start
             await context.EmitEventAsync(new() { Id = CommonEvents.CStepDone });
         }
+    }
+
+    /// <summary>
+    /// A state object for the CStep.
+    /// </summary>
+    private sealed record CStepState
+    {
+        public int CurrentCycle { get; set; }
     }
 
     /// <summary>

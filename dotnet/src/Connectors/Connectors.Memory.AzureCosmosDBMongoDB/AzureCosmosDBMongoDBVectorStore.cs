@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -39,7 +39,6 @@ public sealed class AzureCosmosDBMongoDBVectorStore : IVectorStore
     /// <inheritdoc />
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
-        where TRecord : class
     {
         if (typeof(TKey) != typeof(string))
         {

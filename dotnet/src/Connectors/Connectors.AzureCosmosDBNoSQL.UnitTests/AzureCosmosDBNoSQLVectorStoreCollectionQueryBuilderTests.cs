@@ -3,8 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using Microsoft.SemanticKernel.Data;
 using Xunit;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
@@ -27,13 +27,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     public void BuildSearchQueryByDefaultReturnsValidQueryDefinition()
     {
         // Arrange
-        const string ExpectedQueryText =
-            "SELECT x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore " +
-            "FROM x " +
-            "WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1) " +
-            "ORDER BY VectorDistance(x.test_property_1, @vector) " +
-            "OFFSET @offset LIMIT @limit ";
-
         var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
         var vectorPropertyName = "test_property_1";
         var fields = this._storagePropertyNames.Values.ToList();
@@ -57,7 +50,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         var queryParameters = queryDefinition.GetQueryParameters();
 
         // Assert
-        Assert.Equal(ExpectedQueryText, queryText);
+        Assert.Contains("SELECT x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore", queryText);
+        Assert.Contains("FROM x", queryText);
+        Assert.Contains("WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1)", queryText);
+        Assert.Contains("ORDER BY VectorDistance(x.test_property_1, @vector)", queryText);
+        Assert.Contains("OFFSET @offset LIMIT @limit", queryText);
 
         Assert.Equal("@vector", queryParameters[0].Name);
         Assert.Equal(vector, queryParameters[0].Value);
@@ -73,6 +70,53 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 
         Assert.Equal("@cv1", queryParameters[4].Name);
         Assert.Equal("test-value-3", queryParameters[4].Value);
+    }
+
+    [Fact]
+    public void BuildSearchQueryWithoutOffsetReturnsQueryDefinitionWithTopParameter()
+    {
+        // Arrange
+        var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
+        var vectorPropertyName = "test_property_1";
+        var fields = this._storagePropertyNames.Values.ToList();
+
+        var filter = new VectorSearchFilter()
+            .EqualTo("TestProperty2", "test-value-2")
+            .AnyTagEqualTo("TestProperty3", "test-value-3");
+
+        var searchOptions = new VectorSearchOptions { Filter = filter, Top = 10 };
+
+        // Act
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+            vector,
+            fields,
+            this._storagePropertyNames,
+            vectorPropertyName,
+            ScorePropertyName,
+            searchOptions);
+
+        var queryText = queryDefinition.QueryText;
+        var queryParameters = queryDefinition.GetQueryParameters();
+
+        // Assert
+        Assert.Contains("SELECT TOP @top x.test_property_1,x.test_property_2,x.test_property_3,VectorDistance(x.test_property_1, @vector) AS TestScore", queryText);
+        Assert.Contains("FROM x", queryText);
+        Assert.Contains("WHERE x.test_property_2 = @cv0 AND ARRAY_CONTAINS(x.test_property_3, @cv1)", queryText);
+        Assert.Contains("ORDER BY VectorDistance(x.test_property_1, @vector)", queryText);
+
+        Assert.DoesNotContain("OFFSET @offset LIMIT @limit", queryText);
+
+        Assert.Equal("@vector", queryParameters[0].Name);
+        Assert.Equal(vector, queryParameters[0].Value);
+
+        Assert.Equal("@top", queryParameters[1].Name);
+        Assert.Equal(10, queryParameters[1].Value);
+
+        Assert.Equal("@cv0", queryParameters[2].Name);
+        Assert.Equal("test-value-2", queryParameters[2].Value);
+
+        Assert.Equal("@cv1", queryParameters[3].Name);
+        Assert.Equal("test-value-3", queryParameters[3].Value);
     }
 
     [Fact]
@@ -134,31 +178,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     }
 
     [Fact]
-    public void BuildSearchQueryWithUnsupportedFilterThrowsException()
-    {
-        // Arrange
-        var vector = new ReadOnlyMemory<float>([1f, 2f, 3f]);
-        var vectorPropertyName = "test_property_1";
-        var fields = this._storagePropertyNames.Values.ToList();
-
-        var filter = new VectorSearchFilter();
-
-        ((List<FilterClause>)filter.FilterClauses).Add(new UnsupportedFilterClause());
-
-        var searchOptions = new VectorSearchOptions { Filter = filter, Skip = 5, Top = 10 };
-
-        // Act & Assert
-        Assert.Throws<NotSupportedException>(() =>
-            AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
-                vector,
-                fields,
-                this._storagePropertyNames,
-                vectorPropertyName,
-                ScorePropertyName,
-                searchOptions));
-    }
-
-    [Fact]
     public void BuildSelectQueryByDefaultReturnsValidQueryDefinition()
     {
         // Arrange
@@ -192,10 +211,4 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         Assert.Equal("@pk0", queryParameters[1].Name);
         Assert.Equal("partition_key", queryParameters[1].Value);
     }
-
-    #region private
-
-    private sealed class UnsupportedFilterClause : FilterClause;
-
-    #endregion
 }

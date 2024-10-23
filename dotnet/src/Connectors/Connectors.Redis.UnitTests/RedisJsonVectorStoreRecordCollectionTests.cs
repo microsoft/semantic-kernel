@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Moq;
 using NRedisStack;
 using StackExchange.Redis;

@@ -6,8 +6,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Microsoft.SemanticKernel.Data;
 using Pinecone;
 using SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone.Xunit;
 using Xunit;
@@ -311,6 +311,74 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         await this.Fixture.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: -1);
     }
 
+    [PineconeTheory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task VectorizedSearchAsync(bool collectionFromVectorStore, bool includeVectors)
+    {
+        // Arrange.
+        var hotelRecordCollection = collectionFromVectorStore
+            ? this.Fixture.HotelRecordCollectionFromVectorStore
+            : this.Fixture.HotelRecordCollection;
+        var searchVector = new ReadOnlyMemory<float>([17.5f, 721.0f, 731.5f, 742.0f, 762.5f, 783.0f, 793.5f, 704.0f]);
+
+        // Act.
+        var actual = await hotelRecordCollection.VectorizedSearchAsync(searchVector, new() { IncludeVectors = includeVectors });
+        var searchResults = await actual.Results.ToListAsync();
+        var searchResultRecord = searchResults.First().Record;
+
+        Assert.Equal("Vacation Inn Hotel", searchResultRecord.HotelName);
+        Assert.Equal("On vacation? Stay with us.", searchResultRecord.Description);
+        Assert.Equal(11, searchResultRecord.HotelCode);
+        Assert.Equal(4.3f, searchResultRecord.HotelRating);
+        Assert.True(searchResultRecord.ParkingIncluded);
+        Assert.Contains("wi-fi", searchResultRecord.Tags);
+        Assert.Contains("breakfast", searchResultRecord.Tags);
+        Assert.Contains("gym", searchResultRecord.Tags);
+        Assert.Equal(includeVectors, searchResultRecord.DescriptionEmbedding.Length > 0);
+    }
+
+    [PineconeTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VectorizedSearchWithTopSkipAsync(bool collectionFromVectorStore)
+    {
+        // Arrange.
+        var hotelRecordCollection = collectionFromVectorStore
+            ? this.Fixture.HotelRecordCollectionFromVectorStore
+            : this.Fixture.HotelRecordCollection;
+        var searchVector = new ReadOnlyMemory<float>([17.5f, 721.0f, 731.5f, 742.0f, 762.5f, 783.0f, 793.5f, 704.0f]);
+
+        // Act.
+        var actual = await hotelRecordCollection.VectorizedSearchAsync(searchVector, new() { Skip = 1, Top = 1 });
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResultRecord = searchResults.First().Record;
+        Assert.Equal("Best Eastern Hotel", searchResultRecord.HotelName);
+    }
+
+    [PineconeTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VectorizedSearchWithFilterAsync(bool collectionFromVectorStore)
+    {
+        // Arrange.
+        var hotelRecordCollection = collectionFromVectorStore
+            ? this.Fixture.HotelRecordCollectionFromVectorStore
+            : this.Fixture.HotelRecordCollection;
+        var searchVector = new ReadOnlyMemory<float>([17.5f, 721.0f, 731.5f, 742.0f, 762.5f, 783.0f, 793.5f, 704.0f]);
+
+        // Act.
+        var filter = new VectorSearchFilter().EqualTo(nameof(PineconeHotel.HotelCode), 42);
+        var actual = await hotelRecordCollection.VectorizedSearchAsync(searchVector, new() { Top = 1, Filter = filter });
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResultRecord = searchResults.First().Record;
+        Assert.Equal("Best Eastern Hotel", searchResultRecord.HotelName);
+    }
+
     [PineconeFact]
     public async Task UseCollectionExistsOnNonExistingStoreReturnsFalseAsync()
     {
@@ -555,7 +623,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         [VectorStoreRecordData]
         public string? Name { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 5, IndexKind: null, DistanceFunction: "just eyeball it")]
+        [VectorStoreRecordVector(Dimensions: 5, DistanceFunction: "just eyeball it")]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 #pragma warning restore CA1812

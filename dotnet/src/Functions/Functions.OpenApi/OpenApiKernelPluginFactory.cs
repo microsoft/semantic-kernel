@@ -265,7 +265,8 @@ public static partial class OpenApiKernelPluginFactory
         // Add unstructured metadata, specific to Open API, to the metadata property bag.
         var additionalMetadata = new Dictionary<string, object?>
         {
-            { OpenApiKernelPluginFactory.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() }
+            { OpenApiKernelPluginFactory.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() },
+            { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, string.IsNullOrEmpty(operation.Server?.Url) ? Array.Empty<string>() : [ operation.Server!.Url! ] }
         };
         if (operation.Extensions is { Count: > 0 })
         {
@@ -289,6 +290,9 @@ public static partial class OpenApiKernelPluginFactory
 
     /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
     private const string OperationExtensionsMethodKey = "method";
+
+    /// <summary>The metadata property bag key to use when storing the server of an operation.</summary>
+    private const string OperationExtensionsServerUrlsKey = "server-urls";
 
     /// <summary>The metadata property bag key to use for the list of extension values provided in the swagger file at the operation level.</summary>
     private const string OperationExtensionsMetadataKey = "operation-extensions";

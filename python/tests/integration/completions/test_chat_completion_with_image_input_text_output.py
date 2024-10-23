@@ -19,7 +19,7 @@ from tests.integration.completions.chat_completion_test_base import (
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
-from tests.integration.completions.test_utils import retry
+from tests.integration.test_utils import retry
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -204,6 +204,25 @@ pytestmark = pytest.mark.parametrize(
             {},
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_image_input_file",
+        ),
+        pytest.param(
+            "bedrock_anthropic_claude",
+            {},
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+            ],
+            {},
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+            id="bedrock_anthropic_claude_image_input_file",
         ),
     ],
 )

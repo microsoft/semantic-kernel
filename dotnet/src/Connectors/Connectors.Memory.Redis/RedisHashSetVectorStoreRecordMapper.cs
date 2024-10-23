@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 /// <typeparam name="TConsumerDataModel">The consumer data model to map to or from.</typeparam>
 internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : IVectorStoreRecordMapper<TConsumerDataModel, (string Key, HashEntry[] HashEntries)>
-    where TConsumerDataModel : class
 {
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;

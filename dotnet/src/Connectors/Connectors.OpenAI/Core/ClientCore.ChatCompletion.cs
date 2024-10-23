@@ -207,6 +207,7 @@ internal partial class ClientCore
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
                 cancellationToken).ConfigureAwait(false);
             if (lastMessage != null)
@@ -248,9 +249,9 @@ internal partial class ClientCore
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
-            var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
+            var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
-            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, toolCallingConfig, kernel);
+            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
 
             // Reset state
             contentBuilder?.Clear();
@@ -306,24 +307,16 @@ internal partial class ClientCore
                         finishReason = chatCompletionUpdate.FinishReason ?? default;
 
                         // If we're intending to invoke function calls, we need to consume that function call information.
-                        if (toolCallingConfig.AutoInvoke)
+                        if (functionCallingConfig.AutoInvoke)
                         {
-                            try
+                            foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
                             {
-                                foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
+                                if (contentPart.Kind == ChatMessageContentPartKind.Text)
                                 {
-                                    if (contentPart.Kind == ChatMessageContentPartKind.Text)
-                                    {
-                                        (contentBuilder ??= new()).Append(contentPart.Text);
-                                    }
+                                    (contentBuilder ??= new()).Append(contentPart.Text);
                                 }
-                                OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                             }
-                            catch (NullReferenceException)
-                            {
-                                // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
-                                // TODO: Remove this try-catch block once the bug is fixed.
-                            }
+                            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
                         var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
@@ -370,7 +363,7 @@ internal partial class ClientCore
             // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
-            if (!toolCallingConfig.AutoInvoke ||
+            if (!functionCallingConfig.AutoInvoke ||
                 toolCallIdsByIndex is not { Count: > 0 })
             {
                 yield break;
@@ -389,6 +382,7 @@ internal partial class ClientCore
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
                 cancellationToken).ConfigureAwait(false);
             if (lastMessage != null)

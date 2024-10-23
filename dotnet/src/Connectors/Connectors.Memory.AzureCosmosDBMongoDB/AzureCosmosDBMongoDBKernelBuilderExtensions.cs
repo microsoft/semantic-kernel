@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
-using Microsoft.SemanticKernel.Data;
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel;
@@ -64,7 +64,6 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         string collectionName,
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         builder.Services.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
         return builder;
@@ -89,7 +88,6 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         string databaseName,
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         builder.Services.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(collectionName, connectionString, databaseName, options, serviceId);
         return builder;

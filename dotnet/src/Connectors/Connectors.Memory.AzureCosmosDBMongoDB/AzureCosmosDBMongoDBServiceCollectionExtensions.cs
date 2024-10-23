@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Http;
 using MongoDB.Driver;
 
@@ -93,7 +93,6 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
         string collectionName,
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -129,7 +128,6 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
         string databaseName,
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -158,7 +156,6 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
-        where TRecord : class
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

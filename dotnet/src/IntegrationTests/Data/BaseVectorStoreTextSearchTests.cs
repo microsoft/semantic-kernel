@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -16,7 +17,7 @@ using static Microsoft.SemanticKernel.Data.VectorStoreExtensions;
 namespace SemanticKernel.IntegrationTests.Data;
 
 /// <summary>
-/// Base class for integration tests for using <see cref="VolatileVectorStore"/> with <see cref="ITextSearch"/>.
+/// Base class for integration tests for using various vector stores with <see cref="ITextSearch"/>.
 /// </summary>
 public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 {
@@ -40,7 +41,6 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecordFromString<TKey, TRecord> createRecord)
         where TKey : notnull
-        where TRecord : class
     {
         var lines = await File.ReadAllLinesAsync("./TestData/semantic-kernel-info.txt");
 
@@ -100,7 +100,6 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
     /// </summary>
     protected sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
-        where TRecord : class
     {
         /// <inheritdoc/>
         public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
