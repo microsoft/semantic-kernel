@@ -19,19 +19,36 @@ namespace SemanticKernel.Connectors.Anthropic.UnitTests.Core;
 /// <summary>
 /// Test for <see cref="AnthropicClient"/>
 /// </summary>
-public sealed class AnthropicChatGenerationTests : IDisposable
+public sealed class AnthropicChatStreamingTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
-    private const string ChatTestDataFilePath = "./TestData/chat_one_response.json";
+    private const string ChatTestDataFilePath = "./TestData/chat_stream_response.txt";
 
-    public AnthropicChatGenerationTests()
+    public AnthropicChatStreamingTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
             File.ReadAllText(ChatTestDataFilePath));
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+    }
+
+    [Fact]
+    public async Task ShouldSetStreamTrueInRequestContentAsync()
+    {
+        // Arrange
+        string modelId = "fake-model234";
+        var client = this.CreateChatCompletionClient(modelId: modelId);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        AnthropicRequest? request = JsonSerializer.Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.True(request.Stream);
     }
 
     [Fact]
@@ -43,10 +60,10 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        AnthropicRequest? request = Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        AnthropicRequest? request = JsonSerializer.Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
         Assert.Contains(modelId, request.ModelId, StringComparison.Ordinal);
     }
@@ -59,10 +76,10 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        AnthropicRequest? request = Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        AnthropicRequest? request = JsonSerializer.Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
         Assert.Collection(request.Messages,
             item => Assert.Equal(chatHistory[1].Role, item.Role),
@@ -78,17 +95,17 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        AnthropicRequest? request = Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        AnthropicRequest? request = JsonSerializer.Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
         Assert.Collection(request.Messages,
             item => Assert.Equal(chatHistory[1].Content, GetTextFrom(item.Contents[0])),
             item => Assert.Equal(chatHistory[2].Content, GetTextFrom(item.Contents[0])),
             item => Assert.Equal(chatHistory[3].Content, GetTextFrom(item.Contents[0])));
 
-        string? GetTextFrom(AnthropicContent content) => ((AnthropicContent)content).Text;
+        string? GetTextFrom(AnthropicContent content) => content.Text;
     }
 
     [Fact]
@@ -99,60 +116,77 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        var response = await client.GenerateChatMessageAsync(chatHistory);
+        var responses = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        Assert.NotNull(response);
-        Assert.Equal("Hi! My name is Claude.", response[0].Content);
-        Assert.Equal(AuthorRole.Assistant, response[0].Role);
+        Assert.NotNull(responses);
+        Assert.NotEmpty(responses);
+        string content = string.Concat(responses.Select(streamingContent => streamingContent.Content));
+        Assert.Equal("Hi! My name is Claude.", content);
+        Assert.All(responses, response => Assert.Equal(AuthorRole.Assistant, response.Role));
     }
 
     [Fact]
-    public async Task ShouldReturnValidAnthropicMetadataAsync()
+    public async Task ShouldReturnValidAnthropicMetadataStartMessageAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        var chatMessageContents = await client.GenerateChatMessageAsync(chatHistory);
+        var streamingChatMessageContents = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        AnthropicResponse response = Deserialize<AnthropicResponse>(
-            await File.ReadAllTextAsync(ChatTestDataFilePath))!;
-        var textContent = chatMessageContents.SingleOrDefault();
-        Assert.NotNull(textContent);
-        var metadata = textContent.Metadata as AnthropicMetadata;
+        Assert.NotNull(streamingChatMessageContents);
+        Assert.NotEmpty(streamingChatMessageContents);
+        var messageContent = streamingChatMessageContents.First();
+        var metadata = messageContent.Metadata as AnthropicMetadata;
         Assert.NotNull(metadata);
-        Assert.Equal(response.StopReason, metadata.FinishReason);
-        Assert.Equal(response.Id, metadata.MessageId);
-        Assert.Equal(response.StopSequence, metadata.StopSequence);
-        Assert.Equal(response.Usage.InputTokens, metadata.InputTokenCount);
-        Assert.Equal(response.Usage.OutputTokens, metadata.OutputTokenCount);
+        Assert.Null(metadata.FinishReason);
+        Assert.Equal("msg_1nZdL29xx5MUA1yADyHTEsnR8uuvGzszyY", metadata.MessageId);
+        Assert.Null(metadata.StopSequence);
+        Assert.Equal(25, metadata.InputTokenCount);
+        Assert.Equal(1, metadata.OutputTokenCount);
     }
 
     [Fact]
-    public async Task ShouldReturnValidDictionaryMetadataAsync()
+    public async Task ShouldReturnNullAnthropicMetadataDeltaMessagesAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        var chatMessageContents = await client.GenerateChatMessageAsync(chatHistory);
+        var streamingChatMessageContents = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        AnthropicResponse response = Deserialize<AnthropicResponse>(
-            await File.ReadAllTextAsync(ChatTestDataFilePath))!;
-        var textContent = chatMessageContents.SingleOrDefault();
-        Assert.NotNull(textContent);
-        var metadata = textContent.Metadata;
+        Assert.NotNull(streamingChatMessageContents);
+        Assert.NotEmpty(streamingChatMessageContents);
+        var deltaMessages = streamingChatMessageContents[1..^1];
+        Assert.All(deltaMessages, messageContent => Assert.Null(messageContent.Metadata));
+    }
+
+    [Fact]
+    public async Task ShouldReturnValidAnthropicMetadataEndMessageAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var streamingChatMessageContents = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.NotNull(streamingChatMessageContents);
+        Assert.NotEmpty(streamingChatMessageContents);
+        var messageContent = streamingChatMessageContents.Last();
+        var metadata = messageContent.Metadata as AnthropicMetadata;
         Assert.NotNull(metadata);
-        Assert.Equal(response.StopReason, metadata[nameof(AnthropicMetadata.FinishReason)]);
-        Assert.Equal(response.Id, metadata[nameof(AnthropicMetadata.MessageId)]);
-        Assert.Equal(response.StopSequence, metadata[nameof(AnthropicMetadata.StopSequence)]);
-        Assert.Equal(response.Usage.InputTokens, metadata[nameof(AnthropicMetadata.InputTokenCount)]);
-        Assert.Equal(response.Usage.OutputTokens, metadata[nameof(AnthropicMetadata.OutputTokenCount)]);
+        Assert.Equal(AnthropicFinishReason.StopSequence, metadata.FinishReason);
+        Assert.Equal("msg_1nZdL29xx5MUA1yADyHTEsnR8uuvGzszyY", metadata.MessageId);
+        Assert.Equal("claude", metadata.StopSequence);
+        Assert.Equal(0, metadata.InputTokenCount);
+        Assert.Equal(15, metadata.OutputTokenCount);
     }
 
     [Fact]
@@ -163,14 +197,12 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        var chatMessageContents = await client.GenerateChatMessageAsync(chatHistory);
+        var streamingChatMessageContents = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        var response = Deserialize<AnthropicResponse>(
-            await File.ReadAllTextAsync(ChatTestDataFilePath))!;
-        var chatMessageContent = chatMessageContents.SingleOrDefault();
-        Assert.NotNull(chatMessageContent);
-        Assert.Equal(response.ModelId, chatMessageContent.ModelId);
+        Assert.NotNull(streamingChatMessageContents);
+        Assert.NotEmpty(streamingChatMessageContents);
+        Assert.All(streamingChatMessageContents, chatMessageContent => Assert.Equal("claude-3-5-sonnet-20240620", chatMessageContent.ModelId));
     }
 
     [Fact]
@@ -187,10 +219,10 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         };
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings);
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings).ToListAsync();
 
         // Assert
-        var request = Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        var request = JsonSerializer.Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
         Assert.Equal(executionSettings.MaxTokens, request.MaxTokens);
         Assert.Equal(executionSettings.Temperature, request.Temperature);
@@ -206,7 +238,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
+            () => client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync().AsTask());
     }
 
     [Fact]
@@ -220,7 +252,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
+            () => client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync().AsTask());
     }
 
     [Fact]
@@ -234,17 +266,17 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        AnthropicRequest? request = Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        AnthropicRequest? request = JsonSerializer.Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
         Assert.NotNull(request.SystemPrompt);
         Assert.All(messages, msg => Assert.Contains(msg, request.SystemPrompt, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task ShouldPassVersionToRequestBodyIfThirdVendorIsUsedAsync()
+    public async Task ShouldPassVersionToRequestBodyIfCustomHandlerUsedAsync()
     {
         // Arrange
         var options = new AmazonBedrockAnthropicClientOptions();
@@ -255,10 +287,10 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
-        AnthropicRequest? request = Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        AnthropicRequest? request = JsonSerializer.Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
         Assert.Equal(options.Version, request.Version);
     }
@@ -272,7 +304,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
+            () => client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync().AsTask());
     }
 
     [Theory]
@@ -289,7 +321,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
-            () => client.GenerateChatMessageAsync(CreateSampleChatHistory(), executionSettings: executionSettings));
+            () => client.StreamGenerateChatMessageAsync(CreateSampleChatHistory(), executionSettings: executionSettings).ToListAsync().AsTask());
     }
 
     [Fact]
@@ -300,7 +332,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.Equal(HttpMethod.Post, this._messageHandlerStub.Method);
@@ -314,7 +346,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
@@ -330,7 +362,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var expectedVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AnthropicClient));
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
@@ -348,7 +380,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
@@ -364,7 +396,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
@@ -379,7 +411,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.ContentHeaders);
@@ -401,7 +433,7 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.GenerateChatMessageAsync(chatHistory);
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.Equal(uri, httpHandler.RequestUri);
@@ -425,16 +457,6 @@ public sealed class AnthropicChatGenerationTests : IDisposable
         HttpClient? httpClient = null)
     {
         return new AnthropicClient(modelId, apiKey ?? "fake-key", options: new(), httpClient: this._httpClient);
-    }
-
-    private static T? Deserialize<T>(string json)
-    {
-        return JsonSerializer.Deserialize<T>(json);
-    }
-
-    private static T? Deserialize<T>(ReadOnlySpan<byte> json)
-    {
-        return JsonSerializer.Deserialize<T>(json);
     }
 
     public void Dispose()
