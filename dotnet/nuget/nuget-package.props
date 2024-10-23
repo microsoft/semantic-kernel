@@ -8,7 +8,7 @@
     <Configurations>Debug;Release;Publish</Configurations>
     <IsPackable>true</IsPackable>
 
-    <!-- Package validation. Baseline Version should be lower or equal to current version. -->
+    <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
     <PackageValidationBaselineVersion>1.24.1</PackageValidationBaselineVersion>
     <!-- Validate assembly attributes only for Publish builds -->
     <NoWarn Condition="'$(Configuration)' != 'Publish'">$(NoWarn);CP0003</NoWarn>
