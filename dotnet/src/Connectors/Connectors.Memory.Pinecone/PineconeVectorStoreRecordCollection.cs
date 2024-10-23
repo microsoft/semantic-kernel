@@ -245,7 +245,8 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Pinecone connector.");
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Pinecone connector." +
+                $"Supported types are: {typeof(ReadOnlyMemory<float>).FullName}");
         }
 
         // Resolve options and build filter clause.
