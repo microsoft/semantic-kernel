@@ -19,7 +19,7 @@ internal static class ClaudeToolUse
         /// The name of the tool.
         /// </summary>
         [JsonPropertyName("name")]
-        public required string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// (optional, but strongly recommended) The description of the tool.
@@ -31,7 +31,7 @@ internal static class ClaudeToolUse
         /// The JSON schema for the tool.
         /// </summary>
         [JsonPropertyName("input_schema")]
-        public required string InputSchema { get; set; }
+        public string? InputSchema { get; set; }
     }
 
     /// <summary>

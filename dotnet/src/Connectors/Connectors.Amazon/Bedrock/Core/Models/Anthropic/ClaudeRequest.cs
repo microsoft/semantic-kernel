@@ -13,13 +13,13 @@ internal static class ClaudeRequest
         /// (Required) The prompt that you want Claude to complete. For proper response generation you need to format your prompt using alternating \n\nHuman: and \n\nAssistant: conversational turns.
         /// </summary>
         [JsonPropertyName("prompt")]
-        public required string Prompt { get; set; }
+        public string? Prompt { get; set; }
 
         /// <summary>
         /// (Required) The maximum number of tokens to generate before stopping. We recommend a limit of 4,000 tokens for optimal performance.
         /// </summary>
         [JsonPropertyName("max_tokens_to_sample")]
-        public required int MaxTokensToSample { get; set; }
+        public int MaxTokensToSample { get; set; }
 
         /// <summary>
         /// (Optional) Sequences that will cause the model to stop generating. Anthropic Claude models stop on "\n\nHuman:", and may include additional built-in stop sequences in the future.Use the stop_sequences inference parameter to include additional strings that will signal the model to stop generating text.

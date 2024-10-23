@@ -16,7 +16,7 @@ internal static class MistralRequest
         /// (Required) The prompt that you want to pass to the model, as shown in the following example.
         /// </summary>
         [JsonPropertyName("prompt")]
-        public required string Prompt { get; set; }
+        public string? Prompt { get; set; }
 
         /// <summary>
         /// Specify the maximum number of tokens to use in the generated response. The model truncates the response once the generated text exceeds max_tokens

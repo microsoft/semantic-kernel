@@ -90,7 +90,7 @@ internal sealed class AmazonIOService : IBedrockTextGenerationIOService, IBedroc
         var text = chunk["outputText"]?.ToString();
         if (!string.IsNullOrEmpty(text))
         {
-            yield return text;
+            yield return text!;
         }
     }
 

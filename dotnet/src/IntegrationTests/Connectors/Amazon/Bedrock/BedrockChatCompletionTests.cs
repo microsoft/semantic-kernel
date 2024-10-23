@@ -9,7 +9,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Amazon;
 
 public class BedrockChatCompletionTests
 {
-    [Theory]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("ai21.jamba-instruct-v1:0")]
     [InlineData("amazon.titan-text-premier-v1:0")]
     [InlineData("amazon.titan-text-lite-v1")]
@@ -54,7 +54,7 @@ public class BedrockChatCompletionTests
         Assert.Equal(AuthorRole.Assistant, chatHistory[3].Role);
     }
 
-    [Theory]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("ai21.jamba-instruct-v1:0")]
     [InlineData("amazon.titan-text-premier-v1:0")]
     [InlineData("amazon.titan-text-lite-v1")]

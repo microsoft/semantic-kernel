@@ -63,7 +63,7 @@ internal sealed class CohereCommandIOService : IBedrockTextGenerationIOService
                 var text = generation?["text"]?.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {
-                    yield return text;
+                    yield return text!;
                 }
             }
         }

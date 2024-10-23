@@ -58,7 +58,7 @@ internal static class BedrockModelUtilities
     {
         // Check that the text from the latest message in the chat history  is not empty.
         Verify.NotNullOrEmpty(chatHistory);
-        string? text = chatHistory[^1].Content;
+        string? text = chatHistory[chatHistory.Count - 1].Content;
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new ArgumentException("Last message in chat history was null or whitespace.");

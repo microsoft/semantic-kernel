@@ -14,19 +14,19 @@ internal sealed class CommandResponse
     /// A list of generated results along with the likelihoods for tokens requested. (Always returned).
     /// </summary>
     [JsonPropertyName("generations")]
-    public required List<Generation> Generations { get; set; }
+    public List<Generation> Generations { get; set; } = [];
 
     /// <summary>
     /// An identifier for the request (always returned).
     /// </summary>
     [JsonPropertyName("id")]
-    public required string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     /// The prompt from the input request (always returned).
     /// </summary>
     [JsonPropertyName("prompt")]
-    public required string Prompt { get; set; }
+    public string? Prompt { get; set; }
 
     /// <summary>
     /// A list of generated results along with the likelihoods for tokens requested. (Always returned). Each generation object in the list contains the following fields.
@@ -43,7 +43,7 @@ internal sealed class CommandResponse
         /// An identifier for the generation. (Always returned).
         /// </summary>
         [JsonPropertyName("id")]
-        public required string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         /// The generated text.

@@ -19,7 +19,7 @@ internal static class AI21JurassicRequest
         /// The input prompt as required by AI21 Labs Jurassic.
         /// </summary>
         [JsonPropertyName("prompt")]
-        public required string Prompt { get; set; }
+        public string? Prompt { get; set; }
 
         /// <summary>
         /// Use a lower value to decrease randomness in the response.

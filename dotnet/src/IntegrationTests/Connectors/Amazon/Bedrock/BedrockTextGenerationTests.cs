@@ -9,10 +9,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Amazon;
 
 public class BedrockTextGenerationTests
 {
-    [Theory]
-    [InlineData("anthropic.claude-v2")]
-    [InlineData("anthropic.claude-v2:1")]
-    [InlineData("anthropic.claude-instant-v1")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("cohere.command-text-v14")]
     [InlineData("cohere.command-light-text-v14")]
     [InlineData("cohere.command-r-v1:0")]
@@ -50,11 +47,36 @@ public class BedrockTextGenerationTests
         Assert.False(string.IsNullOrEmpty(output));
     }
 
-    [Theory]
-    [InlineData("ai21.jamba-instruct-v1:0")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("anthropic.claude-v2")]
     [InlineData("anthropic.claude-v2:1")]
     [InlineData("anthropic.claude-instant-v1")]
+    public async Task AnthropicTextGenerationReturnsValidResponseAsync(string modelId)
+    {
+        // Arrange
+        string prompt = """
+                        Human: What is 2 + 2?
+                        Assistant: 
+                        """;
+        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId).Build();
+        var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
+
+        // Act
+        var response = await textGenerationService.GetTextContentsAsync(prompt).ConfigureAwait(true);
+        string output = "";
+        foreach (var text in response)
+        {
+            output += text;
+        }
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.True(response.Count > 0);
+        Assert.False(string.IsNullOrEmpty(output));
+    }
+
+    [Theory(Skip = "For manual verification only")]
+    [InlineData("ai21.jamba-instruct-v1:0")]
     [InlineData("cohere.command-text-v14")]
     [InlineData("cohere.command-light-text-v14")]
     [InlineData("cohere.command-r-v1:0")]
@@ -72,6 +94,33 @@ public class BedrockTextGenerationTests
     {
         // Arrange
         string prompt = "What is 2 + 2?";
+        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId).Build();
+        var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
+
+        // Act
+        var response = textGenerationService.GetStreamingTextContentsAsync(prompt).ConfigureAwait(true);
+        string output = "";
+        await foreach (var textContent in response)
+        {
+            output += textContent.Text;
+        }
+
+        // Assert
+        Assert.NotNull(output);
+        Assert.False(string.IsNullOrEmpty(output));
+    }
+
+    [Theory(Skip = "For manual verification only")]
+    [InlineData("anthropic.claude-v2")]
+    [InlineData("anthropic.claude-v2:1")]
+    [InlineData("anthropic.claude-instant-v1")]
+    public async Task AnthropicTextStreamingReturnsValidResponseAsync(string modelId)
+    {
+        // Arrange
+        string prompt = """
+                        Human: What is 2 + 2?
+                        Assistant: 
+                        """;
         var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId).Build();
         var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
 

@@ -40,7 +40,7 @@ internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBed
         List<TextContent> textContents = [];
         if (!string.IsNullOrEmpty(responseBody?.Completion))
         {
-            textContents.Add(new TextContent(responseBody.Completion));
+            textContents.Add(new TextContent(responseBody!.Completion));
         }
 
         return textContents;
@@ -125,7 +125,7 @@ internal sealed class AnthropicIOService : IBedrockTextGenerationIOService, IBed
         var text = chunk["completion"]?.ToString();
         if (!string.IsNullOrEmpty(text))
         {
-            yield return text;
+            yield return text!;
         }
     }
 

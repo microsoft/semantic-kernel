@@ -92,7 +92,7 @@ internal sealed class MistralIOService : IBedrockTextGenerationIOService, IBedro
                 var text = output?["text"]?.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {
-                    yield return text;
+                    yield return text!;
                 }
             }
         }

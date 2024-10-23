@@ -19,7 +19,7 @@ internal static class AI21JambaRequest
         /// The previous messages in this chat, from oldest (index 0) to newest. Must have at least one user or assistant message in the list. Include both user inputs and system responses. Maximum total size for the list is about 256K tokens.
         /// </summary>
         [JsonPropertyName("messages")]
-        public required List<JambaMessage> Messages { get; set; }
+        public List<JambaMessage> Messages { get; set; } = [];
 
         /// <summary>
         /// How many responses to generate (one for text generation).
@@ -79,13 +79,13 @@ internal static class AI21JambaRequest
             /// Role of the message written (assistant, user, or system).
             /// </summary>
             [JsonPropertyName("role")]
-            public required string Role { get; set; }
+            public string? Role { get; set; }
 
             /// <summary>
             /// Message contents.
             /// </summary>
             [JsonPropertyName("content")]
-            public required string Content { get; set; }
+            public string? Content { get; set; }
         }
     }
 }

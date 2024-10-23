@@ -16,7 +16,7 @@ internal static class TitanRequest
         /// The provided input text string for text generation response.
         /// </summary>
         [JsonPropertyName("inputText")]
-        public required string InputText { get; set; }
+        public string? InputText { get; set; }
 
         /// <summary>
         /// Text generation configurations as required by Amazon Titan request body.

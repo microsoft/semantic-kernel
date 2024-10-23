@@ -19,7 +19,7 @@ internal static class CommandRRequest
         /// (Required) Text input for the model to respond to.
         /// </summary>
         [JsonPropertyName("message")]
-        public required string Message { get; set; }
+        public string? Message { get; set; }
 
         /// <summary>
         /// A list of previous messages between the user and the model, meant to give the model conversational context for responding to the user's message.

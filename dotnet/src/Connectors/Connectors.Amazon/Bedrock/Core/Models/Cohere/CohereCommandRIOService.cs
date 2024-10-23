@@ -64,7 +64,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
         List<TextContent> textContents = [];
         if (!string.IsNullOrEmpty(responseBody?.Text))
         {
-            textContents.Add(new TextContent(responseBody.Text));
+            textContents.Add(new TextContent(responseBody!.Text));
         }
 
         return textContents;
@@ -145,7 +145,7 @@ internal sealed class CohereCommandRIOService : IBedrockTextGenerationIOService,
         var text = chunk["text"]?.ToString();
         if (!string.IsNullOrEmpty(text))
         {
-            yield return text;
+            yield return text!;
         }
     }
 

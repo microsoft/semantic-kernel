@@ -15,7 +15,7 @@ internal static class LlamaRequest
         /// The prompt that you want to pass to the model.
         /// </summary>
         [JsonPropertyName("prompt")]
-        public required string Prompt { get; set; }
+        public string? Prompt { get; set; }
 
         /// <summary>
         /// Use a lower value to decrease randomness in the response.

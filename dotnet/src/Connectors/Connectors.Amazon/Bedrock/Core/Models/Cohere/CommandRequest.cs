@@ -16,7 +16,7 @@ internal static class CommandRequest
         /// The input text that serves as the starting point for generating the response.
         /// </summary>
         [JsonPropertyName("prompt")]
-        public required string Prompt { get; set; }
+        public string? Prompt { get; set; }
 
         /// <summary>
         /// Use a lower value to decrease randomness in the response.

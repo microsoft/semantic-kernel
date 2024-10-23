@@ -37,7 +37,7 @@ internal sealed class MetaIOService : IBedrockTextGenerationIOService, IBedrockC
         List<TextContent> textContents = [];
         if (!string.IsNullOrEmpty(responseBody?.Generation))
         {
-            textContents.Add(new TextContent(responseBody.Generation));
+            textContents.Add(new TextContent(responseBody!.Generation));
         }
 
         return textContents;
@@ -80,7 +80,7 @@ internal sealed class MetaIOService : IBedrockTextGenerationIOService, IBedrockC
         var generation = chunk["generation"]?.ToString();
         if (!string.IsNullOrEmpty(generation))
         {
-            yield return generation;
+            yield return generation!;
         }
     }
 
