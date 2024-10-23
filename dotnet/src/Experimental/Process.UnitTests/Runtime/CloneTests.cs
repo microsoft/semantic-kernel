@@ -53,7 +53,7 @@ public class CloneTests
     public void VerifyCloneSimpleStepTest()
     {
         // Arrange
-        KernelProcessStepInfo source = new(typeof(KernelProcessStepState), new(nameof(VerifyCloneSimpleStepTest), "test"), []);
+        KernelProcessStepInfo source = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSimpleStepTest), "test"), []);
 
         // Act
         KernelProcessStepInfo copy = source.Clone(NullLogger.Instance);
@@ -70,7 +70,7 @@ public class CloneTests
     {
         // Arrange
         KernelProcessStepState<TestState> state = new(nameof(VerifyCloneRealStepTest), "test") { State = new TestState() };
-        KernelProcessStepInfo source = new(typeof(KernelProcessStepState<TestState>), state, CreateTestEdges());
+        KernelProcessStepInfo source = new(typeof(KernelProcessStep<TestState>), state, CreateTestEdges());
 
         // Act
         KernelProcessStepInfo copy = source.Clone(NullLogger.Instance);
@@ -86,7 +86,7 @@ public class CloneTests
     public void VerifyCloneSingleProcessTest()
     {
         // Arrange
-        KernelProcessStepInfo step = new(typeof(KernelProcessStepState), new(nameof(VerifyCloneSingleProcessTest), "teststep"), []);
+        KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSingleProcessTest), "teststep"), []);
         KernelProcessState processState = new(nameof(VerifyCloneSingleProcessTest), "test");
         KernelProcess source = new(processState, [step], CreateTestEdges());
 
@@ -104,7 +104,7 @@ public class CloneTests
     public void VerifyCloneNestedProcessTest()
     {
         // Arrange
-        KernelProcessStepInfo step = new(typeof(KernelProcessStepState), new(nameof(VerifyCloneNestedProcessTest), "teststep"), []);
+        KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneNestedProcessTest), "teststep"), []);
         KernelProcess subProcess = new(new(nameof(VerifyCloneNestedProcessTest), "inner"), [step], CreateTestEdges());
         KernelProcess source = new(new(nameof(VerifyCloneNestedProcessTest), "outer"), [subProcess], []);
 

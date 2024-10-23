@@ -12,7 +12,7 @@ internal static class StepExtensions
     /// <summary>
     /// The generic state type for a process step.
     /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStepState<>);
+    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
 
     public static KernelProcessStepInfo Clone(this KernelProcessStepInfo step, ILogger logger)
     {
