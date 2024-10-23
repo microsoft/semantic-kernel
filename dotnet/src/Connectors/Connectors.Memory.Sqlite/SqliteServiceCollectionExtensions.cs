@@ -15,7 +15,7 @@ public static class SqliteServiceCollectionExtensions
     /// <summary>
     /// Register a SQLite <see cref="IVectorStore"/> with the specified service ID
     /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container,
-    /// assuming the connection is already opened and vector search extension is already loaded.
+    /// assuming the connection is already opened, and vector search extension is already loaded.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
@@ -54,7 +54,7 @@ public static class SqliteServiceCollectionExtensions
         SqliteVectorStoreOptions? options = default,
         string? serviceId = default)
     {
-        services.AddKeyedSingleton<IVectorStore>(
+        services.AddKeyedTransient<IVectorStore>(
             serviceId,
             (sp, obj) =>
             {
@@ -75,7 +75,7 @@ public static class SqliteServiceCollectionExtensions
     /// <summary>
     /// Register a SQLite <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
     /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container,
-    /// assuming the connection is already opened and vector search extension is already loaded.
+    /// assuming the connection is already opened, and vector search extension is already loaded.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
