@@ -21,7 +21,7 @@ public class KernelProcessStateTests
         string id = "123";
 
         // Act
-        var state = new KernelProcessState(name, id);
+        KernelProcessState state = new(name, id);
 
         // Assert
         Assert.Equal(name, state.Name);
@@ -38,7 +38,7 @@ public class KernelProcessStateTests
         string name = "TestProcess";
 
         // Act
-        var state = new KernelProcessState(name);
+        KernelProcessState state = new(name);
 
         // Assert
         Assert.Equal(name, state.Name);
@@ -52,8 +52,6 @@ public class KernelProcessStateTests
     public void KernelProcessStateInitializationWithNullNameThrows()
     {
         // Act & Assert
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        var ex = Assert.Throws<ArgumentNullException>(() => new KernelProcessState(name: null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+        Assert.Throws<ArgumentNullException>(() => new KernelProcessState(name: null!));
     }
 }

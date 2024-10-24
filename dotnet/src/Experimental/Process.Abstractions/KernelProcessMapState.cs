@@ -11,12 +11,13 @@ namespace Microsoft.SemanticKernel;
 public sealed record KernelProcessMapState : KernelProcessStepState
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="KernelProcessState"/> class.
+    /// Initializes a new instance of the <see cref="KernelProcessMapState"/> class.
     /// </summary>
-    /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
-    /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
-    public KernelProcessMapState(string name, string? id = null)
+    /// <param name="name">The name of the associated <see cref="KernelProcessMap"/></param>
+    /// <param name="id">The Id of the associated <see cref="KernelProcessMap"/></param>
+    public KernelProcessMapState(string name, string id)
         : base(name, id)
     {
+        Verify.NotNullOrWhiteSpace(id, nameof(id));
     }
 }

@@ -17,7 +17,7 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// The unique identifier for the step. This may be null until the step is run within a process.
     /// </summary>
-    public string? Id { get; }
+    public string Id { get; }
 
     /// <summary>
     /// The name of the step. This is intended to be a human-readable name and is not required to be unique.

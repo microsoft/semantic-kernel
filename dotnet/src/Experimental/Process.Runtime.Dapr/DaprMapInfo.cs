@@ -46,7 +46,7 @@ public sealed record DaprMapInfo : DaprStepInfo
 
         DaprStepInfo daprStepInfo = DaprStepInfo.FromKernelStepInfo(processMap);
 
-        DaprProcessInfo daprProcess = DaprProcessInfo.FromKernelProcess(processMap.Map);
+        DaprProcessInfo daprProcess = DaprProcessInfo.FromKernelProcess(processMap.Operation);
 
         return new DaprMapInfo
         {

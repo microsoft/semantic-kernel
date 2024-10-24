@@ -25,7 +25,7 @@ internal sealed class LocalMap : LocalStep
     internal LocalMap(KernelProcessMap map, Kernel kernel)
         : base(map, kernel)
     {
-        Verify.NotNull(map.Map);
+        Verify.NotNull(map.Operation);
 
         this._map = map;
 
@@ -54,7 +54,7 @@ internal sealed class LocalMap : LocalStep
                 ++index;
                 Console.WriteLine($"\tLOCAL MAP #{index}: {value}");
 
-                KernelProcess process = this._map.Map.CloneProcess(this.Logger);
+                KernelProcess process = this._map.Operation.CloneProcess(this.Logger);
                 MapOperationContext context = new(index, this._mapEvents, capturedEvents);
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 Task<LocalKernelProcessContext> processTask =
