@@ -63,6 +63,6 @@ internal static class JsonSchemaGenerator
             }
         };
 
-        return KernelJsonSchemaBuilder.Build(null, typeof(SchemaType), "Intent Result", config).AsJson();
+        return KernelJsonSchemaBuilder.Build(typeof(SchemaType), "Intent Result", config).AsJson();
     }
 }

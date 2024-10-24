@@ -23,7 +23,7 @@ public static class TextSearchServiceCollectionExtensions
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    public static IServiceCollection AddVectorStoreTextSearch<TRecord>(
+    public static IServiceCollection AddVectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord>(
         this IServiceCollection services,
         ITextSearchStringMapper? stringMapper = null,
         ITextSearchResultMapper? resultMapper = null,
@@ -77,7 +77,7 @@ public static class TextSearchServiceCollectionExtensions
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    public static IServiceCollection AddVectorStoreTextSearch<TRecord>(
+    public static IServiceCollection AddVectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord>(
         this IServiceCollection services,
         string vectorizableTextSearchServiceId,
         ITextSearchStringMapper? stringMapper = null,
@@ -122,7 +122,7 @@ public static class TextSearchServiceCollectionExtensions
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    public static IServiceCollection AddVectorStoreTextSearch<TRecord>(
+    public static IServiceCollection AddVectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord>(
         this IServiceCollection services,
         string vectorizedSearchServiceId,
         string textEmbeddingGenerationServiceId,
