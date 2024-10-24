@@ -33,8 +33,9 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
     public KernelProcessMap(KernelProcessMapState state, KernelProcess operation, string inputParameter, Dictionary<string, List<KernelProcessEdge>> edges)
         : base(typeof(KernelProcessMap), state, edges)
     {
-        Verify.NotNull(operation);
-        Verify.NotNullOrWhiteSpace(state.Name);
+        Verify.NotNull(operation, nameof(operation));
+        Verify.NotNullOrWhiteSpace(state.Name, $"{nameof(state)}.{nameof(KernelProcessMapState.Name)}");
+        Verify.NotNullOrWhiteSpace(state.Id, $"{nameof(state)}.{nameof(KernelProcessMapState.Id)}");
 
         this.Operation = operation;
         this.InputParameterName = inputParameter;
