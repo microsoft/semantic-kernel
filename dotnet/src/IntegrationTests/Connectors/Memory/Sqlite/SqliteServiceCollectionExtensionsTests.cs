@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Data;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -65,6 +67,29 @@ public sealed class SqliteServiceCollectionExtensionsTests
         var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public void ItClosesConnectionWhenDIServiceIsDisposed()
+    {
+        // Act
+        using var connection = new SqliteConnection("Data Source=:memory:");
+
+        this._serviceCollection.AddTransient<SqliteConnection>(_ => connection);
+
+        this._serviceCollection.AddSqliteVectorStore();
+
+        var serviceProvider = this._serviceCollection.BuildServiceProvider();
+
+        using (var scope = serviceProvider.CreateScope())
+        {
+            scope.ServiceProvider.GetRequiredService<IVectorStore>();
+
+            Assert.Equal(ConnectionState.Open, connection.State);
+        }
+
+        // Assert
+        Assert.Equal(ConnectionState.Closed, connection.State);
     }
 
     #region private
