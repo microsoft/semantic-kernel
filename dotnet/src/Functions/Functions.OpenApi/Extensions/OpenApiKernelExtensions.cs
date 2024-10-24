@@ -9,8 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides extension methods for importing plugins exposed as OpenAPI specifications.
