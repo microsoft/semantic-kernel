@@ -191,13 +191,6 @@ public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(outp
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
-        var summarizationPrompt = @"Provide a CONCISE SUMMARY of the following chat messages
-        EXTRACT KEY DETAILS from user questions and assistant responses
-        MOST RECENT AND IMPORTANT MESSAGES ARE AT THE END
-        The summary will only be used to help you respond to the user DO NOT INCLUDE ANY COMMENTARY
-        Always use the last location the user asked about as the context for the next response
-        <MESSAGES START>{{$chat_messages}}<MESSAGES END>";
-
         OpenAIChatCompletionService openAiChatService = new(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
