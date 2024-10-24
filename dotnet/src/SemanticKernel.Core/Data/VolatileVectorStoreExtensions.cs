@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -27,6 +28,8 @@ public static class VolatileVectorStoreExtensions
     /// <param name="collectionName">The collection name.</param>
     /// <param name="stream">The stream to write the serialized JSON to.</param>
     /// <param name="jsonSerializerOptions">The JSON serializer options to use.</param>
+    [RequiresUnreferencedCode("Uses reflection for collection serialization, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection for collection serialization, making it incompatible with AOT scenarios.")]
     public static async Task SerializeCollectionAsJsonAsync<TKey, TRecord>(
         this VolatileVectorStore vectorStore,
         string collectionName,
@@ -56,6 +59,8 @@ public static class VolatileVectorStoreExtensions
     /// <typeparam name="TRecord">Type of the record.</typeparam>
     /// <param name="vectorStore">Instance of <see cref="VolatileVectorStore"/> used to retrieve the collection.</param>
     /// <param name="stream">The stream to read the serialized JSON from.</param>
+    [RequiresUnreferencedCode("Uses reflection for collection deserialization, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection for collection deserialization, making it incompatible with AOT scenarios.")]
     public static async Task<IVectorStoreRecordCollection<TKey, TRecord>?> DeserializeCollectionFromJsonAsync<TKey, TRecord>(
         this VolatileVectorStore vectorStore,
         Stream stream)
