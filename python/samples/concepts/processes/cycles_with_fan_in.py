@@ -3,6 +3,7 @@
 import asyncio
 import logging
 from enum import Enum
+from typing import ClassVar
 
 from pydantic import Field
 
@@ -37,10 +38,9 @@ class CommonEvents(Enum):
 # Define a sample step that once the `on_input_event` is received,
 # it will emit two events to start the A and B steps.
 class KickOffStep(KernelProcessStep):
-    class Functions:
-        KickOff = "kick_off"
+    KICK_OFF_FUNCTION: ClassVar[str] = "kick_off"
 
-    @kernel_function(name=Functions.KickOff)
+    @kernel_function(name=KICK_OFF_FUNCTION)
     async def print_welcome_message(self, context: KernelProcessStepContext):
         context.emit_event(KernelProcessEvent(id=CommonEvents.StartARequested.value, data="Get Going A"))
         context.emit_event(KernelProcessEvent(id=CommonEvents.StartBRequested.value, data="Get Going B"))
@@ -83,6 +83,7 @@ class CStep(KernelProcessStep[CStepState]):
         self.state.current_cycle += 1
         print(f"CStep Current Cycle: {self.state.current_cycle}")
         if self.state.current_cycle == 3:
+            print("CStep Exit Requested")
             context.emit_event(process_event=KernelProcessEvent(id=CommonEvents.ExitRequested.value))
             return
         context.emit_event(process_event=KernelProcessEvent(id=CommonEvents.CStepDone.value))

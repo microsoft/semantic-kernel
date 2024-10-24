@@ -2,6 +2,7 @@
 
 import asyncio
 from enum import Enum
+from typing import ClassVar
 
 from pydantic import Field
 
@@ -37,8 +38,7 @@ class UserInputState(KernelBaseModel):
 
 
 class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
-    class Functions:
-        GetUserInput = "get_user_input"
+    GET_USER_INPUT: ClassVar[str] = "get_user_input"
 
     def create_default_state(self) -> "UserInputState":
         """Creates the default UserInputState."""
@@ -59,7 +59,7 @@ class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
         self.populate_user_inputs()
         pass
 
-    @kernel_function(name=Functions.GetUserInput)
+    @kernel_function(name=GET_USER_INPUT)
     async def get_user_input(self, context: KernelProcessStepContext):
         """Gets the user input."""
         if not self.state:
@@ -106,8 +106,7 @@ SERVICE_ID = "default"
 
 
 class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
-    class Functions:
-        GetChatResponse = "get_chat_response"
+    GET_CHAT_RESPONSE: ClassVar[str] = "get_chat_response"
 
     state: ChatBotState = Field(default_factory=ChatBotState)
 
@@ -116,7 +115,7 @@ class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
         self.state = state.state or ChatBotState()
         self.state.chat_messages = self.state.chat_messages or []
 
-    @kernel_function(name=Functions.GetChatResponse)
+    @kernel_function(name=GET_CHAT_RESPONSE)
     async def get_chat_response(self, context: "KernelProcessStepContext", user_message: str, kernel: "Kernel"):
         """Generates a response from the chat completion service."""
         # Add user message to the state

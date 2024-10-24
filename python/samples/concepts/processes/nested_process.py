@@ -3,6 +3,7 @@
 import asyncio
 import logging
 from enum import Enum
+from typing import ClassVar
 
 from pydantic import Field
 
@@ -34,18 +35,16 @@ class StepState:
 
 
 class EchoStep(KernelProcessStep):
-    class Functions:
-        Echo = "echo"
+    ECHO: ClassVar[str] = "echo"
 
-    @kernel_function(name=Functions.Echo)
+    @kernel_function(name=ECHO)
     async def echo(self, message: str):
         print(f"[ECHO] {message}")
         return message
 
 
 class RepeatStep(KernelProcessStep[StepState]):
-    class Functions:
-        Repeat = "repeat"
+    REPEAT: ClassVar[str] = "repeat"
 
     state: StepState = Field(default_factory=StepState)
 
@@ -53,7 +52,7 @@ class RepeatStep(KernelProcessStep[StepState]):
         """Activates the step and sets the state."""
         self.state = state.state
 
-    @kernel_function()
+    @kernel_function(name=REPEAT)
     async def repeat(self, message: str, context: KernelProcessStepContext, count: int = 2):
         output = " ".join([message] * count)
         self.state.last_message = output
@@ -80,7 +79,7 @@ def create_linear_process(name: str):
 
     process_builder.on_input_event(event_id=ProcessEvents.StartProcess.value).send_event_to(target=echo_step)
 
-    echo_step.on_function_result(function_name=EchoStep.Functions.Echo).send_event_to(
+    echo_step.on_function_result(function_name=EchoStep.ECHO).send_event_to(
         target=repeat_step, parameter_name="message"
     )
 
