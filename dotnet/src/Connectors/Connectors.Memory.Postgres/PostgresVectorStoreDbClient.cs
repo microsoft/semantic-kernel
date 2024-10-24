@@ -32,7 +32,7 @@ public class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string sch
     /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
     /// <param name="schema">Schema of collection tables.</param>
-    public PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string schema = "public") : this(dataSource, schema, new PostgresVectorStoreCollectionSqlBuilder()) { }
+    public PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string schema = PostgresConstants.DefaultSchema) : this(dataSource, schema, new PostgresVectorStoreCollectionSqlBuilder()) { }
 
     /// <inheritdoc />
     public async Task<bool> DoesTableExistsAsync(string tableName, CancellationToken cancellationToken = default)

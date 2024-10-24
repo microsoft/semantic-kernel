@@ -58,6 +58,9 @@ internal static class PostgresConstants
         typeof(ReadOnlyMemory<float>?)
     ];
 
+    /// <summary>The default schema name.</summary>
+    public const string DefaultSchema = "public";
+
     /// <summary>The name of the column that returns distance value in the database.</summary>
     /// <remarks>It is used in the similarity search query. Must not conflict with model property.</remarks>
     public const string DistanceColumnName = "sk_pg_distance";
