@@ -1,0 +1,24 @@
+{
+  "stepsState": {
+    "GatherFriedFishIngredientsWithStockStep": {
+      "state": {
+        "IngredientsStock": 1
+      },
+      "id": "51b39c78e71148c9af0a3c44c83bc6f5",
+      "name": "GatherFriedFishIngredientsWithStockStep"
+    },
+    "chopStep": {
+      "state": {
+        "KnifeSharpness": 4
+      },
+      "id": "6be5207cb71e42c28d7061e45e1127c1",
+      "name": "chopStep"
+    },
+    "FryFoodStep": {
+      "id": "9523d47a97a546908985a6ff028783cd",
+      "name": "FryFoodStep"
+    }
+  },
+  "id": "1c90a002-68ca-4c68-ac3b-a083054ed628",
+  "name": "FriedFishWithStatefulStepsProcess"
+}

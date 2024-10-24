@@ -120,5 +120,5 @@ public class GatherIngredientsWithStockStep : KernelProcessStep<GatherIngredient
 /// </summary>
 public sealed class GatherIngredientsState
 {
-    internal int IngredientsStock { get; set; } = 5;
+    public int IngredientsStock { get; set; } = 5;
 }

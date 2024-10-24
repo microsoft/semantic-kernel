@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -41,6 +42,11 @@ internal sealed class EndStep : ProcessStepBuilder
     }
 
     internal override KernelProcessStepInfo BuildStep()
+    {
+        return this.BuildStep(null);
+    }
+
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
     {
         // The end step has no state.
         return new KernelProcessStepInfo(typeof(KernelProcessStepState), new KernelProcessStepState(EndStepName), []);
