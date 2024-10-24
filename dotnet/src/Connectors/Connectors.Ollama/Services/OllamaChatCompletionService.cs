@@ -508,11 +508,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         bool autoInvoke = false;
         FunctionChoiceBehaviorOptions? options = null;
 
-        // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
-        if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
-        {
-            (tools, choice, autoInvoke, options) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior, chatHistory);
-        }
+        (tools, choice, autoInvoke, options) = this.ConfigureFunctionCalling(kernel, requestIndex, executionSettings.FunctionChoiceBehavior, chatHistory);
 
         return new ToolCallingConfig(
             Tools: tools, // Ollama may be happy with null here
@@ -521,7 +517,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             Options: options);
     }
 
-    private (IList<Tool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, FunctionChoiceBehaviorOptions? Options) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior, ChatHistory chatHistory)
+    private (IList<Tool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, FunctionChoiceBehaviorOptions? Options) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior? functionChoiceBehavior, ChatHistory chatHistory)
     {
         FunctionChoiceBehaviorConfiguration? config = this._functionCallsProcessor.GetConfiguration(functionChoiceBehavior, chatHistory, requestIndex, kernel);
 

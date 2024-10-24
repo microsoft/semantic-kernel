@@ -58,7 +58,7 @@ public sealed class Ollama_FunctionCalling(ITestOutputHelper output) : BaseTest(
         Console.WriteLine(result2);
     }
 
-    [Fact]
+    [Fact(Skip = "This sample may not work 100% of times, a future release of Ollama will sort it")]
     public async Task AutoInvokeKernelFunctionsWithComplexParameterAsync()
     {
         // Create a kernel with Ollama chat completion and HolidayPlugin
