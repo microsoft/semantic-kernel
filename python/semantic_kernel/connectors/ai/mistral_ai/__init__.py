@@ -9,9 +9,9 @@ from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completio
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_text_embedding import (
     MistralAITextEmbedding,
 )
+from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 
 __all__ = [
     "MistralAIChatCompletion",
     "MistralAIChatPromptExecutionSettings",
-    "MistralAITextEmbedding",
 ]
