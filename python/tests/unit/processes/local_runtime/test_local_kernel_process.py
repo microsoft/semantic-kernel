@@ -28,7 +28,7 @@ async def test_start_method():
     with (
         patch.object(LocalKernelProcessContext, "start_with_event", new=AsyncMock()) as mock_start_with_event,
         patch(
-            "semantic_kernel.processes.kernel_process.kernel_process.LocalKernelProcessContext",
+            "semantic_kernel.processes.local_runtime.local_kernel_process_context.LocalKernelProcessContext",
             autospec=True,
         ) as MockContext,
     ):
