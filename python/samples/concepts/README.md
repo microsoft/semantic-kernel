@@ -17,6 +17,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | On Your Data | Examples of using AzureOpenAI [`On Your Data`](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/use-your-data?tabs=mongo-db) |
 | Planners | Showing the uses of [`Planners`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/planners) |
 | Plugins | Different ways of creating and using [`Plugins`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_plugin.py) |
+| Processes | Examples of using the [`Process Framework`](../../semantic_kernel/processes/) |
 | PromptTemplates | Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/prompt_template/prompt_template_base.py) with parametrization for `Prompt` rendering  |
 | RAG | Different ways of `RAG` (Retrieval-Augmented Generation) |
 | Search | Using search services information |

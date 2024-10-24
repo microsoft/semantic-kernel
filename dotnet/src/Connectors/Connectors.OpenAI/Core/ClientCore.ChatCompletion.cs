@@ -207,6 +207,7 @@ internal partial class ClientCore
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
                 cancellationToken).ConfigureAwait(false);
             if (lastMessage != null)
@@ -248,9 +249,9 @@ internal partial class ClientCore
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
-            var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
+            var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
-            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, toolCallingConfig, kernel);
+            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
 
             // Reset state
             contentBuilder?.Clear();
@@ -306,7 +307,7 @@ internal partial class ClientCore
                         finishReason = chatCompletionUpdate.FinishReason ?? default;
 
                         // If we're intending to invoke function calls, we need to consume that function call information.
-                        if (toolCallingConfig.AutoInvoke)
+                        if (functionCallingConfig.AutoInvoke)
                         {
                             foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
                             {
@@ -362,7 +363,7 @@ internal partial class ClientCore
             // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
-            if (!toolCallingConfig.AutoInvoke ||
+            if (!functionCallingConfig.AutoInvoke ||
                 toolCallIdsByIndex is not { Count: > 0 })
             {
                 yield break;
@@ -381,6 +382,7 @@ internal partial class ClientCore
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
                 cancellationToken).ConfigureAwait(false);
             if (lastMessage != null)
@@ -552,7 +554,7 @@ internal partial class ClientCore
     {
         var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
-        var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
+        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
         return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);

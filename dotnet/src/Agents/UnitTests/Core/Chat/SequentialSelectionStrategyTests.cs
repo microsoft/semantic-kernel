@@ -45,7 +45,7 @@ public class SequentialSelectionStrategyTests
     /// Verify <see cref="SequentialSelectionStrategy"/> provides agents in expected order.
     /// </summary>
     [Fact]
-    public async Task VerifySequentialSelectionStrategyInitialAgentAsync()
+    public async Task VerifySequentialSelectionStrategyInitialLastAgentAsync()
     {
         MockAgent agent1 = new();
         MockAgent agent2 = new();
@@ -59,6 +59,30 @@ public class SequentialSelectionStrategyTests
 
         await VerifyNextAgentAsync(agent2, agents, strategy);
         await VerifyNextAgentAsync(agent1, agents, strategy);
+        await VerifyNextAgentAsync(agent2, agents, strategy);
+        await VerifyNextAgentAsync(agent1, agents, strategy);
+    }
+
+    /// <summary>
+    /// Verify <see cref="SequentialSelectionStrategy"/> provides agents in expected order.
+    /// </summary>
+    [Fact]
+    public async Task VerifySequentialSelectionStrategyInitialFirstAgentAsync()
+    {
+        MockAgent agent1 = new();
+        MockAgent agent2 = new();
+
+        Agent[] agents = [agent1, agent2];
+        SequentialSelectionStrategy strategy =
+            new()
+            {
+                InitialAgent = agent1
+            };
+
+        await VerifyNextAgentAsync(agent1, agents, strategy);
+        await VerifyNextAgentAsync(agent2, agents, strategy);
+        await VerifyNextAgentAsync(agent1, agents, strategy);
+        await VerifyNextAgentAsync(agent2, agents, strategy);
     }
 
     /// <summary>
