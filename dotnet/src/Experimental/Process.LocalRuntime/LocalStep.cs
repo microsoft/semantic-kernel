@@ -226,7 +226,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
-        Type stateType = this._stepInfo.InnerStepType.InspectStateType(out Type? userStateType, this._logger);
+        Type stateType = this._stepInfo.InnerStepType.ExtractStateType(out Type? userStateType, this._logger);
         KernelProcessStepState stateObject = this._stepInfo.State;
         stateObject.InitializeUserState(stateType, userStateType);
 

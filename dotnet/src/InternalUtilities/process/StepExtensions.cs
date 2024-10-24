@@ -21,7 +21,7 @@ internal static class StepExtensions
             return subProcess.CloneProcess(logger);
         }
 
-        Type stateType = step.InnerStepType.InspectStateType(out Type? userStateType, logger);
+        Type stateType = step.InnerStepType.ExtractStateType(out Type? userStateType, logger);
 
         KernelProcessStepState newState = step.State.Clone(stateType, userStateType, logger);
 
@@ -53,7 +53,7 @@ internal static class StepExtensions
         return newState;
     }
 
-    public static Type InspectStateType(this Type? innerStepType, out Type? userStateType, ILogger? logger)
+    public static Type ExtractStateType(this Type? innerStepType, out Type? userStateType, ILogger? logger)
     {
         Type stateType;
 
