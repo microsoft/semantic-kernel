@@ -353,6 +353,7 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
             DistanceFunction.EuclideanDistance => "<->",
             DistanceFunction.ManhattanDistance => "<+>",
             DistanceFunction.DotProductSimilarity => "<#>",
+            null or "" => "<->",  // Default to Euclidean distance
             _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
         };
 
