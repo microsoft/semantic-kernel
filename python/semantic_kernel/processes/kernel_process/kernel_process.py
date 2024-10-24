@@ -7,12 +7,9 @@ from pydantic import Field
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
-from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
-from semantic_kernel.processes.local_runtime.local_kernel_process_context import LocalKernelProcessContext
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from semantic_kernel.kernel import Kernel
     from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 
 
@@ -47,14 +44,3 @@ class KernelProcess(KernelProcessStepInfo):
         }
 
         super().__init__(**args)
-
-    async def start(
-        self, kernel: "Kernel", initial_event: KernelProcessEvent | str, **kwargs
-    ) -> LocalKernelProcessContext:
-        """Start the kernel process."""
-        if isinstance(initial_event, str):
-            initial_event = KernelProcessEvent(id=initial_event, data=kwargs.get("data", None))
-
-        process_context = LocalKernelProcessContext(self, kernel)
-        await process_context.start_with_event(initial_event)
-        return process_context
