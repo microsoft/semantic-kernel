@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Pinecone;
+namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
 public class PineconeUtilsTests
 {

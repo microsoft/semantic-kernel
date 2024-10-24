@@ -8,7 +8,7 @@ using Moq;
 using Xunit;
 using Sdk = Pinecone;
 
-namespace SemanticKernel.Connectors.UnitTests.Pinecone;
+namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
 /// <summary>
 /// Contains tests for the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> class.
