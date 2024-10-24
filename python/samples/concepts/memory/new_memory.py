@@ -36,7 +36,7 @@ class MyDataModelArray:
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
             index_kind="hnsw",
             dimensions=1536,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
             serialize_function=np.ndarray.tolist,
             deserialize_function=np.array,
@@ -58,7 +58,7 @@ class MyDataModelList:
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
             index_kind="hnsw",
             dimensions=1536,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
         ),
     ] = None

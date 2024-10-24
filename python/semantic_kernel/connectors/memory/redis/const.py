@@ -21,7 +21,7 @@ INDEX_TYPE_MAP = {
 DISTANCE_FUNCTION_MAP = {
     DistanceFunction.COSINE_SIMILARITY: "COSINE",
     DistanceFunction.DOT_PROD: "IP",
-    DistanceFunction.EUCLIDEAN: "L2",
+    DistanceFunction.EUCLIDEAN_DISTANCE: "L2",
     "default": "COSINE",
 }
 

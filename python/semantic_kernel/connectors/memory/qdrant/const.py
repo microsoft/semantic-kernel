@@ -7,7 +7,7 @@ from semantic_kernel.data.const import DistanceFunction
 DISTANCE_FUNCTION_MAP = {
     DistanceFunction.COSINE_SIMILARITY: Distance.COSINE,
     DistanceFunction.DOT_PROD: Distance.DOT,
-    DistanceFunction.EUCLIDEAN: Distance.EUCLID,
+    DistanceFunction.EUCLIDEAN_DISTANCE: Distance.EUCLID,
     DistanceFunction.MANHATTAN: Distance.MANHATTAN,
     "default": Distance.COSINE,
 }

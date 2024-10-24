@@ -101,7 +101,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         dimension_num: int | None = None,
-        distance_type: str | None = "cosine",
+        distance_type: str | None = "cosine_similarity",
     ) -> None:
         """Creates a new collection in Astra if it does not exist.
 

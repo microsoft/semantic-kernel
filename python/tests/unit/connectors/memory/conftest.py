@@ -30,7 +30,7 @@ def dataclass_vector_data_model() -> object:
                 embedding_settings={"default": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
                 index_kind="hnsw",
                 dimensions=1536,
-                distance_function="cosine",
+                distance_function="cosine_similarity",
                 property_type="float",
             ),
         ] = None
