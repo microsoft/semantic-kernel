@@ -28,15 +28,4 @@ internal static class MapExtensions
 
         return (IEnumerable)values;
     }
-
-    public static KernelProcess CloneProcess(this KernelProcess process, ILogger logger)
-    {
-        KernelProcess copy =
-            new(
-                new KernelProcessState(process.State.Name, process.State.Id),
-                process.Steps.Select(s => s.Clone(logger)).ToArray(),
-                process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList()));
-
-        return copy;
-    }
 }

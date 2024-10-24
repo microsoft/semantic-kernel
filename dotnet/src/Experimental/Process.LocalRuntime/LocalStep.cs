@@ -265,7 +265,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         if (activateTask == null)
         {
             var errorMessage = "The ActivateAsync method failed to complete.";
-            this._logger.LogError("{ErrorMessage}", errorMessage);
+            this.Logger.LogError("{ErrorMessage}", errorMessage);
             throw new KernelException(errorMessage);
         }
 
