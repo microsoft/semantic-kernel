@@ -9,8 +9,6 @@ from samples.getting_started_with_processes.step03.steps.gather_ingredients_step
 from semantic_kernel.processes.process_builder import ProcessBuilder
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 
-# Define ProcessEvents as a simple class with class variables.
-
 
 class GatherFriedFishIngredientsStep(GatherIngredientsStep):
     def __init__(self):

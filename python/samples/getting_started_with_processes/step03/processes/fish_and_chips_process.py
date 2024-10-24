@@ -13,8 +13,6 @@ from semantic_kernel.processes.kernel_process.kernel_process_step_context import
 from semantic_kernel.processes.process_builder import ProcessBuilder
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 
-# Define ProcessEvents as a simple class with class variables.
-
 
 class AddFishAndChipsCondimentsStep(KernelProcessStep):
     class Functions(Enum):
