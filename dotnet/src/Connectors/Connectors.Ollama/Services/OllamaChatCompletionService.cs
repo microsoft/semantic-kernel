@@ -503,16 +503,37 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false, Options: null);
         }
 
-        IList<Tool>? tools = null;
-        ChatToolChoice? choice = null;
-        bool autoInvoke = false;
         FunctionChoiceBehaviorOptions? options = null;
+        FunctionChoiceBehaviorConfiguration? config = this._functionCallsProcessor.GetConfiguration(executionSettings.FunctionChoiceBehavior, chatHistory, requestIndex, kernel);
 
-        (tools, choice, autoInvoke, options) = this.ConfigureFunctionCalling(kernel, requestIndex, executionSettings.FunctionChoiceBehavior, chatHistory);
+        IList<Tool>? tools = null;
+        ChatToolChoice? toolChoice = null;
+        bool autoInvoke = config?.AutoInvoke ?? false;
+
+        if (config?.Functions is { Count: > 0 } functions)
+        {
+            if (config.Choice == FunctionChoice.Auto)
+            {
+                toolChoice = ChatToolChoice.Auto;
+            }
+            else
+            {
+                throw new NotSupportedException(
+    "Currently, Ollama does only supports 'Auto' choice behavior. " +
+    "See Ollama docs at https://github.com/ollama/ollama/blob/55ea963/docs/openai.md#supported-request-fields to see whether support has since been added.");
+            }
+
+            tools = [];
+
+            foreach (var function in functions)
+            {
+                tools.Add(FromFunctionMetadata(function.Metadata));
+            }
+        }
 
         return new ToolCallingConfig(
-            Tools: tools, // Ollama may be happy with null here
-            Choice: choice ?? ChatToolChoice.Auto,
+            Tools: tools, // Ollama doesn't fail with null tools
+            Choice: toolChoice ?? ChatToolChoice.Auto,
             AutoInvoke: autoInvoke,
             Options: options);
     }
@@ -546,7 +567,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             }
         }
 
-        return new(tools, toolChoice, autoInvoke, config?.Options);
+        return (tools, toolChoice, autoInvoke, config?.Options);
     }
 
     private static Tool FromFunctionMetadata(KernelFunctionMetadata functionMetadata)
