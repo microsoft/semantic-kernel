@@ -68,8 +68,8 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
 
         // Respond to user input
-        await InvokeAgentAsync(agent, threadId, "What is the special soup?");
-        await InvokeAgentAsync(agent, threadId, "What is the special drink?");
+        await InvokeAgentAsync(agent, threadId, "What is the special soup and its price?");
+        await InvokeAgentAsync(agent, threadId, "What is the special drink and its price?");
 
         // Output the entire chat history
         await DisplayChatHistoryAsync(agent, threadId);
@@ -120,6 +120,12 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAgentsTes
         {
             if (string.IsNullOrEmpty(response.Content))
             {
+                StreamingFunctionCallUpdateContent? functionCall = response.Items.OfType<StreamingFunctionCallUpdateContent>().SingleOrDefault();
+                if (functionCall != null)
+                {
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}: FUNCTION CALL - {functionCall.Name}");
+                }
+
                 continue;
             }
 
