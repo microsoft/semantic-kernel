@@ -17,21 +17,6 @@ namespace Microsoft.SemanticKernel;
 
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 {
-<<<<<<< HEAD
-    private const string DaprStepInfoStateName = "DaprStepInfo";
-    private const string StepStateJson = "kernelStepStateJson";
-    private const string StepStateType = "kernelStepStateType";
-    private const string StepParentProcessId = "parentProcessId";
-    private const string StepIncomingMessagesState = "incomingMessagesState";
-
-    private readonly Kernel _kernel;
-=======
-    /// <summary>
-    /// The generic state type for a process step.
-    /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
-
->>>>>>> main
     private readonly Lazy<ValueTask> _activateTask;
 
     private DaprStepInfo? _stepInfo;
