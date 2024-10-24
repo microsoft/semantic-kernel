@@ -3,7 +3,7 @@
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Process.UnitTests;
+namespace Microsoft.SemanticKernel.Process.Runtime.Local.UnitTests;
 
 /// <summary>
 /// Unit tests for the <see cref="LocalProcess"/> class.

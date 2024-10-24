@@ -2,7 +2,7 @@
 
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Process.UnitTests;
+namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
 
 /// <summary>
 /// Unit testing of <see cref="ProcessEdgeBuilder"/>.

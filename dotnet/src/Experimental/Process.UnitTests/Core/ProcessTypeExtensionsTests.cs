@@ -3,7 +3,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Process.UnitTests;
+namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
 
 /// <summary>
 /// Unit tests for the <see cref="ProcessTypeExtensions"/> class.
