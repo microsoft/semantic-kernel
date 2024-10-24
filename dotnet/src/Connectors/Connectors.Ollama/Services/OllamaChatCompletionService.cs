@@ -47,7 +47,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
 
     private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("""{"type":"string"}""");
 
-    private record ToolCallingConfig(IList<Tool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
+    private record ToolCallingConfig(IList<Tool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, FunctionChoiceBehaviorOptions? Options);
 
     /// <summary>
     /// The function calls processor.
@@ -500,13 +500,12 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         // If neither behavior is specified, we just return default configuration with no tool and no choice
         if (executionSettings.FunctionChoiceBehavior is null)
         {
-            return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false, AllowAnyRequestedKernelFunction: false, Options: null);
+            return new ToolCallingConfig(Tools: null, Choice: null, AutoInvoke: false, Options: null);
         }
 
         IList<Tool>? tools = null;
         ChatToolChoice? choice = null;
         bool autoInvoke = false;
-        bool allowAnyRequestedKernelFunction = false;
         FunctionChoiceBehaviorOptions? options = null;
 
         // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
@@ -519,7 +518,6 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             Tools: tools, // Ollama may be happy with null here
             Choice: choice ?? ChatToolChoice.Auto,
             AutoInvoke: autoInvoke,
-            AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction,
             Options: options);
     }
 
@@ -639,14 +637,6 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
 
         if (message.Role == AuthorRole.Tool)
         {
-            // Handling function results represented by the TextContent type.
-            // Example: new ChatMessageContent(AuthorRole.Tool, content, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } })
-            if (message.Metadata?.TryGetValue(OllamaChatCompletionService.ToolIdProperty, out object? toolId) is true &&
-                toolId?.ToString() is string toolIdString)
-            {
-                return [new Message(ChatRole.Tool, message.Content ?? string.Empty)];
-            }
-
             // Handling function results represented by the FunctionResultContent type.
             // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
             List<Message>? toolMessages = null;
@@ -788,7 +778,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                 Temperature = settings.Temperature,
                 TopP = settings.TopP,
                 TopK = settings.TopK,
-                Stop = settings.Stop?.ToArray()
+                Stop = settings.Stop?.ToArray(),
             },
             Messages = chatForRequest,
             Model = selectedModel,

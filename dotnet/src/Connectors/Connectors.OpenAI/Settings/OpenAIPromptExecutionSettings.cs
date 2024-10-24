@@ -368,7 +368,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt,
             Logprobs = this.Logprobs,
-            TopLogprobs = this.TopLogprobs
+            TopLogprobs = this.TopLogprobs,
+            ServiceId = this.ServiceId,
         };
     }
 

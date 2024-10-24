@@ -25,7 +25,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<OllamaChatCompletionTests>()
+        .AddUserSecrets<OllamaTextGenerationTests>()
         .Build();
 
     [Theory(Skip = "For manual verification only")]

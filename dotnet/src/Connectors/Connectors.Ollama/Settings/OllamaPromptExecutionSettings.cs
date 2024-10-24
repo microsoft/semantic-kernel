@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -31,10 +32,11 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
 
         var json = JsonSerializer.Serialize(executionSettings);
         var ollamaExecutionSettings = JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        if (ollamaExecutionSettings is not null)
-        {
-            return ollamaExecutionSettings;
-        }
+
+        // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
+        ollamaExecutionSettings!.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
+
+        return ollamaExecutionSettings;
 
         throw new ArgumentException(
             $"Invalid execution settings, cannot convert to {nameof(OllamaPromptExecutionSettings)}",
@@ -48,7 +50,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("stop")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<string>? Stop
+    public IList<string>? Stop
     {
         get => this._stop;
 
@@ -112,9 +114,41 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <inheritdoc/>
+    public override PromptExecutionSettings Clone()
+    {
+        return new OllamaPromptExecutionSettings
+        {
+            ModelId = this.ModelId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            Temperature = this.Temperature,
+            TopP = this.TopP,
+            TopK = this.TopK,
+            Stop = this.Stop is not null ? new List<string>(this.Stop) : null,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
+            ServiceId = this.ServiceId
+        };
+    }
+
+    /// <inheritdoc/>
+    public override void Freeze()
+    {
+        if (this.IsFrozen)
+        {
+            return;
+        }
+
+        base.Freeze();
+
+        if (this._stop is not null)
+        {
+            this._stop = new ReadOnlyCollection<string>(this._stop);
+        }
+    }
+
     #region private
 
-    private List<string>? _stop;
+    private IList<string>? _stop;
     private float? _temperature;
     private float? _topP;
     private int? _topK;
