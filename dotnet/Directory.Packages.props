@@ -10,6 +10,7 @@
     <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="Dapr.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.11.20" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.6.1" />
     <PackageVersion Include="OpenAI" Version="[2.1.0-beta.1]" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="[2.1.0-beta.1]" />
@@ -82,7 +83,7 @@
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.10" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.1.1" />
-    <PackageVersion Include="DuckDB.NET.Data" Version="1.1.1" />
+    <PackageVersion Include="DuckDB.NET.Data" Version="1.1.2.1" />
     <PackageVersion Include="MongoDB.Driver" Version="2.29.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />

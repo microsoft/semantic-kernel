@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,14 +28,14 @@ public static class TextToImageServiceExtensions
     Kernel? kernel = null,
     CancellationToken cancellationToken = default)
     {
-        var imageJson = $$"""
-                        {   
-                            "width": {{width}},
-                            "height": {{height}}
-                        }
-                        """;
-
-        var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(imageJson);
+        var executionSettings = new PromptExecutionSettings
+        {
+            ExtensionData = new Dictionary<string, object>
+            {
+                { "width", width },
+                { "height", height }
+            }
+        };
 
         var result = await service.GetImageContentsAsync(new TextContent(description), executionSettings, kernel, cancellationToken).ConfigureAwait(false);
 

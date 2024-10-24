@@ -88,6 +88,10 @@ jobs:
             dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute
           done
 
+      - name: Run AOT Unit Tests
+        shell: pwsh
+        run: .github/workflows/test-aot-compatibility.ps1 ${{ matrix.dotnet }}
+
       - name: Azure CLI Login
         if: github.event_name != 'pull_request' && matrix.integration-tests
         uses: azure/login@v2
