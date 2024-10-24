@@ -29,5 +29,5 @@ internal sealed class VectorStoreRecordPropertyReaderOptions
     /// <summary>
     /// Gets or sets the json serializer options that the connector might be using for storage serialization.
     /// </summary>
-    public JsonSerializerOptions JsonSerializerOptions = JsonSerializerOptions.Default;
+    public JsonSerializerOptions? JsonSerializerOptions { get; set; }
 }
