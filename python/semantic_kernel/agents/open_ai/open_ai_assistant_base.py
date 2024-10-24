@@ -93,7 +93,7 @@ class OpenAIAssistantBase(Agent):
 
     allowed_message_roles: ClassVar[list[str]] = [AuthorRole.USER, AuthorRole.ASSISTANT]
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
-    error_message_states: ClassVar[list[str]] = ["failed", "canceled", "expired"]
+    error_message_states: ClassVar[list[str]] = ["failed", "cancelled", "expired", "incomplete"]
 
     channel_type: ClassVar[type[AgentChannel]] = OpenAIAssistantChannel
 
@@ -1108,14 +1108,28 @@ class OpenAIAssistantBase(Agent):
             thread_id: The thread id.
 
         Returns:
-            The run.
+            The updated run.
         """
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
 
         count = 0
 
+        try:
+            run = await asyncio.wait_for(
+                self._poll_loop(run, thread_id, count), timeout=self.polling_options.run_polling_timeout.total_seconds()
+            )
+        except asyncio.TimeoutError:
+            timeout_duration = self.polling_options.run_polling_timeout
+            error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
+            logger.error(error_message)
+            raise AgentInvokeException(error_message)
+
+        logger.info(f"Polled run status: {run.status}, {run.id}, threadId: {thread_id}")
+        return run
+
+    async def _poll_loop(self, run: Run, thread_id: str, count: int) -> Run:
+        """Internal polling loop."""
         while True:
-            # Reduce polling frequency after a couple attempts
             await asyncio.sleep(self.polling_options.get_polling_interval(count).total_seconds())
             count += 1
 
@@ -1128,7 +1142,6 @@ class OpenAIAssistantBase(Agent):
             if run.status not in self.polling_status:
                 break
 
-        logger.info(f"Polled run status: {run.status}, {run.id}, threadId: {thread_id}")
         return run
 
     async def _retrieve_message(self, thread_id: str, message_id: str) -> Message | None:

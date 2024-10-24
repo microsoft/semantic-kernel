@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
+using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -62,24 +63,36 @@ public class KernelParameterMetadataTests
         Assert.Null(new KernelParameterMetadata("p") { ParameterType = typeof(int*) }.Schema);
     }
 
-    [Fact]
-    public void ItIncludesDescriptionInSchema()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForPrimitives))]
+    public void ItIncludesDescriptionInSchema(JsonSerializerOptions? jsos)
     {
-        var m = new KernelParameterMetadata("p") { Description = "something neat", ParameterType = typeof(int) };
+        var m = jsos is not null ?
+            new KernelParameterMetadata("p", jsos) { Description = "something neat", ParameterType = typeof(int) } :
+            new KernelParameterMetadata("p") { Description = "something neat", ParameterType = typeof(int) };
+
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
-    [Fact]
-    public void ItIncludesDefaultValueInSchema()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForPrimitives))]
+    public void ItIncludesDefaultValueInSchema(JsonSerializerOptions? jsos)
     {
-        var m = new KernelParameterMetadata("p") { DefaultValue = "42", ParameterType = typeof(int) };
+        var m = jsos is not null ?
+            new KernelParameterMetadata("p", jsos) { DefaultValue = "42", ParameterType = typeof(int) } :
+            new KernelParameterMetadata("p") { DefaultValue = "42", ParameterType = typeof(int) };
+
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"(default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
-    [Fact]
-    public void ItIncludesDescriptionAndDefaultValueInSchema()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForPrimitives))]
+    public void ItIncludesDescriptionAndDefaultValueInSchema(JsonSerializerOptions? jsos)
     {
-        var m = new KernelParameterMetadata("p") { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) };
+        var m = jsos is not null ?
+            new KernelParameterMetadata("p", jsos) { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) } :
+            new KernelParameterMetadata("p") { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) };
+
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat (default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
