@@ -58,4 +58,16 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
         return await Task.FromResult(response);
     }
+
+    /// <summary>
+    /// Converts the binary request content to a string using the specified encoding.
+    /// </summary>
+    /// <param name="encoding">Specifies the encoding to use. If not specified, defaults to UTF-8.</param>
+    /// <returns> The request content as a string.</returns>
+    public string? GetRequestContentAsString(Encoding? encoding = null)
+    {
+        encoding ??= Encoding.UTF8;
+
+        return this.RequestContent is null ? null : encoding.GetString(this.RequestContent);
+    }
 }

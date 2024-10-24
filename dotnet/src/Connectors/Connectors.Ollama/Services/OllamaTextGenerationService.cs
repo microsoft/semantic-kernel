@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -30,7 +31,7 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
         string modelId,
         Uri endpoint,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, endpoint, null, loggerFactory)
+        : base(modelId, endpoint, null, loggerFactory?.CreateLogger(typeof(OllamaTextGenerationService)))
     {
         Verify.NotNull(endpoint);
     }
@@ -45,7 +46,7 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
         string modelId,
         HttpClient httpClient,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, null, httpClient, loggerFactory)
+        : base(modelId, null, httpClient, loggerFactory?.CreateLogger(typeof(OllamaTextGenerationService)))
     {
         Verify.NotNull(httpClient);
         Verify.NotNull(httpClient.BaseAddress);
@@ -61,7 +62,7 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
         string modelId,
         OllamaApiClient ollamaClient,
         ILoggerFactory? loggerFactory = null)
-        : base(modelId, ollamaClient, loggerFactory)
+        : base(modelId, ollamaClient, loggerFactory?.CreateLogger(typeof(OllamaTextGenerationService)))
     {
     }
 
