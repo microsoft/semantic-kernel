@@ -14,14 +14,9 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
     public const string MapEventId = "Map";
 
     /// <summary>
-    /// The discrete map operation.
+    /// The map operation.
     /// </summary>
-    public KernelProcess MapStep { get; }
-
-    /// <summary>
-    /// The event that signals the completion of the map operation.
-    /// </summary>
-    public string CompleteEventId { get; }
+    public KernelProcess Map { get; }
 
     /// <summary>
     /// The name of the input parameter for the map operation.
@@ -32,20 +27,16 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
     /// Creates a new instance of the <see cref="KernelProcess"/> class.
     /// </summary>
     /// <param name="state">The process state.</param>
-    /// <param name="step">The discrete map operation.</param>
-    /// <param name="completeEventId">The event that signals the completion of the map operation.</param>
+    /// <param name="map">The map operation.</param>
     /// <param name="inputParameter">name of the input parameter for the map operation.</param>
-    /// <param name="edges">// %%% COMMENT</param>
-    public KernelProcessMap(KernelProcessMapState state, KernelProcess step, string completeEventId, string inputParameter, Dictionary<string, List<KernelProcessEdge>> edges)
+    /// <param name="edges">The edges for the map.</param> // %%% NEEDED ???
+    public KernelProcessMap(KernelProcessMapState state, KernelProcess map, string inputParameter, Dictionary<string, List<KernelProcessEdge>> edges)
         : base(typeof(KernelProcessMap), state, edges)
     {
-        Verify.NotNull(step);
+        Verify.NotNull(map);
         Verify.NotNullOrWhiteSpace(state.Name);
 
-        //Console.WriteLine($"\nPROCESS MAP: {state.Id}");
-
-        this.MapStep = step;
-        this.CompleteEventId = completeEventId;
+        this.Map = map;
         this.InputParameterName = inputParameter;
     }
 }

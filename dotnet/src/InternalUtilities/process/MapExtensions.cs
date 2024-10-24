@@ -11,12 +11,12 @@ internal static class MapExtensions
 {
     public static IEnumerable GetMapInput(this ProcessMessage message, string parameterName, ILogger logger)
     {
-        if (string.IsNullOrWhiteSpace(message.TargetEventId))
-        {
-            string errorMessage = "Internal Map Error: The target event id must be specified when sending a message to a step.";
-            logger.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
-        }
+        //if (string.IsNullOrWhiteSpace(message.TargetEventId))
+        //{
+        //    string errorMessage = "Internal Map Error: The target event id must be specified when sending a message to a step.";
+        //    logger.LogError("{ErrorMessage}", errorMessage);
+        //    throw new KernelException(errorMessage);
+        //}
 
         if (!message.Values.TryGetValue(parameterName, out object? values))
         {
@@ -34,20 +34,6 @@ internal static class MapExtensions
         }
 
         return (IEnumerable)values;
-    }
-
-    public static object GetMapOutput(this KernelProcess mapProcess)
-    {
-        KernelProcessStepState state =
-            mapProcess.Steps
-                .Where(step => step.InnerStepType.Name == "MapResultStep")
-                .Single()
-                .State;
-
-        object resultState = state.GetType().GetProperty("State")!.GetValue(state)!; // %%% NULLABLE / TYPE ASSUMPTION (CLEAN-UP)
-        object result = resultState.GetType().GetProperty("Value")!.GetValue(resultState)!; // %%% NULLABLE / TYPE ASSUMPTION (CLEAN-UP)
-
-        return result;
     }
 
     public static KernelProcess CloneProcess(this KernelProcess process, ILogger logger)

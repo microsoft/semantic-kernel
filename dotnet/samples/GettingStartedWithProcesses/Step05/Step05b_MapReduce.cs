@@ -98,7 +98,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             .OnInputEvent("Init")
             .SendEventTo(new ProcessFunctionTargetBuilder(initStep));
 
-        var mapStep = process.AddMapFromType<BasicDiscreteStep>("Complete"); // %%% COULD HAVE MULTIPLE EVENTS / RUNTIME LISTENS TO ALL EVENTS
+        var mapStep = process.AddMapFromType<BasicDiscreteStep>(); // %%% COULD HAVE MULTIPLE EVENTS / RUNTIME LISTENS TO ALL EVENTS
 
         initStep
             .OnEvent("Start")
@@ -133,7 +133,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             .OnInputEvent("Start")
             .SendEventTo(new ProcessFunctionTargetBuilder(discreteStep, "DiscreteSubprocess"));
 
-        var mapStep = process.AddMapFromProcess(subProcess, "Complete");
+        var mapStep = process.AddMapFromProcess(subProcess, "Start");
 
         initStep
             .OnEvent("Start")
@@ -156,7 +156,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
     {
         ProcessBuilder process = new(processName);
 
-        var mapStep = process.AddMapFromType<BasicDiscreteStep>("Complete");
+        var mapStep = process.AddMapFromType<BasicDiscreteStep>();
 
         process
             .OnInputEvent("Start")
@@ -164,7 +164,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var unionStep = process.AddStepFromType<UnionStep>();
         mapStep
-            .OnEvent("Complete")
+            .OnEvent("Complete22")
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
 
         var resultStep = process.AddStepFromType<ResultStep>();
@@ -186,7 +186,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var mapStep =
             process
-                .AddMapFromType<DiscreteStep>("Complete")
+                .AddMapFromType<DiscreteStep>()
                 .ForTarget("DiscreteCompute");
 
         initStep
@@ -217,7 +217,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var mapStep =
             process
-                .AddMapFromType<DiscreteStep>("Complete")
+                .AddMapFromType<DiscreteStep>()
                 .ForTarget("DiscreteTransform");
 
         initStep
