@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
+import importlib.util
 import time
 
 import numpy as np
@@ -11,29 +11,10 @@ from semantic_kernel.connectors.memory.pinecone import PineconeMemoryStore
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
+from tests.integration.test_utils import retry
 
-try:
-    import pinecone
-
-    pinecone_installed = True
-except ImportError:
-    pinecone_installed = False
-
+pinecone_installed = importlib.util.find_spec("pinecone") is not None
 pytestmark = pytest.mark.skipif(not pinecone_installed, reason="pinecone is not installed")
-
-
-async def retry(func, retries=1):
-    for i in range(retries):
-        try:
-            await asyncio.sleep(3)
-            return await func()
-        except pinecone.core.client.exceptions.ForbiddenException as e:
-            print(e)
-            await asyncio.sleep(i * 2)
-        except pinecone.core.client.exceptions.ServiceException as e:
-            print(e)
-            await asyncio.sleep(i * 2)
-    return None
 
 
 @pytest.fixture(autouse=True, scope="module")
