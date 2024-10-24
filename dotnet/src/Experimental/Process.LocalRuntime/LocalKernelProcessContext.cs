@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Threading.Tasks;
 
@@ -13,7 +12,7 @@ public sealed class LocalKernelProcessContext : IDisposable
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
-    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel)
+    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventFilter? filter = null)
     {
         Verify.NotNull(process);
         Verify.NotNullOrWhiteSpace(process.State?.Name);
@@ -22,9 +21,10 @@ public sealed class LocalKernelProcessContext : IDisposable
         this._kernel = kernel;
         this._localProcess = new LocalProcess(
             process,
-            kernel: kernel,
-            parentProcessId: null,
-            loggerFactory: null);
+            kernel)
+        {
+            EventFilter = filter
+        };
     }
 
     internal async Task StartWithEventAsync(KernelProcessEvent? initialEvent, Kernel? kernel = null)

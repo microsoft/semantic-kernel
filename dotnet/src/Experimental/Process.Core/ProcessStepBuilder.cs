@@ -17,7 +17,7 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// The unique identifier for the step. This may be null until the step is run within a process.
     /// </summary>
-    public string? Id { get; }
+    public string Id { get; }
 
     /// <summary>
     /// The name of the step. This is intended to be a human-readable name and is not required to be unique.
@@ -57,6 +57,8 @@ public abstract class ProcessStepBuilder
     }
 
     #endregion
+
+    internal const char EventIdSeparator = '.';
 
     /// <summary>The namespace for events that are scoped to this step.</summary>
     private readonly string _eventNamespace;

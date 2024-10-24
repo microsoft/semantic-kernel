@@ -55,7 +55,7 @@ public record KernelProcessStepState
     /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
     public KernelProcessStepState(string name, string? id = null)
     {
-        Verify.NotNullOrWhiteSpace(name);
+        Verify.NotNullOrWhiteSpace(name, nameof(name));
 
         this.Id = id;
         this.Name = name;
