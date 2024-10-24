@@ -8,7 +8,6 @@ from pydantic import Field
 
 from semantic_kernel.exceptions.kernel_exceptions import KernelException
 from semantic_kernel.exceptions.process_exceptions import ProcessInvalidConfigurationException
-from semantic_kernel.functions import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_function_target import KernelProcessFunctionTarget
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
@@ -18,6 +17,7 @@ from semantic_kernel.processes.process_types import TState, TStep, get_generic_s
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
+    from semantic_kernel.functions import KernelFunctionMetadata
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
 
@@ -38,6 +38,8 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
 
     def __init__(self, name: str, type: type[TStep] | None = None, initial_state: TState | None = None, **kwargs):
         """Initialize the ProcessStepBuilder with a step class type and name."""
+        from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata  # noqa: F401
+
         if not name or not name.strip():
             raise ValueError("Name cannot be null or empty")
 

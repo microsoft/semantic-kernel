@@ -15,7 +15,6 @@ from semantic_kernel.processes.kernel_process.kernel_process_step_state import K
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -105,28 +104,16 @@ async def cycles_with_fan_in():
     myCStep = process.add_step(step_type=CStep)
 
     # Define the input event and where to send it to
-    process.on_input_event(event_id=CommonEvents.StartProcess.value).send_event_to(
-        ProcessFunctionTargetBuilder(step=kickoff_step)
-    )
+    process.on_input_event(event_id=CommonEvents.StartProcess.value).send_event_to(target=kickoff_step)
 
     # Define the process flow
-    kickoff_step.on_event(event_id=CommonEvents.StartARequested.value).send_event_to(
-        ProcessFunctionTargetBuilder(step=myAStep)
-    )
-    kickoff_step.on_event(event_id=CommonEvents.StartBRequested.value).send_event_to(
-        ProcessFunctionTargetBuilder(step=myBStep)
-    )
-    myAStep.on_event(event_id=CommonEvents.AStepDone.value).send_event_to(
-        ProcessFunctionTargetBuilder(step=myCStep, parameter_name="astepdata")
-    )
+    kickoff_step.on_event(event_id=CommonEvents.StartARequested.value).send_event_to(target=myAStep)
+    kickoff_step.on_event(event_id=CommonEvents.StartBRequested.value).send_event_to(target=myBStep)
+    myAStep.on_event(event_id=CommonEvents.AStepDone.value).send_event_to(target=myCStep, parameter_name="astepdata")
 
     # Define the fan in behavior once both AStep and BStep are done
-    myBStep.on_event(event_id=CommonEvents.BStepDone.value).send_event_to(
-        ProcessFunctionTargetBuilder(step=myCStep, parameter_name="bstepdata")
-    )
-    myCStep.on_event(event_id=CommonEvents.CStepDone.value).send_event_to(
-        ProcessFunctionTargetBuilder(step=kickoff_step)
-    )
+    myBStep.on_event(event_id=CommonEvents.BStepDone.value).send_event_to(target=myCStep, parameter_name="bstepdata")
+    myCStep.on_event(event_id=CommonEvents.CStepDone.value).send_event_to(target=kickoff_step)
     myCStep.on_event(event_id=CommonEvents.ExitRequested.value).stop_process()
 
     # Build the process

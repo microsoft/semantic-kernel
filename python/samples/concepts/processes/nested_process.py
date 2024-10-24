@@ -17,10 +17,9 @@ from semantic_kernel.processes.kernel_process.kernel_process_step_state import K
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 from semantic_kernel.processes.process_types import TState
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 
 
 class ProcessEvents(Enum):
@@ -79,12 +78,10 @@ def create_linear_process(name: str):
     echo_step = process_builder.add_step(step_type=EchoStep)
     repeat_step = process_builder.add_step(step_type=RepeatStep)
 
-    process_builder.on_input_event(event_id=ProcessEvents.StartProcess.value).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=echo_step)
-    )
+    process_builder.on_input_event(event_id=ProcessEvents.StartProcess.value).send_event_to(target=echo_step)
 
     echo_step.on_function_result(function_name=EchoStep.Functions.Echo).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=repeat_step, parameter_name="message")
+        target=repeat_step, parameter_name="message"
     )
 
     return process_builder

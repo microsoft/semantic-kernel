@@ -17,7 +17,6 @@ from semantic_kernel.processes.kernel_process.kernel_process_step_state import K
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 
 
 class CommonEvents(Enum):
@@ -161,22 +160,23 @@ async def step01_processes():
     response_step = process.add_step(ChatBotResponseStep)
 
     # Define the input event that starts the process and where to send it
-    process.on_input_event(event_id=ChatBotEvents.StartProcess.value).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=intro_step)
-    )
+    process.on_input_event(event_id=ChatBotEvents.StartProcess.value).send_event_to(target=intro_step)
+
     # Define the event that triggers the next step in the process
     intro_step.on_function_result(function_name=IntroStep.print_intro_message.__name__).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=user_input_step)
+        target=user_input_step
     )
+
     # Define the event that triggers the process to stop
     user_input_step.on_event(event_id=ChatBotEvents.Exit.value).stop_process()
     # For the user step, send the user input to the response step
     user_input_step.on_event(event_id=CommonEvents.UserInputReceived.value).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=response_step, parameter_name="user_message")
+        target=response_step, parameter_name="user_message"
     )
+
     # For the response step, send the response back to the user input step
     response_step.on_event(event_id=ChatBotEvents.AssistantResponseGenerated.value).send_event_to(
-        target=ProcessFunctionTargetBuilder(step=user_input_step)
+        target=user_input_step
     )
 
     # Build the kernel process

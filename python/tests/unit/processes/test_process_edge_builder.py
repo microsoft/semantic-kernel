@@ -15,6 +15,7 @@ from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeB
 @pytest.fixture(scope="function", autouse=True)
 def rebuild_model():
     """Fixture to rebuild the model before each test."""
+    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata  # noqa: F401
     from semantic_kernel.processes.process_builder import ProcessBuilder  # noqa: F401
 
     ProcessEdgeBuilder.model_rebuild()

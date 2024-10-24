@@ -18,6 +18,10 @@ class ProcessFunctionTargetBuilder(KernelBaseModel):
 
     def __init__(self, step: ProcessStepBuilder, function_name: str | None = None, parameter_name: str | None = None):
         """Initializes a new instance of ProcessFunctionTargetBuilder."""
+        from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata  # noqa: F401
+
+        ProcessFunctionTargetBuilder.model_rebuild()
+
         if isinstance(step, EndStep):
             function_name = "END"
             parameter_name = None

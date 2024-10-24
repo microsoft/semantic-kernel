@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class EndStep(ProcessStepBuilder):
     """An end step in a process."""
 
-    END_STEP_VALUE: ClassVar[str] = "END"
+    END_STEP_VALUE: ClassVar[str] = "Microsoft.SemanticKernel.Process.EndStep"
     END_STEP_NAME: ClassVar[str] = END_STEP_VALUE
     END_STEP_ID: ClassVar[str] = END_STEP_VALUE
 
