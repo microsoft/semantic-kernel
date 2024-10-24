@@ -10,10 +10,9 @@ internal static class ProcessExtensions
 {
     public static KernelProcess CloneProcess(this KernelProcess process, ILogger logger)
     {
-        string? newId = !string.IsNullOrWhiteSpace(process.State.Id) ? Guid.NewGuid().ToString("n") : null;
         KernelProcess copy =
             new(
-                new KernelProcessState(process.State.Name, newId),
+                new KernelProcessState(process.State.Name, process.State.Id),
                 process.Steps.Select(s => s.Clone(logger)).ToArray(),
                 process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList()));
 
