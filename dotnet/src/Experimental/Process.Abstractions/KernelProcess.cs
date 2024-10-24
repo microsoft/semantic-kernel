@@ -45,11 +45,9 @@ public sealed record KernelProcess : KernelProcessStepInfo
     public KernelProcess(KernelProcessState state, IList<KernelProcessStepInfo> steps, Dictionary<string, List<KernelProcessEdge>>? edges = null)
         : base(typeof(KernelProcess), state, edges ?? [])
     {
-        Verify.NotNull(state);
         Verify.NotNull(steps);
         Verify.NotNullOrWhiteSpace(state.Name);
 
-        this.Steps = [];
-        this.Steps.AddRange(steps);
+        this.Steps = [.. steps];
     }
 }

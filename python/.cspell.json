@@ -35,6 +35,7 @@
         "endregion",
         "genai",
         "generativeai",
+        "hnsw",
         "httpx",
         "huggingface",
         "kernelfunction",
@@ -59,7 +60,9 @@
         "skprompt",
         "templating",
         "vectordb",
+        "vectorizer",
         "vectorstoremodel",
-        "vertexai"
+        "vertexai",
+        "Weaviate"
     ]
 }
