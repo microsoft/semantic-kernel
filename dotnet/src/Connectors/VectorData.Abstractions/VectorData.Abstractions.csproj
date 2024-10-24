@@ -4,13 +4,16 @@
     <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
-    <PackageVersion>9.0.0-preview.1.24518.1</PackageVersion>
+    <PackageVersion>9.0.0-preview.1.24523.1</PackageVersion>
     <AssemblyVersion>9.0.0.0</AssemblyVersion>
+    <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
+    <PackageValidationBaselineVersion>9.0.0-preview.1.24518.1</PackageValidationBaselineVersion>
     <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
     <PackageId>$(AssemblyName)</PackageId>
     <PackageDescription>Abstractions for vector database access.
