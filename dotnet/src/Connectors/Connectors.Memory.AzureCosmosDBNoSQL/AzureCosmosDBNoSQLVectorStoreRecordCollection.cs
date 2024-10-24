@@ -457,6 +457,20 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         var embeddings = new Collection<Embedding>();
         var vectorIndexPaths = new Collection<VectorIndexPath>();
 
+        var indexingPolicy = new IndexingPolicy
+        {
+            IndexingMode = this._options.IndexingMode,
+            Automatic = this._options.Automatic
+        };
+
+        if (this._options.IndexingMode == IndexingMode.None)
+        {
+            return new ContainerProperties(this.CollectionName, partitionKeyPath: $"/{this._partitionKeyStoragePropertyName}")
+            {
+                IndexingPolicy = indexingPolicy
+            };
+        }
+
         foreach (var property in this._propertyReader.VectorProperties)
         {
             var vectorPropertyName = this._storagePropertyNames[property.DataModelPropertyName];
@@ -486,33 +500,26 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             vectorIndexPaths.Add(vectorIndexPath);
         }
 
+        indexingPolicy.VectorIndexes = vectorIndexPaths;
+
         var vectorEmbeddingPolicy = new VectorEmbeddingPolicy(embeddings);
-        var indexingPolicy = new IndexingPolicy
+
+        // Process Data properties.
+        foreach (var property in this._propertyReader.DataProperties)
         {
-            VectorIndexes = vectorIndexPaths,
-            IndexingMode = this._options.IndexingMode,
-            Automatic = this._options.Automatic
-        };
+            if (property.IsFilterable || property.IsFullTextSearchable)
+            {
+                indexingPolicy.IncludedPaths.Add(new IncludedPath { Path = $"/{this._storagePropertyNames[property.DataModelPropertyName]}/?" });
+            }
+        }
 
-        if (indexingPolicy.IndexingMode != IndexingMode.None)
+        // Adding special mandatory indexing path.
+        indexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/" });
+
+        // Exclude vector paths to ensure optimized performance.
+        foreach (var vectorIndexPath in vectorIndexPaths)
         {
-            // Process Data properties.
-            foreach (var property in this._propertyReader.DataProperties)
-            {
-                if (property.IsFilterable || property.IsFullTextSearchable)
-                {
-                    indexingPolicy.IncludedPaths.Add(new IncludedPath { Path = $"/{this._storagePropertyNames[property.DataModelPropertyName]}/?" });
-                }
-            }
-
-            // Adding special mandatory indexing path.
-            indexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/" });
-
-            // Exclude vector paths to ensure optimized performance.
-            foreach (var vectorIndexPath in vectorIndexPaths)
-            {
-                indexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = $"{vectorIndexPath.Path}/*" });
-            }
+            indexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = $"{vectorIndexPath.Path}/*" });
         }
 
         return new ContainerProperties(this.CollectionName, partitionKeyPath: $"/{this._partitionKeyStoragePropertyName}")
