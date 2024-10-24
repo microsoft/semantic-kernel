@@ -168,7 +168,7 @@ def data_model_pandas_definition() -> object:
                 name="vector",
                 index_kind="hnsw",
                 dimensions=5,
-                distance_function="cosine",
+                distance_function="cosine_similarity",
                 property_type="float",
             ),
             "id": VectorStoreRecordKeyField(name="id"),

@@ -62,7 +62,7 @@ def DataModelPandas(record) -> tuple:
                 name="embedding",
                 index_kind="hnsw",
                 dimensions=3,
-                distance_function="cosine",
+                distance_function="cosine_similarity",
                 property_type="float",
             ),
             "id": VectorStoreRecordKeyField(name="id", property_type="int"),
