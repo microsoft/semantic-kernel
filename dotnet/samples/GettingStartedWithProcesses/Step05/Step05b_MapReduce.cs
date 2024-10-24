@@ -70,6 +70,20 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
     }
 
     [Fact]
+    public async Task RunMapReduceMultipleTargetsAsync()
+    {
+        KernelProcess process = SetupMultiTargetMapProcess(nameof(RunMapReduceMultipleTargetsAsync));
+        await RunProcessAsync(process, s_seedInput);
+    }
+
+    [Fact]
+    public async Task RunMapReducePartialTargetsAsync()
+    {
+        KernelProcess process = SetupPartialTargetMapProcess(nameof(RunMapReducePartialTargetsAsync));
+        await RunProcessAsync(process, s_seedInput);
+    }
+
+    [Fact]
     public async Task RunMapBadInputAsync()
     {
         KernelProcess process = SetupBasicMapProcess(nameof(RunMapBadInputAsync));
@@ -98,7 +112,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             .OnInputEvent("Init")
             .SendEventTo(new ProcessFunctionTargetBuilder(initStep));
 
-        var mapStep = process.AddMapFromType<BasicDiscreteStep>(); // %%% COULD HAVE MULTIPLE EVENTS / RUNTIME LISTENS TO ALL EVENTS
+        var mapStep = process.AddMapFromType<BasicDiscreteStep>();
 
         initStep
             .OnEvent("Start")
@@ -106,7 +120,73 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var unionStep = process.AddStepFromType<UnionStep>();
         mapStep
-            .OnEvent("Complete22")
+            .OnEvent("Complete")
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
+
+        var resultStep = process.AddStepFromType<ResultStep>();
+        unionStep
+            .OnEvent("Complete")
+            .SendEventTo(new ProcessFunctionTargetBuilder(resultStep));
+
+        return process.Build();
+    }
+
+    private KernelProcess SetupMultiTargetMapProcess(string processName)
+    {
+        ProcessBuilder process = new(processName);
+
+        var initStep = process.AddStepFromType<InitialStep>();
+        process
+            .OnInputEvent("Init")
+            .SendEventTo(new ProcessFunctionTargetBuilder(initStep));
+
+        var mapStep =
+            process
+                .AddMapFromType<DiscreteStep>()
+                .ForTarget("DiscreteFork");
+
+        initStep
+            .OnEvent("Start")
+            .SendEventTo(mapStep);
+
+        var unionStep = process.AddStepFromType<UnionStep>();
+        mapStep
+            .OnEvent("CompleteSquare")
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
+
+        mapStep
+            .OnEvent("CompleteCube")
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
+
+        var resultStep = process.AddStepFromType<ResultStep>();
+        unionStep
+            .OnEvent("Complete")
+            .SendEventTo(new ProcessFunctionTargetBuilder(resultStep));
+
+        return process.Build();
+    }
+
+    private KernelProcess SetupPartialTargetMapProcess(string processName)
+    {
+        ProcessBuilder process = new(processName);
+
+        var initStep = process.AddStepFromType<InitialStep>();
+        process
+            .OnInputEvent("Init")
+            .SendEventTo(new ProcessFunctionTargetBuilder(initStep));
+
+        var mapStep =
+            process
+                .AddMapFromType<DiscreteStep>()
+                .ForTarget("DiscreteFork");
+
+        initStep
+            .OnEvent("Start")
+            .SendEventTo(mapStep);
+
+        var unionStep = process.AddStepFromType<UnionStep>();
+        mapStep
+            .OnEvent("CompleteCube")
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
 
         var resultStep = process.AddStepFromType<ResultStep>();
@@ -141,7 +221,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var unionStep = process.AddStepFromType<UnionStep>();
         mapStep
-            .OnEvent("Complete")
+            .OnEvent("CompleteSquare")
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
 
         var resultStep = process.AddStepFromType<ResultStep>();
@@ -164,7 +244,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var unionStep = process.AddStepFromType<UnionStep>();
         mapStep
-            .OnEvent("Complete22")
+            .OnEvent("Complete")
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
 
         var resultStep = process.AddStepFromType<ResultStep>();
@@ -195,7 +275,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var unionStep = process.AddStepFromType<UnionStep>();
         mapStep
-            .OnEvent("Complete")
+            .OnEvent("CompleteSquare")
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionCompute"));
 
         var resultStep = process.AddStepFromType<ResultStep>();
@@ -226,7 +306,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
 
         var unionStep = process.AddStepFromType<UnionStep>();
         mapStep
-            .OnEvent("Complete")
+            .OnEvent("CompleteFormat")
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, "UnionTransform"));
 
         var resultStep = process.AddStepFromType<ResultStep>();
@@ -317,7 +397,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             System.Console.WriteLine($"DISCRETE INPUT: {value}");
             long square = value * value;
             System.Console.WriteLine($"DISCRETE OUTPUT: {square}");
-            await context.EmitEventAsync(new() { Id = "Complete22", Data = square });
+            await context.EmitEventAsync(new() { Id = "Complete", Data = square });
         }
     }
 
@@ -329,7 +409,19 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             System.Console.WriteLine($"DISCRETE INPUT: {value}");
             long square = value * value;
             System.Console.WriteLine($"DISCRETE OUTPUT: {square}");
-            await context.EmitEventAsync(new() { Id = "Complete", Data = square });
+            await context.EmitEventAsync(new() { Id = "CompleteSquare", Data = square });
+        }
+
+        [KernelFunction("DiscreteFork")]
+        public async ValueTask DiscreteForkAsync(KernelProcessStepContext context, long value)
+        {
+            System.Console.WriteLine($"DISCRETE INPUT: {value}");
+            long square = value * value;
+            long cube = square * value;
+            System.Console.WriteLine($"DISCRETE OUTPUT: {square}");
+            System.Console.WriteLine($"DISCRETE OUTPUT: {cube}");
+            await context.EmitEventAsync(new() { Id = "CompleteSquare", Data = square });
+            await context.EmitEventAsync(new() { Id = "CompleteCube", Data = cube });
         }
 
         [KernelFunction("DiscreteTransform")]
@@ -338,7 +430,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             System.Console.WriteLine($"DISCRETE INPUT: {value}");
             string transform = $"#{value}";
             System.Console.WriteLine($"DISCRETE OUTPUT: {transform}");
-            await context.EmitEventAsync(new() { Id = "Complete", Data = transform });
+            await context.EmitEventAsync(new() { Id = "CompleteFormat", Data = transform });
         }
 
         [KernelFunction("DiscreteSubprocess")]
@@ -347,7 +439,7 @@ public class Step05b_MapReduce(ITestOutputHelper output) : BaseTest(output, redi
             System.Console.WriteLine($"DISCRETE INPUT: {value}");
             long square = value * value;
             System.Console.WriteLine($"DISCRETE OUTPUT: {square}");
-            await context.EmitEventAsync(new() { Id = "Complete", Data = square, Visibility = KernelProcessEventVisibility.Public }); // %%% VALIDATE WITH SUBPROCESS
+            await context.EmitEventAsync(new() { Id = "CompleteSquare", Data = square, Visibility = KernelProcessEventVisibility.Public }); // %%% VALIDATE WITH SUBPROCESS
         }
 
         [KernelFunction("DiscreteNoise")]

@@ -27,7 +27,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal readonly List<LocalStep> _steps = [];
     internal readonly KernelProcess _process;
 
-    private ILogger?_logger;
+    private ILogger? _logger;
     private ILogger Logger => this._logger ??= this.LoggerFactory?.CreateLogger(this.Name) ?? NullLogger.Instance;
 
     private JoinableTask? _processTask;
