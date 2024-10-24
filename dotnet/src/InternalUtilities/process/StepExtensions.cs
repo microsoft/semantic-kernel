@@ -23,7 +23,7 @@ internal static class StepExtensions
 
         Type stateType = step.InnerStepType.InspectStateType(out Type? userStateType, logger);
 
-        KernelProcessStepState newState = step.State.Clone(stateType, userStateType);
+        KernelProcessStepState newState = step.State.Clone(stateType, userStateType, logger);
 
         KernelProcessStepInfo copy =
             new(
@@ -35,9 +35,16 @@ internal static class StepExtensions
     }
 
     // Exposed for testing
-    public static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType)
+    public static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType, ILogger logger)
     {
-        KernelProcessStepState newState = (KernelProcessStepState)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id)!; // %%% EXCEPTION / NULL RESULT
+        KernelProcessStepState? newState = (KernelProcessStepState?)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id);
+        if (newState == null)
+        {
+            string errorMessage = $"Failed to instantiate state: {stateType.Name} [{sourceState.Id}].";
+            logger?.LogError("{ErrorMessage}", errorMessage);
+            throw new KernelException(errorMessage);
+        }
+
         if (userStateType != null)
         {
             newState.InitializeUserState(stateType, userStateType);
@@ -57,7 +64,7 @@ internal static class StepExtensions
             userStateType = genericStepType.GetGenericArguments()[0];
             if (userStateType is null)
             {
-                var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
+                string errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
                 logger?.LogError("{ErrorMessage}", errorMessage);
                 throw new KernelException(errorMessage);
             }
@@ -65,7 +72,7 @@ internal static class StepExtensions
             stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             if (stateType is null)
             {
-                var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
+                string errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
                 logger?.LogError("{ErrorMessage}", errorMessage);
                 throw new KernelException(errorMessage);
             }
@@ -106,7 +113,7 @@ internal static class StepExtensions
     {
         if (functions is null)
         {
-            var errorMessage = "Internal Error: The step has not been initialized.";
+            string errorMessage = "Internal Error: The step has not been initialized.";
             logger?.LogError("{ErrorMessage}", errorMessage);
             throw new KernelException(errorMessage);
         }
