@@ -269,7 +269,6 @@ internal class LocalStep : IKernelProcessMessageChannel
             throw new KernelException(errorMessage);
         }
 
-        await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
         await activateTask.Value.ConfigureAwait(false);
     }
 
