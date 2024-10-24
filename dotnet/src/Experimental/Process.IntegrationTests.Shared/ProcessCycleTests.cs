@@ -6,13 +6,24 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Processes;
+namespace SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
 /// Integration test focusing on cycles in a process.
 /// </summary>
-public sealed class ProcessCycleTests
+public class ProcessCycleTests : IClassFixture<ProcessTestFixture>
 {
+    private readonly ProcessTestFixture _fixture;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessCycleTests"/> class. This is called by the test framework.
+    /// </summary>
+    /// <param name="fixture"></param>
+    public ProcessCycleTests(ProcessTestFixture fixture)
+    {
+        this._fixture = fixture;
+    }
+
     /// <summary>
     /// Tests a process which cycles a fixed number of times and then exits.
     /// </summary>
@@ -58,7 +69,7 @@ public sealed class ProcessCycleTests
             .StopProcess();
 
         KernelProcess kernelProcess = process.Build();
-        var processContext = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
+        var processContext = await this._fixture.StartProcessAsync(kernelProcess, kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
 
         var processState = await processContext.GetStateAsync();
         var cStepState = processState.Steps.Where(s => s.State.Name == "CStep").FirstOrDefault()?.State as KernelProcessStepState<CStepState>;

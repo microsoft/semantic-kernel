@@ -5,20 +5,33 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using SemanticKernel.IntegrationTests.Agents;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Processes;
-public sealed class ProcessTests
+namespace SemanticKernel.Process.IntegrationTests;
+
+/// <summary>
+/// Integration tests for processes.
+/// </summary>
+public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
 {
+    private readonly ProcessTestFixture _fixture;
     private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAIAssistantAgentTests>()
+            .AddUserSecrets<OpenAIConfiguration>()
             .Build();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessTests"/> class. This is called by the test framework.
+    /// </summary>
+    /// <param name="fixture"></param>
+    public ProcessTests(ProcessTestFixture fixture)
+    {
+        this._fixture = fixture;
+    }
 
     /// <summary>
     /// Tests a simple linear process with two steps and no sub processes.
@@ -38,7 +51,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -78,7 +91,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -124,7 +137,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -168,7 +181,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -191,7 +204,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -220,7 +233,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
