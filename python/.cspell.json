@@ -45,6 +45,7 @@
         "mongocluster",
         "ndarray",
         "nopep",
+        "NOSQL",
         "ollama",
         "onyourdatatest",
         "OPENAI",
