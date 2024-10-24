@@ -11,6 +11,51 @@ namespace Memory.VectorStoreFixtures;
 internal static class VectorStoreInfra
 {
     /// <summary>
+    /// Setup the postgres pgvector container by pulling the image and running it.
+    /// </summary>
+    /// <param name="client">The docker client to create the container with.</param>
+    /// <returns>The id of the container.</returns>
+    public static async Task<string> SetupPostgresContainerAsync(DockerClient client)
+    {
+        await client.Images.CreateImageAsync(
+            new ImagesCreateParameters
+            {
+                FromImage = "pgvector/pgvector",
+                Tag = "pg16",
+            },
+            null,
+            new Progress<JSONMessage>());
+
+        var container = await client.Containers.CreateContainerAsync(new CreateContainerParameters()
+        {
+            Image = "pgvector/pgvector:pg16",
+            HostConfig = new HostConfig()
+            {
+                PortBindings = new Dictionary<string, IList<PortBinding>>
+                {
+                    {"5432", new List<PortBinding> {new() {HostPort = "5432" } }},
+                },
+                PublishAllPorts = true
+            },
+            ExposedPorts = new Dictionary<string, EmptyStruct>
+            {
+               { "5432", default },
+            },
+            Env = new List<string>
+            {
+                "POSTGRES_USER=postgres",
+                "POSTGRES_PASSWORD=example",
+            },
+        });
+
+        await client.Containers.StartContainerAsync(
+            container.ID,
+            new ContainerStartParameters());
+
+        return container.ID;
+    }
+
+    /// <summary>
     /// Setup the qdrant container by pulling the image and running it.
     /// </summary>
     /// <param name="client">The docker client to create the container with.</param>
