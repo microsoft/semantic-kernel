@@ -96,7 +96,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         if (stateMetadata is KernelProcessStateMetadata processState)
         {
             return this.BuildStep(processState);
-    }
+        }
 
         return this.BuildStep();
     }
@@ -110,6 +110,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     {
         // The step is a process so we can return the step info directly.
         return this.Build(stateMetadata);
+    }
+
+    internal override KernelProcessStepInfo BuildStep()
+    {
+        return this.Build(null);
     }
 
     #region Public Interface
