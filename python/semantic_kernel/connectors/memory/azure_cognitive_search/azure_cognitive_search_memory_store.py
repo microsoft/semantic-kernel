@@ -141,7 +141,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                             m=4,  # Number of bidirectional links, typically between 4 and 10
                             ef_construction=400,  # Size during indexing, range: 100-1000
                             ef_search=500,  # Size during search, range: 100-1000
-                            metric="cosine",  # Can be "cosine", "dotProduct", or "euclidean"
+                            metric="cosine",  # Can be "cosine", "dotProduct", or "euclidean_distance"
                         ),
                     )
                 ],

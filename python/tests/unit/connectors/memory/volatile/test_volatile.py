@@ -2,23 +2,23 @@
 
 from pytest import fixture, mark
 
-from semantic_kernel.connectors.memory.volatile.volatile_collection import VolatileCollection
-from semantic_kernel.connectors.memory.volatile.volatile_store import VolatileStore
+from semantic_kernel.connectors.memory.in_memory.in_memory_collection import InMemoryVectorCollection
+from semantic_kernel.connectors.memory.in_memory.in_memory_store import InMemoryVectorStore
 
 
 @fixture
 def collection(data_model_definition):
-    return VolatileCollection("test", dict, data_model_definition)
+    return InMemoryVectorCollection("test", dict, data_model_definition)
 
 
 def test_store_init():
-    store = VolatileStore()
+    store = InMemoryVectorStore()
     assert store.vector_record_collections == {}
 
 
 @mark.asyncio
 async def test_store_get_collection(data_model_definition):
-    store = VolatileStore()
+    store = InMemoryVectorStore()
     collection = store.get_collection("test", dict, data_model_definition)
     assert collection.collection_name == "test"
     assert collection.data_model_type is dict

@@ -12,10 +12,10 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
-from semantic_kernel.connectors.memory.volatile import VolatileCollection
 from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
 from semantic_kernel.data import (
     VectorStoreRecordCollection,
@@ -36,7 +36,7 @@ class MyDataModelArray:
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
             index_kind="hnsw",
             dimensions=1536,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
             serialize_function=np.ndarray.tolist,
             deserialize_function=np.array,
@@ -58,7 +58,7 @@ class MyDataModelList:
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
             index_kind="hnsw",
             dimensions=1536,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
         ),
     ] = None
@@ -109,7 +109,7 @@ stores: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     "qdrant": lambda: QdrantCollection[MyDataModel](
         data_model_type=MyDataModel, collection_name=collection_name, prefer_grpc=True, named_vectors=False
     ),
-    "volatile": lambda: VolatileCollection[MyDataModel](
+    "volatile": lambda: InMemoryVectorCollection[MyDataModel](
         data_model_type=MyDataModel,
         collection_name=collection_name,
     ),

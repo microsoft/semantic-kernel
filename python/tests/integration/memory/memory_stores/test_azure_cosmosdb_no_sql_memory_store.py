@@ -52,7 +52,7 @@ async def azure_cosmosdb_no_sql_memory_store(cosmos_client, partition_key) -> Me
         cosmos_client=cosmos_client,
         database_name=database_name,
         partition_key=partition_key.path,
-        vector_embedding_policy=get_vector_embedding_policy("cosine", "float32", 5),
+        vector_embedding_policy=get_vector_embedding_policy("cosine_similarity", "float32", 5),
         indexing_policy=get_vector_indexing_policy("flat"),
         cosmos_container_properties=cosmos_container_properties,
     )

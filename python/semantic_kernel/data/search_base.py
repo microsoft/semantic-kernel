@@ -10,8 +10,8 @@ from typing import Any, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION
-from semantic_kernel.data.kernel_search_result import KernelSearchResults
-from semantic_kernel.data.search_options_base import SearchOptions
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
+from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.exceptions.search_exceptions import SearchResultEmptyError
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -39,7 +39,10 @@ class SearchBase(ABC):
         function_name: str = "search",
         description: str = DEFAULT_DESCRIPTION,
         map_function: Callable[[TMapInput], str] | None = None,
-        update_options_function: Callable[[SearchOptions, dict[str, Any]], SearchOptions] | None = None,
+        update_options_function: Callable[
+            [Any, Any, Any, SearchOptions, dict[str, Any]], tuple[Any, Any, Any, SearchOptions]
+        ]
+        | None = None,
     ) -> KernelFunction:
         """Create a function from a search service.
 
@@ -60,14 +63,24 @@ class SearchBase(ABC):
 
         @kernel_function(name=function_name, description=description)
         async def search_wrapper(**kwargs: Any) -> Sequence[str]:
+            search_text = kwargs.get("search_text") or kwargs.get("query")
+            query = search_text
+            vector = kwargs.get("vector")
             inner_options = self._create_options(deepcopy(options), **kwargs)
             if update_options_function:
-                inner_options = update_options_function(inner_options, kwargs)
+                search_text, query, vector, inner_options = update_options_function(
+                    search_text, query, vector, inner_options, kwargs
+                )
             try:
-                results = await search_func(options=inner_options)
+                results = await search_func(
+                    search_text=search_text,
+                    query=query,
+                    vector=vector,
+                    options=inner_options,
+                )
             except SearchResultEmptyError:
                 return ["No results found for this query"]
-            return self._map_result_to_strings(results, map_function)
+            return await self._map_result_to_strings(results, map_function)
 
         return KernelFunctionFromMethod(
             method=search_wrapper,
@@ -82,7 +95,10 @@ class SearchBase(ABC):
         """Create search options."""
         if options:
             if not isinstance(options, self._get_options_class):
-                options = self._get_options_class.model_validate(**options.model_dump())
+                options = self._get_options_class.model_validate(
+                    options.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True),
+                    strict=False,
+                )
             for key, value in kwargs.items():
                 if key in options.model_fields:
                     setattr(options, key, value)
@@ -93,13 +109,13 @@ class SearchBase(ABC):
         except ValidationError:
             return self._get_options_class()
 
-    def _map_result_to_strings(
+    async def _map_result_to_strings(
         self, results: KernelSearchResults[TMapInput], map_function: Callable[[TMapInput], str] | None = None
     ) -> list[str]:
         """Map search results to strings."""
         if not map_function:
             map_function = self._default_map_to_string
-        return [map_function(result) for result in results.results]
+        return [map_function(result) async for result in results.results]
 
     @staticmethod
     def _default_map_to_string(result: Any) -> str:

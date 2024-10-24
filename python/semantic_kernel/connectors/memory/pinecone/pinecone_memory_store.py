@@ -81,7 +81,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         dimension_num: int | None = None,
-        distance_type: str | None = "cosine",
+        distance_type: str | None = "cosine_similarity",
         index_spec: NamedTuple = DEFAULT_INDEX_SPEC,
     ) -> None:
         """Creates a new collection in Pinecone if it does not exist.
@@ -95,7 +95,7 @@ class PineconeMemoryStore(MemoryStoreBase):
                 of "collection" in Pinecone is just a static copy of an index.
             dimension_num (int, optional): The dimensionality of the embeddings.
             distance_type (str, optional): The distance metric to use for the index.
-                (default: {"cosine"})
+                (default: {"cosine_similarity"})
             index_spec (NamedTuple, optional): The index spec to use for the index.
         """
         if dimension_num is None:

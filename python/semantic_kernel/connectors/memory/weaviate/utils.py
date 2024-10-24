@@ -99,11 +99,11 @@ def to_weaviate_vector_distance(distance_function: DistanceFunction | None) -> s
         str: The Weaviate vector distance metric name.
     """
     match distance_function:
-        case DistanceFunction.COSINE:
+        case DistanceFunction.COSINE_DISTANCE:
             return "cosine"
         case DistanceFunction.DOT_PROD:
             return "dot"
-        case DistanceFunction.EUCLIDEAN:
+        case DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE:
             return "l2-squared"
         case DistanceFunction.MANHATTAN:
             return "manhattan"

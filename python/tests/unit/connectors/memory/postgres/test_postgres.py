@@ -66,7 +66,7 @@ class SimpleDataModel:
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
             index_kind=IndexKind.HNSW,
             dimensions=1536,
-            distance_function=DistanceFunction.COSINE,
+            distance_function=DistanceFunction.COSINE_SIMILARITY,
             property_type="float",
         ),
     ]
