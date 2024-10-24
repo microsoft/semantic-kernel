@@ -4,22 +4,30 @@ using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Ollama;
 
 namespace ChatCompletion;
-public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
+
+/// <summary>
+/// This sample shows how to use the Ollama chat completion service with function calling.
+/// </summary>
+/// <remarks>
+/// Ensure you configured your Ollama:ModelId for a model that supports Function Calling like (llama3.1+).
+/// </remarks>
+/// <param name="output"></param>
+public sealed class Ollama_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task AutoInvokeKernelFunctionsAsync()
     {
-        // Create a kernel with OpenAI chat completion and WeatherPlugin
+        // Create a kernel with Ollama chat completion and WeatherPlugin
         Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
 
         // Invoke chat prompt with auto invocation of functions enabled
         const string ChatPrompt = """
             <message role="user">What is the weather like in Paris?</message>
         """;
-        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        var executionSettings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
@@ -30,7 +38,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeKernelFunctionsMultipleCallsAsync()
     {
-        // Create a kernel with OpenAI chat completion and WeatherPlugin
+        // Create a kernel with Ollama chat completion and WeatherPlugin
         Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
         var service = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -39,7 +47,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        var executionSettings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result1 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result1);
 
@@ -53,14 +61,14 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeKernelFunctionsWithComplexParameterAsync()
     {
-        // Create a kernel with OpenAI chat completion and HolidayPlugin
+        // Create a kernel with Ollama chat completion and HolidayPlugin
         Kernel kernel = CreateKernelWithPlugin<HolidayPlugin>();
 
         // Invoke chat prompt with auto invocation of functions enabled
         const string ChatPrompt = """
             <message role="user">Book a holiday for me from 6th June 2025 to 20th June 2025?</message>
         """;
-        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        var executionSettings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
@@ -71,7 +79,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeLightPluginAsync()
     {
-        // Create a kernel with OpenAI chat completion and LightPlugin
+        // Create a kernel with Ollama chat completion and LightPlugin
         Kernel kernel = CreateKernelWithPlugin<LightPlugin>();
         kernel.FunctionInvocationFilters.Add(new FunctionFilterExample(this.Output));
 
@@ -79,7 +87,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         const string ChatPrompt = """
             <message role="user">Turn on the light?</message>
         """;
-        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        var executionSettings = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
@@ -136,13 +144,15 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     {
         // Create a logging handler to output HTTP requests and responses
         var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
+        HttpClient httpClient = new(handler)
+        {
+            BaseAddress = new Uri(TestConfiguration.Ollama.Endpoint)
+        };
 
-        // Create a kernel with OpenAI chat completion and WeatherPlugin
+        // Create a kernel with Ollama chat completion and WeatherPlugin
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId!,
-                apiKey: TestConfiguration.OpenAI.ApiKey!,
+        kernelBuilder.AddOllamaChatCompletion(
+                modelId: TestConfiguration.Ollama.ModelId!,
                 httpClient: httpClient);
         kernelBuilder.Plugins.AddFromType<T>();
         Kernel kernel = kernelBuilder.Build();
