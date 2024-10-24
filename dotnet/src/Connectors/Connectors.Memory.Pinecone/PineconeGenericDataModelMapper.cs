@@ -20,6 +20,8 @@ internal sealed class PineconeGenericDataModelMapper : IVectorStoreRecordMapper<
     public PineconeGenericDataModelMapper(
         VectorStoreRecordPropertyReader propertyReader)
     {
+        Verify.NotNull(propertyReader);
+
         // Validate property types.
         propertyReader.VerifyKeyProperties(PineconeVectorStoreRecordFieldMapping.s_supportedKeyTypes);
         propertyReader.VerifyDataProperties(PineconeVectorStoreRecordFieldMapping.s_supportedDataTypes, PineconeVectorStoreRecordFieldMapping.s_supportedEnumerableDataElementTypes);
