@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -14,30 +15,45 @@ namespace SemanticKernel.UnitTests.Data;
 public class TextSearchExtensionsTests
 {
     private static MockTextSearch TextSearch => new();
+
+    private static JsonSerializerOptions JsonSerializerOptions => new();
+
     public static TheoryData<KernelPlugin> StandardPlugins => new()
         {
             { TextSearch.CreateWithSearch("SearchPlugin") },
+            { TextSearch.CreateWithSearch("SearchPlugin", JsonSerializerOptions) },
             { TextSearch.CreateWithGetTextSearchResults("SearchPlugin") },
+            { TextSearch.CreateWithGetTextSearchResults("SearchPlugin", JsonSerializerOptions) },
             { TextSearch.CreateWithGetSearchResults("SearchPlugin") },
+            { TextSearch.CreateWithGetSearchResults("SearchPlugin", JsonSerializerOptions) },
         };
     public static TheoryData<KernelFunction, string> StandardFunctions => new()
         {
             { TextSearch.CreateSearch(), "Search" },
+            { TextSearch.CreateSearch(JsonSerializerOptions), "Search" },
             { TextSearch.CreateGetTextSearchResults(), "GetTextSearchResults" },
+            { TextSearch.CreateGetTextSearchResults(JsonSerializerOptions), "GetTextSearchResults" },
             { TextSearch.CreateGetSearchResults(), "GetSearchResults" },
+            { TextSearch.CreateGetSearchResults(JsonSerializerOptions), "GetSearchResults" },
         };
     public static TheoryData<KernelFunction> CustomFunctions => new()
        {
             { TextSearch.CreateSearch(CustomSearchMethodOptions()) },
+            { TextSearch.CreateSearch(JsonSerializerOptions, CustomSearchMethodOptions()) },
             { TextSearch.CreateGetTextSearchResults(CustomSearchMethodOptions()) },
+            { TextSearch.CreateGetTextSearchResults(JsonSerializerOptions, CustomSearchMethodOptions()) },
             { TextSearch.CreateGetSearchResults(CustomSearchMethodOptions()) },
+            { TextSearch.CreateGetSearchResults(JsonSerializerOptions, CustomSearchMethodOptions()) },
        };
 
     public static TheoryData<KernelFunction, int> FunctionsWithCount => new()
        {
             { TextSearch.CreateSearch(searchOptions: new() { Top = 10 }), 10 },
+            { TextSearch.CreateSearch(JsonSerializerOptions, searchOptions: new() { Top = 10 }), 10 },
             { TextSearch.CreateGetTextSearchResults(searchOptions: new() { Top = 10 }), 10 },
+            { TextSearch.CreateGetTextSearchResults(JsonSerializerOptions, searchOptions: new() { Top = 10 }), 10 },
             { TextSearch.CreateGetSearchResults(searchOptions: new() { Top = 10 }), 10 },
+            { TextSearch.CreateGetSearchResults(JsonSerializerOptions, searchOptions: new() { Top = 10 }), 10 },
        };
 
     [Theory]
@@ -116,6 +132,21 @@ public class TextSearchExtensionsTests
         Assert.NotNull(results);
         Assert.NotEmpty(results);
         Assert.Equal(count, results.Count());
+    }
+
+    [Theory]
+    [MemberData(nameof(StandardFunctions))]
+    public async Task CountCanBeOverriddenInArgumentsAsync(KernelFunction function, string _)
+    {
+        // Act
+        var result = await function.InvokeAsync(new(), new() { ["query"] = "What is the Semantic Kernel?", ["count"] = 5 });
+
+        // Assert
+        Assert.NotNull(result);
+        var results = result.GetValue<IEnumerable<object>>();
+        Assert.NotNull(results);
+        Assert.NotEmpty(results);
+        Assert.Equal(5, results.Count());
     }
 
     #region private

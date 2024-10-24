@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.SemanticKernel;
 
@@ -58,50 +58,27 @@ public sealed class PromptTemplateConfig
     /// <returns>The deserialized <see cref="PromptTemplateConfig"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="json"/> is an invalid JSON representation of a <see cref="PromptTemplateConfig"/>.</exception>
+    [RequiresUnreferencedCode("Uses reflection to deserialize the prompt template config from JSON, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to deserialize the prompt template config from JSON, making it incompatible with AOT scenarios.")]
     public static PromptTemplateConfig FromJson(string json)
     {
-        Verify.NotNullOrWhiteSpace(json);
+        return FromJsonInternal(json, jsonSerializerOptions: null);
+    }
 
-        Exception? innerException = null;
-        PromptTemplateConfig? config = null;
-        try
-        {
-            config = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
-            if (config is null)
-            {
-                throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json));
-            }
-
-            // Prevent the default value from being any type other than a string.
-            // It's a temporary limitation that helps shape the public API surface
-            // (changing the type of the Default property to object) now, before the release.
-            // This helps avoid a breaking change while a proper solution for
-            // dealing with the different deserialization outputs of JSON/YAML prompt configurations is being evaluated.
-            foreach (var inputVariable in config.InputVariables)
-            {
-                // The value of the default property becomes a JsonElement after deserialization because that is how the JsonSerializer handles properties of the object type.
-                if (inputVariable.Default is JsonElement element)
-                {
-                    if (element.ValueKind == JsonValueKind.String)
-                    {
-                        inputVariable.Default = element.ToString();
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
-                            $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{config.Name ?? config.Description}'.");
-                    }
-                }
-            }
-        }
-        catch (JsonException e)
-        {
-            innerException = e;
-        }
-
-        return
-            config ??
-            throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
+    /// <summary>
+    /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
+    /// </summary>
+    /// <param name="json">A string containing a JSON representation of the <see cref="PromptTemplateConfig"/>.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to deserialize the prompt template config from JSON.</param>
+    /// <returns>The deserialized <see cref="PromptTemplateConfig"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is an invalid JSON representation of a <see cref="PromptTemplateConfig"/>.</exception>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
+    [Experimental("SKEXP0120")]
+    public static PromptTemplateConfig FromJson(string json, JsonSerializerOptions jsonSerializerOptions)
+    {
+        return FromJsonInternal(json, jsonSerializerOptions);
     }
 
     /// <summary>
@@ -256,6 +233,35 @@ public sealed class PromptTemplateConfig
     /// <summary>
     /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
     /// </summary>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> for schema generation.</param>
+    internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata(JsonSerializerOptions jsonSerializerOptions)
+    {
+        KernelParameterMetadata[] result = [];
+        if (this._inputVariables is List<InputVariable> inputVariables)
+        {
+            result = new KernelParameterMetadata[inputVariables.Count];
+            for (int i = 0; i < result.Length; i++)
+            {
+                InputVariable p = inputVariables[i];
+                result[i] = new KernelParameterMetadata(p.Name, jsonSerializerOptions)
+                {
+                    Description = p.Description,
+                    DefaultValue = p.Default,
+                    IsRequired = p.IsRequired,
+                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : p.Default?.GetType() ?? typeof(string),
+                    Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
+                };
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
+    /// </summary>
+    [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
     {
         KernelParameterMetadata[] result = [];
@@ -282,6 +288,8 @@ public sealed class PromptTemplateConfig
     /// <summary>
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
+    [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata() =>
         this.OutputVariable is OutputVariable outputVariable ?
             new KernelReturnParameterMetadata
@@ -290,4 +298,82 @@ public sealed class PromptTemplateConfig
                 Schema = KernelJsonSchema.ParseOrNull(outputVariable.JsonSchema)
             } :
             null;
+
+    /// <summary>
+    /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate and parse JSON schema.</param>"
+    /// </summary>
+    internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata(JsonSerializerOptions jsonSerializerOptions) =>
+        this.OutputVariable is OutputVariable outputVariable ?
+            new KernelReturnParameterMetadata(jsonSerializerOptions)
+            {
+                Description = outputVariable.Description,
+                Schema = KernelJsonSchema.ParseOrNull(outputVariable.JsonSchema)
+            } :
+            null;
+
+    /// <summary>
+    /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
+    /// </summary>
+    /// <param name="json">A string containing a JSON representation of the <see cref="PromptTemplateConfig"/>.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to deserialize the prompt template config from JSON.</param>
+    /// <returns>The deserialized <see cref="PromptTemplateConfig"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is an invalid JSON representation of a <see cref="PromptTemplateConfig"/>.</exception>
+    [RequiresUnreferencedCode("Uses reflection for deserialization if no JSOs are provided, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection for deserialization if no JSOs are provided, making it incompatible with AOT scenarios.")]
+    private static PromptTemplateConfig FromJsonInternal(string json, JsonSerializerOptions? jsonSerializerOptions)
+    {
+        Verify.NotNullOrWhiteSpace(json);
+
+        Exception? innerException = null;
+        PromptTemplateConfig? config = null;
+        try
+        {
+            if (jsonSerializerOptions is not null)
+            {
+                JsonTypeInfo<PromptTemplateConfig> typeInfo = (JsonTypeInfo<PromptTemplateConfig>)jsonSerializerOptions.GetTypeInfo(typeof(PromptTemplateConfig));
+                config = JsonSerializer.Deserialize<PromptTemplateConfig>(json, typeInfo);
+            }
+            else
+            {
+                config = JsonSerializer.Deserialize<PromptTemplateConfig>(json);
+            }
+
+            if (config is null)
+            {
+                throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json));
+            }
+
+            // Prevent the default value from being any type other than a string.
+            // It's a temporary limitation that helps shape the public API surface
+            // (changing the type of the Default property to object) now, before the release.
+            // This helps avoid a breaking change while a proper solution for
+            // dealing with the different deserialization outputs of JSON/YAML prompt configurations is being evaluated.
+            foreach (var inputVariable in config.InputVariables)
+            {
+                // The value of the default property becomes a JsonElement after deserialization because that is how the JsonSerializer handles properties of the object type.
+                if (inputVariable.Default is JsonElement element)
+                {
+                    if (element.ValueKind == JsonValueKind.String)
+                    {
+                        inputVariable.Default = element.ToString();
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
+                            $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{config.Name ?? config.Description}'.");
+                    }
+                }
+            }
+        }
+        catch (JsonException e)
+        {
+            innerException = e;
+        }
+
+        return
+            config ??
+            throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
+    }
 }
