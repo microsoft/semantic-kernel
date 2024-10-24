@@ -751,6 +751,33 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Contains("\"result\":\"rainy\"", functionResult.GetProperty("content").GetString());
     }
 
+    [Theory]
+    [InlineData("required")]
+    [InlineData("none")]
+    public async Task GetChatMessageContentWithNotSupportedFunctionChoiceBehaviorShouldThrowAsync(string choice)
+    {
+        // Arrange
+        Kernel kernel = new();
+        kernel.ImportPluginFromFunctions("TestPlugin", [KernelFunctionFactory.CreateFromMethod(() => "rainy", "TestFunction")]);
+
+        var sut = new OllamaChatCompletionService("any", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "Message")
+        };
+
+        var settings = new OllamaPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = choice == "required"
+                ? FunctionChoiceBehavior.Required()
+                : FunctionChoiceBehavior.None()
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<NotSupportedException>(() => sut.GetChatMessageContentAsync(chatHistory, settings, kernel));
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

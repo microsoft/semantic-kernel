@@ -112,22 +112,6 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
-    /// <inheritdoc/>
-    public override FunctionChoiceBehavior? FunctionChoiceBehavior
-    {
-        get => base.FunctionChoiceBehavior;
-        set
-        {
-            if (value is not null && value.GetType().Name != "AutoFunctionChoiceBehavior")
-            {
-                throw new NotSupportedException(
-    "Currently, Ollama does only supports 'Auto' choice behavior. " +
-    "See Ollama docs at https://github.com/ollama/ollama/blob/55ea963/docs/openai.md#supported-request-fields to see whether support has since been added.");
-            }
-            base.FunctionChoiceBehavior = value;
-        }
-    }
-
     #region private
 
     private List<string>? _stop;

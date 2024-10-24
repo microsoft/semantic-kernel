@@ -64,8 +64,11 @@ public class OllamaPromptExecutionSettingsTests
         Assert.Equal(100, ollamaExecutionSettings.TopK);
     }
 
-    [Fact]
-    public void SupportedAutoFunctionChoiceBehaviorWorksAsExpected()
+    [Theory]
+    [InlineData("auto")]
+    [InlineData("none")]
+    [InlineData("required")]
+    public void SupportedAutoFunctionChoiceBehaviorWorksAsExpected(string choice)
     {
         // Arrange
         string configPayload = """
@@ -80,29 +83,12 @@ public class OllamaPromptExecutionSettingsTests
         """;
 
         // Act & Assert
-        _ = JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(configPayload.Replace("<type>", "auto"));
-        _ = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
-    }
-
-    [Fact]
-    public void NotSupportedChoiceBehaviorsThrowsAsExpected()
-    {
-        // Arrange
-        string configPayload = """
+        var exception = Record.Exception(() =>
         {
-            "model_id": "llama3.2",
-            "service_id": "service-1",
-            "function_choice_behavior": {
-                "type": "<type>",
-                "functions": ["p1.f1"]
-            }
-        }
-        """;
+            _ = JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(configPayload.Replace("<type>", choice));
+            _ = new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        });
 
-        // Act & Assert
-        Assert.Throws<NotSupportedException>(() => new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required() });
-        Assert.Throws<NotSupportedException>(() => JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(configPayload.Replace("<type>", "required")));
-        Assert.Throws<NotSupportedException>(() => new OllamaPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.None() });
-        Assert.Throws<NotSupportedException>(() => JsonSerializer.Deserialize<OllamaPromptExecutionSettings>(configPayload.Replace("<type>", "none")));
+        Assert.Null(exception);
     }
 }

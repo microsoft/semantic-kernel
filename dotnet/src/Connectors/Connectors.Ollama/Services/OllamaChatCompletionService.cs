@@ -245,8 +245,9 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(request.Tools, content),
+                options: toolCallingConfig.Options ?? new(),
                 kernel,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken).ConfigureAwait(false);
             if (lastMessage != null)
             {
                 return [lastMessage];
@@ -538,7 +539,9 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             }
             else
             {
-                throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
+                throw new NotSupportedException(
+    "Currently, Ollama does only supports 'Auto' choice behavior. " +
+    "See Ollama docs at https://github.com/ollama/ollama/blob/55ea963/docs/openai.md#supported-request-fields to see whether support has since been added.");
             }
 
             tools = [];
