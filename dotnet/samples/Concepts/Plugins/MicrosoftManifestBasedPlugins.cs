@@ -93,12 +93,14 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
         {
             try
             {
+#pragma warning disable CA1308 // Normalize strings to uppercase
                 KernelPlugin plugin =
                 await kernel.ImportPluginFromMicrosoftManifestAsync(
                     pluginName,
-                    $"Plugins/MicrosoftManifestPlugins/{pluginName}/microsoftmanifest.json",
+                    $"Plugins/MicrosoftManifestPlugins/{pluginName}/{pluginName[..^6].ToLowerInvariant()}-apiplugin.json",
                     apiManifestPluginParameters)
                     .ConfigureAwait(false);
+#pragma warning restore CA1308 // Normalize strings to uppercase
                 Console.WriteLine($">> {pluginName} is created.");
 #pragma warning restore SKEXP0040
 #pragma warning restore SKEXP0043
