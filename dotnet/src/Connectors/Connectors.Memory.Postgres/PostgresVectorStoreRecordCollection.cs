@@ -101,26 +101,13 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        await this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition, false, cancellationToken).ConfigureAwait(false);
-        // Create indexes for vector properties.
-        foreach (var vectorProperty in this._propertyReader.VectorProperties)
-        {
-            // Ensure the dimensionality of the vector is supported for indexing.
-            if (vectorProperty.IndexKind == IndexKind.Hnsw)
-            {
-                if (vectorProperty.Dimensions > 2000)
-                {
-                    throw new NotSupportedException($"The provided vector property {vectorProperty.DataModelPropertyName} has {vectorProperty.Dimensions} dimensions, which is not supported by the HNSW index. The maximum number of dimensions supported by the HNSW index is 2000.");
-                }
-            }
-            await this._client.CreateVectorIndexAsync(this.CollectionName, vectorProperty, cancellationToken).ConfigureAwait(false);
-        }
+        await this.InternalCreateCollectionAsync(false, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition, true, cancellationToken);
+        return this.InternalCreateCollectionAsync(true, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -268,6 +255,24 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             }, cancellationToken);
 
         return Task.FromResult(new VectorSearchResults<TRecord>(results));
+    }
+
+    private async Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
+    {
+        await this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition, ifNotExists, cancellationToken).ConfigureAwait(false);
+        // Create indexes for vector properties.
+        foreach (var vectorProperty in this._propertyReader.VectorProperties)
+        {
+            // Ensure the dimensionality of the vector is supported for indexing.
+            if (vectorProperty.IndexKind == IndexKind.Hnsw)
+            {
+                if (vectorProperty.Dimensions > 2000)
+                {
+                    throw new NotSupportedException($"The provided vector property {vectorProperty.DataModelPropertyName} has {vectorProperty.Dimensions} dimensions, which is not supported by the HNSW index. The maximum number of dimensions supported by the HNSW index is 2000.");
+                }
+            }
+            await this._client.CreateVectorIndexAsync(this.CollectionName, vectorProperty, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
