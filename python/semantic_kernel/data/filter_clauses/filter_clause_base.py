@@ -13,4 +13,4 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class FilterClauseBase(ABC, KernelBaseModel):
     """A base for all filter clauses."""
 
-    filter_clause_type: str = Field("BaseFilterClause", init=False)  # type: ignore
+    filter_clause_type: str = Field("FilterClauseBase", init=False)  # type: ignore

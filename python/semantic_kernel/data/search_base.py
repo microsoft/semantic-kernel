@@ -11,7 +11,7 @@ from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.search_options_base import SearchOptions
+from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.exceptions.search_exceptions import SearchResultEmptyError
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -39,7 +39,10 @@ class SearchBase(ABC):
         function_name: str = "search",
         description: str = DEFAULT_DESCRIPTION,
         map_function: Callable[[TMapInput], str] | None = None,
-        update_options_function: Callable[[SearchOptions, dict[str, Any]], SearchOptions] | None = None,
+        update_options_function: Callable[
+            [Any, Any, Any, SearchOptions, dict[str, Any]], tuple[Any, Any, Any, SearchOptions]
+        ]
+        | None = None,
     ) -> KernelFunction:
         """Create a function from a search service.
 
@@ -65,7 +68,9 @@ class SearchBase(ABC):
             vector = kwargs.get("vector")
             inner_options = self._create_options(deepcopy(options), **kwargs)
             if update_options_function:
-                inner_options = update_options_function(inner_options, kwargs)
+                search_text, query, vector, inner_options = update_options_function(
+                    search_text, query, vector, inner_options, kwargs
+                )
             try:
                 results = await search_func(
                     search_text=search_text,
@@ -90,7 +95,10 @@ class SearchBase(ABC):
         """Create search options."""
         if options:
             if not isinstance(options, self._get_options_class):
-                options = self._get_options_class.model_validate(**options.model_dump())
+                options = self._get_options_class.model_validate(
+                    options.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True),
+                    strict=False,
+                )
             for key, value in kwargs.items():
                 if key in options.model_fields:
                     setattr(options, key, value)

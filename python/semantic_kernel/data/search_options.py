@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from semantic_kernel.data.filters.search_filter_base import SearchFilter
-from semantic_kernel.data.search_filter_base import SearchFilter
+from pydantic import Field
+
+from semantic_kernel.data.search_filter import SearchFilter
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -11,4 +12,5 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class SearchOptions(KernelBaseModel):
     """Options for a search."""
 
-    filter: SearchFilter | None = None
+    filter: SearchFilter = Field(default_factory=SearchFilter)
+    include_total_count: bool = False

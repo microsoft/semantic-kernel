@@ -2,7 +2,6 @@
 
 from semantic_kernel.data.const import (
     DEFAULT_DESCRIPTION,
-    DEFAULT_TOP,
     DistanceFunction,
     IndexKind,
 from semantic_kernel.data.const import DistanceFunction, IndexKind
@@ -25,7 +24,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.data.record_definition.vector_store_record_utils import VectorStoreRecordUtils
-from semantic_kernel.data.search_options_base import SearchOptions
+from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
@@ -43,7 +42,6 @@ from semantic_kernel.data.vector_storage.vector_store_record_collection import V
 
 __all__ = [
     "DEFAULT_DESCRIPTION",
-    "DEFAULT_TOP",
     "AnyTagsEqualTo",
     "DistanceFunction",
     "EqualTo",

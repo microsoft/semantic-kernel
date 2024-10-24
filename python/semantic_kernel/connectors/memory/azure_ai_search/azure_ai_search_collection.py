@@ -240,7 +240,7 @@ class AzureAISearchCollection(VectorizableTextSearch[str, TModel], Generic[TMode
             "skip": options.skip,
             "include_total_count": options.include_total_count,
         }
-        if options.filter:
+        if options.filter.filters:
             search_args["filter"] = self._build_filter_string(options.filter)
         search_args["search_text"] = search_text if search_text else "*"
         if vector is not None:
