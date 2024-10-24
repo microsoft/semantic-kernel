@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -94,7 +95,7 @@ public class CloneTests
         KernelProcess copy = source.CloneProcess(NullLogger.Instance);
 
         // Assert
-        Assert.Equivalent(source, copy);
+        VerifyProcess(source, copy);
     }
 
     /// <summary>
@@ -112,7 +113,26 @@ public class CloneTests
         KernelProcess copy = source.CloneProcess(NullLogger.Instance);
 
         // Assert
-        Assert.Equivalent(source, copy);
+        VerifyProcess(source, copy);
+    }
+
+    private static void VerifyProcess(KernelProcess expected, KernelProcess actual)
+    {
+        Assert.Equal(expected.State.Name, actual.State.Name);
+        Assert.Equal(expected.InnerStepType, actual.InnerStepType);
+        Assert.Equivalent(expected.Edges, actual.Edges);
+        foreach (var (expectedStep, actualStep) in expected.Steps.Zip(actual.Steps))
+        {
+            if (expectedStep is KernelProcess subProcess)
+            {
+                Assert.IsType<KernelProcess>(subProcess);
+                VerifyProcess(subProcess, (KernelProcess)actualStep);
+            }
+            else
+            {
+                Assert.Equivalent(expectedStep, actualStep);
+            }
+        }
     }
 
     private static Dictionary<string, List<KernelProcessEdge>> CreateTestEdges() =>
