@@ -240,7 +240,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
-        Type stateType = this._stepInfo.InspectStateType(out Type? userStateType, this.Logger);
+        Type stateType = this._stepInfo.InnerStepType.ExtractStateType(out Type? userStateType, this.Logger);
         KernelProcessStepState stateObject = this._stepInfo.State;
         stateObject.InitializeUserState(stateType, userStateType);
 
@@ -260,8 +260,17 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         this._stepState = stateObject;
-        var task = methodInfo.Invoke(stepInstance, [stateObject]);
+
+        ValueTask? activateTask = (ValueTask?)methodInfo.Invoke(stepInstance, [stateObject]);
+        if (activateTask == null)
+        {
+            var errorMessage = "The ActivateAsync method failed to complete.";
+            this._logger.LogError("{ErrorMessage}", errorMessage);
+            throw new KernelException(errorMessage);
+        }
+
         await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
+        await activateTask.Value.ConfigureAwait(false);
     }
 
     /// <summary>

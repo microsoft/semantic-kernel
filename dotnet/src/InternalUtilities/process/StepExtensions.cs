@@ -21,9 +21,9 @@ internal static class StepExtensions
             return subProcess.CloneProcess(logger);
         }
 
-        Type stateType = step.InspectStateType(out Type? userStateType, logger);
+        Type stateType = step.InnerStepType.ExtractStateType(out Type? userStateType, logger);
 
-        KernelProcessStepState newState = step.State.Clone(stateType, userStateType);
+        KernelProcessStepState newState = step.State.Clone(stateType, userStateType, logger);
 
         KernelProcessStepInfo copy =
             new(
@@ -34,32 +34,37 @@ internal static class StepExtensions
         return copy;
     }
 
-    private static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType)
+    // Exposed for testing
+    public static KernelProcessStepState Clone(this KernelProcessStepState sourceState, Type stateType, Type? userStateType, ILogger logger)
     {
-        // If the userStateType is null, then the sourceState is a KernelProcessStepState.
-        if (userStateType == null)
+        KernelProcessStepState? newState = (KernelProcessStepState?)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id);
+        if (newState == null)
         {
-            return new KernelProcessStepState(sourceState.Name, sourceState.Id);
+            string errorMessage = $"Failed to instantiate state: {stateType.Name} [{sourceState.Id}].";
+            logger?.LogError("{ErrorMessage}", errorMessage);
+            throw new KernelException(errorMessage);
         }
 
-        KernelProcessStepState newState = (KernelProcessStepState)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id)!; // $$$ EXCEPTION
-        newState.InitializeUserState(stateType, userStateType);
+        if (userStateType != null)
+        {
+            newState.InitializeUserState(stateType, userStateType);
+        }
 
         return newState;
     }
 
-    public static Type InspectStateType(this KernelProcessStepInfo step, out Type? userStateType, ILogger logger)
+    public static Type ExtractStateType(this Type? innerStepType, out Type? userStateType, ILogger? logger)
     {
         Type stateType;
 
-        if (step.InnerStepType.TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
+        if (innerStepType.TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
         {
             // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
             // and create an instance of the corresponding KernelProcessStepState<>.
             userStateType = genericStepType.GetGenericArguments()[0];
             if (userStateType is null)
             {
-                var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
+                string errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
                 logger?.LogError("{ErrorMessage}", errorMessage);
                 throw new KernelException(errorMessage);
             }
@@ -67,7 +72,7 @@ internal static class StepExtensions
             stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             if (stateType is null)
             {
-                var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
+                string errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
                 logger?.LogError("{ErrorMessage}", errorMessage);
                 throw new KernelException(errorMessage);
             }
@@ -99,7 +104,7 @@ internal static class StepExtensions
     /// Some types such as KernelProcessStepContext are special and need to be injected into
     /// the function parameter. Those objects are instantiated at this point.
     /// </summary>
-    /// <param name="channel">/// %%% COMMENT</param>
+    /// <param name="channel">The source channel to evaluate</param>
     /// <param name="functions">A dictionary of KernelFunction instances.</param>
     /// <param name="logger">An instance of <see cref="ILogger"/>.</param>
     /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
@@ -108,7 +113,7 @@ internal static class StepExtensions
     {
         if (functions is null)
         {
-            var errorMessage = "Internal Error: The step has not been initialized.";
+            string errorMessage = "Internal Error: The step has not been initialized.";
             logger?.LogError("{ErrorMessage}", errorMessage);
             throw new KernelException(errorMessage);
         }
@@ -148,7 +153,7 @@ internal static class StepExtensions
     /// <param name="genericStateType">The matching type if found, otherwise null.</param>
     /// <returns>True if a match is found, false otherwise.</returns>
     /// TODO: Move this to a share process utilities project.
-    public static bool TryGetSubtypeOfStatefulStep(this Type? type, out Type? genericStateType) // %%% PRIVATE AFTER DAPR REFACTORING
+    private static bool TryGetSubtypeOfStatefulStep(this Type? type, out Type? genericStateType)
     {
         while (type != null && type != typeof(object))
         {

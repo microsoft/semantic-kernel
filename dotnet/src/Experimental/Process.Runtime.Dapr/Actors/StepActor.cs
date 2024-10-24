@@ -340,32 +340,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
         else
         {
+            stateType = this._innerStepType.ExtractStateType(out Type? userStateType, this._logger);
             stateObject = this._stepInfo.State;
-            if (this._innerStepType.TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
-            {
-                // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
-                // and create an instance of the corresponding KernelProcessStepState<>.
-                var userStateType = genericStepType.GetGenericArguments()[0];
-                if (userStateType is null)
-                {
-                    var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                    this._logger?.LogError("{ErrorMessage}", errorMessage);
-                    throw new KernelException(errorMessage);
-                }
-
-                stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
-                if (stateType is null)
-                {
-                    var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                    this._logger?.LogError("{ErrorMessage}", errorMessage);
-                    throw new KernelException(errorMessage);
-                }
-            }
-            else
-            {
-                // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-                stateType = typeof(KernelProcessStepState);
-            }
 
             // Persist the state type and type object.
             await this.StateManager.AddStateAsync(ActorStateKeys.StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
