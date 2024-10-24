@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -13,6 +14,27 @@ public sealed record KernelProcess : KernelProcessStepInfo
     /// The collection of Steps in the Process.
     /// </summary>
     public IList<KernelProcessStepInfo> Steps { get; }
+
+    /// <summary>
+    /// Captures Kernel Process State into <see cref="KernelProcessStateMetadata"/>
+    /// </summary>
+    /// <returns><see cref="KernelProcessStateMetadata"/></returns>
+    public override KernelProcessStateMetadata ToProcessStateMetadata()
+    {
+        KernelProcessStateMetadata metadata = new()
+        {
+            Name = this.State.Name,
+            Id = this.State.Id,
+            StepsState = [],
+        };
+
+        foreach (var step in this.Steps)
+        {
+            metadata.StepsState.Add(step.State.Name, step.ToProcessStateMetadata());
+        }
+
+        return metadata;
+    }
 
     /// <summary>
     /// Creates a new instance of the <see cref="KernelProcess"/> class.

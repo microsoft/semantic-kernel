@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Process.Models;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.UnitTests;
@@ -235,7 +236,7 @@ public class ProcessStepBuilderTests
     {
         public TestProcessStepBuilder(string name) : base(name) { }
 
-        internal override KernelProcessStepInfo BuildStep()
+        internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata = null)
         {
             return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, this.Id), []);
         }

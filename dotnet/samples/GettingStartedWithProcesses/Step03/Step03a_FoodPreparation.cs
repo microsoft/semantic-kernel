@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process.Models;
 using Step03.Processes;
 
 namespace Step03;
@@ -101,7 +103,7 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
     }
 
-    private async Task<KernelProcess> ExecuteProcessWithStateAsync(KernelProcess process, Kernel kernel, string externalTriggerEvent, string orderLabel)
+    private async Task<KernelProcess> ExecuteProcessWithStateAsync(KernelProcess process, Kernel kernel, string externalTriggerEvent, string orderLabel = "Order 1")
     {
         Console.WriteLine($"=== {orderLabel} ===");
         var runningProcess = await process.StartAsync(kernel, new KernelProcessEvent()
@@ -111,6 +113,106 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         });
         return await runningProcess.GetStateAsync();
     }
+
+    private readonly string _statefulFriedFishProcessFilename = "FriedFishProcessStateSuccess.json";
+    private readonly string _statefulFriedFishLowStockProcessFilename = "FriedFishProcessStateSuccessLowStock.json";
+    private readonly string _statefulFriedFishNoStockProcessFilename = "FriedFishProcessStateSuccessNoStock.json";
+    private readonly string _statefulFishSandwichProcessFilename = "FishSandwichStateProcessSuccess.json";
+    private readonly string _statefulFishSandwichLowStockProcessFilename = "FishSandwichStateProcessSuccessLowStock.json";
+
+    #region Running processes and saving Process State Metadata in a file locally
+    [Fact]
+    public async Task RunAndStoreStatefulFriedFishProcessStateAsync()
+    {
+        Kernel kernel = CreateKernelWithChatCompletion();
+        ProcessBuilder builder = FriedFishProcess.CreateProcessWithStatefulSteps();
+        KernelProcess friedFishProcess = builder.Build();
+
+        var executedProcess = await ExecuteProcessWithStateAsync(friedFishProcess, kernel, externalTriggerEvent: FriedFishProcess.ProcessEvents.PrepareFriedFish);
+        var processState = executedProcess.ToProcessStateMetadata();
+        DumpProcessStateMetadataLocally(processState, _statefulFriedFishProcessFilename);
+    }
+
+    [Fact]
+    public async Task RunAndStoreStatefulFishSandwichProcessStateAsync()
+    {
+        Kernel kernel = CreateKernelWithChatCompletion();
+        ProcessBuilder builder = FishSandwichProcess.CreateProcessWithStatefulSteps();
+        KernelProcess friedFishProcess = builder.Build();
+
+        var executedProcess = await ExecuteProcessWithStateAsync(friedFishProcess, kernel, externalTriggerEvent: FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
+        var processState = executedProcess.ToProcessStateMetadata();
+        DumpProcessStateMetadataLocally(processState, _statefulFishSandwichProcessFilename);
+    }
+    #endregion
+
+    #region Reading State from local file and apply to existing ProcessBuilder
+    [Fact]
+    public async Task RunStatefulFriedFishProcessFromFileAsync()
+    {
+        var processState = LoadProcessStateMetadata(this._statefulFriedFishProcessFilename);
+        Assert.NotNull(processState);
+
+        Kernel kernel = CreateKernelWithChatCompletion();
+        ProcessBuilder processBuilder = FriedFishProcess.CreateProcessWithStatefulSteps();
+        KernelProcess processFromFile = processBuilder.Build(processState);
+
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FriedFishProcess.ProcessEvents.PrepareFriedFish);
+    }
+
+    [Fact]
+    public async Task RunStatefulFriedFishProcessWithLowStockFromFileAsync()
+    {
+        var processState = LoadProcessStateMetadata(this._statefulFriedFishLowStockProcessFilename);
+        Assert.NotNull(processState);
+
+        Kernel kernel = CreateKernelWithChatCompletion();
+        ProcessBuilder processBuilder = FriedFishProcess.CreateProcessWithStatefulSteps();
+        KernelProcess processFromFile = processBuilder.Build(processState);
+
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FriedFishProcess.ProcessEvents.PrepareFriedFish);
+    }
+
+    [Fact]
+    public async Task RunStatefulFriedFishProcessWithNoStockFromFileAsync()
+    {
+        var processState = LoadProcessStateMetadata(this._statefulFriedFishNoStockProcessFilename);
+        Assert.NotNull(processState);
+
+        Kernel kernel = CreateKernelWithChatCompletion();
+        ProcessBuilder processBuilder = FriedFishProcess.CreateProcessWithStatefulSteps();
+        KernelProcess processFromFile = processBuilder.Build(processState);
+
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FriedFishProcess.ProcessEvents.PrepareFriedFish);
+    }
+
+    [Fact]
+    public async Task RunStatefulFishSandwichProcessFromFileAsync()
+    {
+        var processState = LoadProcessStateMetadata(this._statefulFishSandwichProcessFilename);
+        Assert.NotNull(processState);
+
+        Kernel kernel = CreateKernelWithChatCompletion();
+        ProcessBuilder processBuilder = FishSandwichProcess.CreateProcessWithStatefulSteps();
+        KernelProcess processFromFile = processBuilder.Build(processState);
+
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
+    }
+
+    [Fact]
+    public async Task RunStatefulFishSandwichProcessWithLowStockFromFileAsync()
+    {
+        var processState = LoadProcessStateMetadata(this._statefulFishSandwichLowStockProcessFilename);
+        Assert.NotNull(processState);
+
+        Kernel kernel = CreateKernelWithChatCompletion();
+        ProcessBuilder processBuilder = FishSandwichProcess.CreateProcessWithStatefulSteps();
+        KernelProcess processFromFile = processBuilder.Build(processState);
+
+        await ExecuteProcessWithStateAsync(processFromFile, kernel, externalTriggerEvent: FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
+    }
+    #endregion
+
     #endregion
     protected async Task UsePrepareSpecificProductAsync(ProcessBuilder processBuilder, string externalTriggerEvent)
     {
@@ -127,5 +229,64 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
             Id = externalTriggerEvent, Data = new List<string>()
         });
         Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
+    }
+
+    // Path used for storing json processes samples in repository
+    private readonly string _currentSourceDir = Path.Combine(
+        Directory.GetCurrentDirectory(), "..", "..", "..", "Step03", "ProcessesStates");
+
+    private protected JsonSerializerOptions _jsonOptions = new()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private string GetRepositoryProcessStateFilepath(string jsonFilename, bool checkFilepathExists = false)
+    {
+        string filepath = Path.Combine(_currentSourceDir, jsonFilename);
+        if (checkFilepathExists && !File.Exists(filepath))
+        {
+            throw new KernelException($"Filepath {filepath} does not exist");
+        }
+
+        return filepath;
+    }
+
+    private void DumpProcessStateMetadataLocally(KernelProcessStateMetadata processStateInfo, string jsonFilename)
+    {
+        var filepath = GetRepositoryProcessStateFilepath(jsonFilename);
+        StoreProcessStateLocally(processStateInfo, filepath);
+    }
+
+    /// <summary>
+    /// Function that stores the definition of the SK Process State`.<br/>
+    /// </summary>
+    /// <param name="processStateInfo">Process State to be stored</param>
+    /// <param name="fullFilepath">Filepath to store definition of process in json format</param>
+    private void StoreProcessStateLocally(KernelProcessStateMetadata processStateInfo, string fullFilepath)
+    {
+        if (!(Path.GetDirectoryName(fullFilepath) is string directory && Directory.Exists(directory)))
+        {
+            throw new KernelException($"Directory for path '{fullFilepath}' does not exist, could not save process {processStateInfo.Name}");
+        }
+
+        if (!(Path.GetExtension(fullFilepath) is string extension && !string.IsNullOrEmpty(extension) && extension == ".json"))
+        {
+            throw new KernelException($"Filepath for process {processStateInfo.Name} does not have .json extension");
+        }
+
+        var content = JsonSerializer.Serialize(processStateInfo, _jsonOptions);
+        Console.WriteLine($"Process State: \n{content}");
+        Console.WriteLine($"Saving Process State Locally: \n{Path.GetFullPath(fullFilepath)}");
+        File.WriteAllText(fullFilepath, content);
+    }
+
+    protected private KernelProcessStateMetadata? LoadProcessStateMetadata(string jsonFilename)
+    {
+        var filepath = GetRepositoryProcessStateFilepath(jsonFilename, checkFilepathExists: true);
+
+        using StreamReader reader = new(filepath);
+        var content = reader.ReadToEnd();
+        return JsonSerializer.Deserialize<KernelProcessStateMetadata>(content);
     }
 }
