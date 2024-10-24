@@ -1,0 +1,65 @@
+{
+  "applicationName": "application",
+  "apiDependencies": {
+    "Calendar": {
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/graphexplorer.yaml",
+      "apiDeploymentBaseUrl": "https://graph.microsoft.com/v1.0/",
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "me/calendar/events"
+        }
+      ],
+      "extensions": {
+        "x-ms-kiota-hash": "29814D37A98A70300C212A353CCD01919F5B58D6C8F741C4948E4B7A5FDAA44B",
+        "x-ms-kiota-version": "1.20.0-preview.202410170001"
+      }
+    },
+    "Contacts": {
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/graphexplorer.yaml",
+      "apiDeploymentBaseUrl": "https://graph.microsoft.com/v1.0/",
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "me/contacts"
+        }
+      ],
+      "extensions": {
+        "x-ms-kiota-hash": "21808D91F876D396FF383233E2CC18B4DD82CDFE2A403B155CBAEC18808808E2",
+        "x-ms-kiota-version": "1.20.0-preview.202410170001"
+      }
+    },
+    "DriveItem": {
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/graphexplorer.yaml",
+      "apiDeploymentBaseUrl": "https://graph.microsoft.com/v1.0/",
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "drive/root/children/{driveItem-id}/content"
+        }
+      ],
+      "extensions": {
+        "x-ms-kiota-hash": "883D3BE04064138511FB79FDB1C2A7883D9E8F492481A04F0D55AA75B63CA642",
+        "x-ms-kiota-version": "1.20.0-preview.202410170001"
+      }
+    },
+    "Messages": {
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/master/openapi/v1.0/graphexplorer.yaml",
+      "apiDeploymentBaseUrl": "https://graph.microsoft.com/v1.0/",
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "me/messages"
+        },
+        {
+          "method": "POST",
+          "uriTemplate": "me/messages"
+        }
+      ],
+      "extensions": {
+        "x-ms-kiota-hash": "C8360ADB984F44449D607A0517A4AE13A7BF0BF2F53FA7AA147257F49D6BBF8F",
+        "x-ms-kiota-version": "1.20.0-preview.202410170001"
+      }
+    }
+  }
+}
