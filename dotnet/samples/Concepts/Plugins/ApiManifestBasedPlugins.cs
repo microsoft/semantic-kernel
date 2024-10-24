@@ -94,6 +94,7 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
                 { "microsoft.graph", graphOpenApiFunctionExecutionParameters },
                 { "nasa", nasaOpenApiFunctionExecutionParameters }
             });
+        var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "ApiManifestPlugins");
 
         foreach (var pluginName in pluginNames)
         {
@@ -102,7 +103,7 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
                 KernelPlugin plugin =
                 await kernel.ImportPluginFromApiManifestAsync(
                     pluginName,
-                    $"Plugins/ApiManifestPlugins/{pluginName}/apimanifest.json",
+                    Path.Combine(manifestLookupDirectory, pluginName, "apimanifest.json"),
                     apiManifestPluginParameters)
                     .ConfigureAwait(false);
                 Console.WriteLine($">> {pluginName} is created.");

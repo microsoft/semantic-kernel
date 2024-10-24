@@ -88,6 +88,7 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
                 { "microsoft.graph", graphOpenApiFunctionExecutionParameters },
                 { "nasa", nasaOpenApiFunctionExecutionParameters }
             });
+        var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "MicrosoftManifestPlugins");
 
         foreach (var pluginName in pluginNames)
         {
@@ -97,7 +98,7 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
                 KernelPlugin plugin =
                 await kernel.ImportPluginFromMicrosoftManifestAsync(
                     pluginName,
-                    $"Plugins/MicrosoftManifestPlugins/{pluginName}/{pluginName[..^6].ToLowerInvariant()}-apiplugin.json",
+                    Path.Combine(manifestLookupDirectory, pluginName, $"{pluginName[..^6].ToLowerInvariant()}-apiplugin.json"),
                     apiManifestPluginParameters)
                     .ConfigureAwait(false);
 #pragma warning restore CA1308 // Normalize strings to uppercase
