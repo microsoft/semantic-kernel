@@ -1,19 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Contents;
+namespace SemanticKernel.UnitTests.Contents.FunctionCallBuilder;
 
 public class FunctionCallContentBuilderTests
 {
-    [Fact]
-    public void ItShouldBuildFunctionCallContentForOneFunction()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForKernelArguments))]
+    public void ItShouldBuildFunctionCallContentForOneFunction(JsonSerializerOptions? jsos)
     {
         // Arrange
-        var sut = new FunctionCallContentBuilder();
+        var sut = jsos is not null ? new FunctionCallContentBuilder(jsos) : new FunctionCallContentBuilder();
 
         // Act
         var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: "f_101", name: null, arguments: null);
@@ -43,11 +46,12 @@ public class FunctionCallContentBuilderTests
         Assert.Null(functionCall.Exception);
     }
 
-    [Fact]
-    public void ItShouldBuildFunctionCallContentForManyFunctions()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForKernelArguments))]
+    public void ItShouldBuildFunctionCallContentForManyFunctions(JsonSerializerOptions? jsos)
     {
         // Arrange
-        var sut = new FunctionCallContentBuilder();
+        var sut = jsos is not null ? new FunctionCallContentBuilder(jsos) : new FunctionCallContentBuilder();
 
         // Act
         var f1_update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, callId: "f_1", name: "WeatherUtils-GetTemperature", arguments: null);
@@ -91,11 +95,12 @@ public class FunctionCallContentBuilderTests
         Assert.Null(functionCall2.Exception);
     }
 
-    [Fact]
-    public void ItShouldCaptureArgumentsDeserializationException()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForKernelArguments))]
+    public void ItShouldCaptureArgumentsDeserializationException(JsonSerializerOptions? jsos)
     {
         // Arrange
-        var sut = new FunctionCallContentBuilder();
+        var sut = jsos is not null ? new FunctionCallContentBuilder(jsos) : new FunctionCallContentBuilder();
 
         // Act
         var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: "f_101", name: "WeatherUtils-GetTemperature", arguments: null);
@@ -134,5 +139,19 @@ public class FunctionCallContentBuilderTests
         });
 
         return content;
+    }
+
+#pragma warning disable CA1812 // Internal class that is apparently never instantiated
+    internal sealed class TestJsonSerializerOptionsForKernelArguments : TheoryData<JsonSerializerOptions?>
+#pragma warning restore CA1812 // Internal class that is apparently never instantiated
+    {
+        public TestJsonSerializerOptionsForKernelArguments()
+        {
+            JsonSerializerOptions options = new();
+            options.TypeInfoResolverChain.Add(KernelArgumentsJsonSerializerContext.Default);
+
+            this.Add(null);
+            this.Add(options);
+        }
     }
 }
