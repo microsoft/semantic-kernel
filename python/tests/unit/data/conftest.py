@@ -9,13 +9,13 @@ import numpy as np
 from pydantic import BaseModel, Field
 from pytest import fixture
 
-from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.data import (
+    VectorStoreRecordCollection,
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
 )
 
 
@@ -213,7 +213,7 @@ def data_model_type_vector_array():
             self,
             content: Annotated[str, VectorStoreRecordDataField()],
             vector: Annotated[
-                np.array,
+                np.ndarray,
                 VectorStoreRecordVectorField(
                     serialize_function=np.ndarray.tolist,
                     deserialize_function=np.array,

@@ -4,18 +4,23 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, TypeVar
 
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField, VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordVectorField,
+)
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
 from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-    from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+    from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
     from semantic_kernel.kernel import Kernel
 
 TModel = TypeVar("TModel", bound=object)
 
 
+@experimental_class
 class VectorStoreRecordUtils:
     """Helper class to easily add embeddings to a (set of) vector store record."""
 

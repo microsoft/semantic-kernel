@@ -14,6 +14,7 @@ else:
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import SearchIndex
+from azure.search.documents.models import VectorizedQuery
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_ai_search.utils import (
@@ -21,10 +22,16 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
+from semantic_kernel.data.vector_search import (
+    VectorSearch,
+    VectorSearchFilter,
+    VectorSearchOptions,
+    VectorSearchQueryTypes,
+)
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -33,7 +40,7 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[TModel]):
+class AzureAISearchCollection(VectorSearch[str, TModel], Generic[TModel]):
     """Azure AI Search collection implementation."""
 
     search_client: SearchClient
@@ -212,3 +219,91 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
     @override
     async def delete_collection(self, **kwargs) -> None:
         await self.search_index_client.delete_index(self.collection_name, **kwargs)
+
+    @override
+    async def _inner_search(
+        self,
+        options: VectorSearchOptions,
+    ) -> Sequence[Any] | None:
+        search_args: dict[str, Any] = {
+            "top": options.count,
+            "skip": options.offset,
+        }
+        if options.filter:
+            search_args["filter"] = self._build_filter_string(options.filter)
+        if options.query_type == VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY and options.vector:
+            search_args["search_text"] = "*"
+            search_args["vector_queries"] = [
+                VectorizedQuery(
+                    vector=options.vector,
+                    k_nearest_neighbors=options.count,
+                    fields=options.vector_field_name,
+                )
+            ]
+        if options.query_type == VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY and options.query:
+            search_args["search_text"] = options.query
+        if options.select_fields:
+            search_args["select"] = options.select_fields
+        else:
+            if options.include_vectors:
+                search_args["select"] = ["*"]
+            else:
+                search_args["select"] = [
+                    name
+                    for name, field in self.data_model_definition.fields.items()
+                    if not isinstance(field, VectorStoreRecordVectorField)
+                ]
+
+        return [res async for res in await self.search_client.search(**search_args)]
+
+    def _build_filter_string(self, search_filter: VectorSearchFilter) -> str:
+        filter_string = ""
+        for filter in search_filter.filters:
+            if isinstance(filter, EqualTo):
+                filter_string += f"{filter.field_name} eq '{filter.value}' {search_filter.group_type.lower()} "
+            elif isinstance(filter, AnyTagsEqualTo):
+                filter_string += (
+                    f"{filter.field_name}/any(t: t eq '{filter.value}') {search_filter.group_type.lower()} "
+                )
+        return filter_string[:-5]
+
+    @staticmethod
+    def _default_parameter_metadata() -> list[KernelParameterMetadata]:
+        """Default parameter metadata for text search functions.
+
+        This function should be overridden when necessary.
+        """
+        return [
+            KernelParameterMetadata(
+                name="query",
+                description="What to search for.",
+                type="str",
+                is_required=False,
+                default_value="*",
+                type_object=str,
+            ),
+            KernelParameterMetadata(
+                name="count",
+                description="Number of results to return.",
+                type="int",
+                is_required=False,
+                default_value=2,
+                type_object=int,
+            ),
+            KernelParameterMetadata(
+                name="skip",
+                description="Number of results to skip.",
+                type="int",
+                is_required=False,
+                default_value=0,
+                type_object=int,
+            ),
+        ]
+
+    @override
+    def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
+        return result
+
+    @override
+    def _get_score_from_result(self, result: dict[str, Any]) -> float | None:
+        return result.get("@search.score")

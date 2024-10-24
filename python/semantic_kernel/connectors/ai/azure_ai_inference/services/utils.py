@@ -6,7 +6,6 @@ from collections.abc import Callable
 
 from azure.ai.inference.models import (
     AssistantMessage,
-    ChatCompletionsFunctionToolCall,
     ChatCompletionsToolCall,
     ChatRequestMessage,
     ContentItem,
@@ -94,7 +93,7 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
             continue
         if isinstance(item, FunctionCallContent):
             tool_calls.append(
-                ChatCompletionsFunctionToolCall(
+                ChatCompletionsToolCall(
                     id=item.id or "",
                     function=FunctionCall(
                         name=item.name or "",

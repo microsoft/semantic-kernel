@@ -8,7 +8,7 @@ from qdrant_client.models import Datatype, Distance, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,

@@ -15,7 +15,7 @@ from azure.ai.inference.models import (
     AsyncStreamingChatCompletions,
     ChatChoice,
     ChatCompletions,
-    ChatCompletionsFunctionToolCall,
+    ChatCompletionsToolCall,
     ChatRequestMessage,
     StreamingChatChoiceUpdate,
     StreamingChatCompletionsUpdate,
@@ -265,7 +265,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             )
         if choice.message.tool_calls:
             for tool_call in choice.message.tool_calls:
-                if isinstance(tool_call, ChatCompletionsFunctionToolCall):
+                if isinstance(tool_call, ChatCompletionsToolCall):
                     items.append(
                         FunctionCallContent(
                             id=tool_call.id,
@@ -314,7 +314,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             )
         if choice.delta.tool_calls:
             for tool_call in choice.delta.tool_calls:
-                if isinstance(tool_call, ChatCompletionsFunctionToolCall):
+                if isinstance(tool_call, ChatCompletionsToolCall):
                     items.append(
                         FunctionCallContent(
                             id=tool_call.id,

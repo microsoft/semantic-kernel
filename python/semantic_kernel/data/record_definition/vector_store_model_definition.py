@@ -2,21 +2,23 @@
 
 from dataclasses import dataclass, field
 
-from semantic_kernel.data.vector_store_model_protocols import (
+from semantic_kernel.data.record_definition.vector_store_model_protocols import (
     DeserializeProtocol,
     FromDictProtocol,
     SerializeProtocol,
     ToDictProtocol,
 )
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 @dataclass
 class VectorStoreRecordDefinition:
     """Memory record definition.
