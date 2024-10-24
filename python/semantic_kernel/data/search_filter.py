@@ -3,8 +3,6 @@
 import sys
 from typing import TypeVar
 
-from semantic_kernel.utils.experimental_decorator import experimental_class
-
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
@@ -12,24 +10,20 @@ else:
 
 from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.filter_clauses.filter_clause_base import FilterClauseBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 _T = TypeVar("_T", bound="SearchFilter")
 
 
 @experimental_class
 class SearchFilter:
-    """A filter clause for a search query."""
+    """A filter clause for a search."""
 
     def __init__(self) -> None:
         """Initialize a new instance of SearchFilter."""
-        self.filters: list[SearchFilter | FilterClauseBase] = []
+        self.filters: list[FilterClauseBase] = []
         self.group_type = "AND"
         self.equal_to = self.__equal_to
-
-    def add_sub_filter(self, sub_filter: Self) -> Self:
-        """Add a subfilter."""
-        self.filters.append(sub_filter)
-        return self
 
     def __equal_to(self, field_name: str, value: str) -> Self:
         """Add an equals filter clause."""

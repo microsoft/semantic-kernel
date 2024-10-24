@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.search_base import SearchBase
-from semantic_kernel.data.search_options_base import SearchOptions
+from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
