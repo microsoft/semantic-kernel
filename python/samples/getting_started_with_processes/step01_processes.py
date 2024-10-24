@@ -3,6 +3,8 @@
 import asyncio
 from enum import Enum
 
+from pydantic import Field
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
@@ -13,6 +15,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_step import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
+from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.process_builder import ProcessBuilder
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 
@@ -68,13 +71,13 @@ class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
         print(f"USER: {user_message}")
 
         if "exit" in user_message:
-            await context.emit_event(KernelProcessEvent(id=ChatBotEvents.Exit.value, data=None))
+            context.emit_event(KernelProcessEvent(id=ChatBotEvents.Exit.value, data=None))
             return
 
         self.state.current_input_index += 1
 
         # Emit the user input event
-        await context.emit_event({"id": CommonEvents.UserInputReceived.value, "data": user_message})
+        context.emit_event({"id": CommonEvents.UserInputReceived.value, "data": user_message})
 
 
 class ChatUserInputStep(ScriptedUserInputStep):
@@ -107,7 +110,7 @@ class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
     class Functions:
         GetChatResponse = "get_chat_response"
 
-    state: ChatBotState | None = None
+    state: ChatBotState = Field(default_factory=ChatBotState)
 
     async def activate(self, state: "KernelProcessStepState[ChatBotState]"):
         """Activates the step and initializes the state object."""
@@ -139,7 +142,7 @@ class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
         self.state.chat_messages.append(answer)
 
         # Emit an event: assistantResponse
-        await context.emit_event(
+        context.emit_event(
             process_event=KernelProcessEvent(id=ChatBotEvents.AssistantResponseGenerated.value, data=answer)
         )
 
@@ -180,8 +183,10 @@ async def step01_processes():
     kernel_process = process.build()
 
     # Start the process
-    await kernel_process.start(
-        kernel=kernel, initial_event=KernelProcessEvent(id=ChatBotEvents.StartProcess.value, data=None)
+    await start(
+        process=kernel_process,
+        kernel=kernel,
+        initial_event=KernelProcessEvent(id=ChatBotEvents.StartProcess.value, data=None),
     )
 
 

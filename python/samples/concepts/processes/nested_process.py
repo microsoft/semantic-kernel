@@ -15,6 +15,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_step import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
+from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.process_builder import ProcessBuilder
 from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
 from semantic_kernel.processes.process_types import TState
@@ -107,7 +108,9 @@ async def nested_process():
 
     test_input = "Test"
 
-    process_handle = await process.start(kernel=kernel, initial_event=ProcessEvents.StartProcess.value, data=test_input)
+    process_handle = await start(
+        process=process, kernel=kernel, initial_event=ProcessEvents.StartProcess.value, data=test_input
+    )
     process_info = await process_handle.get_state()
 
     inner_process: KernelProcess = next((s for s in process_info.steps if s.state.name == "Inner"), None)

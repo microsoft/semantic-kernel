@@ -12,7 +12,6 @@ from semantic_kernel.functions import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_function_target import KernelProcessFunctionTarget
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.process_types import TState, TStep, get_generic_state_type
@@ -107,7 +106,7 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
         if verified_parameter_name is None:
             # Exclude parameters of type KernelProcessStepContext
             undetermined_parameters = [
-                p for p in kernel_function_metadata.parameters if p.type_ != KernelProcessStepContext
+                p for p in kernel_function_metadata.parameters if p.type_ != "KernelProcessStepContext"
             ]
 
             if len(undetermined_parameters) > 1:
