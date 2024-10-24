@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Moq;
@@ -125,5 +126,52 @@ public class PostgresVectorStoreRecordCollectionTests
         Assert.Equal(2.0f, embedding[1]);
         Assert.Equal(3.0f, embedding[2]);
         Assert.Equal(4.0f, embedding[3]);
+    }
+
+    [Fact]
+    public async Task CreateCollectionAsyncLogsWarningWhenDimensionsTooLargeAsync()
+    {
+        // Arrange
+        var recordDefinition = new VectorStoreRecordDefinition
+        {
+            Properties = [
+                new VectorStoreRecordKeyProperty("HotelId", typeof(int)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreRecordDataProperty("Description", typeof(string)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 2001, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.ManhattanDistance }
+            ]
+        };
+        var mockLogger = new Mock<ILogger<PostgresVectorStoreRecordCollection<int, PostgresHotel>>>();
+        mockLogger.Setup(x => x.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()));
+        var sut = new PostgresVectorStoreRecordCollection<int, PostgresHotel>(
+            this._postgresClientMock.Object,
+            TestCollectionName,
+            logger: mockLogger.Object,
+            options: new PostgresVectorStoreRecordCollectionOptions<PostgresHotel> { VectorStoreRecordDefinition = recordDefinition }
+        );
+
+        this._postgresClientMock.Setup(x => x.CreateTableAsync(TestCollectionName, It.IsAny<VectorStoreRecordDefinition>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        // Act
+        await sut.CreateCollectionAsync(cancellationToken: this._testCancellationToken);
+
+        // Assert
+        mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("2001")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 }

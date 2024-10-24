@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
@@ -32,6 +34,9 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     // <summary>Optional configuration options for this class.</summary>
     private readonly PostgresVectorStoreRecordCollectionOptions<TRecord> _options;
 
+    /// <summary>The logger to use for logging.</summary>
+    private readonly ILogger<PostgresVectorStoreRecordCollection<TKey, TRecord>> _logger;
+
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 
@@ -47,7 +52,9 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <param name="client">The Postgres client used to interact with the database.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public PostgresVectorStoreRecordCollection(IPostgresVectorStoreDbClient client, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default)
+    /// <param name="logger">The logger to use for logging.</param>
+    public PostgresVectorStoreRecordCollection(IPostgresVectorStoreDbClient client, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ILogger<PostgresVectorStoreRecordCollection<TKey, TRecord>>? logger = null)
     {
         // Verify.
         Verify.NotNull(client);
@@ -68,6 +75,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                 SupportsMultipleKeys = false,
                 SupportsMultipleVectors = true,
             });
+        this._logger = logger ?? NullLogger<PostgresVectorStoreRecordCollection<TKey, TRecord>>.Instance;
 
         // Validate property types.
         this._propertyReader.VerifyKeyProperties(PostgresConstants.SupportedKeyTypes);
@@ -268,7 +276,12 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 if (vectorProperty.Dimensions > 2000)
                 {
-                    throw new NotSupportedException($"The provided vector property {vectorProperty.DataModelPropertyName} has {vectorProperty.Dimensions} dimensions, which is not supported by the HNSW index. The maximum number of dimensions supported by the HNSW index is 2000.");
+                    this._logger.LogWarning(
+                        "The provided vector property {VectorPropertyName} has {Dimensions} dimensions, which is not supported by the HNSW index. The maximum number of dimensions supported by the HNSW index is 2000. Index not created.",
+                        vectorProperty.DataModelPropertyName,
+                        vectorProperty.Dimensions
+                    );
+                    continue;
                 }
             }
             await this._client.CreateVectorIndexAsync(this.CollectionName, vectorProperty, cancellationToken).ConfigureAwait(false);
