@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Process.Runtime;
