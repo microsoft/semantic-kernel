@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Provides methods to build SQL commands for managing vector store collections in PostgreSQL.
 /// </summary>
-public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCollectionSqlBuilder
+internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCollectionSqlBuilder
 {
     /// <inheritdoc />
     public PostgresSqlCommandInfo BuildDoesTableExistCommand(string schema, string tableName)
@@ -190,7 +190,10 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
         // Generate column names and parameter placeholders
         var columnNames = string.Join(", ", columns.Select(c => $"\"{c}\""));
         var valuePlaceholders = string.Join(", ", columns.Select((c, i) => $"${i + 1}"));
-        var valuesRows = string.Join(", ", rows.Select((row, rowIndex) => $"({string.Join(", ", columns.Select((c, colIndex) => $"${rowIndex * columns.Count + colIndex + 1}"))})"));
+        var valuesRows = string.Join(", ",
+            rows.Select((row, rowIndex) =>
+                $"({string.Join(", ",
+                    columns.Select((c, colIndex) => $"${rowIndex * columns.Count + colIndex + 1}"))})"));
 
         // Generate the update set clause
         var updateSetClause = string.Join(", ", columns.Where(c => c != keyColumn).Select(c => $"\"{c}\" = EXCLUDED.\"{c}\""));
@@ -199,7 +202,7 @@ public class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreColle
         var commandText = $@"
             INSERT INTO {schema}.""{tableName}"" ({columnNames})
             VALUES {valuesRows}
-            ON CONFLICT(""{keyColumn}"")
+            ON CONFLICT (""{keyColumn}"")
             DO UPDATE SET {updateSetClause}; ";
 
         // Generate the parameters

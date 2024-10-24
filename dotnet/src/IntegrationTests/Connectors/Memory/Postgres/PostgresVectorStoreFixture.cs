@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Postgres;
+using Microsoft.SemanticKernel;
 using Npgsql;
 using Xunit;
 
@@ -18,7 +19,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     private readonly DockerClient _client;
 
     /// <summary>The id of the postgres container that we are testing with.</summary>
-    private readonly string? _containerId = null;
+    private string? _containerId = null;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
@@ -63,8 +64,8 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     private string _connectionString = null!;
     private string _databaseName = null!;
 
-    /// <summary>Gets the postgres client connection to use for tests.</summary>
-    public PostgresVectorStoreDbClient PostgresClient { get; private set; }
+    /// <summary>Gets the Kernel that holds the vector store.</summary>
+    public Kernel Kernel { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
     public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
@@ -72,16 +73,14 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
     public VectorStoreRecordDefinition HotelWithGuidIdVectorStoreRecordDefinition { get; private set; }
 
-    public PostgresVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
-        PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default)
+        VectorStoreRecordDefinition? recordDefinition = default)
         where TKey : notnull
         where TRecord : class
     {
-        return new PostgresVectorStoreRecordCollection<TKey, TRecord>(
-            this.PostgresClient,
-            collectionName,
-            options);
+        var vectorStore = this.Kernel.GetRequiredService<IVectorStore>();
+        return vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
     }
 
     /// <summary>
@@ -90,7 +89,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <returns>An async task.</returns>
     public async Task InitializeAsync()
     {
-        //this._containerId = await SetupPostgresContainerAsync(this._client);
+        this._containerId = await SetupPostgresContainerAsync(this._client);
         this._connectionString = "Host=localhost;Port=5432;Username=postgres;Password=example;Database=postgres;";
         this._databaseName = $"sk_it_{Guid.NewGuid():N}";
 
@@ -105,7 +104,9 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
 
         this._dataSource = dataSourceBuilder.Build();
 
-        this.PostgresClient = new PostgresVectorStoreDbClient(this._dataSource);
+        this.Kernel = Kernel.CreateBuilder()
+            .AddPostgresVectorStore(connectionStringBuilder.ToString())
+            .Build();
 
         // Wait for the postgres container to be ready and create the test database using the initial data source.
         var initialDataSource = NpgsqlDataSource.Create(this._connectionString);
@@ -174,6 +175,15 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <returns>An async task.</returns>
     public async Task DisposeAsync()
     {
+        if (this.Kernel != null)
+        {
+            var dataSource = this.Kernel.Services.GetService<NpgsqlDataSource>();
+            if (dataSource != null)
+            {
+                dataSource.Dispose();
+            }
+        }
+
         if (this._dataSource != null)
         {
             this._dataSource.Dispose();

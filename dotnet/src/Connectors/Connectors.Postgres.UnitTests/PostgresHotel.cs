@@ -4,18 +4,18 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 
-namespace SemanticKernel.Connectors.UnitTests.Postgres;
+namespace SemanticKernel.Connectors.Postgres.UnitTests;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 /// <summary>
 /// A test model for the postgres vector store.
 /// </summary>
-public record PostgresHotel()
+public record PostgresHotel<T>()
 {
     /// <summary>The key of the record.</summary>
     [VectorStoreRecordKey]
-    public int HotelId { get; init; }
+    public T HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
     [VectorStoreRecordData()]

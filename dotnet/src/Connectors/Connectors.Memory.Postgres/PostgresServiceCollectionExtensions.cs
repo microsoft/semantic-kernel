@@ -127,7 +127,7 @@ public static class PostgresServiceCollectionExtensions
 
     /// <summary>
     /// Register a Postgres <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the Postgres <see cref="PostgresVectorStoreDbClient"/> is retrieved from the dependency injection container.
+    /// and where the Postgres <see cref="IPostgresVectorStoreDbClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>

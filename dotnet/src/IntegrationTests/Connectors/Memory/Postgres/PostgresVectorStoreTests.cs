@@ -2,7 +2,7 @@
 
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Postgres;
+using Microsoft.Extensions.VectorData;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
@@ -14,7 +14,7 @@ public class PostgresVectorStoreTests(PostgresVectorStoreFixture fixture)
     public async Task ItCanGetAListOfExistingCollectionNamesAsync()
     {
         // Arrange
-        var sut = new PostgresVectorStore(fixture.PostgresClient);
+        var sut = fixture.Kernel.GetRequiredService<IVectorStore>();
 
         // Setup
         var collection = sut.GetCollection<long, PostgresHotel<long>>("VS_TEST_HOTELS");

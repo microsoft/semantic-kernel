@@ -11,7 +11,7 @@ using Moq;
 using Pgvector;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Postgres;
+namespace SemanticKernel.Connectors.Postgres.UnitTests;
 
 public class PostgresVectorStoreRecordCollectionTests
 {
@@ -77,13 +77,13 @@ public class PostgresVectorStoreRecordCollectionTests
     }
 
     [Fact]
-    public async Task UpsertRecordAsyncProducesExpectedSqlAsync()
+    public async Task UpsertRecordAsyncProducesExpectedClientCallAsync()
     {
         // Arrange
         Dictionary<string, object?>? capturedArguments = null;
 
-        var sut = new PostgresVectorStoreRecordCollection<int, PostgresHotel>(this._postgresClientMock.Object, TestCollectionName);
-        var record = new PostgresHotel
+        var sut = new PostgresVectorStoreRecordCollection<int, PostgresHotel<int>>(this._postgresClientMock.Object, TestCollectionName);
+        var record = new PostgresHotel<int>
         {
             HotelId = 1,
             HotelName = "Hotel 1",
@@ -92,7 +92,7 @@ public class PostgresVectorStoreRecordCollectionTests
             ParkingIncluded = true,
             Tags = ["tag1", "tag2"],
             Description = "A hotel",
-            DescriptionEmbedding = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f, 4.0f })
+            DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 2.0f, 3.0f, 4.0f])
         };
 
         this._postgresClientMock.Setup(x => x.UpsertAsync(
@@ -145,18 +145,18 @@ public class PostgresVectorStoreRecordCollectionTests
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 2001, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.ManhattanDistance }
             ]
         };
-        var mockLogger = new Mock<ILogger<PostgresVectorStoreRecordCollection<int, PostgresHotel>>>();
+        var mockLogger = new Mock<ILogger<PostgresVectorStoreRecordCollection<int, PostgresHotel<int>>>>();
         mockLogger.Setup(x => x.Log(
             LogLevel.Warning,
             It.IsAny<EventId>(),
             It.IsAny<It.IsAnyType>(),
             It.IsAny<Exception>(),
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()));
-        var sut = new PostgresVectorStoreRecordCollection<int, PostgresHotel>(
+        var sut = new PostgresVectorStoreRecordCollection<int, PostgresHotel<int>>(
             this._postgresClientMock.Object,
             TestCollectionName,
             logger: mockLogger.Object,
-            options: new PostgresVectorStoreRecordCollectionOptions<PostgresHotel> { VectorStoreRecordDefinition = recordDefinition }
+            options: new PostgresVectorStoreRecordCollectionOptions<PostgresHotel<int>> { VectorStoreRecordDefinition = recordDefinition }
         );
 
         this._postgresClientMock.Setup(x => x.CreateTableAsync(TestCollectionName, It.IsAny<VectorStoreRecordDefinition>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -174,4 +174,82 @@ public class PostgresVectorStoreRecordCollectionTests
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
+
+    [Fact]
+    public async Task CollectionExistsReturnsValidResultAsync()
+    {
+        // Arrange
+        const string TableName = "CollectionExists";
+
+        this._postgresClientMock.Setup(x => x.DoesTableExistsAsync(TableName, this._testCancellationToken)).ReturnsAsync(true);
+
+        var sut = new PostgresVectorStoreRecordCollection<int, TestRecord<int>>(this._postgresClientMock.Object, TableName);
+
+        // Act
+        var result = await sut.CollectionExistsAsync();
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task DeleteCollectionCallsClientDeleteAsync()
+    {
+        // Arrange
+        const string TableName = "DeleteCollection";
+
+        this._postgresClientMock.Setup(x => x.DeleteTableAsync(TableName, this._testCancellationToken)).Returns(Task.CompletedTask);
+
+        var sut = new PostgresVectorStoreRecordCollection<int, TestRecord<int>>(this._postgresClientMock.Object, TableName);
+
+        // Act
+        await sut.DeleteCollectionAsync();
+
+        // Assert
+        this._postgresClientMock.Verify(x => x.DeleteTableAsync(TableName, this._testCancellationToken), Times.Once);
+    }
+
+    #region private
+
+    private static void AssertRecord<TKey>(TestRecord<TKey> expectedRecord, TestRecord<TKey>? actualRecord, bool includeVectors)
+    {
+        Assert.NotNull(actualRecord);
+
+        Assert.Equal(expectedRecord.Key, actualRecord.Key);
+        Assert.Equal(expectedRecord.Data, actualRecord.Data);
+
+        if (includeVectors)
+        {
+            Assert.NotNull(actualRecord.Vector);
+            Assert.Equal(expectedRecord.Vector!.Value.ToArray(), actualRecord.Vector.Value.Span.ToArray());
+        }
+        else
+        {
+            Assert.Null(actualRecord.Vector);
+        }
+    }
+
+#pragma warning disable CA1812
+    private sealed class TestRecord<TKey>
+    {
+        [VectorStoreRecordKey]
+        public TKey? Key { get; set; }
+
+        [VectorStoreRecordData]
+        public string? Data { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        public ReadOnlyMemory<float>? Vector { get; set; }
+    }
+
+    private sealed class TestRecordWithoutVectorProperty<TKey>
+    {
+        [VectorStoreRecordKey]
+        public TKey? Key { get; set; }
+
+        [VectorStoreRecordData]
+        public string? Data { get; set; }
+    }
+#pragma warning restore CA1812
+
+    #endregion
 }

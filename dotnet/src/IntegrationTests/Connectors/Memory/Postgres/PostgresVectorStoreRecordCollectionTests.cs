@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Postgres;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
@@ -216,12 +215,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     {
         const int HotelId = 5;
 
-        var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<int>>
-        {
-            VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<int>()
-        };
-
-        var sut = fixture.GetCollection<int, VectorStoreGenericDataModel<int>>("GenericMapperWithNumericKey", options);
+        var sut = fixture.GetCollection<int, VectorStoreGenericDataModel<int>>("GenericMapperWithNumericKey", GetVectorStoreRecordDefinition<int>());
 
         await sut.CreateCollectionAsync();
 
@@ -296,10 +290,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var hotel3 = new PostgresHotel<int> { HotelId = 3, HotelName = "Hotel 3", HotelCode = 3, ParkingIncluded = true, HotelRating = 3.5f, Tags = ["tag1", "tag4"], DescriptionEmbedding = new[] { 0f, 0f, 1f, 0f } };
         var hotel4 = new PostgresHotel<int> { HotelId = 4, HotelName = "Hotel 4", HotelCode = 4, ParkingIncluded = false, HotelRating = 1.5f, Tags = ["tag1", "tag5"], DescriptionEmbedding = new[] { 0f, 0f, 0f, 1f } };
 
-        var sut = fixture.GetCollection<int, PostgresHotel<int>>($"VectorizedSearch_{includeVectors}_{distanceFunction}", new()
-        {
-            VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<int>(distanceFunction)
-        });
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>($"VectorizedSearch_{includeVectors}_{distanceFunction}", GetVectorStoreRecordDefinition<int>(distanceFunction));
 
         await sut.CreateCollectionAsync();
 

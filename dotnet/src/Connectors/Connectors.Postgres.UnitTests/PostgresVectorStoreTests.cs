@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Connectors.Postgres;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Postgres;
+namespace SemanticKernel.Connectors.Postgres.UnitTests;
 
 /// <summary>
 /// Contains tests for the <see cref="PostgresVectorStore"/> class.

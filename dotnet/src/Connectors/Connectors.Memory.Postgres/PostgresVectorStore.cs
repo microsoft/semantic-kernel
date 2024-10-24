@@ -69,10 +69,14 @@ public class PostgresVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
-        // Support int, long, Guid, and string keys
-        if (typeof(TKey) != typeof(int) && typeof(TKey) != typeof(long) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(string))
+        // Support short, int, long, Guid, and string keys
+        if (typeof(TKey) != typeof(short) &&
+            typeof(TKey) != typeof(int) &&
+            typeof(TKey) != typeof(long) &&
+            typeof(TKey) != typeof(Guid) &&
+            typeof(TKey) != typeof(string))
         {
-            throw new NotSupportedException($"Only int, long, {nameof(Guid)}, and {nameof(String)} keys are supported.");
+            throw new NotSupportedException($"Only short, int, long, {nameof(Guid)}, and {nameof(String)} keys are supported.");
         }
 
         if (this._options?.VectorStoreCollectionFactory is not null)

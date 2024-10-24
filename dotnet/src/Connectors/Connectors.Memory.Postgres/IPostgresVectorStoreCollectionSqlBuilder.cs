@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Interface for constructing SQL commands for Postgres vector store collections.
 /// </summary>
-public interface IPostgresVectorStoreCollectionSqlBuilder
+internal interface IPostgresVectorStoreCollectionSqlBuilder
 {
     /// <summary>
     /// Builds a SQL command to check if a table exists in the Postgres vector store.

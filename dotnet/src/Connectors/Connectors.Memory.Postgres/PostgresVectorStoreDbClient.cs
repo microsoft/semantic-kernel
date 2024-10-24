@@ -19,20 +19,13 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// </remarks>
 /// <param name="dataSource">Postgres data source.</param>
 /// <param name="schema">Schema of collection tables.</param>
-/// <param name="sqlBuilder">Sql builder for collection tables.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
-public class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string schema, IPostgresVectorStoreCollectionSqlBuilder sqlBuilder) : IPostgresVectorStoreDbClient
+public class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string schema = PostgresConstants.DefaultSchema) : IPostgresVectorStoreDbClient
 {
     private readonly NpgsqlDataSource _dataSource = dataSource;
-    private readonly IPostgresVectorStoreCollectionSqlBuilder _sqlBuilder = sqlBuilder;
     private readonly string _schema = schema;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PostgresVectorStoreDbClient"/> class.
-    /// </summary>
-    /// <param name="dataSource">Postgres data source.</param>
-    /// <param name="schema">Schema of collection tables.</param>
-    public PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string schema = PostgresConstants.DefaultSchema) : this(dataSource, schema, new PostgresVectorStoreCollectionSqlBuilder()) { }
+    private IPostgresVectorStoreCollectionSqlBuilder _sqlBuilder = new PostgresVectorStoreCollectionSqlBuilder();
 
     /// <inheritdoc />
     public async Task<bool> DoesTableExistsAsync(string tableName, CancellationToken cancellationToken = default)
@@ -223,6 +216,25 @@ public class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string sch
         }
     }
 
+    #region internal ===============================================================================
+
+    /// <summary>
+    /// Sets the SQL builder for the client.
+    /// </summary>
+    /// <param name="sqlBuilder"></param>
+    /// <remarks>
+    /// This method is used for other Semnatic Kernel connectors that may need to override the default SQL
+    /// used by this client.
+    /// </remarks>
+    internal void SetSqlBuilder(IPostgresVectorStoreCollectionSqlBuilder sqlBuilder)
+    {
+        this._sqlBuilder = sqlBuilder;
+    }
+
+    #endregion
+
+    #region private ================================================================================
+
     private Dictionary<string, object?> GetRecord(
         NpgsqlDataReader reader,
         IEnumerable<VectorStoreRecordProperty> properties,
@@ -243,4 +255,6 @@ public class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string sch
 
         return storageModel;
     }
+
+    #endregion
 }

@@ -61,7 +61,7 @@ internal sealed class PostgresGenericDataModelMapper<TKey> : IVectorStoreRecordM
         return properties;
     }
 
-    VectorStoreGenericDataModel<TKey> IVectorStoreRecordMapper<VectorStoreGenericDataModel<TKey>, Dictionary<string, object?>>.MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
+    public VectorStoreGenericDataModel<TKey> MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
     {
         TKey key;
         var dataProperties = new Dictionary<string, object?>();
