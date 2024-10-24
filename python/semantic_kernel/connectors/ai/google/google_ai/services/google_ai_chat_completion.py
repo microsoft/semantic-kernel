@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import logging
 import sys
 from collections.abc import AsyncGenerator, Callable

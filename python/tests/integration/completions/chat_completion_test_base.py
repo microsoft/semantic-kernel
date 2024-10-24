@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import os
 import platform
 import sys
 from functools import reduce
@@ -70,7 +71,12 @@ else:
 mistral_ai_setup: bool = is_service_setup_for_testing(
     ["MISTRALAI_API_KEY", "MISTRALAI_CHAT_MODEL_ID"], raise_if_not_set=False
 )  # We don't have a MistralAI deployment
+# There is no single model in Ollama that supports both image and tool call in chat completion
+# We are splitting the Ollama test into three services: chat, image, and tool call. The chat model
+# can be any model that supports chat completion.
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"])
+ollama_image_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_IMAGE"])
+ollama_tool_call_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
@@ -142,6 +148,18 @@ class ChatCompletionTestBase(CompletionTestBase):
                 MistralAIChatPromptExecutionSettings,
             ),
             "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
+            "ollama_image": (
+                OllamaChatCompletion(ai_model_id=os.environ["OLLAMA_CHAT_MODEL_ID_IMAGE"])
+                if ollama_image_setup
+                else None,
+                OllamaChatPromptExecutionSettings,
+            ),
+            "ollama_tool_call": (
+                OllamaChatCompletion(ai_model_id=os.environ["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"])
+                if ollama_tool_call_setup
+                else None,
+                OllamaChatPromptExecutionSettings,
+            ),
             "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
             "onnx_gen_ai": (

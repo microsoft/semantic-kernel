@@ -4,9 +4,14 @@ from unittest.mock import patch
 
 import pytest
 
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidExecutionSettingsError,
+    ServiceInvalidResponseError,
+)
 
 
 def test_settings(model_id):
@@ -34,11 +39,37 @@ def test_custom_client(model_id, custom_client):
     assert ollama.client == custom_client
 
 
+def test_invalid_ollama_settings():
+    """Test that the service initializes incorrectly with invalid settings."""
+    with pytest.raises(ServiceInitializationError):
+        _ = OllamaChatCompletion(ai_model_id=123)
+
+
 @pytest.mark.parametrize("exclude_list", [["OLLAMA_CHAT_MODEL_ID"]], indirect=True)
 def test_init_empty_model_id_in_env(ollama_unit_test_env):
     """Test that the service initializes incorrectly with an empty model id."""
     with pytest.raises(ServiceInitializationError):
         _ = OllamaChatCompletion(env_file_path="fake_env_file_path.env")
+
+
+def test_function_choice_settings(ollama_unit_test_env):
+    """Test that REQUIRED and NONE function choice settings are unsupported."""
+    ollama = OllamaChatCompletion()
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        ollama._verify_function_choice_settings(
+            OllamaChatPromptExecutionSettings(function_choice_behavior=FunctionChoiceBehavior.Required())
+        )
+
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        ollama._verify_function_choice_settings(
+            OllamaChatPromptExecutionSettings(function_choice_behavior=FunctionChoiceBehavior.NoneInvoke())
+        )
+
+
+def test_service_url(ollama_unit_test_env):
+    """Test that the service URL is correct."""
+    ollama = OllamaChatCompletion()
+    assert ollama.service_url() == ollama_unit_test_env["OLLAMA_HOST"]
 
 
 @pytest.mark.asyncio
@@ -201,5 +232,24 @@ async def test_streaming_chat_completion_wrong_return_type(
         async for _ in ollama.get_streaming_chat_message_contents(
             chat_history,
             OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        ):
+            pass
+
+
+@pytest.mark.asyncio
+async def test_streaming_chat_completion_with_tools_raise(
+    model_id,
+    service_id,
+    chat_history,
+    default_options,
+):
+    """Test that the chat completion streaming service fails when tool calls are requested."""
+    ollama = OllamaChatCompletion(ai_model_id=model_id)
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        async for _ in ollama.get_streaming_chat_message_contents(
+            chat_history,
+            OllamaChatPromptExecutionSettings(
+                tools=[{"type": "function"}], service_id=service_id, options=default_options
+            ),
         ):
             pass
