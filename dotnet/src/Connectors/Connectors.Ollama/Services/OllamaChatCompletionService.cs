@@ -359,22 +359,6 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     private Activity? StartCompletionActivity(ChatHistory chatHistory, PromptExecutionSettings settings)
         => ModelDiagnostics.StartCompletionActivity(this._client.Config.Uri, this._client.Config.Model, ModelPlatform, chatHistory, settings);
 
-    /// <summary>
-    /// Tracks tooling updates from streaming responses.
-    /// </summary>
-    /// <param name="updates">The tool call updates to incorporate.</param>
-    /// <param name="toolCallIdsByIndex">Lazily-initialized dictionary mapping indices to IDs.</param>
-    /// <param name="functionNamesByIndex">Lazily-initialized dictionary mapping indices to names.</param>
-    /// <param name="functionArgumentBuildersByIndex">Lazily-initialized dictionary mapping indices to arguments.</param>
-    internal static void TrackStreamingToolingUpdate(
-        IEnumerable<Message.ToolCall>? updates,
-        ref Dictionary<int, string>? toolCallIdsByIndex,
-        ref Dictionary<int, string>? functionNamesByIndex,
-        ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
-    {
-        throw new NotImplementedException();
-    }
-
     /// <inheritdoc />
     public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         ChatHistory chatHistory,
@@ -536,38 +520,6 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             Choice: toolChoice ?? ChatToolChoice.Auto,
             AutoInvoke: autoInvoke,
             Options: options);
-    }
-
-    private (IList<Tool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, FunctionChoiceBehaviorOptions? Options) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior? functionChoiceBehavior, ChatHistory chatHistory)
-    {
-        FunctionChoiceBehaviorConfiguration? config = this._functionCallsProcessor.GetConfiguration(functionChoiceBehavior, chatHistory, requestIndex, kernel);
-
-        IList<Tool>? tools = null;
-        ChatToolChoice? toolChoice = null;
-        bool autoInvoke = config?.AutoInvoke ?? false;
-
-        if (config?.Functions is { Count: > 0 } functions)
-        {
-            if (config.Choice == FunctionChoice.Auto)
-            {
-                toolChoice = ChatToolChoice.Auto;
-            }
-            else
-            {
-                throw new NotSupportedException(
-    "Currently, Ollama does only supports 'Auto' choice behavior. " +
-    "See Ollama docs at https://github.com/ollama/ollama/blob/55ea963/docs/openai.md#supported-request-fields to see whether support has since been added.");
-            }
-
-            tools = [];
-
-            foreach (var function in functions)
-            {
-                tools.Add(FromFunctionMetadata(function.Metadata));
-            }
-        }
-
-        return (tools, toolChoice, autoInvoke, config?.Options);
     }
 
     private static Tool FromFunctionMetadata(KernelFunctionMetadata functionMetadata)
