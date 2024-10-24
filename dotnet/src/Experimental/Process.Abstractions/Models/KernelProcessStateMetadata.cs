@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Process.Models;
 
 /// <summary>
-/// Process state used for State Persistance serialization
+/// Process state used for State Persistence serialization
 /// </summary>
 public record class KernelProcessStateMetadata : KernelProcessStepStateMetadata<object>
 {
