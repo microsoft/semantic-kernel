@@ -11,13 +11,6 @@ internal static class MapExtensions
 {
     public static IEnumerable GetMapInput(this ProcessMessage message, string parameterName, ILogger logger)
     {
-        //if (string.IsNullOrWhiteSpace(message.TargetEventId))
-        //{
-        //    string errorMessage = "Internal Map Error: The target event id must be specified when sending a message to a step.";
-        //    logger.LogError("{ErrorMessage}", errorMessage);
-        //    throw new KernelException(errorMessage);
-        //}
-
         if (!message.Values.TryGetValue(parameterName, out object? values))
         {
             string errorMessage = $"Internal Map Error: Input parameter not present - {parameterName}";
