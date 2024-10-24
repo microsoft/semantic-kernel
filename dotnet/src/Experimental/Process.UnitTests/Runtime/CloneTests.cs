@@ -25,7 +25,7 @@ public class CloneTests
         KernelProcessStepState state = new(nameof(VerifyCloneStepStateTest), "test");
 
         // Act
-        KernelProcessStepState copy = state.Clone(typeof(KernelProcessStepState), null);
+        KernelProcessStepState copy = state.Clone(typeof(KernelProcessStepState), null, NullLogger.Instance);
 
         // Assert
         Assert.Equal(state, copy);
@@ -41,7 +41,7 @@ public class CloneTests
         KernelProcessStepState<TestState> state = new(nameof(VerifyCloneTypedStepStateTest), "test") { State = new TestState() };
 
         // Act
-        KernelProcessStepState copy = state.Clone(state.GetType(), typeof(TestState));
+        KernelProcessStepState copy = state.Clone(state.GetType(), typeof(TestState), NullLogger.Instance);
 
         // Assert
         Assert.Equal(state, copy);
