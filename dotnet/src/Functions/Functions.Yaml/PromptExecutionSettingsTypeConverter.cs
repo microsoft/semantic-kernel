@@ -9,6 +9,7 @@ using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.BufferedDeserialization;
 using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.Serialization.ObjectFactories;
 
 namespace Microsoft.SemanticKernel;
 
@@ -29,6 +30,7 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
         s_deserializer ??= new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .IgnoreUnmatchedProperties() // Required to ignore the 'type' property used as type discrimination. Otherwise, the "Property 'type' not found on type '{type.FullName}'" exception is thrown.
+            .WithObjectFactory(new FunctionChoiceBehaviorsObjectFactory())
             .WithTypeDiscriminatingNodeDeserializer(CreateAndRegisterTypeDiscriminatingNodeDeserializer)
             .Build();
 
@@ -98,4 +100,22 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
     /// The YamlDotNet deserializer instance.
     /// </summary>
     private static IDeserializer? s_deserializer;
+
+    private sealed class FunctionChoiceBehaviorsObjectFactory : ObjectFactoryBase
+    {
+        private static DefaultObjectFactory? s_defaultFactory = null;
+
+        public override object Create(Type type)
+        {
+            if (type == typeof(AutoFunctionChoiceBehavior) ||
+                type == typeof(NoneFunctionChoiceBehavior) ||
+                type == typeof(RequiredFunctionChoiceBehavior))
+            {
+                return Activator.CreateInstance(type, nonPublic: true)!;
+            }
+
+            // Use the default object factory for other types
+            return (s_defaultFactory ??= new DefaultObjectFactory()).Create(type);
+        }
+    }
 }
