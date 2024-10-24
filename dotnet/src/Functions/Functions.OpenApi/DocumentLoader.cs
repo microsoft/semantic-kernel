@@ -21,6 +21,30 @@ internal static class DocumentLoader
         string? userAgent,
         CancellationToken cancellationToken)
     {
+        using var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
+        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+    }
+
+    internal static async Task<Stream> LoadDocumentFromUriAsStreamAsync(
+        Uri uri,
+        ILogger logger,
+        HttpClient httpClient,
+        AuthenticateRequestAsyncCallback? authCallback,
+        string? userAgent,
+        CancellationToken cancellationToken)
+    {
+        using var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
+        return await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+    }
+
+    private static async Task<HttpResponseMessage> LoadDocumentResponseFromUriAsync(
+        Uri uri,
+        ILogger logger,
+        HttpClient httpClient,
+        AuthenticateRequestAsyncCallback? authCallback,
+        string? userAgent,
+        CancellationToken cancellationToken)
+    {
         using var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
         request.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(userAgent ?? HttpHeaderConstant.Values.UserAgent));
 
@@ -31,8 +55,7 @@ internal static class DocumentLoader
 
         logger.LogTrace("Importing document from {0}", uri);
 
-        using var response = await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
     internal static async Task<string> LoadDocumentFromFilePathAsync(
@@ -42,12 +65,7 @@ internal static class DocumentLoader
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var pluginJson = string.Empty;
-
-        if (!File.Exists(filePath))
-        {
-            throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
-        }
+        CheckIfFileExists(filePath);
 
         logger.LogTrace("Importing document from {0}", filePath);
 
@@ -58,10 +76,30 @@ internal static class DocumentLoader
 #endif
             ).ConfigureAwait(false);
     }
+    private static void CheckIfFileExists(string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
+        }
+    }
 
-    internal static async Task<string> LoadDocumentFromStreamAsync(Stream stream)
+    internal static Stream LoadDocumentFromFilePathAsStream(
+        string filePath,
+        ILogger logger)
+    {
+        CheckIfFileExists(filePath);
+
+        logger.LogTrace("Importing document from {0}", filePath);
+
+        return File.OpenRead(filePath);
+    }
+
+    internal static async Task<string> LoadDocumentFromStreamAsync(
+        Stream stream,
+        CancellationToken cancellationToken)
     {
         using StreamReader reader = new(stream);
-        return await reader.ReadToEndAsync().ConfigureAwait(false);
+        return await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
     }
 }

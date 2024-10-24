@@ -112,7 +112,7 @@ public static partial class OpenApiKernelPluginFactory
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
 #pragma warning restore CA2000
 
-        var openApiSpec = await DocumentLoader.LoadDocumentFromStreamAsync(stream).ConfigureAwait(false);
+        var openApiSpec = await DocumentLoader.LoadDocumentFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
             pluginName,

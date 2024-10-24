@@ -114,21 +114,29 @@ public static class MicrosoftManifestKernelExtensions
                 continue;
             }
 
-            var openApiDocumentString = await DocumentLoader.LoadDocumentFromUriAsync(new Uri(apiDescriptionUrl),
-                logger,
-                httpClient,
-                authCallback: null,
-                pluginParameters?.UserAgent,
-                cancellationToken).ConfigureAwait(false);
+            var (parsedDescriptionUrl, isOnlineDescription) = Uri.TryCreate(apiDescriptionUrl, UriKind.Absolute, out var result) ?
+                (result, true) :
+                (new Uri(Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, apiDescriptionUrl)), false);
 
-            OpenApiDiagnostic diagnostic = new();
-            var openApiDocument = new OpenApiStringReader(new()
+            using var openApiDocumentStream = isOnlineDescription ?
+                await DocumentLoader.LoadDocumentFromUriAsStreamAsync(parsedDescriptionUrl,
+                    logger,
+                    httpClient,
+                    authCallback: null,
+                    pluginParameters?.UserAgent,
+                    cancellationToken).ConfigureAwait(false) :
+                DocumentLoader.LoadDocumentFromFilePathAsStream(parsedDescriptionUrl.LocalPath,
+                    logger);
+
+            var documentReadResult = await new OpenApiStreamReader(new()
             {
-                BaseUrl = new(apiDescriptionUrl)
+                BaseUrl = parsedDescriptionUrl
             }
-            ).Read(openApiDocumentString, out diagnostic);
+            ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
+            var openApiDocument = documentReadResult.OpenApiDocument;
+            var openApiDiagnostic = documentReadResult.OpenApiDiagnostic;
 
-            var predicate = OpenApiFilterService.CreatePredicate(string.Join(",", manifestFunctions.Select(f => f.Name)), null, null, openApiDocument);
+            var predicate = OpenApiFilterService.CreatePredicate(string.Join(",", manifestFunctions.Select(static f => f.Name)), null, null, openApiDocument);
             var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);
 
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();
