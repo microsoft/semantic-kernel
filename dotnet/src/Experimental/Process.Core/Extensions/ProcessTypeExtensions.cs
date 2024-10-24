@@ -32,6 +32,8 @@ internal static class ProcessTypeExtensions
         return type.TryGetSpecificType(s_genericStepBuilder, out genericStateType);
     }
 
+    // TODO: Create another project that can be used all LocalRuntime, Abstraction, Core with
+    // that contain extensions with no dependencies
     private static bool TryGetSpecificType(this Type? type, Type specificType, out Type? genericOutputType)
     {
         while (type != null && type != typeof(object))
