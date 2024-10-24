@@ -10,7 +10,7 @@ namespace ChatCompletion;
 /// <summary>
 /// The sample show how to add a chat history reducer which only sends the last two messages in <see cref="ChatHistory"/> to the model.
 /// </summary>
-public class OpenAI_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(output)
+public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task ShowTotalTokenCountAsync()
