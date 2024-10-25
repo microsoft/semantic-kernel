@@ -88,6 +88,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
             Type t when t == typeof(string) => reader.GetString(propertyIndex),
             Type t when t == typeof(byte[]) => reader.GetFieldValue<byte[]>(propertyIndex),
             Type t when t == typeof(DateTime) || t == typeof(DateTime?) => reader.GetDateTime(propertyIndex),
+            Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => reader.GetFieldValue<DateTimeOffset>(propertyIndex),
             Type t when t == typeof(Guid) => reader.GetFieldValue<Guid>(propertyIndex),
             _ => reader.GetValue(propertyIndex)
         };
@@ -106,6 +107,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
             Type t when t == typeof(string) => NpgsqlDbType.Text,
             Type t when t == typeof(byte[]) => NpgsqlDbType.Bytea,
             Type t when t == typeof(DateTime) || t == typeof(DateTime?) => NpgsqlDbType.Timestamp,
+            Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => NpgsqlDbType.TimestampTz,
             Type t when t == typeof(Guid) => NpgsqlDbType.Uuid,
             _ => null
         };
@@ -129,6 +131,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
             Type t when t == typeof(string) => ("TEXT", true),
             Type t when t == typeof(byte[]) => ("BYTEA", true),
             Type t when t == typeof(DateTime) => ("TIMESTAMP", false),
+            Type t when t == typeof(DateTimeOffset) => ("TIMESTAMPTZ", false),
             Type t when t == typeof(Guid) => ("UUID", false),
             _ => (null, false)
         };

@@ -35,6 +35,8 @@ internal static class PostgresConstants
         typeof(decimal),
         typeof(decimal?),
         typeof(string),
+        typeof(DateTime),
+        typeof(DateTime?),
         typeof(DateTimeOffset),
         typeof(DateTimeOffset?),
         typeof(Guid),

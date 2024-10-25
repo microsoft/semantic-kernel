@@ -40,6 +40,10 @@ public record PostgresHotel<T>()
     [VectorStoreRecordData]
     public string Description { get; set; }
 
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
     /// <summary>A vector field.</summary>
     [VectorStoreRecordVector(4, IndexKind.Hnsw, DistanceFunction.ManhattanDistance)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }

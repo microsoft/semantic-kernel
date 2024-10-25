@@ -47,6 +47,10 @@ public record PostgresHotel<T>()
     [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance, IndexKind: IndexKind.Hnsw)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
     public PostgresHotel(T key) : this()
     {
         this.HotelId = key;

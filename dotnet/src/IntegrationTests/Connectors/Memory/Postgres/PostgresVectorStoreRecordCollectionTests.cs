@@ -55,40 +55,49 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
+        var writtenHotel1 = new PostgresHotel<int> { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
+        var writtenHotel2 = new PostgresHotel<int> { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, ListInts = [1, 2] };
+
         try
         {
             // Act
-            await sut.UpsertAsync(new PostgresHotel<int> { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] });
-            await sut.UpsertAsync(new PostgresHotel<int> { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, ListInts = [1, 2] });
 
-            var hotel1 = await sut.GetAsync(1);
-            var hotel2 = await sut.GetAsync(2);
+            await sut.UpsertAsync(writtenHotel1);
+
+            await sut.UpsertAsync(writtenHotel2);
+
+            var fetchedHotel1 = await sut.GetAsync(1);
+            var fetchedHotel2 = await sut.GetAsync(2);
 
             // Assert
-            Assert.NotNull(hotel1);
-            Assert.Equal(1, hotel1!.HotelId);
-            Assert.Equal("Hotel 1", hotel1!.HotelName);
-            Assert.Equal(1, hotel1!.HotelCode);
-            Assert.True(hotel1!.ParkingIncluded);
-            Assert.Equal(4.5f, hotel1!.HotelRating);
-            Assert.NotNull(hotel1!.Tags);
-            Assert.Equal(2, hotel1!.Tags!.Count);
-            Assert.Equal("tag1", hotel1!.Tags![0]);
-            Assert.Equal("tag2", hotel1!.Tags![1]);
-            Assert.Null(hotel1!.ListInts);
+            Assert.NotNull(fetchedHotel1);
+            Assert.Equal(1, fetchedHotel1!.HotelId);
+            Assert.Equal("Hotel 1", fetchedHotel1!.HotelName);
+            Assert.Equal(1, fetchedHotel1!.HotelCode);
+            Assert.True(fetchedHotel1!.ParkingIncluded);
+            Assert.Equal(4.5f, fetchedHotel1!.HotelRating);
+            Assert.NotNull(fetchedHotel1!.Tags);
+            Assert.Equal(2, fetchedHotel1!.Tags!.Count);
+            Assert.Equal("tag1", fetchedHotel1!.Tags![0]);
+            Assert.Equal("tag2", fetchedHotel1!.Tags![1]);
+            Assert.Null(fetchedHotel1!.ListInts);
+            Assert.Equal(TruncateMilliseconds(fetchedHotel1.CreatedAt), TruncateMilliseconds(writtenHotel1.CreatedAt));
+            Assert.Equal(TruncateMilliseconds(fetchedHotel1.UpdatedAt), TruncateMilliseconds(writtenHotel1.UpdatedAt));
 
-            Assert.NotNull(hotel2);
-            Assert.Equal(2, hotel2!.HotelId);
-            Assert.Equal("Hotel 2", hotel2!.HotelName);
-            Assert.Equal(2, hotel2!.HotelCode);
-            Assert.False(hotel2!.ParkingIncluded);
-            Assert.Equal(2.5f, hotel2!.HotelRating);
-            Assert.NotNull(hotel2!.Tags);
-            Assert.Empty(hotel2!.Tags);
-            Assert.NotNull(hotel2!.ListInts);
-            Assert.Equal(2, hotel2!.ListInts!.Count);
-            Assert.Equal(1, hotel2!.ListInts![0]);
-            Assert.Equal(2, hotel2!.ListInts![1]);
+            Assert.NotNull(fetchedHotel2);
+            Assert.Equal(2, fetchedHotel2!.HotelId);
+            Assert.Equal("Hotel 2", fetchedHotel2!.HotelName);
+            Assert.Equal(2, fetchedHotel2!.HotelCode);
+            Assert.False(fetchedHotel2!.ParkingIncluded);
+            Assert.Equal(2.5f, fetchedHotel2!.HotelRating);
+            Assert.NotNull(fetchedHotel2!.Tags);
+            Assert.Empty(fetchedHotel2!.Tags);
+            Assert.NotNull(fetchedHotel2!.ListInts);
+            Assert.Equal(2, fetchedHotel2!.ListInts!.Count);
+            Assert.Equal(1, fetchedHotel2!.ListInts![0]);
+            Assert.Equal(2, fetchedHotel2!.ListInts![1]);
+            Assert.Equal(TruncateMilliseconds(fetchedHotel2.CreatedAt), TruncateMilliseconds(writtenHotel2.CreatedAt));
+            Assert.Equal(TruncateMilliseconds(fetchedHotel2.UpdatedAt), TruncateMilliseconds(writtenHotel2.UpdatedAt));
         }
         finally
         {
@@ -420,6 +429,15 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         record.HotelRating = 4.5f;
         record.Tags = new List<string> { "tag1", "tag2" };
         return record;
+    }
+    private static DateTime TruncateMilliseconds(DateTime dateTime)
+    {
+        return new DateTime(dateTime.Ticks - (dateTime.Ticks % TimeSpan.TicksPerSecond), dateTime.Kind);
+    }
+
+    private static DateTimeOffset TruncateMilliseconds(DateTimeOffset dateTimeOffset)
+    {
+        return new DateTimeOffset(dateTimeOffset.Ticks - (dateTimeOffset.Ticks % TimeSpan.TicksPerSecond), dateTimeOffset.Offset);
     }
 
     #endregion
