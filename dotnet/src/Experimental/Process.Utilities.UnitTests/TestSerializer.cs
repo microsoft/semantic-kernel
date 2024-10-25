@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
 
-namespace SemanticKernel.Process.UnitTests.Runtime;
+namespace SemanticKernel.Process.Utilities.UnitTests;
 
 internal static class TestSerializer
 {
