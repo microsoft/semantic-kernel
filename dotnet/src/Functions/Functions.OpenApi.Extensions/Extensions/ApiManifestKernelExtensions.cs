@@ -73,10 +73,9 @@ public static class ApiManifestKernelExtensions
 
         var loggerFactory = kernel.LoggerFactory;
         var logger = loggerFactory.CreateLogger(typeof(ApiManifestKernelExtensions)) ?? NullLogger.Instance;
-        string apiManifestFileJsonContents = await DocumentLoader.LoadDocumentFromFilePathAsync(filePath,
-            logger,
-            cancellationToken).ConfigureAwait(false);
-        JsonDocument jsonDocument = JsonDocument.Parse(apiManifestFileJsonContents);
+        using var apiManifestFileJsonContents = DocumentLoader.LoadDocumentFromFilePathAsStream(filePath,
+            logger);
+        JsonDocument jsonDocument = await JsonDocument.ParseAsync(apiManifestFileJsonContents, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         ApiManifestDocument document = ApiManifestDocument.Load(jsonDocument.RootElement);
 
@@ -93,19 +92,27 @@ public static class ApiManifestKernelExtensions
                 continue;
             }
 
-            var openApiDocumentString = await DocumentLoader.LoadDocumentFromUriAsync(new Uri(apiDescriptionUrl),
-                logger,
-                httpClient,
-                authCallback: null,
-                pluginParameters?.UserAgent,
-                cancellationToken).ConfigureAwait(false);
+            var (parsedDescriptionUrl, isOnlineDescription) = Uri.TryCreate(apiDescriptionUrl, UriKind.Absolute, out var result) ?
+                (result, true) :
+                (new Uri(Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, apiDescriptionUrl)), false);
 
-            OpenApiDiagnostic diagnostic = new();
-            var openApiDocument = new OpenApiStringReader(new()
+            using var openApiDocumentStream = isOnlineDescription ?
+                await DocumentLoader.LoadDocumentFromUriAsStreamAsync(new Uri(apiDescriptionUrl),
+                    logger,
+                    httpClient,
+                    authCallback: null,
+                    pluginParameters?.UserAgent,
+                    cancellationToken).ConfigureAwait(false) :
+                DocumentLoader.LoadDocumentFromFilePathAsStream(parsedDescriptionUrl.LocalPath,
+                    logger);
+
+            var documentReadResult = await new OpenApiStreamReader(new()
             {
                 BaseUrl = new(apiDescriptionUrl)
             }
-            ).Read(openApiDocumentString, out diagnostic);
+            ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
+            var openApiDocument = documentReadResult.OpenApiDocument;
+            var openApiDiagnostic = documentReadResult.OpenApiDiagnostic;
 
             var requestUrls = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var pathMethodPairs = apiDependencyDetails.Requests.Select(request => (request.UriTemplate, request.Method?.ToUpperInvariant()));
@@ -144,30 +151,28 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();
-            if (server?.Url is not null)
-            {
-                foreach (var path in filteredOpenApiDocument.Paths)
-                {
-                    var operations = OpenApiDocumentParser.CreateRestApiOperations(server, path.Key, path.Value, null, logger);
-                    foreach (RestApiOperation operation in operations)
-                    {
-                        try
-                        {
-                            logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
-                        }
-                        catch (Exception ex) when (!ex.IsCriticalException())
-                        {
-                            //Logging the exception and keep registering other Rest functions
-                            logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
-                                pluginName, operation.Id, ex.Message);
-                        }
-                    }
-                }
-            }
-            else
+            if (server?.Url is null)
             {
                 logger.LogWarning("Server URI not found. Plugin: {0}", pluginName);
+                continue;
+            }
+            foreach (var path in filteredOpenApiDocument.Paths)
+            {
+                var operations = OpenApiDocumentParser.CreateRestApiOperations(server, path.Key, path.Value, null, logger);
+                foreach (RestApiOperation operation in operations)
+                {
+                    try
+                    {
+                        logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
+                        functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
+                    }
+                    catch (Exception ex) when (!ex.IsCriticalException())
+                    {
+                        //Logging the exception and keep registering other Rest functions
+                        logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                            pluginName, operation.Id, ex.Message);
+                    }
+                }
             }
         }
 
