@@ -172,7 +172,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
         return [
             self._create_chat_message_content(
                 response_object,
-                self._get_meta_data_from_response(response_object),
+                self._get_metadata_from_response(response_object),
             )
         ]
 
@@ -211,7 +211,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             yield [
                 self._create_streaming_chat_message_content(
                     part,
-                    self._get_meta_data_from_response(part),
+                    self._get_metadata_from_response(part),
                 )
             ]
 
@@ -274,7 +274,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
             metadata=metadata,
         )
 
-    def _get_meta_data_from_response(self, response: Mapping[str, Any]) -> dict[str, Any]:
+    def _get_metadata_from_response(self, response: Mapping[str, Any]) -> dict[str, Any]:
         """Get metadata from the response."""
         metadata = {
             "model": response.get("model"),
