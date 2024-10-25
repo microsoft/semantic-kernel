@@ -10,10 +10,13 @@ from semantic_kernel.data.vector_store import VectorStore
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from tests.integration.memory.vector_stores.data_records import (
     PANDAS_RECORD_DEFINITION,
+    PANDAS_RECORD_DEFINITION_FLAT,
     RAW_RECORD_ARRAY,
     RAW_RECORD_LIST,
     TestDataModelArray,
+    TestDataModelArrayFlat,
     TestDataModelList,
+    TestDataModelListFlat,
 )
 from tests.integration.memory.vector_stores.vector_store_test_base import VectorStoreTestBase
 
@@ -223,6 +226,35 @@ class TestVectorStore(VectorStoreTestBase):
                 PANDAS_RECORD_DEFINITION,
                 RAW_RECORD_LIST,
                 id="weaviate_local_pandas_data_model",
+            ),
+            # endregion
+            # region Azure Cosmos DB NoSQL
+            pytest.param(
+                "cosmos_db_nosql",
+                "cosmos_db_nosql_array_data_model",
+                {},
+                TestDataModelArrayFlat,
+                None,
+                RAW_RECORD_ARRAY,
+                id="cosmos_db_nosql_array_data_model",
+            ),
+            pytest.param(
+                "cosmos_db_nosql",
+                "cosmos_db_nosql_list_data_model",
+                {},
+                TestDataModelListFlat,
+                None,
+                RAW_RECORD_LIST,
+                id="cosmos_db_nosql_list_data_model",
+            ),
+            pytest.param(
+                "cosmos_db_nosql",
+                "cosmos_db_nosql_pandas_data_model",
+                {},
+                pd.DataFrame,
+                PANDAS_RECORD_DEFINITION_FLAT,
+                RAW_RECORD_LIST,
+                id="cosmos_db_nosql_pandas_data_model",
             ),
             # endregion
         ],

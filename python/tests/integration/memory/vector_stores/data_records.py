@@ -48,6 +48,26 @@ PANDAS_RECORD_DEFINITION = VectorStoreRecordDefinition(
     from_dict=lambda x, **_: pd.DataFrame(x),
 )
 
+# A Pandas record definition with flat index kind
+PANDAS_RECORD_DEFINITION_FLAT = VectorStoreRecordDefinition(
+    fields={
+        "vector": VectorStoreRecordVectorField(
+            name="vector",
+            index_kind="flat",
+            dimensions=5,
+            distance_function="cosine",
+            property_type="float",
+        ),
+        "id": VectorStoreRecordKeyField(name="id"),
+        "content": VectorStoreRecordDataField(
+            name="content", has_embedding=True, embedding_property_name="vector", property_type="str"
+        ),
+    },
+    container_mode=True,
+    to_dict=lambda x: x.to_dict(orient="records"),
+    from_dict=lambda x, **_: pd.DataFrame(x),
+)
+
 
 @vectorstoremodel
 @dataclass
@@ -74,6 +94,29 @@ class TestDataModelArray:
 
 @vectorstoremodel
 @dataclass
+class TestDataModelArrayFlat:
+    """A data model where the vector is a numpy array and the index kind is IndexKind.Flat."""
+
+    vector: Annotated[
+        np.ndarray | None,
+        VectorStoreRecordVectorField(
+            index_kind="flat",
+            dimensions=5,
+            distance_function="cosine",
+            property_type="float",
+            serialize_function=np.ndarray.tolist,
+            deserialize_function=np.array,
+        ),
+    ] = None
+    other: str | None = None
+    id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+    content: Annotated[
+        str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+    ] = "content1"
+
+
+@vectorstoremodel
+@dataclass
 class TestDataModelList:
     """A data model where the vector is a list."""
 
@@ -81,6 +124,27 @@ class TestDataModelList:
         list[float] | None,
         VectorStoreRecordVectorField(
             index_kind="hnsw",
+            dimensions=5,
+            distance_function="cosine",
+            property_type="float",
+        ),
+    ] = None
+    other: str | None = None
+    id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+    content: Annotated[
+        str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+    ] = "content1"
+
+
+@vectorstoremodel
+@dataclass
+class TestDataModelListFlat:
+    """A data model where the vector is a list and the index kind is IndexKind.Flat."""
+
+    vector: Annotated[
+        list[float] | None,
+        VectorStoreRecordVectorField(
+            index_kind="flat",
             dimensions=5,
             distance_function="cosine",
             property_type="float",
