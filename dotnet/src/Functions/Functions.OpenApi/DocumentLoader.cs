@@ -33,7 +33,8 @@ internal static class DocumentLoader
         string? userAgent,
         CancellationToken cancellationToken)
     {
-        using var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
+        //disposing the response disposes the stream
+        var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
     }
 
