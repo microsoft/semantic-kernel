@@ -60,6 +60,20 @@
         "x-ms-kiota-hash": "C8360ADB984F44449D607A0517A4AE13A7BF0BF2F53FA7AA147257F49D6BBF8F",
         "x-ms-kiota-version": "1.20.0-preview.202410170001"
       }
+    },
+    "Astronomy": {
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/zengin/openapi-directory/zengin/nasa/APIs/nasa.gov/apod/1.0.0/openapi.yaml",
+      "apiDeploymentBaseUrl": "https://api.nasa.gov/planetary/",
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "apod"
+        }
+      ],
+      "extensions": {
+        "x-ms-kiota-hash": "F7C689BA3B0415A681458A5B04112EA0E57E45428DA08AD23DE7C8E00610086B",
+        "x-ms-kiota-version": "1.20.0-preview.202410170001"
+      }
     }
   }
 }

@@ -54,6 +54,19 @@
       ],
       "excludePatterns": [],
       "outputPath": "./dotnet/samples/Concepts/Resources/Plugins/MicrosoftManifestPlugins/MessagesPlugin"
+    },
+    "Astronomy": {
+      "types": [
+        "APIPlugin"
+      ],
+      "authType": null,
+      "authReferenceId": null,
+      "descriptionLocation": "https://raw.githubusercontent.com/zengin/openapi-directory/zengin/nasa/APIs/nasa.gov/apod/1.0.0/openapi.yaml",
+      "includePatterns": [
+        "/apod#GET"
+      ],
+      "excludePatterns": [],
+      "outputPath": "./dotnet/samples/Concepts/Resources/Plugins/MicrosoftManifestPlugins/AstronomyPlugin"
     }
   }
 }
