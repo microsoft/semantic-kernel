@@ -128,8 +128,8 @@ public static class ApiManifestKernelExtensions
             var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
             var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);
 
-            var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.ContainsKey(apiName) == true
-                ? pluginParameters.FunctionExecutionParameters[apiName]
+            var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.TryGetValue(apiName, out var parameters) == true
+                ? parameters
                 : null;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.

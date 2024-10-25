@@ -145,8 +145,8 @@ public static class MicrosoftManifestKernelExtensions
                 continue;
             }
 
-            var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.ContainsKey(apiDescriptionUrl) == true
-                ? pluginParameters.FunctionExecutionParameters[apiDescriptionUrl]
+            var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.TryGetValue(server.Url, out var parameters) == true
+                ? parameters
                 : null;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.

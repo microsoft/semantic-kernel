@@ -85,7 +85,7 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
         var apiManifestPluginParameters = new MicrosoftManifestPluginParameters(
             functionExecutionParameters: new()
             {
-                { "microsoft.graph", graphOpenApiFunctionExecutionParameters },
+                { "https://graph.microsoft.com/v1.0", graphOpenApiFunctionExecutionParameters },
                 { "nasa", nasaOpenApiFunctionExecutionParameters }
             });
         var manifestLookupDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Resources", "Plugins", "MicrosoftManifestPlugins");
