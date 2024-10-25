@@ -10,7 +10,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 [Collection("MongoDBVectorStoreCollection")]
 public class MongoDBVectorStoreTests(MongoDBVectorStoreFixture fixture)
 {
-    [Fact]
+    // If null, all tests will be enabled
+    private const string? SkipReason = "The tests are for manual verification.";
+
+    [Fact(Skip = SkipReason)]
     public async Task ItCanGetAListOfExistingCollectionNamesAsync()
     {
         // Arrange
