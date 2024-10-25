@@ -14,7 +14,7 @@ internal sealed class PostgresGenericDataModelMapper<TKey> : IVectorStoreRecordM
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresGenericDataModelMapper{TKey}"/> class.
     /// /// </summary>
-    /// <param name="propertyReader">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
+    /// <param name="propertyReader"><see cref="VectorStoreRecordPropertyReader"/> with helpers for reading vector store model properties and their attributes.</param>
     public PostgresGenericDataModelMapper(VectorStoreRecordPropertyReader propertyReader)
     {
         Verify.NotNull(propertyReader);
