@@ -163,9 +163,9 @@ To cover these scenarios, we propose a new option for handling payloads in SK.
 
 ## Considered Options
 
-- Option #1: Construct payload out of root properties
+- Option #4: Construct payload out of root properties
 
-## Option #2: Dynamic Payload Construction From Root Properties
+## Option #4: Dynamic Payload Construction From Root Properties
 
 There could be cases when the payload contains properties with the same name, and using namespaces is not possible for a various reasons. In order not to offload 
 the responsibility of constructing the payload to the caller, SK can do an extra step and construct the payload out of the root properties. Of cause the complexity of building
@@ -212,9 +212,9 @@ This option naturally fits between existing option #1. The `payload` and the `co
 | Option | Caller | SK | Limitations |
 |--------|-------|----|--------|
 | 1. The `payload` and the `content-type` Arguments | Constructs payload | Use it as is | No limitations |
-| 2. Dynamic Payload Construction From Root Properties | Provides arguments for root properties | Constructs payload | No limitations |
-| 3. Dynamic Payload Construction From Leaf Properties | Provides arguments for leaf properties | Constructs payload | Leaf properties must be unique, Cycles |
-| 4. Dynamic Payload Construction From Leaf Properties + Namespaces | Provides arguments for namespaced properties | Constructs payload | Cycles |
+| 4. Dynamic Payload Construction From Root Properties | Provides arguments for root properties | Constructs payload | No limitations |
+| 2. Dynamic Payload Construction From Leaf Properties | Provides arguments for leaf properties | Constructs payload | Leaf properties must be unique, Cycles |
+| 3. Dynamic Payload Construction From Leaf Properties + Namespaces | Provides arguments for namespaced properties | Constructs payload | Cycles |
 
 
 ## Decision Outcome
