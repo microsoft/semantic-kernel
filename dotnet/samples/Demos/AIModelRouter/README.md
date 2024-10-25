@@ -21,16 +21,16 @@ The sample can be configured by using the command line with .NET [Secret Manager
 ### Using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 
 ```powershell
-dotnet user-secrets set "OpenAI:ApiKey" "... your api key ... "
-dotnet user-secrets set "OpenAI:ChatModelId" ".. Openai chat completion model .. " (default: gpt-4o)
-dotnet user-secrets set "AzureOpenAI:Endpoint" "... your api key ... "
-dotnet user-secrets set "AzureOpenAI:ChatModelId" ".. Openai chat completion model .. " (default: gpt-4o)
-dotnet user-secrets set "AzureOpenAI:ApiKey" "... your api key ..." (default: Authenticate with Azure CLI credential)
-dotnet user-secrets set "LMStudio:Endpoint" ".. LMStudio endpoint .. " (default: http://localhost:1234)
-dotnet user-secrets set "Ollama:ModelId" ".. Ollama model id .. "
-dotnet user-secrets set "Ollama:Endpoint" ".. Ollama endpoint .. " (default: http://localhost:11434)
-dotnet user-secrets set "Onnx:ModelId" ".. Onnx model id"
-dotnet user-secrets set "Onnx:ModelPath" ".. your Onnx model folder path .."
+dotnet user-secrets set "OpenAI:ApiKey" ".. api key .."
+dotnet user-secrets set "OpenAI:ChatModelId" ".. chat completion model .." (default: gpt-4o)
+dotnet user-secrets set "AzureOpenAI:Endpoint" ".. endpoint .."
+dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" ".. chat deployment name .." (default: gpt-4o)
+dotnet user-secrets set "AzureOpenAI:ApiKey" ".. api key .." (default: Authenticate with Azure CLI credential)
+dotnet user-secrets set "LMStudio:Endpoint" ".. endpoint .." (default: http://localhost:1234)
+dotnet user-secrets set "Ollama:ModelId" ".. model id .."
+dotnet user-secrets set "Ollama:Endpoint" ".. endpoint .." (default: http://localhost:11434)
+dotnet user-secrets set "Onnx:ModelId" ".. model id .."
+dotnet user-secrets set "Onnx:ModelPath" ".. model folder path .."
 ```
 
 ## Running the sample
