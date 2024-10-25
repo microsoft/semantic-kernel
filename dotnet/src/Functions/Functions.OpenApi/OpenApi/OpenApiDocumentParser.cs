@@ -183,6 +183,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     {
         var operations = new List<RestApiOperation>();
         var operationServer = CreateRestApiOperationServer(server);
+        var operationsToExcludeLookup = operationsToExclude is not null ? new HashSet<string>(operationsToExclude, StringComparer.OrdinalIgnoreCase) : null;
 
         foreach (var operationPair in pathItem.Operations)
         {
@@ -190,7 +191,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
             var operationItem = operationPair.Value;
 
-            if (operationsToExclude is not null && operationsToExclude.Contains(operationItem.OperationId, StringComparer.OrdinalIgnoreCase))
+            if (operationsToExcludeLookup is not null && operationsToExcludeLookup.Contains(operationItem.OperationId))
             {
                 continue;
             }
@@ -203,7 +204,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
+                CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2)
             )
             {
                 Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
