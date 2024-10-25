@@ -20,13 +20,16 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
     public PostgresSqlCommandInfo BuildDoesTableExistCommand(string schema, string tableName)
     {
         return new PostgresSqlCommandInfo(
-            commandText: $@"
+            commandText: @"
                 SELECT table_name
                 FROM information_schema.tables
                 WHERE table_schema = $1
                     AND table_type = 'BASE TABLE'
-                    AND table_name = '{tableName}'",
-            parameters: [new NpgsqlParameter() { Value = schema }]
+                    AND table_name = $2",
+            parameters: [
+                new NpgsqlParameter() { Value = schema },
+                new NpgsqlParameter() { Value = tableName }
+            ]
         );
     }
 
