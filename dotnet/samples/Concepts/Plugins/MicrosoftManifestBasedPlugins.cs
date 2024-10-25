@@ -64,7 +64,6 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
 
         BearerAuthenticationProviderWithCancellationToken authenticationProvider = new(() => Task.FromResult(token));
 #pragma warning disable SKEXP0040
-#pragma warning disable SKEXP0043
 
         // Microsoft Graph API execution parameters
         var graphOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
@@ -104,7 +103,6 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
 #pragma warning restore CA1308 // Normalize strings to uppercase
                 Console.WriteLine($">> {pluginName} is created.");
 #pragma warning restore SKEXP0040
-#pragma warning restore SKEXP0043
             }
             catch (Exception ex)
             {

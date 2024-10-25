@@ -70,7 +70,6 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
 
         BearerAuthenticationProviderWithCancellationToken authenticationProvider = new(() => Task.FromResult(token));
 #pragma warning disable SKEXP0040
-#pragma warning disable SKEXP0043
 
         // Microsoft Graph API execution parameters
         var graphOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
@@ -108,7 +107,6 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
                     .ConfigureAwait(false);
                 Console.WriteLine($">> {pluginName} is created.");
 #pragma warning restore SKEXP0040
-#pragma warning restore SKEXP0043
             }
             catch (Exception ex)
             {
