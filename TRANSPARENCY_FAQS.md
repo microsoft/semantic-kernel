@@ -22,8 +22,7 @@ The intended uses of Microsoft Semantic Kernel include:
 
 
 ## How was Microsoft Semantic Kernel evaluated? What metrics are used to measure performance?
-Microsoft Semantic Kernel was reviewed for reliability and performance metrics that include:
--	Accuracy: Evaluated based on the correctness of the outputs generated against known facts.
+Microsoft Semantic Kernel metrics include:
 -	Integration Speed: Assessed by the time taken to integrate AI models and initiate functional outputs based on telemetry.
 -	Performance Consistency: Measurements taken to verify the system's reliability based on telemetry.
 
