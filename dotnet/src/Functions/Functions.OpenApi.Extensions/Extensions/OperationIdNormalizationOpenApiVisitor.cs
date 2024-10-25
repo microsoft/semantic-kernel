@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 /// An OpenAPI visitor that normalizes the operation IDs by replacing dots with underscores.
 /// So that the operation IDs can be used as function names in semantic kernel.
 /// </summary>
-internal class OperationIdNormalizationOpenApiVisitor : OpenApiVisitorBase
+internal sealed class OperationIdNormalizationOpenApiVisitor : OpenApiVisitorBase
 {
     public override void Visit(OpenApiOperation operation)
     {
