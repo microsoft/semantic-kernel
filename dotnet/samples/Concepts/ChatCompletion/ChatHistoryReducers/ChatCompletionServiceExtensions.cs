@@ -343,7 +343,7 @@ public interface IChatHistoryReducer
 /// Instance of <see cref="IChatCompletionService"/> which will invoke a delegate
 /// to reduce the size of the <see cref="ChatHistory"/> before sending it to the model.
 /// </summary>
-internal sealed class ChatCompletionServiceWithReducer(IChatCompletionService service, IChatHistoryReducer reducer) : IChatCompletionService
+public sealed class ChatCompletionServiceWithReducer(IChatCompletionService service, IChatHistoryReducer reducer) : IChatCompletionService
 {
     public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
 
