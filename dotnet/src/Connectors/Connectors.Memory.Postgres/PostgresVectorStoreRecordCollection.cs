@@ -271,8 +271,10 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Create indexes for vector properties.
         foreach (var vectorProperty in this._propertyReader.VectorProperties)
         {
+            var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
+
             // Ensure the dimensionality of the vector is supported for indexing.
-            if (vectorProperty.IndexKind == IndexKind.Hnsw)
+            if (indexKind == IndexKind.Hnsw)
             {
                 if (vectorProperty.Dimensions > 2000)
                 {

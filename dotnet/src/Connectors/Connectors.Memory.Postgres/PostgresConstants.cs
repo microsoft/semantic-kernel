@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -66,4 +67,7 @@ internal static class PostgresConstants
     /// <summary>The name of the column that returns distance value in the database.</summary>
     /// <remarks>It is used in the similarity search query. Must not conflict with model property.</remarks>
     public const string DistanceColumnName = "sk_pg_distance";
+
+    /// <summary>The default index kind.</summary>
+    public const string DefaultIndexKind = IndexKind.Hnsw;
 }
