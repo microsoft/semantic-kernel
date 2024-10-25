@@ -8,11 +8,6 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 public sealed class PostgresVectorStoreOptions
 {
     /// <summary>
-    /// Gets or sets the default vector size to use when creating a new vector.
-    /// </summary>
-    public int DefaultVectorSize { get; init; } = 100;
-
-    /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
     public string Schema { get; init; } = "public";
