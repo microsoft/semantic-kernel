@@ -20,7 +20,7 @@ public class MicrosoftManifestBasedPlugins(ITestOutputHelper output) : BaseTest(
 
         #region Multiple API dependencies (multiple auth requirements) scenario within the same plugin
         // Graph API uses MSAL
-        // ["AstronomyPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
+        ["AstronomyPlugin", "me_ListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
         // Astronomy API uses API key authentication
         ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
         #endregion
