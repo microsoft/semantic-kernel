@@ -6,12 +6,6 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
-from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search_options import VectorSearchOptions
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -20,7 +14,7 @@ else:
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import SearchIndex
-from azure.search.documents.models import VectorizedQuery
+from azure.search.documents.models import VectorizableTextQuery, VectorizedQuery
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_ai_search.utils import (
@@ -28,18 +22,19 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
-from semantic_kernel.data.const import VectorSearchQueryTypes
 from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
 from semantic_kernel.data.vector_search import (
-    VectorizableTextSearch,
+    VectorizableTextSearchMixin,
     VectorSearchFilter,
     VectorSearchOptions,
 )
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
+from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
+from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -48,7 +43,13 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class AzureAISearchCollection(VectorizableTextSearch[str, TModel], Generic[TModel]):
+class AzureAISearchCollection(
+    VectorSearchBase[str, TModel],
+    VectorizableTextSearchMixin[TModel],
+    VectorizedSearchMixin[TModel],
+    VectorTextSearchMixin[TModel],
+    Generic[TModel],
+):
     """Azure AI Search collection implementation."""
 
     search_client: SearchClient
@@ -233,7 +234,9 @@ class AzureAISearchCollection(VectorizableTextSearch[str, TModel], Generic[TMode
         self,
         options: VectorSearchOptions,
         search_text: str | None = None,
+        vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,
+        **kwargs: Any,
     ) -> KernelSearchResults[Any]:
         search_args: dict[str, Any] = {
             "top": options.top,
@@ -242,7 +245,16 @@ class AzureAISearchCollection(VectorizableTextSearch[str, TModel], Generic[TMode
         }
         if options.filter.filters:
             search_args["filter"] = self._build_filter_string(options.filter)
-        search_args["search_text"] = search_text if search_text else "*"
+        if search_text is not None:
+            search_args["search_text"] = search_text
+        if vectorizable_text is not None:
+            search_args["vector_queries"] = [
+                VectorizableTextQuery(
+                    text=vectorizable_text,
+                    k_nearest_neighbors=options.top,
+                    fields=options.vector_field_name,
+                )
+            ]
         if vector is not None:
             search_args["vector_queries"] = [
                 VectorizedQuery(
@@ -251,6 +263,9 @@ class AzureAISearchCollection(VectorizableTextSearch[str, TModel], Generic[TMode
                     fields=options.vector_field_name,
                 )
             ]
+        if "vector_queries" not in search_args and "search_text" not in search_args:
+            # this assumes that a filter only query is asked for
+            search_args["search_text"] = "*"
         else:
             if options.include_vectors:
                 search_args["select"] = ["*"]

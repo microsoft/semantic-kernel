@@ -4,14 +4,19 @@
 from enum import Enum
 
 
-class VectorSearchQueryTypes(str, Enum):
+class VectorSearchType(str, Enum):
     """Types of vector search queries.
 
     Attributes:
-        VECTORIZED_SEARCH_QUERY: A type of query that searches a vector store using a vector.
-        VECTORIZABLE_TEXT_SEARCH_QUERY: A type of query that search a vector store using a
-            text string that will be vectorized downstream.
+        SEARCH_STR_RESULT: Search using a query, with result as strings.
+        SEARCH_TEXT_SEARCH_RESULT: Search using a query, with result as text search results.
+        SEARCH_VECTOR_RESULT: Search using a query, with result as vector search results.
+        VECTORIZED_SEARCH: Search with a vector, with result as vector search results.
+        VECTORIZABLE_TEXT_SEARCH: Search for a vectorizable text, with result as vector search results.
     """
 
-    VECTORIZED_SEARCH_QUERY = "vectorized_search_query"
-    VECTORIZABLE_TEXT_SEARCH_QUERY = "vectorizable_text_search_query"
+    SEARCH_STR_RESULT = "search_str_result"
+    SEARCH_TEXT_SEARCH_RESULT = "search_text_search_result"
+    SEARCH_VECTOR_RESULT = "search_vector_result"
+    VECTORIZED_SEARCH = "vectorized_search"
+    VECTORIZABLE_TEXT_SEARCH = "vectorizable_text_search"

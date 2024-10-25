@@ -17,13 +17,6 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.search_options_base import SearchOptions
-from semantic_kernel.data.vector_search import (
-    VectorSearchFilter,
-    VectorSearchOptions,
-from semantic_kernel.data.record_definition import (
 from semantic_kernel.data import (
     SearchOptions,
     VectorSearchFilter,
@@ -34,15 +27,13 @@ from semantic_kernel.data import (
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
-from semantic_kernel.data.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.text_search.vector_store_text_search import VectorStoreTextSearch
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions import (
     KernelArguments,
     KernelParameterMetadata,
 )
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 
 @vectorstoremodel
@@ -96,32 +87,38 @@ azure_ai_search_collection: AzureAISearchCollection[HotelSampleClassType] = Azur
     collection_name="hotels-sample-index", data_model_type=HotelSampleClass
 )
 
+text_search = VectorStoreTextSearch.from_text_search(azure_ai_search_collection)
 
-def update_options_search(options: SearchOptions, func_args: dict[str, Any]) -> SearchOptions:
+
+def update_options_search(
+    vectorizable_text: Any, query: Any, vector: Any, options: SearchOptions, func_args: dict[str, Any]
+) -> tuple[Any, Any, Any, SearchOptions]:
     for key, value in func_args.items():
         if key == "city":
             if options.filter:
                 options.filter.equal_to("address/city", value)
             else:
                 options.filter = VectorSearchFilter.equal_to("address/city", value)
-    return options
+    return vectorizable_text, query, vector, options
 
 
-def update_options_details(options: SearchOptions, func_args: dict[str, Any]) -> SearchOptions:
+def update_options_details(
+    vectorizable_text: Any, query: Any, vector: Any, options: SearchOptions, func_args: dict[str, Any]
+) -> tuple[Any, Any, Any, SearchOptions]:
     for key, value in func_args.items():
         if key == "hotel_id":
             if options.filter:
                 options.filter.equal_to("hotel_id", value)
             else:
                 options.filter = VectorSearchFilter.equal_to("hotel_id", value)
-    return options
+    return vectorizable_text, query, vector, options
 
 
 plugin = kernel.add_functions(
     plugin_name="azure_ai_search",
     functions=[
-        azure_ai_search_collection.create_kernel_function(
-            search_function="vectorizable_text_search",
+        text_search.create_kernel_function(
+            search_function="text_search",
             description="A hotel search engine, allows searching for hotels in specific cities, "
             "you do not have to specify that you are searching for hotels, for all, use `*`.",
             options=VectorSearchOptions(
@@ -160,8 +157,8 @@ plugin = kernel.add_functions(
             ],
             update_options_function=update_options_search,
         ),
-        azure_ai_search_collection.create_kernel_function(
-            search_function="vectorizable_text_search",
+        text_search.create_kernel_function(
+            search_function="search",
             function_name="get_details",
             description="Get details about a hotel, by ID, use the overview function to get the ID.",
             options=VectorSearchOptions(

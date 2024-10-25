@@ -9,10 +9,10 @@ from typing import Any, Generic, TypeVar
 from pydantic import BaseModel
 
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.search_base import SearchBase
 from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], SearchBase, Generic[TKey, TModel]):
+class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, TModel]):
     """Method for searching vectors."""
 
     # region: New abstract methods to be implemented by vector stores
@@ -33,10 +33,17 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], SearchBase, Ge
         self,
         options: SearchOptions | None = None,
         search_text: str | None = None,
+        vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[Any]:
-        """Inner search method."""
+        """Inner search method.
+
+        The value of the vector_search_type parameter determines the type of search
+        to be performed and what type of results is passed back, always wrapped
+        in a KernelSearchResults object.
+
+        """
         ...
 
     @abstractmethod
@@ -72,84 +79,23 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], SearchBase, Ge
             record = self.deserialize(self._get_record_from_result(result))
             score = self._get_score_from_result(result)
             if record:
-                yield VectorSearchResult(record=record, score=score)
-
-
-@experimental_class
-class VectorizableTextSearch(VectorSearchBase, Generic[TKey, TModel]):
-    """Method for searching vectors."""
-
-    async def vectorizable_text_search(
-        self,
-        search_text: str,
-        options: SearchOptions | None = None,
-        **kwargs: Any,
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        """Search the vector store for records that match the given text and filter.
-
-        The text string will be vectorized downstream and used for the vector search.
-
-        Args:
-            search_text: The text to search for.
-            options: options for the search
-            **kwargs: if options are not set, this is used to create them.
-
-        Raises:
-            VectorSearchOptionsException: raised when the options given are not correct.
-            SearchResultEmptyError: raised when there are no results returned.
-
-        """
-        if not options:
-            options = self._create_options(**kwargs)
-        return await self._inner_search(search_text=search_text, options=options)
+                # single records are always returned as single records by the deserializer
+                yield VectorSearchResult(record=record, score=score)  # type: ignore
 
     @property
-    def _search_function_map(
-        self,
-    ) -> dict[str, Callable[..., Awaitable[KernelSearchResults[VectorSearchResult[TModel]]]]]:
+    def _search_function_map(self) -> dict[str, Callable[..., Awaitable[KernelSearchResults[Any]]]]:
         """Get the search function map.
 
         Can be overwritten by subclasses.
         """
-        function_map = super()._search_function_map
-        function_map["vectorizable_text_search"] = self.vectorizable_text_search
-        return function_map
+        from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
+        from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 
-
-@experimental_class
-class VectorizedSearch(VectorSearchBase, Generic[TKey, TModel]):
-    """Method for searching vectors."""
-
-    async def vectorized_search(
-        self,
-        vector: list[float | int],
-        options: SearchOptions | None = None,
-        **kwargs: Any,
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        """Search the vector store for records that match the given embedding and filter.
-
-        Args:
-            vector: The vector to search for.
-            options: options, should include query_text
-            **kwargs: if options are not set, this is used to create them.
-
-        Raises:
-            VectorSearchOptionsException: raised when the options given are not correct.
-            SearchResultEmptyError: raised when there are no results returned.
-
-        """
-        if not options:
-            options = self._create_options(**kwargs)
-        return await self._inner_search(vector=vector, options=options)
-
-    @property
-    def _search_function_map(
-        self,
-    ) -> dict[str, Callable[..., Awaitable[KernelSearchResults[VectorSearchResult[TModel]]]]]:
-        """Get the search function map.
-
-        Can be overwritten by subclasses.
-        """
-        function_map = super()._search_function_map
-        function_map["vectorized_search"] = self.vectorized_search
-        return function_map
+        search_functions = {}
+        if isinstance(self, VectorizableTextSearchMixin):
+            search_functions["vectorizable_text_search"] = self.vectorizable_text_search
+        if isinstance(self, VectorizedSearchMixin):
+            search_functions["vectorized_search"] = self.vectorized_search
+        if isinstance(self, VectorTextSearchMixin):
+            search_functions["text_search"] = self.text_search
+        return search_functions

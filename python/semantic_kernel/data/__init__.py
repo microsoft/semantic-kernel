@@ -4,14 +4,6 @@ from semantic_kernel.data.const import (
     DEFAULT_DESCRIPTION,
     DistanceFunction,
     IndexKind,
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.filters.text_search_filter import TextSearchFilter
-from semantic_kernel.data.filters.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_store import VectorStore
-from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import (
-    VectorStoreRecordDefinition,
 )
 from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
@@ -30,12 +22,13 @@ from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
 from semantic_kernel.data.text_search.text_search_result import TextSearchResult
 from semantic_kernel.data.vector_search import (
-    VectorizableTextSearch,
-    VectorizedSearch,
+    VectorizableTextSearchMixin,
+    VectorizedSearchMixin,
+    VectorSearchBase,
     VectorSearchFilter,
     VectorSearchOptions,
-    VectorSearchQueryTypes,
     VectorSearchResult,
+    VectorSearchType,
 )
 from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
@@ -50,20 +43,19 @@ __all__ = [
     "SearchOptions",
     "TextSearch",
     "TextSearchFilter",
-    "TextSearchOptions",
-    "TextSearchResult",
-    "VectorSearchFilter",
-    "VectorSearchOptions",
-    "VectorSearchQueryTypes",
-    "VectorSearchResult",
     "TextSearchFilter",
     "TextSearchOptions",
+    "TextSearchOptions",
     "TextSearchResult",
-    "VectorSearch",
+    "TextSearchResult",
+    "VectorSearchBase",
+    "VectorSearchFilter",
     "VectorSearchFilter",
     "VectorSearchOptions",
-    "VectorSearchQueryTypes",
+    "VectorSearchOptions",
     "VectorSearchResult",
+    "VectorSearchResult",
+    "VectorSearchType",
     "VectorStore",
     "VectorStoreRecordCollection",
     "VectorStoreRecordDataField",
@@ -71,7 +63,7 @@ __all__ = [
     "VectorStoreRecordKeyField",
     "VectorStoreRecordUtils",
     "VectorStoreRecordVectorField",
-    "VectorizableTextSearch",
-    "VectorizedSearch",
+    "VectorizableTextSearchMixin",
+    "VectorizedSearchMixin",
     "vectorstoremodel",
 ]
