@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Postgres;
+using Npgsql;
 
 namespace Memory;
 
@@ -73,7 +74,10 @@ public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper outp
 
         // Initialize the Postgres docker container via the fixtures and construct the Postgres VectorStore.
         await PostgresFixture.ManualInitializeAsync();
-        var vectorStore = new PostgresVectorStore(ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(ConnectionString);
+        dataSourceBuilder.UseVector();
+        await using var dataSource = dataSourceBuilder.Build();
+        var vectorStore = new PostgresVectorStore(dataSource);
 
         // Create the common processor that works for any vector store.
         var processor = new VectorStore_VectorSearch_MultiStore_Common(vectorStore, textEmbeddingGenerationService, this.Output);

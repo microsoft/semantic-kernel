@@ -20,20 +20,6 @@ public class PostgresVectorStore : IVectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
-    /// <param name="connectionString">Postgres database connection string.</param>
-    /// <param name="options">Optional configuration options for this class</param>
-    public PostgresVectorStore(string connectionString, PostgresVectorStoreOptions? options = default)
-    {
-        NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionString);
-        dataSourceBuilder.UseVector();
-        this._dataSource = dataSourceBuilder.Build();
-        this._options = options ?? new PostgresVectorStoreOptions();
-        this._postgresClient = new PostgresVectorStoreDbClient(this._dataSource, this._options.Schema);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
-    /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
     /// <param name="options">Optional configuration options for this class</param>
     public PostgresVectorStore(NpgsqlDataSource dataSource, PostgresVectorStoreOptions? options = default)
