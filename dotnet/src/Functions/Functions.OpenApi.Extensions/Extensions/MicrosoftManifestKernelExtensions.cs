@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,6 +94,7 @@ public static class MicrosoftManifestKernelExtensions
         }
 
         var functions = new List<KernelFunction>();
+        var documentWalker = new OpenApiWalker(new OperationIdNormalizationOpenApiVisitor());
         foreach (var runtime in openAPIRuntimes)
         {
             var manifestFunctions = document?.Functions?.Where(f => runtime.RunForFunctions.Contains(f.Name)).ToList();
@@ -133,6 +133,8 @@ public static class MicrosoftManifestKernelExtensions
             ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
             var openApiDocument = documentReadResult.OpenApiDocument;
             var openApiDiagnostic = documentReadResult.OpenApiDiagnostic;
+
+            documentWalker.Walk(openApiDocument);
 
             var predicate = OpenApiFilterService.CreatePredicate(string.Join(",", manifestFunctions.Select(static f => f.Name)), null, null, openApiDocument);
             var filteredOpenApiDocument = OpenApiFilterService.CreateFilteredDocument(openApiDocument, predicate);

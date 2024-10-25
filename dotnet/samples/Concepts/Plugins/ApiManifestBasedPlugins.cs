@@ -16,14 +16,14 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
     public static readonly IEnumerable<object[]> s_parameters =
     [
         // function names are sanitized operationIds from the OpenAPI document
-        ["MessagesPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "MessagesPlugin"],
-        ["DriveItemPlugin", "driverootGetChildrenContent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin"],
-        ["ContactsPlugin", "meListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
-        ["CalendarPlugin", "mecalendarListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
+        ["MessagesPlugin", "me_ListMessages", new KernelArguments { { "_top", "1" } }, "MessagesPlugin"],
+        ["DriveItemPlugin", "drive_root_GetChildrenContent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin"],
+        ["ContactsPlugin", "me_ListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
+        ["CalendarPlugin", "me_calendar_ListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
 
         #region Multiple API dependencies (multiple auth requirements) scenario within the same plugin
         // Graph API uses MSAL
-        ["AstronomyPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
+        ["AstronomyPlugin", "me_ListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
         // Astronomy API uses API key authentication
         ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
         #endregion

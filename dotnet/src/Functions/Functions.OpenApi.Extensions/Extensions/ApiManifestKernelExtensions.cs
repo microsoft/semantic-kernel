@@ -80,6 +80,7 @@ public static class ApiManifestKernelExtensions
         ApiManifestDocument document = ApiManifestDocument.Load(jsonDocument.RootElement);
 
         var functions = new List<KernelFunction>();
+        var documentWalker = new OpenApiWalker(new OperationIdNormalizationOpenApiVisitor());
         foreach (var apiDependency in document.ApiDependencies)
         {
             var apiName = apiDependency.Key;
@@ -113,6 +114,8 @@ public static class ApiManifestKernelExtensions
             ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
             var openApiDocument = documentReadResult.OpenApiDocument;
             var openApiDiagnostic = documentReadResult.OpenApiDiagnostic;
+
+            documentWalker.Walk(openApiDocument);
 
             var requestUrls = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var pathMethodPairs = apiDependencyDetails.Requests.Select(request => (request.UriTemplate, request.Method?.ToUpperInvariant()));
