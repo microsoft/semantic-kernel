@@ -130,14 +130,15 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
             _ => throw new NotSupportedException($"Index kind '{vectorProperty.IndexKind}' is not supported for table creation. If you need to create an index of this type, please do so manually. Only HNSW indexes are supported through the vector store.")
         };
 
-        var indexOps = vectorProperty.DistanceFunction switch
+        var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
+
+        var indexOps = distanceFunction switch
         {
             DistanceFunction.CosineDistance => "vector_cosine_ops",
             DistanceFunction.CosineSimilarity => "vector_cosine_ops",
             DistanceFunction.DotProductSimilarity => "vector_ip_ops",
             DistanceFunction.EuclideanDistance => "vector_l2_ops",
             DistanceFunction.ManhattanDistance => "vector_l1_ops",
-            null => throw new ArgumentException("Distance function must be specified for HNSW index."),
             _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
         };
 
@@ -352,7 +353,8 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
                 .Select(column => $"\"{column}\"")
         );
 
-        var distanceOp = vectorProperty.DistanceFunction switch
+        var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
+        var distanceOp = distanceFunction switch
         {
             DistanceFunction.CosineDistance => "<=>",
             DistanceFunction.CosineSimilarity => "<=>",

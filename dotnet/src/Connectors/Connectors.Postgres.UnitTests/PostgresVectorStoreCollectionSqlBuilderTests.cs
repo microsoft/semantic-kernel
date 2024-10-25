@@ -75,6 +75,54 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         this._output.WriteLine(cmdInfo.CommandText);
     }
 
+    [Theory]
+    [InlineData(IndexKind.Hnsw, null)]
+    [InlineData(IndexKind.IvfFlat, null)]
+    [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance)]
+    [InlineData(IndexKind.Hnsw, DistanceFunction.CosineDistance)]
+    public void TestBuildCreateIndexCommand(string indexKind, string? distanceFunction)
+    {
+        var builder = new PostgresVectorStoreCollectionSqlBuilder();
+
+        var vectorProperty = new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+        {
+            Dimensions = 10,
+            IndexKind = indexKind,
+            DistanceFunction = distanceFunction,
+        };
+
+        if (indexKind != IndexKind.Hnsw)
+        {
+            Assert.Throws<NotSupportedException>(() => builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorProperty));
+            return;
+        }
+
+        var cmdInfo = builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorProperty);
+
+        // Check for expected properties; integration tests will validate the actual SQL.
+        Assert.Contains("CREATE INDEX ", cmdInfo.CommandText);
+        Assert.Contains("ON public.\"testcollection\" USING hnsw (\"embedding1\" ", cmdInfo.CommandText);
+        if (distanceFunction == null)
+        {
+            // Check for distance function defaults to cosine distance
+            Assert.Contains("vector_cosine_ops)", cmdInfo.CommandText);
+        }
+        else if (distanceFunction == DistanceFunction.CosineDistance)
+        {
+            Assert.Contains("vector_cosine_ops)", cmdInfo.CommandText);
+        }
+        else if (distanceFunction == DistanceFunction.EuclideanDistance)
+        {
+            Assert.Contains("vector_l2_ops)", cmdInfo.CommandText);
+        }
+        else
+        {
+            throw new NotImplementedException($"Test case for Distance function {distanceFunction} is not implemented.");
+        }
+        // Output
+        this._output.WriteLine(cmdInfo.CommandText);
+    }
+
     [Fact]
     public void TestBuildDropTableCommand()
     {

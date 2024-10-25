@@ -70,4 +70,7 @@ internal static class PostgresConstants
 
     /// <summary>The default index kind.</summary>
     public const string DefaultIndexKind = IndexKind.Hnsw;
+
+    /// <summary>The default distance function.</summary>
+    public const string DefaultDistanceFunction = DistanceFunction.CosineDistance;
 }
