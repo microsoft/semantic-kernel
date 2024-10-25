@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Moq;
+using Npgsql;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Postgres.UnitTests;
@@ -58,8 +59,9 @@ public class PostgresVectorStoreTests
         var factoryMock = new Mock<IPostgresVectorStoreRecordCollectionFactory>(MockBehavior.Strict);
         var collectionMock = new Mock<IVectorStoreRecordCollection<int, SinglePropsModel<int>>>(MockBehavior.Strict);
         var clientMock = new Mock<IPostgresVectorStoreDbClient>(MockBehavior.Strict);
+        clientMock.Setup(x => x.DataSource).Returns<NpgsqlDataSource>(null);
         factoryMock
-            .Setup(x => x.CreateVectorStoreRecordCollection<int, SinglePropsModel<int>>(clientMock.Object, TestCollectionName, null))
+            .Setup(x => x.CreateVectorStoreRecordCollection<int, SinglePropsModel<int>>(It.IsAny<NpgsqlDataSource>(), TestCollectionName, null))
             .Returns(collectionMock.Object);
         var sut = new PostgresVectorStore(clientMock.Object, new() { VectorStoreCollectionFactory = factoryMock.Object });
 

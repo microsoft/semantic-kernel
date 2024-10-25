@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.VectorData;
+using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -49,11 +50,26 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
-    /// <param name="client">The Postgres client used to interact with the database.</param>
+    /// <param name="dataSource">The data source to use for connecting to the database.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <param name="logger">The logger to use for logging.</param>
-    public PostgresVectorStoreRecordCollection(IPostgresVectorStoreDbClient client, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
+    public PostgresVectorStoreRecordCollection(NpgsqlDataSource dataSource, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
+       ILogger<PostgresVectorStoreRecordCollection<TKey, TRecord>>? logger = null) : this(new PostgresVectorStoreDbClient(dataSource), collectionName, options, logger)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresVectorStoreRecordCollection{TKey, TRecord}"/> class.
+    /// </summary>
+    /// <param name="client">The client to use for interacting with the database.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="options">Optional configuration options for this class.</param>
+    /// <param name="logger">The logger to use for logging.</param>
+    /// <remarks>
+    /// This constructor is internal. It allows internal code to create an instance of this class with a custom client.
+    /// </remarks>
+    internal PostgresVectorStoreRecordCollection(IPostgresVectorStoreDbClient client, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
         ILogger<PostgresVectorStoreRecordCollection<TKey, TRecord>>? logger = null)
     {
         // Verify.

@@ -34,7 +34,7 @@ public class PostgresVectorStore : IVectorStore
     /// </summary>
     /// <param name="postgresDbClient">An instance of <see cref="IPostgresDbClient"/>.</param>
     /// <param name="options">Optional configuration options for this class</param>
-    public PostgresVectorStore(IPostgresVectorStoreDbClient postgresDbClient, PostgresVectorStoreOptions? options = default)
+    internal PostgresVectorStore(IPostgresVectorStoreDbClient postgresDbClient, PostgresVectorStoreOptions? options = default)
     {
         this._postgresClient = postgresDbClient;
         this._options = options ?? new PostgresVectorStoreOptions();
@@ -57,7 +57,7 @@ public class PostgresVectorStore : IVectorStore
 
         if (this._options.VectorStoreCollectionFactory is not null)
         {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._postgresClient, name, vectorStoreRecordDefinition);
+            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._postgresClient.DataSource, name, vectorStoreRecordDefinition);
         }
 
         var recordCollection = new PostgresVectorStoreRecordCollection<TKey, TRecord>(

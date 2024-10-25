@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.VectorData;
+using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -14,10 +15,10 @@ public interface IPostgresVectorStoreRecordCollectionFactory
     /// </summary>
     /// <typeparam name="TKey">The data type of the record key.</typeparam>
     /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
-    /// <param name="client">The Postgres client.</param>
+    /// <param name="dataSource">The Postgres data source.</param>
     /// <param name="name">The name of the collection to connect to.</param>
     /// <param name="vectorStoreRecordDefinition">An optional record definition that defines the schema of the record type. If not present, attributes on <typeparamref name="TRecord"/> will be used.</param>
     /// <returns>The new instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</returns>
-    IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(IPostgresVectorStoreDbClient client, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(NpgsqlDataSource dataSource, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
         where TKey : notnull;
 }

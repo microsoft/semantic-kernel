@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using Npgsql;
 using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
@@ -11,8 +12,13 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Internal interface for client managing postgres database operations.
 /// </summary>
-public interface IPostgresVectorStoreDbClient
+internal interface IPostgresVectorStoreDbClient
 {
+    /// <summary>
+    /// The <see cref="NpgsqlDataSource"/> used to connect to the database.
+    /// </summary>
+    public NpgsqlDataSource DataSource { get; }
+
     /// <summary>
     /// Check if a table exists.
     /// </summary>
