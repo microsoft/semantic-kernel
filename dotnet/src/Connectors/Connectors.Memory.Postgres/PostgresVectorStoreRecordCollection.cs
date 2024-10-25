@@ -85,7 +85,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Resolve mapper.
         // First, if someone has provided a custom mapper, use that.
         // If they didn't provide a custom mapper, and the record type is the generic data model, use the built in mapper for that.
-        // Otherwise, don't set the mapper, and we'll default to just using Azure AI Search's built in json serialization and deserialization.
+        // Otherwise, use our own default mapper implementation for all other data models.
         if (this._options.DictionaryCustomMapper is not null)
         {
             this._mapper = this._options.DictionaryCustomMapper;
