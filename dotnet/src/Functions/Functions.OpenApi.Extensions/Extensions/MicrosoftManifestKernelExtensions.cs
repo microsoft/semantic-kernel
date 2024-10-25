@@ -75,12 +75,11 @@ public static class MicrosoftManifestKernelExtensions
         var logger = loggerFactory.CreateLogger(typeof(MicrosoftManifestKernelExtensions)) ?? NullLogger.Instance;
         using var microsoftManifestFileJsonContents = DocumentLoader.LoadDocumentFromFilePathAsStream(filePath,
             logger);
-        var jsonDocument = await JsonDocument.ParseAsync(microsoftManifestFileJsonContents, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var results = PluginManifestDocument.Load(jsonDocument.RootElement, new ReaderOptions
+        var results = await PluginManifestDocument.LoadAsync(microsoftManifestFileJsonContents, new ReaderOptions
         {
             ValidationRules = new() // Disable validation rules
-        });
+        }).ConfigureAwait(false);
 
         if (!results.IsValid)
         {
