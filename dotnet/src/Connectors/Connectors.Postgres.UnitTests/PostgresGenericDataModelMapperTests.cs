@@ -10,7 +10,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.Postgres.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="PostgresGenericDataModelMapper"/> class.
+/// Unit tests for <see cref="PostgresGenericDataModelMapper{T}"/> class.
 /// </summary>
 public sealed class PostgresGenericDataModelMapperTests
 {
@@ -123,7 +123,7 @@ public sealed class PostgresGenericDataModelMapperTests
         var definition = GetRecordDefinition<ulong>();
         var propertyReader = GetPropertyReader<VectorStoreGenericDataModel<ulong>>(definition);
 
-        IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, Dictionary<string, object?>> mapper = new PostgresGenericDataModelMapper<string>(propertyReader);
+        var mapper = new PostgresGenericDataModelMapper<string>(propertyReader);
 
         // Act
         var result = mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
