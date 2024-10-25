@@ -266,7 +266,8 @@ public static partial class OpenApiKernelPluginFactory
         var additionalMetadata = new Dictionary<string, object?>
         {
             { OpenApiKernelPluginFactory.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() },
-            { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, string.IsNullOrEmpty(operation.Server?.Url) ? Array.Empty<string>() : [ operation.Server!.Url! ] }
+            { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, string.IsNullOrEmpty(operation.Server?.Url) ? Array.Empty<string>() : [ operation.Server!.Url! ] },
+            { OpenApiKernelPluginFactory.OperationExtensionsSecuritySchemesKey, operation.SecuritySchemes },
         };
         if (operation.Extensions is { Count: > 0 })
         {
@@ -293,6 +294,9 @@ public static partial class OpenApiKernelPluginFactory
 
     /// <summary>The metadata property bag key to use when storing the server of an operation.</summary>
     private const string OperationExtensionsServerUrlsKey = "server-urls";
+
+    /// <summary>The metadata property bag key to use when storing the security schemes of an operation.</summary>
+    private const string OperationExtensionsSecuritySchemesKey = "security-schemes";
 
     /// <summary>The metadata property bag key to use for the list of extension values provided in the swagger file at the operation level.</summary>
     private const string OperationExtensionsMetadataKey = "operation-extensions";

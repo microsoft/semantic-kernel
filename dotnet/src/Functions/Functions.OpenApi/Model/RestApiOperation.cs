@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -55,6 +56,11 @@ public sealed class RestApiOperation
     public RestApiOperationServer Server { get; }
 
     /// <summary>
+    /// The security schemes.
+    /// </summary>
+    public IReadOnlyDictionary<string, RestApiSecurityScheme> SecuritySchemes { get; }
+
+    /// <summary>
     /// The operation parameters.
     /// </summary>
     public IList<RestApiOperationParameter> Parameters { get; }
@@ -85,6 +91,7 @@ public sealed class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="payload">The operation payload.</param>
     /// <param name="responses">The operation responses.</param>
+    /// <param name="securitySchemes">The security schemes.</param>
     public RestApiOperation(
         string id,
         RestApiOperationServer server,
@@ -93,7 +100,8 @@ public sealed class RestApiOperation
         string description,
         IList<RestApiOperationParameter> parameters,
         RestApiOperationPayload? payload = null,
-        IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
+        IDictionary<string, RestApiOperationExpectedResponse>? responses = null,
+        IReadOnlyDictionary<string, RestApiSecurityScheme>? securitySchemes = null)
     {
         this.Id = id;
         this.Server = server;
@@ -103,6 +111,7 @@ public sealed class RestApiOperation
         this.Parameters = parameters;
         this.Payload = payload;
         this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
+        this.SecuritySchemes = securitySchemes ?? new ReadOnlyDictionary<string, RestApiSecurityScheme>(new Dictionary<string, RestApiSecurityScheme>());
     }
 
     /// <summary>

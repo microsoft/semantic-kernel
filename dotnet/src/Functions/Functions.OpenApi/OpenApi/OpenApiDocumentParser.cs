@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -159,10 +160,11 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         var result = new List<RestApiOperation>();
 
         var server = document.Servers.FirstOrDefault();
+        var securitySchemes = document.Components?.SecuritySchemes;
 
         foreach (var pathPair in document.Paths)
         {
-            var operations = CreateRestApiOperations(server, pathPair.Key, pathPair.Value, operationsToExclude, logger);
+            var operations = CreateRestApiOperations(server, securitySchemes, pathPair.Key, pathPair.Value, operationsToExclude, logger);
 
             result.AddRange(operations);
         }
@@ -174,12 +176,13 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// Creates REST API operation.
     /// </summary>
     /// <param name="server">Rest server.</param>
+    /// <param name="securitySchemes">Security schemes.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <param name="logger">Used to perform logging.</param>
     /// <returns>Rest operation.</returns>
-    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiServer? server, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
+    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiServer? server, IDictionary<string, OpenApiSecurityScheme>? securitySchemes, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
     {
         var operations = new List<RestApiOperation>();
         var operationServer = CreateRestApiOperationServer(server);
@@ -203,7 +206,8 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
+                CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
+                CreateRestApiOperationSecuritySchemes(securitySchemes)
             )
             {
                 Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
@@ -223,6 +227,25 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     {
         var variables = server?.Variables.ToDictionary(item => item.Key, item => new RestApiOperationServerVariable(item.Value.Default, item.Value.Description, item.Value.Enum));
         return new(server?.Url, variables);
+    }
+
+    /// <summary>
+    /// Build a dictionary of <see cref="RestApiSecurityScheme"/> objects from the given <see cref="OpenApiSecurityScheme"/> objects.
+    /// </summary>
+    /// <param name="securitySchemes">Represents the security schemes used by the REST API.</param>
+    private static ReadOnlyDictionary<string, RestApiSecurityScheme> CreateRestApiOperationSecuritySchemes(IDictionary<string, OpenApiSecurityScheme>? securitySchemes)
+    {
+        var result = new Dictionary<string, RestApiSecurityScheme>();
+
+        if (securitySchemes is not null)
+        {
+            foreach (var item in securitySchemes)
+            {
+                result.Add(item.Key, new RestApiSecurityScheme(item.Value));
+            }
+        }
+
+        return new ReadOnlyDictionary<string, RestApiSecurityScheme>(result);
     }
 
     /// <summary>
