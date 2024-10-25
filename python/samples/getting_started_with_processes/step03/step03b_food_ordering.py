@@ -51,8 +51,19 @@ async def use_single_order_fish_and_chips():
     await use_prepare_food_order_process_single_item(FoodItem.FISH_AND_CHIPS)
 
 
+async def main():
+    order_methods = [
+        (use_single_order_fried_fish, "use_single_order_fried_fish"),
+        (use_single_order_potato_fries, "use_single_order_potato_fries"),
+        (use_single_order_fish_sandwich, "use_single_order_fish_sandwich"),
+        (use_single_order_fish_and_chips, "use_single_order_fish_and_chips"),
+    ]
+
+    for method, name in order_methods:
+        print(f"=== Start '{name}' ===")
+        await method()
+        print(f"=== End '{name}' ===\n")
+
+
 if __name__ == "__main__":
-    asyncio.run(use_single_order_fried_fish())
-    asyncio.run(use_single_order_potato_fries())
-    asyncio.run(use_single_order_fish_sandwich())
-    asyncio.run(use_single_order_fish_and_chips())
+    asyncio.run(main())
