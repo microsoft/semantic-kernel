@@ -79,7 +79,7 @@ MyDataModel = MyDataModelArray
 # - redis_json: Redis JSON
 # - redis_hashset: Redis Hashset
 # - qdrant: Qdrant
-# - volatile: In-memory store
+# - in_memory: In-memory store
 # - weaviate: Weaviate
 #   Please either configure the weaviate settings via environment variables or provide them through the constructor.
 #   Note that embed mode is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315
@@ -109,7 +109,7 @@ stores: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     "qdrant": lambda: QdrantCollection[MyDataModel](
         data_model_type=MyDataModel, collection_name=collection_name, prefer_grpc=True, named_vectors=False
     ),
-    "volatile": lambda: InMemoryVectorCollection[MyDataModel](
+    "in_memory": lambda: InMemoryVectorCollection[MyDataModel](
         data_model_type=MyDataModel,
         collection_name=collection_name,
     ),
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     argparse.ArgumentParser()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--store", default="volatile", choices=stores.keys(), help="What store to use.")
+    parser.add_argument("--store", default="in_memory", choices=stores.keys(), help="What store to use.")
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     # Model
