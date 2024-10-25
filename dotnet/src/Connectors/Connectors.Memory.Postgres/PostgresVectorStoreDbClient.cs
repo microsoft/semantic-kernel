@@ -64,13 +64,13 @@ public class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string sch
     }
 
     /// <inheritdoc />
-    public async Task CreateTableAsync(string tableName, VectorStoreRecordDefinition recordDefinition, bool ifNotExists = true, CancellationToken cancellationToken = default)
+    public async Task CreateTableAsync(string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, bool ifNotExists = true, CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         await using (connection)
         {
-            var commandInfo = this._sqlBuilder.BuildCreateTableCommand(this._schema, tableName, recordDefinition.Properties, ifNotExists);
+            var commandInfo = this._sqlBuilder.BuildCreateTableCommand(this._schema, tableName, properties, ifNotExists);
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }

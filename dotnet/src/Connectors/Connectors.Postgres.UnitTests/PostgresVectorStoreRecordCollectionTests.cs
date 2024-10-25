@@ -159,7 +159,7 @@ public class PostgresVectorStoreRecordCollectionTests
             options: new PostgresVectorStoreRecordCollectionOptions<PostgresHotel<int>> { VectorStoreRecordDefinition = recordDefinition }
         );
 
-        this._postgresClientMock.Setup(x => x.CreateTableAsync(TestCollectionName, It.IsAny<VectorStoreRecordDefinition>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        this._postgresClientMock.Setup(x => x.CreateTableAsync(TestCollectionName, It.IsAny<IReadOnlyList<VectorStoreRecordProperty>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         // Act
         await sut.CreateCollectionAsync(cancellationToken: this._testCancellationToken);

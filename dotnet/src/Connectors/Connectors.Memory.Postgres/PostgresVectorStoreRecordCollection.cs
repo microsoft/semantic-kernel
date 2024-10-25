@@ -267,7 +267,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     private async Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
     {
-        await this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition, ifNotExists, cancellationToken).ConfigureAwait(false);
+        await this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition.Properties, ifNotExists, cancellationToken).ConfigureAwait(false);
         // Create indexes for vector properties.
         foreach (var vectorProperty in this._propertyReader.VectorProperties)
         {

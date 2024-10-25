@@ -31,11 +31,11 @@ public interface IPostgresVectorStoreDbClient
     /// Create a table.
     /// </summary>
     /// <param name="tableName">The name assigned to a table of entries.</param>
-    /// <param name="recordDefinition">The record definition of the table.</param>
+    /// <param name="properties">The properties of the record definition that define the table.</param>
     /// <param name="ifNotExists">Specifies whether to include IF NOT EXISTS in the command.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    Task CreateTableAsync(string tableName, VectorStoreRecordDefinition recordDefinition, bool ifNotExists = true, CancellationToken cancellationToken = default);
+    Task CreateTableAsync(string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, bool ifNotExists = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a vector index.
