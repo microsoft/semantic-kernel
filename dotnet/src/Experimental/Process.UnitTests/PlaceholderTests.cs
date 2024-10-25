@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 //using Microsoft.SemanticKernel.Process.Internal;
 using Xunit;
 
