@@ -345,7 +345,9 @@ public interface IChatHistoryReducer
 /// </summary>
 public sealed class ChatCompletionServiceWithReducer(IChatCompletionService service, IChatHistoryReducer reducer) : IChatCompletionService
 {
-    public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
+    private static IReadOnlyDictionary<string, object?> EmptyAttributes { get; } = new Dictionary<string, object?>();
+
+    public IReadOnlyDictionary<string, object?> Attributes => EmptyAttributes;
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
