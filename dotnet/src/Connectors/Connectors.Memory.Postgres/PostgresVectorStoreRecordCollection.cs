@@ -141,7 +141,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         Verify.NotNull(keyObj);
         TKey key = (TKey)keyObj!;
 
-        await this._client.UpsertAsync(this.CollectionName, this._mapper?.MapFromDataToStorageModel(record) ?? throw new InvalidOperationException("Failed to map record to storage model."), this._propertyReader.KeyPropertyStoragePropertyName, cancellationToken).ConfigureAwait(false);
+        await this._client.UpsertAsync(this.CollectionName, storageModel, this._propertyReader.KeyPropertyStoragePropertyName, cancellationToken).ConfigureAwait(false);
         return key;
     }
 
