@@ -278,12 +278,9 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 if (vectorProperty.Dimensions > 2000)
                 {
-                    this._logger.LogWarning(
-                        "The provided vector property {VectorPropertyName} has {Dimensions} dimensions, which is not supported by the HNSW index. The maximum number of dimensions supported by the HNSW index is 2000. Index not created.",
-                        vectorProperty.DataModelPropertyName,
-                        vectorProperty.Dimensions
+                    throw new NotSupportedException(
+                        $"The provided vector property {vectorProperty.DataModelPropertyName} has {vectorProperty.Dimensions} dimensions, which is not supported by the HNSW index. The maximum number of dimensions supported by the HNSW index is 2000. Index not created."
                     );
-                    continue;
                 }
             }
             await this._client.CreateVectorIndexAsync(this.CollectionName, vectorProperty, cancellationToken).ConfigureAwait(false);
