@@ -57,12 +57,9 @@ public class PostgresVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
-        await foreach (string collection in this._postgresClient.GetTablesAsync(cancellationToken).ConfigureAwait(false))
-        {
-            yield return collection;
-        }
+        return this._postgresClient.GetTablesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
