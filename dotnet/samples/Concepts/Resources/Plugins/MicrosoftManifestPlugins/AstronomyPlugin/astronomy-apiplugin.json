@@ -1,0 +1,37 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.1/schema.json",
+  "schema_version": "v2.1",
+  "name_for_human": "APOD",
+  "description_for_human": "This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds; but generally help with discoverability of relevant imagery",
+  "description_for_model": "This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds; but generally help with discoverability of relevant imagery",
+  "contact_email": "evan.t.yates@nasa.gov",
+  "namespace": "Astronomy",
+  "capabilities": {
+    "conversation_starters": [
+      {
+        "text": "Returns images"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "name": "apod",
+      "description": "Returns the picture of the day"
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "OpenApi",
+      "auth": {
+        "type": "ApiKeyPluginVault",
+        "reference_id": "{api_key_REGISTRATION_ID}"
+      },
+      "spec": {
+        "url": "astronomy-openapi.yml"
+      },
+      "run_for_functions": [
+        "apod"
+      ]
+    }
+  ]
+}
