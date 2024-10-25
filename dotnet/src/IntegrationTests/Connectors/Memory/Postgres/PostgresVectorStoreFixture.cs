@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Npgsql;
@@ -104,9 +103,9 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
 
         this._dataSource = dataSourceBuilder.Build();
 
-        this.Kernel = Kernel.CreateBuilder()
-            .AddPostgresVectorStore(connectionStringBuilder.ToString())
-            .Build();
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddPostgresVectorStore(this._dataSource);
+        this.Kernel = kernelBuilder.Build();
 
         // Wait for the postgres container to be ready and create the test database using the initial data source.
         var initialDataSource = NpgsqlDataSource.Create(this._connectionString);
@@ -175,15 +174,6 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <returns>An async task.</returns>
     public async Task DisposeAsync()
     {
-        if (this.Kernel != null)
-        {
-            var dataSource = this.Kernel.Services.GetService<NpgsqlDataSource>();
-            if (dataSource != null)
-            {
-                dataSource.Dispose();
-            }
-        }
-
         if (this._dataSource != null)
         {
             this._dataSource.Dispose();

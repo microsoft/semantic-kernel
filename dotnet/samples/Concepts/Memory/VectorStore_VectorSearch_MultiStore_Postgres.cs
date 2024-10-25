@@ -44,7 +44,7 @@ public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper outp
 
         // Initialize the Postgres docker container via the fixtures and register the Postgres VectorStore.
         await PostgresFixture.ManualInitializeAsync();
-        kernelBuilder.AddPostgresVectorStore(ConnectionString);
+        kernelBuilder.Services.AddPostgresVectorStore(ConnectionString);
 
         // Register the test output helper common processor with the DI container.
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
