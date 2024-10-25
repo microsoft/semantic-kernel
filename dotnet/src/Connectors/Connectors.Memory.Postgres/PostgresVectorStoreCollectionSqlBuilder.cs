@@ -345,7 +345,7 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
     /// <inheritdoc />
     public PostgresSqlCommandInfo BuildGetNearestMatchCommand(
         string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue,
-        VectorSearchFilter? filter, int? skip, bool withEmbeddings, int limit)
+        VectorSearchFilter? filter, int? skip, bool includeVectors, int limit)
     {
         var columns = string.Join(" ,",
             properties

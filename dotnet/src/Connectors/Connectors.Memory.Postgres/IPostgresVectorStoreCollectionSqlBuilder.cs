@@ -127,8 +127,8 @@ internal interface IPostgresVectorStoreCollectionSqlBuilder
     /// <param name="vectorValue">The vector to match.</param>
     /// <param name="filter">The filter conditions for the query.</param>
     /// <param name="skip">The number of records to skip.</param>
-    /// <param name="withEmbeddings">Specifies whether to include embeddings in the result.</param>
+    /// <param name="includeVectors">Specifies whether to include vectors in the result.</param>
     /// <param name="limit">The maximum number of records to return.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildGetNearestMatchCommand(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, VectorSearchFilter? filter, int? skip, bool withEmbeddings, int limit);
+    PostgresSqlCommandInfo BuildGetNearestMatchCommand(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, VectorSearchFilter? filter, int? skip, bool includeVectors, int limit);
 }

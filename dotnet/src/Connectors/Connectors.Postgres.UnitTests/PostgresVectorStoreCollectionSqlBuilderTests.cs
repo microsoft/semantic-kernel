@@ -409,7 +409,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
             vectorValue: vector,
             filter: null,
             skip: null,
-            withEmbeddings: true,
+            includeVectors: true,
             limit: 10);
 
         // Assert
