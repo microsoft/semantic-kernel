@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 
@@ -26,8 +25,6 @@ public sealed record KernelProcess : KernelProcessStepInfo
     {
         Verify.NotNull(steps);
         Verify.NotNullOrWhiteSpace(state.Name);
-
-        SharedPlaceholder.InjectedMethodDependency(); // Demonstrate an active binding to a shared type.
 
         this.Steps = [.. steps];
     }

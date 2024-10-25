@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 
@@ -201,7 +200,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessBuilder(string name)
         : base(name)
     {
-        SharedPlaceholder.InjectedMethodDependency(); // Demonstrate an active binding to a shared type.
     }
 
     #endregion
