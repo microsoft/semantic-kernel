@@ -7,12 +7,11 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
-    <NoWarn>$(NoWarn);CA1050;RCS1110</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Title>Semantic Kernel - ONNX ConnectorsC</Title>
-    <Description>Semantic Kernel connectors for the ONNX runtime on CPU. Contains clients for text embedding generation.</Description>
+    <Title>Semantic Kernel - ONNX Connectors</Title>
+    <Description>Semantic Kernel connectors for the ONNX runtime running on CPUs. Contains services for chat completion and text embedding generation.</Description>
   </PropertyGroup>
 
   <ItemGroup>
