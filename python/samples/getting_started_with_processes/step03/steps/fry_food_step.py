@@ -7,7 +7,6 @@ from pydantic import Field
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.processes.kernel_process.kernel_process_event import (
-    KernelProcessEvent,
     KernelProcessEventVisibility,
 )
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
@@ -33,15 +32,13 @@ class FryFoodStep(KernelProcessStep):
         if fryer_malfunction < 5:
             food_actions.append(f"{food_to_fry}_frying_failed")
             print(f"FRYING_STEP: Ingredient {food_to_fry} got burnt while frying :(")
-            context.emit_event(KernelProcessEvent(id=FryFoodStep.OutputEvents.FoodRuined.value, data=food_actions))
+            await context.emit_event(process_event=FryFoodStep.OutputEvents.FoodRuined.value, data=food_actions)
             return
 
         food_actions.append(f"{food_to_fry}_frying_succeeded")
         print(f"FRYING_STEP: Ingredient {food_to_fry} is ready!")
-        context.emit_event(
-            KernelProcessEvent(
-                id=FryFoodStep.OutputEvents.FriedFoodReady.value,
-                data=food_actions,
-                visibility=KernelProcessEventVisibility.Public,
-            )
+        await context.emit_event(
+            process_event=FryFoodStep.OutputEvents.FriedFoodReady.value,
+            data=food_actions,
+            visibility=KernelProcessEventVisibility.Public,
         )

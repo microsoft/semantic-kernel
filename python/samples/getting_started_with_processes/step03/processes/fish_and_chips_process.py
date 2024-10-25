@@ -7,7 +7,6 @@ from samples.getting_started_with_processes.step03.processes.fried_fish_process 
 from samples.getting_started_with_processes.step03.processes.potato_fries_process import PotatoFriesProcess
 from samples.getting_started_with_processes.step03.steps.external_step import ExternalStep
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.process_builder import ProcessBuilder
@@ -30,8 +29,8 @@ class AddFishAndChipsCondimentsStep(KernelProcessStep):
         )
         fish_actions.extend(potato_actions)
         fish_actions.append("Condiments")
-        context.emit_event(
-            KernelProcessEvent(id=AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded.value, data=fish_actions)
+        await context.emit_event(
+            process_event=AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded.value, data=fish_actions
         )
 
 

@@ -9,7 +9,6 @@ from samples.getting_started_with_processes.step03.processes.fried_fish_process 
 from samples.getting_started_with_processes.step03.processes.potato_fries_process import PotatoFriesProcess
 from samples.getting_started_with_processes.step03.steps.external_step import ExternalStep
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.process_builder import ProcessBuilder
@@ -26,7 +25,7 @@ class PackOrderStep(KernelProcessStep):
     @kernel_function(name=Functions.PackFood.value)
     async def pack_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         print(f"PACKING_FOOD: Food {food_actions[0]} Packed! - {food_actions}")
-        context.emit_event(KernelProcessEvent(id=PackOrderStep.OutputEvents.FoodPacked.value))
+        await context.emit_event(process_event=PackOrderStep.OutputEvents.FoodPacked.value)
 
 
 class ExternalSingleOrderStep(ExternalStep):
@@ -51,20 +50,23 @@ class DispatchSingleOrderStep(KernelProcessStep):
         food_actions = []
 
         if food_item == FoodItem.POTATO_FRIES:
-            context.emit_event(
-                KernelProcessEvent(id=DispatchSingleOrderStep.OutputEvents.PrepareFries.value, data=food_actions)
+            await context.emit_event(
+                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFries.value, data=food_actions
             )
+
         elif food_item == FoodItem.FRIED_FISH:
-            context.emit_event(
-                KernelProcessEvent(id=DispatchSingleOrderStep.OutputEvents.PrepareFriedFish.value, data=food_actions)
+            await context.emit_event(
+                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFriedFish.value, data=food_actions
             )
+
         elif food_item == FoodItem.FISH_SANDWICH:
-            context.emit_event(
-                KernelProcessEvent(id=DispatchSingleOrderStep.OutputEvents.PrepareFishSandwich.value, data=food_actions)
+            await context.emit_event(
+                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFishSandwich.value, data=food_actions
             )
+
         elif food_item == FoodItem.FISH_AND_CHIPS:
-            context.emit_event(
-                KernelProcessEvent(id=DispatchSingleOrderStep.OutputEvents.PrepareFishAndChips.value, data=food_actions)
+            await context.emit_event(
+                process_event=DispatchSingleOrderStep.OutputEvents.PrepareFishAndChips.value, data=food_actions
             )
 
 

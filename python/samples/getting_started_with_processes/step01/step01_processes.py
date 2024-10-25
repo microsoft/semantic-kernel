@@ -70,13 +70,13 @@ class ScriptedUserInputStep(KernelProcessStep[UserInputState]):
         print(f"USER: {user_message}")
 
         if "exit" in user_message:
-            context.emit_event(KernelProcessEvent(id=ChatBotEvents.Exit.value, data=None))
+            await context.emit_event(process_event=ChatBotEvents.Exit.value, data=None)
             return
 
         self.state.current_input_index += 1
 
         # Emit the user input event
-        context.emit_event({"id": CommonEvents.UserInputReceived.value, "data": user_message})
+        await context.emit_event(process_event=CommonEvents.UserInputReceived.value, data=user_message)
 
 
 class ChatUserInputStep(ScriptedUserInputStep):
@@ -140,9 +140,7 @@ class ChatBotResponseStep(KernelProcessStep[ChatBotState]):
         self.state.chat_messages.append(answer)
 
         # Emit an event: assistantResponse
-        context.emit_event(
-            process_event=KernelProcessEvent(id=ChatBotEvents.AssistantResponseGenerated.value, data=answer)
-        )
+        await context.emit_event(process_event=ChatBotEvents.AssistantResponseGenerated.value, data=answer)
 
 
 kernel = Kernel()

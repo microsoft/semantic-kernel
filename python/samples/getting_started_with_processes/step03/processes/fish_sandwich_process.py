@@ -22,7 +22,7 @@ class AddBunStep(KernelProcessStep):
     async def slice_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         print(f"BUNS_ADDED_STEP: Buns added to ingredient {food_actions[0]}")
         food_actions.append("Buns")
-        context.emit_event({"id": self.OutputEvents.BunsAdded.value, "data": food_actions})
+        await context.emit_event(process_event=self.OutputEvents.BunsAdded.value, data=food_actions)
 
 
 class AddSpecialSauceStep(KernelProcessStep):
@@ -36,7 +36,7 @@ class AddSpecialSauceStep(KernelProcessStep):
     async def slice_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         print(f"SPECIAL_SAUCE_ADDED: Special sauce added to ingredient {food_actions[0]}")
         food_actions.append("Sauce")
-        context.emit_event({"id": self.OutputEvents.SpecialSauceAdded.value, "data": food_actions})
+        await context.emit_event(process_event=self.OutputEvents.SpecialSauceAdded.value, data=food_actions)
 
 
 class ExternalFriedFishStep(ExternalStep):

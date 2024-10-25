@@ -4,9 +4,6 @@ from enum import Enum
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.processes.kernel_process.kernel_process_event import (
-    KernelProcessEvent,
-)
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
@@ -45,13 +42,11 @@ class CutFoodWithSharpeningStep(KernelProcessStep[CutFoodWithSharpeningState]):
     async def chop_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         food_to_be_cut = food_actions[0]
         if self.knife_needs_sharpening():
-            # Console.WriteLine($"CUTTING_STEP: Dull knife, cannot chop {foodToBeCut} - needs sharpening.");
             print(f"CUTTING_STEP: Dull knife, cannot chop {food_to_be_cut} - needs sharpening.")
-            context.emit_event(
-                KernelProcessEvent(
-                    id=CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening.value, data=food_actions
-                )
+            await context.emit_event(
+                process_event=CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening.value, data=food_actions
             )
+
             return
         # Update knife sharpness
         self.state.knife_sharpness -= 1
@@ -60,8 +55,8 @@ class CutFoodWithSharpeningStep(KernelProcessStep[CutFoodWithSharpeningState]):
         print(
             f"CUTTING_STEP: Ingredient {food_to_be_cut} has been chopped! - knife sharpness: {self.state.knife_sharpness}"  # noqa: E501
         )
-        context.emit_event(
-            KernelProcessEvent(id=CutFoodWithSharpeningStep.OutputEvents.ChoppingReady.value, data=food_actions)
+        await context.emit_event(
+            process_event=CutFoodWithSharpeningStep.OutputEvents.ChoppingReady.value, data=food_actions
         )
 
     @kernel_function(name=Functions.SliceFood.value)
@@ -69,11 +64,10 @@ class CutFoodWithSharpeningStep(KernelProcessStep[CutFoodWithSharpeningState]):
         food_to_be_cut = food_actions[0]
         if self.knife_needs_sharpening():
             print(f"CUTTING_STEP: Dull knife, cannot slice {food_to_be_cut} - needs sharpening.")
-            context.emit_event(
-                KernelProcessEvent(
-                    id=CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening.value, data=food_actions
-                )
+            await context.emit_event(
+                process_event=CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening.value, data=food_actions
             )
+
             return
         # Update knife sharpness
         self.state.knife_sharpness -= 1
@@ -82,14 +76,14 @@ class CutFoodWithSharpeningStep(KernelProcessStep[CutFoodWithSharpeningState]):
         print(
             f"CUTTING_STEP: Ingredient {food_to_be_cut} has been sliced! - knife sharpness: {self.state.knife_sharpness}"  # noqa: E501
         )
-        context.emit_event(
-            KernelProcessEvent(id=CutFoodWithSharpeningStep.OutputEvents.SlicingReady.value, data=food_actions)
+        await context.emit_event(
+            process_event=CutFoodWithSharpeningStep.OutputEvents.SlicingReady.value, data=food_actions
         )
 
     @kernel_function(name=Functions.SharpenKnife.value)
     async def sharpen_knife(self, context: KernelProcessStepContext, food_actions: list[str]):
         self.state.knife_sharpness += self.state.sharpening_boost
         print(f"KNIFE SHARPENED: Knife sharpness is now {self.state.knife_sharpness}!")
-        context.emit_event(
-            KernelProcessEvent(id=CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened.value, data=food_actions)
+        await context.emit_event(
+            process_event=CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened.value, data=food_actions
         )
