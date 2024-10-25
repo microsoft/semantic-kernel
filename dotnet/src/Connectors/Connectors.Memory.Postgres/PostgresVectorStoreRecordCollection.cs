@@ -95,7 +95,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // Validate property types.
         this._propertyReader.VerifyKeyProperties(PostgresConstants.SupportedKeyTypes);
-        this._propertyReader.VerifyDataProperties(PostgresConstants.SupportedDataTypes, supportEnumerable: true);
+        this._propertyReader.VerifyDataProperties(PostgresConstants.SupportedDataTypes, PostgresConstants.SupportedEnumerableDataElementTypes);
         this._propertyReader.VerifyVectorProperties(PostgresConstants.SupportedVectorTypes);
 
         // Resolve mapper.

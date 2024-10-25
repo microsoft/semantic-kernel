@@ -394,6 +394,60 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         Assert.Equal([1, 3], ids);
     }
 
+    [Fact]
+    public async Task ItCanUpsertAndGetEnumerableTypesAsync()
+    {
+        // Arrange
+        var sut = fixture.GetCollection<int, RecordWithEnumerables>("UpsertAndGetEnumerableTypes");
+
+        await sut.CreateCollectionAsync();
+
+        var record = new RecordWithEnumerables
+        {
+            Id = 1,
+            ListInts = new() { 1, 2, 3 },
+            CollectionInts = new HashSet<int>() { 4, 5, 6 },
+            EnumerableInts = [7, 8, 9],
+            ReadOnlyCollectionInts = new List<int> { 10, 11, 12 },
+            ReadOnlyListInts = new List<int> { 13, 14, 15 }
+        };
+
+        // Act
+        await sut.UpsertAsync(record);
+
+        var getResult = await sut.GetAsync(1);
+
+        // Assert
+        Assert.NotNull(getResult);
+        Assert.Equal(1, getResult!.Id);
+        Assert.NotNull(getResult.ListInts);
+        Assert.Equal(3, getResult.ListInts!.Count);
+        Assert.Equal(1, getResult.ListInts![0]);
+        Assert.Equal(2, getResult.ListInts![1]);
+        Assert.Equal(3, getResult.ListInts![2]);
+        Assert.NotNull(getResult.CollectionInts);
+        Assert.Equal(3, getResult.CollectionInts!.Count);
+        Assert.Contains(4, getResult.CollectionInts);
+        Assert.Contains(5, getResult.CollectionInts);
+        Assert.Contains(6, getResult.CollectionInts);
+        Assert.NotNull(getResult.EnumerableInts);
+        Assert.Equal(3, getResult.EnumerableInts!.Count());
+        Assert.Equal(7, getResult.EnumerableInts.ElementAt(0));
+        Assert.Equal(8, getResult.EnumerableInts.ElementAt(1));
+        Assert.Equal(9, getResult.EnumerableInts.ElementAt(2));
+        Assert.NotNull(getResult.ReadOnlyCollectionInts);
+        Assert.Equal(3, getResult.ReadOnlyCollectionInts!.Count);
+        var readOnlyCollectionIntsList = getResult.ReadOnlyCollectionInts.ToList();
+        Assert.Equal(10, readOnlyCollectionIntsList[0]);
+        Assert.Equal(11, readOnlyCollectionIntsList[1]);
+        Assert.Equal(12, readOnlyCollectionIntsList[2]);
+        Assert.NotNull(getResult.ReadOnlyListInts);
+        Assert.Equal(3, getResult.ReadOnlyListInts!.Count);
+        Assert.Equal(13, getResult.ReadOnlyListInts[0]);
+        Assert.Equal(14, getResult.ReadOnlyListInts[1]);
+        Assert.Equal(15, getResult.ReadOnlyListInts[2]);
+    }
+
     #region private ==================================================================================
 
     private static VectorStoreRecordDefinition GetVectorStoreRecordDefinition<TKey>(string distanceFunction = DistanceFunction.CosineDistance) => new()
@@ -439,6 +493,32 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     {
         return new DateTimeOffset(dateTimeOffset.Ticks - (dateTimeOffset.Ticks % TimeSpan.TicksPerSecond), dateTimeOffset.Offset);
     }
+
+#pragma warning disable CA1812
+    private sealed class RecordWithEnumerables
+    {
+        [VectorStoreRecordKey]
+        public int Id { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        public ReadOnlyMemory<float>? Embedding { get; set; }
+
+        [VectorStoreRecordData]
+        public List<int>? ListInts { get; set; }
+
+        [VectorStoreRecordData]
+        public ICollection<int>? CollectionInts { get; set; }
+
+        [VectorStoreRecordData]
+        public IEnumerable<int>? EnumerableInts { get; set; }
+
+        [VectorStoreRecordData]
+        public IReadOnlyCollection<int>? ReadOnlyCollectionInts { get; set; }
+
+        [VectorStoreRecordData]
+        public IReadOnlyList<int>? ReadOnlyListInts { get; set; }
+    }
+#pragma warning restore CA1812
 
     #endregion
 

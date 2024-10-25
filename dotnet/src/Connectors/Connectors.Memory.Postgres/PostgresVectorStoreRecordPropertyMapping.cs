@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
 using Npgsql;
@@ -67,13 +68,11 @@ internal static class PostgresVectorStoreRecordPropertyMapping
             return null;
         }
 
-        // Check if the type is a List<T>
-        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
+        // Check if the type implements IEnumerable<T>
+        if (propertyType.IsGenericType && propertyType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
         {
-            var elementType = propertyType.GetGenericArguments()[0];
-            var list = (IEnumerable)reader.GetValue(propertyIndex);
-            // Convert list to the correct element type
-            return ConvertList(list, elementType);
+            var enumerable = (IEnumerable)reader.GetValue(propertyIndex);
+            return VectorStoreRecordMapping.CreateEnumerable(enumerable.Cast<object>(), propertyType);
         }
 
         return propertyType switch
@@ -141,8 +140,8 @@ internal static class PostgresVectorStoreRecordPropertyMapping
             return (pgType, isNullable);
         }
 
-        // Handle lists
-        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
+        // Handle enumerables
+        if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(propertyType))
         {
             Type elementType = propertyType.GetGenericArguments()[0];
             var underlyingPgType = GetPostgresTypeName(elementType);
@@ -175,17 +174,56 @@ internal static class PostgresVectorStoreRecordPropertyMapping
         return ($"VECTOR({vectorProperty.Dimensions})", Nullable.GetUnderlyingType(vectorProperty.PropertyType) != null);
     }
 
-    // Helper method to convert lists
-    private static object ConvertList(IEnumerable list, Type elementType)
+    public static NpgsqlParameter GetNpgsqlParameter(object? value)
     {
-        var listType = typeof(List<>).MakeGenericType(elementType);
-        var convertedList = (IList)Activator.CreateInstance(listType)!;
-
-        foreach (var item in list)
+        if (value == null)
         {
-            convertedList.Add(Convert.ChangeType(item, elementType));
+            return new NpgsqlParameter() { Value = DBNull.Value };
         }
 
-        return convertedList;
+        // If it's already a List, return it directly
+        if (value is IList list)
+        {
+            return new NpgsqlParameter() { Value = list };
+        }
+
+        // If it's an IEnumerable<T>, but not a List, convert it to a List<T>
+        if (value is IEnumerable enumerable && !(value is string))
+        {
+            // Use a helper method to convert to a List<T> if possible
+            return new NpgsqlParameter() { Value = ConvertToListIfNecessary(enumerable) };
+        }
+
+        // Return the value directly if it's not IEnumerable
+        return new NpgsqlParameter() { Value = value };
+    }
+
+    // Helper method to convert an IEnumerable to a List if necessary
+    private static object ConvertToListIfNecessary(IEnumerable enumerable)
+    {
+        // Get an enumerator to manually iterate over the collection
+        var enumerator = enumerable.GetEnumerator();
+
+        // Check if the collection is empty by attempting to move to the first element
+        if (!enumerator.MoveNext())
+        {
+            return enumerable; // Return the original enumerable if it's empty
+        }
+
+        // Determine the type of the first element
+        var firstItem = enumerator.Current;
+        var itemType = firstItem?.GetType() ?? typeof(object);
+
+        // Create a strongly-typed List<T> based on the type of the first element
+        var typedList = Activator.CreateInstance(typeof(List<>).MakeGenericType(itemType)) as IList;
+        typedList!.Add(firstItem); // Add the first element to the typed list
+
+        // Continue iterating through the rest of the enumerable and add items to the list
+        while (enumerator.MoveNext())
+        {
+            typedList.Add(enumerator.Current);
+        }
+
+        return typedList;
     }
 }

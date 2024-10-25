@@ -43,15 +43,22 @@ internal static class PostgresConstants
         typeof(Guid),
         typeof(Guid?),
         typeof(byte[]),
-        typeof(List<bool>),
-        typeof(List<short>),
-        typeof(List<int>),
-        typeof(List<long>),
-        typeof(List<float>),
-        typeof(List<double>),
-        typeof(List<decimal>),
-        typeof(List<string>),
-        typeof(List<DateTimeOffset>),
+    ];
+
+    /// <summary>A <see cref="HashSet{T}"/> of types that enumerable data properties on the provided model may use as their element types.</summary>
+    public static readonly HashSet<Type> SupportedEnumerableDataElementTypes =
+    [
+        typeof(bool),
+        typeof(short),
+        typeof(int),
+        typeof(long),
+        typeof(float),
+        typeof(double),
+        typeof(decimal),
+        typeof(string),
+        typeof(DateTime),
+        typeof(DateTimeOffset),
+        typeof(Guid),
     ];
 
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>

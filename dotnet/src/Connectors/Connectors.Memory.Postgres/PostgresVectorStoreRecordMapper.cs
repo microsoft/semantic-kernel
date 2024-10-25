@@ -28,7 +28,7 @@ internal sealed class PostgresVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         this._propertyReader.VerifyHasParameterlessConstructor();
 
         // Validate property types.
-        this._propertyReader.VerifyDataProperties(PostgresConstants.SupportedDataTypes, supportEnumerable: false);
+        this._propertyReader.VerifyDataProperties(PostgresConstants.SupportedDataTypes, PostgresConstants.SupportedEnumerableDataElementTypes);
         this._propertyReader.VerifyVectorProperties(PostgresConstants.SupportedVectorTypes);
     }
 
@@ -43,7 +43,10 @@ internal sealed class PostgresVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         // Add data properties
         foreach (var property in this._propertyReader.DataPropertiesInfo)
         {
-            properties.Add(this._propertyReader.GetStoragePropertyName(property.Name), property.GetValue(dataModel));
+            properties.Add(
+                this._propertyReader.GetStoragePropertyName(property.Name),
+                property.GetValue(dataModel)
+            );
         }
 
         // Add vector properties

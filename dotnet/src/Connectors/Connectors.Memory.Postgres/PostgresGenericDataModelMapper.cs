@@ -22,7 +22,7 @@ internal sealed class PostgresGenericDataModelMapper<TKey> : IVectorStoreRecordM
         this._propertyReader = propertyReader;
 
         // Validate property types.
-        this._propertyReader.VerifyDataProperties(PostgresConstants.SupportedDataTypes, supportEnumerable: false);
+        this._propertyReader.VerifyDataProperties(PostgresConstants.SupportedDataTypes, PostgresConstants.SupportedEnumerableDataElementTypes);
         this._propertyReader.VerifyVectorProperties(PostgresConstants.SupportedVectorTypes);
     }
     public Dictionary<string, object?> MapFromDataToStorageModel(VectorStoreGenericDataModel<TKey> dataModel)

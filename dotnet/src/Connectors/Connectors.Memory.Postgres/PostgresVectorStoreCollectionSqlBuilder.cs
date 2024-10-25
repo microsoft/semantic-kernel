@@ -174,11 +174,11 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
                 ON CONFLICT (""{keyColumn}"")
                 DO UPDATE SET {updateColumnsWithParams};";
 
-        var parameters = row.ToDictionary(kvp => $"@{kvp.Key}", kvp => kvp.Value);
-
         return new PostgresSqlCommandInfo(commandText)
         {
-            Parameters = columns.Select(c => new NpgsqlParameter() { Value = row[c] ?? DBNull.Value }).ToList()
+            Parameters = columns.Select(c =>
+                PostgresVectorStoreRecordPropertyMapping.GetNpgsqlParameter(row[c])
+            ).ToList()
         };
     }
 
