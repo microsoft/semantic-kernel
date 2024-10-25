@@ -64,6 +64,8 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
             {
                 if (keyProperty != null)
                 {
+                    // Should be impossible, as property reader should have already validated that
+                    // multiple key properties are not allowed.
                     throw new ArgumentException("Record definition cannot have more than one key property.");
                 }
                 keyProperty = keyProp;
