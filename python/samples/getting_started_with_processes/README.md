@@ -22,7 +22,7 @@ Example|Description
 ---|---
 [step01_processes](../getting_started_with_processes/step01/step01_processes.py)|How to create a simple process with a loop and a conditional exit|
 [step03a_food_preparation](../getting_started_with_processes/step03/step03a_food_preparation.py)|Showcasing reuse of steps, creation of processes, spawning of multiple events, use of stateful steps with food preparation samples.
-[step03b_food_ordering](../getting_started_with_processes/step03/step03b_food_preparation.py)|Showcasing use of subprocesses as steps, spawning of multiple events conditionally reusing the food preparation samples. 
+[step03b_food_ordering](../getting_started_with_processes/step03/step03b_food_ordering.py)|Showcasing use of subprocesses as steps, spawning of multiple events conditionally reusing the food preparation samples. 
 
 ### step01_processes
 
