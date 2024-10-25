@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net;
+using Azure;
+using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,11 +57,22 @@ internal sealed class Program
 
         if (config["AzureOpenAI:Endpoint"] is not null)
         {
-            services.AddAzureOpenAIChatCompletion(
-                serviceId: "azureopenai",
-                endpoint: config["AzureOpenAI:Endpoint"]!,
-                deploymentName: config["AzureOpenAI:ChatDeploymentName"]!,
-                credentials: new AzureCliCredential());
+            if (config["AzureOpenAI:ApiKey"] is not null)
+            {
+                services.AddAzureOpenAIChatCompletion(
+                    serviceId: "azureopenai",
+                    endpoint: config["AzureOpenAI:Endpoint"]!,
+                    deploymentName: config["AzureOpenAI:ChatDeploymentName"]!,
+                    apiKey: config["AzureOpenAI:ApiKey"]!);
+            }
+            else
+            {
+                services.AddAzureOpenAIChatCompletion(
+                    serviceId: "azureopenai",
+                    endpoint: config["AzureOpenAI:Endpoint"]!,
+                    deploymentName: config["AzureOpenAI:ChatDeploymentName"]!,
+                    credentials: new AzureCliCredential());
+            }
 
             serviceIds.Add("azureopenai");
             Console.WriteLine("• Azure OpenAI Added - Use \"azureopenai\" in the prompt.");
