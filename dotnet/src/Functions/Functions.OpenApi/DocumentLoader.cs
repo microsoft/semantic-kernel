@@ -101,6 +101,10 @@ internal static class DocumentLoader
         CancellationToken cancellationToken)
     {
         using StreamReader reader = new(stream);
+#if NET7_0_OR_GREATER
         return await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+#else
+        return await reader.ReadToEndAsync().ConfigureAwait(false);
+#endif
     }
 }
