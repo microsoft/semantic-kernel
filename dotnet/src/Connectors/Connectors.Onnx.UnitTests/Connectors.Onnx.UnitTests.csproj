@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\Connectors.Onnx\Connectors.Onnx.csproj" />
+    <ProjectReference Include="..\Connectors.Onnx.Cpu\Connectors.Onnx.Cpu.csproj" />
   </ItemGroup>
 
 </Project>

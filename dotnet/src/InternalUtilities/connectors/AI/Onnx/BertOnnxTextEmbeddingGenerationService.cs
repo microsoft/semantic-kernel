@@ -13,13 +13,14 @@ using System.Threading.Tasks;
 using FastBertTokenizer;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
-
-namespace Microsoft.SemanticKernel.Connectors.Onnx;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+
+namespace Microsoft.SemanticKernel.Connectors.Onnx;
 
 /// <summary>
 /// Provides a text embedding generation service using a BERT ONNX model.

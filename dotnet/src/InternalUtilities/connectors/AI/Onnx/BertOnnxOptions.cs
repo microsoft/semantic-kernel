@@ -2,10 +2,13 @@
 
 using System;
 using System.Text;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.SemanticKernel.Connectors.Onnx;
 
-/// <summary>Provides an options bag used to configure <see cref="BertOnnxTextEmbeddingGenerationService"/>.</summary>
+/// <summary>
+/// Provides an options bag used to configure <see cref="BertOnnxTextEmbeddingGenerationService"/>.
+/// </summary>
 public sealed class BertOnnxOptions
 {
     private int _maximumTokens = 512;
