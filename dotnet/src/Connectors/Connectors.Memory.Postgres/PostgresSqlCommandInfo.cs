@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Represents a SQL command for Postgres.
 /// </summary>
-public class PostgresSqlCommandInfo
+internal class PostgresSqlCommandInfo
 {
     /// <summary>
     /// Gets or sets the SQL command text.
