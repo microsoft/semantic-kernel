@@ -1,0 +1,73 @@
+{
+  "apiKey": "your_api_key_here",
+  "databaseUrl": "your_database_url_here",
+  "secretKey": "your_secret_key_here",
+  "mongodb": {
+    "url": "your_mongodb_url_here",
+    "dbName": "chat-ui",
+    "directConnection": false
+  },
+  "cookie": {
+    "name": "chat-ui"
+  },
+  "hfAccessToken": "your_hf_access_token_here",
+  "serpapiKey": "your_serpapi_key_here",
+  "openid": {
+    "clientId": "your_openid_client_id_here",
+    "clientSecret": "your_openid_client_secret_here",
+    "scopes": "openid profile",
+    "providerUrl": "https://huggingface.co"
+  },
+  "models": [
+    {
+      "name": "your_model_name_here",
+      "chatPromptTemplate": "your_model_prompt_template_here",
+      "preprompt": "",
+      "promptExamples": [
+        {
+          "title": "Python Fibonacci",
+          "prompt": "How can I write a Python function to generate the nth Fibonacci number?"
+        },
+        {
+          "title": "What is a meme?",
+          "prompt": "What is a meme, and what's the history behind this word?"
+        },
+        {
+          "title": "Regex",
+          "prompt": "Create a regex to extract dates from logs"
+        }
+      ],
+      "endpoints": [
+        {
+          "type": "tgi",
+          "url": "http://127.0.0.1:8080"
+        }
+      ],
+      "parameters": "your_model_params_here"
+    }
+  ],
+  "oldModels": [],
+  "public": {
+    "origin": "your_public_origin_here",
+    "sharePrefix": "your_public_share_prefix_here",
+    "googleAnalyticsId": "your_public_google_analytics_id_here",
+    "deprecatedGoogleAnalyticsId": "your_public_deprecated_google_analytics_id_here",
+    "announcementBanners": [
+      {
+        "title": "Chat UI is now open sourced on GitHub",
+        "linkTitle": "GitHub repo",
+        "linkHref": "https://github.com/huggingface/chat-ui"
+      }
+    ],
+    "appName": "your_app_name_here",
+    "appAssets": "chatui",
+    "appColor": "your_app_color_here",
+    "appDataSharing": 1,
+    "appDataDisclaimer": 1
+  },
+  "parquetExport": {
+    "dataset": "your_parquet_export_dataset_here",
+    "hfToken": "your_parquet_export_hf_token_here",
+    "secret": "your_parquet_export_secret_here"
+  }
+}

@@ -131,3 +131,18 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 COPY --chown=user . /app
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
+
+# Set up environment variables using a .env file
+COPY .env /app/.env
+
+# Create a configuration file using config.json
+COPY config.json /app/config.json
+
+# Build the Docker image
+RUN docker build -t my-app .
+
+# Run the Docker container
+CMD ["docker", "run", "-p", "3000:3000", "--env-file", ".env", "my-app"]
+
+# Access the web page
+CMD ["open", "http://localhost:3000"]

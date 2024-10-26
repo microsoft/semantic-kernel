@@ -41,3 +41,35 @@ documentation:
 memory:
   - dotnet/src/Connectors/Connectors.Memory.*/**/*
   - python/semantic_kernel/connectors/memory/**/*
+
+# Add 'bug' label to any issue with the 'bug' template
+bug:
+  - .github/ISSUE_TEMPLATE/bug_report.md
+
+# Add 'feature request' label to any issue with the 'feature request' template
+feature request:
+  - .github/ISSUE_TEMPLATE/feature_request.md
+
+# Add 'custom issue' label to any issue with the 'custom' template
+custom issue:
+  - .github/ISSUE_TEMPLATE/custom.md
+
+# Add 'pull request' label to any pull request
+pull request:
+  - .github/pull_request_template.md
+
+# Add 'community' label to any change within the 'COMMUNITY.md' file
+community:
+  - COMMUNITY.md
+
+# Add 'contributing' label to any change within the 'CONTRIBUTING.md' file
+contributing:
+  - CONTRIBUTING.md
+
+# Add 'getting started' label to any change within the 'docs/Getting_Started.md' file
+getting started:
+  - docs/Getting_Started.md
+
+# Add 'repository structure' label to any change within the 'docs/Repository_Structure.md' file
+repository structure:
+  - docs/Repository_Structure.md
