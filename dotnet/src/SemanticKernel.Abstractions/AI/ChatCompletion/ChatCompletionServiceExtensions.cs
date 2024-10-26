@@ -2,9 +2,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -109,5 +117,691 @@ public static class ChatCompletionServiceExtensions
         chatHistory.AddUserMessage(prompt);
 
         return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+    }
+
+    /// <summary>Creates an <see cref="IChatClient"/> for the specified <see cref="IChatCompletionService"/>.</summary>
+    /// <param name="service">The chat completion service to be represented as a chat client.</param>
+    /// <returns>
+    /// The <see cref="IChatClient"/>. If the <paramref name="service"/> is an <see cref="IChatClient"/>, the <paramref name="service"/>
+    /// will be returned. Otherwise, a new <see cref="IChatClient"/> will be created that wraps <paramref name="service"/>.
+    /// </returns>
+    [Experimental("SKEXP0001")]
+    public static IChatClient AsChatClient(this IChatCompletionService service)
+    {
+        Verify.NotNull(service);
+
+        return service is IChatClient chatClient ?
+            chatClient :
+            new ChatCompletionServiceChatClient(service);
+    }
+
+    /// <summary>Creates an <see cref="IChatCompletionService"/> for the specified <see cref="IChatClient"/>.</summary>
+    /// <param name="client">The chat client to be represented as a chat completion service.</param>
+    /// <param name="serviceProvider">An optional <see cref="IServiceProvider"/> that can be used to resolve services to use in the instance.</param>
+    /// <returns>
+    /// The <see cref="IChatCompletionService"/>. If <paramref name="client"/> is an <see cref="IChatCompletionService"/>, <paramref name="client"/> will
+    /// be returned. Otherwise, a new <see cref="IChatCompletionService"/> will be created that wraps <paramref name="client"/>.
+    /// </returns>
+    [Experimental("SKEXP0001")]
+    public static IChatCompletionService AsChatCompletionService(this IChatClient client, IServiceProvider? serviceProvider = null)
+    {
+        Verify.NotNull(client);
+
+        return client is IChatCompletionService chatCompletionService ?
+            chatCompletionService :
+            new ChatClientChatCompletionService(client, serviceProvider);
+    }
+
+    /// <summary>Provides an implementation of <see cref="IChatClient"/> around an arbitrary <see cref="IChatCompletionService"/>.</summary>
+    private sealed class ChatCompletionServiceChatClient : IChatClient
+    {
+        /// <summary>The wrapped <see cref="IChatCompletionService"/>.</summary>
+        private readonly IChatCompletionService _chatCompletionService;
+
+        /// <summary>Initializes the <see cref="ChatCompletionServiceChatClient"/> for <paramref name="chatCompletionService"/>.</summary>
+        public ChatCompletionServiceChatClient(IChatCompletionService chatCompletionService)
+        {
+            Verify.NotNull(chatCompletionService);
+
+            this._chatCompletionService = chatCompletionService;
+
+            this.Metadata = new ChatClientMetadata(
+                chatCompletionService.GetType().Name,
+                chatCompletionService.GetEndpoint() is string endpoint ? new Uri(endpoint) : null,
+                chatCompletionService.GetModelId());
+        }
+
+        /// <inheritdoc />
+        public ChatClientMetadata Metadata { get; }
+
+        /// <inheritdoc />
+        public async Task<Extensions.AI.ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            Verify.NotNull(chatMessages);
+
+            var response = await this._chatCompletionService.GetChatMessageContentAsync(
+                new ChatHistory(chatMessages.Select(ToChatMessageContent)),
+                ToPromptExecutionSettings(options),
+                kernel: null,
+                cancellationToken).ConfigureAwait(false);
+
+            return new(ToChatMessage(response))
+            {
+                ModelId = response.ModelId,
+                RawRepresentation = response.InnerContent,
+            };
+        }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            Verify.NotNull(chatMessages);
+
+            await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
+                new ChatHistory(chatMessages.Select(ToChatMessageContent)),
+                ToPromptExecutionSettings(options),
+                kernel: null,
+                cancellationToken).ConfigureAwait(false))
+            {
+                yield return ToStreamingChatCompletionUpdate(update);
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            (this._chatCompletionService as IDisposable)?.Dispose();
+        }
+
+        /// <inheritdoc />
+        public TService? GetService<TService>(object? key = null) where TService : class
+        {
+            return
+                typeof(TService) == typeof(IChatClient) ? (TService)(object)this :
+                this._chatCompletionService as TService;
+        }
+    }
+
+    /// <summary>Provides an implementation of <see cref="IChatCompletionService"/> around an <see cref="IChatClient"/>.</summary>
+    private sealed class ChatClientChatCompletionService : IChatCompletionService
+    {
+        /// <summary>The wrapped <see cref="IChatClient"/>.</summary>
+        private readonly IChatClient _chatClient;
+
+        /// <summary>Initializes the <see cref="ChatClientChatCompletionService"/> for <paramref name="chatClient"/>.</summary>
+        public ChatClientChatCompletionService(IChatClient chatClient, IServiceProvider? serviceProvider)
+        {
+            Verify.NotNull(chatClient);
+
+            // Store the client.
+            this._chatClient = chatClient;
+
+            // Initialize the attributes.
+            var attrs = new Dictionary<string, object?>();
+            this.Attributes = new ReadOnlyDictionary<string, object?>(attrs);
+
+            var metadata = chatClient.Metadata;
+            if (metadata.ProviderUri is not null)
+            {
+                attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();
+            }
+            if (metadata.ModelId is not null)
+            {
+                attrs[AIServiceExtensions.ModelIdKey] = metadata.ModelId;
+            }
+        }
+
+        /// <inheritdoc/>
+        public IReadOnlyDictionary<string, object?> Attributes { get; }
+
+        /// <inheritdoc/>
+        public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
+            ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            Verify.NotNull(chatHistory);
+
+            var completion = await this._chatClient.CompleteAsync(
+                chatHistory.Select(ToChatMessage).ToList(),
+                ToChatOptions(executionSettings, kernel),
+                cancellationToken).ConfigureAwait(false);
+
+            return completion.Choices.Select(ToChatMessageContent).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+            ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            Verify.NotNull(chatHistory);
+
+            await foreach (var update in this._chatClient.CompleteStreamingAsync(
+                chatHistory.Select(ToChatMessage).ToList(),
+                ToChatOptions(executionSettings, kernel),
+                cancellationToken).ConfigureAwait(false))
+            {
+                yield return ToStreamingChatMessageContent(update);
+            }
+        }
+    }
+
+    /// <summary>Converts a pair of <see cref="PromptExecutionSettings"/> and <see cref="Kernel"/> to a <see cref="ChatOptions"/>.</summary>
+    private static ChatOptions? ToChatOptions(PromptExecutionSettings? settings, Kernel? kernel)
+    {
+        if (settings is null)
+        {
+            return null;
+        }
+
+        if (settings.GetType() != typeof(PromptExecutionSettings))
+        {
+            // If the settings are of a derived type, roundtrip through JSON to the base type in order to try
+            // to get the derived strongly-typed properties to show up in the loosely-typed ExtensionData dictionary.
+            // This has the unfortunate effect of making all the ExtensionData values into JsonElements, so we lose
+            // some type fidelity. (As an alternative, we could introduce new interfaces that could be queried for
+            // in this method and implemented by the derived settings types to control how they're converted to
+            // ChatOptions.)
+            settings = JsonSerializer.Deserialize(
+                JsonSerializer.Serialize(settings, AbstractionsJsonContext.GetTypeInfo(settings.GetType(), null)),
+                AbstractionsJsonContext.Default.PromptExecutionSettings);
+        }
+
+        ChatOptions options = new()
+        {
+            ModelId = settings!.ModelId
+        };
+
+        if (settings!.ExtensionData is IDictionary<string, object> extensionData)
+        {
+            foreach (var entry in extensionData)
+            {
+                if (entry.Key.Equals("temperature", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out float temperature))
+                {
+                    options.Temperature = temperature;
+                }
+                else if (entry.Key.Equals("top_p", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out float top_p))
+                {
+                    options.TopP = top_p;
+                }
+                else if (entry.Key.Equals("top_k", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out int top_k))
+                {
+                    options.TopK = top_k;
+                }
+                else if (entry.Key.Equals("max_tokens", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out int maxTokens))
+                {
+                    options.MaxOutputTokens = maxTokens;
+                }
+                else if (entry.Key.Equals("frequency_penalty", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out float frequencyPenalty))
+                {
+                    options.FrequencyPenalty = frequencyPenalty;
+                }
+                else if (entry.Key.Equals("presence_penalty", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out float presence_penalty))
+                {
+                    options.PresencePenalty = presence_penalty;
+                }
+                else if (entry.Key.Equals("stop_sequences", StringComparison.OrdinalIgnoreCase) &&
+                    TryConvert(entry.Value, out IList<string>? stopSequences))
+                {
+                    options.StopSequences = stopSequences;
+                }
+                else if (entry.Key.Equals("response_format", StringComparison.OrdinalIgnoreCase) &&
+                    entry.Value is { } responseFormat)
+                {
+                    options.ResponseFormat = responseFormat switch
+                    {
+                        "text" => ChatResponseFormat.Text,
+                        "json_object" => ChatResponseFormat.Json,
+                        JsonElement e => ChatResponseFormat.ForJsonSchema(e.ToString()),
+                        _ => null,
+                    };
+                }
+                else
+                {
+                    // Roundtripping a derived PromptExecutionSettings through the base type will have put all the
+                    // object values in AdditionalProperties into JsonElements. Convert them back where possible.
+                    object? value = entry.Value;
+                    if (value is JsonElement jsonElement)
+                    {
+                        value = jsonElement.ValueKind switch
+                        {
+                            JsonValueKind.String => jsonElement.GetString(),
+                            JsonValueKind.Number => jsonElement.GetDouble(), // not perfect, but a reasonable heuristic
+                            JsonValueKind.True => true,
+                            JsonValueKind.False => false,
+                            JsonValueKind.Null => null,
+                            _ => value,
+                        };
+                    }
+
+                    (options.AdditionalProperties ??= [])[entry.Key] = value;
+                }
+            }
+        }
+
+        if (settings.FunctionChoiceBehavior?.GetConfiguration(new([]) { Kernel = kernel }).Functions is { Count: > 0 } functions)
+        {
+            options.ToolMode = settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior ? ChatToolMode.RequireAny : ChatToolMode.Auto;
+            options.Tools = functions.Select(f => f.AsAIFunction(kernel)).Cast<AITool>().ToList();
+        }
+
+        return options;
+
+        // Be a little lenient on the types of the values used in the extension data,
+        // e.g. allow doubles even when requesting floats.
+        static bool TryConvert<T>(object? value, [NotNullWhen(true)] out T? result)
+        {
+            if (value is not null)
+            {
+                // If the value is a T, use it.
+                if (value is T typedValue)
+                {
+                    result = typedValue;
+                    return true;
+                }
+
+                if (value is JsonElement json)
+                {
+                    // If the value is JsonElement, it likely resulted from JSON serializing as object.
+                    // Try to deserialize it as a T. This currently will only be successful either when
+                    // reflection-based serialization is enabled or T is one of the types special-cased
+                    // in the AbstractionsJsonContext. For other cases with NativeAOT, we would need to
+                    // have a JsonSerializationOptions with the relevant type information.
+                    if (AbstractionsJsonContext.TryGetTypeInfo(typeof(T), firstOptions: null, out JsonTypeInfo? jti))
+                    {
+                        try
+                        {
+                            result = (T)json.Deserialize(jti)!;
+                            return true;
+                        }
+                        catch (Exception e) when (e is ArgumentException or JsonException or NotSupportedException or InvalidOperationException)
+                        {
+                        }
+                    }
+                }
+                else
+                {
+                    // Otherwise, try to convert it to a T using Convert, in particular to handle conversions between numeric primitive types.
+                    try
+                    {
+                        result = (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
+                        return true;
+                    }
+                    catch (Exception e) when (e is ArgumentException or FormatException or InvalidCastException or OverflowException)
+                    {
+                    }
+                }
+            }
+
+            result = default;
+            return false;
+        }
+    }
+
+    /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="PromptExecutionSettings"/>.</summary>
+    private static PromptExecutionSettings? ToPromptExecutionSettings(ChatOptions? options)
+    {
+        if (options is null)
+        {
+            return null;
+        }
+
+        PromptExecutionSettings settings = new()
+        {
+            ExtensionData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
+            ModelId = options.ModelId,
+        };
+
+        // Transfer over all strongly-typed members of ChatOptions. We do not know the exact name the derived PromptExecutionSettings
+        // will pick for these options, so we just use the most common choice for each. (We could make this more exact by having an
+        // IPromptExecutionSettingsFactory interface with a method like `PromptExecutionSettings Create(ChatOptions options)`; that
+        // interface could then optionally be implemented by an IChatCompletionService, and this implementation could just ask the
+        // chat completion service to produce the PromptExecutionSettings it wants. But, this is already a problem
+        // with PromptExecutionSettings, regardless of ChatOptions... someone creating a PES without knowing what backend is being
+        // used has to guess at the names to use.)
+
+        if (options.Temperature is not null)
+        {
+            settings.ExtensionData["temperature"] = options.Temperature.Value;
+        }
+
+        if (options.MaxOutputTokens is not null)
+        {
+            settings.ExtensionData["max_tokens"] = options.MaxOutputTokens.Value;
+        }
+
+        if (options.FrequencyPenalty is not null)
+        {
+            settings.ExtensionData["frequency_penalty"] = options.FrequencyPenalty.Value;
+        }
+
+        if (options.PresencePenalty is not null)
+        {
+            settings.ExtensionData["presence_penalty"] = options.PresencePenalty.Value;
+        }
+
+        if (options.StopSequences is not null)
+        {
+            settings.ExtensionData["stop_sequences"] = options.StopSequences;
+        }
+
+        if (options.TopP is not null)
+        {
+            settings.ExtensionData["top_p"] = options.TopP.Value;
+        }
+
+        if (options.TopK is not null)
+        {
+            settings.ExtensionData["top_k"] = options.TopK.Value;
+        }
+
+        if (options.ResponseFormat is not null)
+        {
+            if (options.ResponseFormat is ChatResponseFormatText)
+            {
+                settings.ExtensionData["response_format"] = "text";
+            }
+            else if (options.ResponseFormat is ChatResponseFormatJson json)
+            {
+                settings.ExtensionData["response_format"] = json.Schema is not null ?
+                    JsonSerializer.Deserialize(json.Schema, AbstractionsJsonContext.Default.JsonElement) :
+                    "json_object";
+            }
+        }
+
+        // Transfer over loosely-typed members of ChatOptions.
+
+        if (options.AdditionalProperties is not null)
+        {
+            foreach (var kvp in options.AdditionalProperties)
+            {
+                if (kvp.Value is not null)
+                {
+                    settings.ExtensionData[kvp.Key] = kvp.Value;
+                }
+            }
+        }
+
+        // Transfer over tools. For IChatClient, we do not want automatic invocation, as that's a concern left up to
+        // components like FunctionInvocationChatClient. As such, based on the tool mode, we map to the appropriate
+        // FunctionChoiceBehavior, but always with autoInvoke: false.
+
+        if (options.Tools is { Count: > 0 })
+        {
+            var functions = options.Tools.OfType<AIFunction>().Select(f => new AIFunctionKernelFunction(f));
+            settings.FunctionChoiceBehavior =
+                options.ToolMode is null or AutoChatToolMode ? FunctionChoiceBehavior.Auto(functions, autoInvoke: false) :
+                options.ToolMode is RequiredChatToolMode { RequiredFunctionName: null } ? FunctionChoiceBehavior.Required(functions, autoInvoke: false) :
+                options.ToolMode is RequiredChatToolMode { RequiredFunctionName: string functionName } ? FunctionChoiceBehavior.Required(functions.Where(f => f.Name == functionName), autoInvoke: false) :
+                null;
+        }
+
+        return settings;
+    }
+
+    /// <summary>Converts a <see cref="ChatMessageContent"/> to a <see cref="ChatMessage"/>.</summary>
+    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
+    private static ChatMessage ToChatMessage(ChatMessageContent content)
+    {
+        ChatMessage message = new()
+        {
+            AdditionalProperties = content.Metadata is not null ? new(content.Metadata) : null,
+            AuthorName = content.AuthorName,
+            RawRepresentation = content.InnerContent,
+            Role = content.Role.Label is string label ? new ChatRole(label) : ChatRole.User,
+        };
+
+        foreach (var item in content.Items)
+        {
+            AIContent? aiContent = null;
+            switch (item)
+            {
+                case Microsoft.SemanticKernel.TextContent tc:
+                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
+                    break;
+
+                case Microsoft.SemanticKernel.ImageContent ic:
+                    aiContent =
+                        ic.DataUri is not null ? new Microsoft.Extensions.AI.ImageContent(ic.DataUri, ic.MimeType) :
+                        ic.Uri is not null ? new Microsoft.Extensions.AI.ImageContent(ic.Uri, ic.MimeType) :
+                        null;
+                    break;
+
+                case Microsoft.SemanticKernel.AudioContent ac:
+                    aiContent =
+                        ac.DataUri is not null ? new Microsoft.Extensions.AI.AudioContent(ac.DataUri, ac.MimeType) :
+                        ac.Uri is not null ? new Microsoft.Extensions.AI.AudioContent(ac.Uri, ac.MimeType) :
+                        null;
+                    break;
+
+                case Microsoft.SemanticKernel.BinaryContent bc:
+                    aiContent =
+                        bc.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(bc.DataUri, bc.MimeType) :
+                        bc.Uri is not null ? new Microsoft.Extensions.AI.DataContent(bc.Uri, bc.MimeType) :
+                        null;
+                    break;
+
+                case Microsoft.SemanticKernel.FunctionCallContent fcc:
+                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(fcc.Id ?? string.Empty, fcc.FunctionName, fcc.Arguments);
+                    break;
+
+                case Microsoft.SemanticKernel.FunctionResultContent frc:
+                    aiContent = new Microsoft.Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.FunctionName ?? string.Empty, frc.Result);
+                    break;
+            }
+
+            if (aiContent is not null)
+            {
+                aiContent.RawRepresentation = item.InnerContent;
+                aiContent.AdditionalProperties = item.Metadata is not null ? new(item.Metadata) : null;
+
+                message.Contents.Add(aiContent);
+            }
+        }
+
+        return message;
+    }
+
+    /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
+    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
+    private static ChatMessageContent ToChatMessageContent(ChatMessage message)
+    {
+        ChatMessageContent result = new()
+        {
+            AuthorName = message.AuthorName,
+            InnerContent = message.RawRepresentation,
+            Metadata = message.AdditionalProperties,
+            Role = new AuthorRole(message.Role.Value),
+        };
+
+        foreach (AIContent content in message.Contents)
+        {
+            KernelContent? resultContent = null;
+            switch (content)
+            {
+                case Microsoft.Extensions.AI.TextContent tc:
+                    resultContent = new Microsoft.SemanticKernel.TextContent(tc.Text);
+                    break;
+
+                case Microsoft.Extensions.AI.ImageContent ic:
+                    resultContent = ic.ContainsData ?
+                        new Microsoft.SemanticKernel.ImageContent(ic.Uri) :
+                        new Microsoft.SemanticKernel.ImageContent(new Uri(ic.Uri));
+                    break;
+
+                case Microsoft.Extensions.AI.AudioContent ac:
+                    resultContent = ac.ContainsData ?
+                        new Microsoft.SemanticKernel.AudioContent(ac.Uri) :
+                        new Microsoft.SemanticKernel.AudioContent(new Uri(ac.Uri));
+                    break;
+
+                case Microsoft.Extensions.AI.DataContent dc:
+                    resultContent = dc.ContainsData ?
+                        new Microsoft.SemanticKernel.BinaryContent(dc.Uri) :
+                        new Microsoft.SemanticKernel.BinaryContent(new Uri(dc.Uri));
+                    break;
+
+                case Microsoft.Extensions.AI.FunctionCallContent fcc:
+                    resultContent = new Microsoft.SemanticKernel.FunctionCallContent(fcc.Name, null, fcc.CallId, fcc.Arguments is not null ? new(fcc.Arguments) : null);
+                    break;
+
+                case Microsoft.Extensions.AI.FunctionResultContent frc:
+                    resultContent = new Microsoft.SemanticKernel.FunctionResultContent(frc.Name, null, frc.CallId, frc.Result);
+                    break;
+            }
+
+            if (resultContent is not null)
+            {
+                resultContent.Metadata = content.AdditionalProperties;
+                resultContent.InnerContent = content.RawRepresentation;
+
+                result.Items.Add(resultContent);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="StreamingChatCompletionUpdate"/>.</summary>
+    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
+    private static StreamingChatCompletionUpdate ToStreamingChatCompletionUpdate(StreamingChatMessageContent content)
+    {
+        StreamingChatCompletionUpdate update = new()
+        {
+            AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,
+            AuthorName = content.AuthorName,
+            ChoiceIndex = content.ChoiceIndex,
+            ModelId = content.ModelId,
+            Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,
+        };
+
+        foreach (var item in content.Items)
+        {
+            AIContent? aiContent = null;
+            switch (item)
+            {
+                case Microsoft.SemanticKernel.StreamingTextContent tc:
+                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
+                    break;
+
+                case Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent fcc:
+                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(
+                        fcc.CallId ?? string.Empty,
+                        fcc.Name ?? string.Empty,
+                        fcc.Arguments is not null ? JsonSerializer.Deserialize<IDictionary<string, object?>>(fcc.Arguments, AbstractionsJsonContext.Default.IDictionaryStringObject!) : null);
+                    break;
+            }
+
+            if (aiContent is not null)
+            {
+                aiContent.RawRepresentation = content;
+
+                update.Contents.Add(aiContent);
+            }
+        }
+
+        return update;
+    }
+
+    /// <summary>Converts a <see cref="StreamingChatCompletionUpdate"/> to a <see cref="StreamingChatMessageContent"/>.</summary>
+    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
+    private static StreamingChatMessageContent ToStreamingChatMessageContent(StreamingChatCompletionUpdate update)
+    {
+        StreamingChatMessageContent content = new(
+            update.Role is not null ? new AuthorRole(update.Role.Value.Value) : null,
+            null,
+            update.RawRepresentation,
+            update.ChoiceIndex,
+            metadata: update.AdditionalProperties)
+        {
+            ModelId = update.ModelId
+        };
+
+        foreach (AIContent item in update.Contents)
+        {
+            StreamingKernelContent? resultContent =
+                item is Microsoft.Extensions.AI.TextContent tc ? new Microsoft.SemanticKernel.StreamingTextContent(tc.Text) :
+                item is Microsoft.Extensions.AI.FunctionCallContent fcc ?
+                    new Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent(fcc.CallId, fcc.Name, fcc.Arguments is not null ?
+                        JsonSerializer.Serialize(fcc.Arguments!, AbstractionsJsonContext.Default.IDictionaryStringObject!) :
+                        null) :
+                null;
+
+            if (resultContent is not null)
+            {
+                content.Items.Add(resultContent);
+            }
+        }
+
+        return content;
+    }
+
+    /// <summary>Provides a <see cref="KernelFunction"/> that wraps an <see cref="AIFunction"/>.</summary>
+    /// <remarks>
+    /// The implementation should largely be unused, other than for its <see cref="AIFunction.Metadata"/>. The implementation of
+    /// <see cref="ChatCompletionServiceChatClient"/> only manufactures these to pass along to the underlying
+    /// <see cref="IChatCompletionService"/> with autoInvoke:false, which means the <see cref="IChatCompletionService"/>
+    /// implementation shouldn't be invoking these functions at all. As such, the <see cref="InvokeCoreAsync"/> and
+    /// <see cref="InvokeStreamingCoreAsync"/> methods both unconditionally throw, even though they could be implemented.
+    /// </remarks>
+    private sealed class AIFunctionKernelFunction : KernelFunction
+    {
+        private readonly AIFunction _aiFunction;
+
+        public AIFunctionKernelFunction(AIFunction aiFunction) :
+            base(aiFunction.Metadata.Name,
+                aiFunction.Metadata.Description,
+                aiFunction.Metadata.Parameters.Select(p => new KernelParameterMetadata(p.Name, AbstractionsJsonContext.Default.Options)
+                {
+                    Description = p.Description,
+                    DefaultValue = p.DefaultValue,
+                    IsRequired = p.IsRequired,
+                    ParameterType = p.ParameterType,
+                    Schema =
+                        p.Schema is JsonElement je ? new KernelJsonSchema(je) :
+                        p.Schema is string s ? new KernelJsonSchema(JsonSerializer.Deserialize(s, AbstractionsJsonContext.Default.JsonElement)) :
+                        null,
+                }).ToList(),
+                AbstractionsJsonContext.Default.Options,
+                new KernelReturnParameterMetadata(AbstractionsJsonContext.Default.Options)
+                {
+                    Description = aiFunction.Metadata.ReturnParameter.Description,
+                    ParameterType = aiFunction.Metadata.ReturnParameter.ParameterType,
+                    Schema =
+                        aiFunction.Metadata.ReturnParameter.Schema is JsonElement je ? new KernelJsonSchema(je) :
+                        aiFunction.Metadata.ReturnParameter.Schema is string s ? new KernelJsonSchema(JsonSerializer.Deserialize(s, AbstractionsJsonContext.Default.JsonElement)) :
+                        null,
+                })
+        {
+            this._aiFunction = aiFunction;
+        }
+
+        private AIFunctionKernelFunction(AIFunctionKernelFunction other, string pluginName) :
+            base(other.Name, pluginName, other.Description, other.Metadata.Parameters, AbstractionsJsonContext.Default.Options, other.Metadata.ReturnParameter)
+        {
+            this._aiFunction = other._aiFunction;
+        }
+
+        public override KernelFunction Clone(string pluginName)
+        {
+            Verify.NotNullOrWhiteSpace(pluginName);
+            return new AIFunctionKernelFunction(this, pluginName);
+        }
+
+        protected override ValueTask<FunctionResult> InvokeCoreAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+        {
+            // This should never be invoked, as instances are always passed with autoInvoke:false.
+            throw new NotSupportedException();
+        }
+
+        protected override IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+        {
+            // This should never be invoked, as instances are always passed with autoInvoke:false.
+            throw new NotSupportedException();
+        }
     }
 }
