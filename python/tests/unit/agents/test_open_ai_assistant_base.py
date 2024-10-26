@@ -201,6 +201,14 @@ from openai.types.beta.assistant_stream_event import (
     ThreadRunFailed,
     ThreadRunRequiresAction,
     ThreadRunStepCompleted,
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+    ThreadRunStepDelta,
+>>>>>>> Stashed changes
+=======
+    ThreadRunStepDelta,
+>>>>>>> Stashed changes
 )
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.function_tool import FunctionDefinition, FunctionTool
@@ -338,13 +346,44 @@ from openai.types.beta.threads.run import (
 >>>>>>> Stashed changes
 >>>>>>> head
 )
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from openai.types.beta.threads.runs import RunStep
+=======
+=======
+>>>>>>> Stashed changes
+from openai.types.beta.threads.runs import (
+    FunctionToolCallDelta,
+    RunStep,
+    RunStepDelta,
+    RunStepDeltaEvent,
+    ToolCallDeltaObject,
+    ToolCallsStepDetails,
+)
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 from openai.types.beta.threads.runs.code_interpreter_tool_call import (
     CodeInterpreter,
     CodeInterpreterToolCall,
 )
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from openai.types.beta.threads.runs.function_tool_call import Function as RunsFunction
 from openai.types.beta.threads.runs.function_tool_call import FunctionToolCall
+=======
+=======
+>>>>>>> Stashed changes
+from openai.types.beta.threads.runs.code_interpreter_tool_call_delta import CodeInterpreter as CodeInterpreterDelta
+from openai.types.beta.threads.runs.code_interpreter_tool_call_delta import CodeInterpreterToolCallDelta
+from openai.types.beta.threads.runs.function_tool_call import Function as RunsFunction
+from openai.types.beta.threads.runs.function_tool_call import FunctionToolCall
+<<<<<<< main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 from openai.types.beta.threads.runs.message_creation_step_details import (
     MessageCreation,
     MessageCreationStepDetails,
@@ -415,6 +454,20 @@ from openai.types.beta.threads.runs.run_step import Usage
 =======
 >>>>>>> head
 from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+=======
+from openai.types.beta.threads.runs.function_tool_call_delta import Function as FunctionForToolCallDelta
+from openai.types.beta.threads.runs.message_creation_step_details import MessageCreation, MessageCreationStepDetails
+from openai.types.beta.threads.runs.run_step import Usage
+>>>>>>> microsoft/main
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.shared.response_format_json_object import ResponseFormatJSONObject
@@ -836,6 +889,67 @@ def mock_run_completed():
 
 
 @pytest.fixture
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+def mock_run_incomplete():
+    return Run(
+        id="run_id",
+        status="incomplete",
+        assistant_id="assistant_id",
+        created_at=123456789,
+        instructions="instructions",
+        model="model",
+        object="thread.run",
+        thread_id="thread_id",
+        tools=[],
+        required_action=RequiredAction(
+            type="submit_tool_outputs",
+            submit_tool_outputs=RequiredActionSubmitToolOutputs(
+                tool_calls=[
+                    RequiredActionFunctionToolCall(
+                        id="tool_call_id", type="function", function=Function(arguments="{}", name="function_name")
+                    )
+                ]
+            ),
+        ),
+        parallel_tool_calls=True,
+    )
+
+
+@pytest.fixture
+def mock_run_cancelled():
+    return Run(
+        id="run_id",
+        status="cancelled",
+        assistant_id="assistant_id",
+        created_at=123456789,
+        instructions="instructions",
+        model="model",
+        object="thread.run",
+        thread_id="thread_id",
+        tools=[],
+        required_action=RequiredAction(
+            type="submit_tool_outputs",
+            submit_tool_outputs=RequiredActionSubmitToolOutputs(
+                tool_calls=[
+                    RequiredActionFunctionToolCall(
+                        id="tool_call_id", type="function", function=Function(arguments="{}", name="function_name")
+                    )
+                ]
+            ),
+        ),
+        parallel_tool_calls=True,
+    )
+
+
+@pytest.fixture
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 def mock_function_call_content():
     return FunctionCallContent(
         id="function_call_id", name="function_name", arguments={}
@@ -1348,6 +1462,33 @@ def create_thread_message_delta_mock():
     )
 
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+def create_thread_run_step_delta_mock():
+    function = FunctionForToolCallDelta(name="math-Add", arguments="", output=None)
+    function_tool_call = FunctionToolCallDelta(
+        index=0, type="function", id="call_RcvYVzsppjjnUZcC47fAlwTW", function=function
+    )
+    code = CodeInterpreterDelta(input="import os")
+    code_tool_call = CodeInterpreterToolCallDelta(
+        index=1, type="code_interpreter", id="call_RcvYVzsppjjnUZcC47fAlwTW", code_interpreter=code
+    )
+
+    step_details = ToolCallDeltaObject(type="tool_calls", tool_calls=[function_tool_call, code_tool_call])
+    delta = RunStepDelta(step_details=step_details)
+    run_step_delta_event = RunStepDeltaEvent(
+        id="step_FXzQ44kRmoeHOPUstkEI1UL5", delta=delta, object="thread.run.step.delta"
+    )
+    return ThreadRunStepDelta(data=run_step_delta_event, event="thread.run.step.delta")
+
+
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 def mock_thread_requires_action_run():
     return ThreadRunRequiresAction(
         data=Run(
@@ -2892,6 +3033,41 @@ async def test_invoke_stream(
 
 
 @pytest.mark.asyncio
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+async def test_invoke_stream_with_function_call(
+    azure_openai_assistant_agent,
+    mock_assistant,
+    mock_thread_messages,
+    azure_openai_unit_test_env,
+):
+    events = [create_thread_run_step_delta_mock()]
+
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.threads = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+        mock_client.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        mock_client.beta.threads.runs = MagicMock()
+        mock_client.beta.threads.runs.stream = MagicMock(return_value=MockStream(events))
+
+        mock_client.beta.threads.messages.retrieve = AsyncMock(side_effect=mock_thread_messages)
+
+        azure_openai_assistant_agent.assistant = await azure_openai_assistant_agent.create_assistant()
+
+        async for content in azure_openai_assistant_agent.invoke_stream("thread_id"):
+            assert content is not None
+
+
+@pytest.mark.asyncio
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 async def test_invoke_stream_code_output(
     azure_openai_assistant_agent,
     mock_assistant,
@@ -4206,10 +4382,70 @@ async def test_poll_run_status(
             return_value=mock_run_completed
         )
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
         run = await azure_openai_assistant_agent._poll_run_status(
             run=mock_run_required_action, thread_id="test_thread_id"
         )
         assert run.status == "completed"
+=======
+=======
+>>>>>>> Stashed changes
+        # Test successful polling
+        run = await azure_openai_assistant_agent._poll_run_status(
+            run=mock_run_required_action, thread_id="test_thread_id"
+        )
+        assert run.status == "completed", f"Expected status 'completed', but got '{run.status}'"
+
+        # Test timeout scenario
+        mock_client.beta.threads.runs.retrieve = AsyncMock(side_effect=TimeoutError)
+        azure_openai_assistant_agent.polling_options.run_polling_timeout = timedelta(milliseconds=10)
+
+        with pytest.raises(AgentInvokeException) as excinfo:
+            await azure_openai_assistant_agent._poll_run_status(
+                run=mock_run_required_action, thread_id="test_thread_id"
+            )
+
+        assert "Polling timed out" in str(excinfo.value)
+        assert f"after waiting {azure_openai_assistant_agent.polling_options.run_polling_timeout}" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_poll_run_status_incomplete(
+    azure_openai_assistant_agent, mock_run_required_action, mock_run_incomplete, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+
+        mock_client.beta.threads.runs.retrieve = AsyncMock(return_value=mock_run_incomplete)
+
+        run = await azure_openai_assistant_agent._poll_run_status(
+            run=mock_run_required_action, thread_id="test_thread_id"
+        )
+
+        assert run.status in azure_openai_assistant_agent.error_message_states
+
+
+@pytest.mark.asyncio
+async def test_poll_run_status_cancelled(
+    azure_openai_assistant_agent, mock_run_required_action, mock_run_cancelled, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+
+        mock_client.beta.threads.runs.retrieve = AsyncMock(return_value=mock_run_cancelled)
+
+        run = await azure_openai_assistant_agent._poll_run_status(
+            run=mock_run_required_action, thread_id="test_thread_id"
+        )
+
+        assert run.status in azure_openai_assistant_agent.error_message_states
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
 
 @pytest.mark.asyncio

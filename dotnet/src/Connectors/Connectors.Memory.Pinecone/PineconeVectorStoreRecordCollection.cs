@@ -73,6 +73,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.VectorData;
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+using Pinecone;
+>>>>>>> Stashed changes
+=======
+using Pinecone;
+>>>>>>> Stashed changes
 using Pinecone.Grpc;
 using Sdk = Pinecone;
 
@@ -94,6 +102,18 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     private const string UpsertOperationName = "Upsert";
     private const string DeleteOperationName = "Delete";
     private const string GetOperationName = "Get";
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+    private const string QueryOperationName = "Query";
+
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+>>>>>>> Stashed changes
+=======
+    private const string QueryOperationName = "Query";
+
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
+>>>>>>> Stashed changes
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
@@ -453,7 +473,15 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
             DatabaseName,
             this.CollectionName,
             GetOperationName,
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
             () => results.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)).ToList());
+=======
+            () => results.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
+>>>>>>> Stashed changes
+=======
+            () => results.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
+>>>>>>> Stashed changes
 
         foreach (var record in records)
         {
@@ -574,10 +602,86 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
 =======
     /// <inheritdoc />
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
 >>>>>>> upstream/main
     {
         throw new NotImplementedException();
+=======
+=======
+>>>>>>> Stashed changes
+<<<<<<< main
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+>>>>>>> upstream/main
+=======
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+>>>>>>> microsoft/main
+    {
+        Verify.NotNull(vector);
+
+        if (vector is not ReadOnlyMemory<float> floatVector)
+        {
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Pinecone connector." +
+                $"Supported types are: {typeof(ReadOnlyMemory<float>).FullName}");
+        }
+
+        // Resolve options and build filter clause.
+        var internalOptions = options ?? s_defaultVectorSearchOptions;
+        var mapperOptions = new StorageToDataModelMapperOptions { IncludeVectors = options?.IncludeVectors ?? false };
+        var filter = PineconeVectorStoreCollectionSearchMapping.BuildSearchFilter(
+            internalOptions.Filter?.FilterClauses,
+            this._propertyReader.StoragePropertyNamesMap);
+
+        // Get the current index.
+        var indexNamespace = this.GetIndexNamespace();
+        var index = await this.GetIndexAsync(this.CollectionName, cancellationToken).ConfigureAwait(false);
+
+        // Search.
+        var results = await this.RunOperationAsync(
+            QueryOperationName,
+            () => index.Query(
+                floatVector.ToArray(),
+                (uint)(internalOptions.Skip + internalOptions.Top),
+                filter,
+                sparseValues: null,
+                indexNamespace,
+                internalOptions.IncludeVectors,
+                includeMetadata: true,
+                cancellationToken)).ConfigureAwait(false);
+
+        // Skip the required results for paging.
+        var skippedResults = results.Skip(internalOptions.Skip);
+
+        // Map the results.
+        var records = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            QueryOperationName,
+            () =>
+            {
+                // First convert to Vector objects, since the
+                // mapper requires these as input.
+                var vectorResults = skippedResults.Select(x => (
+                    Vector: new Vector()
+                    {
+                        Id = x.Id,
+                        Values = x.Values ?? Array.Empty<float>(),
+                        Metadata = x.Metadata,
+                        SparseValues = x.SparseValues
+                    },
+                    x.Score));
+
+                return vectorResults.Select(x => new VectorSearchResult<TRecord>(
+                    this._mapper.MapFromStorageToDataModel(x.Vector, mapperOptions),
+                    x.Score));
+            });
+
+        return new VectorSearchResults<TRecord>(records.ToAsyncEnumerable());
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     }
 
 <<<<<<< main
