@@ -66,6 +66,10 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [Google_GeminiChatCompletionStreaming](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Google_GeminiChatCompletionStreaming.cs)
 - [Google_GeminiGetModelResult](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Google_GeminiGetModelResult.cs)
 - [Google_GeminiVision](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Google_GeminiVision.cs)
+- [Anthropic_ChatCompletion](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Anthropic_ChatCompletion.cs)
+- [Anthropic_ChatCompletionStreaming](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Anthropic_ChatCompletionStreaming.cs)
+- [Anthropic_Vision](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Anthropic_Vision.cs)
+- [Anthropic_ProvidersSetup](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Anthropic_ProvidersSetup.cs)
 - [OpenAI_ChatCompletion](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/OpenAI_ChatCompletion.cs)
 
 - [OpenAI_ChatCompletionMultipleChoices](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/OpenAI_ChatCompletionMultipleChoices.cs)
