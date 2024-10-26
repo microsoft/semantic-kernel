@@ -1,147 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-=======
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> head
-<<<<<<< main
-=======
 
 from typing import Any, Dict, List, Literal, Optional
->>>>>>> ms/small_fixes
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
 
 from typing import Any, Literal
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
+from pydantic import Field
+
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 class OllamaPromptExecutionSettings(PromptExecutionSettings):
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
-<<<<<<< main
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-=======
-<<<<<<< main
->>>>>>> main
->>>>>>> Stashed changes
-=======
-=======
-<<<<<<< main
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
+
     """Settings for Ollama prompt execution."""
 
     format: Literal["json"] | None = None
@@ -149,82 +21,11 @@ class OllamaPromptExecutionSettings(PromptExecutionSettings):
 
     # TODO(@taochen): Add individual properties for execution settings and
     # convert them to the appropriate types in the options dictionary.
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-=======
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> head
-=======
+
     ai_model_id: str = Field("", serialization_alias="model")
     format: Optional[Literal["json"]] = None
     options: Optional[Dict[str, Any]] = None
     stream: bool = False
->>>>>>> ms/small_fixes
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
 
 
 class OllamaTextPromptExecutionSettings(OllamaPromptExecutionSettings):
@@ -238,6 +39,12 @@ class OllamaTextPromptExecutionSettings(OllamaPromptExecutionSettings):
 
 class OllamaChatPromptExecutionSettings(OllamaPromptExecutionSettings):
     """Settings for Ollama chat prompt execution."""
+
+    tools: list[dict[str, Any]] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
 
 
 class OllamaEmbeddingPromptExecutionSettings(OllamaPromptExecutionSettings):

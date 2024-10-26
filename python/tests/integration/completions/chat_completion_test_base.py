@@ -1,78 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-<<<<<<< main
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-
-=======
 import logging
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-import logging
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
+import os
 import platform
->>>>>>> upstream/main
-=======
-<<<<<<< div
-=======
 import logging
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> head
->>>>>>> div
 import sys
 from functools import reduce
 from typing import Annotated, Any
@@ -129,81 +60,10 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-<<<<<<< main
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-=======
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> head
 logger: logging.Logger = logging.getLogger(__name__)
 
 logging.basicConfig(level=logging.DEBUG)
 
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
 mistral_ai_setup: bool = False
 try:
     MistralAIChatCompletion()
@@ -238,7 +98,6 @@ try:
     anthropic_setup = True
 except ServiceInitializationError:
     anthropic_setup = False
-=======
 # This can later also be simplified as map probably
 mistral_ai_setup: bool = is_service_setup_for_testing("MISTRALAI_API_KEY")
 ollama_setup: bool = is_service_setup_for_testing("OLLAMA_MODEL")
@@ -246,12 +105,33 @@ google_ai_setup: bool = is_service_setup_for_testing("GOOGLE_AI_API_KEY")
 vertex_ai_setup: bool = is_service_setup_for_testing("VERTEX_AI_PROJECT_ID")
 anthropic_setup: bool = is_service_setup_for_testing("ANTHROPIC_API_KEY")
 onnx_setup: bool = is_service_setup_for_testing("ONNX_GEN_AI_CHAT_MODEL_FOLDER")
+# Make sure all services are setup for before running the tests
+# The following exceptions apply:
+# 1. OpenAI and Azure OpenAI services are always setup for testing.
+# 2. Bedrock services don't use API keys and model providers are tested individually,
+#    so no environment variables are required.
+mistral_ai_setup: bool = is_service_setup_for_testing(
+    ["MISTRALAI_API_KEY", "MISTRALAI_CHAT_MODEL_ID"], raise_if_not_set=False
+)  # We don't have a MistralAI deployment
+# There is no single model in Ollama that supports both image and tool call in chat completion
+# We are splitting the Ollama test into three services: chat, image, and tool call. The chat model
+# can be any model that supports chat completion.
+ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID"])
+ollama_image_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_IMAGE"])
+ollama_tool_call_setup: bool = is_service_setup_for_testing(["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"])
+google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY", "GOOGLE_AI_GEMINI_MODEL_ID"])
+vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID", "VERTEX_AI_GEMINI_MODEL_ID"])
+onnx_setup: bool = is_service_setup_for_testing(
+    ["ONNX_GEN_AI_CHAT_MODEL_FOLDER"], raise_if_not_set=False
+)  # Tests are optional for ONNX
+anthropic_setup: bool = is_service_setup_for_testing(
+    ["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"], raise_if_not_set=False
+)  # We don't have an Anthropic deployment
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:
     from semantic_kernel.connectors.ai.onnx import OnnxGenAIChatCompletion, OnnxGenAIPromptExecutionSettings
     from semantic_kernel.connectors.ai.onnx.utils import ONNXTemplate
->>>>>>> upstream/main
 
 
 # A mock plugin that contains a function that returns a complex object.
@@ -309,6 +189,18 @@ class ChatCompletionTestBase(CompletionTestBase):
                 MistralAIChatPromptExecutionSettings,
             ),
             "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
+            "ollama_image": (
+                OllamaChatCompletion(ai_model_id=os.environ["OLLAMA_CHAT_MODEL_ID_IMAGE"])
+                if ollama_image_setup
+                else None,
+                OllamaChatPromptExecutionSettings,
+            ),
+            "ollama_tool_call": (
+                OllamaChatCompletion(ai_model_id=os.environ["OLLAMA_CHAT_MODEL_ID_TOOL_CALL"])
+                if ollama_tool_call_setup
+                else None,
+                OllamaChatPromptExecutionSettings,
+            ),
             "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
             "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
             "onnx_gen_ai": (

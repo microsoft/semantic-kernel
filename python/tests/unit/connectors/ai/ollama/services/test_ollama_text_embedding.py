@@ -1,62 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
-=======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
 # Copyright (c) Microsoft. All rights reserved.
 
 from unittest.mock import patch
@@ -87,6 +28,13 @@ def test_custom_client(model_id, custom_client):
 
 
 @pytest.mark.parametrize("exclude_list", [["OLLAMA_MODEL"]], indirect=True)
+def test_invalid_ollama_settings():
+    """Test that the service initializes incorrectly with invalid settings."""
+    with pytest.raises(ServiceInitializationError):
+        _ = OllamaTextEmbedding(ai_model_id=123)
+
+
+@pytest.mark.parametrize("exclude_list", [["OLLAMA_EMBEDDING_MODEL_ID"]], indirect=True)
 def test_init_empty_model_id(ollama_unit_test_env):
     """Test that the service initializes incorrectly with an empty model id."""
     with pytest.raises(ServiceInitializationError):
@@ -189,43 +137,6 @@ async def test_raw_embedding_list_input(mock_embedding_client, model_id, prompt)
     assert mock_embedding_client.call_count == 2
     mock_embedding_client.assert_called_with(
         model=model_id, prompt=prompt, options=settings.options
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-=======
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> head
-=======
 from unittest.mock import patch
 
 import pytest
@@ -253,39 +164,4 @@ async def test_embedding(mock_post):
             "texts": ["test_prompt"],
             "options": {},
         },
->>>>>>> f40c1f2075e2443c31c57c34f5f66c2711a8db75
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
     )

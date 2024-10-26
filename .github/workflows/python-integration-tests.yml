@@ -150,6 +150,12 @@ jobs:
             ollama pull ${{ vars.OLLAMA_MODEL }}
             ollama list
           fi
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          ollama list
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
@@ -298,6 +304,11 @@ jobs:
           ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
           ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
           OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
+          OLLAMA_CHAT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
+          OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
+          OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
+          OLLAMA_TEXT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llava-phi3
+          OLLAMA_EMBEDDING_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
           GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
           GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
           GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
@@ -435,7 +446,12 @@ jobs:
           if ${{ vars.OLLAMA_MODEL != '' }}; then
             ollama pull ${{ vars.OLLAMA_MODEL }}
             ollama list
-          fi
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          ollama list
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
@@ -502,6 +518,11 @@ jobs:
           ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
           ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
           OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
+          OLLAMA_CHAT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
+          OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
+          OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
+          OLLAMA_TEXT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llava-phi3
+          OLLAMA_EMBEDDING_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
           GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
           GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
           GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
