@@ -11,7 +11,7 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
     /// <summary>
     /// Event Id used internally to initiate the map operation.
     /// </summary>
-    public const string MapEventId = "Map";
+    public const string MapEventId = "StartMap";
 
     /// <summary>
     /// The map operation.
@@ -19,18 +19,12 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
     public KernelProcess Operation { get; }
 
     /// <summary>
-    /// The name of the input parameter for the map operation.
-    /// </summary>
-    public string InputParameterName { get; }
-
-    /// <summary>
     /// Creates a new instance of the <see cref="KernelProcess"/> class.
     /// </summary>
     /// <param name="state">The process state.</param>
     /// <param name="operation">The map operation.</param>
-    /// <param name="inputParameter">name of the input parameter for the map operation.</param>
-    /// <param name="edges">The edges for the map.</param> // %%% NEEDED ???
-    public KernelProcessMap(KernelProcessMapState state, KernelProcess operation, string inputParameter, Dictionary<string, List<KernelProcessEdge>> edges)
+    /// <param name="edges">The edges for the map.</param>
+    public KernelProcessMap(KernelProcessMapState state, KernelProcess operation, Dictionary<string, List<KernelProcessEdge>> edges)
         : base(typeof(KernelProcessMap), state, edges)
     {
         Verify.NotNull(operation, nameof(operation));
@@ -38,6 +32,5 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
         Verify.NotNullOrWhiteSpace(state.Id, $"{nameof(state)}.{nameof(KernelProcessMapState.Id)}");
 
         this.Operation = operation;
-        this.InputParameterName = inputParameter;
     }
 }

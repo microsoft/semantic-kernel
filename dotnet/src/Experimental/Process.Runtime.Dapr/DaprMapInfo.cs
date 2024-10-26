@@ -32,7 +32,7 @@ public sealed record DaprMapInfo : DaprStepInfo
 
         KernelProcess mapOperation = this.MapStep.ToKernelProcess();
 
-        return new KernelProcessMap(state, mapOperation, "???", this.Edges);
+        return new KernelProcessMap(state, mapOperation, this.Edges);
     }
 
     /// <summary>

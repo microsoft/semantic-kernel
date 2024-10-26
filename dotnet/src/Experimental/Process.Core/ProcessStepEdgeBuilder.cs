@@ -19,7 +19,7 @@ public sealed class ProcessStepEdgeBuilder
     /// <summary>
     /// The source step of the edge.
     /// </summary>
-    internal ProcessStepBuilder Source { get; init; }
+    internal ProcessStepBuilder Source { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepEdgeBuilder"/> class.
@@ -28,8 +28,8 @@ public sealed class ProcessStepEdgeBuilder
     /// <param name="eventId">The Id of the event.</param>
     internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId)
     {
-        Verify.NotNull(source);
-        Verify.NotNullOrWhiteSpace(eventId);
+        Verify.NotNull(source, nameof(source));
+        Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
 
         this.Source = source;
         this.EventId = eventId;

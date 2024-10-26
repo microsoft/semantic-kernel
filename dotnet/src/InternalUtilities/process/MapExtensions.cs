@@ -8,23 +8,23 @@ namespace Microsoft.SemanticKernel.Process.Runtime;
 
 internal static class MapExtensions
 {
-    public static IEnumerable GetMapInput(this ProcessMessage message, string parameterName, ILogger logger)
+    public static IEnumerable GetMapInput(this ProcessMessage message, ILogger logger)
     {
-        if (!message.Values.TryGetValue(parameterName, out object? values))
+        if (message.TargetEventData == null)
         {
-            string errorMessage = $"Internal Map Error: Input parameter not present - {parameterName}";
+            string errorMessage = $"Internal Map Error: Input data not present - {message.SourceId}/{message.DestinationId}.";
             logger.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException($"Internal Map Error: Input parameter not present - {parameterName}");
+            throw new KernelException(errorMessage);
         }
 
-        Type valueType = values!.GetType();
+        Type valueType = message.TargetEventData.GetType();
         if (!typeof(IEnumerable).IsAssignableFrom(valueType) || !valueType.HasElementType)
         {
-            string errorMessage = $"Internal Map Error: Input parameter is not enumerable - {parameterName} [{valueType.FullName}]";
+            string errorMessage = $"Internal Map Error: Input parameter is not enumerable - {message.SourceId}/{message.DestinationId} [{valueType.FullName}].";
             logger.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException($"Internal Map Error: Input parameter is not enumerable - {parameterName} [{valueType.FullName}]");
+            throw new KernelException(errorMessage);
         }
 
-        return (IEnumerable)values;
+        return (IEnumerable)message.TargetEventData;
     }
 }

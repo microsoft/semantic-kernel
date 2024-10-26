@@ -2,6 +2,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using VerifyTests;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
@@ -21,15 +23,15 @@ public class ProcessMapBuilderTests
         ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
 
         // Act
-        ProcessMapBuilder map = new(step);
+        ProcessMapBuilder map = new(new ProcessFunctionTargetBuilder(step));
 
         // Assert
         Assert.NotNull(map.Id);
         Assert.NotNull(map.Name);
         Assert.Contains(nameof(SimpleTestStep), map.Name);
-        Assert.NotNull(map.TargetFunction);
-        Assert.Equal(nameof(SimpleTestStep.TestFunction), map.TargetFunction.FunctionName);
-        Assert.Equal("value", map.TargetFunction.ParameterName);
+        Assert.NotNull(map._mapTarget);
+        Assert.Equal(nameof(SimpleTestStep.TestFunction), map._mapTarget.FunctionName);
+        Assert.Equal("value", map._mapTarget.ParameterName);
     }
 
     /// <summary>
@@ -44,15 +46,15 @@ public class ProcessMapBuilderTests
         process.OnInputEvent("ComputeMapValue").SendEventTo(new ProcessFunctionTargetBuilder(step));
 
         // Act
-        ProcessMapBuilder map = new(process, "ComputeMapValue");
+        ProcessMapBuilder map = new(process.WhereInputEventIs("ComputeMapValue"));
 
         // Assert
         Assert.NotNull(map.Id);
         Assert.NotNull(map.Name);
         Assert.Contains(process.Name, map.Name);
-        Assert.NotNull(map.TargetFunction);
-        Assert.Equal(nameof(SimpleTestStep.TestFunction), map.TargetFunction.FunctionName);
-        Assert.Equal("value", map.TargetFunction.ParameterName);
+        Assert.NotNull(map._mapTarget);
+        Assert.Equal(nameof(SimpleTestStep.TestFunction), map._mapTarget.FunctionName);
+        Assert.Equal("value", map._mapTarget.ParameterName);
     }
 
     /// <summary>
@@ -63,7 +65,7 @@ public class ProcessMapBuilderTests
     {
         // Arrange
         ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
-        ProcessMapBuilder map = new(step);
+        ProcessMapBuilder map = new(new ProcessFunctionTargetBuilder(step));
 
         // Act
         ProcessStepBuilder<SimpleTestStep> step2 = new($"Two{nameof(SimpleTestStep)}");
@@ -84,7 +86,7 @@ public class ProcessMapBuilderTests
     {
         // Arrange
         ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
-        ProcessMapBuilder map = new(step);
+        ProcessMapBuilder map = new(new ProcessFunctionTargetBuilder(step));
 
         // Act
         ProcessStepBuilder<SimpleTestStep> step2 = new($"Two{nameof(SimpleTestStep)}");
@@ -114,7 +116,7 @@ public class ProcessMapBuilderTests
     {
         // Arrange
         ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
-        ProcessMapBuilder map = new(step);
+        ProcessMapBuilder map = new(new ProcessFunctionTargetBuilder(step));
 
         // Act
         Assert.Throws<NotImplementedException>(() => map.GetFunctionMetadataMap());
@@ -129,7 +131,7 @@ public class ProcessMapBuilderTests
     {
         // Arrange
         ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
-        ProcessMapBuilder map = new(step);
+        ProcessMapBuilder map = new(new ProcessFunctionTargetBuilder(step));
 
         // Act
         KernelProcessStepInfo processMap = map.BuildStep();
@@ -143,42 +145,26 @@ public class ProcessMapBuilderTests
 
     /// <summary>
     /// Verify <see cref="ProcessMapBuilder.BuildStep"/> throws an exception
-    /// if the target does not accept any parameters.
+    /// if the target is a <see cref="ProcessBuilder"/>> without the having
+    /// <see cref="ProcessFunctionTargetBuilder.TargetEventId"/> defined.
+    /// While this state should not be achievable by external callers, the
+    /// underlying state contracts do permit this permutation.
     /// </summary>
     [Fact]
     public void ProcessMapBuilderFailsBuildForInvalidTarget()
     {
         // Arrange
-        ProcessStepBuilder<InvalidTestStep> step = new($"One{nameof(InvalidTestStep)}");
-        ProcessMapBuilder map = new(step);
+        ProcessBuilder process = new(nameof(InvalidTestStep));
+        ProcessStepBuilder step = process.AddStepFromType<SimpleTestStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(step));
+        ProcessFunctionTargetBuilder stepTarget = new(step, nameof(SimpleTestStep.TestFunction));
+        ProcessFunctionTargetBuilder invalidTarget = stepTarget with { Step = process };
 
         // Act & Assert
-        Assert.Throws<KernelException>(() => map.BuildStep());
+        Assert.Throws<InvalidOperationException>(() => new ProcessMapBuilder(invalidTarget));
     }
 
-    /// <summary>
-    /// Verify <see cref="ProcessMapBuilder.BuildStep"/> throws an exception
-    /// if the target does not accept any parameters.
-    /// </summary>
-    [Fact]
-    public void ProcessMapBuilderRequiresFunctionTarget()
-    {
-        // Arrange
-        ProcessStepBuilder<ComplexTestStep> step = new($"One{nameof(ComplexTestStep)}");
-        ProcessMapBuilder map = new(step);
-
-        // Act & Assert
-        Assert.Throws<KernelException>(() => map.BuildStep());
-
-        // Arrange (add target)
-        map.ForTarget(nameof(ComplexTestStep.TestFunctionA));
-
-        // Act
-        KernelProcessStepInfo processMap = map.BuildStep();
-
-        // Assert
-        Assert.NotNull(processMap);
-    }
+    // %%% PROVIDE MAP AS TARGET
 
     private sealed class SimpleTestStep : KernelProcessStep<TestState>
     {

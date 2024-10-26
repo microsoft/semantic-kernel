@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,13 +20,16 @@ internal class LocalStep : IKernelProcessMessageChannel
     private readonly Lazy<ValueTask> _initializeTask;
     private readonly KernelProcessStepInfo _stepInfo;
     private readonly string _eventNamespace;
-    private ILogger? _logger;
+
+    private ILogger? _logger; // Note: Use the Logger property to access this field.
     private ILogger Logger => this._logger ??= this.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? NullLogger.Instance;
+
     protected readonly Kernel _kernel;
+    protected readonly Dictionary<string, KernelFunction> _functions = [];
+
     protected KernelProcessStepState _stepState;
     protected Dictionary<string, Dictionary<string, object?>?>? _inputs = [];
     protected Dictionary<string, Dictionary<string, object?>?>? _initialInputs = [];
-    protected readonly Dictionary<string, KernelFunction> _functions = [];
     protected Dictionary<string, List<KernelProcessEdge>> _outputEdges;
 
     /// <summary>
@@ -51,7 +53,6 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._stepInfo = stepInfo;
         this._stepState = stepInfo.State;
         this._initializeTask = new Lazy<ValueTask>(this.InitializeStepAsync);
-        //this._logger = this.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
     }
@@ -72,14 +73,14 @@ internal class LocalStep : IKernelProcessMessageChannel
     internal string? ParentProcessId { get; init; }
 
     /// <summary>
+    /// An event filter that can be used to intercept events emitted by the step.
+    /// </summary>
+    internal ProcessEventFilter? EventFilter { get; init; }
+
+    /// <summary>
     /// An instance of <see cref="LoggerFactory"/> used to create loggers.
     /// </summary>
     internal ILoggerFactory? LoggerFactory { get; init; }
-
-    /// <summary>
-    /// %%%
-    /// </summary>
-    public ProcessEventFilter? EventFilter { get; init; }
 
     /// <summary>
     /// Retrieves all events that have been emitted by this step in the previous superstep.

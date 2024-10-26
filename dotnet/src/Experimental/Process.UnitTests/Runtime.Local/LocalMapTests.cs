@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,7 +24,9 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultAsFirstAsync));
 
-        ProcessMapBuilder mapStep = process.AddMapFromType<ComputeStep>();
+        //ProcessMapBuilder mapStep = process.AddMapFromType<ComputeStep>();
+        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
+        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
         process
             .OnInputEvent("Start")
             .SendEventTo(mapStep);
@@ -52,7 +56,8 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultFilterEventAsync));
 
-        ProcessMapBuilder mapStep = process.AddMapFromType<ComputeStep>();
+        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
+        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
         process
             .OnInputEvent("Start")
             .SendEventTo(mapStep);
@@ -82,7 +87,8 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultWithTransformAsync));
 
-        ProcessMapBuilder mapStep = process.AddMapFromType<FormatStep>();
+        ProcessStepBuilder formatStep = process.AddStepFromType<FormatStep>();
+        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(formatStep));
         process
             .OnInputEvent("Start")
             .SendEventTo(mapStep);
@@ -112,7 +118,9 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultOperationTargetAsync));
 
-        ProcessMapBuilder mapStep = process.AddMapFromType<ComplexStep>().ForTarget(ComplexStep.ComputeFunction);
+        ProcessStepBuilder computeStep = process.AddStepFromType<ComplexStep>();
+        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep, ComplexStep.ComputeFunction));
+
         process
             .OnInputEvent("Start")
             .SendEventTo(mapStep);
@@ -147,7 +155,8 @@ public class LocalMapTests
             .OnInputEvent("Start")
             .SendEventTo(new ProcessFunctionTargetBuilder(initStep));
 
-        ProcessMapBuilder mapStep = process.AddMapFromType<ComputeStep>();
+        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
+        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
         initStep
             .OnEvent(InitialStep.EventId)
             .SendEventTo(mapStep);
@@ -177,7 +186,8 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultMultiEventAsync));
 
-        ProcessMapBuilder mapStep = process.AddMapFromType<ComputeStep>();
+        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
+        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
         process
             .OnInputEvent("Start")
             .SendEventTo(mapStep);
@@ -215,10 +225,10 @@ public class LocalMapTests
         ProcessBuilder mapProcess = new("MapOperation");
         ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
         mapProcess
-            .OnInputEvent("Map")
+            .OnInputEvent("StartMap")
             .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
 
-        ProcessMapBuilder mapStep = process.AddMapFromProcess(mapProcess, "Map");
+        ProcessMapBuilder mapStep = process.AddMapForTarget(mapProcess.WhereInputEventIs("StartMap"));
         process
             .OnInputEvent("Start")
             .SendEventTo(mapStep);
@@ -238,15 +248,94 @@ public class LocalMapTests
         VerifyMapResult(kernel, UnionStep.ResultKey, 55L);
     }
 
-    private async Task RunProcessAsync(Kernel kernel, KernelProcess process, object input, string inputEvent)
+    /// <summary>
+    /// Validates the <see cref="LocalMap"/> result even when an invalid edge is
+    /// introduced to the map-operation.
+    /// </summary>
+    [Fact]
+    public async Task ProcessMapResultWithTargetInvalidAsync()
     {
-        using LocalKernelProcessContext localProcess = // %%% LOGGER
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessMapResultWithTargetInvalidAsync));
+
+        //ProcessMapBuilder mapStep = process.AddMapFromType<ComputeStep>();
+        ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
+        ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        process
+            .OnInputEvent("Start")
+            .SendEventTo(mapStep);
+
+        // CountStep is not part of the map operation, rather it has been defined on the "outer" process.
+        ProcessStepBuilder countStep = process.AddStepFromType<CountStep>();
+        computeStep
+            .OnEvent(ComputeStep.SquareEventId)
+            .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
+
+        ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>();
+        mapStep
+            .OnEvent(ComputeStep.SquareEventId)
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, UnionStep.SumFunction));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<AggregateException>(() => this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start"));
+    }
+
+    /// <summary>
+    /// Validates the <see cref="LocalMap"/> result even when an invalid edge is
+    /// introduced to the map-operation.
+    /// </summary>
+    [Fact]
+    public async Task ProcessMapResultWithTargetExtraAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessMapResultProcessOperationAsync));
+
+        ProcessBuilder mapProcess = new("MapOperation");
+        ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
+        mapProcess
+            .OnInputEvent("Map")
+            .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
+
+        ProcessStepBuilder countStep = mapProcess.AddStepFromType<CountStep>();
+        computeStep
+            .OnEvent(ComputeStep.SquareEventId)
+            .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
+
+        ProcessMapBuilder mapStep = process.AddMapForTarget(mapProcess.WhereInputEventIs("Map"));
+        process
+            .OnInputEvent("Start")
+            .SendEventTo(mapStep);
+
+        ProcessStepBuilder unionStep = process.AddStepFromType<UnionStep>();
+        mapStep
+            .OnEvent(ComputeStep.SquareEventId)
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, UnionStep.SumFunction));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
+
+        // Assert
+        VerifyMapResult(kernel, UnionStep.ResultKey, 55L);
+        VerifyMapResult(kernel, CountStep.CountKey, 5);
+}
+
+    // %%% PROVIDE MAP AS TARGET (two dimensions for input)
+
+    private async Task RunProcessAsync(Kernel kernel, KernelProcess process, object? input, string inputEvent)
+    {
+        using LocalKernelProcessContext localProcess =
             await process.StartAsync(
                 kernel,
                 new KernelProcessEvent
                 {
                     Id = inputEvent,
-                    Data = input
+                    Data = input,
                 });
     }
 
@@ -258,6 +347,9 @@ public class LocalMapTests
         Assert.Equal(expectedResult, kernel.Data[resultKey]);
     }
 
+    /// <summary>
+    /// A filler step used that emits the provided value as its output.
+    /// </summary>
     private sealed class InitialStep : KernelProcessStep
     {
         public const string EventId = "Init";
@@ -270,6 +362,9 @@ public class LocalMapTests
         }
     }
 
+    /// <summary>
+    /// A step that contains a map operation that emits two events.
+    /// </summary>
     private sealed class ComputeStep : KernelProcessStep
     {
         public const string SquareEventId = "SquareResult";
@@ -280,11 +375,14 @@ public class LocalMapTests
         public async ValueTask ComputeAsync(KernelProcessStepContext context, long value)
         {
             long square = value * value;
-            await context.EmitEventAsync(new() { Id = SquareEventId, Data = square });
+            await context.EmitEventAsync(new() { Id = SquareEventId, Data = square, Visibility = KernelProcessEventVisibility.Public });
             await context.EmitEventAsync(new() { Id = CubicEventId, Data = square * value });
         }
     }
 
+    /// <summary>
+    /// A step that contains multiple functions, one of which is a map operation.
+    /// </summary>
     private sealed class ComplexStep : KernelProcessStep
     {
         public const string ComputeEventId = "SquareResult";
@@ -307,6 +405,9 @@ public class LocalMapTests
         }
     }
 
+    /// <summary>
+    /// A map operation that formats the input as a string.
+    /// </summary>
     private sealed class FormatStep : KernelProcessStep
     {
         public const string EventId = "FormatResult";
@@ -319,11 +420,44 @@ public class LocalMapTests
         }
     }
 
+    /// <summary>
+    /// A step that contains a map operation that emits output that
+    /// is not based on function input (perhaps simulating accessing a
+    /// remote store)
+    /// </summary>
+    private sealed class QueryStep(ConcurrentQueue<string> store) : KernelProcessStep
+    {
+        public const string EventId = "QueryResult";
+        public const string QueryFunction = "MapQuery";
+
+        [KernelFunction(QueryFunction)]
+        public async ValueTask QueryAsync(KernelProcessStepContext context)
+        {
+            string? value = null;
+            int attempts = 0;
+            do
+            {
+                ++attempts;
+                store.TryDequeue(out value);
+            } while (value == null && attempts < 3);
+
+            if (value == null)
+            {
+                throw new InvalidDataException("Unable to query store");
+            }
+
+            await context.EmitEventAsync(new() { Id = EventId, Data = value });
+        }
+    }
+
     private sealed record UnionState
     {
         public string Key { get; set; } = UnionStep.ResultKey;
     };
 
+    /// <summary>
+    /// The step that combines the results of the map operation.
+    /// </summary>
     private sealed class UnionStep : KernelProcessStep<UnionState>
     {
         public const string ResultKey = "Result";
@@ -354,6 +488,26 @@ public class LocalMapTests
             string list = string.Join("/", values);
             kernel.Data[this._state.Key] = list;
             await context.EmitEventAsync(new() { Id = EventId, Data = list });
+        }
+    }
+
+    /// <summary>
+    /// The step that counts how many times it has been invoked.
+    /// </summary>
+    private sealed class CountStep : KernelProcessStep
+    {
+        public const string CountFunction = nameof(Count);
+        public const string CountKey = "Count";
+
+        [KernelFunction]
+        public void Count(Kernel kernel)
+        {
+            int count = 0;
+            if (kernel.Data.TryGetValue(CountKey, out object? value))
+            {
+                count = (int)(value ?? 0);
+            }
+            kernel.Data[CountKey] = ++count;
         }
     }
 }

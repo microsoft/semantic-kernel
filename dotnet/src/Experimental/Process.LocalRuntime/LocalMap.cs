@@ -25,8 +25,6 @@ internal sealed class LocalMap : LocalStep
     internal LocalMap(KernelProcessMap map, Kernel kernel)
         : base(map, kernel)
     {
-        Verify.NotNull(map.Operation);
-
         this._map = map;
 
         Console.WriteLine($"\tLOCAL MAP: {this._map.State.Id}");
@@ -41,7 +39,7 @@ internal sealed class LocalMap : LocalStep
     /// <inheritdoc/>
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
-        IEnumerable values = message.GetMapInput(this._map.InputParameterName, this.Logger);
+        IEnumerable values = message.GetMapInput(this.Logger);
 
         int index = 0;
         List<(Task<LocalKernelProcessContext> Task, MapOperationContext Context)> runningProcesses = [];
@@ -85,7 +83,7 @@ internal sealed class LocalMap : LocalStep
                     runningProcesses[index].Context.Results.TryGetValue(eventName, out object? result);
                     if (!resultMap.TryGetValue(eventName, out Array? results))
                     {
-                        results = Array.CreateInstance(resultType, runningProcesses.Count); // %%% CONSTRAINS RECEIVING SIGNATURE (NOT List<T>)
+                        results = Array.CreateInstance(resultType, runningProcesses.Count);
                         resultMap[eventName] = results;
                     }
 
@@ -147,8 +145,6 @@ internal sealed class LocalMap : LocalStep
                     }
 
                     this.Results[eventName] = processEvent.Data;
-
-                    return false;
                 }
             }
 

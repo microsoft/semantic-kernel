@@ -159,52 +159,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// processes each individual parameter value by the specified map operation (TStep).
     /// Results are coalesced into a result set of the same dimension as the input set.
     /// </summary>
-    /// <typeparam name="TStep">The step type of the map operation.</typeparam>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="target">The target for the map operation</param>
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
-    public ProcessMapBuilder AddMapFromType<TStep>(string? name = null) where TStep : KernelProcessStep
+    public ProcessMapBuilder AddMapForTarget(ProcessFunctionTargetBuilder target)
     {
-        var stepBuilder = new ProcessStepBuilder<TStep>(name);
-
-        var mapBuilder = new ProcessMapBuilder(stepBuilder);
-        this._steps.Add(mapBuilder);
-
-        return mapBuilder;
-    }
-
-    /// <summary>
-    /// Adds a map operation to the process that accepts an enumerable input parameter and
-    /// processes each individual parameter value by the specified map operation (TStep).
-    /// Results are coalesced into a result set of the same dimension as the input set.
-    /// </summary>
-    /// <typeparam name="TStep">The step type of the map operation.</typeparam>
-    /// <typeparam name="TState">The state Type of the map operation.</typeparam>
-    /// <param name="initialState">The initial state of the map operation.</param>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
-    /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
-    public ProcessMapBuilder AddMapFromType<TStep, TState>(TState initialState, string? name = null) where TStep : KernelProcessStep
-    {
-        var stepBuilder = new ProcessStepBuilder<TStep>(name, initialState);
-
-        var mapBuilder = new ProcessMapBuilder(stepBuilder);
-        this._steps.Add(mapBuilder);
-
-        return mapBuilder;
-    }
-
-    /// <summary>
-    /// Adds a map operation to the process that accepts an enumerable input parameter and
-    /// processes each individual parameter value by the specified map operation (mapProcess).
-    /// Results are coalesced into a result set of the same dimension as the input set.
-    /// </summary>
-    /// <param name="mapProcess">The sub-process responsible for the map-operation</param>
-    /// <param name="eventId">// %%% COMMENT</param>
-    /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
-    public ProcessMapBuilder AddMapFromProcess(ProcessBuilder mapProcess, string eventId)
-    {
-        mapProcess.HasParentProcess = true;
-
-        var mapBuilder = new ProcessMapBuilder(mapProcess, eventId);
+        var mapBuilder = new ProcessMapBuilder(target);
         this._steps.Add(mapBuilder);
 
         return mapBuilder;

@@ -18,6 +18,7 @@ internal delegate bool ProcessEventFilter(KernelProcessEvent processEvent);
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
     private const string EndProcessId = "Microsoft.SemanticKernel.Process.EndStep";
+
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
@@ -27,8 +28,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal readonly List<LocalStep> _steps = [];
     internal readonly KernelProcess _process;
 
-    private ILogger? _logger;
-    private ILogger Logger => this._logger ??= this.LoggerFactory?.CreateLogger(this.Name) ?? NullLogger.Instance;
+    private ILogger? _logger; // Note: Use the Logger property to access this field.
+    private ILogger Logger => this._logger ??= this.LoggerFactory?.CreateLogger<LocalProcess>() ?? NullLogger<LocalProcess>.Instance;
 
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;

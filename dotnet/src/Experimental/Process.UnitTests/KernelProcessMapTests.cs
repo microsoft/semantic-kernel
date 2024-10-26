@@ -21,11 +21,11 @@ public class KernelProcessMapTests
         KernelProcessMapState state = new(nameof(KernelProcessMapStateInitialization), Guid.NewGuid().ToString());
 
         // Act
-        KernelProcessMap map = new(state, process, "values", []);
+        KernelProcessMap map = new(state, process, []);
 
         // Assert
         Assert.Equal(state, map.State);
-        Assert.Equal("values", map.InputParameterName);
+        //Assert.Equal("values", map.InputParameterName);
         Assert.Equivalent(process, map.Operation);
         Assert.Empty(map.Edges);
     }

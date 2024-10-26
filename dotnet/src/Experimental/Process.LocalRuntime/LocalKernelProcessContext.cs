@@ -23,7 +23,8 @@ public sealed class LocalKernelProcessContext : IDisposable
             process,
             kernel)
         {
-            EventFilter = filter
+            EventFilter = filter,
+            LoggerFactory = kernel.LoggerFactory,
         };
     }
 
