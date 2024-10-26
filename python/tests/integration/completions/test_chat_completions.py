@@ -566,7 +566,11 @@ from tests.integration.completions.chat_completion_test_base import (
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
+<<<<<<< Updated upstream
 from tests.integration.completions.test_utils import retry
+=======
+from tests.integration.test_utils import retry
+>>>>>>> Stashed changes
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -2168,6 +2172,20 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> head
         ),
         pytest.param(
+<<<<<<< Updated upstream
+=======
+            "anthropic",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            {},
+            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
+            id="anthropic_text_input",
+        ),
+        pytest.param(
+>>>>>>> Stashed changes
             "mistral_ai",
             {},
             [
@@ -2178,10 +2196,21 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
                 ),
             ],
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
             ["Hello", "well"],
             marks=pytest.mark.skipif(
                 not mistral_ai_setup, reason="Mistral AI Environment Variables not set"
             ),
+<<<<<<< Updated upstream
+=======
+=======
+            {},
+            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
+>>>>>>> microsoft/main
+>>>>>>> Stashed changes
             id="mistral_ai_text_input",
         ),
         pytest.param(
@@ -2195,10 +2224,21 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
                 ),
             ],
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
             ["Hello", "well"],
             marks=pytest.mark.skipif(
                 not ollama_setup, reason="Need local Ollama setup"
             ),
+<<<<<<< Updated upstream
+=======
+=======
+            {},
+            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+>>>>>>> microsoft/main
+>>>>>>> Stashed changes
             id="ollama_text_input",
         ),
 <<<<<<< HEAD
@@ -2268,11 +2308,19 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
+<<<<<<< Updated upstream
             ["Hello", "well"],
+=======
+            {},
+>>>>>>> Stashed changes
             marks=pytest.mark.skipif(not onnx_setup, reason="Need a Onnx Model setup"),
             id="onnx_gen_ai",
         ),
         pytest.param(
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 >>>>>>> upstream/main
 =======
 <<<<<<< div
@@ -2518,6 +2566,11 @@ pytestmark = pytest.mark.parametrize(
 >>>>>>> head
         ),
         pytest.param(
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> microsoft/main
+>>>>>>> Stashed changes
             "google_ai",
             {},
             [
@@ -2707,7 +2760,11 @@ pytestmark = pytest.mark.parametrize(
 =======
 >>>>>>> head
             ],
+<<<<<<< Updated upstream
             ["Hello", "well"],
+=======
+            {},
+>>>>>>> Stashed changes
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_input",
         ),
@@ -2722,7 +2779,11 @@ pytestmark = pytest.mark.parametrize(
                     role=AuthorRole.USER, items=[TextContent(text="How are you today?")]
                 ),
             ],
+<<<<<<< Updated upstream
             ["Hello", "well"],
+=======
+            {},
+>>>>>>> Stashed changes
             marks=pytest.mark.skipif(not vertex_ai_setup, reason="Vertex AI Environment Variables not set"),
             id="vertex_ai_text_input",
         ),
@@ -2960,6 +3021,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+<<<<<<< Updated upstream
+=======
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+>>>>>>> Stashed changes
             id="bedrock_ai21labs_text_input",
         ),
         pytest.param(
@@ -2970,6 +3035,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+<<<<<<< Updated upstream
+=======
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+>>>>>>> Stashed changes
             id="bedrock_anthropic_claude_text_input",
         ),
         pytest.param(
@@ -2980,6 +3049,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+<<<<<<< Updated upstream
+=======
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+>>>>>>> Stashed changes
             id="bedrock_cohere_command_text_input",
         ),
         pytest.param(
@@ -2990,6 +3063,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+<<<<<<< Updated upstream
+=======
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+>>>>>>> Stashed changes
             id="bedrock_meta_llama_text_input",
         ),
         pytest.param(
@@ -3000,6 +3077,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             {},
+<<<<<<< Updated upstream
+=======
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
+>>>>>>> Stashed changes
             id="bedrock_mistralai_text_input",
         ),
 >>>>>>> upstream/main
