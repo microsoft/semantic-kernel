@@ -336,10 +336,10 @@ public class LocalMapTests
         ProcessBuilder mapProcess = new("MapOperation");
         ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
         ProcessMapBuilder mapStepInner = mapProcess.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
-        ProcessStepBuilder unionStepINner = mapProcess.AddStepFromType<UnionStep>();
+        ProcessStepBuilder unionStepInner = mapProcess.AddStepFromType<UnionStep>();
         mapStepInner
             .OnEvent(ComputeStep.SquareEventId)
-            .SendEventTo(new ProcessFunctionTargetBuilder(unionStepINner, UnionStep.SumFunction));
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStepInner, UnionStep.SumFunction));
 
         mapProcess
             .OnInputEvent("StartMap")
