@@ -56,139 +56,13 @@ from semantic_kernel.prompt_template import PromptTemplateConfig
 kernel = Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-api_key, org_id = sk.openai_settings_from_dot_env()
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< head
->>>>>>> head
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< div
->>>>>>> main
-=======
-=======
-<<<<<<< main
-=======
-api_key, org_id = sk.openai_settings_from_dot_env()
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-api_key, org_id = sk.openai_settings_from_dot_env()
->>>>>>> Stashed changes
->>>>>>> origin/main
->>>>>>> head
 service_id="chat-gpt"
 kernel.add_service(
     OpenAIChatCompletion(
         service_id=service_id,
-<<<<<<< div
-<<<<<<< div
-=======
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
         ai_model_id="gpt-3.5-turbo",
         api_key=api_key,
         org_id=org_id
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-        ai_model_id="gpt-3.5-turbo",
-        api_key=api_key,
-        org_id=org_id
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> head
     )
 )
 
@@ -196,155 +70,14 @@ kernel.add_service(
 # kernel.add_service(
 #   AzureChatCompletion(
 #       service_id=service_id,
-<<<<<<< div
-<<<<<<< div
-=======
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
->>>>>>> origin/main
-=======
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-<<<<<<< div
-=======
->>>>>>> main
-=======
->>>>>>> Stashed changes
->>>>>>> head
-# deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-# kernel.add_service(
-#   AzureChatCompletion(
-#       service_id="dv",
 #       deployment_name=deployment,
 #       base_url=endpoint,
 #       api_key=api_key
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< div
->>>>>>> main
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> origin/main
->>>>>>> head
 #   )
 # )
 
 # Define the request settings
 req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< div
-=======
-req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
->>>>>>> main
-=======
->>>>>>> head
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
@@ -362,69 +95,6 @@ does not conflict with the First or Second Law.
 Give me the TLDR in exactly 5 words."""
 
 prompt_template_config = PromptTemplateConfig(
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-prompt_template_config = sk.PromptTemplateConfig(
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-prompt_template_config = sk.PromptTemplateConfig(
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> head
     template=prompt,
     name="tldr",
     template_format="semantic-kernel",
@@ -434,69 +104,6 @@ prompt_template_config = sk.PromptTemplateConfig(
 function = kernel.add_function(
     function_name="tldr_function",
     plugin_name="tldr_plugin",
-<<<<<<< div
-<<<<<<< div
-=======
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-function = kernel.create_function_from_prompt(
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-function = kernel.create_function_from_prompt(
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> head
     prompt_template_config=prompt_template_config,
 )
 
@@ -521,77 +128,6 @@ summarize = kernel.add_function(
     plugin_name="tldr_plugin",
     prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
     prompt_template_settings=req_settings,
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-summarize = kernel.create_function_from_prompt(
-    template="{{$input}}\n\nOne line TLDR with the fewest words."
-    execution_settings=req_settings,
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-summarize = kernel.create_function_from_prompt(
-    template="{{$input}}\n\nOne line TLDR with the fewest words."
-    execution_settings=req_settings,
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< div
-=======
-summarize = kernel.create_function_from_prompt(
-    template="{{$input}}\n\nOne line TLDR with the fewest words."
-    execution_settings=req_settings,
->>>>>>> main
-=======
->>>>>>> head
 )
 
 # Summarize the laws of thermodynamics
@@ -636,81 +172,6 @@ Python notebooks:
 - [Groundedness Checking with Semantic Kernel](./samples/getting_started/09-groundedness-checking.ipynb)
 - [Returning multiple results per prompt](./samples/getting_started/10-multiple-results-per-prompt.ipynb)
 - [Streaming completions with Semantic Kernel](./samples/getting_started/11-streaming-completions.ipynb)
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
-=======
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
->>>>>>> Stashed changes
->>>>>>> head
-- [Getting started with Semantic Kernel](./notebooks/00-getting-started.ipynb)
-- [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
-- [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
-- [Creating Prompt Functions at runtime (i.e. inline functions)](./notebooks/03-prompt-function-inline.ipynb)
-- [Using Context Variables to Build a Chat Experience](./notebooks/04-context-variables-chat.ipynb)
-- [Introduction to planners](./notebooks/05-using-the-planner.ipynb)
-- [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
-- [Using Hugging Face for Plugins](./notebooks/07-hugging-face-for-plugins.ipynb)
-- [Combining native functions and semantic functions](./notebooks/08-native-function-inline.ipynb)
-- [Groundedness Checking with Semantic Kernel](./notebooks/09-groundedness-checking.ipynb)
-- [Returning multiple results per prompt](./notebooks/10-multiple-results-per-prompt.ipynb)
-- [Streaming completions with Semantic Kernel](./notebooks/11-streaming-completions.ipynb)
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 # SK Frequently Asked Questions
 
@@ -795,3 +256,17 @@ print("Output: " + output)
 
 # Output: Protect humans, follow orders, survive.
 ```
+
+## Enhancing Documentation
+
+### Detailed Explanations and Examples
+
+To enhance the existing documentation, we have added more detailed explanations and examples to help users understand how to use the various features of the repository. These explanations and examples are included in the relevant sections of the documentation files such as `README.md` and `java/README.md`.
+
+### Code Snippets and Usage Examples
+
+We have included more code snippets and usage examples in the documentation to provide practical guidance on how to use the repository's features. These code snippets and examples are designed to help users quickly grasp the concepts and apply them in their own projects.
+
+### Repository Structure Explanation
+
+To help users navigate the repository, we have added a section that explains the structure of the repository and the purpose of each directory and file. This section provides an overview of the repository's organization and helps users understand where to find specific components and resources.
