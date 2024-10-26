@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
 
 /// <summary>
-/// Unit tests for the <see cref="ProcessTypeExtensions"/> class.
+/// Unit tests for the <see cref="KernelProcessStepExtensions"/> class.
 /// </summary>
 public class ProcessTypeExtensionsTests
 {

@@ -45,7 +45,7 @@ public record KernelProcessStepInfo
             Id = this.State.Id,
         };
 
-        if (KernelProcessUtilities.TryGetSubtypeOfStatefulStep(this.InnerStepType, out var genericStateType) && genericStateType != null)
+        if (this.InnerStepType.TryGetSubtypeOfStatefulStep(out var genericStateType) && genericStateType != null)
         {
             var userStateType = genericStateType.GetGenericArguments()[0];
             var stateOriginalType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
