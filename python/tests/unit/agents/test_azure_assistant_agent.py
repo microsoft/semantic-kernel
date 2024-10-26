@@ -284,7 +284,7 @@ async def test_create_agent_with_search_files_not_found_raises_exception(kernel:
         patch.object(AzureAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant,
     ):
         mock_create_assistant.return_value = MagicMock(spec=Assistant)
-        with pytest.raises(AgentInitializationException, match="Failed to upload file search files."):
+        with pytest.raises(AgentInitializationException, match="Failed to upload vector store files."):
             _ = await AzureAssistantAgent.create(
                 kernel=kernel,
                 service_id="test_service",
