@@ -24,7 +24,6 @@ public class LocalMapTests
         // Arrange
         ProcessBuilder process = new(nameof(ProcessMapResultAsFirstAsync));
 
-        //ProcessMapBuilder mapStep = process.AddMapFromType<ComputeStep>();
         ProcessStepBuilder computeStep = process.AddStepFromType<ComputeStep>();
         ProcessMapBuilder mapStep = process.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
         process
@@ -323,9 +322,54 @@ public class LocalMapTests
         // Assert
         VerifyMapResult(kernel, UnionStep.ResultKey, 55L);
         VerifyMapResult(kernel, CountStep.CountKey, 5);
-}
+    }
 
-    // %%% PROVIDE MAP AS TARGET (two dimensions for input)
+    /// <summary>
+    /// Validates the <see cref="LocalMap"/> result as for a nested map operation.
+    /// </summary>
+    [Fact]
+    public async Task ProcessMapResultForNestedMapAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessMapResultForNestedMapAsync));
+
+        ProcessBuilder mapProcess = new("MapOperation");
+        ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
+        ProcessMapBuilder mapStep = mapProcess.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        ProcessStepBuilder unionStep = mapProcess.AddStepFromType<UnionStep>();
+        mapStep
+            .OnEvent(ComputeStep.SquareEventId)
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, UnionStep.SumFunction));
+
+        mapProcess
+            .OnInputEvent("StartMap")
+            .SendEventTo(mapStep);
+
+        ProcessMapBuilder mapStep2 = process.AddMapForTarget(mapProcess.WhereInputEventIs("StartMap"));
+        ProcessStepBuilder unionStep2 = process.AddStepFromType<UnionStep>();
+        mapStep2
+            .OnEvent(ComputeStep.SquareEventId)
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep2, UnionStep.SumFunction));
+
+        process
+            .OnInputEvent("Start")
+            .SendEventTo(mapStep2);
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        int[][] input =
+        [
+            [1, 2, 3, 4, 5],
+            [1, 2, 3, 4, 5],
+            [1, 2, 3, 4, 5],
+        ];
+        await this.RunProcessAsync(kernel, processInstance, input, "Start");
+
+        // Assert
+        VerifyMapResult(kernel, UnionStep.ResultKey, 165L);
+    }
 
     private async Task RunProcessAsync(Kernel kernel, KernelProcess process, object? input, string inputEvent)
     {
@@ -477,8 +521,13 @@ public class LocalMapTests
         [KernelFunction(SumFunction)]
         public async ValueTask SumAsync(KernelProcessStepContext context, IList<long> values, Kernel kernel)
         {
+            long current = 0;
             long sum = values.Sum();
-            kernel.Data[this._state.Key] = sum;
+            if (kernel.Data.TryGetValue(this._state.Key, out object? result))
+            {
+                current = (long)result!;
+            }
+            kernel.Data[this._state.Key] = current + sum;
             await context.EmitEventAsync(new() { Id = EventId, Data = sum });
         }
 

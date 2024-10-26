@@ -156,8 +156,6 @@ public class ProcessMapBuilderTests
         Assert.Throws<InvalidOperationException>(() => new ProcessMapBuilder(invalidTarget));
     }
 
-    // %%% PROVIDE MAP AS TARGET
-
     private sealed class SimpleTestStep : KernelProcessStep<TestState>
     {
         private TestState? _state;

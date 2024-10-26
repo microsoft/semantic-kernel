@@ -189,15 +189,13 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     processStep = processStep with { State = processStep.State with { Id = Guid.NewGuid().ToString() } };
                 }
 
-                var process =
+                localStep =
                     new LocalProcess(processStep, this._kernel)
                     {
                         ParentProcessId = this.Id,
                         LoggerFactory = this.LoggerFactory,
                         EventFilter = this.EventFilter,
                     };
-
-                localStep = process;
             }
             else if (step is KernelProcessMap mapStep)
             {

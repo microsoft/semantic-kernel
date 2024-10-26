@@ -21,6 +21,11 @@ internal static class StepExtensions
             return subProcess.CloneProcess(logger);
         }
 
+        if (step is KernelProcessMap mapStep)
+        {
+            return mapStep.CloneMap(logger);
+        }
+
         Type stateType = step.InnerStepType.ExtractStateType(out Type? userStateType, logger);
 
         KernelProcessStepState newState = step.State.Clone(stateType, userStateType, logger);

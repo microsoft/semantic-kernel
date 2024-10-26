@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Process.Runtime;
@@ -26,5 +27,18 @@ internal static class MapExtensions
         }
 
         return (IEnumerable)message.TargetEventData;
+    }
+
+    public static KernelProcessMap CloneMap(this KernelProcessMap map, ILogger logger)
+    {
+        KernelProcessMapState newState = new(map.State.Name, map.State.Id!);
+
+        KernelProcessMap copy =
+            new(
+                newState,
+                map.Operation.CloneProcess(logger),
+                map.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList()));
+
+        return copy;
     }
 }
