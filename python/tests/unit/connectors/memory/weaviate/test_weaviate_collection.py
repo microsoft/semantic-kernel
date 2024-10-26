@@ -6,6 +6,7 @@ import pytest
 import weaviate
 from weaviate import WeaviateAsyncClient
 from weaviate.classes.config import Configure, DataType, Property
+from weaviate.collections.classes.config_vectorizers import VectorDistances
 from weaviate.collections.classes.data import DataObject
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
@@ -206,6 +207,7 @@ def test_weaviate_collection_init_with_lower_case_collection_name(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("index_kind, distance_function", [("hnsw", "cosine")])
 async def test_weaviate_collection_create_collection(
     clear_weaviate_env,
     data_model_type,
@@ -236,7 +238,7 @@ async def test_weaviate_collection_create_collection(
         vectorizer_config=[
             Configure.NamedVectors.none(
                 name="vector",
-                vector_index_config=Configure.VectorIndex.none(),
+                vector_index_config=Configure.VectorIndex.hnsw(distance_metric=VectorDistances.COSINE),
             )
         ],
     )

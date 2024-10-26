@@ -20,5 +20,5 @@ class VectorStoreTestBase:
             "qdrant": QdrantStore(),
             "qdrant_in_memory": QdrantStore(location=":memory:"),
             "weaviate_local": WeaviateStore(local_host="localhost"),
-            "cosmos_db_nosql": AzureCosmosDBNoSQLStore(database_name="test_database", create_database=True),
+            "azure_cosmos_db_nosql": AzureCosmosDBNoSQLStore(database_name="test_database", create_database=True),
         }

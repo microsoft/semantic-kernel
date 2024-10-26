@@ -4,11 +4,6 @@ import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
 
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_base import AzureCosmosDBNoSQLBase
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_collection import (
-    AzureCosmosDBNoSQLCollection,
-)
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -16,6 +11,10 @@ else:
 
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_base import AzureCosmosDBNoSQLBase
+from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_collection import (
+    AzureCosmosDBNoSQLCollection,
+)
 from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_settings import (
     AzureCosmosDBNoSQLSettings,
 )

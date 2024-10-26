@@ -132,7 +132,9 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
             try:
                 container_proxy = await self._get_container_proxy(self.collection_name, cosmos_client)
             except CosmosResourceNotFoundError as e:
-                raise MemoryConnectorException("The collection does not exist yet. Create the collection first.") from e
+                raise MemoryConnectorResourceNotFound(
+                    "The collection does not exist yet. Create the collection first."
+                ) from e
 
             results = await asyncio.gather(
                 *[container_proxy.delete_item(item=key, partition_key=get_partition_key(key)) for key in keys],
@@ -227,6 +229,8 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
                 database_proxy = await self._get_database_proxy(cosmos_client)
                 await database_proxy.delete_container(self.collection_name)
             except CosmosResourceNotFoundError as e:
-                raise MemoryConnectorException("Collection does not exist yet. Create the collection first.") from e
+                raise MemoryConnectorResourceNotFound(
+                    "Collection does not exist yet. Create the collection first."
+                ) from e
             except Exception as e:
                 raise MemoryConnectorException("Failed to delete container.") from e

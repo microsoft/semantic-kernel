@@ -19,7 +19,7 @@ from tests.integration.completions.chat_completion_test_base import (
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
-from tests.integration.test_utils import retry
+from tests.integration.utils import retry
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
