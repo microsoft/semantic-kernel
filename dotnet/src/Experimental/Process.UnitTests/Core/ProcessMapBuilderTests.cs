@@ -2,8 +2,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using VerifyTests;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
@@ -35,6 +33,21 @@ public class ProcessMapBuilderTests
     }
 
     /// <summary>
+    /// Verify cannot be a function target.
+    /// </summary>
+    [Fact]
+    public void ProcessMapBuilderFromMap()
+    {
+        // Arrange
+        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
+        ProcessMapBuilder map1 = new(new ProcessFunctionTargetBuilder(step));
+        ProcessMapBuilder map2 = new(new ProcessFunctionTargetBuilder(step));
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => map1.OnEvent("any").SendEventTo(new ProcessFunctionTargetBuilder(map2)));
+    }
+
+    /// <summary>
     /// Verify initialization based on <see cref="ProcessBuilder"/>.
     /// </summary>
     [Fact]
@@ -58,31 +71,10 @@ public class ProcessMapBuilderTests
     }
 
     /// <summary>
-    /// Verify initialization based on <see cref="ProcessStepBuilder"/>.
+    /// Verify <see cref="ProcessMapBuilder"/> is able to define targets / output edges.
     /// </summary>
     [Fact]
-    public void ProcessMapBuilderIsValidTarget()
-    {
-        // Arrange
-        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
-        ProcessMapBuilder map = new(new ProcessFunctionTargetBuilder(step));
-
-        // Act
-        ProcessStepBuilder<SimpleTestStep> step2 = new($"Two{nameof(SimpleTestStep)}");
-        step2.OnEvent("Any").SendEventTo(map);
-
-        // Assert
-        Assert.Single(step2.Edges);
-        Assert.Single(step2.Edges.Single().Value);
-        Assert.NotNull(step2.Edges.Single().Value[0].Target);
-        Assert.Equal(map, step2.Edges.Single().Value[0].Target!.Step);
-    }
-
-    /// <summary>
-    /// Verify initialization based on <see cref="ProcessStepBuilder"/>.
-    /// </summary>
-    [Fact]
-    public void ProcessMapBuilderCanTargetStep()
+    public void ProcessMapBuilderCanDefineTarget()
     {
         // Arrange
         ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");

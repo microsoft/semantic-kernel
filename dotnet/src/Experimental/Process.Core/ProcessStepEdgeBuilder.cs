@@ -58,6 +58,11 @@ public sealed class ProcessStepEdgeBuilder
             throw new InvalidOperationException("An output target has already been set.");
         }
 
+        if (this.Source is ProcessMapBuilder && target.Step is ProcessMapBuilder)
+        {
+            throw new ArgumentException($"{nameof(ProcessMapBuilder)} may not target another {nameof(ProcessMapBuilder)}.", nameof(target));
+        }
+
         this.Target = target;
         this.Source.LinkTo(this.EventId, this);
 
