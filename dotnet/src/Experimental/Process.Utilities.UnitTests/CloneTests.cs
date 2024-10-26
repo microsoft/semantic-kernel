@@ -3,9 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process.Runtime;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Process.Runtime.UnitTests;
+namespace SemanticKernel.Process.Utilities.UnitTests;
 
 /// <summary>
 /// Unit tests for the ability to clone:
