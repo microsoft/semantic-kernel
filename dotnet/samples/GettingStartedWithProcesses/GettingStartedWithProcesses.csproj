@@ -56,7 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\*">
+    <EmbeddedResource Include="..\LearnResources\Resources\Grimms-*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

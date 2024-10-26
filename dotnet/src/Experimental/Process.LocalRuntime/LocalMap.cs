@@ -27,13 +27,7 @@ internal sealed class LocalMap : LocalStep
     {
         this._map = map;
 
-        Console.WriteLine($"\tLOCAL MAP: {this._map.State.Id}");
         this._mapEvents = [.. map.Edges.Keys.Select(key => key.Split('.').Last())];
-        //this._mapEvents = [.. this._map.Edges.Keys];
-        foreach (var eventName in this._mapEvents)
-        {
-            Console.WriteLine($"\tLOCAL MAP EDGE: {eventName}");
-        }
     }
 
     /// <inheritdoc/>
@@ -50,7 +44,6 @@ internal sealed class LocalMap : LocalStep
             foreach (var value in values)
             {
                 ++index;
-                Console.WriteLine($"\tLOCAL MAP #{index}: {value}");
 
                 KernelProcess process = this._map.Operation.CloneProcess(this.Logger);
                 MapOperationContext context = new(index, this._mapEvents, capturedEvents);
@@ -95,7 +88,6 @@ internal sealed class LocalMap : LocalStep
             {
                 string eventName = capturedEvent.Key;
                 Array eventResult = resultMap[eventName];
-                Console.WriteLine($"LOCAL MAP: OUTPUT: {eventName} - {string.Join(",", [.. eventResult])}");
                 await this.EmitEventAsync(new() { Id = eventName, Data = eventResult }).ConfigureAwait(false);
             }
         }
@@ -136,8 +128,6 @@ internal sealed class LocalMap : LocalStep
                 string eventName = processEvent.Id!;
                 if (this.EventTargets.Contains(eventName))
                 {
-                    Console.WriteLine($"\tFILTER CAPTURE: {eventName} {processEvent.Data}");
-
                     this.CapturedEvents.TryGetValue(eventName, out Type? resultType);
                     if (resultType is null || resultType == typeof(object))
                     {

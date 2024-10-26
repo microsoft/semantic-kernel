@@ -335,25 +335,25 @@ public class LocalMapTests
 
         ProcessBuilder mapProcess = new("MapOperation");
         ProcessStepBuilder computeStep = mapProcess.AddStepFromType<ComputeStep>();
-        ProcessMapBuilder mapStep = mapProcess.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
-        ProcessStepBuilder unionStep = mapProcess.AddStepFromType<UnionStep>();
-        mapStep
+        ProcessMapBuilder mapStepInner = mapProcess.AddMapForTarget(new ProcessFunctionTargetBuilder(computeStep));
+        ProcessStepBuilder unionStepINner = mapProcess.AddStepFromType<UnionStep>();
+        mapStepInner
             .OnEvent(ComputeStep.SquareEventId)
-            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, UnionStep.SumFunction));
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStepINner, UnionStep.SumFunction));
 
         mapProcess
             .OnInputEvent("StartMap")
-            .SendEventTo(mapStep);
+            .SendEventTo(mapStepInner);
 
-        ProcessMapBuilder mapStep2 = process.AddMapForTarget(mapProcess.WhereInputEventIs("StartMap"));
-        ProcessStepBuilder unionStep2 = process.AddStepFromType<UnionStep>();
-        mapStep2
+        ProcessMapBuilder mapStepOuter = process.AddMapForTarget(mapProcess.WhereInputEventIs("StartMap"));
+        ProcessStepBuilder unionStepOuter = process.AddStepFromType<UnionStep>();
+        mapStepOuter
             .OnEvent(ComputeStep.SquareEventId)
-            .SendEventTo(new ProcessFunctionTargetBuilder(unionStep2, UnionStep.SumFunction));
+            .SendEventTo(new ProcessFunctionTargetBuilder(unionStepOuter, UnionStep.SumFunction));
 
         process
             .OnInputEvent("Start")
-            .SendEventTo(mapStep2);
+            .SendEventTo(mapStepOuter);
 
         KernelProcess processInstance = process.Build();
         Kernel kernel = new();
