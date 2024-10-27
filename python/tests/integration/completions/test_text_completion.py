@@ -8,34 +8,16 @@ from typing import Any
 import pytest
 from openai import AsyncAzureOpenAI
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< main
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> upstream/main
-=======
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_completion import BedrockTextCompletion
->>>>>>> upstream/main
-=======
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_completion import BedrockTextCompletion
->>>>>>> Stashed changes
-=======
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.bedrock.services.bedrock_text_completion import BedrockTextCompletion
->>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAITextPromptExecutionSettings,
 )
@@ -48,13 +30,6 @@ from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_comp
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAITextPromptExecutionSettings,
 )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
     HuggingFacePromptExecutionSettings,
 )
@@ -78,13 +53,6 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 from semantic_kernel.contents import TextContent
 from tests.integration.completions.test_utils import retry
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
 from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
@@ -98,26 +66,12 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> upstream/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 def setup(
     kernel: Kernel,
     service: str,
@@ -168,71 +122,36 @@ def services() -> (
         "google_ai": (GoogleAITextCompletion(), GoogleAITextPromptExecutionSettings),
         "vertex_ai": (VertexAITextCompletion(), VertexAITextPromptExecutionSettings),
     }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.integration.completions.test_utils import is_service_setup_for_testing, retry
 
-<<<<<<< main
-=======
-=======
->>>>>>> Stashed changes
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.integration.test_utils import is_service_setup_for_testing, retry
 
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ollama_setup: bool = False
 try:
     if os.environ["OLLAMA_MODEL"]:
         ollama_setup = True
 except KeyError:
     ollama_setup = False
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> upstream/main
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 ollama_setup: bool = is_service_setup_for_testing("OLLAMA_MODEL")
 google_ai_setup: bool = is_service_setup_for_testing("GOOGLE_AI_API_KEY")
 vertex_ai_setup: bool = is_service_setup_for_testing("VERTEX_AI_PROJECT_ID")
 onnx_setup: bool = is_service_setup_for_testing("ONNX_GEN_AI_TEXT_MODEL_FOLDER")
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])
 vertex_ai_setup: bool = is_service_setup_for_testing(["VERTEX_AI_PROJECT_ID"])
 onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_TEXT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 skip_on_mac_available = platform.system() == "Darwin"
 if not skip_on_mac_available:
     from semantic_kernel.connectors.ai.onnx import OnnxGenAIPromptExecutionSettings, OnnxGenAITextCompletion
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> upstream/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 
 pytestmark = pytest.mark.parametrize(
@@ -325,14 +244,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
             id="bedrock_anthropic_claude_text_completion",
         ),
         pytest.param(
@@ -340,14 +253,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
             id="bedrock_cohere_command_text_completion",
         ),
         pytest.param(
@@ -355,14 +262,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
             id="bedrock_ai21labs_text_completion",
         ),
         pytest.param(
@@ -370,14 +271,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
             id="bedrock_meta_llama_text_completion",
         ),
         pytest.param(
@@ -385,14 +280,8 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello once"],
             {"streaming": False},  # Streaming is not supported for models from this provider
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
-=======
             marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
->>>>>>> Stashed changes
             id="bedrock_mistralai_text_completion",
         ),
     ],
@@ -400,13 +289,6 @@ pytestmark = pytest.mark.parametrize(
 
 
 @pytest.mark.asyncio(scope="module")
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 async def test_text_completion(
     kernel: Kernel,
     service: str,
@@ -427,20 +309,12 @@ async def test_text_completion(
             ),
             retries=5,
         )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
 class TestTextCompletion(CompletionTestBase):
     """Test class for text completion"""
->>>>>>> upstream/main
-=======
 class TestTextCompletion(CompletionTestBase):
     """Test class for text completion"""
->>>>>>> Stashed changes
-=======
 class TestTextCompletion(CompletionTestBase):
     """Test class for text completion"""
->>>>>>> Stashed changes
 
     @override
     @pytest.fixture(scope="class")
@@ -459,14 +333,7 @@ class TestTextCompletion(CompletionTestBase):
                 default_headers={"Test-User-X-ID": "test"},
             ),
         )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 @pytest.mark.asyncio(scope="module")
 async def test_streaming_text_completion(
     kernel: Kernel,
@@ -510,13 +377,6 @@ async def execute_invoke(kernel: Kernel, input: str, output: str, stream: bool) 
     raise AssertionError(
         f"Unexpected output: response: {invocation}, type: {type(invocation)}"
     )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         return {
             "openai": (OpenAITextCompletion(), OpenAITextPromptExecutionSettings),
             "azure": (AzureTextCompletion(), OpenAITextPromptExecutionSettings),
@@ -672,10 +532,3 @@ async def execute_invoke(kernel: Kernel, input: str, output: str, stream: bool) 
                 retries=5,
             )
             self.evaluate(response)
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> upstream/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes

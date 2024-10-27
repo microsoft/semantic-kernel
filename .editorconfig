@@ -184,23 +184,12 @@ dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing th
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
 dotnet_diagnostic.CA2263.severity = suggestion # Use generic overload
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently dotnet_diagnostic.RCS1138.severity = none # Use pattern matching instead of 'is' and cast.
-=======
-=======
->>>>>>> Stashed changes
-<<<<<<< main
 dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently dotnet_diagnostic.RCS1138.severity = none # Use pattern matching instead of 'is' and cast.
-=======
+dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently dotnet_diagnostic.RCS1138.severity = none # Use pattern matching instead of 'is' and cast.
 
 dotnet_diagnostic.VSTHRD003.severity = none # Waiting on thread from another context
 dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
->>>>>>> microsoft/main
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
 dotnet_diagnostic.VSTHRD200.severity = none # Use Async suffix for async methods
 dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.

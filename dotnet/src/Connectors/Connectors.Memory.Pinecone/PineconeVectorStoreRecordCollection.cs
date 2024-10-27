@@ -1,69 +1,4 @@
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-﻿// Copyright (c) Microsoft. All rights reserved.
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-﻿// Copyright (c) Microsoft. All rights reserved.
-=======
 // Copyright (c) Microsoft. All rights reserved.
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-// Copyright (c) Microsoft. All rights reserved.
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< div
-=======
-// Copyright (c) Microsoft. All rights reserved.
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> head
 
 using System;
 using System.Collections.Generic;
@@ -73,14 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.VectorData;
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
 using Pinecone;
->>>>>>> Stashed changes
-=======
-using Pinecone;
->>>>>>> Stashed changes
 using Pinecone.Grpc;
 using Sdk = Pinecone;
 
@@ -102,87 +30,22 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     private const string UpsertOperationName = "Upsert";
     private const string DeleteOperationName = "Delete";
     private const string GetOperationName = "Get";
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
+
     private const string QueryOperationName = "Query";
 
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
->>>>>>> Stashed changes
-=======
+
     private const string QueryOperationName = "Query";
 
     private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
->>>>>>> Stashed changes
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
-=======
     private readonly VectorStoreRecordPropertyReader _propertyReader;
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
     private readonly VectorStoreRecordPropertyReader _propertyReader;
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< div
-=======
     private readonly VectorStoreRecordPropertyReader _propertyReader;
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> head
     private readonly IVectorStoreRecordMapper<TRecord, Sdk.Vector> _mapper;
 
     private Sdk.Index<GrpcTransport>? _index;
@@ -205,81 +68,12 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this._pineconeClient = pineconeClient;
         this.CollectionName = collectionName;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 
         if (this._options.VectorCustomMapper is null)
         {
             this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition);
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> head
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+            
         this._propertyReader = new VectorStoreRecordPropertyReader(
             typeof(TRecord),
             this._options.VectorStoreRecordDefinition,
@@ -293,40 +87,6 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         if (this._options.VectorCustomMapper is null)
         {
             this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._propertyReader);
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
         }
         else
         {
@@ -353,67 +113,11 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
         var vectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         var vectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
-=======
         var vectorProperty = this._propertyReader.VectorProperty!;
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
         var vectorProperty = this._propertyReader.VectorProperty!;
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> head
         var (dimension, metric) = PineconeVectorStoreCollectionCreateMapping.MapServerlessIndex(vectorProperty);
 
         await this.RunOperationAsync(
@@ -473,16 +177,9 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
             DatabaseName,
             this.CollectionName,
             GetOperationName,
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
             () => results.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)).ToList());
-=======
             () => results.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
->>>>>>> Stashed changes
-=======
             () => results.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
->>>>>>> Stashed changes
-
         foreach (var record in records)
         {
             yield return record;
@@ -561,62 +258,14 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         }
     }
 
-<<<<<<< main
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-=======
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> head
     /// <inheritdoc />
     public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
-=======
     /// <inheritdoc />
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
->>>>>>> upstream/main
     {
         throw new NotImplementedException();
-=======
-=======
->>>>>>> Stashed changes
-<<<<<<< main
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
->>>>>>> upstream/main
-=======
     public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
->>>>>>> microsoft/main
     {
         Verify.NotNull(vector);
 
@@ -678,55 +327,8 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
             });
 
         return new VectorSearchResults<TRecord>(records.ToAsyncEnumerable());
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     }
 
-<<<<<<< main
-<<<<<<< main
-=======
-<<<<<<< div
-=======
->>>>>>> div
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
-<<<<<<< main
-=======
->>>>>>> upstream/main
-=======
->>>>>>> head
->>>>>>> div
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
     {
         try

@@ -1,88 +1,5 @@
-<<<<<<< Updated upstream
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
-=======
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-﻿<?xml version="1.0" encoding="utf-8"?>
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-﻿<?xml version="1.0" encoding="utf-8"?>
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-﻿<?xml version="1.0" encoding="utf-8"?>
-=======
->>>>>>> Stashed changes
-=======
-﻿<?xml version="1.0" encoding="utf-8"?>
-=======
->>>>>>> Stashed changes
->>>>>>> head
-<<<<<<< HEAD
-<?xml version="1.0" encoding="utf-8"?>
-<?xml version="1.0" encoding="utf-8"?>
-=======
-﻿<?xml version="1.0" encoding="utf-8"?>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
->>>>>>> Stashed changes
 <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
@@ -381,7 +298,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
@@ -392,159 +308,31 @@
 
 <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.TextToImage.ITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
-=======
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> e8afd504d96495738a50ac60aabb8575f0589714
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> e8afd504d96495738a50ac60aabb8575f0589714
-=======
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.TextToImage.ITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.TextToImage.ITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< div
-=======
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.TextToImage.ITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> head
->>>>>>> Stashed changes
     <Left>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< div
-=======
     <Target>M:Microsoft.SemanticKernel.Agents.OpenAI.AnnotationContent.#ctor(System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> head
->>>>>>> Stashed changes
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Left>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
@@ -602,87 +390,21 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< div
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> head
->>>>>>> Stashed changes
+    <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
+    <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
+    <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
 
@@ -691,344 +413,61 @@
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.TextToImage.ITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
     <Target>M:Microsoft.SemanticKernel.AudioContent.get_Data</Target>
-=======
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
->>>>>>> Stashed changes
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
->>>>>>> Stashed changes
->>>>>>> head
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.TextToImage.ITextToImageService.GenerateImageAsync(System.String,System.Int32,System.Int32,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
-=======
     <Target>M:Microsoft.SemanticKernel.AudioContent.get_Data</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
->>>>>>> Stashed changes
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
->>>>>>> Stashed changes
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
->>>>>>> Stashed changes
->>>>>>> head
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
->>>>>>> Stashed changes
+    <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
+    <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
+    <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
+    <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
+    <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
+    <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.get_Content</Target>
-=======
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
-=======
->>>>>>> Stashed changes
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
-=======
->>>>>>> Stashed changes
->>>>>>> head
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.get_Content</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
->>>>>>> Stashed changes
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
-=======
-=======
-<<<<<<< HEAD
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
->>>>>>> Stashed changes
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetStreamAsync</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
@@ -1044,87 +483,21 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.FunctionResultContent.get_Id</Target>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
-=======
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< div
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-=======
->>>>>>> head
->>>>>>> Stashed changes
+    <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
+    <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
+    <Target>M:Microsoft.SemanticKernel.BinaryContent.GetContentAsync</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
@@ -1132,148 +505,29 @@
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target> 
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
       <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
->>>>>>> Stashed changes
-=======
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
->>>>>>> Stashed changes
->>>>>>> head
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.BinaryData,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
->>>>>>> Stashed changes
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
  
 <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
-=======
-<<<<<<< HEAD
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> e8afd504d96495738a50ac60aabb8575f0589714
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> e8afd504d96495738a50ac60aabb8575f0589714
-=======
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> e8afd504d96495738a50ac60aabb8575f0589714
-=======
->>>>>>> Stashed changes
-=======
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> e8afd504d96495738a50ac60aabb8575f0589714
-=======
->>>>>>> Stashed changes
->>>>>>> head
-<<<<<<< HEAD
     <Target>M:Microsoft.SemanticKernel.ImageContent.#ctor(System.Uri,System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
->>>>>>> Stashed changes
     <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.TextToImage.ITextToImageService.GetImageContentsAsync(Microsoft.SemanticKernel.TextContent,Microsoft.SemanticKernel.PromptExecutionSettings,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
     <Left>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
@@ -1283,47 +537,9 @@
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.TextToImage.ITextToImageService.GetImageContentsAsync(Microsoft.SemanticKernel.TextContent,Microsoft.SemanticKernel.PromptExecutionSettings,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
-<<<<<<< Updated upstream
     <Target>M:Microsoft.SemanticKernel.ImageContent.get_Data</Target>
-=======
-=======
     <Target>M:Microsoft.SemanticKernel.ImageContent.get_Data</Target>
->>>>>>> ce2496df6e0c39a7c9c1a70b1e013e81a7b8d9b9
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< HEAD
->>>>>>> main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> eab985c52d058dc92abc75034bc790079131ce75
-<<<<<<< div
-=======
-=======
->>>>>>> main
->>>>>>> Stashed changes
-=======
->>>>>>> main
->>>>>>> Stashed changes
->>>>>>> head
->>>>>>> Stashed changes
+    <Target>M:Microsoft.SemanticKernel.ImageContent.get_Data</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
