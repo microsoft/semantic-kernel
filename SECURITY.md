@@ -22,59 +22,6 @@ If you believe you have found a security vulnerability in any Microsoft-owned re
 Microsoft takes the security of our software products and services seriously, which includes all source code repositories managed through our GitHub organizations, which include [Microsoft](https://github.com/microsoft), [Azure](https://github.com/Azure), [DotNet](https://github.com/dotnet), [AspNet](https://github.com/aspnet), [Xamarin](https://github.com/xamarin), and [our GitHub organizations](https://opensource.microsoft.com/).
 
 If you believe you have found a security vulnerability in any Microsoft-owned repository that meets [Microsoft's definition of a security vulnerability](https://aka.ms/opensource/security/definition), please report it to us as described below.
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-:
-
->>>>>>> Stashed changes
-=======
-:
-
->>>>>>> Stashed changes
-=======
-:
-
->>>>>>> Stashed changes
-=======
-:
-
->>>>>>> Stashed changes
-=======
-:
-
->>>>>>> Stashed changes
-=======
-:
-
->>>>>>> Stashed changes
-=======
-:
-
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
-=======
-:
-
->>>>>>> Stashed changes
-=======
-:
-
->>>>>>> Stashed changes
->>>>>>> head
 
 ## Reporting Security Issues
 
@@ -85,218 +32,17 @@ Instead, please report them to the Microsoft Security Response Center (MSRC) at 
 If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com).  If possible, encrypt your message with our PGP key; please download it from the [Microsoft Security Response Center PGP Key page](https://www.microsoft.com/en-us/msrc/pgp-key-msrc?rtc=2).
 
 You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://www.microsoft.com/en-us/msrc?rtc=2).
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
->>>>>>> Stashed changes
 
 Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 
 * Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
-<<<<<<< main
-   <<<<<<< HEAD
-=======
->>>>>>> origin/Bryan-Roe/issue389
 * Full paths of source file(s) related to the manifestation of the issue
 * The location of the affected source code (tag/branch/commit or direct URL)
 * Any special configuration required to reproduce the issue
 * Step-by-step instructions to reproduce the issue
 * Proof-of-concept or exploit code (if possible)
 * Impact of the issue, including how an attacker might exploit the issue
-<<<<<<< main
-   =======
-   * Full paths of source file(s) related to the manifestation of the issue
-   * The location of the affected source code (tag/branch/commit or direct URL)
-   * Any special configuration required to reproduce the issue
-   * Step-by-step instructions to reproduce the issue
-   * Proof-of-concept or exploit code (if possible)
-   * Impact of the issue, including how an attacker might exploit the issue
 
-> > > > > > > dependabot/github_actions/actions/setup-dotnet-4
-=======
->>>>>>> origin/Bryan-Roe/issue389
-
-This information will help us triage your report more quickly.
-
-If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-
-Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
-
-* Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
-   <<<<<<< HEAD
-* Full paths of source file(s) related to the manifestation of the issue
-* The location of the affected source code (tag/branch/commit or direct URL)
-* Any special configuration required to reproduce the issue
-* Step-by-step instructions to reproduce the issue
-* Proof-of-concept or exploit code (if possible)
-* Impact of the issue, including how an attacker might exploit the issue
-   =======
-   * Full paths of source file(s) related to the manifestation of the issue
-   * The location of the affected source code (tag/branch/commit or direct URL)
-   * Any special configuration required to reproduce the issue
-   * Step-by-step instructions to reproduce the issue
-   * Proof-of-concept or exploit code (if possible)
-   * Impact of the issue, including how an attacker might exploit the issue
-
-> > > > > > > dependabot/github_actions/actions/setup-dotnet-4
-
-This information will help us triage your report more quickly.
-
-If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
-This information will help us triage your report more quickly.
-
-If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
-
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com). If possible, encrypt your message with our PGP key; please download it from the [Microsoft Security Response Center PGP Key page](https://aka.ms/opensource/security/pgpkey).
-
-You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://aka.ms/opensource/security/msrc).
-
-Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
-
-=======
-
-Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
-
-* Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
-   <<<<<<< HEAD
-* Full paths of source file(s) related to the manifestation of the issue
-* The location of the affected source code (tag/branch/commit or direct URL)
-* Any special configuration required to reproduce the issue
-* Step-by-step instructions to reproduce the issue
-* Proof-of-concept or exploit code (if possible)
-* Impact of the issue, including how an attacker might exploit the issue
-   =======
-   * Full paths of source file(s) related to the manifestation of the issue
-   * The location of the affected source code (tag/branch/commit or direct URL)
-   * Any special configuration required to reproduce the issue
-   * Step-by-step instructions to reproduce the issue
-   * Proof-of-concept or exploit code (if possible)
-   * Impact of the issue, including how an attacker might exploit the issue
-
-> > > > > > > dependabot/github_actions/actions/setup-dotnet-4
-
-This information will help us triage your report more quickly.
-
-If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
-This information will help us triage your report more quickly.
-
-If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
-
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com). If possible, encrypt your message with our PGP key; please download it from the [Microsoft Security Response Center PGP Key page](https://aka.ms/opensource/security/pgpkey).
-
-You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://aka.ms/opensource/security/msrc).
-
-Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
-
-<<<<<<< div
-=======
-
-Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
-
-* Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
-   <<<<<<< HEAD
-* Full paths of source file(s) related to the manifestation of the issue
-* The location of the affected source code (tag/branch/commit or direct URL)
-* Any special configuration required to reproduce the issue
-* Step-by-step instructions to reproduce the issue
-* Proof-of-concept or exploit code (if possible)
-* Impact of the issue, including how an attacker might exploit the issue
-   =======
-   * Full paths of source file(s) related to the manifestation of the issue
-   * The location of the affected source code (tag/branch/commit or direct URL)
-   * Any special configuration required to reproduce the issue
-   * Step-by-step instructions to reproduce the issue
-   * Proof-of-concept or exploit code (if possible)
-   * Impact of the issue, including how an attacker might exploit the issue
-
-> > > > > > > dependabot/github_actions/actions/setup-dotnet-4
-
-This information will help us triage your report more quickly.
-
-If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
 This information will help us triage your report more quickly.
 
 If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
@@ -307,27 +53,17 @@ You should receive a response within 24 hours. If for some reason you do not, pl
 
 Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 
->>>>>>> main
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> head
--   Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
--   Full paths of source file(s) related to the manifestation of the issue
--   The location of the affected source code (tag/branch/commit or direct URL)
--   Any special configuration required to reproduce the issue
--   Step-by-step instructions to reproduce the issue
--   Proof-of-concept or exploit code (if possible)
--   Impact of the issue, including how an attacker might exploit the issue
+* Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
+* Full paths of source file(s) related to the manifestation of the issue
+* The location of the affected source code (tag/branch/commit or direct URL)
+* Any special configuration required to reproduce the issue
+* Step-by-step instructions to reproduce the issue
+* Proof-of-concept or exploit code (if possible)
+* Impact of the issue, including how an attacker might exploit the issue
 
 This information will help us triage your report more quickly.
 
-If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://aka.ms/opensource/security/bounty) page for more details about our active programs.
+If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://www.microsoft.com/en-us/msrc/bounty?rtc=2) page for more details about our active programs.
 
 ## Preferred Languages
 
@@ -340,68 +76,38 @@ Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https:
 <!-- END MICROSOFT SECURITY.MD BLOCK -->
 Microsoft follows the principle of [Coordinated Vulnerability Disclosure](https://aka.ms/opensource/security/cvd).
 <!-- END MICROSOFT SECURITY.MD BLOCK -->
-<<<<<<< div
-<<<<<<< div
-=======
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-<!-- END MICROSOFT SECURITY.MD BLOCK -->
-<!-- END MICROSOFT SECURITY.MD BLOCK -->
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<!-- END MICROSOFT SECURITY.MD BLOCK -->
-<!-- END MICROSOFT SECURITY.MD BLOCK -->
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
->>>>>>> head
+
+## Security Policies and Best Practices
+
+To ensure the security of our project, we have implemented the following security policies and best practices:
+
+### Secure Coding Guidelines
+
+* Follow secure coding practices to prevent common vulnerabilities such as SQL injection, cross-site scripting (XSS), and buffer overflows.
+* Validate and sanitize all user inputs to prevent injection attacks.
+* Use parameterized queries or prepared statements for database interactions.
+* Avoid using hard-coded credentials or sensitive information in the codebase.
+* Implement proper error handling and logging to avoid exposing sensitive information.
+
+### Regular Security Reviews
+
+* Conduct regular security reviews of the codebase to identify and address potential vulnerabilities.
+* Perform code reviews to ensure adherence to secure coding practices.
+* Use automated security scanning tools to detect vulnerabilities in the code and dependencies.
+* Stay updated with the latest security patches and updates for all dependencies and libraries used in the project.
+
+### Mandatory Security Training
+
+* Ensure that all developers and contributors undergo mandatory security training.
+* Provide training on secure coding practices, common vulnerabilities, and how to mitigate them.
+* Encourage developers to stay informed about the latest security trends and best practices.
+
+## Monitoring and Responding to Security Alerts
+
+We have established a process for monitoring and responding to security alerts generated by our automated security tools. This process includes:
+
+* Regularly monitoring security alerts from tools such as CodeQL, Dependabot, and Frogbot.
+* Triaging and prioritizing security alerts based on their severity and potential impact.
+* Assigning responsible team members to investigate and address security alerts promptly.
+* Implementing fixes for identified vulnerabilities and ensuring they are thoroughly tested before deployment.
+* Communicating with the community and stakeholders about any security incidents and the steps taken to address them.
