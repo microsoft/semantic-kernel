@@ -11,7 +11,7 @@
 
 name: "Frogbot Scan Pull Request"
 on:
-  pull_request_target:
+  pull_request:
     types: [ opened, synchronize ]
 permissions:
   pull-requests: write
