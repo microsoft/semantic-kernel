@@ -556,3 +556,28 @@ For more information, see the [Dependabot documentation](https://docs.github.com
 Frogbot uses JFrog Xray to scan the project for security vulnerabilities. It automatically creates pull requests with fixes for vulnerable project dependencies. The repository includes Frogbot workflows such as `.github/workflows/frogbot-scan-and-fix.yml` and `.github/workflows/frogbot-scan-pr.yml`. These workflows are configured to run on push and pull request events, respectively. The necessary environment variables for JFrog Xray and GitHub token are set in the workflows.
 
 For more information, see the [Frogbot documentation](https://github.com/jfrog/frogbot#frogbot).
+
+### Additional Security Linters
+
+To further enhance security, the repository integrates additional security linters:
+
+* **ESLint**: For JavaScript/TypeScript code, ESLint helps identify and report on patterns found in ECMAScript/JavaScript code. The repository includes an ESLint workflow in `.github/workflows/eslint.yml`.
+* **Bandit**: For Python code, Bandit is a security linter designed to find common security issues. The repository includes a Bandit workflow in `.github/workflows/bandit.yml`.
+* **DevSkim**: A security linter for various languages, DevSkim helps identify potential security issues early in the development process. The repository includes a DevSkim workflow in `.github/workflows/devskim.yml`.
+* **PHPMD**: For PHP code, PHPMD is a tool that looks for several potential problems within the source code. The repository includes a PHPMD workflow in `.github/workflows/phpmd.yml`.
+* **rust-clippy**: For Rust code, rust-clippy is a tool that runs a bunch of lints to catch common mistakes and help improve Rust code. The repository includes a rust-clippy workflow in `.github/workflows/rust-clippy.yml`.
+* **lintr**: For R code, lintr provides static code analysis, checking for adherence to a given style, identifying syntax errors, and possible semantic issues. The repository includes a lintr workflow in `.github/workflows/lintr.yml`.
+
+### Automated Security Testing
+
+The repository is set up with automated security testing workflows to ensure continuous security validation:
+
+* **EthicalCheck**: For API security testing, the repository includes an EthicalCheck workflow in `.github/workflows/ethicalcheck.yml`.
+* **Mayhem for API**: For API fuzz testing, the repository includes a Mayhem for API workflow in `.github/workflows/mayhem-for-api.yml`.
+* **OSSAR**: For open source static analysis, the repository includes an OSSAR workflow in `.github/workflows/ossar.yml`.
+
+### Security Policies and Best Practices
+
+The repository follows documented security policies and best practices to ensure the security of the project. These include guidelines for secure coding, regular security reviews, and mandatory security training for developers. The process for monitoring and responding to security alerts is also documented.
+
+For more information, see the `SECURITY.md` file in the repository.
