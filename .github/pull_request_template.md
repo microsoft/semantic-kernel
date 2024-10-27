@@ -21,3 +21,8 @@ Please help reviewers and future users, providing the following information:
 - [ ] The PR follows the [SK Contribution Guidelines](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) and the [pre-submission formatting script](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md#development-scripts) raises no violations
 - [ ] All unit tests pass, and I have added new tests where possible
 - [ ] I didn't break anyone :smile:
+- [ ] I have updated the documentation as needed
+- [ ] I have added appropriate labels to the PR
+- [ ] I have reviewed the code for any security vulnerabilities
+- [ ] I have considered the impact of my changes on the community and have included necessary updates to the `COMMUNITY.md` file
+- [ ] I have followed the checklist to ensure my code meets the project's standards and requirements

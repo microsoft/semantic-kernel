@@ -6,69 +6,7 @@
 > also actively working on improving the code quality and developer experience,
 > and we appreciate your support, input and PRs!
 
-can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
->>>>>>> head
 You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-You can contribute to Semantic Kernel with issues and pull requests (PRs). Simply
->>>>>>> origin/main
->>>>>>> Stashed changes
 filing issues for problems you encounter is a great way to contribute. Contributing
 code is greatly appreciated.
 
@@ -79,79 +17,9 @@ tips on how you can make reporting your issue as effective as possible.
 
 ### Where to Report
 
-<<<<New issues can be reported in our [list of issues](https://github.com/microsoft/semantic-kernel/issues).
->>>>>>>+HEAD
-===
-New New issues can be reported in our [list of issues](https://github.com/semantic-kernel/issues).
->>>>>>>+8590ec5
-ore filing a new issue, please search the list of issues to make sure it does
-<<<<<<< div
-<<<<<<< div
-=======
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
->>>>>>> origin/main
-=======
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-<<<<<<< div
-=======
->>>>>>> main
-=======
->>>>>>> Stashed changes
->>>>>>> head
 New issues can be reported in our [list of issues](https://github.com/microsoft/semantic-kernel/issues).
 
 Before filing a new issue, please search the list of issues to make sure it does
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 not already exist.
 
 If you do find an existing issue for what you wanted to report, please include
@@ -165,151 +33,15 @@ underlying problem.
 The better a bug report, the faster the problem will be resolved. Ideally, a bug
 report should contain the following information:
 
-<<<<<<- A high-level description of the problem.
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
->>>>>>> head
 - A high-level description of the problem.
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-- A high-level description of the problem.
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-- A high-level description of the problem.
->>>>>>> origin/main
->>>>>>> Stashed changes
 - A _minimal reproduction_, i.e. the smallest size of code/configuration required
   to reproduce the wrong behavior.
 - A description of the _expected behavior_, contrasted with the _actual behavior_ observed.
 - Information on the environment: OS/distribution, CPU architecture, SDK version, etc.
 - Additional information, e.g. Is it a regression from previous versions? Are there
   any known workarounds?
->>>>>>>+HEAD
-=
--   A -   A high-level description of the problem.
--   A _minimal reproduction_, i.e. the smallest size of code/configuration required
-    to reproduce the wrong behavior.
--   A description of the _expected behavior_, contrasted with the _actual behavior_ observed.
--   Information on the environment: OS/distribution, CPU architecture, SDK version, etc.
--   Additional information, e.g. Is it a regression from previous versions? Are there
-    any known workarounds?
->>>>>>>+8590ec5
-ntributing Changes
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
->>>>>>> head
 
 ## Contributing Changes
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-
-## Contributing Changes
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-
-## Contributing Changes
->>>>>>> origin/main
->>>>>>> Stashed changes
 
 Project maintainers will merge accepted code changes from contributors.
 
@@ -317,69 +49,7 @@ Project maintainers will merge accepted code changes from contributors.
 
 DO's:
 
-<<<<<<- **DO** follow the standard coding conventions
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
->>>>>>> head
 - **DO** follow the standard coding conventions
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-- **DO** follow the standard coding conventions
->>>>>>> origin/main
->>>>>>> Stashed changes
-=======
-<<<<<<< main
-=======
-- **DO** follow the standard coding conventions
->>>>>>> origin/main
->>>>>>> Stashed changes
 
   - [.NET](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
   - [Python](https://pypi.org/project/black/)
@@ -403,128 +73,8 @@ DON'Ts:
 - **DON'T** submit PRs that alter licensing related files or headers. If you believe
   there's a problem with them, file an issue and we'll be happy to discuss it.
 - **DON'T** make new APIs without filing an issue and discussing with us first.
->>>>>>>+HEAD
-=
--   **-   **DO** follow the standard Python code style
--   **DO** give priority to the current style of the project or file you're changing
-    if it diverges from the general guidelines.
--   **DO** include tests when adding new features. When fixing bugs, start with
-    adding a test that highlights how the current behavior is broken.
--   **DO** keep the discussions focused. When a new or related topic comes up
-    it's often better to create new issue than to side track the discussion.
--   **DO** clearly state on an issue that you are going to take on implementing it.
--   **DO** blog and tweet (or whatever) about your contributions, frequently!
-<<<<<<< div
-<<<<<<< div
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< head
->>>>>>> head
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-<<<<<<< main
-=======
-=======
-<<<<<<< div
-=======
-=======
-<<<<<<< main
-=======
->>>>>>> Stashed changes
-<<<<<<< Updated upstream
->>>>>>> head
 
-DON'Ts:
-
--   **DON'T** surprise us with big pull requests. Instead, file an issue and start
-    a discussion so we can agree on a direction before you invest a large amount of time.
--   **DON'T** commit code that you didn't write. If you find code that you think is a good
-    fit to add to Semantic Kernel, file an issue and start a discussion before proceeding.
--   **DON'T** submit PRs that alter licensing related files or headers. If you believe
-    there's a problem with them, file an issue and we'll be happy to discuss it.
--   **DON'T** make new APIs without filing an issue and discussing with us first.
->>>>>>>+8590ec5
-reaking Changes
-<<<<<<< div
->>>>>>> main
-=======
->>>>>>> origin/main
-=======
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-<<<<<<< main
-=======
->>>>>>> Stashed changes
->>>>>>> head
-
-DON'Ts:
-
--   **DON'T** surprise us with big pull requests. Instead, file an issue and start
-    a discussion so we can agree on a direction before you invest a large amount of time.
--   **DON'T** commit code that you didn't write. If you find code that you think is a good
-    fit to add to Semantic Kernel, file an issue and start a discussion before proceeding.
--   **DON'T** submit PRs that alter licensing related files or headers. If you believe
-    there's a problem with them, file an issue and we'll be happy to discuss it.
--   **DON'T** make new APIs without filing an issue and discussing with us first.
->>>>>>>+8590ec5
-reaking Changes
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> origin/main
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> origin/main
->>>>>>> Stashed changes
-
-DON'Ts:
-
--   **DON'T** surprise us with big pull requests. Instead, file an issue and start
-    a discussion so we can agree on a direction before you invest a large amount of time.
--   **DON'T** commit code that you didn't write. If you find code that you think is a good
-    fit to add to Semantic Kernel, file an issue and start a discussion before proceeding.
--   **DON'T** submit PRs that alter licensing related files or headers. If you believe
-    there's a problem with them, file an issue and we'll be happy to discuss it.
--   **DON'T** make new APIs without filing an issue and discussing with us first.
->>>>>>>+8590ec5
-reaking Changes
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+## Breaking Changes
 
 Contributions must maintain API signature and behavioral compatibility. Contributions
 that include breaking changes will be rejected. Please file an issue to discuss
@@ -593,33 +143,41 @@ as separate plugins. Memory connectors play a crucial role in interfacing with
 external memory systems, and treating them as plugins enhances modularity and
 maintainability.
 
-    - You can skip this step for trivial changes.
-    - Reuse an existing issue on the topic, if there is one.
-    - Get agreement from the team and the community that your proposed change is
-      a good one.
-    - Clearly state that you are going to take on implementing it, if that's the case.
-      You can request that the issue be assigned to you. Note: The issue filer and
-      the implementer don't have to be the same person.
-2. Create a personal fork of the repository on GitHub (if you don't already have one).
-3. In your fork, create a branch off of main (`git checkout -b mybranch`).
-    - Name the branch so that it clearly communicates your intentions, such as
-      "issue-123" or "githubhandle-issue".
-4. Make and commit your changes to your branch.
-5. Add new tests corresponding to your change, if applicable.
-6. Build the repository with your changes.
-    - Make sure that the builds are clean.
-    - Make sure that the tests are all passing, including your new tests.
-7. Create a PR against the repository's **main** branch.
-    - State in the description what issue or improvement your change is addressing.
-    - Verify that all the Continuous Integration checks are passing.
-8. Wait for feedback or approval of your changes from the code maintainers.
-9. When area owners have signed off, and all checks are green, your PR will be merged.
+### Examples and Use Cases
 
-### PR - CI Process
+To help contributors understand how to use the repository effectively, we have included some examples and use cases below:
 
-The continuous integration (CI) system will automatically perform the required
-builds and run tests (including the ones you are expected to run) for PRs. Builds
-and test runs must be clean.
+#### Example 1: Adding a New Feature
 
-If the CI build fails for any reason, the PR issue will be updated with a link
-that can be used to determine the cause of the failure.
+1. Identify the feature you want to add and create an issue to discuss it with the community.
+2. Fork the repository and create a new branch for your feature.
+3. Implement the feature in your branch, following the coding standards and guidelines.
+4. Add tests to verify the new feature works as expected.
+5. Run the development scripts to ensure your changes do not break the build or existing tests.
+6. Create a pull request with a description of the feature and link to the issue.
+7. Address any feedback from maintainers and community members.
+8. Once approved, your feature will be merged into the main branch.
+
+#### Example 2: Fixing a Bug
+
+1. Identify the bug and create an issue to discuss it with the community.
+2. Fork the repository and create a new branch for your bug fix.
+3. Write a test that reproduces the bug.
+4. Implement the fix in your branch.
+5. Run the development scripts to ensure your changes do not break the build or existing tests.
+6. Create a pull request with a description of the bug and the fix, and link to the issue.
+7. Address any feedback from maintainers and community members.
+8. Once approved, your bug fix will be merged into the main branch.
+
+#### Example 3: Improving Documentation
+
+1. Identify the documentation that needs improvement and create an issue to discuss it with the community.
+2. Fork the repository and create a new branch for your documentation improvements.
+3. Make the necessary changes to the documentation in your branch.
+4. Run the development scripts to ensure your changes do not break the build or existing tests.
+5. Create a pull request with a description of the documentation improvements and link to the issue.
+6. Address any feedback from maintainers and community members.
+7. Once approved, your documentation improvements will be merged into the main branch.
+
+By following these examples and use cases, you can effectively contribute to the Semantic Kernel repository and help improve the project for everyone.
+

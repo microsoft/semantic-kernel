@@ -1,6 +1,4 @@
 [submodule "semantic-kernel"]
-	path = semantic-kernel
-	url = https://github.com/microsoft/semantic-kernel.git
 [submodule "tree-sitter-python"]
-	path = tree-sitter-python
-	url = https://github.com/tree-sitter/tree-sitter-python.git
+[submodule "compositional-generalization-span-level-attention"]
+[submodule "OpenKP"]
