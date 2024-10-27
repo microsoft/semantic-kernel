@@ -534,3 +534,25 @@ We have included more code snippets and usage examples in the documentation to p
 ### Repository Structure Explanation
 
 To help users navigate the repository, we have added a section that explains the structure of the repository and the purpose of each directory and file. This section provides an overview of the repository's organization and helps users understand where to find specific components and resources.
+
+## Security Fixes
+
+This repository uses several tools to automatically identify and fix security vulnerabilities:
+
+### CodeQL
+
+CodeQL is used to analyze the code for security vulnerabilities and errors. The results are shown as code scanning alerts in GitHub. The repository includes multiple CodeQL workflows such as `.github/workflows/codeql-adv.yml`, `.github/workflows/codeql-analysis.yml`, and `.github/workflows/codeql.yml`. These workflows are configured to run on push, pull request, and scheduled events. CodeQL analyzes various languages including C/C++, C#, Java, JavaScript, TypeScript, Python, and Ruby.
+
+For more information, see the [CodeQL documentation](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning-with-codeql).
+
+### Dependabot
+
+Dependabot automatically checks for updates to dependencies and creates pull requests to update them. This helps in keeping the dependencies up-to-date and secure, reducing the risk of vulnerabilities in outdated packages. The repository includes a Dependabot configuration file `.github/dependabot.yml`. The configuration includes updates for nuget, npm, pip, and github-actions, and is set to run weekly on Monday.
+
+For more information, see the [Dependabot documentation](https://docs.github.com/en/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically).
+
+### Frogbot
+
+Frogbot uses JFrog Xray to scan the project for security vulnerabilities. It automatically creates pull requests with fixes for vulnerable project dependencies. The repository includes Frogbot workflows such as `.github/workflows/frogbot-scan-and-fix.yml` and `.github/workflows/frogbot-scan-pr.yml`. These workflows are configured to run on push and pull request events, respectively. The necessary environment variables for JFrog Xray and GitHub token are set in the workflows.
+
+For more information, see the [Frogbot documentation](https://github.com/jfrog/frogbot#frogbot).
