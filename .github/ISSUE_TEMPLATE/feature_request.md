@@ -18,3 +18,15 @@ A clear and concise description of any alternative solutions or features you've 
 
 **Additional context**
 Add any other context or screenshots about the feature request here.
+
+**Use Cases**
+Provide specific use cases or scenarios where this feature would be beneficial.
+
+**Impact**
+Describe the impact of this feature on your work or project. This can help prioritize the feature request.
+
+**Related Issues**
+If there are any related issues or pull requests, please link to them here.
+
+**Additional Information**
+Any other information that may be helpful in understanding and implementing the feature request.
