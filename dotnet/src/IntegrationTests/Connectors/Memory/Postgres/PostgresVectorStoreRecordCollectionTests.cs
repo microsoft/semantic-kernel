@@ -494,7 +494,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         return new DateTimeOffset(dateTimeOffset.Ticks - (dateTimeOffset.Ticks % TimeSpan.TicksPerSecond), dateTimeOffset.Offset);
     }
 
-#pragma warning disable CA1812
+#pragma warning disable CA1812, CA1859
     private sealed class RecordWithEnumerables
     {
         [VectorStoreRecordKey]
@@ -518,7 +518,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         [VectorStoreRecordData]
         public IReadOnlyList<int>? ReadOnlyListInts { get; set; }
     }
-#pragma warning restore CA1812
+#pragma warning restore CA1812, CA1859
 
     #endregion
 
