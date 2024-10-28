@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.IO;
-using SemanticKernel.Process.UnitTests.Runtime;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process.Runtime;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Process.Runtime.UnitTests;
+namespace SemanticKernel.Process.Utilities.UnitTests;
 
 /// <summary>
-/// Unit tests for the <see cref="LocalProcess"/> class.
+/// Unit tests for the <see cref="ProcessEvent"/> class.
 /// </summary>
 public class ProcessEventTests
 {
