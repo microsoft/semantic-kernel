@@ -16,8 +16,7 @@ namespace SemanticKernel.UnitTests.Utilities;
 
 public sealed class SseJsonParserTests
 {
-    public const string SampleSseData1 =
-        """
+    public const string SampleSseData1 = """
         event: message_start
         data: {"type": "message_start", "message": {"id": "msg_1nZdL29xx5MUA1yADyHTEsnR8uuvGzszyY", "type": "message", "role": "assistant", "content": [], "model": "claude-3-opus-20240229", "stop_reason": null, "stop_sequence": null, "usage": {"input_tokens": 25, "output_tokens": 1}}}
 
@@ -44,8 +43,7 @@ public sealed class SseJsonParserTests
 
         """;
 
-    public const string SampleSseData2 =
-        """
+    public const string SampleSseData2 = """
         event: userconnect
         data: {"username": "bobby", "time": "02:33:48"}
 
@@ -59,8 +57,7 @@ public sealed class SseJsonParserTests
         data: {"username": "sean", "time": "02:34:36", "text": "Bye, bobby."}
         """;
 
-    public const string SampleSseData3 =
-        """
+    public const string SampleSseData3 = """
         event: userconnect
         data: {"username": "bobby", "time": "02:33:48"}
 
@@ -71,8 +68,7 @@ public sealed class SseJsonParserTests
         data: {"username": "bobby", "time": "02:34:11", "text": "Hi everyone."}
         """;
 
-    public const string SampleSseData4 =
-        """
+    public const string SampleSseData4 = """
         event: userconnect
         data: {"username": "bobby", "time": "02:33:48"}
 

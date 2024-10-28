@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         this._endpoint = endpoint;
         this._model = model;
 
-        this._httpClient = new(httpClientHandler);
+        this._httpClient = new HttpClient(httpClientHandler);
 
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
@@ -60,8 +60,8 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         this._endpoint = endpoint;
         this._model = model;
 
-        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
-        this._httpClient = new(this._httpClientHandler);
+        this._httpClientHandler = new HttpClientHandler { CheckCertificateRevocationList = true };
+        this._httpClient = new HttpClient(this._httpClientHandler);
 
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }

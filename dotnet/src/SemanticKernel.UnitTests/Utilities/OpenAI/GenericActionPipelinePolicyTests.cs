@@ -29,7 +29,7 @@ public class GenericActionPipelinePolicyTests
         var message = pipeline.CreateMessage();
 
         // Act
-        sut.Process(message, [sut], 0);
+        sut.Process(message, new[] { sut }, 0);
 
         // Assert
         message.Request.Headers.TryGetValue(headerName, out var value);
