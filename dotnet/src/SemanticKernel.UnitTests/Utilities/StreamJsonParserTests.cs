@@ -12,8 +12,7 @@ namespace SemanticKernel.UnitTests.Utilities;
 
 public sealed class StreamJsonParserTests
 {
-    private const string SeeTestData =
-        """
+    private const string SeeTestData = """
         data: {"candidates": [{"content": {"parts": [{"text": "lorem ipsum"}],"role": "model"},"finishReason": "STOP","index": 0,"safetyRatings": [{"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HATE_SPEECH","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HARASSMENT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_DANGEROUS_CONTENT","probability": "NEGLIGIBLE"}]}],"promptFeedback": {"safetyRatings": [{"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HATE_SPEECH","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HARASSMENT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_DANGEROUS_CONTENT","probability": "NEGLIGIBLE"}]}}
 
         data: {"candidates": [{"content": {"parts": [{"text": "lorem ipsum"}],"role": "model"},"finishReason": "STOP","index": 0,"safetyRatings": [{"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HATE_SPEECH","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_HARASSMENT","probability": "NEGLIGIBLE"},{"category": "HARM_CATEGORY_DANGEROUS_CONTENT","probability": "NEGLIGIBLE"}]}]}
@@ -61,7 +60,7 @@ public sealed class StreamJsonParserTests
         // Arrange
         var parser = new StreamJsonParser();
         var stream = new MemoryStream();
-        string input = "}{}";
+        string input = """}{}""";
         WriteToStream(stream, input);
 
         // Act
