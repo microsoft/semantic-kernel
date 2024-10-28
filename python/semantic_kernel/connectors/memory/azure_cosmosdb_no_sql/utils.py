@@ -112,6 +112,21 @@ def create_default_vector_embedding_policy(data_model_definition: VectorStoreRec
     return vector_embedding_policy
 
 
+def get_key(key: str | AzureCosmosDBNoSQLCompositeKey) -> str:
+    """Gets the key value from the key.
+
+    Args:
+        key (str | AzureCosmosDBNoSQLCompositeKey): The key.
+
+    Returns:
+        str: The key.
+    """
+    if isinstance(key, AzureCosmosDBNoSQLCompositeKey):
+        return key.key
+
+    return key
+
+
 def get_partition_key(key: str | AzureCosmosDBNoSQLCompositeKey) -> str:
     """Gets the partition key value from the key.
 
@@ -161,6 +176,6 @@ def build_query_parameters(
     select_clause = ", ".join(f"c.{field}" for field in included_fields)
 
     return (
-        f"SELECT {select_clause} FROM c WHERE c.id IN ({', '.join([f'@id{i}' for i in range(len(keys))])})",
-        [{"name": f"@id{i}", "value": key} for i, key in enumerate(keys)],
+        f"SELECT {select_clause} FROM c WHERE c.id IN ({', '.join([f'@id{i}' for i in range(len(keys))])})",  # nosec: B608
+        [{"name": f"@id{i}", "value": get_key(key)} for i, key in enumerate(keys)],
     )
