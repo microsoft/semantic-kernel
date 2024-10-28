@@ -117,31 +117,43 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return await this._client.DoesTableExistsAsync(this.CollectionName, cancellationToken).ConfigureAwait(false);
+        const string OperationName = "DoesTableExists";
+        return this.RunOperationAsync(OperationName, () =>
+            this._client.DoesTableExistsAsync(this.CollectionName, cancellationToken)
+        );
     }
 
     /// <inheritdoc/>
-    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        await this.InternalCreateCollectionAsync(false, cancellationToken).ConfigureAwait(false);
+        const string OperationName = "CreateCollection";
+        return this.RunOperationAsync(OperationName, () =>
+            this.InternalCreateCollectionAsync(false, cancellationToken)
+        );
     }
 
     /// <inheritdoc/>
     public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this.InternalCreateCollectionAsync(true, cancellationToken);
+        const string OperationName = "CreateCollectionIfNotExists";
+        return this.RunOperationAsync(OperationName, () =>
+            this.InternalCreateCollectionAsync(true, cancellationToken)
+        );
     }
 
     /// <inheritdoc/>
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this._client.DeleteTableAsync(this.CollectionName, cancellationToken);
+        const string OperationName = "DeleteCollection";
+        return this.RunOperationAsync(OperationName, () =>
+            this._client.DeleteTableAsync(this.CollectionName, cancellationToken)
+        );
     }
 
     /// <inheritdoc/>
-    public async Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "Upsert";
 
@@ -157,8 +169,12 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         Verify.NotNull(keyObj);
         TKey key = (TKey)keyObj!;
 
-        await this._client.UpsertAsync(this.CollectionName, storageModel, this._propertyReader.KeyPropertyStoragePropertyName, cancellationToken).ConfigureAwait(false);
-        return key;
+        return this.RunOperationAsync(OperationName, async () =>
+            {
+                await this._client.UpsertAsync(this.CollectionName, storageModel, this._propertyReader.KeyPropertyStoragePropertyName, cancellationToken).ConfigureAwait(false);
+                return key;
+            }
+        );
     }
 
     /// <inheritdoc/>
@@ -174,35 +190,39 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         var keys = storageModels.Select(model => model[this._propertyReader.KeyPropertyStoragePropertyName]!).ToList();
 
-        await this._client.UpsertBatchAsync(this.CollectionName, storageModels, this._propertyReader.KeyPropertyStoragePropertyName, cancellationToken).ConfigureAwait(false);
+        await this.RunOperationAsync(OperationName, () =>
+            this._client.UpsertBatchAsync(this.CollectionName, storageModels, this._propertyReader.KeyPropertyStoragePropertyName, cancellationToken)
+        ).ConfigureAwait(false);
 
         foreach (var key in keys) { yield return (TKey)key!; }
     }
 
     /// <inheritdoc/>
-    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var operationName = "Get";
+        const string OperationName = "Get";
 
         Verify.NotNull(key);
 
         bool includeVectors = options?.IncludeVectors is true;
 
-        var row = await this._client.GetAsync(this.CollectionName, key, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken).ConfigureAwait(false);
+        return this.RunOperationAsync<TRecord?>(OperationName, async () =>
+        {
+            var row = await this._client.GetAsync(this.CollectionName, key, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken).ConfigureAwait(false);
 
-        if (row is null) { return default; }
-
-        return VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this.CollectionName,
-            operationName,
-            () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
+            if (row is null) { return default; }
+            return VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this.CollectionName,
+                OperationName,
+                () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
+        });
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var operationName = "GetBatch";
+        const string OperationName = "GetBatch";
 
         Verify.NotNull(keys);
 
@@ -213,26 +233,34 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             yield return VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
                 this.CollectionName,
-                operationName,
+                OperationName,
                 () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
         }
     }
 
     /// <inheritdoc/>
-    public async Task DeleteAsync(TKey key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(TKey key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        await this._client.DeleteAsync(this.CollectionName, this._propertyReader.KeyPropertyStoragePropertyName, key, cancellationToken).ConfigureAwait(false);
+        const string OperationName = "Delete";
+        return this.RunOperationAsync(OperationName, () =>
+            this._client.DeleteAsync(this.CollectionName, this._propertyReader.KeyPropertyStoragePropertyName, key, cancellationToken)
+        );
     }
 
     /// <inheritdoc/>
     public Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return this._client.DeleteBatchAsync(this.CollectionName, this._propertyReader.KeyPropertyStoragePropertyName, keys, cancellationToken);
+        const string OperationName = "DeleteBatch";
+        return this.RunOperationAsync(OperationName, () =>
+            this._client.DeleteBatchAsync(this.CollectionName, this._propertyReader.KeyPropertyStoragePropertyName, keys, cancellationToken)
+        );
     }
 
     /// <inheritdoc />
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
     {
+        const string OperationName = "VectorizedSearch";
+
         Verify.NotNull(vector);
 
         var vectorType = vector.GetType();
@@ -260,30 +288,38 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
         var limit = searchOptions.Top + searchOptions.Skip;
 
-        var results = this._client.GetNearestMatchesAsync(
-            this.CollectionName,
-            this._propertyReader.RecordDefinition.Properties,
-            vectorProperty,
-            pgVector,
-            searchOptions.Top,
-            searchOptions.Filter,
-            searchOptions.Skip,
-            searchOptions.IncludeVectors,
-            cancellationToken
-            ).Select(result =>
-            {
-                var record = this._mapper.MapFromStorageToDataModel(
-                    result.Row, new StorageToDataModelMapperOptions() { IncludeVectors = searchOptions.IncludeVectors });
+        return this.RunOperationAsync(OperationName, () =>
+        {
+            var results = this._client.GetNearestMatchesAsync(
+                this.CollectionName,
+                this._propertyReader.RecordDefinition.Properties,
+                vectorProperty,
+                pgVector,
+                searchOptions.Top,
+                searchOptions.Filter,
+                searchOptions.Skip,
+                searchOptions.IncludeVectors,
+                cancellationToken
+                ).Select(result =>
+                {
+                    var record = VectorStoreErrorHandler.RunModelConversion(
+                        DatabaseName,
+                        this.CollectionName,
+                        OperationName,
+                        () => this._mapper.MapFromStorageToDataModel(
+                            result.Row, new StorageToDataModelMapperOptions() { IncludeVectors = searchOptions.IncludeVectors })
+                    );
 
-                return new VectorSearchResult<TRecord>(record, result.Distance);
-            }, cancellationToken);
+                    return new VectorSearchResult<TRecord>(record, result.Distance);
+                }, cancellationToken);
 
-        return Task.FromResult(new VectorSearchResults<TRecord>(results));
+            return Task.FromResult(new VectorSearchResults<TRecord>(results));
+        });
     }
 
-    private async Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
+    private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
     {
-        await this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition.Properties, ifNotExists, cancellationToken).ConfigureAwait(false);
+        return this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition.Properties, ifNotExists, cancellationToken);
     }
 
     /// <summary>
@@ -311,5 +347,39 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // If vector property is not provided in options, return first vector property from schema.
         return this._propertyReader.VectorProperty;
+    }
+
+    private async Task RunOperationAsync(string operationName, Func<Task> operation)
+    {
+        try
+        {
+            await operation.Invoke().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreType = DatabaseName,
+                CollectionName = this.CollectionName,
+                OperationName = operationName
+            };
+        }
+    }
+
+    private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
+    {
+        try
+        {
+            return await operation.Invoke().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreType = DatabaseName,
+                CollectionName = this.CollectionName,
+                OperationName = operationName
+            };
+        }
     }
 }
