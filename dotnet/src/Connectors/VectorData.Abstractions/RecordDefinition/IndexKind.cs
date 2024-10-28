@@ -52,4 +52,9 @@ public static class IndexKind
     /// Dynamic index allows to automatically switch from <see cref="Flat"/> to <see cref="Hnsw"/> indexes.
     /// </summary>
     public const string Dynamic = nameof(Dynamic);
+
+    /// <summary>
+    /// No index is used.
+    /// </summary>
+    public const string None = nameof(None);
 }

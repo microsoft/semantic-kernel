@@ -35,9 +35,13 @@ internal class PostgresSqlCommandInfo
     /// Converts this instance to an <see cref="NpgsqlCommand"/>.
     /// </summary>
     [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "User input is passed using command parameters.")]
-    public NpgsqlCommand ToNpgsqlCommand(NpgsqlConnection connection)
+    public NpgsqlCommand ToNpgsqlCommand(NpgsqlConnection connection, NpgsqlTransaction? transaction = null)
     {
         NpgsqlCommand cmd = connection.CreateCommand();
+        if (transaction != null)
+        {
+            cmd.Transaction = transaction;
+        }
         cmd.CommandText = this.CommandText;
         if (this.Parameters != null)
         {

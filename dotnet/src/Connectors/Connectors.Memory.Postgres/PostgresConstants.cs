@@ -80,4 +80,9 @@ internal static class PostgresConstants
 
     /// <summary>The default distance function.</summary>
     public const string DefaultDistanceFunction = DistanceFunction.CosineDistance;
+
+    public static readonly Dictionary<string, int> IndexMaxDimensions = new()
+    {
+        { IndexKind.Hnsw, 2000 },
+    };
 }

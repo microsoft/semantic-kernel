@@ -34,7 +34,7 @@ internal interface IPostgresVectorStoreDbClient
     /// <returns>A group of tables.</returns>
     IAsyncEnumerable<string> GetTablesAsync(CancellationToken cancellationToken = default);
     /// <summary>
-    /// Create a table.
+    /// Create a table. Also creates an index on vector columns if the table has vector properties defined.
     /// </summary>
     /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="properties">The properties of the record definition that define the table.</param>
@@ -42,14 +42,6 @@ internal interface IPostgresVectorStoreDbClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     Task CreateTableAsync(string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, bool ifNotExists = true, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Create a vector index.
-    /// </summary>
-    /// <param name="tableName">The name assigned to a table of entries.</param>
-    /// <param name="vectorProperty">The vector property to create an index for.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task CreateVectorIndexAsync(string tableName, VectorStoreRecordVectorProperty vectorProperty, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Drop a table.

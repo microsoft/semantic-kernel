@@ -122,17 +122,16 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, VectorStoreRecordVectorProperty vectorProperty)
+    public PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction)
     {
-        var vectorColumnName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
         // Only support creating HNSW index creation through the connector.
-        var indexTypeName = vectorProperty.IndexKind switch
+        var indexTypeName = indexKind switch
         {
             IndexKind.Hnsw => "hnsw",
-            _ => throw new NotSupportedException($"Index kind '{vectorProperty.IndexKind}' is not supported for table creation. If you need to create an index of this type, please do so manually. Only HNSW indexes are supported through the vector store.")
+            _ => throw new NotSupportedException($"Index kind '{indexKind}' is not supported for table creation. If you need to create an index of this type, please do so manually. Only HNSW indexes are supported through the vector store.")
         };
 
-        var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
+        distanceFunction ??= PostgresConstants.DefaultDistanceFunction;  // Default to Cosine distance
 
         var indexOps = distanceFunction switch
         {
@@ -141,7 +140,7 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
             DistanceFunction.DotProductSimilarity => "vector_ip_ops",
             DistanceFunction.EuclideanDistance => "vector_l2_ops",
             DistanceFunction.ManhattanDistance => "vector_l1_ops",
-            _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
+            _ => throw new NotSupportedException($"Distance function {distanceFunction} is not supported.")
         };
 
         var indexName = $"{tableName}_{vectorColumnName}_index";

@@ -198,6 +198,45 @@ internal static class PostgresVectorStoreRecordPropertyMapping
         return new NpgsqlParameter() { Value = value };
     }
 
+    /// <summary>
+    /// Returns information about vector indexes to create, validating that the dimensions of the vector are supported.
+    /// </summary>
+    /// <param name="properties">The properties of the vector store record.</param>
+    /// <returns>A list of tuples containing the column name, index kind, and distance function for each vector property.</returns>
+    /// <remarks>
+    /// The user can specify an index kind of "None" to prevent the creation of an index. Otherwise the default index kind is Hnsw.
+    /// </remarks>
+    public static List<(string column, string kind, string function)> GetVectorIndexInfo(IReadOnlyList<VectorStoreRecordProperty> properties)
+    {
+        var vectorIndexesToCreate = new List<(string column, string kind, string function)>();
+        foreach (var property in properties)
+        {
+            if (property is VectorStoreRecordVectorProperty vectorProperty)
+            {
+                var vectorColumnName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
+                var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;  // Default to Hnsw
+                var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
+
+                // The user can specify an index kind of "None" to prevent the creation of an index.
+                if (indexKind != IndexKind.None)
+                {
+                    // Ensure the dimensionality of the vector is supported for indexing.
+                    if (PostgresConstants.IndexMaxDimensions.TryGetValue(indexKind, out int maxDimensions) && vectorProperty.Dimensions > maxDimensions)
+                    {
+                        throw new NotSupportedException(
+                            $"The provided vector property {vectorProperty.DataModelPropertyName} has {vectorProperty.Dimensions} dimensions, " +
+                            $"which is not supported by the {indexKind} index. The maximum number of dimensions supported by the {indexKind} index " +
+                            $"is {maxDimensions}. Please reduce the number of dimensions or use a different index."
+                        );
+                    }
+
+                    vectorIndexesToCreate.Add((vectorColumnName, indexKind, distanceFunction));
+                }
+            }
+        }
+        return vectorIndexesToCreate;
+    }
+
     // Helper method to convert an IEnumerable to a List if necessary
     private static object ConvertToListIfNecessary(IEnumerable enumerable)
     {

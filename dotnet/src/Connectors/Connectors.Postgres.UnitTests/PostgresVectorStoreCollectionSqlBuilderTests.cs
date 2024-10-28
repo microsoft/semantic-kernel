@@ -76,28 +76,22 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
     }
 
     [Theory]
-    [InlineData(IndexKind.Hnsw, null)]
-    [InlineData(IndexKind.IvfFlat, null)]
     [InlineData(IndexKind.Hnsw, DistanceFunction.EuclideanDistance)]
+    [InlineData(IndexKind.IvfFlat, DistanceFunction.DotProductSimilarity)]
     [InlineData(IndexKind.Hnsw, DistanceFunction.CosineDistance)]
-    public void TestBuildCreateIndexCommand(string indexKind, string? distanceFunction)
+    public void TestBuildCreateIndexCommand(string indexKind, string distanceFunction)
     {
         var builder = new PostgresVectorStoreCollectionSqlBuilder();
 
-        var vectorProperty = new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
-        {
-            Dimensions = 10,
-            IndexKind = indexKind,
-            DistanceFunction = distanceFunction,
-        };
+        var vectorColumn = "embedding1";
 
         if (indexKind != IndexKind.Hnsw)
         {
-            Assert.Throws<NotSupportedException>(() => builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorProperty));
+            Assert.Throws<NotSupportedException>(() => builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction));
             return;
         }
 
-        var cmdInfo = builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorProperty);
+        var cmdInfo = builder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("CREATE INDEX ", cmdInfo.CommandText);

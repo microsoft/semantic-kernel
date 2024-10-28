@@ -284,23 +284,6 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     private async Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
     {
         await this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition.Properties, ifNotExists, cancellationToken).ConfigureAwait(false);
-        // Create indexes for vector properties.
-        foreach (var vectorProperty in this._propertyReader.VectorProperties)
-        {
-            var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
-
-            // Ensure the dimensionality of the vector is supported for indexing.
-            if (indexKind == IndexKind.Hnsw)
-            {
-                if (vectorProperty.Dimensions > 2000)
-                {
-                    throw new NotSupportedException(
-                        $"The provided vector property {vectorProperty.DataModelPropertyName} has {vectorProperty.Dimensions} dimensions, which is not supported by the HNSW index. The maximum number of dimensions supported by the HNSW index is 2000. Index not created."
-                    );
-                }
-            }
-            await this._client.CreateVectorIndexAsync(this.CollectionName, vectorProperty, cancellationToken).ConfigureAwait(false);
-        }
     }
 
     /// <summary>
