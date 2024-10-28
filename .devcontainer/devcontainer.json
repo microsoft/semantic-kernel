@@ -86,6 +86,11 @@
 }
 }
 }
+},
+"tasks": {
+  "test": "1. For .NET:\n```\ndotnet test\n```\n2. For Python:\n```\npytest\n```\n3. For Java:\n```\nmvn test\n```\n4. For Node.js:\n```\nnpm test\n```",
+  "build": "dotnet restore && dotnet build && pip install -r requirements.txt && mvn clean install && npm install",
+  "launch": "pip install -r requirements.txt && python app.py"
 }
 }
 
