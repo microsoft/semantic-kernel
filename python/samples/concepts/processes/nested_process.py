@@ -15,7 +15,6 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import Kernel
 from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
-from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.process_builder import ProcessBuilder
 from semantic_kernel.processes.process_types import TState
@@ -58,17 +57,15 @@ class RepeatStep(KernelProcessStep[StepState]):
         self.state.last_message = output
         print(f"[REPEAT] {output}")
 
-        context.emit_event(
-            process_event=KernelProcessEvent(
-                id=ProcessEvents.OutputReadyPublic.value, data=output, visibility=KernelProcessEventVisibility.Public
-            )
+        await context.emit_event(
+            process_event=ProcessEvents.OutputReadyPublic.value,
+            data=output,
+            visibility=KernelProcessEventVisibility.Public,
         )
-        context.emit_event(
-            process_event=KernelProcessEvent(
-                id=ProcessEvents.OutputReadyInternal.value,
-                data=output,
-                visibility=KernelProcessEventVisibility.Internal,
-            )
+        await context.emit_event(
+            process_event=ProcessEvents.OutputReadyInternal.value,
+            data=output,
+            visibility=KernelProcessEventVisibility.Internal,
         )
 
 
