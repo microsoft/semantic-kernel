@@ -31,7 +31,9 @@ internal sealed class AnthropicStreamingResponse
     [JsonPropertyName("index")]
     public int Index { get; init; }
 
-#pragma warning disable CS0649 // Field is assigned via reflection
+    // Fields are assigned via reflection
+#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
+#pragma warning disable IDE0044 // Add readonly modifier
     [JsonPropertyName("content_block")]
     [JsonInclude]
     private AnthropicContent? _contentBlock;
@@ -39,6 +41,7 @@ internal sealed class AnthropicStreamingResponse
     [JsonPropertyName("delta")]
     [JsonInclude]
     private JsonNode? _delta;
+#pragma warning restore IDE0044
 #pragma warning restore CS0649
 
     /// <summary>
