@@ -388,7 +388,17 @@ internal sealed class AnthropicClient
 
         var filteredChatHistory = new ChatHistory(chatHistory.Where(IsAssistantOrUserOrSystem));
         var anthropicRequest = AnthropicRequest.FromChatHistoryAndExecutionSettings(filteredChatHistory, anthropicExecutionSettings);
-        anthropicRequest.Version = this._endpoint.OriginalString.Equals(AnthropicUrl, StringComparison.Ordinal) ? null : this._version;
+        if (this._endpoint.OriginalString.Equals(AnthropicUrl, StringComparison.Ordinal))
+        {
+            anthropicRequest.Version = null;
+            anthropicRequest.ModelId = anthropicExecutionSettings.ModelId ?? throw new InvalidOperationException("Model ID must be provided.");
+        }
+        else
+        {
+            // Vertex and Bedrock require the model ID to be null and version to be set
+            anthropicRequest.Version = this._version;
+            anthropicRequest.ModelId = null;
+        }
 
         return new ChatCompletionState
         {

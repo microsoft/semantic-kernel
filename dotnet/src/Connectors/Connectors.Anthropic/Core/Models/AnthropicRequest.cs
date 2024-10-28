@@ -13,6 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 internal sealed class AnthropicRequest
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("anthropic_version")]
     public string? Version { get; set; }
 
     /// <summary>
@@ -29,7 +30,8 @@ internal sealed class AnthropicRequest
     public IList<Message> Messages { get; set; } = [];
 
     [JsonPropertyName("model")]
-    public string ModelId { get; set; } = null!;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ModelId { get; set; }
 
     [JsonPropertyName("max_tokens")]
     public int MaxTokens { get; set; }
@@ -124,7 +126,6 @@ internal sealed class AnthropicRequest
     {
         AnthropicRequest request = new()
         {
-            ModelId = executionSettings.ModelId ?? throw new InvalidOperationException("Model ID must be provided."),
             MaxTokens = executionSettings.MaxTokens ?? throw new InvalidOperationException("Max tokens must be provided."),
             SystemPrompt = string.Join("\n", chatHistory
                 .Where(msg => msg.Role == AuthorRole.System)
