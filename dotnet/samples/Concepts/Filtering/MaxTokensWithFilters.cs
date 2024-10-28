@@ -33,7 +33,7 @@ public sealed class MaxTokensWithFilters(ITestOutputHelper output) : BaseTest(ou
         // Invoking MoviePlugin-GetMovieDescriptions function.
         // Total output tokens used: 83
 
-        // Run example with filter, which substracts max tokens value based on previous requests.
+        // Run example with filter, which subtracts max tokens value based on previous requests.
         // As a result, it takes 50 tokens to complete the request, as specified in execution settings.
         await this.RunExampleAsync(includeFilter: true);
 
@@ -98,7 +98,7 @@ public sealed class MaxTokensWithFilters(ITestOutputHelper output) : BaseTest(ou
             // Get tokens information from metadata.
             var messageTokens = GetOutputTokensFromMetadata(assistantMessage?.Metadata);
 
-            // Substract a value from execution settings to use less tokens during the next request.
+            // Subtract a value from execution settings to use less tokens during the next request.
             if (messageTokens.HasValue)
             {
                 executionSettings.MaxTokens -= messageTokens.Value;
