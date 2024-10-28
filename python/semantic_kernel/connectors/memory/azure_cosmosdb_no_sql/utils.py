@@ -14,6 +14,9 @@ from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDat
 def to_vector_index_policy_type(index_kind: IndexKind) -> str:
     """Converts the index kind to the vector index policy type for Azure Cosmos DB NoSQL container.
 
+    Depending on the index kind, the maximum number of dimensions may be limited:
+    https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/vector-search#vector-indexing-policies
+
     Args:
         index_kind (IndexKind): The index kind.
 
