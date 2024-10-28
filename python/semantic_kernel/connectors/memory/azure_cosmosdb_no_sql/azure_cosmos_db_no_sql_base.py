@@ -29,7 +29,7 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
         https://github.com/Azure/azure-sdk-for-python/issues/25640
         """
         if not self.cosmos_db_nosql_settings.key:
-            return CosmosClient(str(self.cosmos_db_nosql_settings.url), DefaultAzureCredential())
+            return CosmosClient(str(self.cosmos_db_nosql_settings.url), credential=DefaultAzureCredential())
 
         return CosmosClient(
             str(self.cosmos_db_nosql_settings.url),
