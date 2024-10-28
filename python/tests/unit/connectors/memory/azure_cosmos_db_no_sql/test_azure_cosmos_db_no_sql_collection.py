@@ -386,7 +386,9 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection_fail(
     vector_collection._get_cosmos_client = MagicMock()
     vector_collection._get_database_proxy = AsyncMock(side_effect=CosmosResourceNotFoundError)
 
-    with pytest.raises(MemoryConnectorResourceNotFound, match="Collection does not exist yet"):
+    with pytest.raises(
+        MemoryConnectorResourceNotFound, match="The collection does not exist yet. Create the collection first."
+    ):
         await vector_collection.delete_collection()
 
 
