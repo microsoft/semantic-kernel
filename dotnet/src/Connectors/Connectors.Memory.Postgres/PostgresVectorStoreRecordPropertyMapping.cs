@@ -181,16 +181,16 @@ internal static class PostgresVectorStoreRecordPropertyMapping
             return new NpgsqlParameter() { Value = DBNull.Value };
         }
 
-        // If it's already a List, return it directly
-        if (value is IList list)
-        {
-            return new NpgsqlParameter() { Value = list };
-        }
-
-        // If it's an IEnumerable<T>, but not a List, convert it to a List<T>
+        // If it's an IEnumerable<T>, use reflection to determine if it needs to be converted to a list
         if (value is IEnumerable enumerable && !(value is string))
         {
-            // Use a helper method to convert to a List<T> if possible
+            Type propertyType = value.GetType();
+            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                // If it's already a List<T>, return it directly
+                return new NpgsqlParameter() { Value = value };
+            }
+
             return new NpgsqlParameter() { Value = ConvertToListIfNecessary(enumerable) };
         }
 
