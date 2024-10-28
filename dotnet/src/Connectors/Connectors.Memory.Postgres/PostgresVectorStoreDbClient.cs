@@ -80,8 +80,13 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 
         await using (connection)
         {
+#if !NETSTANDARD2_0
             var transaction = await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             await using (transaction)
+#else
+            var transaction = connection.BeginTransaction();
+            using (transaction)
+#endif
             {
                 using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection, transaction);
                 await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
@@ -92,7 +97,11 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
                     await indexCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 }
 
+#if !NETSTANDARD2_0
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+#else
+                transaction.Commit();
+#endif
             }
         }
     }
