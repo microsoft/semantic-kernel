@@ -3,17 +3,19 @@
 import json
 import logging
 from abc import abstractmethod
-from collections.abc import Awaitable, Callable, Sequence
+from collections.abc import Callable, Sequence
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
-from semantic_kernel.data.const import DEFAULT_DESCRIPTION
+from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
-from semantic_kernel.exceptions.search_exceptions import SearchResultEmptyError
+from semantic_kernel.data.text_search.utils import create_options
+from semantic_kernel.data.vector_search.const import TextSearchFunctions
+from semantic_kernel.exceptions.function_exceptions import TextSearchException
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
@@ -34,22 +36,8 @@ class TextSearch:
     """The base class for all text searches."""
 
     @property
-    def _search_function_map(self) -> dict[str, Callable[..., Awaitable[KernelSearchResults[Any]]]]:
-        """Get the search function map.
-
-        Can be overwritten by subclasses.
-        """
-        return {
-            "search": self.search,
-            "text_search": self.search,
-            "get_text_search_result": self.get_text_search_result,
-            "get_text_search_results": self.get_text_search_result,
-            "get_search_result": self.get_search_result,
-            "get_search_results": self.get_search_result,
-        }
-
-    @property
-    def _get_options_class(self) -> type["SearchOptions"]:
+    def options_class(self) -> type["SearchOptions"]:
+        """The options class for the search."""
         return TextSearchOptions
 
     @staticmethod
@@ -100,96 +88,142 @@ class TextSearch:
 
     # region: Public methods
 
-    def create_kernel_function(
+    def create_search(
         self,
-        search_function: str,
-        options: SearchOptions | None,
+        options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
+        parameter_aliases: dict[str, str] | None = None,
         return_parameter: KernelParameterMetadata | None = None,
-        function_name: str = "search",
+        function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
         string_mapper: Callable[[TMapInput], str] | None = None,
-        update_options_function: Callable[
-            [Any, Any, Any, SearchOptions, dict[str, Any]], tuple[Any, Any, Any, SearchOptions]
-        ]
-        | None = None,
     ) -> KernelFunction:
-        """Create a function from a search service.
+        """Create a kernel function from a search function."""
+        return self._create_kernel_function(
+            search_function=TextSearchFunctions.SEARCH,
+            options=options,
+            parameters=parameters,
+            parameter_aliases=parameter_aliases,
+            return_parameter=return_parameter,
+            function_name=function_name,
+            description=description,
+            string_mapper=string_mapper,
+        )
 
-        Args:
-            search_function: The search function.
-            options: The search options.
-            parameters: The parameters for the function.
-            return_parameter: The return parameter for the function.
-            function_name: The name of the function.
-            description: The description of the function.
-            string_mapper: The function to map the search results to strings.
-                This can be applied to the results from the chosen search function.
-                When using the VectorStoreTextSearch and the Search method, a
-                string_mapper can be defined there as well, that is separate from this one.
-            update_options_function: A function to create search options.
+    def create_get_text_search_result(
+        self,
+        options: SearchOptions | None = None,
+        parameters: list[KernelParameterMetadata] | None = None,
+        parameter_aliases: dict[str, str] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        function_name: str = DEFAULT_FUNCTION_NAME,
+        description: str = DEFAULT_DESCRIPTION,
+        string_mapper: Callable[[TMapInput], str] | None = None,
+    ) -> KernelFunction:
+        """Create a kernel function from a search function."""
+        return self._create_kernel_function(
+            search_function=TextSearchFunctions.GET_TEXT_SEARCH_RESULT,
+            options=options,
+            parameters=parameters,
+            parameter_aliases=parameter_aliases,
+            return_parameter=return_parameter,
+            function_name=function_name,
+            description=description,
+            string_mapper=string_mapper,
+        )
 
-        """
-        search_func = self._search_function_map.get(search_function)
-        if not search_func:
-            raise ValueError(f"Search function '{search_function}' not found.")
-
-        @kernel_function(name=function_name, description=description)
-        async def search_wrapper(**kwargs: Any) -> Sequence[str]:
-            vectorizable_text = kwargs.get("vectorizable_text")
-            query = kwargs.get("query")
-            vector = kwargs.get("vector")
-            inner_options = self._create_options(deepcopy(options), **kwargs)
-
-            if update_options_function:
-                vectorizable_text, query, vector, inner_options = update_options_function(
-                    vectorizable_text, query, vector, inner_options, kwargs
-                )
-            try:
-                results = await search_func(
-                    vectorizable_text=vectorizable_text,
-                    query=query,
-                    vector=vector,
-                    options=inner_options,
-                )
-            except SearchResultEmptyError:
-                return ["No results found for this query"]
-            return await self._map_result_to_strings(results, string_mapper)
-
-        return KernelFunctionFromMethod(
-            method=search_wrapper,
-            parameters=parameters or self._default_parameter_metadata(),
-            return_parameter=return_parameter or self._default_return_parameter_metadata(),
+    def create_get_search_result(
+        self,
+        options: SearchOptions | None = None,
+        parameters: list[KernelParameterMetadata] | None = None,
+        parameter_aliases: dict[str, str] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        function_name: str = DEFAULT_FUNCTION_NAME,
+        description: str = DEFAULT_DESCRIPTION,
+        string_mapper: Callable[[TMapInput], str] | None = None,
+    ) -> KernelFunction:
+        """Create a kernel function from a search function."""
+        return self._create_kernel_function(
+            search_function=TextSearchFunctions.GET_SEARCH_RESULT,
+            options=options,
+            parameters=parameters,
+            parameter_aliases=parameter_aliases,
+            return_parameter=return_parameter,
+            function_name=function_name,
+            description=description,
+            string_mapper=string_mapper,
         )
 
     # endregion
     # region: Private methods
 
-    def _create_options(self, options: SearchOptions | None, **kwargs: Any) -> SearchOptions:
-        """Create search options."""
-        if options:
-            if not isinstance(options, self._get_options_class):
-                options = self._get_options_class.model_validate(
-                    options.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True),
-                    strict=False,
+    def _create_kernel_function(
+        self,
+        search_function: TextSearchFunctions | str = TextSearchFunctions.SEARCH,
+        options: SearchOptions | None = None,
+        parameters: list[KernelParameterMetadata] | None = None,
+        parameter_aliases: dict[str, str] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        function_name: str = DEFAULT_FUNCTION_NAME,
+        description: str = DEFAULT_DESCRIPTION,
+        string_mapper: Callable[[TMapInput], str] | None = None,
+    ) -> KernelFunction:
+        """Create a kernel function from a search function.
+
+        Args:
+            search_function: The search function,
+                options are "search", "get_text_search_result", and "get_search_result".
+                Default is "search".
+            options: The search options.
+            parameters: The parameters for the function,
+                use an empty list for a function without parameters,
+                use None for the default set, which is "query", "top", and "skip".
+            parameter_aliases: The aliases to use for the parameters,
+                for instance when a technical name of the filter is not a good name for the LLM to use.
+                The key is the LLM name, should be in parameters, the value is the technical name.
+            return_parameter: The return parameter for the function.
+            function_name: The name of the function, to be used in the kernel, default is "search".
+            description: The description of the function, a default is provided.
+            string_mapper: The function to map the search results to strings.
+                This can be applied to the results from the chosen search function.
+                When using the VectorStoreTextSearch and the Search method, a
+                string_mapper can be defined there as well, that is separate from this one.
+            # update_options_function: A function to create search options.
+
+        """
+        if isinstance(search_function, str):
+            search_function = TextSearchFunctions(search_function)
+
+        @kernel_function(name=function_name, description=description)
+        async def search_wrapper(**kwargs: Any) -> Sequence[str]:
+            query = kwargs.get("query")
+            inner_options = create_options(
+                self.options_class, deepcopy(options), parameters, parameter_aliases, **kwargs
+            )
+            try:
+                results = await self._get_search_function(search_function)(
+                    query=query,
+                    options=inner_options,
                 )
-            for key, value in kwargs.items():
-                if key in options.model_fields:
-                    setattr(options, key, value)
-            return options
-        try:
-            logger.debug(f"Creating SearchOptions with kwargs: {kwargs}")
-            return self._get_options_class(**kwargs)
-        except ValidationError:
-            return self._get_options_class()
+            except Exception as e:
+                msg = f"Exception in search function ({search_function.value}): {e}"
+                logger.error(msg)
+                raise TextSearchException(msg) from e
+            return await self._map_result_to_strings(results, string_mapper)
+
+        return KernelFunctionFromMethod(
+            method=search_wrapper,
+            parameters=self._default_parameter_metadata() if parameters is None else parameters,
+            return_parameter=return_parameter or self._default_return_parameter_metadata(),
+        )
 
     async def _map_result_to_strings(
         self, results: KernelSearchResults[TMapInput], string_mapper: Callable[[TMapInput], str] | None = None
     ) -> list[str]:
         """Map search results to strings."""
-        if not string_mapper:
-            string_mapper = self._default_map_to_string
-        return [string_mapper(result) async for result in results.results]
+        if string_mapper:
+            return [string_mapper(result) async for result in results.results]
+        return [self._default_map_to_string(result) async for result in results.results]
 
     @staticmethod
     def _default_map_to_string(result: Any) -> str:
@@ -197,6 +231,17 @@ class TextSearch:
         if isinstance(result, BaseModel):
             return result.model_dump_json()
         return result if isinstance(result, str) else json.dumps(result)
+
+    def _get_search_function(self, search_function: TextSearchFunctions) -> Callable:
+        """Get the search function."""
+        match search_function:
+            case TextSearchFunctions.SEARCH:
+                return self.search
+            case TextSearchFunctions.GET_TEXT_SEARCH_RESULT:
+                return self.get_text_search_result
+            case TextSearchFunctions.GET_SEARCH_RESULT:
+                return self.get_search_result
+        raise ValueError(f"Unknown search function: {search_function}")  # pragma: no cover
 
     # region: Abstract methods
 

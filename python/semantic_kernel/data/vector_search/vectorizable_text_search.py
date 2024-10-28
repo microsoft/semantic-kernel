@@ -3,6 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
+from semantic_kernel.data.text_search.utils import create_options
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -41,8 +42,7 @@ class VectorizableTextSearchMixin(Generic[TModel]):
         """
         from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
 
-        if isinstance(self, VectorSearchBase):
-            if not options:
-                options = self._create_options(**kwargs)
-            return await self._inner_search(vectorizable_text=vectorizable_text, options=options)
-        raise NotImplementedError("This method can only be used in combination with the VectorSearchBase.")
+        if not isinstance(self, VectorSearchBase):
+            raise NotImplementedError("This method can only be used in combination with the VectorSearchBase.")
+        options = create_options(self.options_class, options, **kwargs)
+        return await self._inner_search(vectorizable_text=vectorizable_text, options=options)

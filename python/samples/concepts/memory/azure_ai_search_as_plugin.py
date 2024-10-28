@@ -93,47 +93,27 @@ text_search = VectorStoreTextSearch.from_text_search(azure_ai_search_collection)
 def update_options_search(
     vectorizable_text: Any, query: Any, vector: Any, options: SearchOptions, func_args: dict[str, Any]
 ) -> tuple[Any, Any, Any, SearchOptions]:
-    for key, value in func_args.items():
-        if key == "city":
-            if options.filter:
-                options.filter.equal_to("address/city", value)
-            else:
-                options.filter = VectorSearchFilter.equal_to("address/city", value)
+    if "city" in func_args:
+        options.filter.equal_to("address/city", func_args["city"])
     return vectorizable_text, query, vector, options
 
 
 def update_options_details(
     vectorizable_text: Any, query: Any, vector: Any, options: SearchOptions, func_args: dict[str, Any]
 ) -> tuple[Any, Any, Any, SearchOptions]:
-    for key, value in func_args.items():
-        if key == "hotel_id":
-            if options.filter:
-                options.filter.equal_to("hotel_id", value)
-            else:
-                options.filter = VectorSearchFilter.equal_to("hotel_id", value)
+    if "hotel_id" in func_args:
+        options.filter.equal_to("hotel_id", func_args["hotel_id"])
     return vectorizable_text, query, vector, options
 
 
 plugin = kernel.add_functions(
     plugin_name="azure_ai_search",
     functions=[
-        text_search.create_kernel_function(
-            search_function="text_search",
+        text_search.create_search(
             description="A hotel search engine, allows searching for hotels in specific cities, "
             "you do not have to specify that you are searching for hotels, for all, use `*`.",
             options=VectorSearchOptions(
                 filter=VectorSearchFilter.equal_to("address/country", "USA"),
-                select_fields=[
-                    "hotel_id",
-                    "description",
-                    "description_fr",
-                    "address",
-                    "tags",
-                    "rating",
-                    "category",
-                    "location",
-                    "rooms",
-                ],
             ),
             parameters=[
                 KernelParameterMetadata(
@@ -143,22 +123,20 @@ plugin = kernel.add_functions(
                     name="city",
                     description="The city that you want to search for a hotel in.",
                     type="str",
-                    is_required=False,
                     type_object=str,
                 ),
                 KernelParameterMetadata(
-                    name="count",
+                    name="top",
                     description="Number of results to return.",
                     type="int",
-                    is_required=False,
                     default_value=2,
                     type_object=int,
                 ),
             ],
-            update_options_function=update_options_search,
+            parameter_aliases={"city": "address/city"},
+            # update_options_function=update_options_search,
         ),
-        text_search.create_kernel_function(
-            search_function="search",
+        text_search.create_search(
             function_name="get_details",
             description="Get details about a hotel, by ID, use the overview function to get the ID.",
             options=VectorSearchOptions(
@@ -173,7 +151,7 @@ plugin = kernel.add_functions(
                     type_object=str,
                 )
             ],
-            update_options_function=update_options_details,
+            # update_options_function=update_options_details,
         ),
     ],
 )

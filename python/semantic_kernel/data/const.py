@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Final
 
+DEFAULT_FUNCTION_NAME: Final[str] = "search"
 DEFAULT_DESCRIPTION: Final[str] = (
     "Perform a search for content related to the specified query and return string results"
 )

@@ -29,7 +29,7 @@ kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 kernel.add_functions(
     plugin_name="bing",
     functions=[
-        BingSearch().create_kernel_function(
+        BingSearch()._create_kernel_function(
             search_function="get_text_search_results",
             description="Get details about Semantic Kernel concepts.",
             options=TextSearchOptions(

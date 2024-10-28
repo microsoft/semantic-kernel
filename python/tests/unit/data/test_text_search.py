@@ -1,36 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import Awaitable, Callable
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 from pydantic import BaseModel
 
 from semantic_kernel import Kernel
+from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.search_base import SearchBase
 from semantic_kernel.data.search_options import SearchOptions
+from semantic_kernel.data.text_search.text_search import TextSearch
+from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
+from semantic_kernel.data.text_search.text_search_result import TextSearchResult
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.exceptions.search_exceptions import SearchResultEmptyError
+from semantic_kernel.exceptions.function_exceptions import TextSearchException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 
-def test_vanilla_search_base():
-    search_base_class = SearchBase()
+def test_text_search():
+    search_base_class = TextSearch()
     assert search_base_class is not None
-    assert search_base_class._search_function_map == {}
-    assert search_base_class._get_options_class == SearchOptions
+    assert search_base_class.options_class == TextSearchOptions
 
 
-class TestSearchOptions(SearchOptions):
-    """Test search options."""
-
-    test_field: str = "test"
-
-
-class TestSearchBase(SearchBase):
-    async def search_function_test(self, **kwargs) -> KernelSearchResults[Any]:
+class TestSearch(TextSearch):
+    async def search(self, **kwargs) -> KernelSearchResults[Any]:
         """Test search function."""
 
         async def generator() -> str:
@@ -38,48 +34,38 @@ class TestSearchBase(SearchBase):
 
         return KernelSearchResults(results=generator(), metadata=kwargs)
 
-    async def search_function_empty_test(self, **kwargs) -> KernelSearchResults[Any]:
-        """Test search function."""
-        raise SearchResultEmptyError("No results found.")
+    async def get_text_search_result(
+        self, query: str, options: SearchOptions | None = None, **kwargs: Any
+    ) -> KernelSearchResults[TextSearchResult]:
+        """Test get text search result function."""
 
-    @property
-    def _search_function_map(self) -> dict[str, Callable[..., Awaitable[KernelSearchResults[Any]]]]:
-        """Get the search function map."""
-        return {
-            "search_function_test": self.search_function_test,
-            "search_function_empty_test": self.search_function_empty_test,
-        }
+        async def generator() -> TextSearchResult:
+            yield TextSearchResult(value="test")
 
-    @property
-    def _get_options_class(self):
-        return TestSearchOptions
+        return KernelSearchResults(results=generator(), metadata=kwargs)
+
+    async def get_search_result(
+        self, query: str, options: SearchOptions | None = None, **kwargs: Any
+    ) -> KernelSearchResults[Any]:
+        """Test get search result function."""
+
+        async def generator() -> str:
+            yield "test"
+
+        return KernelSearchResults(results=generator(), metadata=kwargs)
 
 
-def test_create_kernel_function():
-    search_base_class = TestSearchBase()
-
-    search_function = "search_function_test"
-    options = None
-    parameters = None
-    return_parameter = None
-    function_name = "search"
-    description = "description"
-    map_function = None
-    update_options_function = None
-    kernel_function = search_base_class.create_kernel_function(
+@pytest.mark.asyncio
+@pytest.mark.parametrize("search_function", ["search", "get_text_search_result", "get_search_result"])
+async def test_create_kernel_function(search_function: str, kernel: Kernel):
+    test_search = TestSearch()
+    kernel_function = test_search._create_kernel_function(
         search_function,
-        options,
-        parameters,
-        return_parameter,
-        function_name,
-        description,
-        map_function,
-        update_options_function,
     )
     assert kernel_function is not None
-    assert kernel_function.name == function_name
-    assert kernel_function.description == description
-    assert kernel_function.parameters == []
+    assert kernel_function.name == DEFAULT_FUNCTION_NAME
+    assert kernel_function.description == DEFAULT_DESCRIPTION
+    assert len(kernel_function.parameters) == 3
     assert kernel_function.return_parameter == KernelParameterMetadata(
         name="results",
         description="The search results.",
@@ -87,35 +73,40 @@ def test_create_kernel_function():
         type_object=list,
         is_required=True,
     )
+    results = await kernel_function.invoke(kernel, KernelArguments(query="query"))
+    assert results is not None
+    assert results.value == (
+        ['{"name":null,"value":"test","link":null}'] if search_function == "get_text_search_result" else ["test"]
+    )
 
 
 def test_create_kernel_function_fail():
-    search_base_class = TestSearchBase()
+    test_search = TestSearch()
     with pytest.raises(ValueError):
-        search_base_class.create_kernel_function(
+        test_search._create_kernel_function(
             search_function="unknown_test",
             options=None,
             parameters=None,
             return_parameter=None,
             function_name="search",
             description="description",
-            map_function=None,
+            string_mapper=None,
             update_options_function=None,
         )
 
 
 @pytest.mark.asyncio
 async def test_create_kernel_function_inner(kernel: Kernel):
-    search_base_class = TestSearchBase()
+    test_search = TestSearch()
 
-    kernel_function = search_base_class.create_kernel_function(
-        search_function="search_function_test",
+    kernel_function = test_search._create_kernel_function(
+        search_function="search",
         options=None,
-        parameters=None,
+        parameters=[],
         return_parameter=None,
         function_name="search",
         description="description",
-        map_function=None,
+        string_mapper=None,
         update_options_function=None,
     )
     results = await kernel_function.invoke(kernel, None)
@@ -125,10 +116,10 @@ async def test_create_kernel_function_inner(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_create_kernel_function_inner_with_options(kernel: Kernel):
-    search_base_class = TestSearchBase()
+    test_search = TestSearch()
 
-    kernel_function = search_base_class.create_kernel_function(
-        search_function="search_function_test",
+    kernel_function = test_search._create_kernel_function(
+        search_function="search",
         options=SearchOptions(),
         parameters=[
             KernelParameterMetadata(
@@ -142,7 +133,7 @@ async def test_create_kernel_function_inner_with_options(kernel: Kernel):
         return_parameter=None,
         function_name="search",
         description="description",
-        map_function=None,
+        string_mapper=None,
         update_options_function=None,
     )
     results = await kernel_function.invoke(kernel, KernelArguments(city="city"))
@@ -152,10 +143,10 @@ async def test_create_kernel_function_inner_with_options(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_create_kernel_function_inner_with_other_options_type(kernel: Kernel):
-    search_base_class = TestSearchBase()
+    test_search = TestSearch()
 
-    kernel_function = search_base_class.create_kernel_function(
-        search_function="search_function_test",
+    kernel_function = test_search._create_kernel_function(
+        search_function="search",
         options=VectorSearchOptions(),
         parameters=[
             KernelParameterMetadata(
@@ -169,7 +160,7 @@ async def test_create_kernel_function_inner_with_other_options_type(kernel: Kern
         return_parameter=None,
         function_name="search",
         description="description",
-        map_function=None,
+        string_mapper=None,
         update_options_function=None,
     )
     results = await kernel_function.invoke(kernel, KernelArguments(test_field="city"))
@@ -179,33 +170,36 @@ async def test_create_kernel_function_inner_with_other_options_type(kernel: Kern
 
 @pytest.mark.asyncio
 async def test_create_kernel_function_inner_no_results(kernel: Kernel):
-    search_base_class = TestSearchBase()
+    test_search = TestSearch()
 
-    kernel_function = search_base_class.create_kernel_function(
-        search_function="search_function_empty_test",
+    kernel_function = test_search._create_kernel_function(
+        search_function="search",
         options=None,
-        parameters=None,
+        parameters=[],
         return_parameter=None,
         function_name="search",
         description="description",
-        map_function=None,
+        string_mapper=None,
         update_options_function=None,
     )
-    results = await kernel_function.invoke(kernel, None)
-    assert results is not None
-    assert results.value == ["No results found for this query"]
+    with (
+        patch.object(test_search, "search") as mock_search,
+        pytest.raises(TextSearchException),
+    ):
+        mock_search.side_effect = Exception("fail")
+        await kernel_function.invoke(kernel, None)
 
 
 @pytest.mark.asyncio
 async def test_create_kernel_function_inner_update_options(kernel: Kernel):
-    search_base_class = TestSearchBase()
+    test_search = TestSearch()
 
     def update_options(search_text, query, vector, options: SearchOptions, kwargs):
         options.filter.equal_to("address/city", kwargs.get("city"))
         return search_text, query, vector, options
 
-    kernel_function = search_base_class.create_kernel_function(
-        search_function="search_function_test",
+    kernel_function = test_search._create_kernel_function(
+        search_function="search",
         options=None,
         parameters=[
             KernelParameterMetadata(
@@ -219,7 +213,7 @@ async def test_create_kernel_function_inner_update_options(kernel: Kernel):
         return_parameter=None,
         function_name="search",
         description="description",
-        map_function=None,
+        string_mapper=None,
         update_options_function=update_options,
     )
     results = await kernel_function.invoke(kernel, KernelArguments(city="city"))
@@ -228,10 +222,10 @@ async def test_create_kernel_function_inner_update_options(kernel: Kernel):
 
 
 def test_default_map_to_string():
-    search_base_class = TestSearchBase()
-    assert search_base_class._default_map_to_string("test") == "test"
+    test_search = TestSearch()
+    assert test_search._default_map_to_string("test") == "test"
 
     class TestClass(BaseModel):
         test: str
 
-    assert search_base_class._default_map_to_string(TestClass(test="test")) == '{"test":"test"}'
+    assert test_search._default_map_to_string(TestClass(test="test")) == '{"test":"test"}'
