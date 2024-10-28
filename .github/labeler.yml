@@ -73,3 +73,15 @@ getting started:
 # Add 'repository structure' label to any change within the 'docs/Repository_Structure.md' file
 repository structure:
   - docs/Repository_Structure.md
+
+# Add rules for labeling issues based on their content
+issue-labels:
+  - python: 
+      - '**/*python*'
+  - java: 
+      - '**/*java*'
+  - .NET: 
+      - '**/*dotnet*'
+      - '**/*.net*'
+      - '**/*csharp*'
+      - '**/*C#*'

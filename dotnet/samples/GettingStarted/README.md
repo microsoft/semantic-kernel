@@ -35,3 +35,31 @@ OpenAI__ChatModelId
 OpenAI__EmbeddingModelId
 OpenAI__ApiKey
 ```
+
+## Using Automatic Issue Workflows
+
+To manage issues effectively in this repository, we have set up automatic issue workflows using GitHub Actions. These workflows help in labeling issues, closing inactive issues, and adding title prefixes based on labels.
+
+### Issue Templates
+
+We have defined issue templates to standardize the information provided when creating new issues. You can find the templates in the `.github/ISSUE_TEMPLATE` directory:
+
+- [Bug Report](../../.github/ISSUE_TEMPLATE/bug_report.md)
+- [Custom Issue](../../.github/ISSUE_TEMPLATE/custom.md)
+- [Feature Request](../../.github/ISSUE_TEMPLATE/feature_request.md)
+
+### Labeling Issues Automatically
+
+We use the `.github/labeler.yml` file to define rules for automatically labeling issues based on their content or file changes. You can find the labeler configuration [here](../../.github/labeler.yml).
+
+### Closing Inactive Issues
+
+We have set up a workflow to automatically close inactive issues after a certain period of inactivity using the `actions/stale` action. You can find the workflow configuration [here](../../.github/workflows/close-inactive-issues.yml).
+
+### Adding Labels Based on Issue Content
+
+We have created a workflow to add labels to issues based on their content using the `actions/github-script` action. You can find the workflow configuration [here](../../.github/workflows/label-issues.yml).
+
+### Adding Title Prefixes Based on Labels
+
+We have created a workflow to add title prefixes to issues based on their labels using the `actions/github-script` action. You can find the workflow configuration [here](../../.github/workflows/label-title-prefix.yml).
