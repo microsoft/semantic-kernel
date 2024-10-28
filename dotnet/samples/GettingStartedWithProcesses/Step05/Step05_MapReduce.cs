@@ -7,10 +7,33 @@ namespace Step05;
 /// <summary>
 /// DEV HARNESS
 /// </summary>
-public class Step05_MapReduce(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
+public class Step05_MapReduce : BaseTest
 {
     // Target Open AI Services
     protected override bool ForceOpenAI => true;
+
+    /// <summary>
+    /// Factor to increase the scale of the content processed to highlight the characteristics of
+    /// each approach: map vs linear.
+    /// </summary>
+    private const int ScaleFactor = 100;
+
+    private readonly string _sourceContent;
+
+    public Step05_MapReduce(ITestOutputHelper output)
+         : base(output, redirectSystemConsoleOutput: true)
+    {
+        StringBuilder content = new();
+
+        for (int count = 0; count < ScaleFactor; ++count)
+        {
+            content.AppendLine(File.ReadAllText("Grimms-The-King-of-the-Golden-Mountain.txt"));
+            content.AppendLine(File.ReadAllText("Grimms-The-Water-of-Life.txt"));
+            content.AppendLine(File.ReadAllText("Grimms-The-White-Snake.txt"));
+        }
+
+        this._sourceContent = content.ToString().ToUpperInvariant();
+    }
 
     [Fact]
     public async Task RunMapReduceAsync()
@@ -23,6 +46,7 @@ public class Step05_MapReduce(ITestOutputHelper output) : BaseTest(output, redir
                 new KernelProcessEvent
                 {
                     Id = "Start",
+                    Data = this._sourceContent,
                 });
 
         Dictionary<string, int> results = (Dictionary<string, int>?)kernel.Data[ResultStep.ResultKey] ?? [];
@@ -32,18 +56,41 @@ public class Step05_MapReduce(ITestOutputHelper output) : BaseTest(output, redir
         }
     }
 
+    [Fact]
+    public async Task RunLinearAsync()
+    {
+        Dictionary<string, int> counts = [];
+
+        string[] words = this._sourceContent.Split([' ', '\n', '\r', '.', ',', '’'], StringSplitOptions.RemoveEmptyEntries);
+        foreach (string word in words)
+        {
+            if (s_notInteresting.Contains(word))
+            {
+                continue;
+            }
+
+            counts.TryGetValue(word.Trim(), out int count);
+            counts[word] = ++count;
+        }
+
+        var sorted =
+            from kvp in counts
+            orderby kvp.Value descending
+            select kvp;
+
+        foreach (var result in sorted.Take(10))
+        {
+            Console.WriteLine($"{result.Key}: {result.Value}");
+        }
+    }
+
     private KernelProcess SetupMapReduceProcess(string processName, string inputEventId)
     {
         ProcessBuilder process = new(processName);
 
-        ProcessStepBuilder contentStep = process.AddStepFromType<ContentStep>();
+        ProcessStepBuilder chunkStep = process.AddStepFromType<ChunkStep>();
         process
             .OnInputEvent(inputEventId)
-            .SendEventTo(new ProcessFunctionTargetBuilder(contentStep));
-
-        ProcessStepBuilder chunkStep = process.AddStepFromType<ChunkStep>();
-        contentStep
-            .OnEvent(ContentStep.EventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(chunkStep));
 
         ProcessStepBuilder countStep = process.AddStepFromType<CountStep>();
@@ -60,24 +107,6 @@ public class Step05_MapReduce(ITestOutputHelper output) : BaseTest(output, redir
         return process.Build();
     }
 
-    private sealed class ContentStep : KernelProcessStep
-    {
-        public const string EventId = "ContentComplete";
-
-        [KernelFunction]
-        public async ValueTask RetrieveAsync(KernelProcessStepContext context)
-        {
-            StringBuilder content = new();
-
-            // %%% TODO: FIX PATH RESOLUTION
-            content.AppendLine(File.ReadAllText("Grimms-The-King-of-the-Golden-Mountain.txt"));
-            content.AppendLine(File.ReadAllText("Grimms-The-Water-of-Life.txt"));
-            content.AppendLine(File.ReadAllText("Grimms-The-White-Snake.txt"));
-
-            await context.EmitEventAsync(new() { Id = EventId, Data = content });
-        }
-    }
-
     private sealed class ChunkStep : KernelProcessStep
     {
         public const string EventId = "ChunkComplete";
@@ -85,14 +114,18 @@ public class Step05_MapReduce(ITestOutputHelper output) : BaseTest(output, redir
         [KernelFunction]
         public async ValueTask ChunkAsync(KernelProcessStepContext context, string content)
         {
-            string[] chunks = ChunkContent(content, 1024).ToArray();
+            int chunkSize = content.Length / Environment.ProcessorCount;
+            string[] chunks = ChunkContent(content, chunkSize).ToArray();
 
             await context.EmitEventAsync(new() { Id = EventId, Data = chunks });
         }
 
         private IEnumerable<string> ChunkContent(string content, int chunkSize)
         {
-            yield return content.ToUpperInvariant();
+            for (int index = 0; index < content.Length; index += chunkSize)
+            {
+                yield return content.Substring(index, Math.Min(chunkSize, content.Length - index));
+            }
         }
     }
 

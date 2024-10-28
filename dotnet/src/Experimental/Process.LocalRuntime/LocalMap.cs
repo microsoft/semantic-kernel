@@ -36,7 +36,7 @@ internal sealed class LocalMap : LocalStep
         IEnumerable values = message.GetMapInput(this.Logger);
 
         int index = 0;
-        List<(Task<LocalKernelProcessContext> Task, MapOperationContext Context)> runningProcesses = [];
+        List<(Task Task, LocalKernelProcessContext ProcessContext, MapOperationContext Context)> mapOperations = [];
         Dictionary<string, Type> capturedEvents = [];
 
         try
@@ -48,35 +48,34 @@ internal sealed class LocalMap : LocalStep
                 KernelProcess process = this._map.Operation.CloneProcess(this.Logger);
                 MapOperationContext context = new(index, this._mapEvents, capturedEvents);
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                Task<LocalKernelProcessContext> processTask =
-                    this.StartProcessAsync(
-                        process,
+                LocalKernelProcessContext processContext = new(process, this._kernel, context.Filter);
+                Task processTask =
+                    processContext.StartWithEventAsync(
                         new KernelProcessEvent
                         {
                             Id = KernelProcessMap.MapEventId,
                             Data = value
-                        },
-                        context.Filter);
+                        });
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                runningProcesses.Add((processTask, context));
+                mapOperations.Add((processTask, processContext, context));
             }
 
-            await Task.WhenAll(runningProcesses.Select(p => p.Task)).ConfigureAwait(false);
+            await Task.WhenAll(mapOperations.Select(p => p.Task)).ConfigureAwait(false);
 
             Dictionary<string, Array> resultMap = [];
 
-            for (index = 0; index < runningProcesses.Count; ++index)
+            for (index = 0; index < mapOperations.Count; ++index)
             {
                 foreach (var capturedEvent in capturedEvents)
                 {
                     string eventName = capturedEvent.Key;
                     Type resultType = capturedEvent.Value;
 
-                    runningProcesses[index].Context.Results.TryGetValue(eventName, out object? result);
+                    mapOperations[index].Context.Results.TryGetValue(eventName, out object? result);
                     if (!resultMap.TryGetValue(eventName, out Array? results))
                     {
-                        results = Array.CreateInstance(resultType, runningProcesses.Count);
+                        results = Array.CreateInstance(resultType, mapOperations.Count);
                         resultMap[eventName] = results;
                     }
 
@@ -93,9 +92,9 @@ internal sealed class LocalMap : LocalStep
         }
         finally
         {
-            foreach (var process in runningProcesses)
+            foreach (var operation in mapOperations)
             {
-                process.Task.Result.Dispose();
+                operation.ProcessContext.Dispose();
             }
         }
     }
@@ -106,15 +105,6 @@ internal sealed class LocalMap : LocalStep
         // The map does not need any further initialization as it's already been initialized.
         // Override the base method to prevent it from being called.
         return default;
-    }
-
-    private async Task<LocalKernelProcessContext> StartProcessAsync(KernelProcess process, KernelProcessEvent initialEvent, ProcessEventFilter filter)
-    {
-        LocalKernelProcessContext processContext = new(process, this._kernel, filter);
-
-        await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
-
-        return processContext;
     }
 
     private sealed record MapOperationContext(int Index, HashSet<string> EventTargets, Dictionary<string, Type> CapturedEvents)

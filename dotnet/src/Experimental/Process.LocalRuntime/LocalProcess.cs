@@ -118,19 +118,19 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
     /// <returns>A <see cref="Task"/></returns>
-    internal async Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
+    internal Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
     {
         Verify.NotNull(processEvent);
-        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
+        return this._externalEventChannel.Writer.WriteAsync(processEvent).AsTask();
     }
 
     /// <summary>
     /// Gets the process information.
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
-    internal async Task<KernelProcess> GetProcessInfoAsync()
+    internal Task<KernelProcess> GetProcessInfoAsync()
     {
-        return await this.ToKernelProcessAsync().ConfigureAwait(false);
+        return this.ToKernelProcessAsync();
     }
 
     /// <summary>
