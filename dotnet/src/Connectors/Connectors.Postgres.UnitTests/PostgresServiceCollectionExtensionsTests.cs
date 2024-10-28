@@ -5,6 +5,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Moq;
+using Npgsql;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Postgres.UnitTests;
@@ -20,7 +21,8 @@ public sealed class PostgresServiceCollectionExtensionsTests
     public void AddVectorStoreRegistersClass()
     {
         // Arrange
-        this._serviceCollection.AddSingleton<IPostgresVectorStoreDbClient>(Mock.Of<IPostgresVectorStoreDbClient>());
+        using var dataSource = NpgsqlDataSource.Create("Host=fake;");
+        this._serviceCollection.AddSingleton<NpgsqlDataSource>(dataSource);
 
         // Act
         this._serviceCollection.AddPostgresVectorStore();
@@ -37,7 +39,8 @@ public sealed class PostgresServiceCollectionExtensionsTests
     public void AddVectorStoreRecordCollectionWithStringKeyRegistersClass()
     {
         // Arrange
-        this._serviceCollection.AddSingleton<IPostgresVectorStoreDbClient>(Mock.Of<IPostgresVectorStoreDbClient>());
+        using var dataSource = NpgsqlDataSource.Create("Host=fake;");
+        this._serviceCollection.AddSingleton<NpgsqlDataSource>(dataSource);
 
         // Act
         this._serviceCollection.AddPostgresVectorStoreRecordCollection<string, TestRecord>("testcollection");
@@ -58,7 +61,8 @@ public sealed class PostgresServiceCollectionExtensionsTests
     public void AddVectorStoreRecordCollectionWithNumericKeyRegistersClass()
     {
         // Arrange
-        this._serviceCollection.AddSingleton<IPostgresVectorStoreDbClient>(Mock.Of<IPostgresVectorStoreDbClient>());
+        using var dataSource = NpgsqlDataSource.Create("Host=fake;");
+        this._serviceCollection.AddSingleton<NpgsqlDataSource>(dataSource);
 
         // Act
         this._serviceCollection.AddPostgresVectorStoreRecordCollection<string, TestRecord>("testcollection");
