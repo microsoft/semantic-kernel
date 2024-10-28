@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import platform
 from typing import Any
 
 import pandas as pd
@@ -236,6 +237,10 @@ class TestVectorStore(VectorStoreTestBase):
                 TestDataModelArrayFlat,
                 None,
                 RAW_RECORD_ARRAY,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Windows",
+                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+                ),
                 id="azure_cosmos_db_nosql_array_data_model",
             ),
             pytest.param(
@@ -245,6 +250,10 @@ class TestVectorStore(VectorStoreTestBase):
                 TestDataModelListFlat,
                 None,
                 RAW_RECORD_LIST,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Windows",
+                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+                ),
                 id="azure_cosmos_db_nosql_list_data_model",
             ),
             pytest.param(
@@ -254,6 +263,10 @@ class TestVectorStore(VectorStoreTestBase):
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION_FLAT,
                 RAW_RECORD_LIST,
+                marks=pytest.mark.skipif(
+                    platform.system() != "Windows",
+                    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+                ),
                 id="azure_cosmos_db_nosql_pandas_data_model",
             ),
             # endregion

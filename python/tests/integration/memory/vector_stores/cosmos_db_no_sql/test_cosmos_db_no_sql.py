@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import platform
 from typing import Any
 
 import pytest
@@ -13,6 +14,10 @@ from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnect
 from tests.integration.memory.vector_stores.vector_store_test_base import VectorStoreTestBase
 
 
+@pytest.mark.skipif(
+    platform.system() != "Windows",
+    reason="The Azure Cosmos DB Emulator is only available on Windows.",
+)
 class TestCosmosDBNoSQL(VectorStoreTestBase):
     """Test Cosmos DB NoSQL store functionality."""
 

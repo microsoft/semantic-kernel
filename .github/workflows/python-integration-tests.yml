@@ -117,6 +117,12 @@ jobs:
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Setup Weaviate docker deployment
         run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
+      - name: Start Azure Cosmos DB emulator
+        if: matrix.os == 'windows-latest'
+        run: |
+          Write-Host "Launching Cosmos DB Emulator"
+          Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+          Start-CosmosDbEmulator
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
@@ -166,6 +172,8 @@ jobs:
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
           REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
+          COSMOS_DB_NOSQL_URL: ${{ vars.COSMOS_DB_NOSQL_URL }}
+          COSMOS_DB_NOSQL_KEY: ${{ secrets.COSMOS_DB_NOSQL_KEY }}
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
       - name: Surface failing tests
@@ -253,6 +261,12 @@ jobs:
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Setup Weaviate docker deployment
         run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
+      - name: Start Azure Cosmos DB emulator
+        if: matrix.os == 'windows-latest'
+        run: |
+          Write-Host "Launching Cosmos DB Emulator"
+          Import-Module "$env:ProgramFiles\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator"
+          Start-CosmosDbEmulator
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
@@ -302,6 +316,8 @@ jobs:
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
           REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
+          COSMOS_DB_NOSQL_URL: ${{ vars.COSMOS_DB_NOSQL_URL }}
+          COSMOS_DB_NOSQL_KEY: ${{ secrets.COSMOS_DB_NOSQL_KEY }}
         run: |
           uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration ./tests/samples -v --junitxml=pytest.xml
       - name: Surface failing tests
