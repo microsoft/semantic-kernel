@@ -151,8 +151,15 @@
                       "enabled": {
                         "type": "boolean",
                         "description": "Determines whether the object is enabled."
+                      },
+                      "encrypted": {
+                        "type": "boolean",
+                        "description": "Determines whether the object is encrypted."
                       }
                     },
+                    "required": [
+                      "enabled"
+                    ],
                     "description": "attributes"
                   },
                   "value": {
