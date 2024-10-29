@@ -61,8 +61,8 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
             raise ValueError(
                 "At least one of vectorizable_text_search, vectorized_search or vector_text_search is required."
             )
-        if data.get("vectorized_text_search") and not data.get("embedding_service"):
-            raise ValueError("embedding_service is required when using vectorized_text_search.")
+        if data.get("vectorized_search") and not data.get("embedding_service"):
+            raise ValueError("embedding_service is required when using vectorized_search.")
         return data
 
     @classmethod
@@ -100,7 +100,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
         )
 
     @classmethod
-    def from_text_search(
+    def from_vector_text_search(
         cls: type[_T],
         vector_text_search: VectorTextSearchMixin,
         string_mapper: Callable | None = None,
@@ -159,7 +159,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
                 options=options,
                 **kwargs,
             )
-        raise ValueError("No search method available.")
+        raise ValueError("No search method available.")  # pragma: no cover
 
     async def _get_results_as_strings(self, results: AsyncIterable[VectorSearchResult[TModel]]) -> AsyncIterable[str]:
         """Get the results as strings."""

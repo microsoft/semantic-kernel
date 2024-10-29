@@ -238,9 +238,9 @@ class TextSearch:
             case TextSearchFunctions.SEARCH:
                 return self.search
             case TextSearchFunctions.GET_TEXT_SEARCH_RESULT:
-                return self.get_text_search_result
+                return self.get_text_search_results
             case TextSearchFunctions.GET_SEARCH_RESULT:
-                return self.get_search_result
+                return self.get_search_results
         raise ValueError(f"Unknown search function: {search_function}")  # pragma: no cover
 
     # region: Abstract methods
@@ -264,7 +264,7 @@ class TextSearch:
         ...
 
     @abstractmethod
-    async def get_text_search_result(
+    async def get_text_search_results(
         self,
         query: str,
         options: "SearchOptions | None" = None,
@@ -274,7 +274,7 @@ class TextSearch:
         ...
 
     @abstractmethod
-    async def get_search_result(
+    async def get_search_results(
         self,
         query: str,
         options: "SearchOptions | None" = None,

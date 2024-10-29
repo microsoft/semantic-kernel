@@ -34,7 +34,7 @@ class TestSearch(TextSearch):
 
         return KernelSearchResults(results=generator(), metadata=kwargs)
 
-    async def get_text_search_result(
+    async def get_text_search_results(
         self, query: str, options: SearchOptions | None = None, **kwargs: Any
     ) -> KernelSearchResults[TextSearchResult]:
         """Test get text search result function."""
@@ -44,7 +44,7 @@ class TestSearch(TextSearch):
 
         return KernelSearchResults(results=generator(), metadata=kwargs)
 
-    async def get_search_result(
+    async def get_search_results(
         self, query: str, options: SearchOptions | None = None, **kwargs: Any
     ) -> KernelSearchResults[Any]:
         """Test get search result function."""

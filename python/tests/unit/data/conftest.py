@@ -18,6 +18,7 @@ from semantic_kernel.data import (
 )
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
+from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
 from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
@@ -76,7 +77,7 @@ def DictVectorStoreRecordCollection():
             **kwargs: Any,
         ) -> Any:
             return KernelSearchResults(
-                results=self,
+                results=self.generator(),
                 total_count=len(self.inner_storage) if options.include_total_count else None,
             )
 
@@ -86,14 +87,10 @@ def DictVectorStoreRecordCollection():
         def _get_score_from_result(self, result: Any) -> float | None:
             return None
 
-        def __aiter__(self):
-            return self
-
-        async def __anext__(self):
+        async def generator(self):
             if self.inner_storage:
                 for record in self.inner_storage.values():
-                    yield record
-            raise StopAsyncIteration
+                    yield VectorSearchResult(record=record)
 
     return DictVectorStoreRecordCollection
 

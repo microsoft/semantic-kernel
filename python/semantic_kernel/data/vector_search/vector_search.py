@@ -37,7 +37,7 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,
         **kwargs: Any,
-    ) -> KernelSearchResults[Any]:
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Inner search method.
 
         This is the main search method that should be implemented, and will be called by the public search methods.

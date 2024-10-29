@@ -85,7 +85,7 @@ class BingSearch(KernelBaseModel, TextSearch):
             metadata=self._get_metadata(results),
         )
 
-    async def get_text_search_result(
+    async def get_text_search_results(
         self, options: TextSearchOptions | None = None, **kwargs
     ) -> "KernelSearchResults[TextSearchResult]":
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
@@ -97,7 +97,7 @@ class BingSearch(KernelBaseModel, TextSearch):
             metadata=self._get_metadata(results),
         )
 
-    async def get_search_result(
+    async def get_search_results(
         self, options: TextSearchOptions | None = None, **kwargs
     ) -> "KernelSearchResults[BingWebPage]":
         """Search for text, returning a KernelSearchResult with the results directly from the service."""

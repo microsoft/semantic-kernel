@@ -87,7 +87,7 @@ azure_ai_search_collection: AzureAISearchCollection[HotelSampleClassType] = Azur
     collection_name="hotels-sample-index", data_model_type=HotelSampleClass
 )
 
-text_search = VectorStoreTextSearch.from_text_search(azure_ai_search_collection)
+text_search = VectorStoreTextSearch.from_vector_text_search(azure_ai_search_collection)
 
 
 def update_options_search(
