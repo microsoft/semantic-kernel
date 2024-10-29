@@ -17,7 +17,6 @@ public sealed class AnthropicUsage
     /// <summary>
     /// The number of input tokens which were used.
     /// </summary>
-    [JsonRequired]
     [JsonPropertyName("input_tokens")]
     public int? InputTokens { get; init; }
 
