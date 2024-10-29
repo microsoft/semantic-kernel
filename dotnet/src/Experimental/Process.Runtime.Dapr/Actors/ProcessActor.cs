@@ -242,19 +242,27 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             // The current step should already have a name.
             Verify.NotNull(step.State?.Name);
 
-            if (step is DaprProcessInfo kernelStep)
+            if (step is DaprProcessInfo processStep)
             {
                 // The process will only have an Id if its already been executed.
-                if (string.IsNullOrWhiteSpace(kernelStep.State.Id))
+                if (string.IsNullOrWhiteSpace(processStep.State.Id))
                 {
-                    kernelStep = kernelStep with { State = kernelStep.State with { Id = Guid.NewGuid().ToString() } };
+                    processStep = processStep with { State = processStep.State with { Id = Guid.NewGuid().ToString() } };
                 }
 
                 // Initialize the step as a process.
-                var scopedProcessId = this.ScopedActorId(new ActorId(kernelStep.State.Id!));
+                var scopedProcessId = this.ScopedActorId(new ActorId(processStep.State.Id!));
                 var processActor = this.ProxyFactory.CreateActorProxy<IProcess>(scopedProcessId, nameof(ProcessActor));
-                await processActor.InitializeProcessAsync(kernelStep, this.Id.GetId()).ConfigureAwait(false);
+                await processActor.InitializeProcessAsync(processStep, this.Id.GetId()).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProcessId, nameof(ProcessActor));
+            }
+            else if (step is DaprMapInfo mapStep)
+            {
+                // Initialize the step as a map.
+                ActorId scopedMapId = this.ScopedActorId(new ActorId(mapStep.State.Id!));
+                IMap mapActor = this.ProxyFactory.CreateActorProxy<IMap>(scopedMapId, nameof(MapActor));
+                await mapActor.InitializeMapAsync(mapStep, this.Id.GetId()).ConfigureAwait(false);
+                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMapId, nameof(MapActor));
             }
             else
             {

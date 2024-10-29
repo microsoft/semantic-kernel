@@ -279,7 +279,7 @@ public class LocalMapTests
         Kernel kernel = new();
 
         // Act & Assert
-        await Assert.ThrowsAsync<AggregateException>(() => this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start"));
     }
 
     /// <summary>
@@ -419,7 +419,7 @@ public class LocalMapTests
         public async ValueTask ComputeAsync(KernelProcessStepContext context, long value)
         {
             long square = value * value;
-            await context.EmitEventAsync(new() { Id = SquareEventId, Data = square, Visibility = KernelProcessEventVisibility.Public });
+            await context.EmitEventAsync(new() { Id = SquareEventId, Data = square });
             await context.EmitEventAsync(new() { Id = CubicEventId, Data = square * value });
         }
     }

@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 [KnownType(typeof(KernelProcessEdge))]
 [KnownType(typeof(KernelProcessState))]
+[KnownType(typeof(KernelProcessMapState))]
 [KnownType(typeof(KernelProcessStepState))]
 [KnownType(typeof(KernelProcessStepState<>))]
 public sealed record DaprProcessInfo : DaprStepInfo
@@ -39,6 +40,10 @@ public sealed record DaprProcessInfo : DaprStepInfo
             {
                 steps.Add(processStep.ToKernelProcess());
             }
+            else if (step is DaprMapInfo mapStep)
+            {
+                steps.Add(mapStep.ToKernelProcessMap());
+            }
             else
             {
                 steps.Add(step.ToKernelProcessStepInfo());
@@ -62,9 +67,13 @@ public sealed record DaprProcessInfo : DaprStepInfo
 
         foreach (var step in kernelProcess.Steps)
         {
-            if (step is KernelProcess kernelStep)
+            if (step is KernelProcess processStep)
             {
-                daprSteps.Add(DaprProcessInfo.FromKernelProcess(kernelStep));
+                daprSteps.Add(DaprProcessInfo.FromKernelProcess(processStep));
+            }
+            else if (step is KernelProcessMap mapStep)
+            {
+                daprSteps.Add(DaprMapInfo.FromKernelProcessMap(mapStep));
             }
             else
             {
