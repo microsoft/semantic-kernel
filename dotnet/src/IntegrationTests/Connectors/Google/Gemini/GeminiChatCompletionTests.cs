@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
-public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsBase(output)
+public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestBase(output)
 {
     [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]

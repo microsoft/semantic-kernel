@@ -9,12 +9,12 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google;
 
-public abstract class TestsBase(ITestOutputHelper output)
+public abstract class TestBase(ITestOutputHelper output)
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-        .AddUserSecrets<TestsBase>()
+        .AddUserSecrets<TestBase>()
         .AddEnvironmentVariables()
         .Build();
 
