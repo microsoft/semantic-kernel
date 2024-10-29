@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -26,7 +27,7 @@ internal sealed class TextSearchResultPropertyReader
     /// Create a new instance of <see cref="TextSearchResultPropertyReader"/>.
     /// </summary>
     /// <param name="dataModelType">Type of the data model.</param>
-    public TextSearchResultPropertyReader(Type dataModelType)
+    public TextSearchResultPropertyReader([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type dataModelType)
     {
         this._dataModelType = dataModelType;
 
@@ -68,7 +69,7 @@ internal sealed class TextSearchResultPropertyReader
     /// </summary>
     /// <param name="type">The data model to find the properties on.</param>
     /// <returns>The properties.</returns>
-    private static (PropertyInfo? NameProperty, PropertyInfo? ValueProperty, PropertyInfo? LinkProperty) FindPropertiesInfo(Type type)
+    private static (PropertyInfo? NameProperty, PropertyInfo? ValueProperty, PropertyInfo? LinkProperty) FindPropertiesInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
     {
         PropertyInfo? nameProperty = null;
         PropertyInfo? valueProperty = null;

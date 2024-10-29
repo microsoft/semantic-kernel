@@ -15,11 +15,12 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from tests.integration.completions.chat_completion_test_base import (
     ChatCompletionTestBase,
     google_ai_setup,
+    ollama_image_setup,
     onnx_setup,
     vertex_ai_setup,
 )
 from tests.integration.completions.completion_test_base import ServiceType
-from tests.integration.completions.test_utils import retry
+from tests.integration.test_utils import retry
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -206,6 +207,28 @@ pytestmark = pytest.mark.parametrize(
             id="vertex_ai_image_input_file",
         ),
         pytest.param(
+            "ollama_image",
+            {},
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                ),
+            ],
+            {},
+            marks=pytest.mark.skipif(not ollama_image_setup, reason="Ollama Environment Variables not set"),
+            id="ollama_image_input_file",
+        ),
+        pytest.param(
             "bedrock_anthropic_claude",
             {},
             [
@@ -221,6 +244,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             {},
+            marks=pytest.mark.skip(reason="Skipping due to occasional throttling from Bedrock."),
             id="bedrock_anthropic_claude_image_input_file",
         ),
     ],

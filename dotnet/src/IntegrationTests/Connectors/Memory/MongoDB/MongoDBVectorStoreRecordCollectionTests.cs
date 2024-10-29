@@ -16,7 +16,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 [Collection("MongoDBVectorStoreCollection")]
 public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture fixture)
 {
-    [Theory]
+    // If null, all tests will be enabled
+    private const string? SkipReason = "The tests are for manual verification.";
+
+    [Theory(Skip = SkipReason)]
     [InlineData("sk-test-hotels", true)]
     [InlineData("nonexistentcollection", false)]
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
@@ -31,7 +34,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Equal(expectedExists, actual);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
@@ -44,7 +47,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.True(await sut.CollectionExistsAsync());
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true, true)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -98,7 +101,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         }
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -116,7 +119,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.False(await sut.CollectionExistsAsync());
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanGetAndDeleteRecordAsync()
     {
         // Arrange
@@ -140,7 +143,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Null(getResult);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanGetAndDeleteBatchAsync()
     {
         // Arrange
@@ -172,7 +175,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Empty(getResults);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertRecordAsync()
     {
         // Arrange
@@ -200,7 +203,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Equal(10, getResult.HotelRating);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithModelWorksCorrectlyAsync()
     {
         // Arrange
@@ -232,7 +235,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithVectorStoreModelWorksCorrectlyAsync()
     {
         // Arrange
@@ -252,7 +255,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithBsonModelWorksCorrectlyAsync()
     {
         // Arrange
@@ -284,7 +287,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithBsonVectorStoreModelWorksCorrectlyAsync()
     {
         // Arrange
@@ -304,7 +307,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task UpsertWithBsonVectorStoreWithNameModelWorksCorrectlyAsync()
     {
         // Arrange
@@ -324,7 +327,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
     {
         // Arrange
@@ -355,7 +358,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.Equal(1, searchResults.First(l => l.Record.HotelId == "key1").Score);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task VectorizedSearchReturnsValidResultsWithOffsetAsync()
     {
         // Arrange
@@ -388,7 +391,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.DoesNotContain("key2", ids);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task VectorizedSearchReturnsValidResultsWithFilterAsync()
     {
         // Arrange
@@ -420,7 +423,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.DoesNotContain("key4", ids);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
     {
         // Arrange

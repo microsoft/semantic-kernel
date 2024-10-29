@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.IO;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -23,18 +24,21 @@ public static class OnnxServiceCollectionExtensions
     /// <param name="modelId">The name of the model.</param>
     /// <param name="modelPath">The generative AI ONNX model path.</param>
     /// <param name="serviceId">Optional service ID.</param>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for various aspects of serialization and deserialization required by the service.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddOnnxRuntimeGenAIChatCompletion(
         this IServiceCollection services,
         string modelId,
         string modelPath,
-        string? serviceId = null)
+        string? serviceId = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
     {
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new OnnxRuntimeGenAIChatCompletionService(
                 modelId,
                 modelPath,
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                jsonSerializerOptions));
 
         return services;
     }

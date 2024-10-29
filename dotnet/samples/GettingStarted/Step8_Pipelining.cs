@@ -25,8 +25,8 @@ public sealed class Step8_Pipelining(ITestOutputHelper output) : BaseTest(output
 
         Console.WriteLine("================ PIPELINE ================");
         {
-            // Create a pipeline of functions that will parse a string into an int, multiply it by a double, truncate it to an int, and then humanize it.
-            KernelFunction parseInt32 = KernelFunctionFactory.CreateFromMethod((string s) => double.Parse(s, CultureInfo.InvariantCulture), "parseInt32");
+            // Create a pipeline of functions that will parse a string into a double, multiply it by a double, truncate it to an int, and then humanize it.
+            KernelFunction parseDouble = KernelFunctionFactory.CreateFromMethod((string s) => double.Parse(s, CultureInfo.InvariantCulture), "parseDouble");
             KernelFunction multiplyByN = KernelFunctionFactory.CreateFromMethod((double i, double n) => i * n, "multiplyByN");
             KernelFunction truncate = KernelFunctionFactory.CreateFromMethod((double d) => (int)d, "truncate");
             KernelFunction humanize = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig()
@@ -34,7 +34,7 @@ public sealed class Step8_Pipelining(ITestOutputHelper output) : BaseTest(output
                 Template = "Spell out this number in English: {{$number}}",
                 InputVariables = [new() { Name = "number" }],
             });
-            KernelFunction pipeline = KernelFunctionCombinators.Pipe([parseInt32, multiplyByN, truncate, humanize], "pipeline");
+            KernelFunction pipeline = KernelFunctionCombinators.Pipe([parseDouble, multiplyByN, truncate, humanize], "pipeline");
 
             KernelArguments args = new()
             {
