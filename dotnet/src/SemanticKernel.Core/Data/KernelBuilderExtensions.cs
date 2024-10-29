@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
@@ -17,6 +19,7 @@ public static class KernelBuilderExtensions
     /// <param name="builder">The builder to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
+    [Obsolete("This has been replaced by the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
     public static IKernelBuilder AddVolatileVectorStore(this IKernelBuilder builder, string? serviceId = default)
     {
         builder.Services.AddVolatileVectorStore(serviceId);
@@ -32,6 +35,7 @@ public static class KernelBuilderExtensions
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
+    [Obsolete("This has been replaced by the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
     public static IKernelBuilder AddVolatileVectorStoreTextSearch<TKey, TRecord>(
         this IKernelBuilder builder,
         string collectionName,
@@ -40,7 +44,6 @@ public static class KernelBuilderExtensions
         VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         builder.Services.AddVolatileVectorStoreTextSearch<TKey, TRecord>(collectionName, stringMapper, resultMapper, options, serviceId);
         return builder;
@@ -55,6 +58,7 @@ public static class KernelBuilderExtensions
     /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> delegate that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
+    [Obsolete("This has been replaced by the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
     public static IKernelBuilder AddVolatileVectorStoreTextSearch<TKey, TRecord>(
         this IKernelBuilder builder,
         string collectionName,
@@ -63,7 +67,6 @@ public static class KernelBuilderExtensions
         VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : class
     {
         builder.AddVolatileVectorStoreTextSearch<TKey, TRecord>(
             collectionName,

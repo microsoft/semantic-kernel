@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -14,6 +16,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// 1. Serializing an instance of <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}"/> to a stream.
 /// 2. Deserializing an instance of <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}"/> from a stream.
 /// </summary>
+[Obsolete("This has been replaced by InMemoryVectorStoreExtensions in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 public static class VolatileVectorStoreExtensions
 {
     /// <summary>
@@ -25,13 +28,14 @@ public static class VolatileVectorStoreExtensions
     /// <param name="collectionName">The collection name.</param>
     /// <param name="stream">The stream to write the serialized JSON to.</param>
     /// <param name="jsonSerializerOptions">The JSON serializer options to use.</param>
+    [RequiresUnreferencedCode("Uses reflection for collection serialization, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection for collection serialization, making it incompatible with AOT scenarios.")]
     public static async Task SerializeCollectionAsJsonAsync<TKey, TRecord>(
         this VolatileVectorStore vectorStore,
         string collectionName,
         Stream stream,
         JsonSerializerOptions? jsonSerializerOptions = null)
         where TKey : notnull
-        where TRecord : class
     {
         // Get collection and verify that it exists.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -55,11 +59,12 @@ public static class VolatileVectorStoreExtensions
     /// <typeparam name="TRecord">Type of the record.</typeparam>
     /// <param name="vectorStore">Instance of <see cref="VolatileVectorStore"/> used to retrieve the collection.</param>
     /// <param name="stream">The stream to read the serialized JSON from.</param>
+    [RequiresUnreferencedCode("Uses reflection for collection deserialization, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection for collection deserialization, making it incompatible with AOT scenarios.")]
     public static async Task<IVectorStoreRecordCollection<TKey, TRecord>?> DeserializeCollectionFromJsonAsync<TKey, TRecord>(
         this VolatileVectorStore vectorStore,
         Stream stream)
         where TKey : notnull
-        where TRecord : class
     {
         IVectorStoreRecordCollection<TKey, TRecord>? collection = null;
 
@@ -91,7 +96,6 @@ public static class VolatileVectorStoreExtensions
     /// <summary>Model class used when storing a <see cref="VolatileVectorStoreRecordCollection{TKey, TRecord}" />.</summary>
     private sealed class VolatileRecordCollection<TKey, TRecord>(string name, IDictionary<TKey, TRecord> records)
         where TKey : notnull
-        where TRecord : class
     {
         public string Name { get; init; } = name;
         public IDictionary<TKey, TRecord> Records { get; init; } = records;

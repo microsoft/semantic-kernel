@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
-using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
@@ -223,8 +223,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Assert
         this._mockMongoCollection.Verify(l => l.DeleteOneAsync(
             It.Is<FilterDefinition<BsonDocument>>(definition =>
-                definition.Render(documentSerializer, serializerRegistry) ==
-                expectedDefinition.Render(documentSerializer, serializerRegistry)),
+                CompareFilterDefinitions(definition, expectedDefinition, documentSerializer, serializerRegistry)),
             It.IsAny<CancellationToken>()), Times.Once());
     }
 
@@ -248,8 +247,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Assert
         this._mockMongoCollection.Verify(l => l.DeleteManyAsync(
             It.Is<FilterDefinition<BsonDocument>>(definition =>
-                definition.Render(documentSerializer, serializerRegistry) ==
-                expectedDefinition.Render(documentSerializer, serializerRegistry)),
+                CompareFilterDefinitions(definition, expectedDefinition, documentSerializer, serializerRegistry)),
             It.IsAny<CancellationToken>()), Times.Once());
     }
 
@@ -377,8 +375,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
 
         this._mockMongoCollection.Verify(l => l.ReplaceOneAsync(
             It.Is<FilterDefinition<BsonDocument>>(definition =>
-                definition.Render(documentSerializer, serializerRegistry) ==
-                expectedDefinition.Render(documentSerializer, serializerRegistry)),
+                CompareFilterDefinitions(definition, expectedDefinition, documentSerializer, serializerRegistry)),
             It.Is<BsonDocument>(document =>
                 document["_id"] == "key" &&
                 document["HotelName"] == "Test Name"),
@@ -704,7 +701,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         var serializerRegistry = BsonSerializer.SerializerRegistry;
         var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
 
-        var documents = actualPipeline.Render(documentSerializer, serializerRegistry).Documents;
+        var documents = actualPipeline.Render(new RenderArgs<BsonDocument>(documentSerializer, serializerRegistry)).Documents;
 
         return
             documents[0].ToJson() == expectedSearch.ToJson() &&
@@ -761,14 +758,23 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
 
         this._mockMongoCollection.Verify(l => l.ReplaceOneAsync(
             It.Is<FilterDefinition<BsonDocument>>(definition =>
-                definition.Render(documentSerializer, serializerRegistry) ==
-                expectedDefinition.Render(documentSerializer, serializerRegistry)),
+                CompareFilterDefinitions(definition, expectedDefinition, documentSerializer, serializerRegistry)),
             It.Is<BsonDocument>(document =>
                 document["_id"] == "key" &&
                 document.Contains(expectedPropertyName) &&
                 document[expectedPropertyName] == "Test Name"),
             It.IsAny<ReplaceOptions>(),
             It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    private static bool CompareFilterDefinitions(
+        FilterDefinition<BsonDocument> actual,
+        FilterDefinition<BsonDocument> expected,
+        IBsonSerializer<BsonDocument> documentSerializer,
+        IBsonSerializerRegistry serializerRegistry)
+    {
+        return actual.Render(new RenderArgs<BsonDocument>(documentSerializer, serializerRegistry)) ==
+            expected.Render(new RenderArgs<BsonDocument>(documentSerializer, serializerRegistry));
     }
 
 #pragma warning disable CA1812
@@ -828,11 +834,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         [VectorStoreRecordData]
         public string? HotelName { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance, StoragePropertyName = "test_embedding_1")]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance, IndexKind: IndexKind.IvfFlat, StoragePropertyName = "test_embedding_1")]
         public ReadOnlyMemory<float> TestEmbedding1 { get; set; }
 
         [BsonElement("test_embedding_2")]
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance, IndexKind: IndexKind.IvfFlat)]
         public ReadOnlyMemory<float> TestEmbedding2 { get; set; }
     }
 #pragma warning restore CA1812

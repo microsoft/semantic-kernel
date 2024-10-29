@@ -57,7 +57,7 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
         """
         try:
             ollama_settings = OllamaSettings.create(
-                model=ai_model_id,
+                embedding_model_id=ai_model_id,
                 host=host,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -65,9 +65,12 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
 
+        if not ollama_settings.embedding_model_id:
+            raise ServiceInitializationError("Ollama embedding model ID is not set.")
+
         super().__init__(
-            service_id=service_id or ollama_settings.model,
-            ai_model_id=ollama_settings.model,
+            service_id=service_id or ollama_settings.embedding_model_id,
+            ai_model_id=ollama_settings.embedding_model_id,
             client=client or AsyncClient(host=ollama_settings.host),
         )
 

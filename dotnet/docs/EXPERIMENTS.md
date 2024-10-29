@@ -24,6 +24,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0080 | Processes |
 | SKEXP0100 | Advanced Semantic Kernel features |
 | SKEXP0110 | Semantic Kernel Agents |
+| SKEXP0120 | Native-AOT |
 
 ## Experimental Features Tracking
 
@@ -84,3 +85,5 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0101 | Experiment with Flow Orchestration |
 | | | | | | | |
 | SKEXP0110 | Agent Framework |
+| | | | | | | |
+| SKEXP0120 | Native-AOT |

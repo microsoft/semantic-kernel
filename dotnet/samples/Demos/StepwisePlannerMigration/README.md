@@ -55,7 +55,7 @@ IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCo
 ChatHistory chatHistory = [];
 chatHistory.AddUserMessage("Check current UTC time and return current weather in Boston city.");
 
-OpenAIPromptExecutionSettings executionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+OpenAIPromptExecutionSettings executionSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
 await chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
 
@@ -87,7 +87,7 @@ Kernel kernel = Kernel
     .AddOpenAIChatCompletion("gpt-4", Environment.GetEnvironmentVariable("OpenAI__ApiKey"))
     .Build();
 
-OpenAIPromptExecutionSettings executionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+OpenAIPromptExecutionSettings executionSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
 FunctionResult result = await kernel.InvokePromptAsync("Check current UTC time and return current weather in Boston city.", new(executionSettings));
 
@@ -124,7 +124,7 @@ IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCo
 
 ChatHistory existingPlan = GetExistingPlan(); // plan can be stored in database for reusability.
 
-OpenAIPromptExecutionSettings executionSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+OpenAIPromptExecutionSettings executionSettings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
 ChatMessageContent result = await chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
 

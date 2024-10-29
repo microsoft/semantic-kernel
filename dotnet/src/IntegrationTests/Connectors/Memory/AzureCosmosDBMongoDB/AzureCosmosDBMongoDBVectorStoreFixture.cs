@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
 using Xunit;
 
@@ -117,7 +117,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         public DateTime Timestamp { get; set; }
 
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance, IndexKind: IndexKind.IvfFlat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 #pragma warning restore CS8618
