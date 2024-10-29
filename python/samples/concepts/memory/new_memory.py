@@ -12,7 +12,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_collection import (
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
     AzureCosmosDBNoSQLCollection,
 )
 from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection

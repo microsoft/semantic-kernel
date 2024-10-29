@@ -5,10 +5,10 @@ from unittest.mock import patch
 
 import pytest
 
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_collection import (
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
     AzureCosmosDBNoSQLCollection,
 )
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 
 

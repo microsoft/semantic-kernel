@@ -4,6 +4,8 @@ import json
 import sys
 from typing import Any
 
+from typing_extensions import deprecated
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -19,6 +21,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class
+@deprecated(
+    "AzureCosmosDBNoSQLMemoryStore is deprecated. Use semantic_kernel.memory.azure_cosmos_db.AzureCosmosDBNoSQLStore."
+)
 class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
     """You can read more about vector search using AzureCosmosDBNoSQL here: https://aka.ms/CosmosVectorSearch."""
 
@@ -186,10 +191,8 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
 
     @staticmethod
     def __serialize_metadata(record: MemoryRecord) -> str:
-        return json.dumps(
-            {
-                "text": record.text,
-                "description": record.description,
-                "additional_metadata": record.additional_metadata,
-            }
-        )
+        return json.dumps({
+            "text": record.text,
+            "description": record.description,
+            "additional_metadata": record.additional_metadata,
+        })

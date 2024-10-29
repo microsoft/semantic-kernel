@@ -231,8 +231,8 @@ class TestVectorStore(VectorStoreTestBase):
             # endregion
             # region Azure Cosmos DB NoSQL
             pytest.param(
-                "azure_cosmos_db_nosql",
-                "azure_cosmos_db_nosql_array_data_model",
+                "azure_cosmos_db_no_sql",
+                "azure_cosmos_db_no_sql_array_data_model",
                 {},
                 TestDataModelArrayFlat,
                 None,
@@ -241,11 +241,11 @@ class TestVectorStore(VectorStoreTestBase):
                     platform.system() != "Windows",
                     reason="The Azure Cosmos DB Emulator is only available on Windows.",
                 ),
-                id="azure_cosmos_db_nosql_array_data_model",
+                id="azure_cosmos_db_no_sql_array_data_model",
             ),
             pytest.param(
-                "azure_cosmos_db_nosql",
-                "azure_cosmos_db_nosql_list_data_model",
+                "azure_cosmos_db_no_sql",
+                "azure_cosmos_db_no_sql_list_data_model",
                 {},
                 TestDataModelListFlat,
                 None,
@@ -254,11 +254,11 @@ class TestVectorStore(VectorStoreTestBase):
                     platform.system() != "Windows",
                     reason="The Azure Cosmos DB Emulator is only available on Windows.",
                 ),
-                id="azure_cosmos_db_nosql_list_data_model",
+                id="azure_cosmos_db_no_sql_list_data_model",
             ),
             pytest.param(
-                "azure_cosmos_db_nosql",
-                "azure_cosmos_db_nosql_pandas_data_model",
+                "azure_cosmos_db_no_sql",
+                "azure_cosmos_db_no_sql_pandas_data_model",
                 {},
                 pd.DataFrame,
                 PANDAS_RECORD_DEFINITION_FLAT,
@@ -267,7 +267,7 @@ class TestVectorStore(VectorStoreTestBase):
                     platform.system() != "Windows",
                     reason="The Azure Cosmos DB Emulator is only available on Windows.",
                 ),
-                id="azure_cosmos_db_nosql_pandas_data_model",
+                id="azure_cosmos_db_no_sql_pandas_data_model",
             ),
             # endregion
         ],

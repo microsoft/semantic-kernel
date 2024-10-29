@@ -2,11 +2,9 @@
 
 from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
-from azure.identity import DefaultAzureCredential
+from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_settings import (
-    AzureCosmosDBNoSQLSettings,
-)
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_settings import AzureCosmosDBNoSQLSettings
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorResourceNotFound
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class

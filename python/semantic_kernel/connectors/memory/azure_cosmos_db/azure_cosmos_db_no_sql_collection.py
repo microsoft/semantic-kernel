@@ -14,14 +14,12 @@ from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from azure.cosmos.partition_key import PartitionKey
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_base import AzureCosmosDBNoSQLBase
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_composite_key import (
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_base import AzureCosmosDBNoSQLBase
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
     AzureCosmosDBNoSQLCompositeKey,
 )
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_settings import (
-    AzureCosmosDBNoSQLSettings,
-)
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.utils import (
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_settings import AzureCosmosDBNoSQLSettings
+from semantic_kernel.connectors.memory.azure_cosmos_db.utils import (
     COSMOS_ITEM_ID_PROPERTY_NAME,
     build_query_parameters,
     create_default_indexing_policy,
@@ -48,7 +46,7 @@ TKey = TypeVar("TKey", str, AzureCosmosDBNoSQLCompositeKey)
 class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordCollection[TKey, TModel]):
     """An Azure Cosmos DB NoSQL collection stores documents in a Azure Cosmos DB NoSQL account."""
 
-    partition_key: PartitionKey | None
+    partition_key: PartitionKey
 
     def __init__(
         self,
@@ -86,12 +84,9 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
             cosmos_db_nosql_settings=cosmos_db_nosql_settings,
             database_name=database_name,
             collection_name=collection_name,
-            partition_key=partition_key,
+            partition_key=partition_key or PartitionKey(path=f"/{COSMOS_ITEM_ID_PROPERTY_NAME}"),
             create_database=create_database,
         )
-
-        # data_model_definition may not be available until the base class is initialized
-        self.partition_key = self.partition_key or PartitionKey(path=f"/{COSMOS_ITEM_ID_PROPERTY_NAME}")
 
     @override
     async def _inner_upsert(

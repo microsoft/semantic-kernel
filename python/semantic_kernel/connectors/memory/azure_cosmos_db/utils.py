@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 from typing import Any
 
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_composite_key import (
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
     AzureCosmosDBNoSQLCompositeKey,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
@@ -17,7 +17,7 @@ INDEX_KIND_MAPPING = {
 }
 
 
-def to_vector_index_policy_type(index_kind: IndexKind) -> str:
+def to_vector_index_policy_type(index_kind: IndexKind | None) -> str:
     """Converts the index kind to the vector index policy type for Azure Cosmos DB NoSQL container.
 
     Depending on the index kind, the maximum number of dimensions may be limited:
@@ -42,7 +42,7 @@ DISTANCE_FUNCTION_MAPPING = {
 }
 
 
-def to_distance_function(distance_function: DistanceFunction) -> str:
+def to_distance_function(distance_function: DistanceFunction | None) -> str:
     """Converts the distance function to the distance function for Azure Cosmos DB NoSQL container."""
     if distance_function in DISTANCE_FUNCTION_MAPPING:
         return DISTANCE_FUNCTION_MAPPING[distance_function]
@@ -80,15 +80,15 @@ def create_default_indexing_policy(data_model_definition: VectorStoreRecordDefin
         if isinstance(field, VectorStoreRecordDataField) and (
             not field.is_full_text_searchable and not field.is_filterable
         ):
-            indexing_policy["excludedPaths"].append({"path": f'/"{field.name}"/*'})
+            indexing_policy["excludedPaths"].append({"path": f'/"{field.name}"/*'})  # type: ignore
 
         if isinstance(field, VectorStoreRecordVectorField):
-            indexing_policy["vectorIndexes"].append({
+            indexing_policy["vectorIndexes"].append({  # type: ignore
                 "path": f'/"{field.name}"',
                 "type": to_vector_index_policy_type(field.index_kind),
             })
             # Exclude the vector field from the index for performance optimization.
-            indexing_policy["excludedPaths"].append({"path": f'/"{field.name}"/*'})
+            indexing_policy["excludedPaths"].append({"path": f'/"{field.name}"/*'})  # type: ignore
 
     return indexing_policy
 
@@ -104,7 +104,7 @@ def create_default_vector_embedding_policy(data_model_definition: VectorStoreRec
     Returns:
         dict[str, Any]: The vector embedding policy.
     """
-    vector_embedding_policy = {"vectorEmbeddings": []}
+    vector_embedding_policy: dict[str, Any] = {"vectorEmbeddings": []}
 
     for _, field in data_model_definition.fields.items():
         if isinstance(field, VectorStoreRecordVectorField):
@@ -156,7 +156,7 @@ def build_query_parameters(
     data_model_definition: VectorStoreRecordDefinition,
     keys: Sequence[str | AzureCosmosDBNoSQLCompositeKey],
     include_vectors: bool,
-) -> tuple[str, list[dict[str, str]]]:
+) -> tuple[str, list[dict[str, Any]]]:
     """Builds the query and parameters for the Azure Cosmos DB NoSQL query item operation.
 
     Args:

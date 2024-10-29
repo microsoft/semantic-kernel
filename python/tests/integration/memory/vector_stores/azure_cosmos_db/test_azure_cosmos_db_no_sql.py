@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 from azure.cosmos.partition_key import PartitionKey
 
-from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmos_db_no_sql_composite_key import (
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
     AzureCosmosDBNoSQLCompositeKey,
 )
 from semantic_kernel.data.vector_store import VectorStore
