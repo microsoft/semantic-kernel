@@ -91,7 +91,6 @@ def test_create_kernel_function_fail():
             function_name="search",
             description="description",
             string_mapper=None,
-            update_options_function=None,
         )
 
 
@@ -107,7 +106,6 @@ async def test_create_kernel_function_inner(kernel: Kernel):
         function_name="search",
         description="description",
         string_mapper=None,
-        update_options_function=None,
     )
     results = await kernel_function.invoke(kernel, None)
     assert results is not None
@@ -134,7 +132,6 @@ async def test_create_kernel_function_inner_with_options(kernel: Kernel):
         function_name="search",
         description="description",
         string_mapper=None,
-        update_options_function=None,
     )
     results = await kernel_function.invoke(kernel, KernelArguments(city="city"))
     assert results is not None
@@ -161,7 +158,6 @@ async def test_create_kernel_function_inner_with_other_options_type(kernel: Kern
         function_name="search",
         description="description",
         string_mapper=None,
-        update_options_function=None,
     )
     results = await kernel_function.invoke(kernel, KernelArguments(test_field="city"))
     assert results is not None
@@ -180,7 +176,6 @@ async def test_create_kernel_function_inner_no_results(kernel: Kernel):
         function_name="search",
         description="description",
         string_mapper=None,
-        update_options_function=None,
     )
     with (
         patch.object(test_search, "search") as mock_search,
@@ -214,7 +209,6 @@ async def test_create_kernel_function_inner_update_options(kernel: Kernel):
         function_name="search",
         description="description",
         string_mapper=None,
-        update_options_function=update_options,
     )
     results = await kernel_function.invoke(kernel, KernelArguments(city="city"))
     assert results is not None
