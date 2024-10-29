@@ -131,6 +131,7 @@ internal sealed class FunctionCallsProcessor
     /// <param name="checkIfFunctionAdvertised">Callback to check if a function was advertised to AI model or not.</param>
     /// <param name="options">Function choice behavior options.</param>
     /// <param name="kernel">The <see cref="Kernel"/>.</param>
+    /// <param name="isStreaming">Boolean flag which indicates whether a filter is invoked within streaming or non-streaming mode.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Last chat history message if function invocation filter requested processing termination, otherwise null.</returns>
     public async Task<ChatMessageContent?> ProcessFunctionCallsAsync(
@@ -140,6 +141,7 @@ internal sealed class FunctionCallsProcessor
         Func<FunctionCallContent, bool> checkIfFunctionAdvertised,
         FunctionChoiceBehaviorOptions options,
         Kernel? kernel,
+        bool isStreaming,
         CancellationToken cancellationToken)
     {
         var functionCalls = FunctionCallContent.GetFunctionCalls(chatMessageContent).ToList();
@@ -201,7 +203,9 @@ internal sealed class FunctionCallsProcessor
                 Arguments = functionCall.Arguments,
                 RequestSequenceIndex = requestIndex,
                 FunctionSequenceIndex = functionCallIndex,
-                FunctionCount = functionCalls.Count
+                FunctionCount = functionCalls.Count,
+                CancellationToken = cancellationToken,
+                IsStreaming = isStreaming
             };
 
             var functionTask = Task.Run<(string? Result, string? ErrorMessage, FunctionCallContent FunctionCall, bool Terminate)>(async () =>

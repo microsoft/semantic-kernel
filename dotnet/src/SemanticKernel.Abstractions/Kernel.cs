@@ -311,12 +311,14 @@ public sealed class Kernel
         KernelFunction function,
         KernelArguments arguments,
         FunctionResult functionResult,
+        bool isStreaming,
         Func<FunctionInvocationContext, Task> functionCallback,
         CancellationToken cancellationToken)
     {
         FunctionInvocationContext context = new(this, function, arguments, functionResult)
         {
-            CancellationToken = cancellationToken
+            CancellationToken = cancellationToken,
+            IsStreaming = isStreaming
         };
 
         await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).ConfigureAwait(false);

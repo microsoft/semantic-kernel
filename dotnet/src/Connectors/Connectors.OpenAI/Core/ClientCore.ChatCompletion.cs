@@ -209,7 +209,9 @@ internal partial class ClientCore
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: false,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 return [lastMessage];
@@ -388,7 +390,9 @@ internal partial class ClientCore
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: true,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content);
