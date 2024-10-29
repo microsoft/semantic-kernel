@@ -10,6 +10,12 @@ from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField, VectorStoreRecordVectorField
 
+INDEX_KIND_MAPPING = {
+    IndexKind.FLAT: "flat",
+    IndexKind.QUANTIZED_FLAT: "quantizedFlat",
+    IndexKind.DISK_ANN: "diskANN",
+}
+
 
 def to_vector_index_policy_type(index_kind: IndexKind) -> str:
     """Converts the index kind to the vector index policy type for Azure Cosmos DB NoSQL container.
@@ -23,26 +29,23 @@ def to_vector_index_policy_type(index_kind: IndexKind) -> str:
     Returns:
         str: The vector index policy type.
     """
-    match index_kind:
-        case IndexKind.FLAT:
-            return "flat"
-        case IndexKind.QUANTIZED_FLAT:
-            return "quantizedFlat"
-        case IndexKind.DISK_ANN:
-            return "diskANN"
+    if index_kind in INDEX_KIND_MAPPING:
+        return INDEX_KIND_MAPPING[index_kind]
 
     raise ValueError(f"Index kind '{index_kind}' is not supported by Azure Cosmos DB NoSQL container.")
 
 
+DISTANCE_FUNCTION_MAPPING = {
+    DistanceFunction.COSINE: "cosine",
+    DistanceFunction.DOT_PROD: "dotproduct",
+    DistanceFunction.EUCLIDEAN: "euclidean",
+}
+
+
 def to_distance_function(distance_function: DistanceFunction) -> str:
     """Converts the distance function to the distance function for Azure Cosmos DB NoSQL container."""
-    match distance_function:
-        case DistanceFunction.COSINE:
-            return "cosine"
-        case DistanceFunction.DOT_PROD:
-            return "dotproduct"
-        case DistanceFunction.EUCLIDEAN:
-            return "euclidean"
+    if distance_function in DISTANCE_FUNCTION_MAPPING:
+        return DISTANCE_FUNCTION_MAPPING[distance_function]
 
     raise ValueError(f"Distance function '{distance_function}' is not supported by Azure Cosmos DB NoSQL container.")
 

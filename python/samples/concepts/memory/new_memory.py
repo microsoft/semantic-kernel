@@ -96,6 +96,8 @@ DataModel = get_data_model_array(IndexKind.HNSW, DistanceFunction.COSINE)
 #   Please either configure the weaviate settings via environment variables or provide them through the constructor.
 #   Note that embed mode is not supported on Windows: https://github.com/weaviate/weaviate/issues/3315
 # - azure_cosmos_nosql: Azure Cosmos NoSQL
+#   https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-create-account?tabs=azure-portal
+#   Please see the link above to learn how to set up an Azure Cosmos NoSQL account.
 #   https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Cpython&pivots=api-nosql
 #   Please see the link above to learn how to set up the Azure Cosmos NoSQL emulator on your machine.
 #   For this sample to work with Azure Cosmos NoSQL, please adjust the index_kind of the data model to QUANTIZED_FLAT.
