@@ -76,7 +76,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal async Task RunOnceAsync(KernelProcessEvent? processEvent, Kernel? kernel = null)
     {
         Verify.NotNull(processEvent);
-        await Task.Yield(); // Ensure that the process is started on a different stack frame.
+        await Task.Yield(); // Ensure that the process has an opportunity to run in a different syncronization context.
         await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
         await this.StartAsync(kernel, keepAlive: false).ConfigureAwait(false);
         await this._processTask!.JoinAsync().ConfigureAwait(false);
