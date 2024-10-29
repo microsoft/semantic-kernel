@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.Identity;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace Memory;
@@ -11,7 +13,7 @@ namespace Memory;
 ///
 /// The example shows the following steps:
 /// 1. Create an embedding generator.
-/// 2. Create a Volatile Vector Store.
+/// 2. Create an InMemory Vector Store.
 /// 3. Ingest some data into the vector store.
 /// 4. Search the vector store with various text and filtering options.
 /// </summary>
@@ -24,10 +26,10 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+                new AzureCliCredential());
 
-        // Construct a volatile vector store.
-        var vectorStore = new VolatileVectorStore();
+        // Construct an InMemory vector store.
+        var vectorStore = new InMemoryVectorStore();
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<ulong, Glossary>("skglossary");

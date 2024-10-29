@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -308,6 +309,42 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
         Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
 
         Assert.Empty(invokedFunctions);
+    }
+
+    [Fact]
+    public async Task SpecifiedInCodeInstructsConnectorToInvokeKernelFunctionsAutomaticallyConcurrentlyAsync()
+    {
+        // Arrange
+        var requestIndexLog = new ConcurrentBag<int>();
+
+        this._kernel.ImportPluginFromType<DateTimeUtils>();
+        this._kernel.ImportPluginFromFunctions("WeatherUtils", [KernelFunctionFactory.CreateFromMethod(() => "Rainy day magic!", "GetCurrentWeather")]);
+
+        var invokedFunctions = new ConcurrentBag<string>();
+
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            requestIndexLog.Add(context.RequestSequenceIndex);
+            invokedFunctions.Add(context.Function.Name);
+
+            await next(context);
+        });
+
+        var settings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: true) };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Give me today's date and weather.");
+
+        // Act
+        var result = await this._chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, this._kernel);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Contains("GetCurrentDate", invokedFunctions);
+        Assert.Contains("GetCurrentWeather", invokedFunctions);
+
+        Assert.True(requestIndexLog.All((item) => item == 0)); // Assert that all functions called by the AI model were executed within the same initial request.  
     }
 
     private Kernel InitializeKernel()

@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Contains helper methods to map between storage and data models.
@@ -33,7 +33,6 @@ internal static class VectorStoreRecordMapping
         IReadOnlyDictionary<string, string> dataModelToStorageNameMapping,
         IReadOnlyDictionary<string, TStorageType> storageValues,
         Func<TStorageType, Type, object?>? storageValueConverter = null)
-            where TRecord : class
     {
         var propertiesInfoWithValues = BuildPropertiesInfoWithValues(
             dataModelPropertiesInfo,
@@ -86,7 +85,6 @@ internal static class VectorStoreRecordMapping
     public static void SetPropertiesOnRecord<TRecord>(
         TRecord record,
         IEnumerable<KeyValuePair<PropertyInfo, object?>> propertiesInfoWithValues)
-            where TRecord : class
     {
         foreach (var propertyInfoWithValue in propertiesInfoWithValues)
         {

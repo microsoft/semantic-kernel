@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
 using NRedisStack.Search.Literals.Enums;
@@ -21,7 +21,6 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TRecord : class
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Redis";
@@ -233,7 +232,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         // Return null if we found nothing.
         if (retrievedHashEntries == null || retrievedHashEntries.Length == 0)
         {
-            return null;
+            return default;
         }
 
         // Convert to the caller's data model.

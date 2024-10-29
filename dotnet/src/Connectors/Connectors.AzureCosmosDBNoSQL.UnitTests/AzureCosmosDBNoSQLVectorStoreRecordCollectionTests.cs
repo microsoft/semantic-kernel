@@ -7,12 +7,12 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using Microsoft.SemanticKernel.Data;
 using Moq;
 using Xunit;
-using DistanceFunction = Microsoft.SemanticKernel.Data.DistanceFunction;
-using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
+using DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
+using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 
@@ -649,40 +649,43 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal(expected.IndexingPolicy.IndexingMode, actual.IndexingPolicy.IndexingMode);
         Assert.Equal(expected.IndexingPolicy.Automatic, actual.IndexingPolicy.Automatic);
 
-        for (var i = 0; i < expected.VectorEmbeddingPolicy.Embeddings.Count; i++)
+        if (expected.IndexingPolicy.IndexingMode != IndexingMode.None)
         {
-            var expectedEmbedding = expected.VectorEmbeddingPolicy.Embeddings[i];
-            var actualEmbedding = actual.VectorEmbeddingPolicy.Embeddings[i];
+            for (var i = 0; i < expected.VectorEmbeddingPolicy.Embeddings.Count; i++)
+            {
+                var expectedEmbedding = expected.VectorEmbeddingPolicy.Embeddings[i];
+                var actualEmbedding = actual.VectorEmbeddingPolicy.Embeddings[i];
 
-            Assert.Equal(expectedEmbedding.DataType, actualEmbedding.DataType);
-            Assert.Equal(expectedEmbedding.Dimensions, actualEmbedding.Dimensions);
-            Assert.Equal(expectedEmbedding.DistanceFunction, actualEmbedding.DistanceFunction);
-            Assert.Equal(expectedEmbedding.Path, actualEmbedding.Path);
-        }
+                Assert.Equal(expectedEmbedding.DataType, actualEmbedding.DataType);
+                Assert.Equal(expectedEmbedding.Dimensions, actualEmbedding.Dimensions);
+                Assert.Equal(expectedEmbedding.DistanceFunction, actualEmbedding.DistanceFunction);
+                Assert.Equal(expectedEmbedding.Path, actualEmbedding.Path);
+            }
 
-        for (var i = 0; i < expected.IndexingPolicy.VectorIndexes.Count; i++)
-        {
-            var expectedIndexPath = expected.IndexingPolicy.VectorIndexes[i];
-            var actualIndexPath = actual.IndexingPolicy.VectorIndexes[i];
+            for (var i = 0; i < expected.IndexingPolicy.VectorIndexes.Count; i++)
+            {
+                var expectedIndexPath = expected.IndexingPolicy.VectorIndexes[i];
+                var actualIndexPath = actual.IndexingPolicy.VectorIndexes[i];
 
-            Assert.Equal(expectedIndexPath.Type, actualIndexPath.Type);
-            Assert.Equal(expectedIndexPath.Path, actualIndexPath.Path);
-        }
+                Assert.Equal(expectedIndexPath.Type, actualIndexPath.Type);
+                Assert.Equal(expectedIndexPath.Path, actualIndexPath.Path);
+            }
 
-        for (var i = 0; i < expected.IndexingPolicy.IncludedPaths.Count; i++)
-        {
-            var expectedIncludedPath = expected.IndexingPolicy.IncludedPaths[i].Path;
-            var actualIncludedPath = actual.IndexingPolicy.IncludedPaths[i].Path;
+            for (var i = 0; i < expected.IndexingPolicy.IncludedPaths.Count; i++)
+            {
+                var expectedIncludedPath = expected.IndexingPolicy.IncludedPaths[i].Path;
+                var actualIncludedPath = actual.IndexingPolicy.IncludedPaths[i].Path;
 
-            Assert.Equal(expectedIncludedPath, actualIncludedPath);
-        }
+                Assert.Equal(expectedIncludedPath, actualIncludedPath);
+            }
 
-        for (var i = 0; i < expected.IndexingPolicy.ExcludedPaths.Count; i++)
-        {
-            var expectedExcludedPath = expected.IndexingPolicy.ExcludedPaths[i].Path;
-            var actualExcludedPath = actual.IndexingPolicy.ExcludedPaths[i].Path;
+            for (var i = 0; i < expected.IndexingPolicy.ExcludedPaths.Count; i++)
+            {
+                var expectedExcludedPath = expected.IndexingPolicy.ExcludedPaths[i].Path;
+                var actualExcludedPath = actual.IndexingPolicy.ExcludedPaths[i].Path;
 
-            Assert.Equal(expectedExcludedPath, actualExcludedPath);
+                Assert.Equal(expectedExcludedPath, actualExcludedPath);
+            }
         }
 
         return true;
@@ -701,16 +704,16 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public string? Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 1, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 1, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
         public ReadOnlyMemory<Half>? DescriptionEmbedding1 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 2, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 2, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 3, IndexKind: IndexKind.QuantizedFlat, DistanceFunction: DistanceFunction.DotProductSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 3, DistanceFunction: DistanceFunction.DotProductSimilarity, IndexKind: IndexKind.QuantizedFlat)]
         public ReadOnlyMemory<byte>? DescriptionEmbedding3 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.DiskAnn, DistanceFunction: DistanceFunction.EuclideanDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance, IndexKind: IndexKind.DiskAnn)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
 
         [VectorStoreRecordData(IsFilterable = true)]

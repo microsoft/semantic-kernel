@@ -9,6 +9,7 @@ using Google.Apis.CustomSearchAPI.v1;
 using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Google;

@@ -145,7 +145,7 @@ public class ChatHistoryReducerExtensionsTests
         int reductionIndex = sourceHistory.LocateSafeReductionIndex(targetCount, thresholdCount);
 
         // Assert
-        Assert.Equal(0, reductionIndex);
+        Assert.Equal(-1, reductionIndex);
     }
 
     /// <summary>

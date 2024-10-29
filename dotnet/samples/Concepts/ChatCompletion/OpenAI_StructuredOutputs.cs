@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
@@ -186,6 +187,52 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         // Email #2
         // Body: Please review the attached document and provide your feedback by EOD.
         // Category: Work
+
+        // ...and more...
+    }
+
+    /// <summary>
+    /// This method shows how to enable Structured Outputs feature with Azure OpenAI chat completion service.
+    /// Model should be gpt-4o with version 2024-08-06 or later.
+    /// Azure OpenAI chat completion API version should be 2024-08-01-preview or later.
+    /// </summary>
+    [Fact]
+    public async Task StructuredOutputsWithAzureOpenAIAsync()
+    {
+        // Initialize kernel.
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                credentials: new AzureCliCredential(),
+                apiVersion: "2024-08-01-preview")
+            .Build();
+
+        // Specify response format by setting Type object in prompt execution settings.
+        var executionSettings = new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = typeof(MovieResult)
+        };
+
+        // Send a request and pass prompt execution settings with desired response format.
+        var result = await kernel.InvokePromptAsync("What are the top 10 movies of all time?", new(executionSettings));
+
+        // Deserialize string response to a strong type to access type properties.
+        // At this point, the deserialization logic won't fail, because MovieResult type was specified as desired response format.
+        // This ensures that response string is a serialized version of MovieResult type.
+        var movieResult = JsonSerializer.Deserialize<MovieResult>(result.ToString())!;
+
+        // Output the result.
+        this.OutputResult(movieResult);
+
+        // Output:
+
+        // Title: The Lord of the Rings: The Fellowship of the Ring
+        // Director: Peter Jackson
+        // Release year: 2001
+        // Rating: 8.8
+        // Is available on streaming: True
+        // Tags: Adventure,Drama,Fantasy
 
         // ...and more...
     }

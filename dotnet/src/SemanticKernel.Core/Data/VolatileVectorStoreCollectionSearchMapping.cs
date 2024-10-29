@@ -3,15 +3,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics.Tensors;
 using System.Reflection;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Contains mapping helpers to use when searching for documents using the Volatile store.
 /// </summary>
+[Obsolete("This has been replaced by InMemoryVectorStoreCollectionSearchMapping in the Microsoft.SemanticKernel.Connectors.InMemory nuget package.")]
 internal static class VolatileVectorStoreCollectionSearchMapping
 {
     /// <summary>
@@ -204,6 +207,7 @@ internal static class VolatileVectorStoreCollectionSearchMapping
     /// <param name="propertyName">The name of the property to find.</param>
     /// <returns>The property info for the required property.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the required property does not exist on the record.</exception>
+    [UnconditionalSuppressMessage("Analysis", "IL2075:Suppress IL2075 warning", Justification = "This class is obsolete")]
     private static PropertyInfo GetPropertyInfo(object record, string propertyName)
     {
         var propertyInfo = record.GetType().GetProperty(propertyName);

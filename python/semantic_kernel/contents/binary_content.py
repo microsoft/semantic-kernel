@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import os
 from typing import Annotated, Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
-from pydantic import Field, UrlConstraints, computed_field
+from pydantic import Field, FilePath, UrlConstraints, computed_field
 from pydantic_core import Url
 
 from semantic_kernel.contents.const import BINARY_CONTENT_TAG, ContentTypes
@@ -38,7 +39,7 @@ class BinaryContent(KernelContent):
     """
 
     content_type: Literal[ContentTypes.BINARY_CONTENT] = Field(BINARY_CONTENT_TAG, init=False)  # type: ignore
-    uri: Url | None = None
+    uri: Url | FilePath | None = None
     default_mime_type: ClassVar[str] = "text/plain"
     tag: ClassVar[str] = BINARY_CONTENT_TAG
     _data_uri: DataUri | None = None
@@ -55,7 +56,7 @@ class BinaryContent(KernelContent):
         """Create a Binary Content object, either from a data_uri or data.
 
         Args:
-            uri (Url | None): The reference uri of the content.
+            uri (Url | str | None): The reference uri of the content.
             data_uri (DataUrl | None): The data uri of the content.
             data (str | bytes | None): The data of the content.
             data_format (str | None): The format of the data (e.g. base64).
@@ -83,6 +84,13 @@ class BinaryContent(KernelContent):
                 _data_uri = DataUri(
                     data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                 )
+
+        if uri is not None:
+            if isinstance(uri, str) and os.path.exists(uri):
+                uri = str(FilePath(uri))
+            elif isinstance(uri, str):
+                uri = Url(uri)
+
         super().__init__(uri=uri, **kwargs)
         self._data_uri = _data_uri
 

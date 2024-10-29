@@ -3,8 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.Azure.Cosmos;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -28,9 +29,12 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         string scorePropertyName,
         VectorSearchOptions searchOptions)
     {
+        Verify.NotNull(vector);
+
         const string VectorVariableName = "@vector";
         const string OffsetVariableName = "@offset";
         const string LimitVariableName = "@limit";
+        const string TopVariableName = "@top";
 
         var tableVariableName = AzureCosmosDBNoSQLConstants.TableQueryVariableName;
 
@@ -44,30 +48,52 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
 
         var filterQueryParameters = filter?.QueryParameters;
         var filterWhereClauseArguments = filter?.WhereClauseArguments;
+        var queryParameters = new Dictionary<string, object>
+        {
+            [VectorVariableName] = vector
+        };
 
         var whereClause = filterWhereClauseArguments is { Count: > 0 } ?
             $"WHERE {string.Join(AndConditionDelimiter, filterWhereClauseArguments)}" :
             string.Empty;
 
-        var query =
-            $"SELECT {selectClauseArguments} " +
-            $"FROM {tableVariableName} " +
-            $"{whereClause} " +
-            $"ORDER BY {vectorDistanceArgument} " +
-            $"OFFSET {OffsetVariableName} LIMIT {LimitVariableName} ";
+        // If Offset is not configured, use Top parameter instead of Limit/Offset
+        // since it's more optimized.
+        var topArgument = searchOptions.Skip == 0 ? $"TOP {TopVariableName} " : string.Empty;
 
-        var queryDefinition = new QueryDefinition(query);
+        var builder = new StringBuilder();
 
-        queryDefinition.WithParameter(VectorVariableName, vector);
-        queryDefinition.WithParameter(OffsetVariableName, searchOptions.Skip);
-        queryDefinition.WithParameter(LimitVariableName, searchOptions.Top);
+        builder.AppendLine($"SELECT {topArgument}{selectClauseArguments}");
+        builder.AppendLine($"FROM {tableVariableName}");
+
+        if (filterWhereClauseArguments is { Count: > 0 })
+        {
+            builder.AppendLine($"WHERE {string.Join(AndConditionDelimiter, filterWhereClauseArguments)}");
+        }
+
+        builder.AppendLine($"ORDER BY {vectorDistanceArgument}");
+
+        if (!string.IsNullOrEmpty(topArgument))
+        {
+            queryParameters.Add(TopVariableName, searchOptions.Top);
+        }
+        else
+        {
+            builder.AppendLine($"OFFSET {OffsetVariableName} LIMIT {LimitVariableName}");
+            queryParameters.Add(OffsetVariableName, searchOptions.Skip);
+            queryParameters.Add(LimitVariableName, searchOptions.Top);
+        }
+
+        var queryDefinition = new QueryDefinition(builder.ToString());
 
         if (filterQueryParameters is { Count: > 0 })
         {
-            foreach (var queryParameter in filterQueryParameters)
-            {
-                queryDefinition.WithParameter(queryParameter.Key, queryParameter.Value);
-            }
+            queryParameters = queryParameters.Union(filterQueryParameters).ToDictionary(k => k.Key, v => v.Value);
+        }
+
+        foreach (var queryParameter in queryParameters)
+        {
+            queryDefinition.WithParameter(queryParameter.Key, queryParameter.Value);
         }
 
         return queryDefinition;

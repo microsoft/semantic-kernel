@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
-using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel;
 
@@ -53,7 +53,6 @@ public static class WeaviateKernelBuilderExtensions
         HttpClient? httpClient = default,
         WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : class
     {
         builder.Services.AddWeaviateVectorStoreRecordCollection(collectionName, httpClient, options, serviceId);
         return builder;

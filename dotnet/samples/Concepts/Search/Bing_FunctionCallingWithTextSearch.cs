@@ -134,9 +134,9 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
             Parameters =
             [
                 new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
-                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("top") { Description = "Number of results", IsRequired = false, DefaultValue = 5 },
                 new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
-                new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false },
             ],
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
         };

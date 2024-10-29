@@ -89,18 +89,18 @@ jobs:
       - name: Install Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          if ${{ vars.OLLAMA_MODEL != '' }}; then
-            curl -fsSL https://ollama.com/install.sh | sh
-            ollama serve &
-            sleep 5
-          fi
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
       - name: Pull model in Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          if ${{ vars.OLLAMA_MODEL != '' }}; then
-            ollama pull ${{ vars.OLLAMA_MODEL }}
-            ollama list
-          fi
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          ollama list
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
@@ -108,9 +108,17 @@ jobs:
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+      - name: Setup Weaviate docker deployment
+        run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
@@ -150,7 +158,11 @@ jobs:
           MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
           ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
           ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
-          OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
+          OLLAMA_CHAT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
+          OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
+          OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
+          OLLAMA_TEXT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llava-phi3
+          OLLAMA_EMBEDDING_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
           GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
           GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
           GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
@@ -217,18 +229,18 @@ jobs:
       - name: Install Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          if ${{ vars.OLLAMA_MODEL != '' }}; then
-            curl -fsSL https://ollama.com/install.sh | sh
-            ollama serve &
-            sleep 5
-          fi
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
       - name: Pull model in Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          if ${{ vars.OLLAMA_MODEL != '' }}; then
-            ollama pull ${{ vars.OLLAMA_MODEL }}
-            ollama list
-          fi
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          ollama list
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
@@ -236,9 +248,17 @@ jobs:
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
       - name: Setup Redis Stack Server
         if: matrix.os == 'ubuntu-latest'
         run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+      - name: Setup Weaviate docker deployment
+        run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
@@ -278,7 +298,11 @@ jobs:
           MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
           ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
           ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
-          OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
+          OLLAMA_CHAT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
+          OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
+          OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
+          OLLAMA_TEXT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llava-phi3
+          OLLAMA_EMBEDDING_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
           GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
           GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
           GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}

@@ -15,7 +15,7 @@ namespace SemanticKernel.IntegrationTests.Plugins.Web.Google;
 public class GoogleTextSearchTests : BaseTextSearchTests
 {
     // If null, all tests will be enabled
-    private const string SkipReason = "Failing in integration test pipeline so disabling while investigating a fix (issue 9168)";
+    private const string SkipReason = "Failing in integration test pipeline because daily quota exceeded";
 
     [Fact(Skip = SkipReason)]
     public override async Task CanSearchAsync()
@@ -65,6 +65,7 @@ public class GoogleTextSearchTests : BaseTextSearchTests
         var configuration = this.Configuration.GetSection("Google").Get<GoogleConfiguration>();
         Assert.NotNull(configuration);
         Assert.NotNull(configuration.ApiKey);
+        Assert.NotNull(configuration.SearchEngineId);
 
         return Task.FromResult<ITextSearch>(new GoogleTextSearch(
             initializer: new() { ApiKey = configuration.ApiKey },

@@ -3,11 +3,12 @@
 using System.Text.Json;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using Qdrant.Client;
 using StackExchange.Redis;
@@ -15,8 +16,8 @@ using StackExchange.Redis;
 namespace Memory;
 
 /// <summary>
-/// An example showing how to ingest data into a vector store using <see cref="RedisVectorStore"/>, <see cref="QdrantVectorStore"/> or <see cref="VolatileVectorStore"/>.
-/// Since Redis and Volatile supports string keys and Qdrant supports ulong or Guid keys, this example also shows how you can have common code
+/// An example showing how to ingest data into a vector store using <see cref="RedisVectorStore"/>, <see cref="QdrantVectorStore"/> or <see cref="InMemoryVectorStore"/>.
+/// Since Redis and InMemory supports string keys and Qdrant supports ulong or Guid keys, this example also shows how you can have common code
 /// that works with both types of keys by using a generic key generator function.
 ///
 /// The example shows the following steps:
@@ -37,7 +38,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     [Theory]
     [InlineData("Redis")]
     [InlineData("Qdrant")]
-    [InlineData("Volatile")]
+    [InlineData("InMemory")]
     public async Task ExampleWithDIAsync(string databaseType)
     {
         // Use the kernel for DI purposes.
@@ -61,9 +62,9 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
             await qdrantFixture.ManualInitializeAsync();
             kernelBuilder.AddQdrantVectorStore("localhost");
         }
-        else if (databaseType == "Volatile")
+        else if (databaseType == "InMemory")
         {
-            kernelBuilder.AddVolatileVectorStore();
+            kernelBuilder.AddInMemoryVectorStore();
         }
 
         // Register the DataIngestor with the DI container.
@@ -76,8 +77,8 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         var dataIngestor = kernel.GetRequiredService<DataIngestor>();
 
         // Invoke the data ingestor using an appropriate key generator function for each database type.
-        // Redis and Volatile supports string keys, while Qdrant supports ulong or Guid keys, so we use a different key generator for each key type.
-        if (databaseType == "Redis" || databaseType == "Volatile")
+        // Redis and InMemory supports string keys, while Qdrant supports ulong or Guid keys, so we use a different key generator for each key type.
+        if (databaseType == "Redis" || databaseType == "InMemory")
         {
             await this.UpsertDataAndReadFromVectorStoreAsync(dataIngestor, () => Guid.NewGuid().ToString());
         }
@@ -94,7 +95,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     [Theory]
     [InlineData("Redis")]
     [InlineData("Qdrant")]
-    [InlineData("Volatile")]
+    [InlineData("InMemory")]
     public async Task ExampleWithoutDIAsync(string databaseType)
     {
         // Create an embedding generation service.
@@ -117,9 +118,9 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
             var qdrantClient = new QdrantClient("localhost");
             vectorStore = new QdrantVectorStore(qdrantClient);
         }
-        else if (databaseType == "Volatile")
+        else if (databaseType == "InMemory")
         {
-            vectorStore = new VolatileVectorStore();
+            vectorStore = new InMemoryVectorStore();
         }
         else
         {
@@ -130,8 +131,8 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         var dataIngestor = new DataIngestor(vectorStore, textEmbeddingGenerationService);
 
         // Invoke the data ingestor using an appropriate key generator function for each database type.
-        // Redis and Volatile supports string keys, while Qdrant supports ulong or Guid keys, so we use a different key generator for each key type.
-        if (databaseType == "Redis" || databaseType == "Volatile")
+        // Redis and InMemory supports string keys, while Qdrant supports ulong or Guid keys, so we use a different key generator for each key type.
+        if (databaseType == "Redis" || databaseType == "InMemory")
         {
             await this.UpsertDataAndReadFromVectorStoreAsync(dataIngestor, () => Guid.NewGuid().ToString());
         }
