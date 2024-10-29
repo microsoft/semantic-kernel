@@ -4,15 +4,12 @@ using System;
 
 namespace Microsoft.SemanticKernel.Process;
 
-/// <summary>
-/// Provides extension methods for <see cref="Type"/> instances related to process steps.
-/// </summary>
-internal static class ProcessTypeExtensions
+internal static class KernelProcessStepExtensions
 {
     /// <summary>
     /// The generic state type for a process step.
     /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
+    private static readonly Type s_genericStepType = typeof(KernelProcessStep<>);
 
     /// <summary>
     /// Attempts to find an instance of <![CDATA['KernelProcessStep<>']]> within the provided types hierarchy.
@@ -24,7 +21,7 @@ internal static class ProcessTypeExtensions
     {
         while (type != null && type != typeof(object))
         {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == s_genericType)
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == s_genericStepType)
             {
                 genericStateType = type;
                 return true;
@@ -34,6 +31,7 @@ internal static class ProcessTypeExtensions
         }
 
         genericStateType = null;
+
         return false;
     }
 }

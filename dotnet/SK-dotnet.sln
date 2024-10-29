@@ -417,6 +417,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Onnx", "Onnx", "{30223E3A-E
 		src\InternalUtilities\connectors\AI\Onnx\PoolingMode.cs = src\InternalUtilities\connectors\AI\Onnx\PoolingMode.cs
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.Utilities.UnitTests", "src\Experimental\Process.Utilities.UnitTests\Process.Utilities.UnitTests.csproj", "{DAC54048-A39A-4739-8307-EA5A291F2EA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1072,6 +1074,12 @@ Global
 		{A078C93D-58DF-4501-953B-9ED54BC58A04}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{A078C93D-58DF-4501-953B-9ED54BC58A04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A078C93D-58DF-4501-953B-9ED54BC58A04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAC54048-A39A-4739-8307-EA5A291F2EA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAC54048-A39A-4739-8307-EA5A291F2EA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAC54048-A39A-4739-8307-EA5A291F2EA0}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAC54048-A39A-4739-8307-EA5A291F2EA0}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{DAC54048-A39A-4739-8307-EA5A291F2EA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAC54048-A39A-4739-8307-EA5A291F2EA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1219,6 +1227,7 @@ Global
 		{6DEB0DDA-F7E4-492F-A2E6-2F6297EE8FB7} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{A078C93D-58DF-4501-953B-9ED54BC58A04} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{30223E3A-E7B0-4B85-BBDE-7E546FE7D9F0} = {C7299F56-3A55-471E-B10E-B1FBE101C625}
+		{DAC54048-A39A-4739-8307-EA5A291F2EA0} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
