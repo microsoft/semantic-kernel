@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using FastBertTokenizer;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope

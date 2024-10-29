@@ -2,7 +2,6 @@
 
 using System;
 using System.Text;
-using Microsoft.SemanticKernel;
 
 namespace Microsoft.SemanticKernel.Connectors.Onnx;
 

@@ -26,9 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/Onnx/*.cs" Link="Onnx/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
-  
+
   <PropertyGroup>
     <Title>Semantic Kernel - ONNX Connectors</Title>
     <Description>Semantic Kernel connectors for the ONNX runtime running on DirectML enabled hardware (NPU). Contains services for chat completion and text embedding generation.</Description>
