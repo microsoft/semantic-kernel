@@ -17,18 +17,6 @@ namespace Microsoft.SemanticKernel;
 
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 {
-    private const string DaprStepInfoStateName = "DaprStepInfo";
-    private const string StepStateJson = "kernelStepStateJson";
-    private const string StepStateType = "kernelStepStateType";
-    private const string StepParentProcessId = "parentProcessId";
-    private const string StepIncomingMessagesState = "incomingMessagesState";
-
-    /// <summary>
-    /// The generic state type for a process step.
-    /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
-
-    private readonly Kernel _kernel;
     private readonly Lazy<ValueTask> _activateTask;
 
     private DaprStepInfo? _stepInfo;
@@ -37,6 +25,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     private Type? _innerStepType;
 
     private bool _isInitialized;
+
+    protected readonly Kernel _kernel;
 
     internal Queue<ProcessMessage> _incomingMessages = new();
     internal KernelProcessStepState? _stepState;
@@ -85,8 +75,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         await this.Int_InitializeStepAsync(stepInfo, parentProcessId).ConfigureAwait(false);
 
         // Save initial state
-        await this.StateManager.AddStateAsync(DaprStepInfoStateName, stepInfo).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync(StepParentProcessId, parentProcessId).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepInfoState, stepInfo).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -133,7 +123,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Save the incoming messages to state
-        await this.StateManager.SetStateAsync(StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return this._incomingMessages.Count;
@@ -152,7 +142,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.HandleMessageAsync(message).ConfigureAwait(false);
 
             // Save the incoming messages to state
-            await this.StateManager.SetStateAsync(StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
+            await this.StateManager.SetStateAsync(ActorStateKeys.StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
     }
@@ -177,15 +167,15 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var existingStepInfo = await this.StateManager.TryGetStateAsync<DaprStepInfo>(DaprStepInfoStateName).ConfigureAwait(false);
+        var existingStepInfo = await this.StateManager.TryGetStateAsync<DaprStepInfo>(ActorStateKeys.StepInfoState).ConfigureAwait(false);
         if (existingStepInfo.HasValue)
         {
             // Initialize the step from persisted state
-            var parentProcessId = await this.StateManager.GetStateAsync<string>(StepParentProcessId).ConfigureAwait(false);
+            var parentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
             await this.Int_InitializeStepAsync(existingStepInfo.Value, parentProcessId).ConfigureAwait(false);
 
             // Load the persisted incoming messages
-            var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(StepIncomingMessagesState).ConfigureAwait(false);
+            var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(ActorStateKeys.StepIncomingMessagesState).ConfigureAwait(false);
             if (incomingMessages.HasValue)
             {
                 this._incomingMessages = incomingMessages.Value;
@@ -289,7 +279,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
             // Persist the state after the function has been executed
             var stateJson = JsonSerializer.Serialize(this._stepState, this._stepStateType!);
-            await this.StateManager.SetStateAsync(StepStateJson, stateJson).ConfigureAwait(false);
+            await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -333,7 +323,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels();
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
@@ -341,45 +331,21 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         Type? stateType = null;
 
         // Check if the state has already been persisted
-        var stepStateType = await this.StateManager.TryGetStateAsync<string>(StepStateType).ConfigureAwait(false);
+        var stepStateType = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.StepStateType).ConfigureAwait(false);
         if (stepStateType.HasValue)
         {
             stateType = Type.GetType(stepStateType.Value);
-            var stateObjectJson = await this.StateManager.GetStateAsync<string>(StepStateJson).ConfigureAwait(false);
+            var stateObjectJson = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepStateJson).ConfigureAwait(false);
             stateObject = JsonSerializer.Deserialize(stateObjectJson, stateType!) as KernelProcessStepState;
         }
         else
         {
+            stateType = this._innerStepType.ExtractStateType(out Type? userStateType, this._logger);
             stateObject = this._stepInfo.State;
-            if (TryGetSubtypeOfStatefulStep(this._innerStepType, out Type? genericStepType) && genericStepType is not null)
-            {
-                // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
-                // and create an instance of the corresponding KernelProcessStepState<>.
-                var userStateType = genericStepType.GetGenericArguments()[0];
-                if (userStateType is null)
-                {
-                    var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                    this._logger?.LogError("{ErrorMessage}", errorMessage);
-                    throw new KernelException(errorMessage);
-                }
-
-                stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
-                if (stateType is null)
-                {
-                    var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                    this._logger?.LogError("{ErrorMessage}", errorMessage);
-                    throw new KernelException(errorMessage);
-                }
-            }
-            else
-            {
-                // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-                stateType = typeof(KernelProcessStepState);
-            }
 
             // Persist the state type and type object.
-            await this.StateManager.AddStateAsync(StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
-            await this.StateManager.AddStateAsync(StepStateJson, JsonSerializer.Serialize(stateObject)).ConfigureAwait(false);
+            await this.StateManager.AddStateAsync(ActorStateKeys.StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
+            await this.StateManager.AddStateAsync(ActorStateKeys.StepStateJson, JsonSerializer.Serialize(stateObject)).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
 
@@ -403,74 +369,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         this._stepStateType = stateType;
         methodInfo.Invoke(stepInstance, [stateObject]);
         await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Examines the KernelFunction for the step and creates a dictionary of input channels.
-    /// Some types such as KernelProcessStepContext are special and need to be injected into
-    /// the function parameter. Those objects are instantiated at this point.
-    /// </summary>
-    /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    private Dictionary<string, Dictionary<string, object?>?> FindInputChannels()
-    {
-        if (this._functions is null)
-        {
-            var errorMessage = "Internal Error: The step has not been initialized.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
-        }
-
-        Dictionary<string, Dictionary<string, object?>?> inputs = new();
-        foreach (var kvp in this._functions)
-        {
-            inputs[kvp.Key] = new();
-            foreach (var param in kvp.Value.Metadata.Parameters)
-            {
-                // Optional parameters are should not be added to the input dictionary.
-                if (!param.IsRequired)
-                {
-                    continue;
-                }
-
-                // Parameters of type KernelProcessStepContext are injected by the process
-                // and are instantiated here.
-                if (param.ParameterType == typeof(KernelProcessStepContext))
-                {
-                    inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(this);
-                }
-                else
-                {
-                    inputs[kvp.Key]![param.Name] = null;
-                }
-            }
-        }
-
-        return inputs;
-    }
-
-    /// <summary>
-    /// Attempts to find an instance of <![CDATA['KernelProcessStep<>']]> within the provided types hierarchy.
-    /// </summary>
-    /// <param name="type">The type to examine.</param>
-    /// <param name="genericStateType">The matching type if found, otherwise null.</param>
-    /// <returns>True if a match is found, false otherwise.</returns>
-    /// TODO: Move this to a share process utilities project.
-    private static bool TryGetSubtypeOfStatefulStep(Type? type, out Type? genericStateType)
-    {
-        while (type != null && type != typeof(object))
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == s_genericType)
-            {
-                genericStateType = type;
-                return true;
-            }
-
-            type = type.BaseType;
-        }
-
-        genericStateType = null;
-        return false;
     }
 
     /// <summary>
