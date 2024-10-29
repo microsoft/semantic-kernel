@@ -6,8 +6,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.VectorData;
 using Npgsql;
 
@@ -35,9 +33,6 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     // <summary>Optional configuration options for this class.</summary>
     private readonly PostgresVectorStoreRecordCollectionOptions<TRecord> _options;
 
-    /// <summary>The logger to use for logging.</summary>
-    private readonly ILogger<PostgresVectorStoreRecordCollection<TKey, TRecord>> _logger;
-
     /// <summary>A helper to access property information for the current data model and record definition.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 
@@ -53,9 +48,8 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <param name="dataSource">The data source to use for connecting to the database.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    /// <param name="logger">The logger to use for logging.</param>
-    public PostgresVectorStoreRecordCollection(NpgsqlDataSource dataSource, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
-       ILogger<PostgresVectorStoreRecordCollection<TKey, TRecord>>? logger = null) : this(new PostgresVectorStoreDbClient(dataSource), collectionName, options, logger)
+    public PostgresVectorStoreRecordCollection(NpgsqlDataSource dataSource, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default)
+        : this(new PostgresVectorStoreDbClient(dataSource), collectionName, options)
     {
     }
 
@@ -65,12 +59,10 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <param name="client">The client to use for interacting with the database.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    /// <param name="logger">The logger to use for logging.</param>
     /// <remarks>
     /// This constructor is internal. It allows internal code to create an instance of this class with a custom client.
     /// </remarks>
-    internal PostgresVectorStoreRecordCollection(IPostgresVectorStoreDbClient client, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        ILogger<PostgresVectorStoreRecordCollection<TKey, TRecord>>? logger = null)
+    internal PostgresVectorStoreRecordCollection(IPostgresVectorStoreDbClient client, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(client);
@@ -91,7 +83,6 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                 SupportsMultipleKeys = false,
                 SupportsMultipleVectors = true,
             });
-        this._logger = logger ?? NullLogger<PostgresVectorStoreRecordCollection<TKey, TRecord>>.Instance;
 
         // Validate property types.
         this._propertyReader.VerifyKeyProperties(PostgresConstants.SupportedKeyTypes);
