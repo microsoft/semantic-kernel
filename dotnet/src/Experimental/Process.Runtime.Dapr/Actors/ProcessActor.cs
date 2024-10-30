@@ -36,9 +36,8 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    /// <param name="loggerFactory">Optional. A <see cref="ILoggerFactory"/>.</param>
-    public ProcessActor(ActorHost host, Kernel kernel, ILoggerFactory? loggerFactory)
-        : base(host, kernel, loggerFactory)
+    public ProcessActor(ActorHost host, Kernel kernel)
+        : base(host, kernel)
     {
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
@@ -78,7 +77,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     {
         if (!this._isInitialized)
         {
-            throw new InvalidOperationException("The process cannot be started before it has been initialized.");
+            throw new InvalidOperationException("The process cannot be started before it has been initialized.").Log(this._logger);
         }
 
         this._processCancelSource = new CancellationTokenSource();
@@ -96,7 +95,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <returns>A <see cref="Task"/></returns>
     public async Task RunOnceAsync(KernelProcessEvent processEvent)
     {
-        Verify.NotNull(processEvent);
+        Verify.NotNull(processEvent, nameof(processEvent));
         var externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
         await externalEventQueue.EnqueueAsync(processEvent).ConfigureAwait(false);
         await this.StartAsync(keepAlive: false).ConfigureAwait(false);
@@ -139,7 +138,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <returns>A <see cref="Task"/></returns>
     public async Task SendMessageAsync(KernelProcessEvent processEvent)
     {
-        Verify.NotNull(processEvent);
+        Verify.NotNull(processEvent, nameof(processEvent));
         await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
     }
 
@@ -175,7 +174,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <summary>
     /// The name of the step.
     /// </summary>
-    protected override string Name => this._process?.State.Name ?? throw new KernelException("The Process must be initialized before accessing the Name property.");
+    protected override string Name => this._process?.State.Name ?? throw new KernelException("The Process must be initialized before accessing the Name property.").Log(this._logger);
 
     #endregion
 
@@ -189,9 +188,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     {
         if (string.IsNullOrWhiteSpace(message.TargetEventId))
         {
-            string errorMessage = "Internal Process Error: The target event id must be specified when sending a message to a step.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException("Internal Process Error: The target event id must be specified when sending a message to a step.").Log(this._logger);
         }
 
         string eventId = message.TargetEventId!;
@@ -223,13 +220,13 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     private async Task InitializeProcessActorAsync(DaprProcessInfo processInfo, string? parentProcessId)
     {
-        Verify.NotNull(processInfo);
+        Verify.NotNull(processInfo, nameof(processInfo));
         Verify.NotNull(processInfo.Steps);
 
         this.ParentProcessId = parentProcessId;
         this._process = processInfo;
         this._stepsInfos = new List<DaprStepInfo>(this._process.Steps);
-        this._logger = this.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<ProcessActor>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<ProcessActor>();
 
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());

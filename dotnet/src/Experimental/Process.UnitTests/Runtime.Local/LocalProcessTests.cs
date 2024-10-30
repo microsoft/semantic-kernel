@@ -26,7 +26,7 @@ public class LocalProcessTests
         ], []);
 
         var mockKernel = new Kernel();
-        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
 
         // Act
         await localProcess.StartAsync();
@@ -53,7 +53,7 @@ public class LocalProcessTests
         ], []);
 
         // Act
-        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
 
         // Assert
         Assert.NotEmpty(localProcess.Id);
@@ -75,7 +75,7 @@ public class LocalProcessTests
         ], []);
 
         // Act
-        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
 
         // Assert
         Assert.NotEmpty(localProcess.Id);
