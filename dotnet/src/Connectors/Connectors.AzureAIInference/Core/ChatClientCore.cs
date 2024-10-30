@@ -251,7 +251,6 @@ internal sealed class ChatClientCore
 
         // Stream the response.
         IReadOnlyDictionary<string, object?>? metadata = null;
-        string? streamedName = null;
         ChatRole? streamedRole = default;
         CompletionsFinishReason finishReason = default;
 
@@ -300,7 +299,6 @@ internal sealed class ChatClientCore
                 StreamingChatMessageContent streamingChatMessageContent =
                     new(role: update.Role.HasValue ? new AuthorRole(update.Role.ToString()!) : null, content: update.ContentUpdate, innerContent: update, modelId: update.Model, metadata: metadata)
                     {
-                        AuthorName = streamedName,
                         Role = role,
                         Metadata = metadata,
                     };
