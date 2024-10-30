@@ -131,7 +131,7 @@ internal sealed class FunctionCallsProcessor
     /// <param name="checkIfFunctionAdvertised">Callback to check if a function was advertised to AI model or not.</param>
     /// <param name="options">Function choice behavior options.</param>
     /// <param name="kernel">The <see cref="Kernel"/>.</param>
-    /// <param name="isStreaming">Boolean flag which indicates whether a filter is invoked within streaming or non-streaming mode.</param>
+    /// <param name="isStreaming">Boolean flag which indicates whether an operation is invoked within streaming or non-streaming mode.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Last chat history message if function invocation filter requested processing termination, otherwise null.</returns>
     public async Task<ChatMessageContent?> ProcessFunctionCallsAsync(
