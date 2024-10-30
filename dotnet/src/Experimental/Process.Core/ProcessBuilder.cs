@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
@@ -18,7 +19,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <summary>The collection of entry steps within this process.</summary>
     private readonly List<ProcessStepBuilder> _entrySteps = [];
 
-    /// <summary>Maps external event Ids to the target entry step for the event.</summary>
+    /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
 
     /// <summary>
@@ -208,17 +209,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         // Build the steps and injecting initial state if any is provided
-        List<KernelProcessStepInfo> builtSteps = [];
-        this._steps.ForEach(step =>
-        {
-            if (stateMetadata != null && stateMetadata.StepsState != null && stateMetadata.StepsState.TryGetValue(step.Name, out var stepStateObject) && stepStateObject != null)
-            {
-                builtSteps.Add(step.BuildStep(stepStateObject));
-                return;
-            }
-
-            builtSteps.Add(step.BuildStep());
-        });
+        var builtSteps = this._steps.BuildWithStateMetadata(stateMetadata);
 
         // Create the process
         var state = new KernelProcessState(this.Name, id: this.HasParentProcess ? this.Id : null);
