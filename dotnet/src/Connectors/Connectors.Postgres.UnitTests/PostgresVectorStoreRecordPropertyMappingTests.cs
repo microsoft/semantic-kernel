@@ -106,7 +106,7 @@ public sealed class PostgresVectorStoreRecordPropertyMappingTests
         // Arrange
         List<VectorStoreRecordVectorProperty> vectorProperties = [
             new VectorStoreRecordVectorProperty("vector1", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Hnsw, Dimensions = 1000 },
-            new VectorStoreRecordVectorProperty("vector2", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.None, Dimensions = 3000 },
+            new VectorStoreRecordVectorProperty("vector2", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Flat, Dimensions = 3000 },
             new VectorStoreRecordVectorProperty("vector3", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Hnsw, Dimensions = 900, DistanceFunction = DistanceFunction.ManhattanDistance },
         ];
 
