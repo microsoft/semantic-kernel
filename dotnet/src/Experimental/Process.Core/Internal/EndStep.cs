@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Process.Models;
 using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
