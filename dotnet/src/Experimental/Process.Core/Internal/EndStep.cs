@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Process.Models;
-using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 

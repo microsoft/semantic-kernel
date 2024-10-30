@@ -11,6 +11,7 @@ using Dapr.Actors.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
@@ -267,6 +268,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
+            Console.WriteLine($"##### STEP ACTOR - FUNCTION INVOKE: {targetFunction}"); // %%% REMOVE 
             this?._logger?.LogInformation("Invoking function {FunctionName} with arguments {Arguments}", targetFunction, arguments);
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
 
@@ -277,6 +279,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
+            Console.WriteLine($"##### STEP ACTOR - FUNCTION RESULT: {invokeResult.GetValue<object>()}"); // %%% REMOVE
             await this.EmitEventAsync(
                 new KernelProcessEvent
                 {
@@ -286,6 +289,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"##### STEP ACTOR - FUNCTION ERROR: {ex.Message}"); // %%% REMOVE
             this._logger?.LogInformation("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             await this.EmitEventAsync(
                 new KernelProcessEvent

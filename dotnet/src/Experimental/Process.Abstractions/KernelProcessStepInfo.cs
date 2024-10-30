@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;

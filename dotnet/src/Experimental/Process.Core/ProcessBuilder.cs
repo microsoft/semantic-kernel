@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Process.Models;
+using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 
@@ -187,7 +188,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// </remarks>
     public ProcessEdgeBuilder OnError()
     {
-        return new ProcessEdgeBuilder(this, KernelProcess.GlobalErrorEventId);
+        return new ProcessEdgeBuilder(this, ProcessConstants.GlobalErrorEventId);
     }
 
     /// <summary>

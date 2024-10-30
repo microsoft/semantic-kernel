@@ -10,6 +10,7 @@ using Dapr.Actors;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
 
