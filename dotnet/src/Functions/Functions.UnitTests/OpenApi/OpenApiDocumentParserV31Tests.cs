@@ -82,13 +82,23 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var enabledProperty = attributesProperty.Properties.FirstOrDefault(p => p.Name == "enabled");
         Assert.NotNull(enabledProperty);
-        Assert.False(enabledProperty.IsRequired);
+        Assert.True(enabledProperty.IsRequired);
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Description);
         Assert.Equal("boolean", enabledProperty.Type);
         Assert.False(enabledProperty.Properties?.Any());
         Assert.NotNull(enabledProperty.Schema);
         Assert.Equal("boolean", enabledProperty.Schema.RootElement.GetProperty("type").GetString());
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Schema.RootElement.GetProperty("description").GetString());
+
+        var encryptedProperty = attributesProperty.Properties.FirstOrDefault(p => p.Name == "encrypted");
+        Assert.NotNull(encryptedProperty);
+        Assert.False(encryptedProperty.IsRequired);
+        Assert.Equal("Determines whether the object is encrypted.", encryptedProperty.Description);
+        Assert.Equal("boolean", encryptedProperty.Type);
+        Assert.False(encryptedProperty.Properties?.Any());
+        Assert.NotNull(encryptedProperty.Schema);
+        Assert.Equal("boolean", encryptedProperty.Schema.RootElement.GetProperty("type").GetString());
+        Assert.Equal("Determines whether the object is encrypted.", encryptedProperty.Schema.RootElement.GetProperty("description").GetString());
     }
 
     [Fact]
