@@ -334,10 +334,14 @@ internal partial class ClientCore
                                     continue;
                                 }
 
+                                string streamingArguments = (functionCallUpdate.FunctionArgumentsUpdate?.ToMemory().IsEmpty ?? true)
+                                    ? string.Empty
+                                    : functionCallUpdate.FunctionArgumentsUpdate.ToString();
+
                                 openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
                                     callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
-                                    arguments: functionCallUpdate.FunctionArgumentsUpdate?.ToString(),
+                                    arguments: streamingArguments,
                                     functionCallIndex: functionCallUpdate.Index));
                             }
                         }
@@ -525,21 +529,24 @@ internal partial class ClientCore
 
             case JsonElement formatElement:
                 // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
-                // Handling only string formatElement.
                 if (formatElement.ValueKind == JsonValueKind.String)
                 {
-                    string formatString = formatElement.GetString() ?? "";
-                    switch (formatString)
+                    switch (formatElement.GetString())
                     {
                         case "json_object":
                             return ChatResponseFormat.CreateJsonObjectFormat();
 
+                        case null:
+                        case "":
                         case "text":
                             return ChatResponseFormat.CreateTextFormat();
                     }
                 }
 
-                break;
+                return ChatResponseFormat.CreateJsonSchemaFormat(
+                    "JsonSchema",
+                    new BinaryData(Encoding.UTF8.GetBytes(formatElement.ToString())));
+
             case Type formatObjectType:
                 return GetJsonSchemaResponseFormat(formatObjectType);
         }
@@ -554,7 +561,7 @@ internal partial class ClientCore
     {
         var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
-        var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
+        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
         return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);

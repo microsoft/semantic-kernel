@@ -93,7 +93,7 @@ class OpenAIAssistantBase(Agent):
 
     allowed_message_roles: ClassVar[list[str]] = [AuthorRole.USER, AuthorRole.ASSISTANT]
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
-    error_message_states: ClassVar[list[str]] = ["failed", "canceled", "expired", "incomplete"]
+    error_message_states: ClassVar[list[str]] = ["failed", "cancelled", "expired", "incomplete"]
 
     channel_type: ClassVar[type[AgentChannel]] = OpenAIAssistantChannel
 

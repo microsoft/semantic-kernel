@@ -3,7 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -167,5 +170,82 @@ public class KernelPluginTests
         Assert.True(plugin2.TryGetFunction(func1.Name, out KernelFunction? pluginFunc2));
         Assert.NotEqual(func1, pluginFunc2);
         Assert.Equal(plugin2.Name, pluginFunc2.PluginName);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ItCanProduceAIFunctionsThatInvokeKernelFunctions(bool withKernel)
+    {
+        string? actualArg1 = null;
+        int? actualArg2 = null;
+        double? actualArg3 = null;
+        Kernel? actualKernel1 = null;
+        Kernel? actualKernel2 = null;
+        CancellationToken? actualToken1 = null;
+        CancellationToken? actualToken2 = null;
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions(
+            "PluginName", [
+                KernelFunctionFactory.CreateFromMethod((string arg1, Kernel kernel1, CancellationToken ct1) =>
+                {
+                    actualArg1 = arg1;
+                    actualKernel1 = kernel1;
+                    actualToken1 = ct1;
+                    return "Return1";
+                }, "Function1"),
+                KernelFunctionFactory.CreateFromMethod((int arg2, double arg3, Kernel kernel2, CancellationToken ct2) =>
+                {
+                    actualArg2 = arg2;
+                    actualArg3 = arg3;
+                    actualKernel2 = kernel2;
+                    actualToken2 = ct2;
+                    return "Return2";
+                }, "Function2"),
+            ]);
+
+        Kernel? kernel = withKernel ? new Kernel() : null;
+        AIFunction[] funcs = plugin.AsAIFunctions(kernel).ToArray();
+        Assert.Equal(2, funcs.Length);
+
+        Assert.Equal("PluginName_Function1", funcs[0].Metadata.Name);
+        Assert.Equal("PluginName_Function2", funcs[1].Metadata.Name);
+
+        Assert.Equal("arg1", Assert.Single(funcs[0].Metadata.Parameters).Name);
+        Assert.Equal(2, funcs[1].Metadata.Parameters.Count);
+        Assert.Equal("arg2", funcs[1].Metadata.Parameters[0].Name);
+        Assert.Equal("arg3", funcs[1].Metadata.Parameters[1].Name);
+
+        Assert.NotNull(funcs[0].Metadata.Parameters[0].Schema);
+        Assert.NotNull(funcs[1].Metadata.Parameters[0].Schema);
+        Assert.NotNull(funcs[1].Metadata.Parameters[1].Schema);
+
+        Assert.Equal(plugin["Function1"].Metadata.Parameters[0].Schema?.ToString(), funcs[0].Metadata.Parameters[0].Schema?.ToString());
+        Assert.Equal(plugin["Function2"].Metadata.Parameters[0].Schema?.ToString(), funcs[1].Metadata.Parameters[0].Schema?.ToString());
+        Assert.Equal(plugin["Function2"].Metadata.Parameters[1].Schema?.ToString(), funcs[1].Metadata.Parameters[1].Schema?.ToString());
+
+        using CancellationTokenSource cts = new();
+
+        JsonElement return1 = Assert.IsType<JsonElement>(await funcs[0].InvokeAsync(
+            [KeyValuePair.Create("arg1", (object?)"value1")],
+            cts.Token));
+        Assert.Equal("Return1", return1.ToString());
+
+        JsonElement return2 = Assert.IsType<JsonElement>(await funcs[1].InvokeAsync(
+            [KeyValuePair.Create("arg2", (object?)42), KeyValuePair.Create("arg3", (object?)84.0)],
+            cts.Token));
+        Assert.Equal("Return2", return2.ToString());
+
+        Assert.Equal("value1", actualArg1);
+        Assert.Equal(42, actualArg2);
+        Assert.Equal(84.0, actualArg3);
+
+        Assert.NotNull(actualKernel1);
+        Assert.NotNull(actualKernel2);
+        Assert.Equal(withKernel, ReferenceEquals(actualKernel1, kernel));
+        Assert.Equal(withKernel, ReferenceEquals(actualKernel2, kernel));
+
+        Assert.Equal(cts.Token, actualToken1);
+        Assert.Equal(cts.Token, actualToken2);
     }
 }
