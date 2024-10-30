@@ -48,7 +48,7 @@ public class ProcessBuilderTests
 
     /// <summary>
     /// Tests that ensures when adding steps to builder, step names are not duplicated.<br/>
-    /// For state persistance step names must be unique to ensure they can be mapped correctly when restoring from save state.
+    /// For state persistence step names must be unique to ensure they can be mapped correctly when restoring from save state.
     /// </summary>
     [Fact]
     public void InvalidOperationExceptionOnAddStepWithSameStepName()
@@ -89,7 +89,7 @@ public class ProcessBuilderTests
 
     /// <summary>
     /// Tests that ensures when adding process steps to builder, step names are not duplicated.<br/>
-    /// For state persistance step names must be unique to ensure they can be mapped correctly when restoring from save state.
+    /// For state persistence step names must be unique to ensure they can be mapped correctly when restoring from save state.
     /// </summary>
     [Fact]
     public void InvalidOperationExceptionOnAddSubprocessWithSameStepName()
