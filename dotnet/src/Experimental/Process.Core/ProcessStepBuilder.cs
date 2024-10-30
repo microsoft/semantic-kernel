@@ -235,8 +235,9 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
                 throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
             }
 
+            var initialState = this._initialState ?? Activator.CreateInstance(userStateType);
             stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, this.Id);
-            stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, this._initialState);
+            stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, initialState);
         }
         else
         {

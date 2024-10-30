@@ -3,6 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using System.Linq;
 
 namespace Microsoft.SemanticKernel;
 
@@ -16,7 +20,7 @@ public record KernelProcessStepState
     /// <summary>
     /// A set of known types that may be used in serialization.
     /// </summary>
-    private readonly static HashSet<Type> s_knownTypes = [];
+    internal readonly static HashSet<Type> s_knownTypes = [];
 
     /// <summary>
     /// Used to dynamically provide the set of known types for serialization.
@@ -47,6 +51,12 @@ public record KernelProcessStepState
     /// </summary>
     [DataMember]
     public string Name { get; init; }
+
+    /// <summary>
+    /// Used to dynamically provide the set of known types for serialization.
+    /// </summary>
+    /// <returns></returns>
+    public static IJsonTypeInfoResolver JsonTypeInfoResolver => new ProcessStatePolymorphicTypeResolver();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepState"/> class.
@@ -87,5 +97,37 @@ public sealed record KernelProcessStepState<TState> : KernelProcessStepState whe
 
         this.Id = id;
         this.Name = name;
+    }
+}
+
+/// <summary>
+/// IJsonTypeInfoResolver implementation that provides polymorphic serialization support for <see cref="KernelProcessStepState"/>.
+/// </summary>
+public sealed class ProcessStatePolymorphicTypeResolver : DefaultJsonTypeInfoResolver
+{
+    /// <inheritdoc>
+    public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
+    {
+        JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
+
+        Type baseType = typeof(KernelProcessStepState);
+        if (jsonTypeInfo.Type == baseType)
+        {
+            var uniqueTypes = KernelProcessStepState.s_knownTypes;
+            uniqueTypes.Add(typeof(KernelProcessState));
+            var derivedTypes = new List<Type>(uniqueTypes.Distinct());
+            var jsonDerivedTypes = derivedTypes.Select(t => new JsonDerivedType(t, t.Name)).ToList();
+
+            jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
+            {
+                TypeDiscriminatorPropertyName = "$state-type",
+                IgnoreUnrecognizedTypeDiscriminators = true,
+                UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization
+            };
+
+            jsonTypeInfo.PolymorphismOptions.DerivedTypes.AddRange(jsonDerivedTypes);
+        }
+
+        return jsonTypeInfo;
     }
 }

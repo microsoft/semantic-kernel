@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0005 // Using directive is unnecessary.
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
+#pragma warning restore IDE0005 // Using directive is unnecessary.
 
 namespace SemanticKernel.Process.IntegrationTests;
 
@@ -375,8 +378,10 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     /// <summary>
     /// The state object for the repeat and fanIn step.
     /// </summary>
+    [DataContract]
     private sealed record StepState
     {
+        [DataMember]
         public string? LastMessage { get; set; }
     }
 

@@ -17,7 +17,7 @@ public sealed record DaprProcessInfo : DaprStepInfo
     /// <summary>
     /// The collection of Steps in the Process.
     /// </summary>
-    public required IList<DaprStepInfo> Steps { get; init; }
+    public required List<DaprStepInfo> Steps { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcess"/> class from this instance of <see cref="DaprProcessInfo"/>.
