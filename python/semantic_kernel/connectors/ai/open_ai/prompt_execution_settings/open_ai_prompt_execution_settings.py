@@ -68,6 +68,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     functions: list[dict[str, Any]] | None = None
     messages: list[dict[str, Any]] | None = None
     function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
+    parallel_tool_calls: bool = True
     tools: list[dict[str, Any]] | None = Field(
         None,
         max_length=64,
