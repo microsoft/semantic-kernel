@@ -28,5 +28,11 @@ Describe the impact of this feature on your work or project. This can help prior
 **Related Issues**
 If there are any related issues or pull requests, please link to them here.
 
+**Best Practices Adherence**
+Please confirm that the feature request adheres to the best practices outlined in the repository's documentation.
+
+**Approval Status**
+Indicate whether the feature request has been reviewed and approved by a trusted person. Provide the name of the approver if applicable.
+
 **Additional Information**
 Any other information that may be helpful in understanding and implementing the feature request.

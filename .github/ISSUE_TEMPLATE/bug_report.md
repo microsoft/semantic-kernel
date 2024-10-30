@@ -57,5 +57,11 @@ Indicate how often the issue occurs. Is it consistent or intermittent?
 **Related Issues**
 If there are any related issues or pull requests, please link to them here.
 
+**Best Practices Adherence**
+Please confirm that the code changes adhere to the best practices outlined in the repository's documentation.
+
+**Approval Status**
+Indicate whether the resolved issue has been reviewed and approved by a trusted person. Provide the name of the approver if applicable.
+
 **Additional Information**
 Any other information that may be helpful in diagnosing and resolving the issue.

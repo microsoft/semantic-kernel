@@ -20,3 +20,16 @@ jobs:
           days-before-pr-stale: -1
           days-before-pr-close: -1
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check for best practices adherence
+        if: github.event.issue
+        run: |
+          if ! grep -q "Best Practices Adherence: true" <<< "${{ github.event.issue.body }}"; then
+            echo "Issue does not adhere to best practices. Skipping closure."
+            exit 1
+          fi
+      - name: Verify approval status
+        if: github.event.issue
+        run: |
+          if ! grep -q "Approval Status: Approved" <<< "${{ github.event.issue.body }}"; then
+            echo "Issue has not been approved by a trusted person. Skipping closure."
+            exit 1

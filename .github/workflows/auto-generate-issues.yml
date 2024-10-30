@@ -1,0 +1,27 @@
+name: Auto Generate Issues
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  generate-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Generate issues
+        run: |
+          echo "Generating issues based on predefined criteria and templates..."
+          # Add your logic here to generate issues based on predefined criteria and templates
+
+      - name: Ensure best practices adherence
+        run: |
+          echo "Ensuring generated issues adhere to best practices..."
+          # Add your logic here to ensure generated issues adhere to best practices
+
+      - name: Notify trusted people for approval
+        run: |
+          echo "Notifying trusted people for approval..."
+          # Add your logic here to notify trusted people for approval
