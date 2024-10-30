@@ -26,12 +26,19 @@ KernelPlugin plugin = await kernel.ImportPluginFromOpenApiAsync("<plugin-name>",
 // Create the payload for the createEvent function
 string payload = """
 {
-  "subject": "IT Meeting",
-  "start": {
-    "dateTime": "2023-10-01T10:00:00",
-    "timeZone": "UTC"
-  },
-  "duration": "PT1H",
+    "subject": "IT Meeting",
+    "start": {
+        "dateTime": "2023-10-01T10:00:00",
+        "timeZone": "UTC"
+    },
+    "end": {
+        "dateTime": "2023-10-01T11:00:00",
+        "timeZone": "UTC"
+    },
+    "tags": [
+        { "name": "IT" },
+        { "name": "Meeting" }
+    ]
 }
 """;
 
@@ -67,6 +74,7 @@ KernelPlugin plugin = await kernel.ImportPluginFromOpenApiAsync("<plugin-name>",
 //        "dateTime": "...",
 //        "timeZone": "..."
 //     },
+//    "duration": "PT1H",
 //    "tags":[{
 //        "name": "...",
 //      }
@@ -79,6 +87,7 @@ KernelArguments arguments = new()
     ["subject"] = "IT Meeting",
     ["dateTime"] = DateTimeOffset.Parse("2023-10-01T10:00:00"),
     ["timeZone"] = "UTC",
+    ["duration"] = "PT1H",
     ["tags"] = new[] { new Tag("work"), new Tag("important") }
 };
 

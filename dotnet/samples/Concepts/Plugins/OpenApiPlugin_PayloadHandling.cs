@@ -256,10 +256,6 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         //   Name: "tags"
         //   Description: "A list of tags to help categorize the meeting."
         //   ParameterType: null
-        // Parameter[3]
-        //   Name: "tags"
-        //   Description: "A list of tags to help categorize the meeting."
-        //   ParameterType: null
         //   Schema: {
         //      "type": "array",
         //      "items": {
@@ -279,10 +275,10 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         KernelArguments arguments = new()
         {
             ["subject"] = "IT Meeting",
-            ["start_dateTime"] = "2023-10-01T10:00:00",
-            ["start_timeZone"] = "UTC",
-            ["end_dateTime"] = "2023-10-01T11:00:00",
-            ["end_timeZone"] = "UTC",
+            ["start.dateTime"] = "2023-10-01T10:00:00",
+            ["start.timeZone"] = "UTC",
+            ["end.dateTime"] = "2023-10-01T11:00:00",
+            ["end.timeZone"] = "UTC",
             ["tags"] = """[ { "name": "IT" }, { "name": "Meeting" }  ]"""
         };
 
