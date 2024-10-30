@@ -89,6 +89,34 @@ async def test_cmc(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=False,
+        parallel_tool_calls=True,
+        messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_parallel_tool_calls_disabled(
+    mock_create,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    mock_chat_completion_response: ChatCompletion,
+    openai_unit_test_env,
+):
+    mock_create.return_value = mock_chat_completion_response
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id", parallel_tool_calls=False
+    )
+
+    openai_chat_completion = OpenAIChatCompletion()
+    await openai_chat_completion.get_chat_message_contents(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    )
+    mock_create.assert_awaited_once_with(
+        model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
+        stream=False,
+        parallel_tool_calls=False,
         messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
     )
 
@@ -113,6 +141,7 @@ async def test_cmc_singular(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=False,
+        parallel_tool_calls=True,
         messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
     )
 
@@ -137,6 +166,7 @@ async def test_cmc_prompt_execution_settings(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=False,
+        parallel_tool_calls=True,
         messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
     )
 
@@ -187,6 +217,7 @@ async def test_cmc_function_call_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=False,
+            parallel_tool_calls=True,
             messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
         )
         mock_process_function_call.assert_awaited()
@@ -238,6 +269,7 @@ async def test_cmc_function_choice_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=False,
+            parallel_tool_calls=True,
             messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
         )
         mock_process_function_call.assert_awaited()
@@ -317,6 +349,7 @@ async def test_cmc_no_fcc_in_response(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=False,
+        parallel_tool_calls=True,
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
     )
 
@@ -413,6 +446,7 @@ async def test_scmc_prompt_execution_settings(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        parallel_tool_calls=True,
         stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
     )
@@ -481,6 +515,55 @@ async def test_scmc(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        parallel_tool_calls=True,
+        stream_options={"include_usage": True},
+        messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_scmc_parallel_tool_calls_disabled(
+    mock_create,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    openai_unit_test_env,
+):
+    content1 = ChatCompletionChunk(
+        id="test_id",
+        choices=[],
+        created=0,
+        model="test",
+        object="chat.completion.chunk",
+    )
+    content2 = ChatCompletionChunk(
+        id="test_id",
+        choices=[ChunkChoice(index=0, delta=ChunkChoiceDelta(content="test", role="assistant"), finish_reason="stop")],
+        created=0,
+        model="test",
+        object="chat.completion.chunk",
+    )
+    stream = MagicMock(spec=AsyncStream)
+    stream.__aiter__.return_value = [content1, content2]
+    mock_create.return_value = stream
+    chat_history.add_user_message("hello world")
+    orig_chat_history = deepcopy(chat_history)
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(
+        service_id="test_service_id", parallel_tool_calls=False
+    )
+
+    openai_chat_completion = OpenAIChatCompletion()
+    async for msg in openai_chat_completion.get_streaming_chat_message_contents(
+        chat_history=chat_history,
+        settings=complete_prompt_execution_settings,
+        kernel=kernel,
+        arguments=KernelArguments(),
+    ):
+        assert isinstance(msg[0], StreamingChatMessageContent)
+    mock_create.assert_awaited_once_with(
+        model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
+        stream=True,
+        parallel_tool_calls=False,
         stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
     )
@@ -526,6 +609,7 @@ async def test_scmc_singular(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        parallel_tool_calls=True,
         stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
     )
@@ -606,6 +690,7 @@ async def test_scmc_function_call_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=True,
+            parallel_tool_calls=True,
             stream_options={"include_usage": True},
             messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
         )
@@ -642,6 +727,7 @@ async def test_scmc_function_choice_behavior(
         mock_create.assert_awaited_once_with(
             model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
             stream=True,
+            parallel_tool_calls=True,
             stream_options={"include_usage": True},
             messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
         )
@@ -713,6 +799,7 @@ async def test_scmc_no_fcc_in_response(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        parallel_tool_calls=True,
         stream_options={"include_usage": True},
         messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
     )
@@ -816,6 +903,7 @@ async def test_tc(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=False,
+        parallel_tool_calls=True,
         messages=[{"role": "user", "content": "test"}],
     )
 
@@ -838,6 +926,7 @@ async def test_stc(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        parallel_tool_calls=True,
         messages=[{"role": "user", "content": "test"}],
     )
 
@@ -862,6 +951,7 @@ async def test_stc_with_msgs(
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,
+        parallel_tool_calls=True,
         messages=[{"role": "system", "content": "system prompt"}, {"role": "user", "content": "test"}],
     )
 

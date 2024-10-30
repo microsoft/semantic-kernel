@@ -186,6 +186,34 @@ async def test_cmc(
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         stream=False,
+        parallel_tool_calls=True,
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_parallel_tool_calls_disabled(
+    mock_create,
+    kernel: Kernel,
+    azure_openai_unit_test_env,
+    chat_history: ChatHistory,
+    mock_chat_completion_response: ChatCompletion,
+) -> None:
+    mock_create.return_value = mock_chat_completion_response
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
+        service_id="test_service_id", parallel_tool_calls=False
+    )
+
+    azure_chat_completion = AzureChatCompletion()
+    await azure_chat_completion.get_chat_message_contents(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    )
+    mock_create.assert_awaited_once_with(
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+        stream=False,
+        parallel_tool_calls=False,
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
     )
 
@@ -217,6 +245,7 @@ async def test_cmc_with_logit_bias(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
+        parallel_tool_calls=True,
         logit_bias=token_bias,
     )
 
@@ -245,6 +274,7 @@ async def test_cmc_with_stop(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
+        parallel_tool_calls=True,
         stop=stop,
     )
 
@@ -314,6 +344,7 @@ async def test_azure_on_your_data(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
         stream=False,
+        parallel_tool_calls=True,
         extra_body=expected_data_settings,
     )
 
@@ -383,6 +414,7 @@ async def test_azure_on_your_data_string(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
         stream=False,
+        parallel_tool_calls=True,
         extra_body=expected_data_settings,
     )
 
@@ -441,6 +473,7 @@ async def test_azure_on_your_data_fail(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
         stream=False,
+        parallel_tool_calls=True,
         extra_body=expected_data_settings,
     )
 
@@ -542,6 +575,7 @@ async def test_cmc_function_calling(
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
         functions=functions,
+        parallel_tool_calls=True,
         function_call=complete_prompt_execution_settings.function_call,
     )
 
@@ -592,6 +626,7 @@ async def test_cmc_tool_calling(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
+        parallel_tool_calls=True,
     )
 
 
@@ -787,5 +822,34 @@ async def test_cmc_streaming(
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         stream=True,
+        parallel_tool_calls=True,
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_streaming_parallel_tool_calls_disabled(
+    mock_create,
+    kernel: Kernel,
+    azure_openai_unit_test_env,
+    chat_history: ChatHistory,
+    mock_streaming_chat_completion_response: AsyncStream[ChatCompletionChunk],
+) -> None:
+    mock_create.return_value = mock_streaming_chat_completion_response
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
+        service_id="test_service_id", parallel_tool_calls=False
+    )
+
+    azure_chat_completion = AzureChatCompletion()
+    async for msg in azure_chat_completion.get_streaming_chat_message_contents(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    ):
+        assert msg is not None
+    mock_create.assert_awaited_once_with(
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+        stream=True,
+        parallel_tool_calls=False,
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
     )
