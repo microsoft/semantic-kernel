@@ -861,7 +861,9 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     [InlineData("string", "random")]
     [InlineData("JsonElement.String", "\"json_object\"")]
     [InlineData("JsonElement.String", "\"text\"")]
-    [InlineData("JsonElement.String", "\"random\"")]
+    [InlineData("JsonElement.String", """
+        {"type":"string"}
+        """)]
     [InlineData("ChatResponseFormat", "json_object")]
     [InlineData("ChatResponseFormat", "text")]
     public async Task GetChatMessageInResponseFormatsAsync(string formatType, string formatValue)
