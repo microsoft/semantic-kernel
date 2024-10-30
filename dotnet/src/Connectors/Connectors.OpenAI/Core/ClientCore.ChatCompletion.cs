@@ -529,21 +529,24 @@ internal partial class ClientCore
 
             case JsonElement formatElement:
                 // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
-                // Handling only string formatElement.
                 if (formatElement.ValueKind == JsonValueKind.String)
                 {
-                    string formatString = formatElement.GetString() ?? "";
-                    switch (formatString)
+                    switch (formatElement.GetString())
                     {
                         case "json_object":
                             return ChatResponseFormat.CreateJsonObjectFormat();
 
+                        case null:
+                        case "":
                         case "text":
                             return ChatResponseFormat.CreateTextFormat();
                     }
                 }
 
-                break;
+                return ChatResponseFormat.CreateJsonSchemaFormat(
+                    "JsonSchema",
+                    new BinaryData(Encoding.UTF8.GetBytes(formatElement.ToString())));
+
             case Type formatObjectType:
                 return GetJsonSchemaResponseFormat(formatObjectType);
         }
