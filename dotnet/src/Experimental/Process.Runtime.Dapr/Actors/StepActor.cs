@@ -17,11 +17,6 @@ namespace Microsoft.SemanticKernel;
 
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 {
-    /// <summary>
-    /// The generic state type for a process step.
-    /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
-
     private readonly Lazy<ValueTask> _activateTask;
 
     private DaprStepInfo? _stepInfo;
@@ -328,7 +323,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels();
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
@@ -345,32 +340,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
         else
         {
+            stateType = this._innerStepType.ExtractStateType(out Type? userStateType, this._logger);
             stateObject = this._stepInfo.State;
-            if (TryGetSubtypeOfStatefulStep(this._innerStepType, out Type? genericStepType) && genericStepType is not null)
-            {
-                // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
-                // and create an instance of the corresponding KernelProcessStepState<>.
-                var userStateType = genericStepType.GetGenericArguments()[0];
-                if (userStateType is null)
-                {
-                    var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                    this._logger?.LogError("{ErrorMessage}", errorMessage);
-                    throw new KernelException(errorMessage);
-                }
-
-                stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
-                if (stateType is null)
-                {
-                    var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                    this._logger?.LogError("{ErrorMessage}", errorMessage);
-                    throw new KernelException(errorMessage);
-                }
-            }
-            else
-            {
-                // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-                stateType = typeof(KernelProcessStepState);
-            }
 
             // Persist the state type and type object.
             await this.StateManager.AddStateAsync(ActorStateKeys.StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
@@ -398,74 +369,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         this._stepStateType = stateType;
         methodInfo.Invoke(stepInstance, [stateObject]);
         await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Examines the KernelFunction for the step and creates a dictionary of input channels.
-    /// Some types such as KernelProcessStepContext are special and need to be injected into
-    /// the function parameter. Those objects are instantiated at this point.
-    /// </summary>
-    /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    private Dictionary<string, Dictionary<string, object?>?> FindInputChannels()
-    {
-        if (this._functions is null)
-        {
-            var errorMessage = "Internal Error: The step has not been initialized.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
-        }
-
-        Dictionary<string, Dictionary<string, object?>?> inputs = new();
-        foreach (var kvp in this._functions)
-        {
-            inputs[kvp.Key] = new();
-            foreach (var param in kvp.Value.Metadata.Parameters)
-            {
-                // Optional parameters are should not be added to the input dictionary.
-                if (!param.IsRequired)
-                {
-                    continue;
-                }
-
-                // Parameters of type KernelProcessStepContext are injected by the process
-                // and are instantiated here.
-                if (param.ParameterType == typeof(KernelProcessStepContext))
-                {
-                    inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(this);
-                }
-                else
-                {
-                    inputs[kvp.Key]![param.Name] = null;
-                }
-            }
-        }
-
-        return inputs;
-    }
-
-    /// <summary>
-    /// Attempts to find an instance of <![CDATA['KernelProcessStep<>']]> within the provided types hierarchy.
-    /// </summary>
-    /// <param name="type">The type to examine.</param>
-    /// <param name="genericStateType">The matching type if found, otherwise null.</param>
-    /// <returns>True if a match is found, false otherwise.</returns>
-    /// TODO: Move this to a share process utilities project.
-    private static bool TryGetSubtypeOfStatefulStep(Type? type, out Type? genericStateType)
-    {
-        while (type != null && type != typeof(object))
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == s_genericType)
-            {
-                genericStateType = type;
-                return true;
-            }
-
-            type = type.BaseType;
-        }
-
-        genericStateType = null;
-        return false;
     }
 
     /// <summary>

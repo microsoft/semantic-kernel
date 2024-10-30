@@ -18,8 +18,22 @@ class KernelProcessStepContext(KernelBaseModel):
         """Initialize the step context."""
         super().__init__(step_message_channel=channel)
 
-    def emit_event(self, process_event: "KernelProcessEvent") -> None:
-        """Emit an event from the current step."""
+    async def emit_event(self, process_event: "KernelProcessEvent | str", **kwargs) -> None:
+        """Emit an event from the current step.
+
+        It is possible to either specify a `KernelProcessEvent` object or the ID of the event
+        along with the `data` and optional `visibility` keyword arguments.
+
+        Args:
+            process_event (KernelProcessEvent | str): The event to emit.
+            **kwargs: Additional keyword arguments to pass to the event.
+        """
+        from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
+
         if process_event is None:
             raise ProcessEventUndefinedException("Process event cannot be None")
-        self.step_message_channel.emit_event(process_event)
+
+        if not isinstance(process_event, KernelProcessEvent):
+            process_event = KernelProcessEvent(id=process_event, **kwargs)
+
+        await self.step_message_channel.emit_event(process_event)
