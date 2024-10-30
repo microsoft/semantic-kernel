@@ -32,7 +32,7 @@ class EventBufferActor(Actor, MessageBuffer, KernelBaseModel):
         """
         self.queue.put(message)
 
-        await self._state_manager.add_or_update_state(ActorStateKeys.EventQueueState.value, self.queue)
+        await self._state_manager.set_state(ActorStateKeys.EventQueueState.value, self.queue)
         await self._state_manager.save_state()
 
     async def dequeue_all(self) -> "list[ProcessMessage]":
@@ -45,7 +45,7 @@ class EventBufferActor(Actor, MessageBuffer, KernelBaseModel):
         while not self.queue.empty():
             items.append(self.queue.get())
 
-        await self._state_manager.add_or_update_state(ActorStateKeys.EventQueueState.value, self.queue)
+        await self._state_manager.set_state(ActorStateKeys.EventQueueState.value, self.queue)
         await self._state_manager.save_state()
 
         return items

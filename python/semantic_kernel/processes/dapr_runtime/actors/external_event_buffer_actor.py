@@ -33,7 +33,7 @@ class ExternalEventBufferActor(Actor, ExternalEventBuffer, KernelBaseModel):
         """
         self.queue.put(message)
 
-        await self._state_manager.add_or_update_state(ActorStateKeys.ExternalEventQueueState.value, self.queue)
+        await self._state_manager.set_state(ActorStateKeys.ExternalEventQueueState.value, self.queue)
         await self._state_manager.save_state()
 
     async def dequeue_all(self) -> "list[KernelProcessEvent]":
@@ -46,7 +46,7 @@ class ExternalEventBufferActor(Actor, ExternalEventBuffer, KernelBaseModel):
         while not self.queue.empty():
             items.append(self.queue.get())
 
-        await self._state_manager.add_or_update_state(ActorStateKeys.ExternalEventQueueState.value, self.queue)
+        await self._state_manager.set_state(ActorStateKeys.ExternalEventQueueState.value, self.queue)
         await self._state_manager.save_state()
 
         return items

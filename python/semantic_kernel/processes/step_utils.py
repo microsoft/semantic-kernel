@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from typing import Any
 
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -6,14 +8,14 @@ from semantic_kernel.processes.kernel_process.kernel_process_step_context import
 
 
 def find_input_channels(
-    channel: KernelProcessMessageChannel, function: dict[str, KernelFunction]
+    channel: KernelProcessMessageChannel, functions: dict[str, KernelFunction]
 ) -> dict[str, dict[str, Any | None]]:
     """Finds and creates input channels."""
-    if not self.functions:
+    if not functions:
         raise ValueError("The step has not been initialized.")
 
     inputs: dict[str, Any] = {}
-    for name, function in self.functions.items():
+    for name, function in functions.items():
         inputs[name] = {}
         for param in function.metadata.parameters:
             # Check for Kernel, and skip if necessary, since it is populated later on
@@ -22,7 +24,7 @@ def find_input_channels(
             if not param.is_required:
                 continue
             if param.type_ == "KernelProcessStepContext":
-                inputs[name][param.name] = KernelProcessStepContext(self)
+                inputs[name][param.name] = KernelProcessStepContext(channel)
             else:
                 inputs[name][param.name] = None
 
