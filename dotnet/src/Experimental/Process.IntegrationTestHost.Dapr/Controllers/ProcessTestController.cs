@@ -36,29 +36,22 @@ public class ProcessTestController : Controller
     [HttpPost("processes/{processId}/start")]
     public async Task<IActionResult> StartProcessAsync(string processId, [FromBody] ProcessStartRequest request)
     {
-        try
+        if (s_processes.ContainsKey(processId))
         {
-            if (s_processes.ContainsKey(processId))
-            {
-                return this.BadRequest("Process already started");
-            }
-
-            if (request.InitialEvent?.Data is JsonElement jsonElement)
-            {
-                object? data = jsonElement.Deserialize<string>();
-                request.InitialEvent = request.InitialEvent with { Data = data };
-            }
-
-            var kernelProcess = request.Process.ToKernelProcess();
-            var context = await kernelProcess.StartAsync(this._kernel, request.InitialEvent!);
-            s_processes.Add(processId, context);
-
-            return this.Ok();
+            return this.BadRequest("Process already started");
         }
-        catch (Exception ex)
+
+        if (request.InitialEvent?.Data is JsonElement jsonElement)
         {
-            throw;
+            object? data = jsonElement.Deserialize<string>();
+            request.InitialEvent = request.InitialEvent with { Data = data };
         }
+
+        var kernelProcess = request.Process.ToKernelProcess();
+        var context = await kernelProcess.StartAsync(this._kernel, request.InitialEvent!);
+        s_processes.Add(processId, context);
+
+        return this.Ok();
     }
 
     /// <summary>
@@ -89,16 +82,8 @@ public class ProcessTestController : Controller
     [HttpGet("daprHealth")]
     public async Task<IActionResult> HealthCheckAsync()
     {
-        try
-        {
-            var healthActor = ActorProxy.Create<IHealthActor>(new Dapr.Actors.ActorId(Guid.NewGuid().ToString("n")), nameof(HealthActor));
-            await healthActor.HealthCheckAsync();
-            return this.Ok();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"####### Health check failed with exception of type '{ex.GetType().Name}'.");
-            return this.NotFound();
-        }
+        var healthActor = ActorProxy.Create<IHealthActor>(new Dapr.Actors.ActorId(Guid.NewGuid().ToString("n")), nameof(HealthActor));
+        await healthActor.HealthCheckAsync();
+        return this.Ok();
     }
 }

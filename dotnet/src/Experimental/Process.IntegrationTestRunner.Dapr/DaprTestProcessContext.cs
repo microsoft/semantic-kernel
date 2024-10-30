@@ -58,20 +58,13 @@ internal class DaprTestProcessContext : KernelProcessContext
 
     public override async Task<KernelProcess> GetStateAsync()
     {
-        var response = await this._httpClient.GetAsync(new Uri($"http://localhost:5200/processes/{this._processId}"));
-        if (!response.IsSuccessStatusCode)
+        var response = await this._httpClient.GetFromJsonAsync<DaprProcessInfo>($"http://localhost:5200/processes/{this._processId}", options: this._serializerOptions);
+        if (response == null)
         {
-            throw new InvalidOperationException("Failed to retrieve process.");
+            throw new InvalidOperationException("Process not found");
         }
 
-        var stringRes = await response.Content.ReadAsStringAsync();
-        var daprProcess = JsonSerializer.Deserialize<DaprProcessInfo>(stringRes, options: this._serializerOptions);
-        if (daprProcess == null)
-        {
-            throw new InvalidOperationException("Failed to retrieve process.");
-        }
-
-        return daprProcess.ToKernelProcess();
+        return response.ToKernelProcess();
     }
 
     public override Task SendEventAsync(KernelProcessEvent processEvent)
