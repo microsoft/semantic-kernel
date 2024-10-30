@@ -2,8 +2,9 @@
 
 import asyncio
 import os
+from enum import Enum
 from functools import reduce
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -12,30 +13,63 @@ from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.core_plugins.math_plugin import MathPlugin
-from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
 
 
+class Coordinates:
+    lat: float
+    lon: float
+
+    def __init__(self, lat: float, lon: float):
+        self.lat = lat
+        self.lon = lon
+
+
+class Status(Enum):
+    HOTELS = "hotels"
+    ATTRACTIONS = "attractions"
+    RESTAURANTS = "restaurants"
+    GEOS = "geos"
+
+
+class Location:
+    name: str
+    coordinates: Coordinates
+    status: list[Status]
+
+    def __init__(self, name: str, coordinates: Coordinates, status: list[Status]):
+        self.name = name
+        self.coordinates = coordinates
+        self.status = status
+
+
+class TravelPlugin:
+    @kernel_function(name="search", description="Provides the coordinates for locations using fuzzy search.")
+    def search(
+        self,
+        query: Annotated[str, "the name of the location to search for"],
+        coordinates: Annotated[Coordinates, "lat/lon coordinates to search around"],
+        radius: Annotated[int | None, "the radius to search within in meters"] = 1,
+        categories: Annotated[list[Status] | None, "categories to search for"] = None,
+    ) -> list[Location]:
+        return [
+            Location(
+                name="Space Needle", coordinates=Coordinates(lat=47.6205, lon=-122.3493), status=[Status.ATTRACTIONS]
+            ),
+        ]
+
+
 system_message = """
-You are a chat bot. Your name is Mosscap and
-you have one goal: figure out what people need.
-Your full name, should you need to know it, is
-Splendid Speckled Mosscap. You communicate
-effectively, but you tend to answer with long
-flowery prose. You are also a math wizard,
-especially for adding and subtracting.
-You also excel at joke telling, where your tone is often sarcastic.
-Once you have the answer I am looking for,
-you will return a full answer to me as soon as possible.
+You are a chat bot who helps users find information about travel destinations.
 """
 
 # This concept example shows how to handle both streaming and non-streaming responses
 # To toggle the behavior, set the following flag accordingly:
-stream = True
+stream = False
 
 kernel = Kernel()
 
@@ -44,8 +78,9 @@ kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
-kernel.add_plugin(MathPlugin(), plugin_name="math")
-kernel.add_plugin(TimePlugin(), plugin_name="time")
+# kernel.add_plugin(MathPlugin(), plugin_name="math")
+# kernel.add_plugin(TimePlugin(), plugin_name="time")
+kernel.add_plugin(TravelPlugin(), plugin_name="travel")
 
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
@@ -83,7 +118,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(auto_invoke=True),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["travel"]}),
 )
 
 history = ChatHistory()

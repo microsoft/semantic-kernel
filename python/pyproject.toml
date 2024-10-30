@@ -116,6 +116,9 @@ pandas = [
 aws = [
     "boto3>=1.28.57",
 ]
+dapr = [
+    "dapr>=1.14.0",
+]
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"
