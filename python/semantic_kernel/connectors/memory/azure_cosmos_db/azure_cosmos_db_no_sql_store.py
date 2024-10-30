@@ -9,22 +9,16 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from pydantic import ValidationError
+from azure.cosmos.aio import CosmosClient
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_base import AzureCosmosDBNoSQLBase
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
     AzureCosmosDBNoSQLCollection,
 )
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_settings import (
-    AzureCosmosDBNoSQLSettings,
-)
 from semantic_kernel.data.vector_store import VectorStore
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import (
-    MemoryConnectorException,
-    MemoryConnectorInitializationError,
-)
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 TModel = TypeVar("TModel")
@@ -39,6 +33,7 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
         database_name: str,
         url: str | None = None,
         key: str | None = None,
+        cosmos_client: CosmosClient | None = None,
         create_database: bool = False,
     ):
         """Initialize the AzureCosmosDBNoSQLStore.
@@ -48,17 +43,16 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
                                  If it does not exist, it will be created when the first collection is created.
             url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
             key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
+            cosmos_client (CosmosClient): The custom Azure Cosmos DB NoSQL client whose lifetime is managed by the user.
+                                          Defaults to None.
             create_database (bool): If True, the database will be created if it does not exist.
                                     Defaults to False.
         """
-        try:
-            cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
-        except ValidationError as e:
-            raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
-
         super().__init__(
-            cosmos_db_nosql_settings=cosmos_db_nosql_settings,
             database_name=database_name,
+            url=url,
+            key=key,
+            cosmos_client=cosmos_client,
             create_database=create_database,
         )
 
@@ -76,6 +70,7 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
                 self.database_name,
                 collection_name,
                 data_model_definition=data_model_definition,
+                cosmos_client=self.cosmos_client,
                 create_database=self.create_database,
                 **kwargs,
             )
@@ -84,10 +79,9 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
 
     @override
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
-        async with self._get_cosmos_client() as cosmos_client:
-            try:
-                database = await self._get_database_proxy(cosmos_client)
-                containers = database.list_containers()
-                return [container["id"] async for container in containers]
-            except Exception as e:
-                raise MemoryConnectorException("Failed to list collection names.") from e
+        try:
+            database = await self._get_database_proxy()
+            containers = database.list_containers()
+            return [container["id"] async for container in containers]
+        except Exception as e:
+            raise MemoryConnectorException("Failed to list collection names.") from e

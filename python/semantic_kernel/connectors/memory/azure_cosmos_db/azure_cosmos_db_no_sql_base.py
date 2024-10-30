@@ -2,10 +2,14 @@
 
 from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
-from azure.identity.aio import DefaultAzureCredential
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_settings import AzureCosmosDBNoSQLSettings
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorResourceNotFound
+from semantic_kernel.connectors.memory.azure_cosmos_db.utils import CosmosClientWrapper, DefaultAzureCredentialWrapper
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorInitializationError,
+    MemoryConnectorResourceNotFound,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -14,52 +18,82 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class AzureCosmosDBNoSQLBase(KernelBaseModel):
     """An Azure Cosmos DB NoSQL collection stores documents in a Azure Cosmos DB NoSQL account."""
 
-    cosmos_db_nosql_settings: AzureCosmosDBNoSQLSettings
+    cosmos_client: CosmosClient
     database_name: str
     # If create_database is True, the database will be created
     # if it does not exist when an operation requires a database.
     create_database: bool
 
-    def _get_cosmos_client(self) -> CosmosClient:
-        """Gets the Cosmos client.
+    def __init__(
+        self,
+        database_name: str,
+        url: str | None = None,
+        key: str | None = None,
+        cosmos_client: CosmosClient | None = None,
+        create_database: bool = False,
+        **kwargs,
+    ):
+        """Initialize the AzureCosmosDBNoSQLBase.
 
-        We cannot cache the Cosmos client because it is only good for one context.
-        https://github.com/Azure/azure-sdk-for-python/issues/25640
+        Args:
+            database_name (str): The name of the database. The database may not exist yet.
+                                 If it does not exist, it will be created when the first collection is created.
+            url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
+            key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
+            cosmos_client (CosmosClient): The custom Azure Cosmos DB NoSQL client whose lifetime is managed by the user.
+                                          Defaults to None.
+            create_database (bool): If True, the database will be created if it does not exist.
+                                    Defaults to False.
+            kwargs: Additional keyword arguments.
         """
-        if not self.cosmos_db_nosql_settings.key:
-            return CosmosClient(str(self.cosmos_db_nosql_settings.url), credential=DefaultAzureCredential())
+        try:
+            cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
+        except ValidationError as e:
+            raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
 
-        return CosmosClient(
-            str(self.cosmos_db_nosql_settings.url),
-            credential=self.cosmos_db_nosql_settings.key.get_secret_value(),
+        if cosmos_client is None:
+            if cosmos_db_nosql_settings.key is not None:
+                cosmos_client = CosmosClientWrapper(
+                    str(cosmos_db_nosql_settings.url), credential=cosmos_db_nosql_settings.key.get_secret_value()
+                )
+            else:
+                cosmos_client = CosmosClientWrapper(
+                    str(cosmos_db_nosql_settings.url), credential=DefaultAzureCredentialWrapper()
+                )
+
+        super().__init__(
+            database_name=database_name,
+            cosmos_client=cosmos_client,
+            create_database=create_database,
+            **kwargs,
         )
 
-    async def _does_database_exist(self, cosmos_client: CosmosClient) -> bool:
+    async def _does_database_exist(self) -> bool:
         """Checks if the database exists."""
         try:
-            await cosmos_client.get_database_client(self.database_name).read()
+            await self.cosmos_client.get_database_client(self.database_name).read()
             return True
         except CosmosResourceNotFoundError:
             return False
         except Exception as e:
             raise MemoryConnectorResourceNotFound(f"Failed to check if database '{self.database_name}' exists.") from e
 
-    async def _get_database_proxy(self, cosmos_client: CosmosClient) -> DatabaseProxy:
+    async def _get_database_proxy(self) -> DatabaseProxy:
         """Gets the database proxy."""
         try:
-            if await self._does_database_exist(cosmos_client):
-                return cosmos_client.get_database_client(self.database_name)
+            if await self._does_database_exist():
+                return self.cosmos_client.get_database_client(self.database_name)
 
             if self.create_database:
-                return await cosmos_client.create_database(self.database_name)
+                return await self.cosmos_client.create_database(self.database_name)
             raise MemoryConnectorResourceNotFound(f"Database '{self.database_name}' does not exist.")
         except Exception as e:
             raise MemoryConnectorResourceNotFound(f"Failed to get database proxy for '{id}'.") from e
 
-    async def _get_container_proxy(self, container_name: str, cosmos_client: CosmosClient) -> ContainerProxy:
+    async def _get_container_proxy(self, container_name: str) -> ContainerProxy:
         """Gets the container proxy."""
         try:
-            database_proxy = await self._get_database_proxy(cosmos_client)
+            database_proxy = await self._get_database_proxy()
             return database_proxy.get_container_client(container_name)
         except Exception as e:
             raise MemoryConnectorResourceNotFound(f"Failed to get container proxy for '{container_name}'.") from e

@@ -23,8 +23,7 @@ def test_azure_cosmos_db_no_sql_store_init(
 
     assert vector_store is not None
     assert vector_store.database_name == database_name
-    assert str(vector_store.cosmos_db_nosql_settings.url) == url
-    assert vector_store.cosmos_db_nosql_settings.key.get_secret_value() == key
+    assert vector_store.cosmos_client is not None
     assert vector_store.create_database is False
 
 
@@ -34,11 +33,7 @@ def test_azure_cosmos_db_no_sql_store_init_env(azure_cosmos_db_no_sql_unit_test_
 
     assert vector_store is not None
     assert vector_store.database_name == database_name
-    assert str(vector_store.cosmos_db_nosql_settings.url) == azure_cosmos_db_no_sql_unit_test_env["COSMOS_DB_NOSQL_URL"]
-    assert (
-        vector_store.cosmos_db_nosql_settings.key.get_secret_value()
-        == azure_cosmos_db_no_sql_unit_test_env["COSMOS_DB_NOSQL_KEY"]
-    )
+    assert vector_store.cosmos_client is not None
     assert vector_store.create_database is False
 
 
@@ -74,5 +69,6 @@ def test_azure_cosmos_db_no_sql_store_get_collection(
         database_name,
         collection_name,
         data_model_definition=None,
+        cosmos_client=vector_store.cosmos_client,
         create_database=vector_store.create_database,
     )

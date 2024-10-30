@@ -1,7 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+import contextlib
 from collections.abc import Sequence
 from typing import Any
+
+from azure.cosmos.aio import CosmosClient
+from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
     AzureCosmosDBNoSQLCompositeKey,
@@ -185,3 +190,21 @@ def build_query_parameters(
         f"SELECT {select_clause} FROM c WHERE c.id IN ({', '.join([f'@id{i}' for i in range(len(keys))])})",  # nosec: B608
         [{"name": f"@id{i}", "value": get_key(key)} for i, key in enumerate(keys)],
     )
+
+
+class CosmosClientWrapper(CosmosClient):
+    """Wrapper to make sure the CosmosClient is closed properly."""
+
+    def __del__(self) -> None:
+        """Close the CosmosClient."""
+        with contextlib.suppress(Exception):
+            asyncio.get_running_loop().create_task(self.close())
+
+
+class DefaultAzureCredentialWrapper(DefaultAzureCredential):
+    """Wrapper to make sure the DefaultAzureCredential is closed properly."""
+
+    def __del__(self) -> None:
+        """Close the DefaultAzureCredential."""
+        with contextlib.suppress(Exception):
+            asyncio.get_running_loop().create_task(self.close())

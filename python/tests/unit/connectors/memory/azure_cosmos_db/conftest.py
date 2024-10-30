@@ -37,8 +37,8 @@ def azure_cosmos_db_no_sql_unit_test_env(monkeypatch, url, key, exclude_list, ov
         override_env_param_dict = {}
 
     env_vars = {
-        "COSMOS_DB_NOSQL_URL": url,
-        "COSMOS_DB_NOSQL_KEY": key,
+        "AZURE_COSMOS_DB_NO_SQL_URL": url,
+        "AZURE_COSMOS_DB_NO_SQL_KEY": key,
     }
 
     env_vars.update(override_env_param_dict)
@@ -55,5 +55,5 @@ def azure_cosmos_db_no_sql_unit_test_env(monkeypatch, url, key, exclude_list, ov
 @pytest.fixture()
 def clear_azure_cosmos_db_no_sql_env(monkeypatch):
     """Fixture to clear the environment variables for Weaviate unit tests."""
-    monkeypatch.delenv("COSMOS_DB_NOSQL_URL", raising=False)
-    monkeypatch.delenv("COSMOS_DB_NOSQL_KEY", raising=False)
+    monkeypatch.delenv("AZURE_COSMOS_DB_NO_SQL_URL", raising=False)
+    monkeypatch.delenv("AZURE_COSMOS_DB_NO_SQL_KEY", raising=False)

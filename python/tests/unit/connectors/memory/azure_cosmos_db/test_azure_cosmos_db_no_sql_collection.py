@@ -4,7 +4,6 @@ from collections.abc import AsyncGenerator
 from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 import pytest
-from azure.cosmos.aio import CosmosClient
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
@@ -12,6 +11,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_co
 )
 from semantic_kernel.connectors.memory.azure_cosmos_db.utils import (
     COSMOS_ITEM_ID_PROPERTY_NAME,
+    CosmosClientWrapper,
     create_default_indexing_policy,
     create_default_vector_embedding_policy,
 )
@@ -42,8 +42,7 @@ def test_azure_cosmos_db_no_sql_collection_init(
     assert vector_collection is not None
     assert vector_collection.database_name == database_name
     assert vector_collection.collection_name == collection_name
-    assert str(vector_collection.cosmos_db_nosql_settings.url) == url
-    assert vector_collection.cosmos_db_nosql_settings.key.get_secret_value() == key
+    assert vector_collection.cosmos_client is not None
     assert vector_collection.partition_key.path == f"/{vector_collection.data_model_definition.key_field_name}"
     assert vector_collection.create_database is False
 
@@ -84,7 +83,7 @@ def test_azure_cosmos_db_no_sql_collection_invalid_settings(
         )
 
 
-@patch.object(CosmosClient, "__init__", return_value=None)
+@patch.object(CosmosClientWrapper, "__init__", return_value=None)
 def test_azure_cosmos_db_no_sql_get_cosmos_client(
     mock_cosmos_client_init,
     azure_cosmos_db_no_sql_unit_test_env,
@@ -99,16 +98,14 @@ def test_azure_cosmos_db_no_sql_get_cosmos_client(
         collection_name=collection_name,
     )
 
-    cosmos_client = vector_collection._get_cosmos_client()
-
-    assert cosmos_client is not None
+    assert vector_collection.cosmos_client is not None
     mock_cosmos_client_init.assert_called_once_with(
-        str(azure_cosmos_db_no_sql_unit_test_env["COSMOS_DB_NOSQL_URL"]),
-        credential=azure_cosmos_db_no_sql_unit_test_env["COSMOS_DB_NOSQL_KEY"],
+        str(azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_URL"]),
+        credential=azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_KEY"],
     )
 
 
-@patch.object(CosmosClient, "__init__", return_value=None)
+@patch.object(CosmosClientWrapper, "__init__", return_value=None)
 def test_azure_cosmos_db_no_sql_get_cosmos_client_without_key(
     mock_cosmos_client_init,
     clear_azure_cosmos_db_no_sql_env,
@@ -125,64 +122,62 @@ def test_azure_cosmos_db_no_sql_get_cosmos_client_without_key(
         url=url,
     )
 
-    cosmos_client = vector_collection._get_cosmos_client()
-
-    assert cosmos_client is not None
+    assert vector_collection.cosmos_client is not None
     mock_cosmos_client_init.assert_called_once_with(url, credential=ANY)
 
 
 @pytest.mark.asyncio
-@patch("azure.cosmos.aio.CosmosClient")
+@patch("azure.cosmos.aio.CosmosClient", spec=True)
 async def test_azure_cosmos_db_no_sql_collection_create_database_if_not_exists(
     mock_cosmos_client,
-    azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
     database_name: str,
     collection_name: str,
 ) -> None:
     """Test the creation of a cosmos DB NoSQL database if it does not exist when create_database=True."""
+    mock_cosmos_client.get_database_client.side_effect = CosmosResourceNotFoundError
+    mock_cosmos_client.create_database = AsyncMock()
+
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
         database_name=database_name,
         collection_name=collection_name,
+        cosmos_client=mock_cosmos_client,
         create_database=True,
     )
 
     assert vector_collection.create_database is True
 
-    mock_cosmos_client.get_database_client.side_effect = CosmosResourceNotFoundError
-    mock_cosmos_client.create_database = AsyncMock()
-
-    await vector_collection._get_database_proxy(mock_cosmos_client)
+    await vector_collection._get_database_proxy()
 
     mock_cosmos_client.get_database_client.assert_called_once_with(database_name)
     mock_cosmos_client.create_database.assert_called_once_with(database_name)
 
 
 @pytest.mark.asyncio
-@patch("azure.cosmos.aio.CosmosClient")
+@patch("azure.cosmos.aio.CosmosClient", spec=True)
 async def test_azure_cosmos_db_no_sql_collection_create_database_raise_if_database_not_exists(
     mock_cosmos_client,
-    azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
     database_name: str,
     collection_name: str,
 ) -> None:
     """Test _get_database_proxy raises an error if the database does not exist when create_database=False."""
+    mock_cosmos_client.get_database_client.side_effect = CosmosResourceNotFoundError
+    mock_cosmos_client.create_database = AsyncMock()
+
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
         database_name=database_name,
         collection_name=collection_name,
+        cosmos_client=mock_cosmos_client,
         create_database=False,
     )
 
     assert vector_collection.create_database is False
 
-    mock_cosmos_client.get_database_client.side_effect = CosmosResourceNotFoundError
-    mock_cosmos_client.create_database = AsyncMock()
-
     with pytest.raises(MemoryConnectorResourceNotFound):
-        await vector_collection._get_database_proxy(mock_cosmos_client)
+        await vector_collection._get_database_proxy()
 
 
 @pytest.mark.asyncio

@@ -10,15 +10,14 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from azure.cosmos.aio import CosmosClient
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from azure.cosmos.partition_key import PartitionKey
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_base import AzureCosmosDBNoSQLBase
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
     AzureCosmosDBNoSQLCompositeKey,
 )
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_settings import AzureCosmosDBNoSQLSettings
 from semantic_kernel.connectors.memory.azure_cosmos_db.utils import (
     COSMOS_ITEM_ID_PROPERTY_NAME,
     build_query_parameters,
@@ -31,7 +30,6 @@ from semantic_kernel.data.vector_store_model_definition import VectorStoreRecord
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
-    MemoryConnectorInitializationError,
     MemoryConnectorResourceNotFound,
     VectorStoreModelDeserializationException,
 )
@@ -56,6 +54,7 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
         data_model_definition: VectorStoreRecordDefinition | None = None,
         url: str | None = None,
         key: str | None = None,
+        cosmos_client: CosmosClient | None = None,
         partition_key: PartitionKey | None = None,
         create_database: bool = False,
     ):
@@ -68,24 +67,22 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
             data_model_definition (VectorStoreRecordDefinition): The definition of the data model. Defaults to None.
             url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
             key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
+            cosmos_client (CosmosClient): The custom Azure Cosmos DB NoSQL client whose lifetime is managed by the user.
             partition_key (PartitionKey): The partition key. Defaults to None. If not provided, the partition
                                           key will be based on the key field of the data model definition.
             create_database (bool): Indicates whether to create the database if it does not exist.
                                     Defaults to False.
         """
-        try:
-            cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(url=url, key=key)
-        except ValidationError as e:
-            raise MemoryConnectorInitializationError("Failed to validate Azure Cosmos DB NoSQL settings.") from e
-
         super().__init__(
+            database_name=database_name,
+            url=url,
+            key=key,
+            cosmos_client=cosmos_client,
+            create_database=create_database,
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
-            cosmos_db_nosql_settings=cosmos_db_nosql_settings,
-            database_name=database_name,
             collection_name=collection_name,
             partition_key=partition_key or PartitionKey(path=f"/{COSMOS_ITEM_ID_PROPERTY_NAME}"),
-            create_database=create_database,
         )
 
     @override
@@ -94,46 +91,43 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
         records: Sequence[Any],
         **kwargs: Any,
     ) -> Sequence[TKey]:
-        async with self._get_cosmos_client() as cosmos_client:
-            try:
-                container_proxy = await self._get_container_proxy(self.collection_name, cosmos_client)
-                results = await asyncio.gather(*[container_proxy.upsert_item(body=record) for record in records])
-                return [result[COSMOS_ITEM_ID_PROPERTY_NAME] for result in results]
-            except CosmosResourceNotFoundError as e:
-                raise MemoryConnectorResourceNotFound(
-                    "The collection does not exist yet. Create the collection first."
-                ) from e
-            except Exception as e:
-                raise MemoryConnectorException("Failed to upsert items.") from e
+        try:
+            container_proxy = await self._get_container_proxy(self.collection_name)
+            results = await asyncio.gather(*[container_proxy.upsert_item(body=record) for record in records])
+            return [result[COSMOS_ITEM_ID_PROPERTY_NAME] for result in results]
+        except CosmosResourceNotFoundError as e:
+            raise MemoryConnectorResourceNotFound(
+                "The collection does not exist yet. Create the collection first."
+            ) from e
+        except Exception as e:
+            raise MemoryConnectorException("Failed to upsert items.") from e
 
     @override
     async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
         include_vectors = kwargs.pop("include_vectors", False)
 
-        async with self._get_cosmos_client() as cosmos_client:
-            try:
-                container_proxy = await self._get_container_proxy(self.collection_name, cosmos_client)
-                query, parameters = build_query_parameters(self.data_model_definition, keys, include_vectors)
-                results = container_proxy.query_items(query=query, parameters=parameters)
-                return [item async for item in results]
-            except CosmosResourceNotFoundError as e:
-                raise MemoryConnectorResourceNotFound(
-                    "The collection does not exist yet. Create the collection first."
-                ) from e
-            except Exception as e:
-                raise MemoryConnectorException("Failed to read items.") from e
+        try:
+            container_proxy = await self._get_container_proxy(self.collection_name)
+            query, parameters = build_query_parameters(self.data_model_definition, keys, include_vectors)
+            results = container_proxy.query_items(query=query, parameters=parameters)
+            return [item async for item in results]
+        except CosmosResourceNotFoundError as e:
+            raise MemoryConnectorResourceNotFound(
+                "The collection does not exist yet. Create the collection first."
+            ) from e
+        except Exception as e:
+            raise MemoryConnectorException("Failed to read items.") from e
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
-        async with self._get_cosmos_client() as cosmos_client:
-            container_proxy = await self._get_container_proxy(self.collection_name, cosmos_client)
-            results = await asyncio.gather(
-                *[container_proxy.delete_item(item=get_key(key), partition_key=get_partition_key(key)) for key in keys],
-                return_exceptions=True,
-            )
-            exceptions = [result for result in results if isinstance(result, Exception)]
-            if exceptions:
-                raise MemoryConnectorException("Failed to delete item(s).", exceptions)
+        container_proxy = await self._get_container_proxy(self.collection_name)
+        results = await asyncio.gather(
+            *[container_proxy.delete_item(item=get_key(key), partition_key=get_partition_key(key)) for key in keys],
+            return_exceptions=True,
+        )
+        exceptions = [result for result in results if isinstance(result, Exception)]
+        if exceptions:
+            raise MemoryConnectorException("Failed to delete item(s).", exceptions)
 
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
@@ -172,50 +166,47 @@ class AzureCosmosDBNoSQLCollection(AzureCosmosDBNoSQLBase, VectorStoreRecordColl
 
     @override
     async def create_collection(self, **kwargs) -> None:
-        async with self._get_cosmos_client() as cosmos_client:
-            try:
-                database_proxy = await self._get_database_proxy(cosmos_client)
-                await database_proxy.create_container_if_not_exists(
-                    id=self.collection_name,
-                    partition_key=self.partition_key,
-                    indexing_policy=kwargs.pop(
-                        "indexing_policy", create_default_indexing_policy(self.data_model_definition)
-                    ),
-                    vector_embedding_policy=kwargs.pop(
-                        "vector_embedding_policy", create_default_vector_embedding_policy(self.data_model_definition)
-                    ),
-                    **kwargs,
-                )
-            except Exception as e:
-                raise MemoryConnectorException("Failed to create container.") from e
+        try:
+            database_proxy = await self._get_database_proxy()
+            await database_proxy.create_container_if_not_exists(
+                id=self.collection_name,
+                partition_key=self.partition_key,
+                indexing_policy=kwargs.pop(
+                    "indexing_policy", create_default_indexing_policy(self.data_model_definition)
+                ),
+                vector_embedding_policy=kwargs.pop(
+                    "vector_embedding_policy", create_default_vector_embedding_policy(self.data_model_definition)
+                ),
+                **kwargs,
+            )
+        except Exception as e:
+            raise MemoryConnectorException("Failed to create container.") from e
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
-        async with self._get_cosmos_client() as cosmos_client:
-            try:
-                database = await self._get_database_proxy(cosmos_client)
-                containers = database.query_containers(
-                    query="SELECT * FROM c WHERE c.id = @id",
-                    parameters=[{"name": "@id", "value": self.collection_name}],
-                )
+        try:
+            database = await self._get_database_proxy()
+            containers = database.query_containers(
+                query="SELECT * FROM c WHERE c.id = @id",
+                parameters=[{"name": "@id", "value": self.collection_name}],
+            )
 
-                async for container in containers:
-                    if container["id"] == self.collection_name:
-                        return True
-            except Exception as e:
-                raise MemoryConnectorException("Failed to query containers.") from e
+            async for container in containers:
+                if container["id"] == self.collection_name:
+                    return True
+        except Exception as e:
+            raise MemoryConnectorException("Failed to query containers.") from e
 
         return False
 
     @override
     async def delete_collection(self, **kwargs) -> None:
-        async with self._get_cosmos_client() as cosmos_client:
-            try:
-                database_proxy = await self._get_database_proxy(cosmos_client)
-                await database_proxy.delete_container(self.collection_name)
-            except CosmosResourceNotFoundError as e:
-                raise MemoryConnectorResourceNotFound(
-                    "The collection does not exist yet. Create the collection first."
-                ) from e
-            except Exception as e:
-                raise MemoryConnectorException("Failed to delete container.") from e
+        try:
+            database_proxy = await self._get_database_proxy()
+            await database_proxy.delete_container(self.collection_name)
+        except CosmosResourceNotFoundError as e:
+            raise MemoryConnectorResourceNotFound(
+                "The collection does not exist yet. Create the collection first."
+            ) from e
+        except Exception as e:
+            raise MemoryConnectorException("Failed to delete container.") from e
