@@ -328,7 +328,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         var mediaType = s_supportedMediaTypes.FirstOrDefault(requestBody.Content.ContainsKey) ?? throw new KernelException($"Neither of the media types of {operationId} is supported.");
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
-        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
+        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema);
 
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonSchema());
     }
@@ -353,11 +353,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="schema">An OpenAPI document schema representing request body properties.</param>
-    /// <param name="requiredProperties">List of required properties.</param>
     /// <param name="level">Current level in OpenAPI schema.</param>
     /// <returns>The REST API operation payload properties.</returns>
-    private static List<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
-        int level = 0)
+    private static List<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, int level = 0)
     {
         if (schema is null)
         {
@@ -380,8 +378,8 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
             var property = new RestApiOperationPayloadProperty(
                 propertyName,
                 propertySchema.Type,
-                requiredProperties.Contains(propertyName),
-                GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
+                schema.Required.Contains(propertyName),
+                GetPayloadProperties(operationId, propertySchema, level + 1),
                 propertySchema.Description,
                 propertySchema.Format,
                 propertySchema.ToJsonSchema(),

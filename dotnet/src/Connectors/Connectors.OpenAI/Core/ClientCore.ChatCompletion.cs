@@ -334,10 +334,14 @@ internal partial class ClientCore
                                     continue;
                                 }
 
+                                string streamingArguments = (functionCallUpdate.FunctionArgumentsUpdate?.ToMemory().IsEmpty ?? true)
+                                    ? string.Empty
+                                    : functionCallUpdate.FunctionArgumentsUpdate.ToString();
+
                                 openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
                                     callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
-                                    arguments: functionCallUpdate.FunctionArgumentsUpdate?.ToString(),
+                                    arguments: streamingArguments,
                                     functionCallIndex: functionCallUpdate.Index));
                             }
                         }
