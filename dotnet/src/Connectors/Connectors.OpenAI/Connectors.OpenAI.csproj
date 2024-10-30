@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.OpenAI.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureOpenAI.UnitTests" />
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
   </ItemGroup>
 
