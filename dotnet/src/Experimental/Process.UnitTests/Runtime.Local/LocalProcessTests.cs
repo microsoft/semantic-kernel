@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -82,6 +83,56 @@ public class LocalProcessTests
     }
 
     /// <summary>
+    /// %%% COMMENT
+    /// </summary>
+    [Fact]
+    public async Task ProcessFunctionErrorHandledAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessFunctionErrorHandledAsync));
+
+        ProcessStepBuilder testStep = process.AddStepFromType<FailedStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(testStep));
+
+        ProcessStepBuilder errorStep = process.AddStepFromType<ErrorStep>();
+        testStep.OnFunctionError(nameof(FailedStep.TestFailure)).SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.FunctionErrorHandler)));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+
+        // Assert
+        Assert.True(kernel.Data.ContainsKey("error-function"));
+    }
+
+    /// <summary>
+    /// %%% COMMENT
+    /// </summary>
+    [Fact]
+    public async Task ProcessGlobalErrorHandledAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessFunctionErrorHandledAsync));
+
+        ProcessStepBuilder testStep = process.AddStepFromType<FailedStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(testStep));
+
+        ProcessStepBuilder errorStep = process.AddStepFromType<ErrorStep>();
+        process.OnError().SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.GlobalErrorHandler)));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+
+        // Assert
+        Assert.True(kernel.Data.ContainsKey("error-global"));
+    }
+
+    /// <summary>
     /// A class that represents a step for testing.
     /// </summary>
     private sealed class TestStep : KernelProcessStep<TestState>
@@ -97,6 +148,45 @@ public class LocalProcessTests
         [KernelFunction]
         public void TestFunction()
         {
+        }
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    private sealed class FailedStep : KernelProcessStep
+    {
+        /// <summary>
+        /// A method that represents a function for testing.
+        /// </summary>
+        [KernelFunction]
+        public void TestFailure()
+        {
+            throw new InvalidOperationException("I failed!");
+        }
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    private sealed class ErrorStep : KernelProcessStep
+    {
+        /// <summary>
+        /// A method for unhandling failures at the process level.
+        /// </summary>
+        [KernelFunction]
+        public void GlobalErrorHandler(Exception exception, Kernel kernel)
+        {
+            kernel.Data.Add("error-global", exception);
+        }
+
+        /// <summary>
+        /// A method for unhandling failures at the function level.
+        /// </summary>
+        [KernelFunction]
+        public void FunctionErrorHandler(Exception exception, Kernel kernel)
+        {
+            kernel.Data.Add("error-function", exception);
         }
     }
 

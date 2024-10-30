@@ -195,10 +195,16 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="processEvent">The event to emit.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
-    {
-        return this.EmitEventAsync(ProcessEvent.FromKernelProcessEvent(processEvent, this._eventNamespace!));
-    }
+    public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(processEvent, isError: false);
+
+    /// <summary>
+    /// Emits an event from the step.
+    /// </summary>
+    /// <param name="processEvent">The event to emit.</param>
+    /// <param name="isError">// %%% COMMENT</param>
+    /// <returns>A <see cref="ValueTask"/></returns>
+    internal ValueTask EmitEventAsync(KernelProcessEvent processEvent, bool isError) =>
+        this.EmitEventAsync(new ProcessEvent(this._eventNamespace, processEvent, isError));
 
     /// <summary>
     /// Handles a <see cref="ProcessMessage"/> that has been sent to the step.
@@ -231,7 +237,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
             if (!this._inputs.TryGetValue(message.FunctionName, out Dictionary<string, object?>? functionParameters))
             {
-                this._inputs[message.FunctionName] = new();
+                this._inputs[message.FunctionName] = [];
                 functionParameters = this._inputs[message.FunctionName];
             }
 
@@ -262,36 +268,40 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             throw new ArgumentException($"Function {targetFunction} not found in plugin {this.Name}");
         }
 
-        FunctionResult? invokeResult = null;
-        string? eventName = null;
-        object? eventValue = null;
-
         // Invoke the function, catching all exceptions that it may throw, and then post the appropriate event.
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             this?._logger?.LogInformation("Invoking function {FunctionName} with arguments {Arguments}", targetFunction, arguments);
-            invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
+            FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
 
             this?.Logger?.LogInformation("Function {FunctionName} returned {Result}", targetFunction, invokeResult);
-            eventName = $"{targetFunction}.OnResult";
-            eventValue = invokeResult?.GetValue<object>();
 
             // Persist the state after the function has been executed
             var stateJson = JsonSerializer.Serialize(this._stepState, this._stepStateType!);
             await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
+
+            await this.EmitEventAsync(
+                new KernelProcessEvent
+                {
+                    Id = $"{targetFunction}.OnResult",
+                    Data = invokeResult.GetValue<object>(),
+                }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             this._logger?.LogInformation("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            eventName = $"{targetFunction}.OnError";
-            eventValue = ex.Message;
+            await this.EmitEventAsync(
+                new KernelProcessEvent
+                {
+                    Id = $"{targetFunction}.OnError",
+                    Data = ex,
+                },
+                isError: true).ConfigureAwait(false);
         }
         finally
         {
-            await this.EmitEventAsync(new KernelProcessEvent { Id = eventName, Data = eventValue }).ConfigureAwait(false);
-
             // Reset the inputs for the function that was just executed
             this._inputs[targetFunction] = new(this._initialInputs[targetFunction] ?? []);
         }
@@ -314,7 +324,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         // Instantiate an instance of the inner step object
         KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._innerStepType!);
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name!);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)

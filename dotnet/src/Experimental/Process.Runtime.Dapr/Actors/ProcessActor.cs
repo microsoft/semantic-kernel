@@ -275,7 +275,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
     {
         Kernel localKernel = kernel ?? this._kernel;
-        Queue<ProcessMessage> messageChannel = new();
 
         try
         {
@@ -293,7 +292,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 await this.EnqueueExternalMessagesAsync().ConfigureAwait(false);
 
                 // Reach out to all of the steps in the process and instruct them to retrieve their pending messages from their associated queues.
-                var stepPreparationTasks = this._steps.Select(step => step.PrepareIncomingMessagesAsync()).ToList();
+                var stepPreparationTasks = this._steps.Select(step => step.PrepareIncomingMessagesAsync()).ToArray();
                 var messageCounts = await Task.WhenAll(stepPreparationTasks).ConfigureAwait(false);
 
                 // If there are no messages to process, wait for an external event or finish.
@@ -307,7 +306,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 }
 
                 // Process the incoming messages for each step.
-                var stepProcessingTasks = this._steps.Select(step => step.ProcessIncomingMessagesAsync()).ToList();
+                var stepProcessingTasks = this._steps.Select(step => step.ProcessIncomingMessagesAsync()).ToArray();
                 await Task.WhenAll(stepProcessingTasks).ConfigureAwait(false);
 
                 // Handle public events that need to be bubbled out of the process.
