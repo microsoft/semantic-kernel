@@ -16,8 +16,7 @@ namespace Memory.VectorstoreLangchainInterop;
 /// ingested into a database using Langchain.
 /// </summary>
 /// <remarks>
-/// To run this sample, you need to first create an instance of a
-/// collection using Langhain.
+/// To run these samples, you need to first create collections instances using Langhain.
 /// This sample assumes that you used the pets sample data set from this article:
 /// https://python.langchain.com/docs/tutorials/retrievers/#documents
 /// And the from_documents method to create the collection as shown here:
@@ -32,7 +31,7 @@ public class LangchainInterop(ITestOutputHelper output) : BaseTest(output)
             new Uri(TestConfiguration.AzureAISearch.Endpoint),
             new AzureKeyCredential(TestConfiguration.AzureAISearch.ApiKey));
         var vectorStore = AzureAISearchFactory.CreateQdrantLangchainInteropVectorStore(searchIndexClient);
-        await this.ReadDataFromCollectionAsync(vectorStore);
+        await this.ReadDataFromCollectionAsync(vectorStore, "pets");
     }
 
     [Fact]
@@ -40,7 +39,7 @@ public class LangchainInterop(ITestOutputHelper output) : BaseTest(output)
     {
         var qdrantClient = new QdrantClient("localhost");
         var vectorStore = QdrantFactory.CreateQdrantLangchainInteropVectorStore(qdrantClient);
-        await this.ReadDataFromCollectionAsync(vectorStore);
+        await this.ReadDataFromCollectionAsync(vectorStore, "pets");
     }
 
     [Fact]
@@ -48,10 +47,16 @@ public class LangchainInterop(ITestOutputHelper output) : BaseTest(output)
     {
         var database = ConnectionMultiplexer.Connect("localhost:6379").GetDatabase();
         var vectorStore = RedisFactory.CreateRedisLangchainInteropVectorStore(database);
-        await this.ReadDataFromCollectionAsync(vectorStore);
+        await this.ReadDataFromCollectionAsync(vectorStore, "pets");
     }
 
-    private async Task ReadDataFromCollectionAsync(IVectorStore vectorStore)
+    /// <summary>
+    /// Method to do a vector search on a collection in the provided vector store.
+    /// </summary>
+    /// <param name="vectorStore">The vector store to search.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <returns>An async task.</returns>
+    private async Task ReadDataFromCollectionAsync(IVectorStore vectorStore, string collectionName)
     {
         // Create an embedding generation service.
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
@@ -60,7 +65,7 @@ public class LangchainInterop(ITestOutputHelper output) : BaseTest(output)
                 new AzureCliCredential());
 
         // Get the collection.
-        var collection = vectorStore.GetCollection<string, LangchainDocument<string>>("pets");
+        var collection = vectorStore.GetCollection<string, LangchainDocument<string>>(collectionName);
 
         // Search the data set.
         var searchString = "I'm looking for an animal that is loyal and will make a great companion";
