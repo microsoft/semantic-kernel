@@ -54,14 +54,14 @@ public sealed class QdrantVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
-        if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid))
-        {
-            throw new NotSupportedException("Only ulong and Guid keys are supported.");
-        }
-
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._qdrantClient.QdrantClient, name, vectorStoreRecordDefinition);
+        }
+
+        if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid))
+        {
+            throw new NotSupportedException("Only ulong and Guid keys are supported.");
         }
 
         var recordCollection = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition });
