@@ -353,12 +353,14 @@ public sealed class Kernel
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
+        bool isStreaming,
         Func<PromptRenderContext, Task> renderCallback,
         CancellationToken cancellationToken)
     {
         PromptRenderContext context = new(this, function, arguments)
         {
-            CancellationToken = cancellationToken
+            CancellationToken = cancellationToken,
+            IsStreaming = isStreaming
         };
 
         await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
