@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Qdrant.Client;
 using StackExchange.Redis;
+using Sdk = Pinecone;
 
 namespace Memory.VectorstoreLangchainInterop;
 
@@ -39,6 +40,14 @@ public class LangchainInterop(ITestOutputHelper output) : BaseTest(output)
     {
         var qdrantClient = new QdrantClient("localhost");
         var vectorStore = QdrantFactory.CreateQdrantLangchainInteropVectorStore(qdrantClient);
+        await this.ReadDataFromCollectionAsync(vectorStore, "pets");
+    }
+
+    [Fact]
+    public async Task ReadDataFromLangchainPineconeAsync()
+    {
+        var pineconeClient = new Sdk.PineconeClient(TestConfiguration.Pinecone.ApiKey);
+        var vectorStore = PineconeFactory.CreatePineconeLangchainInteropVectorStore(pineconeClient);
         await this.ReadDataFromCollectionAsync(vectorStore, "pets");
     }
 
