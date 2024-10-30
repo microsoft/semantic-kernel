@@ -13,7 +13,7 @@ namespace SemanticKernel.Process.IntegrationTests;
 public class ProcessStateTypeResolver<T> : DefaultJsonTypeInfoResolver where T : KernelProcessStep
 {
     private static readonly Type s_genericType = typeof(KernelProcessStep<>);
-    private readonly HashSet<Type> _types = [typeof(KernelProcessState)];
+    private readonly Dictionary<string, Type> _types = new() { { "", typeof(KernelProcessState) } };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStateTypeResolver{T}"/> class.
@@ -30,7 +30,7 @@ public class ProcessStateTypeResolver<T> : DefaultJsonTypeInfoResolver where T :
             {
                 var userStateType = genericStepType.GetGenericArguments()[0];
                 var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
-                this._types.Add(stateType);
+                this._types.TryAdd(userStateType.Name, stateType);
             }
         }
     }
@@ -43,8 +43,7 @@ public class ProcessStateTypeResolver<T> : DefaultJsonTypeInfoResolver where T :
         Type baseType = typeof(KernelProcessStepState);
         if (jsonTypeInfo.Type == baseType)
         {
-            var derivedTypes = new List<Type>(this._types.Distinct());
-            var jsonDerivedTypes = derivedTypes.Select(t => new JsonDerivedType(t, t.Name)).ToList();
+            var jsonDerivedTypes = this._types.Select(t => new JsonDerivedType(t.Value, t.Key)).ToList();
 
             jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -105,3 +106,116 @@ public static class CommonEvents
     public const string StartProcess = nameof(StartProcess);
 }
 
+/// <summary>
+/// A step that echos its input.
+/// </summary>
+public sealed class EchoStep : KernelProcessStep
+{
+    [KernelFunction]
+    public string Echo(string message)
+    {
+        Console.WriteLine($"[ECHO] {message}");
+        return message;
+    }
+}
+
+/// <summary>
+/// A step that repeats its input.
+/// </summary>
+public sealed class RepeatStep : KernelProcessStep<StepState>
+{
+    private StepState? _state;
+
+    public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
+    {
+        this._state = state.State;
+        return default;
+    }
+
+    [KernelFunction]
+    public async Task RepeatAsync(string message, KernelProcessStepContext context, int count = 2)
+    {
+        var output = string.Join(" ", Enumerable.Repeat(message, count));
+        Console.WriteLine($"[REPEAT] {output}");
+        this._state!.LastMessage = output;
+
+        // Emit the OnReady event with a public visibility and an internal visibility to aid in testing
+        await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadyPublic, Data = output, Visibility = KernelProcessEventVisibility.Public });
+        await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadyInternal, Data = output, Visibility = KernelProcessEventVisibility.Internal });
+    }
+}
+
+/// <summary>
+/// A step that emits a startProcess event
+/// </summary>
+public sealed class StartStep : KernelProcessStep
+{
+    [KernelFunction]
+    public async Task SendStartMessageAsync(KernelProcessStepContext context, string text)
+    {
+        Console.WriteLine($"[START] {text}");
+        await context.EmitEventAsync(new()
+        {
+            Id = ProcessTestsEvents.StartProcess,
+            Data = text,
+            Visibility = KernelProcessEventVisibility.Public
+        });
+    }
+}
+
+/// <summary>
+/// A step that combines string inputs received.
+/// </summary>
+public sealed class FanInStep : KernelProcessStep<StepState>
+{
+    private StepState? _state;
+
+    public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
+    {
+        this._state = state.State;
+        return default;
+    }
+
+    [KernelFunction]
+    public async Task EmitCombinedMessageAsync(KernelProcessStepContext context, string firstInput, string secondInput)
+    {
+        var output = $"{firstInput}-{secondInput}";
+        Console.WriteLine($"[EMIT_COMBINED] {output}");
+        this._state!.LastMessage = output;
+
+        await context.EmitEventAsync(new()
+        {
+            Id = ProcessTestsEvents.OutputReadyInternal,
+            Data = output,
+            Visibility = KernelProcessEventVisibility.Internal
+        });
+        await context.EmitEventAsync(new()
+        {
+            Id = ProcessTestsEvents.OutputReadyPublic,
+            Data = output,
+            Visibility = KernelProcessEventVisibility.Public
+        });
+    }
+}
+
+/// <summary>
+/// The state object for the repeat and fanIn step.
+/// </summary>
+[DataContract]
+public sealed record StepState
+{
+    [DataMember]
+    public string? LastMessage { get; set; }
+}
+
+/// <summary>
+/// A class that defines the events that can be emitted by the chat bot process. This is
+/// not required but used to ensure that the event names are consistent.
+/// </summary>
+public static class ProcessTestsEvents
+{
+    public const string StartProcess = "StartProcess";
+    public const string StartInnerProcess = "StartInnerProcess";
+    public const string OutputReadyPublic = "OutputReadyPublic";
+    public const string OutputReadyInternal = "OutputReadyInternal";
+}
