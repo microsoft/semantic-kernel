@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
-    private const string EndProcessId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
@@ -257,7 +256,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 foreach (var message in messagesToProcess)
                 {
                     // Check for end condition
-                    if (message.DestinationId.Equals(EndProcessId, StringComparison.OrdinalIgnoreCase))
+                    if (message.DestinationId.Equals(ProcessConstants.EndStepName, StringComparison.OrdinalIgnoreCase))
                     {
                         this._processCancelSource?.Cancel();
                         break;
@@ -339,7 +338,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
             if (!foundEdge && stepEvent.IsError)
             {
-                if (this._outputEdges.TryGetValue(KernelProcess.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
+                if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
                 {
                     foreach (KernelProcessEdge edge in edges)
                     {

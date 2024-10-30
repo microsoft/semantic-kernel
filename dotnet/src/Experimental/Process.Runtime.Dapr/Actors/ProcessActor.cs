@@ -17,7 +17,6 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 {
-    private const string EndStepId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
@@ -359,7 +358,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <returns>True if the end message has been sent, otherwise false.</returns>
     private async Task<bool> IsEndMessageSentAsync()
     {
-        var scopedMessageBufferId = this.ScopedActorId(new ActorId(EndStepId));
+        var scopedMessageBufferId = this.ScopedActorId(new ActorId(ProcessConstants.EndStepName));
         var endMessageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
         var messages = await endMessageQueue.DequeueAllAsync().ConfigureAwait(false);
         return messages.Count > 0;
