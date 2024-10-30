@@ -17,7 +17,7 @@ This ADR provides an overview of the existing options that OpenAPI functionality
 ### 1. The `payload` and the `content-type` Arguments
 This option allows the caller to create payload that conforms to the OpenAPI schema and pass it as an argument to the OpenAPI function when invoking it.
 ```csharp
-// Import an Open AI plugin with the createEvent function and disable dynamic payload construction
+// Import an OpenAPI plugin with the createEvent function and disable dynamic payload construction
 KernelPlugin plugin = await kernel.ImportPluginFromOpenApiAsync("<plugin-name>", new Uri("<plugin-uri>"), new OpenApiFunctionExecutionParameters 
 { 
     EnableDynamicPayload = false 
@@ -54,7 +54,7 @@ This option allows SK to construct the payload dynamically based on the OpenAPI 
 The caller does not need to provide the payload when invoking the OpenAPI function. However, the caller must provide the arguments 
 that will be used as values for the payload properties of the same name.
 ```csharp
-// Import an Open AI plugin with the createEvent function and disable dynamic payload construction
+// Import an OpenAPI plugin with the createEvent function and disable dynamic payload construction
 KernelPlugin plugin = await kernel.ImportPluginFromOpenApiAsync("<plugin-name>", new Uri("<plugin-uri>"), new OpenApiFunctionExecutionParameters 
 { 
     EnableDynamicPayload = true // It's true by default 
@@ -93,8 +93,8 @@ There is a limitation with this option regarding the creation of payloads that c
 Taking into account that import process creates a kernel function for each OpenAPI operation, there's no feasible way to create a kernel function with more than one parameter having the same name.
 An attempt to import a plugin with such a payload will fail with the following error: "The function has two or more parameters with the same name `<property-name>`."
 
-Additionally, there's probability of cycles in the payload schema that may occur when two or more properties reference each other, creating a loop. 
-SK will detect such cycles and throw an error failing the operation import.
+Additionally, there's probability of circular references in the payload schema that may occur when two or more properties reference each other, creating a loop. 
+SK will detect such circular references and throw an error failing the operation import.
 
 Another specificity of this option is that it does not traverse array properties and considers them as leaf properties. 
 This means that the caller must provide arguments for the properties of the array type, but not for the array elements or the properties of the array elements. 
@@ -105,7 +105,7 @@ This option addresses the limitation of the dynamic payload construction option 
 It does so by prepending child property names with their parent property names, effectively creating unique names. 
 The caller still needs to provide arguments for the properties and SK will do the rest.
 ```csharp
-// Import an Open AI plugin with the createEvent function and disable dynamic payload construction
+// Import an OpenAPI plugin with the createEvent function and disable dynamic payload construction
 KernelPlugin plugin = await kernel.ImportPluginFromOpenApiAsync("<plugin-name>", new Uri("<plugin-uri>"), new OpenApiFunctionExecutionParameters 
 { 
     EnableDynamicPayload = true,
@@ -150,7 +150,7 @@ For instance, the `dateTime` property of the `start` object will be named `start
    
 This option treats array properties in the same way as the previous one, considering them as leaf properties, which means the caller must supply arguments for them.
 
-This option is susceptible to cycles in the payload schema as well, and SK will fail the operation import if it detects any.
+This option is susceptible to circular references in the payload schema as well, and SK will fail the operation import if it detects any.
 
 ## New Options for Handling Payloads in SK
 
@@ -173,7 +173,7 @@ arguments for those root properties will be on the caller side but there's not m
 have to be resolved from the flat list of kernel arguments.
 
 ```csharp
-// Import an Open AI plugin with the createEvent function and disable dynamic payload construction
+// Import an OpenAPI plugin with the createEvent function and disable dynamic payload construction
 KernelPlugin plugin = await kernel.ImportPluginFromOpenApiAsync("<plugin-name>", new Uri("<plugin-uri>"), new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false, EnablePayloadNamespacing = true });
 
 // Expected payload structure
@@ -213,9 +213,8 @@ This option naturally fits between existing option #1. The `payload` and the `co
 |--------|-------|----|--------|
 | 1. The `payload` and the `content-type` Arguments | Constructs payload | Use it as is | No limitations |
 | 4. Dynamic Payload Construction From Root Properties | Provides arguments for root properties | Constructs payload | No limitations |
-| 2. Dynamic Payload Construction From Leaf Properties | Provides arguments for leaf properties | Constructs payload | Leaf properties must be unique, Cycles |
-| 3. Dynamic Payload Construction From Leaf Properties + Namespaces | Provides arguments for namespaced properties | Constructs payload | Cycles |
-
+| 2. Dynamic Payload Construction From Leaf Properties | Provides arguments for leaf properties | Constructs payload | Leaf properties must be unique, Circular references |
+| 3. Dynamic Payload Construction From Leaf Properties + Namespaces | Provides arguments for namespaced properties | Constructs payload | Circular references |
 
 ## Decision Outcome
 TBD
