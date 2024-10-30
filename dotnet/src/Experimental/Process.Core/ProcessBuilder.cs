@@ -126,6 +126,16 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public IReadOnlyList<ProcessStepBuilder> Steps => this._steps.AsReadOnly();
 
     /// <summary>
+    /// Check to ensure stepName is not used yet in another step
+    /// </summary>
+    /// <param name="stepName"></param>
+    /// <returns></returns>
+    private bool StepNameAlreadyExists(string stepName)
+    {
+        return this._steps.Select(step => step.Name).Contains(stepName);
+    }
+
+    /// <summary>
     /// Adds a step to the process.
     /// </summary>
     /// <typeparam name="TStep">The step Type.</typeparam>
@@ -134,6 +144,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessStepBuilder AddStepFromType<TStep>(string? name = null) where TStep : KernelProcessStep
     {
         var stepBuilder = new ProcessStepBuilder<TStep>(name);
+        if (this.StepNameAlreadyExists(stepBuilder.Name))
+        {
+            throw new InvalidOperationException($"Step name {stepBuilder.Name} is already used, assign a different name for step");
+        }
+
         this._steps.Add(stepBuilder);
 
         return stepBuilder;
@@ -150,6 +165,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? name = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
         var stepBuilder = new ProcessStepBuilder<TStep>(name, initialState: initialState);
+        if (this.StepNameAlreadyExists(stepBuilder.Name))
+        {
+            throw new InvalidOperationException($"Step name {stepBuilder.Name} is already used, assign a different name for step");
+        }
+
         this._steps.Add(stepBuilder);
 
         return stepBuilder;
@@ -163,6 +183,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessBuilder AddStepFromProcess(ProcessBuilder kernelProcess)
     {
         kernelProcess.HasParentProcess = true;
+        if (this.StepNameAlreadyExists(kernelProcess.Name))
+        {
+            throw new InvalidOperationException($"Step name {kernelProcess.Name} is already used, assign a different name for step");
+        }
+
         this._steps.Add(kernelProcess);
         return kernelProcess;
     }
