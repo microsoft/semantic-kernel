@@ -12,6 +12,9 @@ namespace Memory.VectorstoreLangchainInterop;
 /// <summary>
 /// Contains a factory method that can be used to create an Azure AI Search vector store that is compatible with datasets ingested using Langchain.
 /// </summary>
+/// <remarks>
+/// This class is used with the <see cref="LangchainInterop"/> sample.
+/// </remarks>
 public static class AzureAISearchFactory
 {
     /// <summary>
@@ -35,6 +38,8 @@ public static class AzureAISearchFactory
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreateQdrantLangchainInteropVectorStore(SearchIndexClient searchIndexClient)
     {
+        // Create a vector store that uses our custom factory for creating collections
+        // so that the collection can be configured to be compatible with Langchain.
         return new AzureAISearchVectorStore(
             searchIndexClient,
             new()
@@ -55,6 +60,12 @@ public static class AzureAISearchFactory
                 throw new NotSupportedException("This VectorStore is only usable with string keys and LangchainDocument<string> record types");
             }
 
+            // Create an Azure AI Search collection. To be compatible with Langchain
+            // we need to use a custom record definition that matches the
+            // schema used by Lanchain. We also need to use a custom mapper
+            // since the Langchain schema includes a metadata field that is
+            // a JSON string containing the source property. Parsing this
+            // string and extracting the source is not supported by the default mapper.
             return (new AzureAISearchVectorStoreRecordCollection<TRecord>(
                 searchIndexClient,
                 name,

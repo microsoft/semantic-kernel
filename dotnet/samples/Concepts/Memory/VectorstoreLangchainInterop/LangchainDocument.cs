@@ -3,8 +3,13 @@
 namespace Memory.VectorstoreLangchainInterop;
 
 /// <summary>
-/// Data model class to use for Langchain interoperability samples
+/// Data model class that matches the data model used by Langchain.
+/// This data model is not decorated with vector store attributes since instead
+/// a different record definition is used with each vector store implementation.
 /// </summary>
+/// <remarks>
+/// This class is used with the <see cref="LangchainInterop"/> sample.
+/// </remarks>
 public class LangchainDocument<TKey>
 {
     /// <summary>

@@ -9,6 +9,9 @@ namespace Memory.VectorstoreLangchainInterop;
 /// <summary>
 /// Contains a factory method that can be used to create a Redis vector store that is compatible with datasets ingested using Langchain.
 /// </summary>
+/// <remarks>
+/// This class is used with the <see cref="LangchainInterop"/> sample.
+/// </remarks>
 public static class RedisFactory
 {
     /// <summary>
@@ -32,11 +35,12 @@ public static class RedisFactory
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreateRedisLangchainInteropVectorStore(IDatabase database)
     {
+        // Create a vector store that uses our custom factory for creating collections
+        // so that the collection can be configured to be compatible with Langchain.
         return new RedisVectorStore(
             database,
             new()
             {
-                StorageType = RedisStorageType.HashSet,
                 VectorStoreCollectionFactory = new RedisVectorStoreRecordCollectionFactory()
             });
     }
@@ -53,6 +57,10 @@ public static class RedisFactory
                 throw new NotSupportedException("This VectorStore is only usable with string keys and LangchainDocument<string> record types");
             }
 
+            // Create a hash set collection, since Langchain uses redis hashes for storing records.
+            // Also pass in our custom record definition that matches the schema used by Langchain
+            // so that the default mapper can use the storage names in it, to map to the storage
+            // scheme.
             return (new RedisHashSetVectorStoreRecordCollection<TRecord>(
                 database,
                 name,

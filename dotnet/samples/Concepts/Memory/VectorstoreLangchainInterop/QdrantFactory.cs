@@ -10,6 +10,9 @@ namespace Memory.VectorstoreLangchainInterop;
 /// <summary>
 /// Contains a factory method that can be used to create a Qdrant vector store that is compatible with datasets ingested using Langchain.
 /// </summary>
+/// <remarks>
+/// This class is used with the <see cref="LangchainInterop"/> sample.
+/// </remarks>
 public static class QdrantFactory
 {
     /// <summary>
@@ -33,11 +36,12 @@ public static class QdrantFactory
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreateQdrantLangchainInteropVectorStore(QdrantClient qdrantClient)
     {
+        // Create a vector store that uses our custom factory for creating collections
+        // so that the collection can be configured to be compatible with Langchain.
         return new QdrantVectorStore(
             qdrantClient,
             new()
             {
-                HasNamedVectors = false,
                 VectorStoreCollectionFactory = new QdrantVectorStoreRecordCollectionFactory()
             });
     }
@@ -49,11 +53,19 @@ public static class QdrantFactory
     {
         public IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(QdrantClient qdrantClient, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TKey : notnull
         {
+            // Create a Qdrant collection. To be compatible with Lanchain
+            // we need to use a custom record definition that matches the
+            // schema used by Lanchain. We also need to use a custom mapper
+            // since the Langchain schema includes a metadata field that is
+            // a struct and this isn't supported by the default mapper.
+            // Since langchain creates collections without named vector support
+            // we should set HasNamedVectors to false.
             var collection = new QdrantVectorStoreRecordCollection<LangchainDocument<Guid>>(
                 qdrantClient,
                 name,
                 new()
                 {
+                    HasNamedVectors = false,
                     VectorStoreRecordDefinition = s_recordDefinition,
                     PointStructCustomMapper = new LangchainInteropMapper()
                 });
@@ -67,6 +79,8 @@ public static class QdrantFactory
             // If the user asked for a string key, we can add a decorator which converts back and forth between string and guid.
             // The string that the user provides will still need to contain a valid guid, since the Langchain created collection
             // uses guid keys.
+            // Supporting string keys like this is useful since it means you can work with the collection in the same way as with
+            // collections from other vector stores that support string keys.
             if (typeof(TKey) == typeof(string) && typeof(TRecord) == typeof(LangchainDocument<string>))
             {
                 var stringKeyCollection = new MappingVectorStoreRecordCollection<string, Guid, LangchainDocument<string>, LangchainDocument<Guid>>(
@@ -84,8 +98,10 @@ public static class QdrantFactory
     }
 
     /// <summary>
-    /// Custom mapper to map the metadata struct, since the default
-    /// Qdrant mapper doesn't support complex types.
+    /// A custom mapper that is required to map the metadata struct. While the other
+    /// fields in the record can be mapped by the default Qdrant mapper, the default
+    /// mapper doesn't support complex types like metadata, which is a Qdrant struct
+    /// containing a source field.
     /// </summary>
     private sealed class LangchainInteropMapper : IVectorStoreRecordMapper<LangchainDocument<Guid>, PointStruct>
     {
