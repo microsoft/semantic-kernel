@@ -11,6 +11,11 @@ namespace Microsoft.SemanticKernel;
 public sealed record KernelProcess : KernelProcessStepInfo
 {
     /// <summary>
+    /// Event raised internally for errors not handled at the step level.
+    /// </summary>
+    public const string GlobalErrorEventId = "Global.OnError";
+
+    /// <summary>
     /// The collection of Steps in the Process.
     /// </summary>
     public IList<KernelProcessStepInfo> Steps { get; }

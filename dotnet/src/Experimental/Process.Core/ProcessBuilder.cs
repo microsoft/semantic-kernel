@@ -187,7 +187,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// </remarks>
     public ProcessEdgeBuilder OnError()
     {
-        return new ProcessEdgeBuilder(this, "Global.OnError"); // %%% NAME DEFINITION
+        return new ProcessEdgeBuilder(this, KernelProcess.GlobalErrorEventId);
     }
 
     /// <summary>

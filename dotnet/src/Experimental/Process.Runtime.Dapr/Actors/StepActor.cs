@@ -196,7 +196,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// Emits an event from the step.
     /// </summary>
     /// <param name="processEvent">The event to emit.</param>
-    /// <param name="isError">// %%% COMMENT</param>
+    /// <param name="isError">Flag indicating if the event being emitted is in response to a step failure</param>
     /// <returns>A <see cref="ValueTask"/></returns>
     internal ValueTask EmitEventAsync(KernelProcessEvent processEvent, bool isError) =>
         this.EmitEventAsync(new ProcessEvent(this._eventNamespace, processEvent, isError));

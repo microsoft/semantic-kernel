@@ -83,7 +83,7 @@ public class LocalProcessTests
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Verify that the function  level error handler is called when a function fails.
     /// </summary>
     [Fact]
     public async Task ProcessFunctionErrorHandledAsync()
@@ -108,7 +108,7 @@ public class LocalProcessTests
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Verify that the process level error handler is called when a function fails.
     /// </summary>
     [Fact]
     public async Task ProcessGlobalErrorHandledAsync()
@@ -130,6 +130,33 @@ public class LocalProcessTests
 
         // Assert
         Assert.True(kernel.Data.ContainsKey("error-global"));
+    }
+
+    /// <summary>
+    /// Verify that the function level error handler has precedence over the process level error handler.
+    /// </summary>
+    [Fact]
+    public async Task FunctionErrorHandlerTakesPrecedenceAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessFunctionErrorHandledAsync));
+
+        ProcessStepBuilder testStep = process.AddStepFromType<FailedStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(testStep));
+
+        ProcessStepBuilder errorStep = process.AddStepFromType<ErrorStep>();
+        testStep.OnFunctionError(nameof(FailedStep.TestFailure)).SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.FunctionErrorHandler)));
+        process.OnError().SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.GlobalErrorHandler)));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+
+        // Assert
+        Assert.True(kernel.Data.ContainsKey("error-function"));
+        Assert.False(kernel.Data.ContainsKey("error-global"));
     }
 
     /// <summary>

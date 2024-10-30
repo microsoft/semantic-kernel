@@ -188,7 +188,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     kernel: this._kernel,
                     parentProcessId: this.Id);
 
-                //await process.StartAsync(kernel: this._kernel, keepAlive: true).ConfigureAwait(false);
                 localStep = process;
             }
             else
@@ -331,7 +330,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
             // Get the edges for the event and queue up the messages to be sent to the next steps.
             bool foundEdge = false;
-            foreach (var edge in step.GetEdgeForEvent(stepEvent.Id))
+            foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.Id))
             {
                 ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
                 messageChannel.Enqueue(message);
@@ -340,7 +339,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
             if (!foundEdge && stepEvent.IsError)
             {
-                if (this._outputEdges.TryGetValue("Global.OnError", out List<KernelProcessEdge>? edges))
+                if (this._outputEdges.TryGetValue(KernelProcess.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
                 {
                     foreach (KernelProcessEdge edge in edges)
                     {
@@ -348,9 +347,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                         messageChannel.Enqueue(message);
                     }
                 }
-
-                //ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
-                //messageChannel.Enqueue(message);
             }
         }
     }
