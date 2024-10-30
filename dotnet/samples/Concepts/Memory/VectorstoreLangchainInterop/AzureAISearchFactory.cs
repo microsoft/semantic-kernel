@@ -13,7 +13,7 @@ namespace Memory.VectorstoreLangchainInterop;
 /// Contains a factory method that can be used to create an Azure AI Search vector store that is compatible with datasets ingested using Langchain.
 /// </summary>
 /// <remarks>
-/// This class is used with the <see cref="LangchainInterop"/> sample.
+/// This class is used with the <see cref="VectorStore_Langchain_Interop"/> sample.
 /// </remarks>
 public static class AzureAISearchFactory
 {

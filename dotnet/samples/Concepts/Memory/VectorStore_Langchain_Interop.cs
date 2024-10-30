@@ -3,6 +3,7 @@
 using Azure;
 using Azure.Identity;
 using Azure.Search.Documents.Indexes;
+using Memory.VectorstoreLangchainInterop;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
@@ -10,11 +11,13 @@ using Qdrant.Client;
 using StackExchange.Redis;
 using Sdk = Pinecone;
 
-namespace Memory.VectorstoreLangchainInterop;
+namespace Memory;
 
 /// <summary>
-/// Example showing how to consume data that had previously been
-/// ingested into a database using Langchain.
+/// Example showing how to consume data that had previously been ingested into a database using Langchain.
+/// The example also demonstrates how to get all vector stores to share the same data model, so where necessary
+/// a conversion is done, specifically for ids, where the database requires GUIDs, but we want to use strings
+/// containing GUIDs in the common data model.
 /// </summary>
 /// <remarks>
 /// To run these samples, you need to first create collections instances using Langhain.
@@ -23,8 +26,11 @@ namespace Memory.VectorstoreLangchainInterop;
 /// And the from_documents method to create the collection as shown here:
 /// https://python.langchain.com/docs/tutorials/retrievers/#vector-stores
 /// </remarks>
-public class LangchainInterop(ITestOutputHelper output) : BaseTest(output)
+public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// Shows how to read data from an Azure AI Search collection that was created and ingested using Langchain.
+    /// </summary>
     [Fact]
     public async Task ReadDataFromLangchainAzureAISearchAsync()
     {
@@ -35,6 +41,11 @@ public class LangchainInterop(ITestOutputHelper output) : BaseTest(output)
         await this.ReadDataFromCollectionAsync(vectorStore, "pets");
     }
 
+    /// <summary>
+    /// Shows how to read data from a Qdrant collection that was created and ingested using Langchain.
+    /// Also adds a converter to expose keys as strings containing GUIDs instead of <see cref="Guid"/> objects,
+    /// to match the document schema of the other vector stores.
+    /// </summary>
     [Fact]
     public async Task ReadDataFromLangchainQdrantAsync()
     {
@@ -43,6 +54,9 @@ public class LangchainInterop(ITestOutputHelper output) : BaseTest(output)
         await this.ReadDataFromCollectionAsync(vectorStore, "pets");
     }
 
+    /// <summary>
+    /// Shows how to read data from a Pinecone collection that was created and ingested using Langchain.
+    /// </summary>
     [Fact]
     public async Task ReadDataFromLangchainPineconeAsync()
     {
@@ -51,6 +65,9 @@ public class LangchainInterop(ITestOutputHelper output) : BaseTest(output)
         await this.ReadDataFromCollectionAsync(vectorStore, "pets");
     }
 
+    /// <summary>
+    /// Shows how to read data from a Redis collection that was created and ingested using Langchain.
+    /// </summary>
     [Fact]
     public async Task ReadDataFromLangchainRedisAsync()
     {

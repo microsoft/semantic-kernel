@@ -8,7 +8,7 @@ namespace Memory.VectorstoreLangchainInterop;
 /// a different record definition is used with each vector store implementation.
 /// </summary>
 /// <remarks>
-/// This class is used with the <see cref="LangchainInterop"/> sample.
+/// This class is used with the <see cref="VectorStore_Langchain_Interop"/> sample.
 /// </remarks>
 public class LangchainDocument<TKey>
 {
