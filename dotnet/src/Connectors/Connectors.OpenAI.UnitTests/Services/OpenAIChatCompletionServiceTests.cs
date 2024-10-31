@@ -1371,6 +1371,58 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("required", optionsJson.GetProperty("tool_choice").ToString());
     }
 
+    [Theory]
+    [InlineData("auto", true)]
+    [InlineData("auto", false)]
+    [InlineData("auto", null)]
+    [InlineData("required", true)]
+    [InlineData("required", false)]
+    [InlineData("required", null)]
+    public async Task ItPassesAllowParallelCallsOptionToLLMAsync(string choice, bool? optionValue)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Now")
+        ]);
+
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        using var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json")) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(response);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var functionChoiceBehaviorOptions = new FunctionChoiceBehaviorOptions() { AllowParallelCalls = optionValue };
+
+        var executionSettings = new OpenAIPromptExecutionSettings()
+        {
+            FunctionChoiceBehavior = choice switch
+            {
+                "auto" => FunctionChoiceBehavior.Auto(options: functionChoiceBehaviorOptions),
+                "required" => FunctionChoiceBehavior.Required(options: functionChoiceBehaviorOptions),
+                _ => throw new ArgumentException("Invalid choice", nameof(choice))
+            }
+        };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!));
+
+        if (optionValue is null)
+        {
+            Assert.False(optionsJson.TryGetProperty("parallel_tool_calls", out _));
+        }
+        else
+        {
+            Assert.Equal(optionValue, optionsJson.GetProperty("parallel_tool_calls").GetBoolean());
+        }
+    }
+
     [Fact]
     public async Task ItDoesNotChangeDefaultsForToolsAndChoiceIfNeitherOfFunctionCallingConfigurationsSetAsync()
     {
