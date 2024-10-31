@@ -23,14 +23,6 @@ internal static class ChatCompletionServiceExtensions
     {
         return new ChatCompletionServiceWithReducer(service, reducer);
     }
-
-    /// <summary>
-    /// Returns the first system prompt from the chat history.
-    /// </summary>
-    internal static ChatMessageContent? GetSystemMessage(this ChatHistory chatHistory)
-    {
-        return chatHistory.FirstOrDefault(m => m.Role == AuthorRole.System);
-    }
 }
 
 /// <summary>
@@ -76,13 +68,14 @@ public sealed class TruncatingChatHistoryReducer : IChatHistoryReducer
     #region private
     private static int ComputeTruncationIndex(ChatHistory chatHistory, int truncatedSize, bool hasSystemMessage)
     {
+        truncatedSize -= hasSystemMessage ? 1 : 0;
         if (chatHistory.Count <= truncatedSize)
         {
             return -1;
         }
 
         // Compute the index of truncation target
-        var truncationIndex = chatHistory.Count - (truncatedSize - (hasSystemMessage ? 1 : 0));
+        var truncationIndex = chatHistory.Count - truncatedSize;
 
         // Skip function related content
         while (truncationIndex < chatHistory.Count)
@@ -265,7 +258,7 @@ public sealed class SummarizingChatHistoryReducer : IChatHistoryReducer
 
         // check are there messages to be summarized
         var startIndex = -1;
-        var endIndex = chatHistory.Count - this._truncatedSize + (hasSystemMessage ? 1 : 0);
+        var endIndex = chatHistory.Count - this._truncatedSize;
         if (lastIndex == -1)
         {
             // have never summarized so use chat history size
@@ -285,17 +278,12 @@ public sealed class SummarizingChatHistoryReducer : IChatHistoryReducer
             startIndex = lastIndex;
         }
 
-        IEnumerable<ChatMessageContent>? truncatedHistory = null;
         var summaryMessage = await this.SummarizeAsync(chatHistory, startIndex, endIndex, cancellationToken);
 
-        truncatedHistory = chatHistory.Extract(endIndex + 1, systemMessage: systemMessage, summaryMessage: summaryMessage);
-
         // insert summary into the original chat history
-        if (summaryMessage is not null)
-        {
-            chatHistory.Insert(endIndex, summaryMessage);
-        }
+        chatHistory.Insert(endIndex + 1, summaryMessage);
 
+        IEnumerable<ChatMessageContent>? truncatedHistory = chatHistory.Extract(endIndex + 2, systemMessage: systemMessage, summaryMessage: summaryMessage);
         return truncatedHistory;
     }
 
@@ -308,7 +296,7 @@ public sealed class SummarizingChatHistoryReducer : IChatHistoryReducer
     /// <param name="endIndex"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<ChatMessageContent?> SummarizeAsync(ChatHistory chatHistory, int startIndex, int endIndex, CancellationToken cancellationToken)
+    private async Task<ChatMessageContent> SummarizeAsync(ChatHistory chatHistory, int startIndex, int endIndex, CancellationToken cancellationToken)
     {
         // extract history for summarization
         IEnumerable<ChatMessageContent> messagesToSummarize =
@@ -318,7 +306,7 @@ public sealed class SummarizingChatHistoryReducer : IChatHistoryReducer
         // summarize the chat history
         var summarizationRequest = new ChatHistory(this._summarizationPrompt);
         summarizationRequest.AddRange(messagesToSummarize);
-        ChatMessageContent? summaryContent = await this._chatClient.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).ConfigureAwait(false);
+        ChatMessageContent summaryContent = await this._chatClient.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).ConfigureAwait(false);
         summaryContent.Metadata = new Dictionary<string, object?> { { SummaryMetadataKey, true } };
 
         return summaryContent;
@@ -357,9 +345,9 @@ public sealed class ChatCompletionServiceWithReducer(IChatCompletionService serv
         CancellationToken cancellationToken = default)
     {
         var reducedMessages = await reducer.ReduceAsync(chatHistory, cancellationToken).ConfigureAwait(false);
-        var history = reducedMessages is null ? chatHistory : new ChatHistory(reducedMessages);
+        var reducedHistory = reducedMessages is null ? chatHistory : new ChatHistory(reducedMessages);
 
-        return await service.GetChatMessageContentsAsync(history, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+        return await service.GetChatMessageContentsAsync(reducedHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

@@ -14,6 +14,14 @@ internal static class ChatHistoryExtensions
     private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
 
     /// <summary>
+    /// Returns the first system prompt from the chat history.
+    /// </summary>
+    internal static ChatMessageContent? GetSystemMessage(this ChatHistory chatHistory)
+    {
+        return chatHistory.FirstOrDefault(m => m.Role == AuthorRole.System);
+    }
+
+    /// <summary>
     /// Extract a range of messages from the provided <see cref="ChatHistory"/>.
     /// </summary>
     /// <param name="chatHistory">The source history</param>
@@ -86,18 +94,6 @@ internal static class ChatHistoryExtensions
                 break;
             }
         }
-
-        /*
-        var targetIndex = truncationIndex;
-        while (truncationIndex >= 0)
-        {
-            if (chatHistory[truncationIndex].Role == AuthorRole.User)
-            {
-                return truncationIndex;
-            }
-            truncationIndex--;
-        }
-        */
 
         return truncationIndex;
     }

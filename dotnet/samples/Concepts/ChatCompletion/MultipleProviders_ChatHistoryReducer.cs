@@ -194,7 +194,7 @@ public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : Ba
         OpenAIChatCompletionService openAiChatService = new(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new SummarizingChatHistoryReducer(openAiChatService, 2, 6));
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new SummarizingChatHistoryReducer(openAiChatService, 2, 4));
 
         var chatHistory = new ChatHistory("You are an expert on the best restaurants in every city. Answer for the city the user has asked about.");
 
@@ -202,19 +202,22 @@ public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : Ba
             "Recommend restaurants in Seattle",
             "What is the best Italian restaurant?",
             "What is the best Korean restaurant?",
+            "What is the best Brazilian restaurant?",
             "Recommend restaurants in Dublin",
             "What is the best Indian restaurant?",
             "What is the best Japanese restaurant?",
+            "What is the best French restaurant?",
+
         ];
 
         int totalTokenCount = 0;
         foreach (var userMessage in userMessages)
         {
-            chatHistory.AddUserMessageWithTokenCount(userMessage);
+            chatHistory.AddUserMessage(userMessage);
             Console.WriteLine($"\n>>> User:\n{userMessage}");
 
             var response = await chatService.GetChatMessageContentAsync(chatHistory);
-            chatHistory.AddAssistantMessageWithTokenCount(response.Content!);
+            chatHistory.AddAssistantMessage(response.Content!);
             Console.WriteLine($"\n>>> Assistant:\n{response.Content!}");
 
             if (response.InnerContent is OpenAI.Chat.ChatCompletion chatCompletion)
