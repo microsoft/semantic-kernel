@@ -9,7 +9,7 @@ internal static class ProcessStateMetadataFactory
     /// Captures Kernel Process Step State into <see cref="KernelProcessStateMetadata"/>
     /// </summary>
     /// <returns><see cref="KernelProcessStateMetadata"/></returns>
-    private static KernelProcessStateMetadata ToProcessStateMetadata(this KernelProcessStepInfo stepInfo)
+    private static KernelProcessStateMetadata StepInfoToProcessStateMetadata(KernelProcessStepInfo stepInfo)
     {
         KernelProcessStateMetadata metadata = new()
         {
@@ -54,12 +54,22 @@ internal static class ProcessStateMetadataFactory
             }
             else
             {
-                stepEventMetadata = step.ToProcessStateMetadata();
+                stepEventMetadata = StepInfoToProcessStateMetadata(step);
             }
 
             metadata.StepsState.Add(step.State.Name, stepEventMetadata);
         }
 
         return metadata;
+    }
+
+    public static KernelProcessStateMetadata ToProcessStateMetadata(this KernelProcessStepInfo stepInfo)
+    {
+        if (stepInfo is KernelProcess subprocess)
+        {
+            return KernelProcessToProcessStateMetadata(subprocess);
+        }
+
+        return StepInfoToProcessStateMetadata(stepInfo);
     }
 }
