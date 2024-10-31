@@ -161,7 +161,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 
-        response = await self._send_request(request_settings=settings)
+        response = await self._send_request(settings)
         if not isinstance(response, AsyncStream):
             raise ServiceInvalidResponseError("Expected an AsyncStream[ChatCompletionChunk] response.")
         async for chunk in response:

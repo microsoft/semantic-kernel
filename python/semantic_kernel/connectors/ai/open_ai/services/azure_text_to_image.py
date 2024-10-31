@@ -84,7 +84,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
-            ai_model_type=OpenAIModelTypes.IMAGE,
+            ai_model_type=OpenAIModelTypes.TEXT_TO_IMAGE,
             client=async_client,
         )
 

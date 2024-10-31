@@ -83,9 +83,6 @@ class OpenAIConfigBase(OpenAIHandler):
             client_settings["org_id"] = self.client.organization
         base = self.model_dump(
             exclude={
-                "prompt_tokens",
-                "completion_tokens",
-                "total_tokens",
                 "api_type",
                 "ai_model_type",
                 "service_id",

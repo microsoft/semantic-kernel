@@ -2,21 +2,30 @@
 
 import logging
 from abc import ABC
-from typing import Any
+from typing import Any, Union
 
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.lib._parsing._completions import type_to_response_format_param
-from openai.types import Completion, CreateEmbeddingResponse
+from openai.types import Completion
+from openai.types.audio import Transcription
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
+from openai.types.images_response import ImagesResponse
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_audio_to_text_execution_settings import (
+    OpenAIAudioToTextExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
+    OpenAITextToImageExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -24,30 +33,53 @@ from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBu
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+RESPONSE_TYPE = Union[
+    ChatCompletion,
+    Completion,
+    AsyncStream[ChatCompletionChunk],
+    AsyncStream[Completion],
+    list[Any],
+    ImagesResponse,
+    Transcription,
+]
+
 
 class OpenAIHandler(KernelBaseModel, ABC):
     """Internal class for calls to OpenAI API's."""
 
     client: AsyncOpenAI
     ai_model_type: OpenAIModelTypes = OpenAIModelTypes.CHAT
-    prompt_tokens: int = 0
-    completion_tokens: int = 0
-    total_tokens: int = 0
 
-    async def _send_request(
+    async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
+        """Send a request to the OpenAI API."""
+        if self.ai_model_type == OpenAIModelTypes.TEXT or self.ai_model_type == OpenAIModelTypes.CHAT:
+            assert isinstance(settings, OpenAIPromptExecutionSettings)  # nosec
+            return await self._send_completion_request(settings)
+        if self.ai_model_type == OpenAIModelTypes.EMBEDDING:
+            assert isinstance(settings, OpenAIEmbeddingPromptExecutionSettings)  # nosec
+            return await self._send_embedding_request(settings)
+        if self.ai_model_type == OpenAIModelTypes.TEXT_TO_IMAGE:
+            assert isinstance(settings, OpenAITextToImageExecutionSettings)  # nosec
+            return await self._send_text_to_image_request(settings)
+        if self.ai_model_type == OpenAIModelTypes.AUDIO_TO_TEXT:
+            assert isinstance(settings, OpenAIAudioToTextExecutionSettings)  # nosec
+            return await self._send_audio_to_text_request(settings)
+
+        raise NotImplementedError(f"Model type {self.ai_model_type} is not supported")
+
+    async def _send_completion_request(
         self,
-        request_settings: OpenAIPromptExecutionSettings,
+        settings: OpenAIPromptExecutionSettings,
     ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
         """Execute the appropriate call to OpenAI models."""
         try:
-            settings = request_settings.prepare_settings_dict()
+            settings_dict = settings.prepare_settings_dict()
             if self.ai_model_type == OpenAIModelTypes.CHAT:
-                assert isinstance(request_settings, OpenAIChatPromptExecutionSettings)  # nosec
-                self._handle_structured_output(request_settings, settings)
-                response = await self.client.chat.completions.create(**settings)
+                assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
+                self._handle_structured_output(settings, settings_dict)
+                response = await self.client.chat.completions.create(**settings_dict)
             else:
-                response = await self.client.completions.create(**settings)
-            self.store_usage(response)
+                response = await self.client.completions.create(**settings_dict)
             return response
         except BadRequestError as ex:
             if ex.code == "content_filter":
@@ -66,13 +98,36 @@ class OpenAIHandler(KernelBaseModel, ABC):
             ) from ex
 
     async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> list[Any]:
+        """Send a request to the OpenAI embeddings endpoint."""
         try:
             response = await self.client.embeddings.create(**settings.prepare_settings_dict())
-            self.store_usage(response)
             return [x.embedding for x in response.data]
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to generate embeddings",
+                ex,
+            ) from ex
+
+    async def _send_text_to_image_request(self, settings: OpenAITextToImageExecutionSettings) -> ImagesResponse:
+        """Send a request to the OpenAI text to image endpoint."""
+        try:
+            return await self.client.images.generate(
+                **settings.prepare_settings_dict(),
+            )
+        except Exception as ex:
+            raise ServiceResponseException(f"Failed to generate image: {ex}") from ex
+
+    async def _send_audio_to_text_request(self, settings: OpenAIAudioToTextExecutionSettings) -> Transcription:
+        """Send a request to the OpenAI audio to text endpoint."""
+        try:
+            with open(settings.filename, "rb") as audio_file:
+                return await self.client.audio.transcriptions.create(
+                    file=audio_file,
+                    **settings.prepare_settings_dict(),
+                )
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to transcribe audio",
                 ex,
             ) from ex
 
@@ -94,19 +149,3 @@ class OpenAIHandler(KernelBaseModel, ABC):
             # Case 3: response_format is a dictionary, pass it without modification
             elif isinstance(response_format, dict):
                 settings["response_format"] = response_format
-
-    def store_usage(
-        self,
-        response: ChatCompletion
-        | Completion
-        | AsyncStream[ChatCompletionChunk]
-        | AsyncStream[Completion]
-        | CreateEmbeddingResponse,
-    ):
-        """Store the usage information from the response."""
-        if not isinstance(response, AsyncStream) and response.usage:
-            logger.info(f"OpenAI usage: {response.usage}")
-            self.prompt_tokens += response.usage.prompt_tokens
-            self.total_tokens += response.usage.total_tokens
-            if hasattr(response.usage, "completion_tokens"):
-                self.completion_tokens += response.usage.completion_tokens
