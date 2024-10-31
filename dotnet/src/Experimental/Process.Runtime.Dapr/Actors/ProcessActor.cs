@@ -206,6 +206,8 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         }
     }
 
+    internal static ActorId GetScopedGlobalErrorEventBufferId(string processId) => new($"{ProcessConstants.GlobalErrorEventId}_{processId}");
+
     #region Private Methods
 
     /// <summary>
@@ -359,8 +361,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// </summary>
     private async Task HandleGlobalErrorMessageAsync()
     {
-        var scopedEventBufferId = new ActorId(ProcessConstants.GlobalErrorEventId);
-        var errorEventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(scopedEventBufferId, nameof(EventBufferActor));
+        var errorEventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(ProcessActor.GetScopedGlobalErrorEventBufferId(this.Id.GetId()), nameof(EventBufferActor));
 
         var errorEvents = await errorEventQueue.DequeueAllAsync().ConfigureAwait(false);
         if (errorEvents.Count == 0)

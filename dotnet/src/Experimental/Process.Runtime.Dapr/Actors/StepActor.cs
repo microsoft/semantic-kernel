@@ -410,9 +410,9 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Error event was raised with no edge to handle it, send it to the global error event buffer.
-        if (!foundEdge && daprEvent.IsError)
+        if (!foundEdge && daprEvent.IsError && this.ParentProcessId != null)
         {
-            var parentProcess1 = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(ProcessConstants.GlobalErrorEventId), nameof(EventBufferActor));
+            var parentProcess1 = this.ProxyFactory.CreateActorProxy<IEventBuffer>(ProcessActor.GetScopedGlobalErrorEventBufferId(this.ParentProcessId), nameof(EventBufferActor));
             await parentProcess1.EnqueueAsync(daprEvent).ConfigureAwait(false);
         }
     }
