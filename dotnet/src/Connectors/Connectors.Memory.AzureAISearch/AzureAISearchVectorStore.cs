@@ -45,14 +45,14 @@ public sealed class AzureAISearchVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._searchIndexClient, name, vectorStoreRecordDefinition);
+        }
+
+        if (typeof(TKey) != typeof(string))
+        {
+            throw new NotSupportedException("Only string keys are supported.");
         }
 
         var recordCollection = new AzureAISearchVectorStoreRecordCollection<TRecord>(
