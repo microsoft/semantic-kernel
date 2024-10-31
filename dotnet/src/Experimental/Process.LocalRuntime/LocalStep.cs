@@ -207,7 +207,7 @@ internal class LocalStep : IKernelProcessMessageChannel
                 new KernelProcessEvent
                 {
                     Id = $"{targetFunction}.OnError",
-                    Data = ex,
+                    Data = KernelProcessError.FromException(ex),
                 },
                 isError: true).ConfigureAwait(false);
         }

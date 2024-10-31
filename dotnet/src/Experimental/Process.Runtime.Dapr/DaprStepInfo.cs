@@ -51,7 +51,8 @@ public record DaprStepInfo
     /// <returns>An instance of <see cref="DaprStepInfo"/></returns>
     public static DaprStepInfo FromKernelStepInfo(KernelProcessStepInfo kernelStepInfo)
     {
-        Verify.NotNull(kernelStepInfo);
+        Verify.NotNull(kernelStepInfo, nameof(kernelStepInfo));
+
         return new DaprStepInfo
         {
             InnerStepDotnetType = kernelStepInfo.InnerStepType.AssemblyQualifiedName!,

@@ -113,8 +113,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     {
         var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(this.Id.GetId()), nameof(MessageBufferActor));
         var incoming = await messageQueue.DequeueAllAsync().ConfigureAwait(false);
-        foreach (var message in incoming)
+
+        Console.WriteLine($"##### STEP [{this._innerStepType!.Name}] - PREPARE #{incoming.Count}"); // %%% REMOVE
+        foreach (ProcessMessage message in incoming)
         {
+            Console.WriteLine($"##### STEP [{this._innerStepType!.Name}] - PREPARE {message.SourceId}"); // %%% REMOVE
             this._incomingMessages.Enqueue(message);
         }
 
@@ -132,6 +135,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     public async Task ProcessIncomingMessagesAsync()
     {
         // Handle all the incoming messages one at a time
+        Console.WriteLine($"##### STEP [{this._innerStepType!.Name}] - PROCESS #{this._incomingMessages.Count}"); // %%% REMOVE
         while (this._incomingMessages.Count > 0)
         {
             var message = this._incomingMessages.Dequeue();
@@ -268,7 +272,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            Console.WriteLine($"##### STEP ACTOR - FUNCTION INVOKE: {targetFunction}"); // %%% REMOVE 
+            Console.WriteLine($"##### STEP [{this._innerStepType!.Name}] - FUNCTION INVOKE: {targetFunction}"); // %%% REMOVE 
             this?._logger?.LogInformation("Invoking function {FunctionName} with arguments {Arguments}", targetFunction, arguments);
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
 
@@ -279,7 +283,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
-            Console.WriteLine($"##### STEP ACTOR - FUNCTION RESULT: {invokeResult.GetValue<object>()}"); // %%% REMOVE
+            Console.WriteLine($"##### STEP [{this._innerStepType!.Name}] - FUNCTION RESULT: {invokeResult.GetValue<object>()}"); // %%% REMOVE
             await this.EmitEventAsync(
                 new KernelProcessEvent
                 {
@@ -289,13 +293,13 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"##### STEP ACTOR - FUNCTION ERROR: {ex.Message}"); // %%% REMOVE
+            Console.WriteLine($"##### STEP [{this._innerStepType!.Name}] - FUNCTION ERROR: {ex.Message}"); // %%% REMOVE
             this._logger?.LogInformation("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             await this.EmitEventAsync(
                 new KernelProcessEvent
                 {
                     Id = $"{targetFunction}.OnError",
-                    Data = ex,
+                    Data = KernelProcessError.FromException(ex),
                 },
                 isError: true).ConfigureAwait(false);
         }
@@ -361,12 +365,9 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             throw new KernelException("The state object for the KernelProcessStep could not be created.").Log(this._logger);
         }
 
-        MethodInfo? methodInfo = this._innerStepType!.GetMethod(nameof(KernelProcessStep.ActivateAsync), [stateType]);
-
-        if (methodInfo is null)
-        {
+        MethodInfo? methodInfo =
+            this._innerStepType!.GetMethod(nameof(KernelProcessStep.ActivateAsync), [stateType]) ??
             throw new KernelException("The ActivateAsync method for the KernelProcessStep could not be found.").Log(this._logger);
-        }
 
         this._stepState = stateObject;
         this._stepStateType = stateType;
@@ -392,6 +393,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="daprEvent">The event to emit.</param>
     internal async ValueTask EmitEventAsync(ProcessEvent daprEvent)
     {
+        Console.WriteLine($"##### STEP [{this._innerStepType!.Name}] - EMIT START: {daprEvent.Id}"); // %%% REMOVE
+
         var scopedEvent = this.ScopedEvent(daprEvent);
 
         // Emit the event out of the process (this one) if it's visibility is public.
@@ -406,13 +409,25 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Get the edges for the event and queue up the messages to be sent to the next steps.
-        foreach (var edge in this.GetEdgeForEvent(daprEvent.Id!))
+        bool foundEdge = false;
+        foreach (var edge in this.GetEdgeForEvent(daprEvent.Id))
         {
             ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
             var scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
             var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message).ConfigureAwait(false);
+            foundEdge = true;
         }
+
+        if (!foundEdge && daprEvent.IsError)
+        {
+            Console.WriteLine($"##### STEP [{this._innerStepType!.Name}] - EMIT HOWSIE {daprEvent.Id} [{this.ParentProcessId}]"); // %%% REMOVE
+
+            var parentProcess1 = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(ProcessConstants.GlobalErrorEventId), nameof(EventBufferActor));
+            await parentProcess1.EnqueueAsync(daprEvent).ConfigureAwait(false);
+        }
+
+        Console.WriteLine($"##### STEP [{this._innerStepType!.Name}] - EMIT END: {daprEvent.Id}"); // %%% REMOVE
     }
 
     /// <summary>

@@ -105,6 +105,7 @@ public class LocalProcessTests
 
         // Assert
         Assert.True(kernel.Data.ContainsKey("error-function"));
+        Assert.IsType<KernelProcessError>(kernel.Data["error-function"]);
     }
 
     /// <summary>
@@ -130,6 +131,7 @@ public class LocalProcessTests
 
         // Assert
         Assert.True(kernel.Data.ContainsKey("error-global"));
+        Assert.IsType<KernelProcessError>(kernel.Data["error-global"]);
     }
 
     /// <summary>
@@ -155,8 +157,9 @@ public class LocalProcessTests
         using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
 
         // Assert
-        Assert.True(kernel.Data.ContainsKey("error-function"));
         Assert.False(kernel.Data.ContainsKey("error-global"));
+        Assert.True(kernel.Data.ContainsKey("error-function"));
+        Assert.IsType<KernelProcessError>(kernel.Data["error-function"]);
     }
 
     /// <summary>
@@ -202,7 +205,7 @@ public class LocalProcessTests
         /// A method for unhandling failures at the process level.
         /// </summary>
         [KernelFunction]
-        public void GlobalErrorHandler(Exception exception, Kernel kernel)
+        public void GlobalErrorHandler(KernelProcessError exception, Kernel kernel)
         {
             kernel.Data.Add("error-global", exception);
         }
@@ -211,7 +214,7 @@ public class LocalProcessTests
         /// A method for unhandling failures at the function level.
         /// </summary>
         [KernelFunction]
-        public void FunctionErrorHandler(Exception exception, Kernel kernel)
+        public void FunctionErrorHandler(KernelProcessError exception, Kernel kernel)
         {
             kernel.Data.Add("error-function", exception);
         }

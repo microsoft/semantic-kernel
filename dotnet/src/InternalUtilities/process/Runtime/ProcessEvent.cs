@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel.Process.Runtime;
 /// <param name="InnerEvent">The instance of <see cref="KernelProcessEvent"/> that this <see cref="ProcessEvent"/> came from.</param>
 /// <param name="IsError">This event represents a runtime error / exception raised internally by the framework.</param>
 [DataContract]
+[KnownType(typeof(KernelProcessError))]
 public record ProcessEvent(
     [property: DataMember] string? Namespace,
     [property: DataMember] KernelProcessEvent InnerEvent,

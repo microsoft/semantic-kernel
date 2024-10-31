@@ -24,7 +24,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     internal readonly List<IStep> _steps = [];
 
-    internal List<DaprStepInfo>? _stepsInfos;
+    internal IList<DaprStepInfo>? _stepsInfos;
     internal DaprProcessInfo? _process;
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
@@ -225,7 +225,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
         this.ParentProcessId = parentProcessId;
         this._process = processInfo;
-        this._stepsInfos = new List<DaprStepInfo>(this._process.Steps);
+        this._stepsInfos = [.. this._process.Steps];
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<ProcessActor>();
 
         // Initialize the input and output edges for the process
@@ -258,6 +258,8 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 // The current step should already have an Id.
                 Verify.NotNull(step.State?.Id);
 
+                //Console.WriteLine($"##### PROCESS [{step.InnerStepDotnetType.Split(' ').First()}] - INIT #{step.Edges.Count}");
+
                 var scopedStepId = this.ScopedActorId(new ActorId(step.State.Id!));
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedStepId, nameof(StepActor));
                 await stepActor.InitializeStepAsync(step, this.Id.GetId()).ConfigureAwait(false);
@@ -284,6 +286,9 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                     this._processCancelSource?.Cancel();
                     break;
                 }
+
+                // Translate any global error events into an message that targets the appropriate step, when one exists.
+                await this.HandleGlobalErrorMessageAsync().ConfigureAwait(false);
 
                 // Check for external events
                 await this.EnqueueExternalMessagesAsync().ConfigureAwait(false);
@@ -313,7 +318,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         }
         catch (Exception ex)
         {
-            this._logger?.LogError("An error occurred while running the process: {ErrorMessage}.", ex.Message);
+            this._logger?.LogError(ex, "An error occurred while running the process: {ErrorMessage}.", ex.Message);
             throw;
         }
         finally
@@ -354,6 +359,44 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     }
 
     /// <summary>
+    /// Check for the presence of an global-error event and any edges defined for processing it.
+    /// When both exist, the error event is processed and sent to the appropriate targets.
+    /// </summary>
+    private async Task HandleGlobalErrorMessageAsync()
+    {
+        var scopedEventBufferId = new ActorId(ProcessConstants.GlobalErrorEventId);
+        var errorEventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(scopedEventBufferId, nameof(EventBufferActor));
+
+        var errorEvents = await errorEventQueue.DequeueAllAsync().ConfigureAwait(false);
+        Console.WriteLine($"##### PROCESS - ERROR EVENTS {errorEvents.Count}"); // %%% REMOVE
+        if (errorEvents.Count == 0)
+        {
+            // No error events in queue.
+            return;
+        }
+
+        var errorEdges = this.GetEdgeForEvent(ProcessConstants.GlobalErrorEventId).ToArray();
+        if (errorEdges.Length == 0)
+        {
+            // No further action is required when there are no targetes defined for processing the error.
+            return;
+        }
+
+        Console.WriteLine($"##### PROCESS - ERROR EDGE {errorEdges.Length}"); // %%% REMOVE
+
+        foreach (var errorEdge in errorEdges)
+        {
+            foreach (ProcessEvent errorEvent in errorEvents)
+            {
+                var errorMessage = ProcessMessageFactory.CreateFromEdge(errorEdge, errorEvent.Data);
+                var scopedErrorMessageBufferId = this.ScopedActorId(new ActorId(errorEdge.OutputTarget.StepId));
+                var errorStepQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedErrorMessageBufferId, nameof(MessageBufferActor));
+                await errorStepQueue.EnqueueAsync(errorMessage).ConfigureAwait(false);
+            }
+        }
+    }
+
+    /// <summary>
     /// Determines is the end message has been sent to the process.
     /// </summary>
     /// <returns>True if the end message has been sent, otherwise false.</returns>
@@ -375,7 +418,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         var processState = new KernelProcessState(this.Name, this.Id.GetId());
         var stepTasks = this._steps.Select(step => step.ToDaprStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
-        return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = steps.ToList() };
+        return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = [.. steps] };
     }
 
     /// <summary>
