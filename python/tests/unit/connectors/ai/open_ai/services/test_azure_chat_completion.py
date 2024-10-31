@@ -2,6 +2,7 @@
 
 import json
 import os
+from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import openai
@@ -17,6 +18,7 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
     ContentFilterAIException,
@@ -32,6 +34,8 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
 # region Service Setup
@@ -593,6 +597,162 @@ async def test_cmc_tool_calling(
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
     )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_tool_calling_parallel_tool_calls(
+    mock_create,
+    kernel: Kernel,
+    azure_openai_unit_test_env,
+    chat_history: ChatHistory,
+    mock_chat_completion_response: ChatCompletion,
+) -> None:
+    mock_chat_completion_response.choices = [
+        Choice(
+            index=0,
+            message=ChatCompletionMessage(
+                content=None,
+                role="assistant",
+                tool_calls=[
+                    {
+                        "id": "test id",
+                        "function": {"name": "test-tool", "arguments": '{"key": "value"}'},
+                        "type": "function",
+                    }
+                ],
+            ),
+            finish_reason="stop",
+        )
+    ]
+    mock_create.return_value = mock_chat_completion_response
+    prompt = "hello world"
+    chat_history.add_user_message(prompt)
+
+    class MockPlugin:
+        @kernel_function(name="test_tool")
+        def test_tool(self, key: str):
+            return "test"
+
+    kernel.add_plugin(MockPlugin(), plugin_name="test_tool")
+
+    orig_chat_history = deepcopy(chat_history)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
+        service_id="test_service_id", function_choice_behavior=FunctionChoiceBehavior.Auto()
+    )
+
+    with patch(
+        "semantic_kernel.kernel.Kernel.invoke_function_call",
+        new_callable=AsyncMock,
+    ) as mock_process_function_call:
+        azure_chat_completion = AzureChatCompletion()
+        await azure_chat_completion.get_chat_message_contents(
+            chat_history=chat_history,
+            settings=complete_prompt_execution_settings,
+            kernel=kernel,
+            arguments=KernelArguments(),
+        )
+        mock_create.assert_awaited_once_with(
+            model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+            stream=False,
+            messages=azure_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+            parallel_tool_calls=True,
+            tools=[
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "test_tool-test_tool",
+                        "description": "",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {"key": {"type": "string"}},
+                            "required": ["key"],
+                        },
+                    },
+                }
+            ],
+            tool_choice="auto",
+        )
+        mock_process_function_call.assert_awaited()
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_tool_calling_parallel_tool_calls_disabled(
+    mock_create,
+    kernel: Kernel,
+    azure_openai_unit_test_env,
+    chat_history: ChatHistory,
+    mock_chat_completion_response: ChatCompletion,
+) -> None:
+    mock_chat_completion_response.choices = [
+        Choice(
+            index=0,
+            message=ChatCompletionMessage(
+                content=None,
+                role="assistant",
+                tool_calls=[
+                    {
+                        "id": "test id",
+                        "function": {"name": "test-tool", "arguments": '{"key": "value"}'},
+                        "type": "function",
+                    }
+                ],
+            ),
+            finish_reason="stop",
+        )
+    ]
+    mock_create.return_value = mock_chat_completion_response
+    prompt = "hello world"
+    chat_history.add_user_message(prompt)
+
+    class MockPlugin:
+        @kernel_function(name="test_tool")
+        def test_tool(self, key: str):
+            return "test"
+
+    kernel.add_plugin(MockPlugin(), plugin_name="test_tool")
+
+    orig_chat_history = deepcopy(chat_history)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
+        service_id="test_service_id",
+        function_choice_behavior=FunctionChoiceBehavior.Auto(),
+        parallel_tool_calls=False,
+    )
+
+    with patch(
+        "semantic_kernel.kernel.Kernel.invoke_function_call",
+        new_callable=AsyncMock,
+    ) as mock_process_function_call:
+        azure_chat_completion = AzureChatCompletion()
+        await azure_chat_completion.get_chat_message_contents(
+            chat_history=chat_history,
+            settings=complete_prompt_execution_settings,
+            kernel=kernel,
+            arguments=KernelArguments(),
+        )
+        mock_create.assert_awaited_once_with(
+            model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+            stream=False,
+            messages=azure_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+            parallel_tool_calls=False,
+            tools=[
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "test_tool-test_tool",
+                        "description": "",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {"key": {"type": "string"}},
+                            "required": ["key"],
+                        },
+                    },
+                }
+            ],
+            tool_choice="auto",
+        )
+        mock_process_function_call.assert_awaited()
 
 
 CONTENT_FILTERED_ERROR_MESSAGE = (
