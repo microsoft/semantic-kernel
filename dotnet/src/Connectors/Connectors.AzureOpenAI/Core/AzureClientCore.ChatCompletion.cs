@@ -49,7 +49,6 @@ internal partial class AzureClientCore
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
-            AllowParallelToolCalls = toolCallingConfig.Options?.AllowParallelCalls
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -89,6 +88,11 @@ internal partial class AzureClientCore
             {
                 options.StopSequences.Add(s);
             }
+        }
+
+        if (toolCallingConfig.Options?.AllowParallelCalls is not null)
+        {
+            options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
         }
 
         return options;
