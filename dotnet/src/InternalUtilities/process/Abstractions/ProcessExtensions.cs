@@ -3,7 +3,7 @@
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Process.Runtime;
+namespace Microsoft.SemanticKernel.Process.Internal;
 
 internal static class ProcessExtensions
 {
