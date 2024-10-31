@@ -42,11 +42,11 @@ public sealed class PostgresGenericDataModelMapperTests
     public void MapFromDataToStorageModelWithNumericKeyReturnsValidStorageModel()
     {
         // Arrange
-        var definition = GetRecordDefinition<string>();
+        var definition = GetRecordDefinition<int>();
         var propertyReader = GetPropertyReader<VectorStoreGenericDataModel<string>>(definition);
-        var dataModel = GetGenericDataModel<string>("key");
+        var dataModel = GetGenericDataModel<int>(1);
 
-        var mapper = new PostgresGenericDataModelMapper<string>(propertyReader);
+        var mapper = new PostgresGenericDataModelMapper<int>(propertyReader);
 
         // Act
         var result = mapper.MapFromDataToStorageModel(dataModel);
@@ -114,22 +114,22 @@ public sealed class PostgresGenericDataModelMapperTests
 
         var storageModel = new Dictionary<string, object?>
         {
-            ["Key"] = "key",
+            ["Key"] = 1,
             ["StringProperty"] = "Value1",
             ["IntProperty"] = 5,
             ["FloatVector"] = storageVector
         };
 
-        var definition = GetRecordDefinition<ulong>();
-        var propertyReader = GetPropertyReader<VectorStoreGenericDataModel<ulong>>(definition);
+        var definition = GetRecordDefinition<int>();
+        var propertyReader = GetPropertyReader<VectorStoreGenericDataModel<int>>(definition);
 
-        var mapper = new PostgresGenericDataModelMapper<string>(propertyReader);
+        var mapper = new PostgresGenericDataModelMapper<int>(propertyReader);
 
         // Act
         var result = mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
 
         // Assert
-        Assert.Equal("key", result.Key);
+        Assert.Equal(1, result.Key);
         Assert.Equal("Value1", result.Data["StringProperty"]);
         Assert.Equal(5, result.Data["IntProperty"]);
 
