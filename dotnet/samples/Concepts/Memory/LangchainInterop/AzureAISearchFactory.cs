@@ -62,7 +62,7 @@ public static class AzureAISearchFactory
 
             // Create an Azure AI Search collection. To be compatible with Langchain
             // we need to use a custom record definition that matches the
-            // schema used by Lanchain. We also need to use a custom mapper
+            // schema used by Langchain. We also need to use a custom mapper
             // since the Langchain schema includes a metadata field that is
             // a JSON string containing the source property. Parsing this
             // string and extracting the source is not supported by the default mapper.
@@ -124,7 +124,7 @@ public static class AzureAISearchFactory
         public string Content { get; set; }
 
         /// <summary>
-        /// The storage format used by Lanchain stores the source information
+        /// The storage format used by Langchain stores the source information
         /// in the metadata field as a JSON string.
         /// E.g. {"source": "my-doc"}
         /// </summary>

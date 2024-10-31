@@ -53,9 +53,9 @@ public static class QdrantFactory
     {
         public IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(QdrantClient qdrantClient, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TKey : notnull
         {
-            // Create a Qdrant collection. To be compatible with Lanchain
+            // Create a Qdrant collection. To be compatible with Langchain
             // we need to use a custom record definition that matches the
-            // schema used by Lanchain. We also need to use a custom mapper
+            // schema used by Langchain. We also need to use a custom mapper
             // since the Langchain schema includes a metadata field that is
             // a struct and this isn't supported by the default mapper.
             // Since langchain creates collections without named vector support
