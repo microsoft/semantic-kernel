@@ -271,9 +271,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
     {
-        Kernel localKernel = kernel ?? this._kernel;
-        Queue<ProcessMessage> messageChannel = new();
-
         try
         {
             // Run the Pregel algorithm until there are no more messages being sent.
