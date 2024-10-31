@@ -75,32 +75,6 @@ public static class PostgresServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Postgres <see cref="IVectorStore"/> with the specified service ID and where an NpgsqlDataSource is passed in.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="dataSource">The data source to use.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
-    public static IServiceCollection AddPostgresVectorStore(this IServiceCollection services, NpgsqlDataSource dataSource, PostgresVectorStoreOptions? options = default, string? serviceId = default)
-    {
-        // Since we are not constructing the data source, add the IVectorStore as transient, since we
-        // cannot make assumptions about how data source is being managed.
-        services.AddKeyedTransient<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var selectedOptions = options ?? sp.GetService<PostgresVectorStoreOptions>();
-
-                return new PostgresVectorStore(
-                    dataSource,
-                    selectedOptions);
-            });
-
-        return services;
-    }
-
-    /// <summary>
     /// Register a Postgres <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
     /// and where the NpgsqlDataSource is retrieved from the dependency injection container.
     /// </summary>
@@ -171,42 +145,6 @@ public static class PostgresServiceCollectionExtensions
                 var dataSource = sp.GetRequiredKeyedService<NpgsqlDataSource>(npgsqlServiceId);
 
                 return (new PostgresVectorStoreRecordCollection<TKey, TRecord>(dataSource, collectionName, options) as IVectorStoreRecordCollection<TKey, TRecord>)!;
-            });
-
-        AddVectorizedSearch<TKey, TRecord>(services, serviceId);
-
-        return services;
-    }
-
-    /// <summary>
-    /// Register a Postgres <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the NpgsqlDataSource is passed in.
-    /// </summary>
-    /// <typeparam name="TKey">The type of the key.</typeparam>
-    /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="dataSource">The data source to use.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>Service collection.</returns>
-    public static IServiceCollection AddPostgresVectorStoreRecordCollection<TKey, TRecord>(
-        this IServiceCollection services,
-        string collectionName,
-        NpgsqlDataSource dataSource,
-        PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
-        where TKey : notnull
-    {
-        // Since we are not constructing the data source, add the IVectorStore as transient, since we
-        // cannot make assumptions about how data source is being managed.
-        services.AddKeyedTransient<IVectorStoreRecordCollection<TKey, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var selectedOptions = options ?? sp.GetService<PostgresVectorStoreRecordCollectionOptions<TRecord>>();
-
-                return (new PostgresVectorStoreRecordCollection<TKey, TRecord>(dataSource, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
