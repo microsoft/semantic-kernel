@@ -1397,7 +1397,6 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         }
     }
 
-
     [Fact]
     public async Task ItDoesNotChangeDefaultsForToolsAndChoiceIfNeitherOfFunctionCallingConfigurationsSetAsync()
     {
