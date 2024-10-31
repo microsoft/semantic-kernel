@@ -3,7 +3,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
 
-namespace Memory.VectorstoreLangchainInterop;
+namespace Memory.VectorStoreLangchainInterop;
 
 /// <summary>
 /// Decorator class that allows conversion of keys and records between public and internal representations.

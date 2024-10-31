@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
-namespace Memory.VectorstoreLangchainInterop;
+namespace Memory.VectorStoreLangchainInterop;
 
 /// <summary>
 /// Contains a factory method that can be used to create a Qdrant vector store that is compatible with datasets ingested using Langchain.

@@ -3,7 +3,7 @@
 using Azure;
 using Azure.Identity;
 using Azure.Search.Documents.Indexes;
-using Memory.VectorstoreLangchainInterop;
+using Memory.VectorStoreLangchainInterop;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;

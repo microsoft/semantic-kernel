@@ -7,7 +7,7 @@ using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
-namespace Memory.VectorstoreLangchainInterop;
+namespace Memory.VectorStoreLangchainInterop;
 
 /// <summary>
 /// Contains a factory method that can be used to create an Azure AI Search vector store that is compatible with datasets ingested using Langchain.

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Memory.VectorstoreLangchainInterop;
+namespace Memory.VectorStoreLangchainInterop;
 
 /// <summary>
 /// Data model class that matches the data model used by Langchain.

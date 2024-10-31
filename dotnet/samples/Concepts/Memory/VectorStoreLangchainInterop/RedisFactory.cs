@@ -4,7 +4,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using StackExchange.Redis;
 
-namespace Memory.VectorstoreLangchainInterop;
+namespace Memory.VectorStoreLangchainInterop;
 
 /// <summary>
 /// Contains a factory method that can be used to create a Redis vector store that is compatible with datasets ingested using Langchain.

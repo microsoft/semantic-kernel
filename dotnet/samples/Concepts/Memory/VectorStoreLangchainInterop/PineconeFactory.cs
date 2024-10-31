@@ -4,7 +4,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Sdk = Pinecone;
 
-namespace Memory.VectorstoreLangchainInterop;
+namespace Memory.VectorStoreLangchainInterop;
 
 /// <summary>
 /// Contains a factory method that can be used to create a Pinecone vector store that is compatible with datasets ingested using Langchain.
