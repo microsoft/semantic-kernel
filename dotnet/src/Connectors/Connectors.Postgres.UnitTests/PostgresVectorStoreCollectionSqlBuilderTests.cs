@@ -36,7 +36,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
                 new VectorStoreRecordDataProperty("code", typeof(int)),
                 new VectorStoreRecordDataProperty("rating", typeof(float?)),
                 new VectorStoreRecordDataProperty("description", typeof(string)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
+                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
                 new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
                 new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
                 {
@@ -59,7 +59,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         Assert.Contains("\"code\" INTEGER NOT NULL", cmdInfo.CommandText);
         Assert.Contains("\"rating\" REAL", cmdInfo.CommandText);
         Assert.Contains("\"description\" TEXT", cmdInfo.CommandText);
-        Assert.Contains("\"parking_is_included\" BOOLEAN NOT NULL", cmdInfo.CommandText);
+        Assert.Contains("\"free_parking\" BOOLEAN NOT NULL", cmdInfo.CommandText);
         Assert.Contains("\"tags\" TEXT[]", cmdInfo.CommandText);
         Assert.Contains("\"description\" TEXT", cmdInfo.CommandText);
         Assert.Contains("\"embedding1\" VECTOR(10) NOT NULL", cmdInfo.CommandText);
@@ -245,7 +245,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
                 new VectorStoreRecordDataProperty("code", typeof(int)),
                 new VectorStoreRecordDataProperty("rating", typeof(float?)),
                 new VectorStoreRecordDataProperty("description", typeof(string)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
+                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
                 new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
                 new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
                 {
@@ -267,6 +267,8 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         // Assert
         Assert.Contains("SELECT", cmdInfo.CommandText);
+        Assert.Contains("\"free_parking\"", cmdInfo.CommandText);
+        Assert.Contains("\"embedding1\"", cmdInfo.CommandText);
         Assert.Contains("FROM public.\"testcollection\"", cmdInfo.CommandText);
         Assert.Contains("WHERE \"id\" = $1", cmdInfo.CommandText);
 
@@ -288,7 +290,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
                 new VectorStoreRecordDataProperty("code", typeof(int)),
                 new VectorStoreRecordDataProperty("rating", typeof(float?)),
                 new VectorStoreRecordDataProperty("description", typeof(string)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
+                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
                 new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
                 new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
                 {
@@ -310,6 +312,8 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         // Assert
         Assert.Contains("SELECT", cmdInfo.CommandText);
+        Assert.Contains("\"code\"", cmdInfo.CommandText);
+        Assert.Contains("\"free_parking\"", cmdInfo.CommandText);
         Assert.Contains("FROM public.\"testcollection\"", cmdInfo.CommandText);
         Assert.Contains("WHERE \"id\" = ANY($1)", cmdInfo.CommandText);
         Assert.NotNull(cmdInfo.Parameters);
