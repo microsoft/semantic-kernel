@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -288,5 +289,36 @@ public class PromptRenderFilterTests : FilterBaseTest
 
         await Assert.ThrowsAsync<KernelFunctionCanceledException>(()
             => kernel.InvokeAsync(function, cancellationToken: cancellationTokenSource.Token));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasValidStreamingFlagAsync(bool isStreaming)
+    {
+        // Arrange
+        bool? actualStreamingFlag = null;
+
+        var mockTextGeneration = this.GetMockTextGeneration();
+
+        var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
+            onPromptRender: async (context, next) =>
+            {
+                actualStreamingFlag = context.IsStreaming;
+                await next(context);
+            });
+
+        // Act
+        if (isStreaming)
+        {
+            await kernel.InvokePromptStreamingAsync("Prompt").ToListAsync();
+        }
+        else
+        {
+            await kernel.InvokePromptAsync("Prompt");
+        }
+
+        // Assert
+        Assert.Equal(isStreaming, actualStreamingFlag);
     }
 }
