@@ -29,30 +29,6 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     {
         using var dockerClientConfiguration = new DockerClientConfiguration();
         this._client = dockerClientConfiguration.CreateClient();
-        this.HotelVectorStoreRecordDefinition = new VectorStoreRecordDefinition
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, DistanceFunction = DistanceFunction.ManhattanDistance }
-            }
-        };
-        this.HotelWithGuidIdVectorStoreRecordDefinition = new VectorStoreRecordDefinition
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, DistanceFunction = DistanceFunction.ManhattanDistance }
-            }
-        };
     }
 
     /// <summary>
@@ -62,12 +38,6 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
 
     private string _connectionString = null!;
     private string _databaseName = null!;
-
-    /// <summary>Gets the manually created vector store record definition for our test model.</summary>
-    public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
-
-    /// <summary>Gets the manually created vector store record definition for our test model.</summary>
-    public VectorStoreRecordDefinition HotelWithGuidIdVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
     /// Gets a vector store to use for tests.
