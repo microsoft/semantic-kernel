@@ -99,6 +99,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
         }
 
@@ -127,6 +128,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: CreateKernel(),
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -154,6 +156,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: CreateKernel(),
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -186,6 +189,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -213,6 +217,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => false, // Return false to simulate that the function is not advertised
                 options: this._functionChoiceBehaviorOptions,
                 kernel: CreateKernel(),
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -240,6 +245,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: CreateKernel(),
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -280,6 +286,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -345,6 +352,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -433,6 +441,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -480,6 +489,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -531,6 +541,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         var firstFunctionResult = chatHistory[^2].Content;
@@ -582,6 +593,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -627,6 +639,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -670,6 +683,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel!,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -723,6 +737,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
@@ -757,6 +772,7 @@ public class FunctionCallsProcessorTests
                 checkIfFunctionAdvertised: (_) => true,
                 options: this._functionChoiceBehaviorOptions,
                 kernel: kernel,
+                isStreaming: false,
                 cancellationToken: CancellationToken.None);
 
         // Assert
