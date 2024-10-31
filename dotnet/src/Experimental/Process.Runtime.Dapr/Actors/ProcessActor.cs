@@ -359,7 +359,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// </summary>
     private async Task SendOutgoingPublicEventsAsync()
     {
-        // Loop thorugh all steps that are processes and call a function requesting their outgoing events, then queue them up.
+        // Loop through all steps that are processes and call a function requesting their outgoing events, then queue them up.
         if (!string.IsNullOrWhiteSpace(this.ParentProcessId))
         {
             // Handle public events that need to be bubbled out of the process.
