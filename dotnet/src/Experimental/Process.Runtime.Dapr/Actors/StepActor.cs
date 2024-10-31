@@ -378,8 +378,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="daprEvent">The event to emit.</param>
     internal async ValueTask EmitEventAsync(ProcessEvent daprEvent)
     {
-        var scopedEvent = this.ScopedEvent(daprEvent);
-
         // Emit the event out of the process (this one) if it's visibility is public.
         if (daprEvent.Visibility == KernelProcessEventVisibility.Public)
         {
@@ -387,7 +385,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             {
                 // Emit the event to the parent process
                 var parentProcess = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.ParentProcessId), nameof(EventBufferActor));
-                await parentProcess.EnqueueAsync(scopedEvent).ConfigureAwait(false);
+                await parentProcess.EnqueueAsync(daprEvent).ConfigureAwait(false);
             }
         }
 
@@ -406,7 +404,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="daprEvent">The event.</param>
     /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
-    internal ProcessEvent ScopedEvent(ProcessEvent daprEvent)
+    private ProcessEvent ScopedEvent(ProcessEvent daprEvent)
     {
         Verify.NotNull(daprEvent, nameof(daprEvent));
         return daprEvent with { Namespace = $"{this.Name}_{this.Id}" };
