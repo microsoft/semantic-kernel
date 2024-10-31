@@ -43,7 +43,11 @@ public class PostgresVectorStore : IVectorStore
     /// <inheritdoc />
     public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
-        return this._postgresClient.GetTablesAsync(cancellationToken);
+        const string OperationName = "ListCollectionNames";
+        return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
+            this._postgresClient.GetTablesAsync(cancellationToken),
+            OperationName
+        );
     }
 
     /// <inheritdoc />

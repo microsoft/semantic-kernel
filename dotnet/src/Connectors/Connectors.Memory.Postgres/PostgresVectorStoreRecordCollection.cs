@@ -21,9 +21,6 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "Postgres";
-
     /// <inheritdoc />
     public string CollectionName { get; }
 
@@ -149,7 +146,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         const string OperationName = "Upsert";
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            PostgresConstants.DatabaseName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -174,7 +171,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            PostgresConstants.DatabaseName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -203,7 +200,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
             if (row is null) { return default; }
             return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                PostgresConstants.DatabaseName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
@@ -211,7 +208,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "GetBatch";
 
@@ -219,14 +216,19 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         bool includeVectors = options?.IncludeVectors is true;
 
-        await foreach (var row in this._client.GetBatchAsync(this.CollectionName, keys, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken).ConfigureAwait(false))
-        {
-            yield return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
-                this.CollectionName,
-                OperationName,
-                () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
-        }
+        return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
+            this._client.GetBatchAsync(this.CollectionName, keys, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken)
+                .Select(row =>
+                    VectorStoreErrorHandler.RunModelConversion(
+                        PostgresConstants.DatabaseName,
+                        this.CollectionName,
+                        OperationName,
+                        () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors })),
+                    cancellationToken
+                ),
+            OperationName,
+            this.CollectionName
+        );
     }
 
     /// <inheritdoc/>
@@ -294,7 +296,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                 ).Select(result =>
                 {
                     var record = VectorStoreErrorHandler.RunModelConversion(
-                        DatabaseName,
+                        PostgresConstants.DatabaseName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(
@@ -350,7 +352,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = PostgresConstants.DatabaseName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -367,7 +369,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = PostgresConstants.DatabaseName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

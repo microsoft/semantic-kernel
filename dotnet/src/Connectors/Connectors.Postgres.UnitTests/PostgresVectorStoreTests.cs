@@ -93,6 +93,40 @@ public class PostgresVectorStoreTests
         Assert.Equal(expectedCollections, actualList);
     }
 
+    [Fact]
+    public async Task ListCollectionNamesThrowsCorrectExcpetionAsync()
+    {
+        // Arrange
+        var expectedCollections = new List<string> { "fake-collection-1", "fake-collection-2", "fake-collection-3" };
+
+        this._postgresClientMock
+            .Setup(client => client.GetTablesAsync(CancellationToken.None))
+            .Returns(this.ThrowingAsyncEnumerableAsync);
+
+        var sut = new PostgresVectorStore(this._postgresClientMock.Object);
+
+        // Act.
+        var actual = sut.ListCollectionNamesAsync(this._testCancellationToken);
+
+        // Assert
+        Assert.NotNull(actual);
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await actual.ToListAsync());
+    }
+
+    private async IAsyncEnumerable<string> ThrowingAsyncEnumerableAsync()
+    {
+        int itemIndex = 0;
+        await foreach (var item in new List<string> { "item1", "item2", "item3" }.ToAsyncEnumerable())
+        {
+            if (itemIndex == 1)
+            {
+                throw new InvalidOperationException("Test exception");
+            }
+            yield return item;
+            itemIndex++;
+        }
+    }
+
     public sealed class SinglePropsModel<TKey>
     {
         [VectorStoreRecordKey]
