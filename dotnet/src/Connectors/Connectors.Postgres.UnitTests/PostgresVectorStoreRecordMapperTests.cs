@@ -31,6 +31,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
         Assert.Equal("key", result["Key"]);
         Assert.Equal("Value1", result["StringProperty"]);
         Assert.Equal(5, result["IntProperty"]);
+        Assert.Equal(new List<string> { "Value2", "Value3" }, result["StringArray"]);
 
         Vector? vector = result["FloatVector"] as Vector;
 
@@ -55,6 +56,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
         Assert.Equal((ulong)1, result["Key"]);
         Assert.Equal("Value1", result["StringProperty"]);
         Assert.Equal(5, result["IntProperty"]);
+        Assert.Equal(new List<string> { "Value2", "Value3" }, result["StringArray"]);
 
         var vector = result["FloatVector"] as Vector;
 
@@ -76,7 +78,8 @@ public sealed class PostgresVectorStoreRecordMapperTests
             ["Key"] = "key",
             ["StringProperty"] = "Value1",
             ["IntProperty"] = 5,
-            ["FloatVector"] = storageVector
+            ["StringArray"] = new List<string> { "Value2", "Value3" },
+            ["FloatVector"] = storageVector,
         };
 
         var definition = GetRecordDefinition<string>();
@@ -91,6 +94,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
         Assert.Equal("key", result.Key);
         Assert.Equal("Value1", result.StringProperty);
         Assert.Equal(5, result.IntProperty);
+        Assert.Equal(new List<string> { "Value2", "Value3" }, result.StringArray);
 
         if (includeVectors)
         {
@@ -117,6 +121,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
             ["Key"] = (ulong)1,
             ["StringProperty"] = "Value1",
             ["IntProperty"] = 5,
+            ["StringArray"] = new List<string> { "Value2", "Value3" },
             ["FloatVector"] = storageVector
         };
 
@@ -132,6 +137,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
         Assert.Equal((ulong)1, result.Key);
         Assert.Equal("Value1", result.StringProperty);
         Assert.Equal(5, result.IntProperty);
+        Assert.Equal(new List<string> { "Value2", "Value3" }, result.StringArray);
 
         if (includeVectors)
         {
@@ -155,6 +161,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
                 new VectorStoreRecordDataProperty("StringProperty", typeof(string)),
                 new VectorStoreRecordDataProperty("IntProperty", typeof(int)),
+                new VectorStoreRecordDataProperty("StringArray", typeof(IEnumerable<string>)),
                 new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
             }
         };
@@ -167,6 +174,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
             Key = key,
             StringProperty = "Value1",
             IntProperty = 5,
+            StringArray = new List<string> { "Value2", "Value3" },
             FloatVector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f])
         };
     }
@@ -192,6 +200,9 @@ public sealed class PostgresVectorStoreRecordMapperTests
 
         [VectorStoreRecordData]
         public int? IntProperty { get; set; }
+
+        [VectorStoreRecordData]
+        public IEnumerable<string>? StringArray { get; set; }
 
         [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
