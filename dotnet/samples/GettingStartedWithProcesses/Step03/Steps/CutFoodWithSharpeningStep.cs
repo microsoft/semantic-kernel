@@ -92,7 +92,7 @@ public class CutFoodWithSharpeningStep : KernelProcessStep<CutFoodWithSharpening
 /// </summary>
 public sealed class CutFoodWithSharpeningState
 {
-    internal int KnifeSharpness { get; set; } = 5;
+    public int KnifeSharpness { get; set; } = 5;
 
     internal int _needsSharpeningLimit = 3;
     internal int _sharpeningBoost = 5;

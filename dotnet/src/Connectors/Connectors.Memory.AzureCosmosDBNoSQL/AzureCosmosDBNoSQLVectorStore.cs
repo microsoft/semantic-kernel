@@ -40,17 +40,17 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(AzureCosmosDBNoSQLCompositeKey))
-        {
-            throw new NotSupportedException($"Only {nameof(String)} and {nameof(AzureCosmosDBNoSQLCompositeKey)} keys are supported.");
-        }
-
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
                 this._database,
                 name,
                 vectorStoreRecordDefinition);
+        }
+
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(AzureCosmosDBNoSQLCompositeKey))
+        {
+            throw new NotSupportedException($"Only {nameof(String)} and {nameof(AzureCosmosDBNoSQLCompositeKey)} keys are supported.");
         }
 
         var recordCollection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(

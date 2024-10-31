@@ -42,8 +42,8 @@ class KickOffStep(KernelProcessStep):
 
     @kernel_function(name=KICK_OFF_FUNCTION)
     async def print_welcome_message(self, context: KernelProcessStepContext):
-        context.emit_event(KernelProcessEvent(id=CommonEvents.StartARequested.value, data="Get Going A"))
-        context.emit_event(KernelProcessEvent(id=CommonEvents.StartBRequested.value, data="Get Going B"))
+        await context.emit_event(process_event=CommonEvents.StartARequested.value, data="Get Going A")
+        await context.emit_event(process_event=CommonEvents.StartBRequested.value, data="Get Going B")
 
 
 # Define a sample `AStep` step that will emit an event after 1 second.
@@ -52,7 +52,7 @@ class AStep(KernelProcessStep):
     @kernel_function()
     async def do_it(self, context: KernelProcessStepContext):
         await asyncio.sleep(1)
-        context.emit_event(KernelProcessEvent(id=CommonEvents.AStepDone.value, data="I did A"))
+        await context.emit_event(process_event=CommonEvents.AStepDone.value, data="I did A")
 
 
 # Define a sample `BStep` step that will emit an event after 2 seconds.
@@ -61,7 +61,7 @@ class BStep(KernelProcessStep):
     @kernel_function()
     async def do_it(self, context: KernelProcessStepContext):
         await asyncio.sleep(2)
-        context.emit_event(KernelProcessEvent(id=CommonEvents.BStepDone.value, data="I did B"))
+        await context.emit_event(process_event=CommonEvents.BStepDone.value, data="I did B")
 
 
 # Define a sample `CStepState` that will keep track of the current cycle.
@@ -84,9 +84,9 @@ class CStep(KernelProcessStep[CStepState]):
         print(f"CStep Current Cycle: {self.state.current_cycle}")
         if self.state.current_cycle == 3:
             print("CStep Exit Requested")
-            context.emit_event(process_event=KernelProcessEvent(id=CommonEvents.ExitRequested.value))
+            await context.emit_event(process_event=CommonEvents.ExitRequested.value)
             return
-        context.emit_event(process_event=KernelProcessEvent(id=CommonEvents.CStepDone.value))
+        await context.emit_event(process_event=CommonEvents.CStepDone.value)
 
 
 kernel = Kernel()
