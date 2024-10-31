@@ -204,7 +204,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     /// <param name="properties">The properties of the vector store record.</param>
     /// <returns>A list of tuples containing the column name, index kind, and distance function for each vector property.</returns>
     /// <remarks>
-    /// The user can specify an index kind of "Flat" to prevent the creation of an index. Otherwise the default index kind is Hnsw.
+    /// The default index kind is "Flat", which prevents the creation of an index.
     /// </remarks>
     public static List<(string column, string kind, string function)> GetVectorIndexInfo(IReadOnlyList<VectorStoreRecordProperty> properties)
     {
@@ -214,10 +214,11 @@ internal static class PostgresVectorStoreRecordPropertyMapping
             if (property is VectorStoreRecordVectorProperty vectorProperty)
             {
                 var vectorColumnName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
-                var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;  // Default to Hnsw
+                var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
                 var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
 
-                // The user can specify an index kind of "Flat" to prevent the creation of an index.
+                // Index kind of "Flat" to prevent the creation of an index. This is the default behavior.
+                // Otherwise, the index will be created with the specified index kind and distance function, if supported.
                 if (indexKind != IndexKind.Flat)
                 {
                     // Ensure the dimensionality of the vector is supported for indexing.

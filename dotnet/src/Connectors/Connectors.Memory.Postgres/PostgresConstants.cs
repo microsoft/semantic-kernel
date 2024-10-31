@@ -79,7 +79,8 @@ internal static class PostgresConstants
     public const string DistanceColumnName = "sk_pg_distance";
 
     /// <summary>The default index kind.</summary>
-    public const string DefaultIndexKind = IndexKind.Hnsw;
+    /// <remarks>Defaults to "Flat", which means no indexing.</remarks>
+    public const string DefaultIndexKind = IndexKind.Flat;
 
     /// <summary>The default distance function.</summary>
     public const string DefaultDistanceFunction = DistanceFunction.CosineDistance;
