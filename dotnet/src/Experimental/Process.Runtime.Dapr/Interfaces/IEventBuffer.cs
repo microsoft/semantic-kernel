@@ -23,5 +23,5 @@ public interface IEventBuffer : IActor
     /// Dequeues all external events.
     /// </summary>
     /// <returns>A <see cref="List{T}"/> where T is <see cref="ProcessEvent"/></returns>
-    Task<List<ProcessEvent>> DequeueAllAsync();
+    Task<IList<ProcessEvent>> DequeueAllAsync();
 }
