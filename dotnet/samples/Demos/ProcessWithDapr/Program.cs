@@ -12,7 +12,7 @@ builder.Services.AddLogging((logging) =>
 });
 
 // Configure the Kernel with DI. This is required for dependency injection to work with processes.
-builder.Services.AddSingleton(new Kernel());
+builder.Services.AddKernel();
 
 // Configure Dapr
 builder.Services.AddActors(static options =>
