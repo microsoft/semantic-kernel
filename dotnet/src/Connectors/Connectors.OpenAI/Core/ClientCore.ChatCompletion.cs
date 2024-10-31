@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JsonSchemaMapper;
@@ -559,6 +560,18 @@ internal partial class ClientCore
     }
 
     /// <summary>
+    /// Pattern for JSON schema name for structured outputs.
+    /// More information here: <see href="https://platform.openai.com/docs/api-reference/chat/create#chat-create-response_format"/>.
+    /// </summary>
+#if NET
+    [GeneratedRegex("[^a-zA-Z0-9_-]")]
+    private static partial Regex StructuredOutputsJsonSchemaNameRegex();
+#else
+    private static Regex StructuredOutputsJsonSchemaNameRegex() => s_structuredOutputsJsonSchemaNameRegex;
+    private static readonly Regex s_structuredOutputsJsonSchemaNameRegex = new("[^a-zA-Z0-9_-]", RegexOptions.Compiled);
+#endif
+
+    /// <summary>
     /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs.
     /// </summary>
     private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
@@ -568,7 +581,9 @@ internal partial class ClientCore
         var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
-        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);
+        var typeName = StructuredOutputsJsonSchemaNameRegex().Replace(type.Name, string.Empty);
+
+        return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
