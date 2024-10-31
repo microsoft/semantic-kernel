@@ -33,7 +33,7 @@ public sealed class RestApiOAuthFlows
     /// Creates an instance of a <see cref="RestApiOAuthFlows"/> class.
     /// </summary>
     /// <param name="flows"></param>
-    public RestApiOAuthFlows(OpenApiOAuthFlows flows)
+    internal RestApiOAuthFlows(OpenApiOAuthFlows flows)
     {
         this.Implicit = flows.Implicit is not null ? new RestApiOAuthFlow(flows.Implicit) : null;
         this.Password = flows.Password is not null ? new RestApiOAuthFlow(flows.Password) : null;

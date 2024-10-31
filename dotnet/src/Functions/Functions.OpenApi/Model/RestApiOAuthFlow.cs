@@ -38,7 +38,7 @@ public sealed class RestApiOAuthFlow
     /// Creates an instance of a <see cref="RestApiOAuthFlow"/> class.
     /// </summary>
     /// <param name="authFlow"></param>
-    public RestApiOAuthFlow(OpenApiOAuthFlow authFlow)
+    internal RestApiOAuthFlow(OpenApiOAuthFlow authFlow)
     {
         this.AuthorizationUrl = authFlow.AuthorizationUrl;
         this.TokenUrl = authFlow.TokenUrl;

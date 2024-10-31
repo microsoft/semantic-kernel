@@ -56,7 +56,7 @@ public sealed class RestApiSecurityScheme
     /// <summary>
     /// Creates an instance of a <see cref="RestApiSecurityScheme"/> class.
     /// </summary>
-    public RestApiSecurityScheme(OpenApiSecurityScheme value)
+    internal RestApiSecurityScheme(OpenApiSecurityScheme value)
     {
         this.SecuritySchemeType = value.Type.ToString();
         this.Description = value.Description;
