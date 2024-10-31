@@ -35,9 +35,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="process">The <see cref="KernelProcess"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
     /// <param name="parentProcessId">Optional. The Id of the parent process if one exists, otherwise null.</param>
-    /// <param name="loggerFactory">Optional. A <see cref="ILoggerFactory"/>.</param>
-    internal LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
-        : base(process, kernel, parentProcessId, loggerFactory)
+    internal LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null)
+        : base(process, kernel, parentProcessId)
     {
         Verify.NotNull(process.Steps);
 
@@ -47,7 +46,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
-        this._logger = this.LoggerFactory?.CreateLogger(this.Name) ?? new NullLogger<LocalStep>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this.Name) ?? new NullLogger<LocalStep>();
     }
 
     /// <summary>
@@ -75,7 +74,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <returns>A <see cref="Task"/></returns>
     internal async Task RunOnceAsync(KernelProcessEvent? processEvent, Kernel? kernel = null)
     {
-        Verify.NotNull(processEvent);
+        Verify.NotNull(processEvent, nameof(processEvent));
+
+        await Task.Yield(); // Ensure that the process has an opportunity to run in a different synchronization context.
         await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
         await this.StartAsync(kernel, keepAlive: false).ConfigureAwait(false);
         await this._processTask!.JoinAsync().ConfigureAwait(false);
@@ -116,20 +117,17 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
     /// <returns>A <see cref="Task"/></returns>
-    internal async Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
+    internal Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
     {
-        Verify.NotNull(processEvent);
-        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
+        Verify.NotNull(processEvent, nameof(processEvent));
+        return this._externalEventChannel.Writer.WriteAsync(processEvent).AsTask();
     }
 
     /// <summary>
     /// Gets the process information.
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
-    internal async Task<KernelProcess> GetProcessInfoAsync()
-    {
-        return await this.ToKernelProcessAsync().ConfigureAwait(false);
-    }
+    internal Task<KernelProcess> GetProcessInfoAsync() => this.ToKernelProcessAsync();
 
     /// <summary>
     /// Handles a <see cref="ProcessMessage"/> that has been sent to the process. This happens only in the case
@@ -143,9 +141,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     {
         if (string.IsNullOrWhiteSpace(message.TargetEventId))
         {
-            string errorMessage = "Internal Process Error: The target event id must be specified when sending a message to a step.";
-            this._logger.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException("Internal Process Error: The target event id must be specified when sending a message to a step.").Log(this._logger);
         }
 
         string eventId = message.TargetEventId!;
@@ -190,8 +186,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 var process = new LocalProcess(
                     process: kernelStep,
                     kernel: this._kernel,
-                    parentProcessId: this.Id,
-                    loggerFactory: this.LoggerFactory);
+                    parentProcessId: this.Id);
 
                 //await process.StartAsync(kernel: this._kernel, keepAlive: true).ConfigureAwait(false);
                 localStep = process;
@@ -204,8 +199,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 localStep = new LocalStep(
                     stepInfo: step,
                     kernel: this._kernel,
-                    parentProcessId: this.Id,
-                    loggerFactory: this.LoggerFactory);
+                    parentProcessId: this.Id);
             }
 
             this._steps.Add(localStep);
@@ -282,7 +276,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
         catch (Exception ex)
         {
-            this._logger?.LogError("An error occurred while running the process: {ErrorMessage}.", ex.Message);
+            this._logger?.LogError(ex, "An error occurred while running the process.");
             throw;
         }
         finally

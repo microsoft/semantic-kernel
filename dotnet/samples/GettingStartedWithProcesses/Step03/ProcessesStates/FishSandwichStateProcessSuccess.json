@@ -1,0 +1,42 @@
+{
+  "stepsState": {
+    "FriedFishWithStatefulStepsProcess": {
+      "stepsState": {
+        "GatherFriedFishIngredientsWithStockStep": {
+          "state": {
+            "IngredientsStock": 3
+          },
+          "id": "cfc7d51f3bfa455c980d282dcdd85b13",
+          "name": "GatherFriedFishIngredientsWithStockStep"
+        },
+        "chopStep": {
+          "state": {
+            "KnifeSharpness": 2
+          },
+          "id": "daf4a782df094deeb111ae701431ddbb",
+          "name": "chopStep"
+        },
+        "FryFoodStep": {
+          "id": "e508ffe1d4714097b9716db1fd48b587",
+          "name": "FryFoodStep"
+        }
+      },
+      "id": "a201334a1f534e9db9e1d46dce8345a8",
+      "name": "FriedFishWithStatefulStepsProcess"
+    },
+    "AddBunsStep": {
+      "id": "8a9b2d66e0594ee898d1c94c8bc07d0e",
+      "name": "AddBunsStep"
+    },
+    "AddSpecialSauceStep": {
+      "id": "6b0e92097cb74f5cbac2a71473a4e9c2",
+      "name": "AddSpecialSauceStep"
+    },
+    "ExternalFriedFishStep": {
+      "id": "59ebd4724684469ab19d86d281c205e3",
+      "name": "ExternalFriedFishStep"
+    }
+  },
+  "id": "38e8f477-c022-41fc-89f1-3dd3509d0e83",
+  "name": "FishSandwichWithStatefulStepsProcess"
+}

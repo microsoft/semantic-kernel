@@ -63,26 +63,63 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
     {
         var builder = Kernel.CreateBuilder();
 
-        // This filter overrides streaming results with "item * 2" logic.
+        // This filter overrides streaming results with new ending in each chunk.
         builder.Services.AddSingleton<IFunctionInvocationFilter, StreamingFunctionFilterExample>();
 
         var kernel = builder.Build();
 
-        static async IAsyncEnumerable<int> GetData()
+        static async IAsyncEnumerable<string> GetData()
         {
-            yield return 1;
-            yield return 2;
-            yield return 3;
+            yield return "chunk1";
+            yield return "chunk2";
+            yield return "chunk3";
         }
 
         var function = KernelFunctionFactory.CreateFromMethod(GetData);
 
-        await foreach (var item in kernel.InvokeStreamingAsync<int>(function))
+        await foreach (var item in kernel.InvokeStreamingAsync<string>(function))
         {
             Console.WriteLine(item);
         }
 
-        // Output: 2, 4, 6.
+        // Output:
+        // chunk1 - updated from filter
+        // chunk2 - updated from filter
+        // chunk3 - updated from filter
+    }
+
+    [Fact]
+    public async Task FunctionFilterResultOverrideForBothStreamingAndNonStreamingAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+
+        // This filter overrides result for both streaming and non-streaming invocation modes.
+        builder.Services.AddSingleton<IFunctionInvocationFilter, DualModeFilter>();
+
+        var kernel = builder.Build();
+
+        static async IAsyncEnumerable<string> GetData()
+        {
+            yield return "chunk1";
+            yield return "chunk2";
+            yield return "chunk3";
+        }
+
+        var nonStreamingFunction = KernelFunctionFactory.CreateFromMethod(() => "Result");
+        var streamingFunction = KernelFunctionFactory.CreateFromMethod(GetData);
+
+        var nonStreamingResult = await kernel.InvokeAsync(nonStreamingFunction);
+        var streamingResult = await kernel.InvokeStreamingAsync<string>(streamingFunction).ToListAsync();
+
+        Console.WriteLine($"Non-streaming result: {nonStreamingResult}");
+        Console.WriteLine($"Streaming result \n: {string.Join("\n", streamingResult)}");
+
+        // Output:
+        // Non-streaming result: Result - updated from filter
+        // Streaming result:
+        // chunk1 - updated from filter
+        // chunk2 - updated from filter
+        // chunk3 - updated from filter
     }
 
     [Fact]
@@ -172,16 +209,16 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
 
             // In streaming scenario, async enumerable is available in context result object.
             // To override data: get async enumerable from function result, override data and set new async enumerable in context result:
-            var enumerable = context.Result.GetValue<IAsyncEnumerable<int>>();
+            var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
             context.Result = new FunctionResult(context.Result, OverrideStreamingDataAsync(enumerable!));
         }
 
-        private async IAsyncEnumerable<int> OverrideStreamingDataAsync(IAsyncEnumerable<int> data)
+        private async IAsyncEnumerable<string> OverrideStreamingDataAsync(IAsyncEnumerable<string> data)
         {
             await foreach (var item in data)
             {
                 // Example: override streaming data
-                yield return item * 2;
+                yield return $"{item} - updated from filter";
             }
         }
     }
@@ -252,6 +289,39 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
                     yield return result;
                 }
             }
+        }
+    }
+
+    /// <summary>Filter that can be used for both streaming and non-streaming invocation modes at the same time.</summary>
+    private sealed class DualModeFilter : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            await next(context);
+
+            if (context.IsStreaming)
+            {
+                var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
+                context.Result = new FunctionResult(context.Result, OverrideStreamingDataAsync(enumerable!));
+            }
+            else
+            {
+                var data = context.Result.GetValue<string>();
+                context.Result = new FunctionResult(context.Result, OverrideNonStreamingData(data!));
+            }
+        }
+
+        private async IAsyncEnumerable<string> OverrideStreamingDataAsync(IAsyncEnumerable<string> data)
+        {
+            await foreach (var item in data)
+            {
+                yield return $"{item} - updated from filter";
+            }
+        }
+
+        private string OverrideNonStreamingData(string data)
+        {
+            return $"{data} - updated from filter";
         }
     }
 
