@@ -88,7 +88,7 @@ internal partial class ClientCore
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
-        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+        this.FunctionCallsProcessor = new FunctionCallsProcessor(logger);
 
         // Empty constructor will be used when inherited by a specialized Client.
         if (modelId is null
