@@ -5,7 +5,8 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Ollama;
+using Microsoft.SemanticKernel.Embeddings;
+using OllamaSharp;
 using OllamaSharp.Models;
 using Xunit;
 
@@ -27,9 +28,9 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
-        var sut = new OllamaTextEmbeddingGenerationService(
-            "fake-model",
-            httpClient: this._httpClient);
+        var expectedModel = "fake-model";
+        using var ollamaClient = new OllamaApiClient(this._httpClient, expectedModel);
+        var sut = ollamaClient.AsEmbeddingGenerationService();
 
         //Act
         await sut.GenerateEmbeddingsAsync(["fake-text"]);
@@ -44,9 +45,9 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        var sut = new OllamaTextEmbeddingGenerationService(
-            "fake-model",
-            httpClient: this._httpClient);
+        var expectedModel = "fake-model";
+        using var ollamaClient = new OllamaApiClient(this._httpClient, expectedModel);
+        var sut = ollamaClient.AsEmbeddingGenerationService();
 
         //Act
         var contents = await sut.GenerateEmbeddingsAsync(["fake-text"]);

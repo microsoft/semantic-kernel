@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
+using OllamaSharp;
 using OllamaSharp.Models.Chat;
 using Xunit;
 
@@ -36,9 +37,8 @@ public sealed class OllamaChatCompletionTests : IDisposable
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
-        var sut = new OllamaChatCompletionService(
-            "fake-model",
-            httpClient: this._httpClient);
+        using var ollamaClient = new OllamaApiClient(this._httpClient, "fake-model");
+        var sut = ollamaClient.AsChatCompletionService();
         var chat = new ChatHistory();
         chat.AddMessage(AuthorRole.User, "fake-text");
 
@@ -55,9 +55,8 @@ public sealed class OllamaChatCompletionTests : IDisposable
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        var sut = new OllamaChatCompletionService(
-            "fake-model",
-            httpClient: this._httpClient);
+        using var ollamaClient = new OllamaApiClient(this._httpClient, "fake-model");
+        var sut = ollamaClient.AsChatCompletionService();
 
         var chat = new ChatHistory();
         chat.AddMessage(AuthorRole.User, "fake-text");
@@ -77,9 +76,8 @@ public sealed class OllamaChatCompletionTests : IDisposable
     public async Task GetChatMessageContentsShouldHaveModelAndInnerContentAsync()
     {
         //Arrange
-        var sut = new OllamaChatCompletionService(
-            "phi3",
-            httpClient: this._httpClient);
+        using var ollamaClient = new OllamaApiClient(this._httpClient, "phi3");
+        var sut = ollamaClient.AsChatCompletionService();
 
         var chat = new ChatHistory();
         chat.AddMessage(AuthorRole.User, "fake-text");
@@ -123,9 +121,8 @@ public sealed class OllamaChatCompletionTests : IDisposable
     {
         //Arrange
         var expectedModel = "phi3";
-        var sut = new OllamaChatCompletionService(
-            expectedModel,
-            httpClient: this._httpClient);
+        using var ollamaClient = new OllamaApiClient(this._httpClient, expectedModel);
+        var sut = ollamaClient.AsChatCompletionService();
 
         var chat = new ChatHistory();
         chat.AddMessage(AuthorRole.User, "fake-text");
@@ -161,9 +158,8 @@ public sealed class OllamaChatCompletionTests : IDisposable
     {
         //Arrange
         var expectedModel = "phi3";
-        var sut = new OllamaChatCompletionService(
-            expectedModel,
-            httpClient: this._httpClient);
+        using var ollamaClient = new OllamaApiClient(this._httpClient, expectedModel);
+        var sut = ollamaClient.AsChatCompletionService();
 
         var chat = new ChatHistory();
         chat.AddMessage(AuthorRole.User, "fake-text");
@@ -188,9 +184,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
     public async Task GetStreamingChatMessageContentsExecutionSettingsMustBeSentAsync()
     {
         //Arrange
-        var sut = new OllamaChatCompletionService(
-            "fake-model",
-            httpClient: this._httpClient);
+        var expectedModel = "fake-model";
+        using var ollamaClient = new OllamaApiClient(this._httpClient, expectedModel);
+        var sut = ollamaClient.AsChatCompletionService();
+
         var chat = new ChatHistory();
         chat.AddMessage(AuthorRole.User, "fake-text");
         string jsonSettings = """
@@ -222,9 +219,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
     public async Task GetChatMessageContentsExecutionSettingsMustBeSentAsync()
     {
         //Arrange
-        var sut = new OllamaChatCompletionService(
-            "fake-model",
-            httpClient: this._httpClient);
+        var expectedModel = "fake-model";
+        using var ollamaClient = new OllamaApiClient(this._httpClient, expectedModel);
+        var sut = ollamaClient.AsChatCompletionService();
+
         var chat = new ChatHistory();
         chat.AddMessage(AuthorRole.User, "fake-text");
         string jsonSettings = """
