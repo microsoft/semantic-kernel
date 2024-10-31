@@ -5,10 +5,15 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from openai import AsyncClient
 from openai.resources.images import AsyncImages
+from openai.types.image import Image
 from openai.types.images_response import ImagesResponse
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_image import OpenAITextToImage
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidExecutionSettingsError,
+    ServiceResponseException,
+)
 
 
 def test_init(openai_unit_test_env):
@@ -55,8 +60,10 @@ def test_init_with_no_model_id(openai_unit_test_env) -> None:
 
 
 @pytest.mark.asyncio
-@patch.object(AsyncImages, "generate", new_callable=AsyncMock)
+@patch.object(AsyncImages, "generate", return_value=AsyncMock(spec=ImagesResponse))
 async def test_generate_calls_with_parameters(mock_generate, openai_unit_test_env) -> None:
+    mock_generate.return_value.data = [Image(url="abc")]
+
     ai_model_id = "test_model_id"
     prompt = "painting of flowers in vase"
     width = 512
@@ -69,7 +76,6 @@ async def test_generate_calls_with_parameters(mock_generate, openai_unit_test_en
         prompt=prompt,
         model=ai_model_id,
         size=f"{width}x{width}",
-        response_format="url",
     )
 
 
@@ -82,6 +88,26 @@ async def test_generate_fail(mock_generate, openai_unit_test_env) -> None:
     openai_text_to_image = OpenAITextToImage(ai_model_id=ai_model_id)
     with pytest.raises(ServiceResponseException):
         await openai_text_to_image.generate_image(description="painting of flowers in vase", width=width, height=width)
+
+
+@pytest.mark.asyncio
+async def test_generate_invalid_image_size(openai_unit_test_env) -> None:
+    ai_model_id = "test_model_id"
+    width = 100
+
+    openai_text_to_image = OpenAITextToImage(ai_model_id=ai_model_id)
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        await openai_text_to_image.generate_image(description="painting of flowers in vase", width=width, height=width)
+
+
+@pytest.mark.asyncio
+async def test_generate_empty_description(openai_unit_test_env) -> None:
+    ai_model_id = "test_model_id"
+    width = 100
+
+    openai_text_to_image = OpenAITextToImage(ai_model_id=ai_model_id)
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        await openai_text_to_image.generate_image(description="", width=width, height=width)
 
 
 @pytest.mark.asyncio
