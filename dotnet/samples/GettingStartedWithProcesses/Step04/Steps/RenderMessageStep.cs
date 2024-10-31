@@ -45,7 +45,7 @@ public class RenderMessageStep : KernelProcessStep
     {
         string message = string.IsNullOrWhiteSpace(error.Message) ? "Unexpected failure" : error.Message;
         Render($"ERROR: {message} [{error.GetType().Name}]{Environment.NewLine}{error.StackTrace}");
-        logger.LogError("Unexpected failure: {ErrorMessage} [ErrorType]", error.Message, error.Type);
+        logger.LogError("Unexpected failure: {ErrorMessage} [{ErrorType}]", error.Message, error.Type);
     }
 
     /// <summary>
