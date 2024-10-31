@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Postgres;
 using Npgsql;
 using Xunit;
 
@@ -63,14 +63,16 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     private string _connectionString = null!;
     private string _databaseName = null!;
 
-    /// <summary>Gets the Kernel that holds the vector store.</summary>
-    public Kernel Kernel { get; private set; }
-
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
     public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
     public VectorStoreRecordDefinition HotelWithGuidIdVectorStoreRecordDefinition { get; private set; }
+
+    /// <summary>
+    /// Gets a vector store to use for tests.
+    /// </summary>
+    public IVectorStore VectorStore => new PostgresVectorStore(this._dataSource!);
 
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
@@ -78,7 +80,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
         where TKey : notnull
         where TRecord : class
     {
-        var vectorStore = this.Kernel.GetRequiredService<IVectorStore>();
+        var vectorStore = this.VectorStore;
         return vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
     }
 
@@ -102,10 +104,6 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
         dataSourceBuilder.UseVector();
 
         this._dataSource = dataSourceBuilder.Build();
-
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddPostgresVectorStore(this._dataSource);
-        this.Kernel = kernelBuilder.Build();
 
         // Wait for the postgres container to be ready and create the test database using the initial data source.
         var initialDataSource = NpgsqlDataSource.Create(this._connectionString);
