@@ -55,9 +55,9 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
 
         Args:
             options: The search options.
-            search_text: The text to search for.
-            vectorizable_text: The text to search for, will be vectorized downstream.
-            vector: The vector to search for.
+            search_text: The text to search for, optional.
+            vectorizable_text: The text to search for, will be vectorized downstream, optional.
+            vector: The vector to search for, optional.
             **kwargs: Additional arguments that might be needed.
 
         Returns:

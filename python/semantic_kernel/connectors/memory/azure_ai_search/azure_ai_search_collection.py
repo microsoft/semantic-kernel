@@ -266,15 +266,15 @@ class AzureAISearchCollection(
         if "vector_queries" not in search_args and "search_text" not in search_args:
             # this assumes that a filter only query is asked for
             search_args["search_text"] = "*"
+
+        if options.include_vectors:
+            search_args["select"] = ["*"]
         else:
-            if options.include_vectors:
-                search_args["select"] = ["*"]
-            else:
-                search_args["select"] = [
-                    name
-                    for name, field in self.data_model_definition.fields.items()
-                    if not isinstance(field, VectorStoreRecordVectorField)
-                ]
+            search_args["select"] = [
+                name
+                for name, field in self.data_model_definition.fields.items()
+                if not isinstance(field, VectorStoreRecordVectorField)
+            ]
         raw_results = await self.search_client.search(**search_args)
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(raw_results),
