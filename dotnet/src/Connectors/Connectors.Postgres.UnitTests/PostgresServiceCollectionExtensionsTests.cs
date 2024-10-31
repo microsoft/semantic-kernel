@@ -35,29 +35,7 @@ public sealed class PostgresServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void AddVectorStoreRecordCollectionWithStringKeyRegistersClass()
-    {
-        // Arrange
-        using var dataSource = NpgsqlDataSource.Create("Host=fake;");
-        this._serviceCollection.AddSingleton<NpgsqlDataSource>(dataSource);
-
-        // Act
-        this._serviceCollection.AddPostgresVectorStoreRecordCollection<string, TestRecord>("testcollection");
-
-        var serviceProvider = this._serviceCollection.BuildServiceProvider();
-
-        // Assert
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
-        Assert.NotNull(collection);
-        Assert.IsType<PostgresVectorStoreRecordCollection<string, TestRecord>>(collection);
-
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
-        Assert.NotNull(vectorizedSearch);
-        Assert.IsType<PostgresVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
-    }
-
-    [Fact]
-    public void AddVectorStoreRecordCollectionWithNumericKeyRegistersClass()
+    public void AddVectorStoreRecordCollectionRegistersClass()
     {
         // Arrange
         using var dataSource = NpgsqlDataSource.Create("Host=fake;");
