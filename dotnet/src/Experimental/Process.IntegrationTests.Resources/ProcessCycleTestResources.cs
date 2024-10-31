@@ -6,6 +6,8 @@ using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.Process.IntegrationTests;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 /// <summary>
 /// Kick off step for the process.
 /// </summary>
@@ -219,3 +221,5 @@ public static class ProcessTestsEvents
     public const string OutputReadyPublic = "OutputReadyPublic";
     public const string OutputReadyInternal = "OutputReadyInternal";
 }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

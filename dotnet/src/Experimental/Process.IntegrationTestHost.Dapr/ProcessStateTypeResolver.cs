@@ -54,6 +54,19 @@ public class ProcessStateTypeResolver<T> : DefaultJsonTypeInfoResolver where T :
 
             jsonTypeInfo.PolymorphismOptions.DerivedTypes.AddRange(jsonDerivedTypes);
         }
+        else if (jsonTypeInfo.Type == typeof(DaprStepInfo))
+        {
+            jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
+            {
+                TypeDiscriminatorPropertyName = "$state-type",
+                IgnoreUnrecognizedTypeDiscriminators = true,
+                UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
+                DerivedTypes =
+                {
+                    new JsonDerivedType(typeof(DaprProcessInfo), nameof(DaprProcessInfo))
+                }
+            };
+        }
 
         return jsonTypeInfo;
     }

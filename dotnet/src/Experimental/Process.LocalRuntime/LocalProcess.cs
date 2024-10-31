@@ -197,7 +197,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     parentProcessId: this.Id,
                     loggerFactory: this.LoggerFactory);
 
-                //await process.StartAsync(kernel: this._kernel, keepAlive: true).ConfigureAwait(false);
                 localStep = process;
             }
             else

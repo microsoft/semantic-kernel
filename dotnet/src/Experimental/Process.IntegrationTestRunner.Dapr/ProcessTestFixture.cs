@@ -10,17 +10,25 @@ namespace SemanticKernel.Process.IntegrationTests;
 /// <summary>
 /// A test fixture for running shared process tests across multiple runtimes.
 /// </summary>
-public class ProcessTestFixture : IDisposable, IAsyncLifetime
+public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
 {
     private System.Diagnostics.Process? _process;
     private HttpClient? _httpClient;
 
+    /// <summary>
+    /// Called by xUnit before the test is run.
+    /// </summary>
+    /// <returns></returns>
     public async Task InitializeAsync()
     {
         this._httpClient = new HttpClient();
         await this.StartTestHostAsync();
     }
 
+    /// <summary>
+    /// Starts the test host by creating a new process with the Dapr cli. The startup process can take 30 seconds or more and so we wait for this to complete before returning.
+    /// </summary>
+    /// <returns></returns>
     private async Task StartTestHostAsync()
     {
         try
@@ -51,6 +59,11 @@ public class ProcessTestFixture : IDisposable, IAsyncLifetime
         }
     }
 
+    /// <summary>
+    /// Waits for the test host to be ready to accept requests. This is determined by making a request to the health endpoint.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidProgramException"></exception>
     private async Task WaitForHostStartupAsync()
     {
         // Wait for the process to start
@@ -94,9 +107,12 @@ public class ProcessTestFixture : IDisposable, IAsyncLifetime
         return context;
     }
 
+    /// <summary>
+    /// Disposes of the test fixture.
+    /// </summary>
     public void Dispose()
     {
-        if (!this._process.HasExited)
+        if (this._process is not null && this._process.HasExited)
         {
             this._process?.Kill();
             this._process?.WaitForExit();
@@ -106,6 +122,10 @@ public class ProcessTestFixture : IDisposable, IAsyncLifetime
         this._httpClient?.Dispose();
     }
 
+    /// <summary>
+    /// Called by xUnit after the test is run.
+    /// </summary>
+    /// <returns></returns>
     public Task DisposeAsync()
     {
         return Task.CompletedTask;

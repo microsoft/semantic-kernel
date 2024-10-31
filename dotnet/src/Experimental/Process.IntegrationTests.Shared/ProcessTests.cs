@@ -64,7 +64,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     }
 
     /// <summary>
-    /// Tests a process with three steps where the third step is a nested process. Events from the outer process
+    /// Tests a process with three steps where the third step is a nested process. Ev/ts from the outer process
     /// are routed to the inner process.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>

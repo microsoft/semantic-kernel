@@ -13,6 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 [KnownType(typeof(KernelProcessEdge))]
 [KnownType(typeof(KernelProcessStepState))]
+[KnownType(typeof(DaprProcessInfo))]
 [JsonDerivedType(typeof(DaprProcessInfo))]
 public record DaprStepInfo
 {

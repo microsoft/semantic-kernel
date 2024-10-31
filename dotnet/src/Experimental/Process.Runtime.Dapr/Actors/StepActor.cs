@@ -141,7 +141,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// Triggers the step to process all prepared messages.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
-    public async Task ProcessIncomingMessagesAsync()
+    public virtual async Task ProcessIncomingMessagesAsync()
     {
         // Handle all the incoming messages one at a time
         while (this._incomingMessages.Count > 0)
@@ -489,8 +489,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="daprEvent">The event to emit.</param>
     internal async ValueTask EmitEventAsync(DaprEvent daprEvent)
     {
-        var scopedEvent = this.ScopedEvent(daprEvent);
-
         // Emit the event out of the process (this one) if it's visibility is public.
         if (daprEvent.Visibility == KernelProcessEventVisibility.Public)
         {
@@ -498,9 +496,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             {
                 // Emit the event to the parent process
                 var parentProcess = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.ParentProcessId), nameof(EventBufferActor));
-                await parentProcess.EnqueueAsync(scopedEvent).ConfigureAwait(false);
+                await parentProcess.EnqueueAsync(daprEvent).ConfigureAwait(false);
             }
         }
+
+        var scopedEvent = this.ScopedEvent(daprEvent);
 
         // Get the edges for the event and queue up the messages to be sent to the next steps.
         foreach (var edge in this.GetEdgeForEvent(daprEvent.Id!))
@@ -517,7 +517,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="daprEvent">The event.</param>
     /// <returns>A <see cref="DaprEvent"/> with the correctly scoped namespace.</returns>
-    private DaprEvent ScopedEvent(DaprEvent daprEvent)
+    protected DaprEvent ScopedEvent(DaprEvent daprEvent)
     {
         Verify.NotNull(daprEvent);
         return daprEvent with { Namespace = $"{this.Name}_{this.Id}" };
