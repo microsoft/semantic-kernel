@@ -35,9 +35,7 @@ internal static class StepExtensions
         KernelProcessStepState? newState = (KernelProcessStepState?)Activator.CreateInstance(stateType, sourceState.Name, sourceState.Id);
         if (newState == null)
         {
-            string errorMessage = $"Failed to instantiate state: {stateType.Name} [{sourceState.Id}].";
-            logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException($"Failed to instantiate state: {stateType.Name} [{sourceState.Id}].").Log(logger);
         }
 
         if (userStateType != null)
@@ -59,17 +57,13 @@ internal static class StepExtensions
             userStateType = genericStepType.GetGenericArguments()[0];
             if (userStateType is null)
             {
-                string errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                logger?.LogError("{ErrorMessage}", errorMessage);
-                throw new KernelException(errorMessage);
+                throw new KernelException("The generic type argument for the KernelProcessStep subclass could not be determined.").Log(logger);
             }
 
             stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             if (stateType is null)
             {
-                string errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                logger?.LogError("{ErrorMessage}", errorMessage);
-                throw new KernelException(errorMessage);
+                throw new KernelException("The generic type argument for the KernelProcessStep subclass could not be determined.").Log(logger);
             }
         }
         else
@@ -108,9 +102,7 @@ internal static class StepExtensions
     {
         if (functions is null)
         {
-            string errorMessage = "Internal Error: The step has not been initialized.";
-            logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException("Internal Error: The step has not been initialized.").Log(logger);
         }
 
         Dictionary<string, Dictionary<string, object?>?> inputs = new();
