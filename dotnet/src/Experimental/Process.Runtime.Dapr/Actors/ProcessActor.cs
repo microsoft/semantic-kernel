@@ -325,7 +325,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                     foreach (var e in allEvents)
                     {
                         var scopedEvent = this.ScopedEvent(e);
-
                         if (this._outputEdges!.TryGetValue(scopedEvent.Id, out List<KernelProcessEdge>? edges) && edges is not null)
                         {
                             foreach (var edge in edges)
