@@ -337,6 +337,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 foundEdge = true;
             }
 
+            // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
             if (!foundEdge && stepEvent.IsError)
             {
                 if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))

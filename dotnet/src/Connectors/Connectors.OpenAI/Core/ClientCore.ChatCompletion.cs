@@ -209,7 +209,9 @@ internal partial class ClientCore
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: false,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 return [lastMessage];
@@ -388,7 +390,9 @@ internal partial class ClientCore
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: true,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content);
@@ -464,7 +468,7 @@ internal partial class ClientCore
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
-            IncludeLogProbabilities = executionSettings.Logprobs,
+            IncludeLogProbabilities = executionSettings.Logprobs
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -497,6 +501,11 @@ internal partial class ClientCore
             {
                 options.StopSequences.Add(s);
             }
+        }
+
+        if (toolCallingConfig.Options?.AllowParallelCalls is not null)
+        {
+            options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
         }
 
         return options;

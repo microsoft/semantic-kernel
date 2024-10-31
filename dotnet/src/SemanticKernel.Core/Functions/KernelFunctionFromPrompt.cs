@@ -235,7 +235,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        var promptRenderingResult = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        var promptRenderingResult = await this.RenderPromptAsync(
+            kernel,
+            arguments,
+            isStreaming: false,
+            cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable CS0612 // Events are deprecated
         if (promptRenderingResult.RenderedEventArgs?.Cancel is true)
@@ -268,7 +272,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        var result = await this.RenderPromptAsync(
+            kernel,
+            arguments,
+            isStreaming: true,
+            cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable CS0612 // Events are deprecated
         if (result.RenderedEventArgs?.Cancel is true)
@@ -479,7 +487,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-    private async Task<PromptRenderingResult> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    private async Task<PromptRenderingResult> RenderPromptAsync(
+        Kernel kernel,
+        KernelArguments arguments,
+        bool isStreaming,
+        CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
 
@@ -506,7 +518,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         kernel.OnPromptRendering(this, arguments);
 #pragma warning restore CS0618 // Events are deprecated
 
-        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, async (context) =>
+        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, isStreaming, async (context) =>
         {
             renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
 
