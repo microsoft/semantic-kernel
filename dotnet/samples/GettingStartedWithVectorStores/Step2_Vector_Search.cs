@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace GettingStartedWithVectorStores;
 
 /// <summary>
-/// Example showing how to do vector searchs with an in-memory vector store.
+/// Example showing how to do vector searches with an in-memory vector store.
 /// </summary>
 public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture fixture) : BaseTest(output), IClassFixture<VectorStoresFixture>
 {
