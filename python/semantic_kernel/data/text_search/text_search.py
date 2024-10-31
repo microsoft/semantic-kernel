@@ -13,7 +13,11 @@ from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAM
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
-from semantic_kernel.data.text_search.utils import create_options
+from semantic_kernel.data.text_search.utils import (
+    UpdateFunctionCallable,
+    create_options,
+    default_options_update_function,
+)
 from semantic_kernel.data.vector_search.const import TextSearchFunctions
 from semantic_kernel.exceptions.function_exceptions import TextSearchException
 from semantic_kernel.functions import kernel_function
@@ -92,7 +96,7 @@ class TextSearch:
         self,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
-        parameter_aliases: dict[str, str] | None = None,
+        options_update_function: UpdateFunctionCallable | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
@@ -103,18 +107,18 @@ class TextSearch:
             search_function=TextSearchFunctions.SEARCH,
             options=options,
             parameters=parameters,
-            parameter_aliases=parameter_aliases,
+            options_update_function=options_update_function,
             return_parameter=return_parameter,
             function_name=function_name,
             description=description,
             string_mapper=string_mapper,
         )
 
-    def create_get_text_search_result(
+    def create_get_text_search_results(
         self,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
-        parameter_aliases: dict[str, str] | None = None,
+        options_update_function: UpdateFunctionCallable | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
@@ -125,18 +129,18 @@ class TextSearch:
             search_function=TextSearchFunctions.GET_TEXT_SEARCH_RESULT,
             options=options,
             parameters=parameters,
-            parameter_aliases=parameter_aliases,
+            options_update_function=options_update_function,
             return_parameter=return_parameter,
             function_name=function_name,
             description=description,
             string_mapper=string_mapper,
         )
 
-    def create_get_search_result(
+    def create_get_search_results(
         self,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
-        parameter_aliases: dict[str, str] | None = None,
+        options_update_function: UpdateFunctionCallable | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
@@ -147,7 +151,7 @@ class TextSearch:
             search_function=TextSearchFunctions.GET_SEARCH_RESULT,
             options=options,
             parameters=parameters,
-            parameter_aliases=parameter_aliases,
+            options_update_function=options_update_function,
             return_parameter=return_parameter,
             function_name=function_name,
             description=description,
@@ -162,7 +166,7 @@ class TextSearch:
         search_function: TextSearchFunctions | str = TextSearchFunctions.SEARCH,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
-        parameter_aliases: dict[str, str] | None = None,
+        options_update_function: UpdateFunctionCallable | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
@@ -178,9 +182,11 @@ class TextSearch:
             parameters: The parameters for the function,
                 use an empty list for a function without parameters,
                 use None for the default set, which is "query", "top", and "skip".
-            parameter_aliases: The aliases to use for the parameters,
-                for instance when a technical name of the filter is not a good name for the LLM to use.
-                The key is the LLM name, should be in parameters, the value is the technical name.
+            options_update_function: A function to update the search options.
+                takes the query, options, parameters, and kwargs as arguments.
+                The function should return the updated query and options.
+                There is a default function that can be used, or you can supply your own.
+                Needs to adhere to the UpdateFunctionCallable type.
             return_parameter: The return parameter for the function.
             function_name: The name of the function, to be used in the kernel, default is "search".
             description: The description of the function, a default is provided.
@@ -188,18 +194,21 @@ class TextSearch:
                 This can be applied to the results from the chosen search function.
                 When using the VectorStoreTextSearch and the Search method, a
                 string_mapper can be defined there as well, that is separate from this one.
-            # update_options_function: A function to create search options.
+
+        Returns:
+            KernelFunction: The kernel function.
 
         """
         if isinstance(search_function, str):
             search_function = TextSearchFunctions(search_function)
 
+        update_func = options_update_function or default_options_update_function
+
         @kernel_function(name=function_name, description=description)
         async def search_wrapper(**kwargs: Any) -> Sequence[str]:
-            query = kwargs.get("query")
-            inner_options = create_options(
-                self.options_class, deepcopy(options), parameters, parameter_aliases, **kwargs
-            )
+            query = kwargs.pop("query", "")
+            inner_options = create_options(self.options_class, deepcopy(options), **kwargs)
+            query, inner_options = update_func(query, inner_options, parameters, **kwargs)
             try:
                 results = await self._get_search_function(search_function)(
                     query=query,

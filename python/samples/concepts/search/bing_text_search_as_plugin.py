@@ -11,35 +11,57 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.search.bing import BingSearch
-from semantic_kernel.connectors.search.bing.bing_search import BingSearch
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.data import TextSearchFilter, TextSearchOptions
-from semantic_kernel.data.filters.text_search_filter import TextSearchFilter
-from semantic_kernel.data.text_search_options import TextSearchOptions
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.functions import KernelArguments
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions import KernelArguments, KernelParameterMetadata, KernelPlugin
 
 kernel = Kernel()
 service_id = "chat"
 kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 
-kernel.add_functions(
-    plugin_name="bing",
-    functions=[
-        BingSearch()._create_kernel_function(
-            search_function="get_text_search_results",
-            description="Get details about Semantic Kernel concepts.",
-            options=TextSearchOptions(
-                filter=TextSearchFilter.equal_to(
-                    "site", "https://github.com/microsoft/semantic-kernel/tree/main/python"
-                ),
-                top=6,
+kernel.add_plugin(
+    KernelPlugin.from_text_search_with_search(
+        BingSearch(),
+        plugin_name="bing",
+        description="Get details about Semantic Kernel concepts.",
+        # options=TextSearchOptions(
+        #     filter=TextSearchFilter.equal_to("site", "https://github.com/microsoft/semantic-kernel/tree/main/python"),
+        # ),
+        parameters=[
+            KernelParameterMetadata(
+                name="query",
+                description="The search query.",
+                type="str",
+                is_required=True,
+                type_object=str,
             ),
-        )
-    ],
+            KernelParameterMetadata(
+                name="top",
+                description="The number of results to return.",
+                type="int",
+                is_required=False,
+                default_value=2,
+                type_object=int,
+            ),
+            KernelParameterMetadata(
+                name="skip",
+                description="The number of results to skip.",
+                type="int",
+                is_required=False,
+                default_value=0,
+                type_object=int,
+            ),
+            KernelParameterMetadata(
+                name="site",
+                description="The site to search.",
+                default_value="https://github.com/microsoft/semantic-kernel/tree/main/python",
+                type="str",
+                is_required=False,
+                type_object=str,
+            ),
+        ],
+    )
 )
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
