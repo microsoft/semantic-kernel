@@ -130,6 +130,7 @@ def test_azure_cosmos_db_no_sql_get_cosmos_client_without_key(
 @patch("azure.cosmos.aio.CosmosClient", spec=True)
 async def test_azure_cosmos_db_no_sql_collection_create_database_if_not_exists(
     mock_cosmos_client,
+    azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
     database_name: str,
     collection_name: str,
@@ -158,6 +159,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_database_if_not_exists(
 @patch("azure.cosmos.aio.CosmosClient", spec=True)
 async def test_azure_cosmos_db_no_sql_collection_create_database_raise_if_database_not_exists(
     mock_cosmos_client,
+    azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
     database_name: str,
     collection_name: str,
