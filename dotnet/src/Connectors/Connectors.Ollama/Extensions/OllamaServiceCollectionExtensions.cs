@@ -2,15 +2,15 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.Extensions.AI;
 using OllamaSharp;
-using Microsoft.SemanticKernel.Connectors.Ollama;
 
 namespace Microsoft.SemanticKernel;
 
