@@ -349,6 +349,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionCalling", "Function
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallingUtilities.props = src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallingUtilities.props
 		src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessor.cs = src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessor.cs
+		src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessorLoggerExtensions.cs = src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessorLoggerExtensions.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Weaviate.UnitTests", "src\Connectors\Connectors.Weaviate.UnitTests\Connectors.Weaviate.UnitTests.csproj", "{E8FC97B0-B417-4A90-993C-B8AA9223B058}"
