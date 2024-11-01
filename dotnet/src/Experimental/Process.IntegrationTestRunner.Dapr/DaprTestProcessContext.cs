@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
 
 namespace SemanticKernel.Process.IntegrationTests;
-internal class DaprTestProcessContext : KernelProcessContext
+internal sealed class DaprTestProcessContext : KernelProcessContext
 {
     private readonly HttpClient _httpClient;
     private readonly KernelProcess _process;
@@ -38,33 +38,24 @@ internal class DaprTestProcessContext : KernelProcessContext
     /// <returns></returns>
     internal async Task StartWithEventAsync(KernelProcessEvent initialEvent)
     {
-        try
-        {
-            var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
-            var request = new ProcessStartRequest { Process = daprProcess, InitialEvent = initialEvent };
+        var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
+        var request = new ProcessStartRequest { Process = daprProcess, InitialEvent = initialEvent };
 
-            var response = await this._httpClient.PostAsJsonAsync($"http://localhost:5200/processes/{this._processId}/start", request, options: this._serializerOptions).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new InvalidOperationException("Failed to start process");
-            }
-        }
-        catch (Exception)
+        var response = await this._httpClient.PostAsJsonAsync($"http://localhost:5200/processes/{this._processId}/start", request, options: this._serializerOptions).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
         {
-
-            throw;
+            throw new InvalidOperationException("Failed to start process");
         }
     }
 
     public override async Task<KernelProcess> GetStateAsync()
     {
         var response = await this._httpClient.GetFromJsonAsync<DaprProcessInfo>($"http://localhost:5200/processes/{this._processId}", options: this._serializerOptions);
-        if (response == null)
+        return response switch
         {
-            throw new InvalidOperationException("Process not found");
-        }
-
-        return response.ToKernelProcess();
+            null => throw new InvalidOperationException("Process not found"),
+            _ => response.ToKernelProcess()
+        };
     }
 
     public override Task SendEventAsync(KernelProcessEvent processEvent)

@@ -11,22 +11,12 @@ using Dapr.Actors.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
+
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 {
-    private const string DaprStepInfoStateName = "DaprStepInfo";
-    private const string StepStateJson = "kernelStepStateJson";
-    private const string StepStateType = "kernelStepStateType";
-    private const string StepParentProcessId = "parentProcessId";
-    private const string StepIncomingMessagesState = "incomingMessagesState";
-
-    /// <summary>
-    /// The generic state type for a process step.
-    /// </summary>
-    private static readonly Type s_genericType = typeof(KernelProcessStep<>);
-
-    private readonly Kernel _kernel;
     private readonly Lazy<ValueTask> _activateTask;
 
     private DaprStepInfo? _stepInfo;
@@ -36,10 +26,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
     private bool _isInitialized;
 
-    internal Queue<DaprMessage> _incomingMessages = new();
+    protected readonly Kernel _kernel;
+
+    internal Queue<ProcessMessage> _incomingMessages = new();
     internal KernelProcessStepState? _stepState;
     internal Type? _stepStateType;
-    internal readonly ILoggerFactory? LoggerFactory;
     internal Dictionary<string, List<KernelProcessEdge>>? _outputEdges;
     internal readonly Dictionary<string, KernelFunction> _functions = [];
     internal Dictionary<string, Dictionary<string, object?>?>? _inputs = [];
@@ -52,11 +43,9 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="host">The host.</param>
     /// <param name="kernel">Required. An instance of <see cref="Kernel"/>.</param>
-    /// <param name="loggerFactory">An instance of <see cref="ILoggerFactory"/> used to create loggers.</param>
-    public StepActor(ActorHost host, Kernel kernel, ILoggerFactory? loggerFactory)
+    public StepActor(ActorHost host, Kernel kernel)
         : base(host)
     {
-        this.LoggerFactory = loggerFactory;
         this._kernel = kernel;
         this._activateTask = new Lazy<ValueTask>(this.ActivateStepAsync);
     }
@@ -71,7 +60,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public async Task InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId)
     {
-        Verify.NotNull(stepInfo);
+        Verify.NotNull(stepInfo, nameof(stepInfo));
 
         // Only initialize once. This check is required as the actor can be re-activated from persisted state and
         // this should not result in multiple initializations.
@@ -83,8 +72,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         await this.Int_InitializeStepAsync(stepInfo, parentProcessId).ConfigureAwait(false);
 
         // Save initial state
-        await this.StateManager.AddStateAsync(DaprStepInfoStateName, stepInfo).ConfigureAwait(false);
-        await this.StateManager.AddStateAsync(StepParentProcessId, parentProcessId).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepInfoState, stepInfo).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -96,21 +85,19 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public Task Int_InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId)
     {
-        Verify.NotNull(stepInfo);
+        Verify.NotNull(stepInfo, nameof(stepInfo));
 
         // Attempt to load the inner step type
         this._innerStepType = Type.GetType(stepInfo.InnerStepDotnetType);
         if (this._innerStepType is null)
         {
-            var errorMessage = $"Could not load the inner step type '{stepInfo.InnerStepDotnetType}'.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException($"Could not load the inner step type '{stepInfo.InnerStepDotnetType}'.").Log(this._logger);
         }
 
         this.ParentProcessId = parentProcessId;
         this._stepInfo = stepInfo;
         this._stepState = this._stepInfo.State;
-        this._logger = this.LoggerFactory?.CreateLogger(this._innerStepType) ?? new NullLogger<StepActor>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._innerStepType) ?? new NullLogger<StepActor>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
         this._isInitialized = true;
@@ -131,7 +118,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Save the incoming messages to state
-        await this.StateManager.SetStateAsync(StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return this._incomingMessages.Count;
@@ -150,7 +137,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.HandleMessageAsync(message).ConfigureAwait(false);
 
             // Save the incoming messages to state
-            await this.StateManager.SetStateAsync(StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
+            await this.StateManager.SetStateAsync(ActorStateKeys.StepIncomingMessagesState, this._incomingMessages).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
     }
@@ -175,15 +162,15 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var existingStepInfo = await this.StateManager.TryGetStateAsync<DaprStepInfo>(DaprStepInfoStateName).ConfigureAwait(false);
+        var existingStepInfo = await this.StateManager.TryGetStateAsync<DaprStepInfo>(ActorStateKeys.StepInfoState).ConfigureAwait(false);
         if (existingStepInfo.HasValue)
         {
             // Initialize the step from persisted state
-            var parentProcessId = await this.StateManager.GetStateAsync<string>(StepParentProcessId).ConfigureAwait(false);
+            var parentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
             await this.Int_InitializeStepAsync(existingStepInfo.Value, parentProcessId).ConfigureAwait(false);
 
             // Load the persisted incoming messages
-            var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<DaprMessage>>(StepIncomingMessagesState).ConfigureAwait(false);
+            var incomingMessages = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(ActorStateKeys.StepIncomingMessagesState).ConfigureAwait(false);
             if (incomingMessages.HasValue)
             {
                 this._incomingMessages = incomingMessages.Value;
@@ -196,7 +183,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <summary>
     /// The name of the step.
     /// </summary>
-    protected virtual string Name => this._stepInfo?.State.Name ?? throw new KernelException("The Step must be initialized before accessing the Name property.");
+    protected virtual string Name => this._stepInfo?.State.Name ?? throw new KernelException("The Step must be initialized before accessing the Name property.").Log(this._logger);
 
     /// <summary>
     /// Emits an event from the step.
@@ -205,25 +192,25 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
-        return this.EmitEventAsync(DaprEvent.FromKernelProcessEvent(processEvent, this._eventNamespace!));
+        return this.EmitEventAsync(ProcessEvent.FromKernelProcessEvent(processEvent, this._eventNamespace!));
     }
 
     /// <summary>
-    /// Handles a <see cref="DaprMessage"/> that has been sent to the step.
+    /// Handles a <see cref="ProcessMessage"/> that has been sent to the step.
     /// </summary>
     /// <param name="message">The message to process.</param>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    internal virtual async Task HandleMessageAsync(DaprMessage message)
+    internal virtual async Task HandleMessageAsync(ProcessMessage message)
     {
-        Verify.NotNull(message);
+        Verify.NotNull(message, nameof(message));
 
         // Lazy one-time initialization of the step before processing a message
         await this._activateTask.Value.ConfigureAwait(false);
 
         if (this._functions is null || this._inputs is null || this._initialInputs is null)
         {
-            throw new KernelException("The step has not been initialized.");
+            throw new KernelException("The step has not been initialized.").Log(this._logger);
         }
 
         string messageLogParameters = string.Join(", ", message.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
@@ -259,7 +246,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         // A message can only target one function and should not result in a different function being invoked.
         var targetFunction = invocableFunctions.FirstOrDefault((name) => name == message.FunctionName) ??
-            throw new InvalidOperationException($"A message targeting function '{message.FunctionName}' has resulted in a function named '{invocableFunctions.First()}' becoming invocable. Are the function names configured correctly?");
+            throw new InvalidOperationException($"A message targeting function '{message.FunctionName}' has resulted in a function named '{invocableFunctions.First()}' becoming invocable. Are the function names configured correctly?").Log(this._logger);
 
         this._logger?.LogInformation("Step with Id `{StepId}` received all required input for function [{TargetFunction}] and is executing.", this.Name, targetFunction);
 
@@ -267,7 +254,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         KernelArguments arguments = new(this._inputs[targetFunction]!);
         if (!this._functions.TryGetValue(targetFunction, out KernelFunction? function) || function == null)
         {
-            throw new ArgumentException($"Function {targetFunction} not found in plugin {this.Name}");
+            throw new InvalidOperationException($"Function {targetFunction} not found in plugin {this.Name}").Log(this._logger);
         }
 
         FunctionResult? invokeResult = null;
@@ -287,7 +274,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
             // Persist the state after the function has been executed
             var stateJson = JsonSerializer.Serialize(this._stepState, this._stepStateType!);
-            await this.StateManager.SetStateAsync(StepStateJson, stateJson).ConfigureAwait(false);
+            await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -315,9 +302,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     {
         if (this._stepInfo is null)
         {
-            var errorMessage = "A step cannot be activated before it has been initialized.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException("A step cannot be activated before it has been initialized.").Log(this._logger);
         }
 
         // Instantiate an instance of the inner step object
@@ -331,7 +316,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels();
+        this._initialInputs = this.FindInputChannels(this._functions, this._logger);
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
@@ -339,136 +324,40 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         Type? stateType = null;
 
         // Check if the state has already been persisted
-        var stepStateType = await this.StateManager.TryGetStateAsync<string>(StepStateType).ConfigureAwait(false);
+        var stepStateType = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.StepStateType).ConfigureAwait(false);
         if (stepStateType.HasValue)
         {
             stateType = Type.GetType(stepStateType.Value);
-            var stateObjectJson = await this.StateManager.GetStateAsync<string>(StepStateJson).ConfigureAwait(false);
+            var stateObjectJson = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepStateJson).ConfigureAwait(false);
             stateObject = JsonSerializer.Deserialize(stateObjectJson, stateType!) as KernelProcessStepState;
         }
         else
         {
+            stateType = this._innerStepType.ExtractStateType(out Type? userStateType, this._logger);
             stateObject = this._stepInfo.State;
-            if (TryGetSubtypeOfStatefulStep(this._innerStepType, out Type? genericStepType) && genericStepType is not null)
-            {
-                // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
-                // and create an instance of the corresponding KernelProcessStepState<>.
-                var userStateType = genericStepType.GetGenericArguments()[0];
-                if (userStateType is null)
-                {
-                    var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                    this._logger?.LogError("{ErrorMessage}", errorMessage);
-                    throw new KernelException(errorMessage);
-                }
-
-                stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
-                if (stateType is null)
-                {
-                    var errorMessage = "The generic type argument for the KernelProcessStep subclass could not be determined.";
-                    this._logger?.LogError("{ErrorMessage}", errorMessage);
-                    throw new KernelException(errorMessage);
-                }
-            }
-            else
-            {
-                // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-                stateType = typeof(KernelProcessStepState);
-            }
 
             // Persist the state type and type object.
-            await this.StateManager.AddStateAsync(StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
-            await this.StateManager.AddStateAsync(StepStateJson, JsonSerializer.Serialize(stateObject)).ConfigureAwait(false);
+            await this.StateManager.AddStateAsync(ActorStateKeys.StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
+            await this.StateManager.AddStateAsync(ActorStateKeys.StepStateJson, JsonSerializer.Serialize(stateObject)).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
         }
 
         if (stateType is null || stateObject is null)
         {
-            var errorMessage = "The state object for the KernelProcessStep could not be created.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException("The state object for the KernelProcessStep could not be created.").Log(this._logger);
         }
 
         MethodInfo? methodInfo = this._innerStepType!.GetMethod(nameof(KernelProcessStep.ActivateAsync), [stateType]);
 
         if (methodInfo is null)
         {
-            var errorMessage = "The ActivateAsync method for the KernelProcessStep could not be found.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException("The ActivateAsync method for the KernelProcessStep could not be found.").Log(this._logger);
         }
 
         this._stepState = stateObject;
         this._stepStateType = stateType;
         methodInfo.Invoke(stepInstance, [stateObject]);
         await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Examines the KernelFunction for the step and creates a dictionary of input channels.
-    /// Some types such as KernelProcessStepContext are special and need to be injected into
-    /// the function parameter. Those objects are instantiated at this point.
-    /// </summary>
-    /// <returns><see cref="Dictionary{TKey, TValue}"/></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    private Dictionary<string, Dictionary<string, object?>?> FindInputChannels()
-    {
-        if (this._functions is null)
-        {
-            var errorMessage = "Internal Error: The step has not been initialized.";
-            this._logger?.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
-        }
-
-        Dictionary<string, Dictionary<string, object?>?> inputs = new();
-        foreach (var kvp in this._functions)
-        {
-            inputs[kvp.Key] = new();
-            foreach (var param in kvp.Value.Metadata.Parameters)
-            {
-                // Optional parameters are should not be added to the input dictionary.
-                if (!param.IsRequired)
-                {
-                    continue;
-                }
-
-                // Parameters of type KernelProcessStepContext are injected by the process
-                // and are instantiated here.
-                if (param.ParameterType == typeof(KernelProcessStepContext))
-                {
-                    inputs[kvp.Key]![param.Name] = new KernelProcessStepContext(this);
-                }
-                else
-                {
-                    inputs[kvp.Key]![param.Name] = null;
-                }
-            }
-        }
-
-        return inputs;
-    }
-
-    /// <summary>
-    /// Attempts to find an instance of <![CDATA['KernelProcessStep<>']]> within the provided types hierarchy.
-    /// </summary>
-    /// <param name="type">The type to examine.</param>
-    /// <param name="genericStateType">The matching type if found, otherwise null.</param>
-    /// <returns>True if a match is found, false otherwise.</returns>
-    /// TODO: Move this to a share process utilities project.
-    private static bool TryGetSubtypeOfStatefulStep(Type? type, out Type? genericStateType)
-    {
-        while (type != null && type != typeof(object))
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == s_genericType)
-            {
-                genericStateType = type;
-                return true;
-            }
-
-            type = type.BaseType;
-        }
-
-        genericStateType = null;
-        return false;
     }
 
     /// <summary>
@@ -487,7 +376,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// Emits an event from the step.
     /// </summary>
     /// <param name="daprEvent">The event to emit.</param>
-    internal async ValueTask EmitEventAsync(DaprEvent daprEvent)
+    internal async ValueTask EmitEventAsync(ProcessEvent daprEvent)
     {
         // Emit the event out of the process (this one) if it's visibility is public.
         if (daprEvent.Visibility == KernelProcessEventVisibility.Public)
@@ -505,7 +394,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         // Get the edges for the event and queue up the messages to be sent to the next steps.
         foreach (var edge in this.GetEdgeForEvent(daprEvent.Id!))
         {
-            DaprMessage message = DaprMessageFactory.CreateFromEdge(edge, daprEvent.Data);
+            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
             var scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
             var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message).ConfigureAwait(false);
@@ -516,10 +405,10 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// Generates a scoped event for the step.
     /// </summary>
     /// <param name="daprEvent">The event.</param>
-    /// <returns>A <see cref="DaprEvent"/> with the correctly scoped namespace.</returns>
-    protected DaprEvent ScopedEvent(DaprEvent daprEvent)
+    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
+    private ProcessEvent ScopedEvent(ProcessEvent daprEvent)
     {
-        Verify.NotNull(daprEvent);
+        Verify.NotNull(daprEvent, nameof(daprEvent));
         return daprEvent with { Namespace = $"{this.Name}_{this.Id}" };
     }
 

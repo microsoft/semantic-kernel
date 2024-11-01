@@ -307,6 +307,32 @@ def mock_run_incomplete():
 
 
 @pytest.fixture
+def mock_run_cancelled():
+    return Run(
+        id="run_id",
+        status="cancelled",
+        assistant_id="assistant_id",
+        created_at=123456789,
+        instructions="instructions",
+        model="model",
+        object="thread.run",
+        thread_id="thread_id",
+        tools=[],
+        required_action=RequiredAction(
+            type="submit_tool_outputs",
+            submit_tool_outputs=RequiredActionSubmitToolOutputs(
+                tool_calls=[
+                    RequiredActionFunctionToolCall(
+                        id="tool_call_id", type="function", function=Function(arguments="{}", name="function_name")
+                    )
+                ]
+            ),
+        ),
+        parallel_tool_calls=True,
+    )
+
+
+@pytest.fixture
 def mock_function_call_content():
     return FunctionCallContent(id="function_call_id", name="function_name", arguments={})
 
@@ -1568,7 +1594,7 @@ async def test_poll_run_status(
 
 
 @pytest.mark.asyncio
-async def test_poll_run_status_incomplete_throws(
+async def test_poll_run_status_incomplete(
     azure_openai_assistant_agent, mock_run_required_action, mock_run_incomplete, openai_unit_test_env
 ):
     with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
@@ -1576,6 +1602,23 @@ async def test_poll_run_status_incomplete_throws(
         mock_client.beta.assistants = MagicMock()
 
         mock_client.beta.threads.runs.retrieve = AsyncMock(return_value=mock_run_incomplete)
+
+        run = await azure_openai_assistant_agent._poll_run_status(
+            run=mock_run_required_action, thread_id="test_thread_id"
+        )
+
+        assert run.status in azure_openai_assistant_agent.error_message_states
+
+
+@pytest.mark.asyncio
+async def test_poll_run_status_cancelled(
+    azure_openai_assistant_agent, mock_run_required_action, mock_run_cancelled, openai_unit_test_env
+):
+    with patch.object(azure_openai_assistant_agent, "client", spec=AsyncAzureOpenAI) as mock_client:
+        mock_client.beta = MagicMock()
+        mock_client.beta.assistants = MagicMock()
+
+        mock_client.beta.threads.runs.retrieve = AsyncMock(return_value=mock_run_cancelled)
 
         run = await azure_openai_assistant_agent._poll_run_status(
             run=mock_run_required_action, thread_id="test_thread_id"

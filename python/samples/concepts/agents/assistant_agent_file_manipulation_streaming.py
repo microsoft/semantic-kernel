@@ -20,7 +20,7 @@ AGENT_INSTRUCTIONS = "Find answers to the user's questions in the provided file.
 
 
 # A helper method to invoke the agent with the user input
-async def invoke_streaming_agent(agent: OpenAIAssistantAgent, thread_id: str, input: str) -> None:
+async def invoke_streaming_agent(agent: OpenAIAssistantAgent | AzureAssistantAgent, thread_id: str, input: str) -> None:
     """Invoke the streaming agent with the user input."""
     await agent.add_chat_message(thread_id=thread_id, message=ChatMessageContent(role=AuthorRole.USER, content=input))
 

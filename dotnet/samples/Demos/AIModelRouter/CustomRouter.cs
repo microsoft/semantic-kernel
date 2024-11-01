@@ -21,12 +21,15 @@ internal sealed class CustomRouter()
     /// <param name="lookupPrompt">User's input prompt</param>
     /// <param name="serviceIds">List of service ids to choose from in order of importance, defaulting to the first</param>
     /// <returns>Service id.</returns>
-    internal string FindService(string lookupPrompt, IReadOnlyList<string> serviceIds)
+    internal string GetService(string lookupPrompt, List<string> serviceIds)
     {
         // The order matters, if the keyword is not found, the first one is used.
         foreach (var serviceId in serviceIds)
         {
-            if (Contains(lookupPrompt, serviceId)) { return serviceId; }
+            if (Contains(lookupPrompt, serviceId))
+            {
+                return serviceId;
+            }
         }
 
         return serviceIds[0];

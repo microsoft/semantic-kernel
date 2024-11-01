@@ -59,6 +59,27 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
         }
     }
 
+    private async Task ShutdownTestHostAsync()
+    {
+        var procesStartInfo = new ProcessStartInfo
+        {
+            FileName = "dapr",
+            Arguments = "stop --app-id daprprocesstests",
+            RedirectStandardOutput = false,
+            RedirectStandardError = false,
+            UseShellExecute = true,
+            CreateNoWindow = false
+        };
+
+        using var shutdownProcess = new System.Diagnostics.Process
+        {
+            StartInfo = procesStartInfo
+        };
+
+        shutdownProcess.Start();
+        await shutdownProcess.WaitForExitAsync();
+    }
+
     /// <summary>
     /// Waits for the test host to be ready to accept requests. This is determined by making a request to the health endpoint.
     /// </summary>
@@ -128,6 +149,6 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
     /// <returns></returns>
     public Task DisposeAsync()
     {
-        return Task.CompletedTask;
+        return this.ShutdownTestHostAsync();
     }
 }

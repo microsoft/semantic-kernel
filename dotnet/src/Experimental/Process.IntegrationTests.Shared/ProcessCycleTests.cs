@@ -12,6 +12,7 @@ namespace SemanticKernel.Process.IntegrationTests;
 /// <summary>
 /// Integration test focusing on cycles in a process.
 /// </summary>
+[Collection(nameof(ProcessTestGroup))]
 public class ProcessCycleTests : IClassFixture<ProcessTestFixture>
 {
     private readonly ProcessTestFixture _fixture;

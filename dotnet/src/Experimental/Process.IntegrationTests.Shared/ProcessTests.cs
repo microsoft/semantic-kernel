@@ -16,6 +16,7 @@ namespace SemanticKernel.Process.IntegrationTests;
 /// <summary>
 /// Integration tests for processes.
 /// </summary>
+[Collection(nameof(ProcessTestGroup))]
 public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
 {
     private readonly ProcessTestFixture _fixture;

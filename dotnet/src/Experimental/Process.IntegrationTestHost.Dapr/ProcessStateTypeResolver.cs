@@ -35,7 +35,7 @@ public class ProcessStateTypeResolver<T> : DefaultJsonTypeInfoResolver where T :
         }
     }
 
-    /// <inheritdoc>
+    /// <inheritdoc />
     public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
     {
         JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);

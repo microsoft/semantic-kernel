@@ -105,7 +105,7 @@ public sealed record KernelProcessStepState<TState> : KernelProcessStepState whe
 /// </summary>
 public sealed class ProcessStatePolymorphicTypeResolver : DefaultJsonTypeInfoResolver
 {
-    /// <inheritdoc>
+    /// <inheritdoc />
     public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
     {
         JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
