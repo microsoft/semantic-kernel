@@ -10,18 +10,28 @@ from pydantic import BaseModel, Field
 from pytest import fixture
 
 from semantic_kernel.data import (
-    VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
+from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
+from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
+from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
+from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 
 
 @fixture
 def DictVectorStoreRecordCollection():
-    class DictVectorStoreRecordCollection(VectorStoreRecordCollection[str, Any]):
+    class DictVectorStoreRecordCollection(
+        VectorSearchBase[str, Any],
+        VectorizedSearchMixin[Any],
+        VectorizableTextSearchMixin[Any],
+        VectorTextSearchMixin[Any],
+    ):
         inner_storage: dict[str, Any] = Field(default_factory=dict)
 
         async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
@@ -57,6 +67,30 @@ def DictVectorStoreRecordCollection():
 
         async def does_collection_exist(self, **kwargs: Any) -> bool:
             return True
+
+        async def _inner_search(
+            self,
+            options: Any = None,
+            search_text: str | None = None,
+            vectorizable_text: str | None = None,
+            vector: list[float | int] | None = None,
+            **kwargs: Any,
+        ) -> Any:
+            return KernelSearchResults(
+                results=self.generator(),
+                total_count=len(self.inner_storage) if options.include_total_count else None,
+            )
+
+        def _get_record_from_result(self, result: Any) -> Any:
+            return result
+
+        def _get_score_from_result(self, result: Any) -> float | None:
+            return None
+
+        async def generator(self):
+            if self.inner_storage:
+                for record in self.inner_storage.values():
+                    yield VectorSearchResult(record=record)
 
     return DictVectorStoreRecordCollection
 
@@ -168,7 +202,7 @@ def data_model_pandas_definition() -> object:
                 name="vector",
                 index_kind="hnsw",
                 dimensions=5,
-                distance_function="cosine",
+                distance_function="cosine_similarity",
                 property_type="float",
             ),
             "id": VectorStoreRecordKeyField(name="id"),

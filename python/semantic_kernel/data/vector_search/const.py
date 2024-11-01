@@ -4,14 +4,15 @@
 from enum import Enum
 
 
-class VectorSearchQueryTypes(str, Enum):
-    """Types of vector search queries.
+class TextSearchFunctions(str, Enum):
+    """Text search functions.
 
     Attributes:
-        VECTORIZED_SEARCH_QUERY: A type of query that searches a vector store using a vector.
-        VECTORIZABLE_TEXT_SEARCH_QUERY: A type of query that search a vector store using a
-            text string that will be vectorized downstream.
+        SEARCH: Search using a query.
+        GET_TEXT_SEARCH_RESULT: Get text search results.
+        GET_SEARCH_RESULT: Get search results.
     """
 
-    VECTORIZED_SEARCH_QUERY = "vectorized_search_query"
-    VECTORIZABLE_TEXT_SEARCH_QUERY = "vectorizable_text_search_query"
+    SEARCH = "search"
+    GET_TEXT_SEARCH_RESULT = "get_text_search_result"
+    GET_SEARCH_RESULT = "get_search_result"

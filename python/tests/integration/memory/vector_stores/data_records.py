@@ -7,9 +7,9 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 
-from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
@@ -35,7 +35,7 @@ PANDAS_RECORD_DEFINITION = VectorStoreRecordDefinition(
             name="vector",
             index_kind="hnsw",
             dimensions=5,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
         ),
         "id": VectorStoreRecordKeyField(name="id"),
@@ -59,7 +59,7 @@ class TestDataModelArray:
         VectorStoreRecordVectorField(
             index_kind="hnsw",
             dimensions=5,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
             serialize_function=np.ndarray.tolist,
             deserialize_function=np.array,
@@ -82,7 +82,7 @@ class TestDataModelList:
         VectorStoreRecordVectorField(
             index_kind="hnsw",
             dimensions=5,
-            distance_function="cosine",
+            distance_function="cosine_similarity",
             property_type="float",
         ),
     ] = None

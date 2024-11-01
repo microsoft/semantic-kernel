@@ -3,7 +3,7 @@
 
 import asyncio
 from collections.abc import Coroutine
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, Any
 
 from pydantic import BaseModel
 
@@ -18,7 +18,6 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.data import (
-    SearchOptions,
     VectorSearchFilter,
     VectorSearchOptions,
     VectorStoreRecordDataField,
@@ -27,6 +26,8 @@ from semantic_kernel.data import (
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
+from semantic_kernel.data.search_options import SearchOptions
+from semantic_kernel.data.text_search.vector_store_text_search import VectorStoreTextSearch
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions import (
@@ -74,59 +75,45 @@ class HotelSampleClass(BaseModel):
     rooms: Annotated[list[dict[str, Any]], VectorStoreRecordDataField()]
 
 
-HotelSampleClassType = TypeVar("HotelSampleClassType", bound=HotelSampleClass)
-
 kernel = Kernel()
 service_id = "chat"
 kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 embeddings = OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small")
 kernel.add_service(embeddings)
 vectorizer = VectorStoreRecordUtils(kernel)
-azure_ai_search_collection: AzureAISearchCollection[HotelSampleClassType] = AzureAISearchCollection(
-    collection_name="hotels-sample-index", data_model_type=HotelSampleClass
+
+text_search = VectorStoreTextSearch.from_vector_text_search(
+    AzureAISearchCollection[HotelSampleClass](
+        collection_name="hotels-sample-index",
+        data_model_type=HotelSampleClass,
+    )
 )
 
 
-def update_options_search(options: SearchOptions, func_args: dict[str, Any]) -> SearchOptions:
-    for key, value in func_args.items():
-        if key == "city":
-            if options.filter:
-                options.filter.equal_to("address/city", value)
-            else:
-                options.filter = VectorSearchFilter.equal_to("address/city", value)
-    return options
+def update_options_search(
+    query: str, options: SearchOptions, parameters: list[Any] | None = None, **kwargs: Any
+) -> tuple[Any, SearchOptions]:
+    if "city" in kwargs:
+        options.filter.equal_to("address/city", kwargs["city"])
+    return query, options
 
 
-def update_options_details(options: SearchOptions, func_args: dict[str, Any]) -> SearchOptions:
-    for key, value in func_args.items():
-        if key == "hotel_id":
-            if options.filter:
-                options.filter.equal_to("hotel_id", value)
-            else:
-                options.filter = VectorSearchFilter.equal_to("hotel_id", value)
-    return options
+def update_options_details(
+    query: str, options: SearchOptions, parameters: list[Any] | None = None, **kwargs: Any
+) -> tuple[Any, SearchOptions]:
+    if "hotel_id" in kwargs:
+        options.filter.equal_to("hotel_id", kwargs["hotel_id"])
+    return query, options
 
 
 plugin = kernel.add_functions(
     plugin_name="azure_ai_search",
     functions=[
-        azure_ai_search_collection.create_kernel_function(
-            search_function="vectorizable_text_search",
+        text_search.create_search(
             description="A hotel search engine, allows searching for hotels in specific cities, "
             "you do not have to specify that you are searching for hotels, for all, use `*`.",
             options=VectorSearchOptions(
                 filter=VectorSearchFilter.equal_to("address/country", "USA"),
-                select_fields=[
-                    "hotel_id",
-                    "description",
-                    "description_fr",
-                    "address",
-                    "tags",
-                    "rating",
-                    "category",
-                    "location",
-                    "rooms",
-                ],
             ),
             parameters=[
                 KernelParameterMetadata(
@@ -136,27 +123,23 @@ plugin = kernel.add_functions(
                     name="city",
                     description="The city that you want to search for a hotel in.",
                     type="str",
-                    is_required=False,
                     type_object=str,
                 ),
                 KernelParameterMetadata(
-                    name="count",
+                    name="top",
                     description="Number of results to return.",
                     type="int",
-                    is_required=False,
                     default_value=2,
                     type_object=int,
                 ),
             ],
-            update_options_function=update_options_search,
+            options_update_function=update_options_search,
         ),
-        azure_ai_search_collection.create_kernel_function(
-            search_function="vectorizable_text_search",
+        text_search.create_search(
             function_name="get_details",
             description="Get details about a hotel, by ID, use the overview function to get the ID.",
             options=VectorSearchOptions(
-                query="*",
-                count=1,
+                top=1,
             ),
             parameters=[
                 KernelParameterMetadata(
@@ -167,7 +150,7 @@ plugin = kernel.add_functions(
                     type_object=str,
                 )
             ],
-            update_options_function=update_options_details,
+            options_update_function=update_options_details,
         ),
     ],
 )
