@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
@@ -269,8 +269,8 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
                 throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
             }
 
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, stepMetadataAttributes.Version, this.Id);
-            stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, this._initialState);
+            var initialState = this._initialState ?? Activator.CreateInstance(userStateType, this.Name, this.Id);
+            stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, initialState);
         }
         else
         {
