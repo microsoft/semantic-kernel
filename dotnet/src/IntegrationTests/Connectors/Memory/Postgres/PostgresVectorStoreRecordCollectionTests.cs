@@ -236,7 +236,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
                 INSERT INTO public.""{CollectionName}"" (
                     ""HotelId"", ""HotelName"", ""HotelCode"", ""HotelRating"", ""parking_is_included"", ""Tags"", ""Description"", ""DescriptionEmbedding""
                 ) VALUES (
-                    215, 'Devine Lorraine', 215, 5, false, ARRAY['historic', 'philly'], 'An iconic building on broad street', '[10,20,30,40]'
+                    215, 'Divine Lorraine', 215, 5, false, ARRAY['historic', 'philly'], 'An iconic building on broad street', '[10,20,30,40]'
                 );";
             await cmd.ExecuteNonQueryAsync().ConfigureAwait(true);
         }
@@ -247,7 +247,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         // Assert
         Assert.NotNull(getResult);
         Assert.Equal(215, getResult!.HotelId);
-        Assert.Equal("Devine Lorraine", getResult.HotelName);
+        Assert.Equal("Divine Lorraine", getResult.HotelName);
         Assert.Equal(215, getResult.HotelCode);
         Assert.Equal(5, getResult.HotelRating);
         Assert.False(getResult.ParkingIncluded);

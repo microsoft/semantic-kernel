@@ -94,7 +94,7 @@ public class PostgresVectorStoreTests
     }
 
     [Fact]
-    public async Task ListCollectionNamesThrowsCorrectExcpetionAsync()
+    public async Task ListCollectionNamesThrowsCorrectExceptionAsync()
     {
         // Arrange
         var expectedCollections = new List<string> { "fake-collection-1", "fake-collection-2", "fake-collection-3" };
