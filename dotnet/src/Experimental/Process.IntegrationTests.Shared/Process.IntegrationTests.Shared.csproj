@@ -4,8 +4,8 @@
     <RootNamespace>SemanticKernel.Process.IntegrationTests.Shared</RootNamespace>
     <AssemblyName>SemanticKernel.Process.IntegrationTests.Shared</AssemblyName>
     <TargetFrameworks>net8.0</TargetFrameworks>
-    <IsTestProject>false</IsTestProject>
     <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
     <NoWarn>
       $(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0080,SKEXP0110;OPENAI001
     </NoWarn>
@@ -17,23 +17,14 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Moq" />
-    <PackageReference Include="Verify.Xunit" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.collector">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
+    <PackageReference Include="xunit">
+      <IncludeAssets>compile</IncludeAssets>
+      <ExcludeAssets>build</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Agents\UnitTests\Agents.UnitTests.csproj" />
-    <ProjectReference Include="..\..\IntegrationTests\IntegrationTests.csproj" />
+    <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
