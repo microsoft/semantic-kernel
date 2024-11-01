@@ -20,7 +20,7 @@ Additionally, today, it's not possible to specify function calling behavior decl
 
 ## Decision Drivers
 
-- The same set of function call behavior model classes should be connector/mode-agnostic, allowing them to be used by all SK connectors that support function calling.
+- The same set of function call behavior model classes should be connector/model-agnostic, allowing them to be used by all SK connectors that support function calling.
 - Function calling behavior should be specified in the `PromptExecutionSettings` base class rather than in connector-specific derivatives.
 - It should be possible and easy to specify function calling behavior in all already supported YAML(Handlebars, Prompty), MD, and SK(config.json) prompts.
 - It should be possible to override the prompt execution settings specified in the prompt by using the prompt execution settings specified in the code.
@@ -36,10 +36,10 @@ or
 GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions };
 ```
 
-Taking into account that the function-calling behavior has been around since SK v1 release and might be used extensively as a result, the new function-calling abstraction must be introduced and coexist alongside the existing function-calling model. This will prevent breaking changes and allow consumers to gradually migrate from the current model to the new one.
+Taking into account that the function-calling behavior has been around since the SK v1 release and might be used extensively, the new function-calling abstraction must be introduced and coexist alongside the existing function-calling model. This will prevent breaking changes and allow consumers to gradually migrate from the current model to the new one.
 
 ## [New model] Option 1.1 - A class per function call choice
-To satisfy the "no breaking changes" requirement above and the "connector/mode-agnostic model" decision driver, the new set of connector agnostic classes needs to be introduced.
+To satisfy the "no breaking changes" requirement above and the "connector/model-agnostic" decision driver, the new set of connector agnostic classes needs to be introduced.
 
 ### Function call choice classes 
 The `FunctionChoiceBehavior` class is abstract base class for all *FunctionChoiceBehavior classes:
@@ -47,124 +47,144 @@ The `FunctionChoiceBehavior` class is abstract base class for all *FunctionChoic
 ```csharp
 public abstract class FunctionChoiceBehavior
 {
-    public static FunctionChoiceBehavior AutoFunctionChoice(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true) { ... }
-    public static FunctionChoiceBehavior RequiredFunctionChoice(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true) { ... }
-    public static FunctionChoiceBehavior NoneFunctionChoice { get { ... }; }
+    public static FunctionChoiceBehavior Auto(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, FunctionChoiceBehaviorOptions? options = null) { ... }
+    public static FunctionChoiceBehavior Required(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, FunctionChoiceBehaviorOptions? options = null) { ... }
+    public static FunctionChoiceBehavior None(IEnumerable<KernelFunction>? functions = null, FunctionChoiceBehaviorOptions? options = null)
 
-    public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context);
+    public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context);
 }
 ```
 
-All the `FunctionChoiceBehavior` derivatives must implement the abstract `GetConfiguration` method, which is called with the `FunctionChoiceBehaviorContext` provided by connectors. This method returns the `FunctionChoiceBehaviorConfiguration` back to the connectors, instructing them to behave in a specific way described by a particular function call choice behavior class with respect to function calling.
+All the `FunctionChoiceBehavior` derivatives must implement the abstract `GetConfiguration` method, which is called with the `FunctionChoiceBehaviorConfigurationContext` provided by connectors. This method returns the `FunctionChoiceBehaviorConfiguration` back to the connectors, instructing them to behave in a specific way described by a particular function call choice behavior class with respect to function calling and invocation.
 
 ```csharp
-public class FunctionChoiceBehaviorContext
+public class FunctionChoiceBehaviorConfigurationContext
 {
     public Kernel? Kernel { get; init; }
+    public ChatHistory ChatHistory { get; }
+    public int RequestSequenceIndex { get; init; }
 }
 
-public class FunctionCallChoiceConfiguration
+public class FunctionChoiceBehaviorConfiguration
 {
-    public IEnumerable<KernelFunctionMetadata>? AvailableFunctions { get; init; }
-    public IEnumerable<KernelFunctionMetadata>? RequiredFunctions { get; init; }
-    public bool? AllowAnyRequestedKernelFunction { get; init; }
-    public int? MaximumAutoInvokeAttempts { get; init; }
-    public int? MaximumUseAttempts { get; init; }
+    public FunctionChoice Choice { get; internal init; }
+    public IReadOnlyList<KernelFunction>? Functions { get; internal init; }
+    public bool AutoInvoke { get; set; } = true;
+    public FunctionChoiceBehaviorOptions Options { get; }
 }
 ```
 
-The `AutoFunctionChoiceBehavior` class advertises either all kernel functions or a subset of functions, and instructs LLM to either call one or multiple advertised functions or return a natural language response.
+The `AutoFunctionChoiceBehavior` class advertises either all kernel functions or a subset of functions specified either via its constructor or via the `Functions` property. It also instructs the AI model to decide whether to call the functions and, if so, which ones to call.
 ```csharp
 public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
 {
-    private const int DefaultMaximumAutoInvokeAttempts = 5;
-
     [JsonConstructor]
     public AutoFunctionChoiceBehavior() { }
-    public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction> functions) { ... }
-
-    [JsonPropertyName("maximumAutoInvokeAttempts")]
-    public int MaximumAutoInvokeAttempts { get; init; } = DefaultMaximumAutoInvokeAttempts;
+    public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions, bool autoInvoke, FunctionChoiceBehaviorOptions? options) { }
 
     [JsonPropertyName("functions")]
-    public IEnumerable<string>? Functions { get; init; }
+    public IList<string>? Functions { get; set; }
 
-    [JsonPropertyName("allowAnyRequestedKernelFunction")]
-    public bool AllowAnyRequestedKernelFunction { get; init; }
+    [JsonPropertyName("options")]
+    public FunctionChoiceBehaviorOptions? Options { get; set; }
 
-    public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
+    public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        // Handle functions provided through the constructor or through the 'Functions' property.
-        ...
-        // Or, provide all functions from the kernel.
+        var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
 
-        return new FunctionChoiceBehaviorConfiguration()
+        return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
         {
-            AvailableFunctions = availableFunctions,
-            MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
-            AllowAnyRequestedKernelFunction = this.AllowAnyRequestedKernelFunction
+            Choice = FunctionChoice.Auto,
+            Functions = functions,
+            AutoInvoke = this._autoInvoke,
         };
     }
 }
 ```
 
-The `RequiredFunctionChoiceBehavior` class advertises either all kernel functions or a subset of functions and forces LLM to call one or a few of them.
+The `RequiredFunctionChoiceBehavior` class, similarly to the `AutoFunctionChoiceBehavior` class, advertises either all kernel functions or a subset of functions specified either via its constructor or via the `Functions` property. However, it differs by forcing the model to call the provided functions.
 ```csharp
 public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 {
-    private const int DefaultMaximumAutoInvokeAttempts = 5;
-    private const int DefaultMaximumUseAttempts = 1;
-
     [JsonConstructor]
     public RequiredFunctionChoiceBehavior() { }
-    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction> functions) { ... }
+    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions, bool autoInvoke, FunctionChoiceBehaviorOptions? options) { }
 
     [JsonPropertyName("functions")]
-    public IEnumerable<string>? Functions { get; init; }
+    public IList<string>? Functions { get; set; }
 
-    [JsonPropertyName("maximumAutoInvokeAttempts")]
-    public int MaximumAutoInvokeAttempts { get; init; } = DefaultMaximumAutoInvokeAttempts;
+    [JsonPropertyName("options")]
+    public FunctionChoiceBehaviorOptions? Options { get; set; }
 
-    [JsonPropertyName("maximumUseAttempts")]
-    public int MaximumUseAttempts { get; init; } = DefaultMaximumUseAttempts;
-
-    public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
+    public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        // Handle functions provided through the constructor or through the 'Functions' property.
-        ...
-        // Or, provide all functions from the kernel.
-
-        return new FunctionCallChoiceConfiguration()
+        // Stop advertising functions after the first request to prevent the AI model from repeatedly calling the same function.
+        // This is a temporary solution which will be removed after we have a way to dynamically control list of functions to advertise to the model.
+        if (context.RequestSequenceIndex >= 1)
         {
-            RequiredFunctions = requiredFunctions,
-            MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
-            MaximumUseAttempts = this.MaximumUseAttempts,
-            AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
+            return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
+            {
+                Choice = FunctionChoice.Required,
+                Functions = null,
+                AutoInvoke = this._autoInvoke,
+            };
+        }
+
+        var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
+
+        return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
+        {
+            Choice = FunctionChoice.Required,
+            Functions = functions,
+            AutoInvoke = this._autoInvoke,
         };
     }
 }
 ```
 
-The `NoneFunctionChoiceBehavior` class instructs the model not to call functions.
+The `NoneFunctionChoiceBehavior` class, similarly to the other behavior classes, advertises either all kernel functions or a subset of functions specified either via its constructor or via the `Functions` property. It also instructs the AI model to use the provided functions without calling them to generate a response. This behavior might be useful for dry runs when you want to see which functions the model would call without actually invoking them.
 ```csharp
 public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
 {
-    public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
+    [JsonConstructor]
+    public NoneFunctionChoiceBehavior() { }
+    public NoneFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions, FunctionChoiceBehaviorOptions? options) { }
+
+    [JsonPropertyName("functions")]
+    public IList<string>? Functions { get; set; }
+
+    [JsonPropertyName("options")]
+    public FunctionChoiceBehaviorOptions? Options { get; set; }
+
+    public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        return new FunctionChoiceBehaviorConfiguration()
+        var functions = base.GetFunctions(this.Functions, context.Kernel, autoInvoke: false);
+
+        return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
         {
-            AvailableFunctions = null,
-            RequiredFunctions = null,
+            Choice = FunctionChoice.None,
+            Functions = functions,
+            AutoInvoke = false,
         };
     }
 }
 ```
 
-To satisfy the "connector/mode-agnostic model" driver, the behavior should not be configured on model-specific prompt execution setting classes, such as `OpenAIPromptExecutionSettings`, as it is done today. Instead, it should be configured on a model-agnostic one - `PromptExecutionSettings`.
+To satisfy the "connector/model-agnostic" driver, it should be possible to possible to set the function choice behavior on the model-agnostic `PromptExecutionSettings` class instead of on the model-specific prompt execution setting classes, such as `OpenAIPromptExecutionSettings`, as it is done today.
 
 ```csharp
-PromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice() };
+PromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required() };
 ```
+   
+All of the function choice behavior classes described above have a `Functions` property of type `IList<string>`. 
+The functions can be specified as strings in the format `pluginName.functionName`. Its primary purpose is to allow users to specify the list of functions to advertise to the AI model in a declarative way using YAML, Markdown, or JSON prompts. 
+However, it can also be used to specify the list of functions to advertise in the code, although it is generally more convenient to do this through the constructors of the function choice behavior classes, as they accept a list of `KernelFunction` instances.  
+
+
+The function choice behavior classes also have the `Options` property of type `FunctionChoiceBehaviorOptions`, which can be provided via the constructor or set directly on the class instance. 
+This property allows users to configure certain aspects of the function choice behavior, such as whether the AI model should prefer parallel function calls over sequential ones, etc. 
+The idea here is that over time, the class will have properties that are relevant to the majority of AI models. 
+In cases where a specific AI model requires specific properties that are not and will not be supported by other models, the options class can have a model-specific derivative options class that the SK AI connector for that AI model can recognize and read that specific properties from.
 
 ### Sequence diagram
 <img src="./diagrams/tool-behavior-usage-by-ai-service.png" alt="Tool choice behavior usage by AI service.png" width="600"/>
