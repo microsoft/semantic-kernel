@@ -52,7 +52,7 @@ public sealed class PostgresGenericDataModelMapperTests
         var result = mapper.MapFromDataToStorageModel(dataModel);
 
         // Assert
-        Assert.Equal("key", result["Key"]);
+        Assert.Equal(1, result["Key"]);
         Assert.Equal("Value1", result["StringProperty"]);
         Assert.Equal(5, result["IntProperty"]);
 
