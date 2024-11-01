@@ -59,7 +59,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false);
 
-        return completion.Choices.Select(ChatCompletionServiceExtensions.ToChatMessageContent).ToList();
+        return completion.Choices.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m, completion)).ToList();
     }
 
     /// <inheritdoc/>
@@ -169,6 +169,26 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
                             JsonValueKind.Null => null,
                             _ => value,
                         };
+
+                        if (jsonElement.ValueKind == JsonValueKind.Array)
+                        {
+                            var enumerator = jsonElement.EnumerateArray();
+
+                            var enumeratorType = enumerator.MoveNext() ? enumerator.Current.ValueKind : JsonValueKind.Null;
+
+                            switch (enumeratorType)
+                            {
+                                case JsonValueKind.String:
+                                    value = enumerator.Select(e => e.GetString()).ToArray();
+                                    break;
+                                case JsonValueKind.Number:
+                                    value = enumerator.Select(e => e.GetDouble()).ToArray();
+                                    break;
+                                case JsonValueKind.True or JsonValueKind.False:
+                                    value = enumerator.Select(e => e.ValueKind == JsonValueKind.True).ToArray();
+                                    break;
+                            }
+                        }
                     }
 
                     (options.AdditionalProperties ??= [])[entry.Key] = value;
@@ -241,11 +261,11 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         StreamingChatMessageContent content = new(
             update.Role is not null ? new AuthorRole(update.Role.Value.Value) : null,
-            null,
-            update.RawRepresentation,
-            update.ChoiceIndex,
-            metadata: update.AdditionalProperties)
+            null)
         {
+            InnerContent = update.RawRepresentation,
+            ChoiceIndex = update.ChoiceIndex,
+            Metadata = update.AdditionalProperties,
             ModelId = update.ModelId
         };
 
@@ -261,6 +281,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
 
             if (resultContent is not null)
             {
+                resultContent.ModelId = update.ModelId;
                 content.Items.Add(resultContent);
             }
         }
