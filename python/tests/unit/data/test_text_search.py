@@ -13,6 +13,7 @@ from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
 from semantic_kernel.data.text_search.text_search_result import TextSearchResult
+from semantic_kernel.data.text_search.utils import create_options, default_options_update_function
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.exceptions.function_exceptions import TextSearchException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -189,9 +190,15 @@ async def test_create_kernel_function_inner_no_results(kernel: Kernel):
 async def test_create_kernel_function_inner_update_options(kernel: Kernel):
     test_search = TestSearch()
 
-    def update_options(search_text, query, vector, options: SearchOptions, kwargs):
-        options.filter.equal_to("address/city", kwargs.get("city"))
-        return search_text, query, vector, options
+    called = False
+    args = {}
+
+    def update_options(**kwargs: Any) -> tuple[str, SearchOptions]:
+        kwargs["options"].filter.equal_to("address/city", kwargs.get("city"))
+        nonlocal called, args
+        called = True
+        args = kwargs
+        return kwargs["query"], kwargs["options"]
 
     kernel_function = test_search._create_kernel_function(
         search_function="search",
@@ -209,10 +216,16 @@ async def test_create_kernel_function_inner_update_options(kernel: Kernel):
         function_name="search",
         description="description",
         string_mapper=None,
+        options_update_function=update_options,
     )
     results = await kernel_function.invoke(kernel, KernelArguments(city="city"))
     assert results is not None
     assert results.value == ["test"]
+    assert called
+    assert "options" in args
+    assert "city" in args
+    assert "query" in args
+    assert "parameters" in args
 
 
 def test_default_map_to_string():
@@ -223,3 +236,37 @@ def test_default_map_to_string():
         test: str
 
     assert test_search._default_map_to_string(TestClass(test="test")) == '{"test":"test"}'
+
+
+def test_create_options():
+    options = SearchOptions()
+    options_class = VectorSearchOptions
+    new_options = create_options(options_class, options, top=1)
+    assert new_options is not None
+    assert isinstance(new_options, options_class)
+    assert new_options.top == 1
+
+
+def test_create_options_none():
+    options = None
+    options_class = VectorSearchOptions
+    new_options = create_options(options_class, options, top=1)
+    assert new_options is not None
+    assert isinstance(new_options, options_class)
+    assert new_options.top == 1
+
+
+def test_default_options_update_function():
+    options = SearchOptions()
+    params = [
+        KernelParameterMetadata(name="query", description="Test", type="str", type_object=str),
+        KernelParameterMetadata(name="test", description="Test", type="str", type_object=str),
+        KernelParameterMetadata(name="test2", description="Test2", type="str", type_object=str, default_value="test2"),
+    ]
+    query, options = default_options_update_function("test", options, params, test="test")
+    assert query == "test"
+    assert len(options.filter.filters) == 2
+    assert options.filter.filters[0].field_name == "test"
+    assert options.filter.filters[0].value == "test"
+    assert options.filter.filters[1].field_name == "test2"
+    assert options.filter.filters[1].value == "test2"

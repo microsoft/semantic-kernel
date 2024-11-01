@@ -9,8 +9,8 @@ if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 
-class UpdateFunctionCallable(Protocol):
-    """Callable for updating search options."""
+class OptionsUpdateFunctionType(Protocol):
+    """Type definition for the options update function in Text Search."""
 
     def __call__(
         self,
@@ -90,10 +90,11 @@ def default_options_update_function(
 
     """
     for param in parameters or []:
-        if param.name not in {"query", "top", "skip"}:
-            if param.name in kwargs:
-                options.filter.equal_to(param.name, kwargs[param.name])
-            if param.default_value:
-                options.filter.equal_to(param.name, param.default_value)
+        if param.name in {"query", "top", "skip"}:
+            continue
+        if param.name in kwargs:
+            options.filter.equal_to(param.name, kwargs[param.name])
+        if param.default_value:
+            options.filter.equal_to(param.name, param.default_value)
 
     return query, options

@@ -14,7 +14,7 @@ from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
 from semantic_kernel.data.text_search.utils import (
-    UpdateFunctionCallable,
+    OptionsUpdateFunctionType,
     create_options,
     default_options_update_function,
 )
@@ -96,13 +96,32 @@ class TextSearch:
         self,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: UpdateFunctionCallable | None = None,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
         string_mapper: Callable[[TMapInput], str] | None = None,
     ) -> KernelFunction:
-        """Create a kernel function from a search function."""
+        """Create a kernel function from a search function.
+
+        Args:
+            options: The search options.
+            parameters: The parameters for the function, a list of KernelParameterMetadata.
+            options_update_function: A function to update the search options.
+                The function should return the updated query and options.
+                There is a default function that can be used, or you can supply your own.
+                The default function uses the parameters and the kwargs to update the options.
+                Adding equal to filters to the options for all parameters that are not "query", "top", or "skip".
+                As well as adding equal to filters for parameters that have a default value.
+            return_parameter: The return parameter for the function.
+            function_name: The name of the function, to be used in the kernel, default is "search".
+            description: The description of the function, a default is provided.
+            string_mapper: The function to map the search results to strings.
+
+        Returns:
+            KernelFunction: The kernel function.
+
+        """
         return self._create_kernel_function(
             search_function=TextSearchFunctions.SEARCH,
             options=options,
@@ -118,13 +137,31 @@ class TextSearch:
         self,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: UpdateFunctionCallable | None = None,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
         string_mapper: Callable[[TMapInput], str] | None = None,
     ) -> KernelFunction:
-        """Create a kernel function from a search function."""
+        """Create a kernel function from a get_text_search_results function.
+
+        Args:
+            options: The search options.
+            parameters: The parameters for the function, a list of KernelParameterMetadata.
+            options_update_function: A function to update the search options.
+                The function should return the updated query and options.
+                There is a default function that can be used, or you can supply your own.
+                The default function uses the parameters and the kwargs to update the options.
+                Adding equal to filters to the options for all parameters that are not "query", "top", or "skip".
+                As well as adding equal to filters for parameters that have a default value.
+            return_parameter: The return parameter for the function.
+            function_name: The name of the function, to be used in the kernel, default is "search".
+            description: The description of the function, a default is provided.
+            string_mapper: The function to map the search results to strings.
+
+        Returns:
+            KernelFunction: The kernel function.
+        """
         return self._create_kernel_function(
             search_function=TextSearchFunctions.GET_TEXT_SEARCH_RESULT,
             options=options,
@@ -140,13 +177,31 @@ class TextSearch:
         self,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: UpdateFunctionCallable | None = None,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
         string_mapper: Callable[[TMapInput], str] | None = None,
     ) -> KernelFunction:
-        """Create a kernel function from a search function."""
+        """Create a kernel function from a get_search_results function.
+
+        Args:
+            options: The search options.
+            parameters: The parameters for the function, a list of KernelParameterMetadata.
+            options_update_function: A function to update the search options.
+                The function should return the updated query and options.
+                There is a default function that can be used, or you can supply your own.
+                The default function uses the parameters and the kwargs to update the options.
+                Adding equal to filters to the options for all parameters that are not "query", "top", or "skip".
+                As well as adding equal to filters for parameters that have a default value.
+            return_parameter: The return parameter for the function.
+            function_name: The name of the function, to be used in the kernel, default is "search".
+            description: The description of the function, a default is provided.
+            string_mapper: The function to map the search results to strings.
+
+        Returns:
+            KernelFunction: The kernel function.
+        """
         return self._create_kernel_function(
             search_function=TextSearchFunctions.GET_SEARCH_RESULT,
             options=options,
@@ -166,7 +221,7 @@ class TextSearch:
         search_function: TextSearchFunctions | str = TextSearchFunctions.SEARCH,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: UpdateFunctionCallable | None = None,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
@@ -183,10 +238,11 @@ class TextSearch:
                 use an empty list for a function without parameters,
                 use None for the default set, which is "query", "top", and "skip".
             options_update_function: A function to update the search options.
-                takes the query, options, parameters, and kwargs as arguments.
                 The function should return the updated query and options.
                 There is a default function that can be used, or you can supply your own.
-                Needs to adhere to the UpdateFunctionCallable type.
+                The default function uses the parameters and the kwargs to update the options.
+                Adding equal to filters to the options for all parameters that are not "query", "top", or "skip".
+                As well as adding equal to filters for parameters that have a default value.
             return_parameter: The return parameter for the function.
             function_name: The name of the function, to be used in the kernel, default is "search".
             description: The description of the function, a default is provided.
@@ -194,6 +250,7 @@ class TextSearch:
                 This can be applied to the results from the chosen search function.
                 When using the VectorStoreTextSearch and the Search method, a
                 string_mapper can be defined there as well, that is separate from this one.
+                The default serializes the result as json strings.
 
         Returns:
             KernelFunction: The kernel function.
@@ -208,7 +265,7 @@ class TextSearch:
         async def search_wrapper(**kwargs: Any) -> Sequence[str]:
             query = kwargs.pop("query", "")
             inner_options = create_options(self.options_class, deepcopy(options), **kwargs)
-            query, inner_options = update_func(query, inner_options, parameters, **kwargs)
+            query, inner_options = update_func(query=query, options=inner_options, parameters=parameters, **kwargs)
             try:
                 results = await self._get_search_function(search_function)(
                     query=query,
@@ -218,7 +275,7 @@ class TextSearch:
                 msg = f"Exception in search function ({search_function.value}): {e}"
                 logger.error(msg)
                 raise TextSearchException(msg) from e
-            return await self._map_result_to_strings(results, string_mapper)
+            return await self._map_results(results, string_mapper)
 
         return KernelFunctionFromMethod(
             method=search_wrapper,
@@ -226,8 +283,10 @@ class TextSearch:
             return_parameter=return_parameter or self._default_return_parameter_metadata(),
         )
 
-    async def _map_result_to_strings(
-        self, results: KernelSearchResults[TMapInput], string_mapper: Callable[[TMapInput], str] | None = None
+    async def _map_results(
+        self,
+        results: KernelSearchResults[TMapInput],
+        string_mapper: Callable[[TMapInput], str] | None = None,
     ) -> list[str]:
         """Map search results to strings."""
         if string_mapper:
