@@ -10,6 +10,7 @@ using Dapr.Actors;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
 
@@ -17,14 +18,13 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 {
-    private const string EndStepId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
 
     internal readonly List<IStep> _steps = [];
 
-    internal List<DaprStepInfo>? _stepsInfos;
+    internal IList<DaprStepInfo>? _stepsInfos;
     internal DaprProcessInfo? _process;
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
@@ -82,7 +82,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
         this._processCancelSource = new CancellationTokenSource();
         this._processTask = this._joinableTaskFactory.RunAsync(()
-            => this.Internal_ExecuteAsync(this._kernel, keepAlive: keepAlive, cancellationToken: this._processCancelSource.Token));
+            => this.Internal_ExecuteAsync(keepAlive: keepAlive, cancellationToken: this._processCancelSource.Token));
 
         return Task.CompletedTask;
     }
@@ -206,6 +206,8 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         }
     }
 
+    internal static ActorId GetScopedGlobalErrorEventBufferId(string processId) => new($"{ProcessConstants.GlobalErrorEventId}_{processId}");
+
     #region Private Methods
 
     /// <summary>
@@ -225,7 +227,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
         this.ParentProcessId = parentProcessId;
         this._process = processInfo;
-        this._stepsInfos = new List<DaprStepInfo>(this._process.Steps);
+        this._stepsInfos = [.. this._process.Steps];
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<ProcessActor>();
 
         // Initialize the input and output edges for the process
@@ -269,7 +271,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         this._isInitialized = true;
     }
 
-    private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
+    private async Task Internal_ExecuteAsync(int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -283,11 +285,14 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                     break;
                 }
 
+                // Translate any global error events into an message that targets the appropriate step, when one exists.
+                await this.HandleGlobalErrorMessageAsync().ConfigureAwait(false);
+
                 // Check for external events
                 await this.EnqueueExternalMessagesAsync().ConfigureAwait(false);
 
                 // Reach out to all of the steps in the process and instruct them to retrieve their pending messages from their associated queues.
-                var stepPreparationTasks = this._steps.Select(step => step.PrepareIncomingMessagesAsync()).ToList();
+                var stepPreparationTasks = this._steps.Select(step => step.PrepareIncomingMessagesAsync()).ToArray();
                 var messageCounts = await Task.WhenAll(stepPreparationTasks).ConfigureAwait(false);
 
                 // If there are no messages to process, wait for an external event or finish.
@@ -301,7 +306,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 }
 
                 // Process the incoming messages for each step.
-                var stepProcessingTasks = this._steps.Select(step => step.ProcessIncomingMessagesAsync()).ToList();
+                var stepProcessingTasks = this._steps.Select(step => step.ProcessIncomingMessagesAsync()).ToArray();
                 await Task.WhenAll(stepProcessingTasks).ConfigureAwait(false);
 
                 // Handle public events that need to be bubbled out of the process.
@@ -310,7 +315,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         }
         catch (Exception ex)
         {
-            this._logger?.LogError("An error occurred while running the process: {ErrorMessage}.", ex.Message);
+            this._logger?.LogError(ex, "An error occurred while running the process: {ErrorMessage}.", ex.Message);
             throw;
         }
         finally
@@ -351,6 +356,40 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     }
 
     /// <summary>
+    /// Check for the presence of an global-error event and any edges defined for processing it.
+    /// When both exist, the error event is processed and sent to the appropriate targets.
+    /// </summary>
+    private async Task HandleGlobalErrorMessageAsync()
+    {
+        var errorEventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(ProcessActor.GetScopedGlobalErrorEventBufferId(this.Id.GetId()), nameof(EventBufferActor));
+
+        var errorEvents = await errorEventQueue.DequeueAllAsync().ConfigureAwait(false);
+        if (errorEvents.Count == 0)
+        {
+            // No error events in queue.
+            return;
+        }
+
+        var errorEdges = this.GetEdgeForEvent(ProcessConstants.GlobalErrorEventId).ToArray();
+        if (errorEdges.Length == 0)
+        {
+            // No further action is required when there are no targetes defined for processing the error.
+            return;
+        }
+
+        foreach (var errorEdge in errorEdges)
+        {
+            foreach (ProcessEvent errorEvent in errorEvents)
+            {
+                var errorMessage = ProcessMessageFactory.CreateFromEdge(errorEdge, errorEvent.Data);
+                var scopedErrorMessageBufferId = this.ScopedActorId(new ActorId(errorEdge.OutputTarget.StepId));
+                var errorStepQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedErrorMessageBufferId, nameof(MessageBufferActor));
+                await errorStepQueue.EnqueueAsync(errorMessage).ConfigureAwait(false);
+            }
+        }
+    }
+
+    /// <summary>
     /// Public events that are produced inside of this process need to be sent to the parent process. This method reads
     /// all of the public events from the event buffer and sends them to the targeted step in the parent process.
     /// </summary>
@@ -386,7 +425,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <returns>True if the end message has been sent, otherwise false.</returns>
     private async Task<bool> IsEndMessageSentAsync()
     {
-        var scopedMessageBufferId = this.ScopedActorId(new ActorId(EndStepId));
+        var scopedMessageBufferId = this.ScopedActorId(new ActorId(ProcessConstants.EndStepName));
         var endMessageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
         var messages = await endMessageQueue.DequeueAllAsync().ConfigureAwait(false);
         return messages.Count > 0;
@@ -402,7 +441,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         var processState = new KernelProcessState(this.Name, this.Id.GetId());
         var stepTasks = this._steps.Select(step => step.ToDaprStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
-        return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = steps.ToList() };
+        return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = [.. steps] };
     }
 
     /// <summary>

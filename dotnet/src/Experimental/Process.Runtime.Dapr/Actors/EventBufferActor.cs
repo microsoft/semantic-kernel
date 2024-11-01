@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Dapr.Actors.Runtime;
 using Microsoft.SemanticKernel.Process.Runtime;
@@ -27,10 +26,10 @@ internal class EventBufferActor : Actor, IEventBuffer
     /// Dequeues an event.
     /// </summary>
     /// <returns>A <see cref="List{T}"/> where T is <see cref="ProcessEvent"/></returns>
-    public async Task<List<ProcessEvent>> DequeueAllAsync()
+    public async Task<IList<ProcessEvent>> DequeueAllAsync()
     {
         // Dequeue and clear the queue.
-        var items = this._queue!.ToList();
+        var items = this._queue!.ToArray();
         this._queue!.Clear();
 
         // Save the state.
