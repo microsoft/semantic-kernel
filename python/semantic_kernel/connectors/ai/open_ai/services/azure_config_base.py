@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.const import USER_AGENT
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         api_key: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: Callable[[], str | Awaitable[str]] | None = None,
+        ad_token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         client: AsyncAzureOpenAI | None = None,
     ) -> None:
@@ -51,6 +53,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             ad_token (str): Azure AD token for authentication. (Optional)
             ad_token_provider (Callable[[], Union[str, Awaitable[str]]]): A callable
                 or coroutine function providing Azure AD tokens. (Optional)
+            ad_token_endpoint (str): Azure AD token endpoint use to get the token. (Optional)
             default_headers (Union[Mapping[str, str], None]): Default headers for HTTP requests. (Optional)
             client (AsyncAzureOpenAI): An existing client to use. (Optional)
 
@@ -62,10 +65,17 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
         if not client:
+            # If the client is None, the api_key is none, the ad_token is none, and the ad_token_provider is none,
+            # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI
+            # settings.
+            if not api_key and not ad_token_provider and not ad_token and ad_token_endpoint:
+                ad_token = get_entra_auth_token(ad_token_endpoint)
+
             if not api_key and not ad_token and not ad_token_provider:
                 raise ServiceInitializationError(
                     "Please provide either api_key, ad_token or ad_token_provider or a client."
                 )
+
             if not base_url:
                 if not endpoint:
                     raise ServiceInitializationError("Please provide an endpoint or a base_url")

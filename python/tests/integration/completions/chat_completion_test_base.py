@@ -55,6 +55,7 @@ from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.integration.test_utils import is_service_setup_for_testing
 
@@ -116,7 +117,7 @@ class ChatCompletionTestBase(CompletionTestBase):
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.chat_deployment_name
-        ad_token = azure_openai_settings.get_azure_openai_auth_token()
+        ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
         api_version = azure_openai_settings.api_version
         azure_custom_client = AzureChatCompletion(
             async_client=AsyncAzureOpenAI(

@@ -31,6 +31,7 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -193,7 +194,7 @@ class TestTextCompletion(CompletionTestBase):
         azure_openai_settings = AzureOpenAISettings.create()
         endpoint = azure_openai_settings.endpoint
         deployment_name = azure_openai_settings.text_deployment_name
-        ad_token = azure_openai_settings.get_azure_openai_auth_token()
+        ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
         api_version = azure_openai_settings.api_version
         azure_custom_client = AzureTextCompletion(
             async_client=AsyncAzureOpenAI(

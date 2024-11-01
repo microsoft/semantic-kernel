@@ -44,15 +44,19 @@ class OpenAITextToImageExecutionSettings(PromptExecutionSettings):
     @model_validator(mode="after")
     def check_size(self) -> "OpenAITextToImageExecutionSettings":
         """Check that the requested image size is valid."""
-        if self.size is not None and (self.size.width, self.size.height) not in VALID_IMAGE_SIZES:
-            raise ServiceInvalidExecutionSettingsError(f"Invalid image size: {self.size.width}x{self.size.height}.")
+        size = self.size or self.extension_data.get("size")
+
+        if size is not None and (size.width, size.height) not in VALID_IMAGE_SIZES:
+            raise ServiceInvalidExecutionSettingsError(f"Invalid image size: {size.width}x{size.height}.")
 
         return self
 
     @model_validator(mode="after")
     def check_prompt(self) -> "OpenAITextToImageExecutionSettings":
         """Check that the prompt is not empty."""
-        if not self.prompt:
+        prompt = self.prompt or self.extension_data.get("prompt")
+
+        if not prompt:
             raise ServiceInvalidExecutionSettingsError("The prompt is required.")
 
         return self

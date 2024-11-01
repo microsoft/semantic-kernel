@@ -32,6 +32,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        ad_token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -39,19 +40,20 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         """Initialize an AzureTextEmbedding service.
 
         service_id: The service ID. (Optional)
-        api_key  {str | None}: The optional api key. If provided, will override the value in the
+        api_key: The optional api key. If provided, will override the value in the
                 env vars or .env file.
-        deployment_name  {str | None}: The optional deployment. If provided, will override the value
+        deployment_name: The optional deployment. If provided, will override the value
             (text_deployment_name) in the env vars or .env file.
-        endpoint {str | None}: The optional deployment endpoint. If provided will override the value
+        endpoint: The optional deployment endpoint. If provided will override the value
             in the env vars or .env file.
-        base_url {str | None}: The optional deployment base_url. If provided will override the value
+        base_url: The optional deployment base_url. If provided will override the value
             in the env vars or .env file.
-        api_version {str | None}: The optional deployment api version. If provided will override the value
+        api_version: The optional deployment api version. If provided will override the value
             in the env vars or .env file.
-        ad_token {str | None}: The Azure AD token for authentication. (Optional)
-        ad_auth {AsyncAzureADTokenProvider | None}: Whether to use Azure Active Directory authentication.
+        ad_token: The Azure AD token for authentication. (Optional)
+        ad_token_provider: Whether to use Azure Active Directory authentication.
             (Optional) The default value is False.
+        ad_token_endpoint: The Azure AD token endpoint. (Optional)
         default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
         async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
@@ -66,29 +68,12 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
                 endpoint=endpoint,
                 base_url=base_url,
                 api_version=api_version,
+                token_endpoint=ad_token_endpoint,
             )
         except ValidationError as exc:
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
         if not azure_openai_settings.embedding_deployment_name:
             raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
-
-        # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
-        # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
-        if (
-            azure_openai_settings.api_key is None
-            and ad_token_provider is None
-            and azure_openai_settings.token_endpoint
-            and ad_token is None
-            and async_client is None
-        ):
-            ad_token = azure_openai_settings.get_azure_openai_auth_token(
-                token_endpoint=azure_openai_settings.token_endpoint
-            )
-
-        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider and not async_client:
-            raise ServiceInitializationError(
-                "Please provide either api_key, ad_token, ad_token_provider, or a custom client"
-            )
 
         super().__init__(
             deployment_name=azure_openai_settings.embedding_deployment_name,
@@ -99,6 +84,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
+            ad_token_endpoint=azure_openai_settings.token_endpoint,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.EMBEDDING,
             client=async_client,

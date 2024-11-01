@@ -29,6 +29,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
         api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        ad_token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -50,8 +51,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
                 in the env vars or .env file.
             ad_token: The Azure AD token for authentication. (Optional)
             ad_token_provider: Azure AD Token provider. (Optional)
-            ad_auth: Whether to use Azure Active Directory authentication.
-                (Optional) The default value is False.
+            ad_token_endpoint: The Azure AD token endpoint. (Optional)
             default_headers: The default headers mapping of string keys to
                     string values for HTTP requests. (Optional)
             async_client: An existing client to use. (Optional)
@@ -68,30 +68,12 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
                 endpoint=endpoint,
                 base_url=base_url,
                 api_version=api_version,
+                token_endpoint=ad_token_endpoint,
             )
         except ValidationError as exc:
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
         if not azure_openai_settings.text_to_image_deployment_name:
             raise ServiceInitializationError("The Azure OpenAI text to image deployment name is required.")
-
-        # TODO(@taochen): Move this to the ConfigBase class
-        # If the async_client is None, the api_key is none, the ad_token is none, and the ad_token_provider is none,
-        # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
-        if (
-            async_client is None
-            and azure_openai_settings.api_key is None
-            and ad_token_provider is None
-            and ad_token is None
-            and azure_openai_settings.token_endpoint
-        ):
-            ad_token = azure_openai_settings.get_azure_openai_auth_token(
-                token_endpoint=azure_openai_settings.token_endpoint
-            )
-
-        if not async_client and not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
-            raise ServiceInitializationError(
-                "Please provide either a custom client, or an api_key, an ad_token or an ad_token_provider"
-            )
 
         super().__init__(
             deployment_name=azure_openai_settings.text_to_image_deployment_name,
@@ -102,6 +84,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
+            ad_token_endpoint=azure_openai_settings.token_endpoint,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.TEXT_TO_IMAGE,
             client=async_client,
