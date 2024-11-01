@@ -41,11 +41,11 @@ public class RenderMessageStep : KernelProcessStep
     /// Render exception
     /// </summary>
     [KernelFunction]
-    public void RenderError(Exception exception, ILogger logger)
+    public void RenderError(KernelProcessError error, ILogger logger)
     {
-        string message = string.IsNullOrWhiteSpace(exception.Message) ? "Unexpected failure" : exception.Message;
-        Render($"ERROR: {message} [{exception.GetType().Name}]{Environment.NewLine}{exception.StackTrace}");
-        logger.LogError(exception, "Unexpected failure.");
+        string message = string.IsNullOrWhiteSpace(error.Message) ? "Unexpected failure" : error.Message;
+        Render($"ERROR: {message} [{error.GetType().Name}]{Environment.NewLine}{error.StackTrace}");
+        logger.LogError("Unexpected failure: {ErrorMessage} [{ErrorType}]", error.Message, error.Type);
     }
 
     /// <summary>

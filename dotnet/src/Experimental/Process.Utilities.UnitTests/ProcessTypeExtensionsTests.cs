@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticKernel.Process.Internal;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Core.UnitTests;

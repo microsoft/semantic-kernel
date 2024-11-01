@@ -8,6 +8,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
 
@@ -15,7 +16,6 @@ namespace Microsoft.SemanticKernel;
 
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
-    private const string EndProcessId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
@@ -188,7 +188,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     kernel: this._kernel,
                     parentProcessId: this.Id);
 
-                //await process.StartAsync(kernel: this._kernel, keepAlive: true).ConfigureAwait(false);
                 localStep = process;
             }
             else
@@ -241,11 +240,11 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 }
 
                 // Complete the writing side, indicating no more messages in this superstep.
-                var messagesToProcess = messageChannel.ToList();
+                var messagesToProcess = messageChannel.ToArray();
                 messageChannel.Clear();
 
                 // If there are no messages to process, wait for an external event.
-                if (messagesToProcess.Count == 0)
+                if (messagesToProcess.Length == 0)
                 {
                     if (!keepAlive || !await this._externalEventChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
                     {
@@ -258,7 +257,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 foreach (var message in messagesToProcess)
                 {
                     // Check for end condition
-                    if (message.DestinationId.Equals(EndProcessId, StringComparison.OrdinalIgnoreCase))
+                    if (message.DestinationId.Equals(ProcessConstants.EndStepName, StringComparison.OrdinalIgnoreCase))
                     {
                         this._processCancelSource?.Cancel();
                         break;
@@ -321,7 +320,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     private void EnqueueStepMessages(LocalStep step, Queue<ProcessMessage> messageChannel)
     {
         var allStepEvents = step.GetAllEvents();
-        foreach (var stepEvent in allStepEvents)
+        foreach (ProcessEvent stepEvent in allStepEvents)
         {
             // Emit the event out of the process (this one) if it's visibility is public.
             if (stepEvent.Visibility == KernelProcessEventVisibility.Public)
@@ -330,10 +329,25 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             }
 
             // Get the edges for the event and queue up the messages to be sent to the next steps.
-            foreach (var edge in step.GetEdgeForEvent(stepEvent.Id!))
+            bool foundEdge = false;
+            foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.Id))
             {
                 ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
                 messageChannel.Enqueue(message);
+                foundEdge = true;
+            }
+
+            // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
+            if (!foundEdge && stepEvent.IsError)
+            {
+                if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
+                {
+                    foreach (KernelProcessEdge edge in edges)
+                    {
+                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
+                        messageChannel.Enqueue(message);
+                    }
+                }
             }
         }
     }
