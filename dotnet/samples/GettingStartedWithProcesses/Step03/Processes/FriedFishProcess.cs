@@ -90,9 +90,9 @@ public static class FriedFishProcess
     {
         var processBuilder = new ProcessBuilder(processName) { Version = "FriedFishProcess.v2" };
 
-        var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsWithStockStep>("gatherFishIngredientStep", aliases: ["GatherFriedFishIngredientsStep"]);
-        var chopStep = processBuilder.AddStepFromType<CutFoodWithSharpeningStep>("chopFishStep", aliases: ["chopStep"]);
-        var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
+        var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsWithStockStep>(name: "gatherFishIngredientStep", aliases: ["GatherFriedFishIngredientsWithStockStep"]);
+        var chopStep = processBuilder.AddStepFromType<CutFoodWithSharpeningStep>(name: "chopFishStep", aliases: ["CutFoodStep"]);
+        var fryStep = processBuilder.AddStepFromType<FryFoodStep>(name: "fryFishStep", aliases: ["FryFoodStep"]);
 
         processBuilder
             .OnInputEvent(ProcessEvents.PrepareFriedFish)

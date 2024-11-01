@@ -27,6 +27,11 @@ public abstract class ProcessStepBuilder
     public string Name { get; }
 
     /// <summary>
+    /// Alternative names that have been used to previous versions of the step
+    /// </summary>
+    public List<string> Aliases { get; set; } = [];
+
+    /// <summary>
     /// Define the behavior of the step when the event with the specified Id is fired.
     /// </summary>
     /// <param name="eventId">The Id of the event of interest.</param>

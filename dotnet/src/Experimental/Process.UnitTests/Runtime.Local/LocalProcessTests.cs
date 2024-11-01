@@ -17,11 +17,11 @@ public class LocalProcessTests
     public async Task ExecuteAsyncInitializesCorrectlyAsync()
     {
         // Arrange
-        var processState = new KernelProcessState(name: "TestProcess", id: "123");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1", id: "123");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
         ], []);
 
         var mockKernel = new Kernel();
@@ -44,11 +44,11 @@ public class LocalProcessTests
     {
         // Arrange
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState(name: "TestProcess");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1",  version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2",  version: "v1", id: "2"), [])
         ], []);
 
         // Act
@@ -66,11 +66,11 @@ public class LocalProcessTests
     {
         // Arrange
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState(name: "TestProcess", id: "AlreadySet");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1", id: "AlreadySet");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
         ], []);
 
         // Act

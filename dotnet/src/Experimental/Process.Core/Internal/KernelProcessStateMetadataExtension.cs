@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel.Process.Internal;
@@ -9,11 +10,11 @@ internal static class KernelProcessStateMetadataExtension
     public static List<KernelProcessStepInfo> BuildWithStateMetadata(this List<ProcessStepBuilder> stepBuilders, KernelProcessStateMetadata? stateMetadata)
     {
         List<KernelProcessStepInfo> builtSteps = [];
-        // 1- Validate StateMetadata: Migrate previous state versions if needed + check state is valid
-        KernelProcessStateMetadata? sanitizedMetadata = stateMetadata;
+        // 1- Validate StateMetadata: Migrate previous state versions if needed + sanitize state
+        KernelProcessStateMetadata? sanitizedMetadata = null;
         if (stateMetadata != null)
         {
-            // TODO: placeholder for adding state sanitization
+            sanitizedMetadata = SanitizeProcessStateMetadata(stateMetadata, stepBuilders);
         }
 
         // 2- Build steps info with validated stateMetadata
@@ -29,5 +30,60 @@ internal static class KernelProcessStateMetadataExtension
         });
 
         return builtSteps;
+    }
+
+    private static KernelProcessStateMetadata SanitizeProcessStateMetadata(KernelProcessStateMetadata stateMetadata, List<ProcessStepBuilder> stepBuilders)
+    {
+        KernelProcessStateMetadata sanitizedStateMetadata = stateMetadata;
+        stepBuilders.ForEach(step =>
+        {
+            // 1- find matching key name with exact match or by alias match
+            string? stepKey = null;
+
+            if (sanitizedStateMetadata.StepsState != null && sanitizedStateMetadata.StepsState.ContainsKey(step.Name))
+            {
+                stepKey = step.Name;
+            }
+            else
+            {
+                stepKey = step.Aliases
+                    .Where(alias => sanitizedStateMetadata.StepsState != null && sanitizedStateMetadata.StepsState.ContainsKey(alias))
+                    .FirstOrDefault();
+            }
+
+            // 2- stepKey match found
+            if (stepKey != null)
+            {
+                var currentVersionStateMetadata = step.BuildStep().ToProcessStateMetadata();
+                if (sanitizedStateMetadata.StepsState!.TryGetValue(stepKey, out var savedStateMetadata))
+                {
+                    if (stepKey != step.Name)
+                    {
+                        if (savedStateMetadata.VersionInfo == currentVersionStateMetadata.VersionInfo)
+                        {
+                            // key mismatch only, but same version
+                            sanitizedStateMetadata.StepsState[step.Name] = savedStateMetadata;
+                            sanitizedStateMetadata.StepsState.Remove(stepKey);
+                        }
+                        else
+                        {
+                            // version mismatch - check if migration logic in place
+                            // TODO: hook up properly custom state override
+
+                            // no compatible state found only migrating name and id
+                            sanitizedStateMetadata.StepsState[step.Name] = new KernelProcessStateMetadata()
+                            {
+                                Name = step.Name,
+                                Id = step.Id,
+                            };
+
+                            sanitizedStateMetadata.StepsState.Remove(stepKey);
+                        }
+                    }
+                }
+            }
+        });
+
+        return sanitizedStateMetadata;
     }
 }

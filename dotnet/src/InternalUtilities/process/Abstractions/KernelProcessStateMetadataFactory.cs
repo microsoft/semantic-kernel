@@ -15,6 +15,7 @@ internal static class ProcessStateMetadataFactory
         {
             Name = stepInfo.State.Name,
             Id = stepInfo.State.Id,
+            VersionInfo = stepInfo.State.Version,
         };
 
         if (stepInfo.InnerStepType.TryGetSubtypeOfStatefulStep(out var genericStateType) && genericStateType != null)
@@ -42,6 +43,7 @@ internal static class ProcessStateMetadataFactory
         {
             Name = kernelProcess.State.Name,
             Id = kernelProcess.State.Id,
+            VersionInfo = kernelProcess.State.Version,
             StepsState = [],
         };
 
