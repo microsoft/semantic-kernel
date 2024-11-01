@@ -36,7 +36,7 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from tests.integration.test_utils import is_service_setup_for_testing
+from tests.integration.utils import is_service_setup_for_testing
 
 # Make sure all services are setup for before running the tests
 # The following exceptions apply:
@@ -72,7 +72,7 @@ class EmbeddingServiceTestBase:
         azure_ai_inference_client = AzureAIInferenceTextEmbedding(
             ai_model_id=deployment_name,
             client=EmbeddingsClient(
-                endpoint=f'{str(endpoint).strip("/")}/openai/deployments/{deployment_name}',
+                endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
                 credential=DefaultAzureCredential(),
                 credential_scopes=["https://cognitiveservices.azure.com/.default"],
                 api_version=DEFAULT_AZURE_API_VERSION,

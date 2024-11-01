@@ -6,8 +6,7 @@ import pandas as pd
 import pytest
 
 from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_storage.vector_store import VectorStore
+from semantic_kernel.data import VectorStore, VectorStoreRecordDefinition
 from tests.integration.memory.vector_stores.data_records import (
     PANDAS_RECORD_DEFINITION,
     RAW_RECORD_ARRAY,

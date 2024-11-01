@@ -10,15 +10,15 @@ import pytest
 import pytest_asyncio
 from pydantic import BaseModel
 
-from semantic_kernel.connectors.memory.postgres import PostgresStore
-from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.connectors.memory.postgres import PostgresSettings, PostgresStore
+from semantic_kernel.data import (
+    DistanceFunction,
+    IndexKind,
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
 )
 
 try:
