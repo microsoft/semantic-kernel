@@ -5,9 +5,9 @@ import json
 import aiohttp
 
 from semantic_kernel.connectors.memory.astradb.utils import AsyncSession
-from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.user_agent import APP_INFO
 
 ASTRA_CALLER_IDENTITY: str
 SEMANTIC_KERNEL_VERSION = APP_INFO.get("Semantic-Kernel-Version")
@@ -16,6 +16,8 @@ ASTRA_CALLER_IDENTITY = f"semantic-kernel/{SEMANTIC_KERNEL_VERSION}" if SEMANTIC
 
 @experimental_class
 class AstraClient:
+    """AstraClient."""
+
     def __init__(
         self,
         astra_id: str,

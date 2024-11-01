@@ -4,7 +4,7 @@ import asyncio
 import logging
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
 
@@ -44,9 +44,7 @@ req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=s
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
-req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-    auto_invoke=True, filters={"excluded_plugins": []}
-)
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": []})
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
 
@@ -78,22 +76,25 @@ async def chat() -> bool:
 
     stream = True
     if stream:
-        answer = kernel.invoke_stream(
+        chunks = kernel.invoke_stream(
             chat_function,
             user_input=user_input,
             chat_history=history,
         )
         print("Mosscap:> ", end="")
-        async for message in answer:
+        answer = ""
+        async for message in chunks:
             print(str(message[0]), end="")
+            answer += str(message[0])
         print("\n")
-        return True
-    answer = await kernel.invoke(
-        chat_function,
-        user_input=user_input,
-        chat_history=history,
-    )
-    print(f"Mosscap:> {answer}")
+    else:
+        answer = await kernel.invoke(
+            chat_function,
+            user_input=user_input,
+            chat_history=history,
+        )
+        print(f"Mosscap:> {answer}")
+
     history.add_user_message(user_input)
     history.add_assistant_message(str(answer))
     return True

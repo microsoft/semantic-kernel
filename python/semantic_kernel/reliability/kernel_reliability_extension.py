@@ -13,4 +13,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelReliabilityExtension(KernelBaseModel, ABC):
+    """Kernel reliability extension."""
+
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)

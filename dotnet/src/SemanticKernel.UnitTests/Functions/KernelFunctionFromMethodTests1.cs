@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Moq;
+using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -814,13 +815,13 @@ public sealed class KernelFunctionFromMethodTests1
         {
             var d = (T actual) =>
             {
-                //Check the argument is of the expected type
+                //Check the argument is of the operationCancelled type
                 if (actual is not null)
                 {
                     Assert.IsType<T>(actual);
                 }
 
-                //Check the argument value is the expected value
+                //Check the argument value is the operationCancelled value
                 Assert.Equal(expected, actual);
             };
 
@@ -1373,6 +1374,125 @@ public sealed class KernelFunctionFromMethodTests1
         // Assert
         Assert.NotNull(actualArgValue);
         Assert.Equal(28, actualArgValue.Id);
+    }
+
+    [Fact]
+    public async Task ItThrowsKernelFunctionCanceledExceptionWhenOperationIsCanceledAsync()
+    {
+        // Arrange
+        var arguments = new KernelArguments();
+        var operationCancelled = new OperationCanceledException("OperationCanceledException");
+        operationCancelled.Data.Add("Key", "Value");
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(() => { throw operationCancelled; });
+
+        // Act
+        Exception actual = await Record.ExceptionAsync(() => func.InvokeAsync(this._kernel, arguments));
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.True(actual is KernelFunctionCanceledException);
+        Assert.True(actual.Data.Contains("Key"));
+        Assert.Equal("Value", actual.Data["Key"]);
+    }
+
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForTestParameterAndReturnTypes))]
+    public async Task ItCanBeCloned(JsonSerializerOptions? jsos)
+    {
+        // Arrange
+        var kernel = new Kernel();
+
+        static TestReturnType StaticMethod(TestParameterType p1)
+        {
+            return new TestReturnType() { Result = int.Parse(p1.Value!) };
+        }
+
+        // Arrange & Act
+        KernelFunction function = jsos is not null ?
+            function = KernelFunctionFromMethod.Create(((Func<TestParameterType, TestReturnType>)StaticMethod).Method, jsonSerializerOptions: jsos, functionName: "f1", description: "f1-description") :
+            function = KernelFunctionFromMethod.Create(((Func<TestParameterType, TestReturnType>)StaticMethod).Method, functionName: "f1", description: "f1-description");
+
+        // Act
+        function = function.Clone("new-plugin-name");
+
+        // Assert plugin name
+        Assert.Equal("new-plugin-name", function.Metadata.PluginName);
+
+        // Assert schema
+        Assert.NotEmpty(function.Metadata.Parameters);
+        Assert.NotNull(function.Metadata.Parameters[0].Schema);
+        Assert.Equal("{\"type\":\"object\",\"properties\":{\"Value\":{\"type\":[\"string\",\"null\"]}}}", function.Metadata.Parameters[0].Schema!.ToString());
+
+        Assert.NotNull(function.Metadata.ReturnParameter);
+        Assert.NotNull(function.Metadata.ReturnParameter.Schema);
+        Assert.Equal("{\"type\":\"object\",\"properties\":{\"Result\":{\"type\":\"integer\"}}}", function.Metadata.ReturnParameter.Schema!.ToString());
+
+        // Assert invocation
+        var invokeResult = await function.InvokeAsync(this._kernel, new() { ["p1"] = """{"Value": "34"}""" }); // Check marshaling logic that deserialize JSON into target type using JSOs
+        var result = invokeResult?.GetValue<TestReturnType>();
+        Assert.Equal(34, result?.Result);
+    }
+
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForTestParameterAndReturnTypes))]
+    public void ItCanCreateFunctionMetadata(JsonSerializerOptions? jsos)
+    {
+        // Arrange
+        static TestReturnType StaticMethod(TestParameterType p1)
+        {
+            return new TestReturnType() { Result = int.Parse(p1.Value!) };
+        }
+
+        // Act
+        KernelFunctionMetadata metadata = jsos is not null ?
+            KernelFunctionFromMethod.CreateMetadata(((Func<TestParameterType, TestReturnType>)StaticMethod).Method, jsos, functionName: "f1_name", description: "f1-description") :
+            KernelFunctionFromMethod.CreateMetadata(((Func<TestParameterType, TestReturnType>)StaticMethod).Method, functionName: "f1_name", description: "f1-description");
+
+        // Assert
+        Assert.Equal("f1_name", metadata.Name);
+        Assert.Equal("f1-description", metadata.Description);
+
+        Assert.NotEmpty(metadata.Parameters);
+        Assert.NotNull(metadata.Parameters[0].Schema);
+        Assert.Equal("""{"type":"object","properties":{"Value":{"type":["string","null"]}}}""", metadata.Parameters[0].Schema!.ToString());
+
+        Assert.NotNull(metadata.ReturnParameter);
+        Assert.NotNull(metadata.ReturnParameter.Schema);
+        Assert.Equal("""{"type":"object","properties":{"Result":{"type":"integer"}}}""", metadata.ReturnParameter.Schema!.ToString());
+    }
+
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForTestParameterAndReturnTypes))]
+    public void ItCanCreateFunctionMetadataUsingOverloadWithOptions(JsonSerializerOptions? jsos)
+    {
+        // Arrange
+        static TestReturnType StaticMethod(TestParameterType p1)
+        {
+            return new TestReturnType() { Result = int.Parse(p1.Value!) };
+        }
+
+        KernelFunctionFromMethodOptions options = new()
+        {
+            FunctionName = "f1_name",
+            Description = "f1-description"
+        };
+
+        // Act
+        KernelFunctionMetadata metadata = jsos is not null ?
+            KernelFunctionFromMethod.CreateMetadata(((Func<TestParameterType, TestReturnType>)StaticMethod).Method, jsos, options) :
+            KernelFunctionFromMethod.CreateMetadata(((Func<TestParameterType, TestReturnType>)StaticMethod).Method, options);
+
+        // Assert
+        Assert.Equal("f1_name", metadata.Name);
+        Assert.Equal("f1-description", metadata.Description);
+
+        Assert.NotEmpty(metadata.Parameters);
+        Assert.NotNull(metadata.Parameters[0].Schema);
+        Assert.Equal("""{"type":"object","properties":{"Value":{"type":["string","null"]}}}""", metadata.Parameters[0].Schema!.ToString());
+
+        Assert.NotNull(metadata.ReturnParameter);
+        Assert.NotNull(metadata.ReturnParameter.Schema);
+        Assert.Equal("""{"type":"object","properties":{"Result":{"type":"integer"}}}""", metadata.ReturnParameter.Schema!.ToString());
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

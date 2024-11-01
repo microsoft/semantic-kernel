@@ -3,6 +3,7 @@
 import pytest
 from pytest import mark
 
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -88,6 +89,15 @@ async def test_it_renders_with_comments(kernel: Kernel):
 async def test_it_renders_fail(kernel: Kernel):
     template = "{{ plug-func 'test1'}}"
     target = create_jinja2_prompt_template(template)
+    with pytest.raises(Jinja2TemplateRenderException):
+        await target.render(kernel, KernelArguments())
+
+
+@pytest.mark.asyncio
+async def test_it_renders_fail_empty_template(kernel: Kernel):
+    template = "{{ plug-func 'test1'}}"
+    target = create_jinja2_prompt_template(template)
+    target.prompt_template_config.template = None
     with pytest.raises(Jinja2TemplateRenderException):
         await target.render(kernel, KernelArguments())
 
@@ -284,10 +294,12 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     chat_history = ChatHistory()
     chat_history.add_user_message("User message")
     chat_history.add_message(
-        ChatMessageContent(role="assistant", items=[FunctionCallContent(id="1", name="plug-test")])
+        ChatMessageContent(role=AuthorRole.ASSISTANT, items=[FunctionCallContent(id="1", name="plug-test")])
     )
     chat_history.add_message(
-        ChatMessageContent(role="tool", items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")])
+        ChatMessageContent(
+            role=AuthorRole.TOOL, items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")]
+        )
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 

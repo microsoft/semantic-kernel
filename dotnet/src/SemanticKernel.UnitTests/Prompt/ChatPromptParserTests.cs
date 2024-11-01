@@ -115,6 +115,40 @@ public sealed class ChatPromptParserTests
     }
 
     [Fact]
+    public void ItReturnsChatHistoryWithValidDataImageContent()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithDataUriImageContent();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("What can I help with?", c.Content),
+            c =>
+            {
+                Assert.Equal("Explain this image", c.Content);
+                Assert.Collection(c.Items,
+                    o =>
+                    {
+                        Assert.IsType<TextContent>(o);
+                        Assert.Equal("Explain this image", ((TextContent)o).Text);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<ImageContent>(o);
+                        Assert.Equal("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAACVJREFUKFNj/KTO/J+BCMA4iBUyQX1A0I10VAizCj1oMdyISyEAFoQbHwTcuS8AAAAASUVORK5CYII=", ((ImageContent)o).DataUri);
+                        Assert.Equal("image/png", ((ImageContent)o).MimeType);
+                        Assert.NotNull(((ImageContent)o).Data);
+                    });
+            });
+    }
+
+    [Fact]
     public void ItReturnsChatHistoryWithValidContentItemsIncludeCode()
     {
         // Arrange
@@ -205,6 +239,21 @@ public sealed class ChatPromptParserTests
             <message role='user'>
                 <text>explain image</text>
                 <image>https://fake-link-to-image/</image>
+            </message>
+
+            """;
+    }
+
+    private static string GetValidPromptWithDataUriImageContent()
+    {
+        return
+            """
+
+            <message role="assistant">What can I help with?</message>
+
+            <message role='user'>
+                <text>Explain this image</text>
+                <image>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAACVJREFUKFNj/KTO/J+BCMA4iBUyQX1A0I10VAizCj1oMdyISyEAFoQbHwTcuS8AAAAASUVORK5CYII=</image>
             </message>
 
             """;

@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import types
 from collections.abc import Callable
-from inspect import Parameter, isasyncgenfunction, isclass, isgeneratorfunction, signature
-from typing import Any, ForwardRef
+from inspect import Parameter, Signature, isasyncgenfunction, isclass, isgeneratorfunction, signature
+from typing import Annotated, Any, ForwardRef, Union, get_args, get_origin
 
 NoneType = type(None)
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ def kernel_function(
     The name and description can be left empty, and then the function name and docstring will be used.
 
     The parameters are parsed from the function signature, use typing.Annotated to provide a description for the
-    parameter, in python 3.8, use typing_extensions.Annotated.
+    parameter.
 
     To parse the type, first it checks if the parameter is annotated, and get's the description from there.
     After that it checks recursively until it reaches the lowest level, and it combines
@@ -53,15 +54,10 @@ def kernel_function(
         setattr(func, "__kernel_function_streaming__", isasyncgenfunction(func) or isgeneratorfunction(func))
         logger.debug(f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}")
         func_sig = signature(func, eval_str=True)
-        annotations = []
-        for arg in func_sig.parameters.values():
-            if arg.name == "self":
-                continue
-            if arg.default == arg.empty:
-                annotations.append(_parse_parameter(arg.name, arg.annotation, None))
-            else:
-                annotations.append(_parse_parameter(arg.name, arg.annotation, arg.default))
+
+        annotations = _process_signature(func_sig)
         logger.debug(f"{annotations=}")
+
         setattr(func, "__kernel_function_parameters__", annotations)
 
         return_annotation = (
@@ -78,11 +74,60 @@ def kernel_function(
     return decorator
 
 
+def _get_non_none_type(args: tuple) -> Any:
+    """Return the first non-None type from args, or None if no such type exists or multiple non-None types are present."""  # noqa: E501
+    non_none_types = [arg for arg in args if arg is not type(None)]
+    # If we have more than one non-none type, we can't determine the single underlying type
+    # so we rely on the type_ attribute, which means it's a Union and will be properly handled
+    # later during schema generation
+    if len(non_none_types) == 1:
+        return non_none_types[0]
+    return None
+
+
+def _get_underlying_type(annotation: Any) -> Any:
+    """Get the underlying type of the annotation."""
+    if isinstance(annotation, types.UnionType):
+        return _get_non_none_type(annotation.__args__)
+
+    if hasattr(annotation, "__origin__"):
+        if annotation.__origin__ is Union:
+            return _get_non_none_type(get_args(annotation))
+
+        if isinstance(annotation.__origin__, types.UnionType):
+            return _get_non_none_type(annotation.__origin__.__args__)
+
+        return annotation.__origin__
+
+    return annotation
+
+
+def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
+    """Process the signature of the function."""
+    annotations = []
+
+    for arg in func_sig.parameters.values():
+        if arg.name == "self":
+            continue
+        annotation = arg.annotation
+        default = arg.default if arg.default != arg.empty else None
+        parsed_annotation = _parse_parameter(arg.name, annotation, default)
+        if get_origin(annotation) is Annotated or get_origin(annotation) in {Union, types.UnionType}:
+            underlying_type = _get_underlying_type(annotation)
+        else:
+            underlying_type = annotation
+        parsed_annotation["type_object"] = underlying_type
+        annotations.append(parsed_annotation)
+
+    return annotations
+
+
 def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
+    """Parse the parameter annotation."""
     logger.debug(f"Parsing param: {name}")
     logger.debug(f"Parsing annotation: {param}")
     ret: dict[str, Any] = {"name": name}
-    if default:
+    if default is not None:
         ret["default_value"] = default
         ret["is_required"] = False
     else:

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -44,7 +43,7 @@ public sealed class RegexTerminationStrategy : TerminationStrategy
     {
         Verify.NotNull(expressions);
 
-        this._expressions = expressions.OfType<Regex>().ToArray();
+        this._expressions = expressions;
     }
 
     /// <inheritdoc/>
@@ -53,26 +52,23 @@ public sealed class RegexTerminationStrategy : TerminationStrategy
         // Most recent message
         if (history.Count > 0 && history[history.Count - 1].Content is string message)
         {
-            if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
-            {
-                this.Logger.LogDebug("[{MethodName}] Evaluating expressions: {ExpressionCount}", nameof(ShouldAgentTerminateAsync), this._expressions.Length);
-            }
+            this.Logger.LogRegexTerminationStrategyEvaluating(nameof(ShouldAgentTerminateAsync), this._expressions.Length);
 
             // Evaluate expressions for match
             foreach (var expression in this._expressions)
             {
-                this.Logger.LogDebug("[{MethodName}] Evaluating expression: {Expression}", nameof(ShouldAgentTerminateAsync), expression);
+                this.Logger.LogRegexTerminationStrategyEvaluatingExpression(nameof(ShouldAgentTerminateAsync), expression);
 
                 if (expression.IsMatch(message))
                 {
-                    this.Logger.LogInformation("[{MethodName}] Expression matched: {Expression}", nameof(ShouldAgentTerminateAsync), expression);
+                    this.Logger.LogRegexTerminationStrategyMatchedExpression(nameof(ShouldAgentTerminateAsync), expression);
 
                     return Task.FromResult(true);
                 }
             }
         }
 
-        this.Logger.LogInformation("[{MethodName}] No expression matched.", nameof(ShouldAgentTerminateAsync));
+        this.Logger.LogRegexTerminationStrategyNoMatch(nameof(ShouldAgentTerminateAsync));
 
         return Task.FromResult(false);
     }

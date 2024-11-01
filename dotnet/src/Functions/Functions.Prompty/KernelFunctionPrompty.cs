@@ -171,7 +171,7 @@ public static partial class KernelFunctionPrompty
                 extensionData.Add("stop_sequences", stop);
             }
 
-            if (prompty.Model?.Parameters?.ResponseFormat == "json_object")
+            if (prompty.Model?.Parameters?.ResponseFormat?.Type == "json_object")
             {
                 extensionData.Add("response_format", "json_object");
             }

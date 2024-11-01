@@ -2,14 +2,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.ImageToText;
-using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel;
 
@@ -37,16 +29,31 @@ public static class HuggingFaceKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(model);
 
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextGenerationService(
-                model,
-                endpoint,
-                apiKey,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()
-            ));
+        builder.Services.AddHuggingFaceTextGeneration(model, endpoint, apiKey, serviceId, httpClient);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an Hugging Face text generation service with the specified configuration.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="endpoint">The endpoint URL for the text generation service.</param>
+    /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddHuggingFaceTextGeneration(
+        this IKernelBuilder builder,
+        Uri endpoint,
+        string? apiKey = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddHuggingFaceTextGeneration(endpoint, apiKey, serviceId, httpClient);
 
         return builder;
     }
@@ -70,16 +77,31 @@ public static class HuggingFaceKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(model);
 
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceChatCompletionService(
-                model,
-                endpoint,
-                apiKey,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()
-            ));
+        builder.Services.AddHuggingFaceChatCompletion(model, endpoint, apiKey, serviceId, httpClient);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an Hugging Face chat completion service with the specified configuration.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="endpoint">The endpoint URL for the chat completion service.</param>
+    /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddHuggingFaceChatCompletion(
+        this IKernelBuilder builder,
+        Uri endpoint,
+        string? apiKey = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddHuggingFaceChatCompletion(endpoint, apiKey, serviceId, httpClient);
 
         return builder;
     }
@@ -103,16 +125,31 @@ public static class HuggingFaceKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(model);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextEmbeddingGenerationService(
-                model,
-                endpoint,
-                apiKey,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()
-            ));
+        builder.Services.AddHuggingFaceTextEmbeddingGeneration(model, endpoint, apiKey, serviceId, httpClient);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an Hugging Face text embedding generation service with the specified configuration.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="endpoint">The endpoint for the text embedding generation service.</param>
+    /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddHuggingFaceTextEmbeddingGeneration(
+        this IKernelBuilder builder,
+        Uri endpoint,
+        string? apiKey = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddHuggingFaceTextEmbeddingGeneration(endpoint, apiKey, serviceId, httpClient);
 
         return builder;
     }
@@ -136,16 +173,31 @@ public static class HuggingFaceKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(model);
 
-        builder.Services.AddKeyedSingleton<IImageToTextService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceImageToTextService(
-                model,
-                endpoint,
-                apiKey,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()
-            ));
+        builder.Services.AddHuggingFaceImageToText(model, endpoint, apiKey, serviceId, httpClient);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an Hugging Face image-to-text service with the specified configuration.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="endpoint">The endpoint for the image-to-text service.</param>
+    /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddHuggingFaceImageToText(
+        this IKernelBuilder builder,
+        Uri endpoint,
+        string? apiKey = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddHuggingFaceImageToText(endpoint, apiKey, serviceId, httpClient);
 
         return builder;
     }

@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel;
 internal sealed class KernelPromptTemplate : IPromptTemplate
 {
     /// <summary>
-    /// Constructor for PromptTemplate.
+    /// Constructor for <see cref="KernelPromptTemplate"/>.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="allowDangerouslySetContent">Flag indicating whether to allow potentially dangerous content to be inserted into the prompt</param>
@@ -68,11 +68,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     private List<Block> ExtractBlocks(PromptTemplateConfig config, ILoggerFactory loggerFactory)
     {
         string templateText = config.Template;
-
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
-        }
 
         var blocks = new TemplateTokenizer(loggerFactory).Tokenize(templateText);
 

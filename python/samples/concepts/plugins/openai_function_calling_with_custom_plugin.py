@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -51,7 +51,7 @@ async def main():
     else:
         ai_service = OpenAIChatCompletion(
             service_id=service_id,
-            ai_model_id="gpt-3.5-turbo-1106",
+            ai_model_id="gpt-3.5-turbo",
         )
     kernel.add_service(ai_service)
 
@@ -63,9 +63,7 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
-    )
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["weather", "time"]})
 
     print(
         await kernel.invoke_prompt(
@@ -81,9 +79,7 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
-    )
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["weather", "time"]})
 
     result = kernel.invoke_prompt_stream(
         function_name="prompt_test",
@@ -104,8 +100,8 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
+        auto_invoke=False, filters={"included_plugins": ["weather", "time"]}
     )
     chat_history.add_user_message(
         "Given the current time of day and weather, what is the likely color of the sky in Boston?"
@@ -113,7 +109,7 @@ async def main():
 
     while True:
         # The result is a list of ChatMessageContent objects, grab the first one
-        result = await chat.get_chat_message_contents(chat_history=chat_history, settings=settings)
+        result = await chat.get_chat_message_contents(chat_history=chat_history, settings=settings, kernel=kernel)
         result = result[0]
 
         if result.content:
@@ -123,12 +119,16 @@ async def main():
             break
 
         chat_history.add_message(result)
-        await chat._process_function_calls(
-            result=result,
-            kernel=kernel,
-            chat_history=chat_history,
-            arguments=KernelArguments(),
-        )
+        for item in result.items:
+            await chat._process_function_call(
+                function_call=item,
+                kernel=kernel,
+                chat_history=chat_history,
+                arguments=KernelArguments(),
+                function_call_count=1,
+                request_index=0,
+                function_call_behavior=settings.function_choice_behavior,
+            )
 
 
 if __name__ == "__main__":

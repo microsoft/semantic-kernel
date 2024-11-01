@@ -33,7 +33,7 @@ public static class VertexAIMemoryBuilderExtensions
     public static MemoryBuilder WithVertexAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
-        Func<Task<string>> bearerTokenProvider,
+        Func<ValueTask<string>> bearerTokenProvider,
         string location,
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,

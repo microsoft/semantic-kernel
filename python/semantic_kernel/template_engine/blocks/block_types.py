@@ -4,6 +4,8 @@ from enum import Enum, auto
 
 
 class BlockTypes(Enum):
+    """Block types."""
+
     UNDEFINED = auto()
     TEXT = auto()
     CODE = auto()

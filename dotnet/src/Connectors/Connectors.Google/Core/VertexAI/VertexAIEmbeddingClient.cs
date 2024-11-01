@@ -31,7 +31,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     public VertexAIEmbeddingClient(
         HttpClient httpClient,
         string modelId,
-        Func<Task<string>> bearerTokenProvider,
+        Func<ValueTask<string>> bearerTokenProvider,
         string location,
         string projectId,
         VertexAIVersion apiVersion,

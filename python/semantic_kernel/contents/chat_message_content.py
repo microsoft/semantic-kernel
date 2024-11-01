@@ -3,33 +3,59 @@
 import logging
 from enum import Enum
 from html import unescape
-from typing import Any, Union, overload
+from typing import Annotated, Any, ClassVar, Literal, overload
 from xml.etree.ElementTree import Element  # nosec
 
 from defusedxml import ElementTree
 from pydantic import Field
 
-from semantic_kernel.contents.author_role import AuthorRole
+from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.const import (
+    ANNOTATION_CONTENT_TAG,
     CHAT_MESSAGE_CONTENT_TAG,
+    DISCRIMINATOR_FIELD,
+    FILE_REFERENCE_CONTENT_TAG,
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
+    IMAGE_CONTENT_TAG,
+    STREAMING_ANNOTATION_CONTENT_TAG,
+    STREAMING_FILE_REFERENCE_CONTENT_TAG,
     TEXT_CONTENT_TAG,
+    ContentTypes,
 )
-from semantic_kernel.contents.finish_reason import FinishReason
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 TAG_CONTENT_MAP = {
+    ANNOTATION_CONTENT_TAG: AnnotationContent,
     TEXT_CONTENT_TAG: TextContent,
+    FILE_REFERENCE_CONTENT_TAG: FileReferenceContent,
     FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
+    IMAGE_CONTENT_TAG: ImageContent,
+    STREAMING_FILE_REFERENCE_CONTENT_TAG: StreamingFileReferenceContent,
+    STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
 }
 
-ITEM_TYPES = Union[TextContent, StreamingTextContent, FunctionResultContent, FunctionCallContent]
+ITEM_TYPES = (
+    AnnotationContent
+    | ImageContent
+    | TextContent
+    | FunctionResultContent
+    | FunctionCallContent
+    | FileReferenceContent
+    | StreamingAnnotationContent
+    | StreamingFileReferenceContent
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +80,11 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
+    content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
+    tag: ClassVar[str] = CHAT_MESSAGE_CONTENT_TAG
     role: AuthorRole
     name: str | None = None
-    items: list[ITEM_TYPES] = Field(default_factory=list)
+    items: list[Annotated[ITEM_TYPES, Field(..., discriminator=DISCRIMINATOR_FIELD)]] = Field(default_factory=list)
     encoding: str | None = None
     finish_reason: FinishReason | None = None
 
@@ -104,8 +132,9 @@ class ChatMessageContent(KernelContent):
         """Create a ChatMessageContent instance.
 
         Args:
-            role: ChatRole - The role of the chat message.
-            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent] - The content.
+            role: AuthorRole - The role of the chat message.
+            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent, ImageContent]
+                 - The content.
             content: str - The text of the response.
             inner_content: Optional[Any] - The inner content of the response,
                 this should hold all the information from the response so even
@@ -193,7 +222,7 @@ class ChatMessageContent(KernelContent):
         Returns:
             Element - The XML Element representing the ChatMessageContent.
         """
-        root = Element(CHAT_MESSAGE_CONTENT_TAG)
+        root = Element(self.tag)
         for field in self.model_fields_set:
             if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id"]:
                 continue
@@ -215,6 +244,8 @@ class ChatMessageContent(KernelContent):
         Returns:
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
+        if element.tag != cls.tag:
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
         kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
         if element.text:
@@ -274,10 +305,14 @@ class ChatMessageContent(KernelContent):
         """Parse the items of the ChatMessageContent.
 
         Returns:
-            str | dict - The parsed items.
+            str | list of dicts - The parsed items.
         """
         if len(self.items) == 1 and isinstance(self.items[0], TextContent):
             return self.items[0].text
         if len(self.items) == 1 and isinstance(self.items[0], FunctionResultContent):
-            return self.items[0].result
+            return str(self.items[0].result)
         return [item.to_dict() for item in self.items]
+
+    def __hash__(self) -> int:
+        """Return the hash of the chat message content."""
+        return hash((self.tag, self.role, self.content, self.encoding, self.finish_reason, *self.items))

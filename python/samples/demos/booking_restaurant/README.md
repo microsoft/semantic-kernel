@@ -15,7 +15,7 @@ This sample uses function calling capable models and has been tested with the fo
 | Model type      | Model name/id             |       Model version | Supported |
 | --------------- | ------------------------- | ------------------: | --------- |
 | Chat Completion | gpt-3.5-turbo             |                0125 | ✅        |
-| Chat Completion | gpt-3.5-turbo-1106        |                1106 | ✅        |
+| Chat Completion | gpt-3.5-turbo             |                1106 | ✅        |
 | Chat Completion | gpt-3.5-turbo-0613        |                0613 | ✅        |
 | Chat Completion | gpt-3.5-turbo-0301        |                0301 | ❌        |
 | Chat Completion | gpt-3.5-turbo-16k         |                0613 | ✅        |

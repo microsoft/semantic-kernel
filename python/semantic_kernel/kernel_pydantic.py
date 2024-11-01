@@ -3,7 +3,7 @@
 
 from typing import Annotated, Any, ClassVar, TypeVar
 
-from pydantic import BaseModel, ConfigDict, UrlConstraints
+from pydantic import BaseModel, ConfigDict, Field, UrlConstraints
 from pydantic.networks import Url
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -35,8 +35,8 @@ class KernelBaseSettings(BaseSettings):
     """
 
     env_prefix: ClassVar[str] = ""
-    env_file_path: str | None = None
-    env_file_encoding: str = "utf-8"
+    env_file_path: str | None = Field(None, exclude=True)
+    env_file_encoding: str = Field("utf-8", exclude=True)
 
     model_config = SettingsConfigDict(
         extra="ignore",
@@ -49,6 +49,8 @@ class KernelBaseSettings(BaseSettings):
         cls.model_config["env_prefix"] = cls.env_prefix
         if data.get("env_file_path"):
             cls.model_config["env_file"] = data["env_file_path"]
+        else:
+            cls.model_config["env_file"] = ".env"
         cls.model_config["env_file_encoding"] = data.get("env_file_encoding", "utf-8")
         data = {k: v for k, v in data.items() if v is not None}
         return cls(**data)

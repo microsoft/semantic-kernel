@@ -1,9 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any, Literal
 
-from pydantic import Field, field_validator, model_validator
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
+else:
+    from typing_extensions import Self  # pragma: no cover
+
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -55,13 +61,28 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
 class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
-    response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
-    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
-    tool_choice: str | None = None
+    response_format: (
+        dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
+    ) = None
     function_call: str | None = None
     functions: list[dict[str, Any]] | None = None
     messages: list[dict[str, Any]] | None = None
     function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
+    parallel_tool_calls: bool = True
+    tools: list[dict[str, Any]] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    tool_choice: str | None = Field(
+        None,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    structured_json_response: bool = Field(False, description="Do not set this manually. It is set by the service.")
+    stream_options: dict[str, Any] | None = Field(
+        None,
+        description="Additional options to pass when streaming is used. Do not set this manually.",
+    )
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
@@ -73,8 +94,67 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
             )
         return v
 
+    @model_validator(mode="before")
+    def validate_response_format_and_set_flag(cls, values) -> Any:
+        """Validate the response_format and set structured_json_response accordingly."""
+        response_format = values.get("response_format", None)
+
+        if response_format is None:
+            return values
+
+        if isinstance(response_format, dict):
+            if response_format.get("type") == "json_object":
+                return values
+            if response_format.get("type") == "json_schema":
+                json_schema = response_format.get("json_schema")
+                if isinstance(json_schema, dict):
+                    values["structured_json_response"] = True
+                    return values
+                raise ServiceInvalidExecutionSettingsError(
+                    "If response_format has type 'json_schema', 'json_schema' must be a valid dictionary."
+                )
+        if isinstance(response_format, type):
+            if issubclass(response_format, BaseModel):
+                values["structured_json_response"] = True
+            else:
+                values["structured_json_response"] = True
+        else:
+            raise ServiceInvalidExecutionSettingsError(
+                "response_format must be a dictionary, a subclass of BaseModel, a Python class/type, or None"
+            )
+
+        return values
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_function_calling_behaviors(cls, data) -> Any:
+        """Check if function_call_behavior is set and if so, move to use function_choice_behavior instead."""
+        # In an attempt to phase out the use of `function_call_behavior` in favor of `function_choice_behavior`,
+        # we are syncing the `function_call_behavior` with `function_choice_behavior` if the former is set.
+        # This allows us to make decisions off of `function_choice_behavior`. Anytime the `function_call_behavior`
+        # is updated, this validation will run to ensure the `function_choice_behavior` stays in sync.
+        from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+
+        if isinstance(data, dict) and "function_call_behavior" in data.get("extension_data", {}):
+            data["function_choice_behavior"] = FunctionChoiceBehavior.from_function_call_behavior(
+                data.get("extension_data", {}).get("function_call_behavior")
+            )
+        return data
+
+    @field_validator("function_call_behavior", mode="after")
+    @classmethod
+    def check_for_function_call_behavior(cls, v) -> Self:
+        """Check if function_choice_behavior is set, if not, set it to default."""
+        if v is not None:
+            logger.warning(
+                "The `function_call_behavior` parameter is deprecated. Please use the `function_choice_behavior` parameter instead."  # noqa: E501
+            )
+        return v
+
 
 class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
+    """Specific settings for the text embedding endpoint."""
+
     input: str | list[str] | list[int] | list[list[int]] | None = None
     ai_model_id: str | None = Field(None, serialization_alias="model")
     encoding_format: Literal["float", "base64"] | None = None

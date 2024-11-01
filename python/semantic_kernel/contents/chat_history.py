@@ -10,10 +10,10 @@ from xml.etree.ElementTree import Element, tostring  # nosec
 from defusedxml.ElementTree import XML, ParseError
 from pydantic import field_validator
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.const import CHAT_HISTORY_TAG, CHAT_MESSAGE_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -263,8 +263,8 @@ class ChatHistory(KernelBaseModel):
         prompt = rendered_prompt.strip()
         try:
             xml_prompt = XML(text=f"<{prompt_tag}>{prompt}</{prompt_tag}>")
-        except ParseError:
-            logger.info(f"Could not parse prompt {prompt} as xml, treating as text")
+        except ParseError as exc:
+            logger.info(f"Could not parse prompt {prompt} as xml, treating as text, error was: {exc}")
             return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=unescape(prompt))])
         if xml_prompt.text and xml_prompt.text.strip():
             messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=unescape(xml_prompt.text.strip())))
