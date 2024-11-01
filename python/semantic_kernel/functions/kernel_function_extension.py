@@ -63,18 +63,18 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         See KernelPlugin.from_directory for more details on how the directory is parsed.
 
         Args:
-            plugin (KernelPlugin | Any | dict[str, Any]): The plugin to add.
+            plugin: The plugin to add.
                 This can be a KernelPlugin, in which case it is added straightaway and other parameters are ignored,
                 a custom class that contains methods with the kernel_function decorator
                 or a dictionary of functions with the kernel_function decorator for one or
                 several methods.
-            plugin_name (str | None): The name of the plugin, used if the plugin is not a KernelPlugin,
+            plugin_name: The name of the plugin, used if the plugin is not a KernelPlugin,
                 if the plugin is None and the parent_directory is set,
                 KernelPlugin.from_directory is called with those parameters,
                 see `KernelPlugin.from_directory` for details.
-            parent_directory (str | None): The parent directory path where the plugin directory resides
-            description (str | None): The description of the plugin, used if the plugin is not a KernelPlugin.
-            class_init_arguments (dict[str, dict[str, Any]] | None): The class initialization arguments
+            parent_directory: The parent directory path where the plugin directory resides
+            description: The description of the plugin, used if the plugin is not a KernelPlugin.
+            class_init_arguments: The class initialization arguments
 
         Returns:
             KernelPlugin: The plugin that was added.

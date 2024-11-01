@@ -22,7 +22,7 @@ async def main():
         print(f"  result {idx + 1}:")
         print(f"    result: {result}")
     print("\n============================\n")
-    results = await connector.get_text_search_result(query, count=2)
+    results = await connector.get_text_search_results(query, count=2)
     print("Text search results: ")
     if results.metadata and results.metadata.get("altered_query", None):
         print(f"  Altered query: {results.metadata['altered_query']}")
@@ -32,7 +32,7 @@ async def main():
         print(f"    value: {result.value}")
         print(f"    link: {result.link}")
     print("\n============================\n")
-    results = await connector.get_search_result(query, count=2)
+    results = await connector.get_search_results(query, count=2)
     print("BingWebPage results: ")
     if results.metadata and results.metadata.get("altered_query", None):
         print(f"  Altered query: {results.metadata['altered_query']}")

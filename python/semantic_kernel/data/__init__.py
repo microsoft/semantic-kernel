@@ -1,54 +1,62 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.data.const import (
-    DEFAULT_COUNT,
     DEFAULT_DESCRIPTION,
     DistanceFunction,
     IndexKind,
 )
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.kernel_search_result import KernelSearchResults
-from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
+    VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
 )
-from semantic_kernel.data.record_definition.vector_store_record_utils import VectorStoreRecordUtils
-from semantic_kernel.data.search_options_base import SearchOptions
-from semantic_kernel.data.text_search.text_search import TextSearch
-from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
-from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
-from semantic_kernel.data.text_search.text_search_result import TextSearchResult
+from semantic_kernel.data.search_options import SearchOptions
+from semantic_kernel.data.text_search import (
+    OptionsUpdateFunctionType,
+    TextSearch,
+    TextSearchFilter,
+    TextSearchOptions,
+    TextSearchResult,
+    create_options,
+    default_options_update_function,
+)
 from semantic_kernel.data.vector_search import (
-    VectorSearch,
+    VectorizableTextSearchMixin,
+    VectorizedSearchMixin,
+    VectorSearchBase,
     VectorSearchFilter,
     VectorSearchOptions,
-    VectorSearchQueryTypes,
     VectorSearchResult,
 )
-from semantic_kernel.data.vector_storage.vector_store import VectorStore
-from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
 
 __all__ = [
-    "DEFAULT_COUNT",
     "DEFAULT_DESCRIPTION",
     "AnyTagsEqualTo",
     "DistanceFunction",
     "EqualTo",
     "IndexKind",
     "KernelSearchResults",
+    "OptionsUpdateFunctionType",
     "SearchOptions",
     "TextSearch",
     "TextSearchFilter",
+    "TextSearchFilter",
+    "TextSearchOptions",
     "TextSearchOptions",
     "TextSearchResult",
-    "VectorSearch",
+    "TextSearchResult",
+    "VectorSearchBase",
+    "VectorSearchFilter",
     "VectorSearchFilter",
     "VectorSearchOptions",
-    "VectorSearchQueryTypes",
+    "VectorSearchOptions",
+    "VectorSearchResult",
     "VectorSearchResult",
     "VectorStore",
     "VectorStoreRecordCollection",
@@ -57,5 +65,9 @@ __all__ = [
     "VectorStoreRecordKeyField",
     "VectorStoreRecordUtils",
     "VectorStoreRecordVectorField",
+    "VectorizableTextSearchMixin",
+    "VectorizedSearchMixin",
+    "create_options",
+    "default_options_update_function",
     "vectorstoremodel",
 ]

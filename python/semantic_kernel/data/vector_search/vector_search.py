@@ -1,22 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 import logging
 from abc import abstractmethod
-from collections.abc import Awaitable, Callable, Mapping, Sequence
+from collections.abc import AsyncIterable
 from typing import Any, Generic, TypeVar
 
-from pydantic import BaseModel
-
-from semantic_kernel.data.kernel_search_result import KernelSearchResults
-from semantic_kernel.data.search_base import SearchBase
-from semantic_kernel.data.search_options_base import SearchOptions
-from semantic_kernel.data.vector_search.const import VectorSearchQueryTypes
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
+from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions.search_exceptions import SearchResultEmptyError, VectorSearchOptionsException
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 TModel = TypeVar("TModel")
@@ -26,151 +19,89 @@ logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class VectorSearch(VectorStoreRecordCollection[TKey, TModel], SearchBase, Generic[TKey, TModel]):
+class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, TModel]):
     """Method for searching vectors."""
+
+    @property
+    def options_class(self) -> type[SearchOptions]:
+        """The options class for the search."""
+        return VectorSearchOptions
 
     # region: New abstract methods to be implemented by vector stores
 
     @abstractmethod
     async def _inner_search(
         self,
-        options: SearchOptions | None = None,
+        options: VectorSearchOptions | None = None,
+        search_text: str | None = None,
+        vectorizable_text: str | None = None,
+        vector: list[float | int] | None = None,
         **kwargs: Any,
-    ) -> Sequence[Mapping[str, Any | float | None]] | None:
-        """Inner search method."""
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        """Inner search method.
+
+        This is the main search method that should be implemented, and will be called by the public search methods.
+        Currently, one of the three search contents will be provided, in the future,
+        this may be expanded to allow multiple of them.
+
+        This method should return a KernelSearchResults object with the results of the search.
+        The inner "results" object of the KernelSearchResults should be a async iterator that yields the search results,
+        this allows things like paging to be implemented.
+
+        There is a default helper method "_get_vector_search_results_from_results" to convert
+        the results to a async iterable VectorSearchResults, but this can be overridden if necessary.
+
+        Options might be a object of type VectorSearchOptions, or a subclass of it.
+
+        Args:
+            options: The search options.
+            search_text: The text to search for, optional.
+            vectorizable_text: The text to search for, will be vectorized downstream, optional.
+            vector: The vector to search for, optional.
+            **kwargs: Additional arguments that might be needed.
+
+        Returns:
+            The search results, wrapped in a KernelSearchResults object.
+
+        """
         ...
 
     @abstractmethod
     def _get_record_from_result(self, result: Any) -> Any:
-        """Get the record from the result.
+        """Get the record from the returned search result.
 
         Does any unpacking or processing of the result to get just the record.
+
+        If the underlying SDK of the store returns a particular type that might include something
+        like a score or other metadata, this method should be overridden to extract just the record.
+
+        Likely returns a dict, but in some cases could return the record in the form of a SDK specific object.
+
+        This method is used as part of the _get_vector_search_results_from_results method,
+        the output of it is passed to the deserializer.
         """
         ...
 
     @abstractmethod
     def _get_score_from_result(self, result: Any) -> float | None:
-        """Get the score from the result."""
+        """Get the score from the result.
+
+        Does any unpacking or processing of the result to get just the score.
+
+        If the underlying SDK of the store returns a particular type with a score or other metadata,
+        this method extracts it.
+        """
         ...
-
-    # endregion
-    # region: Implementation of SearchBase
-
-    @staticmethod
-    def _default_parameter_metadata() -> list[KernelParameterMetadata]:
-        """Default parameter metadata for text search functions.
-
-        This function should be overridden by subclasses.
-        """
-        return []
-
-    @property
-    def _get_options_class(self) -> type[SearchOptions]:
-        return VectorSearchOptions
-
-    @property
-    def _search_function_map(
-        self,
-    ) -> dict[str, Callable[..., Awaitable[KernelSearchResults[VectorSearchResult[TModel]]]]]:
-        """Get the search function map.
-
-        Can be overwritten by subclasses.
-        """
-        return {"vectorizable_text_search": self.vectorizable_text_search, "vectorized_search": self.vectorized_search}
 
     # endregion
     # region: New methods
 
-    async def vectorizable_text_search(
-        self,
-        options: SearchOptions | None = None,
-        **kwargs: Any,
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        """Search the vector store for records that match the given text and filter.
-
-        The text string will be vectorized downstream and used for the vector search.
-
-        Args:
-            options: options, should include query
-            **kwargs: if options are not set, this is used to create them.
-
-        Raises:
-            VectorSearchOptionsException: raised when the options given are not correct.
-            SearchResultEmptyError: raised when there are no results returned.
-
-        """
-        if not options:
-            options = self._create_options(**kwargs)
-        if not isinstance(options, VectorSearchOptions) or options.query is None:
-            raise VectorSearchOptionsException(
-                "Invalid options received, options should be of type "
-                "VectorSearchOptions and 'query' should not be None."
-            )
-        options.query_type = VectorSearchQueryTypes.VECTORIZABLE_TEXT_SEARCH_QUERY
-        raw_results = await self._inner_search(options=options)
-        if raw_results is None or len(raw_results) == 0:
-            raise SearchResultEmptyError("No results returned.")
-        return KernelSearchResults(
-            results=self._get_vector_search_results_from_results(raw_results),
-            total_count=len(raw_results),
-            metadata=self._get_metadata_from_results(raw_results),
-        )
-
-    async def vectorized_search(
-        self,
-        options: SearchOptions | None = None,
-        **kwargs: Any,
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        """Search the vector store for records that match the given embedding and filter.
-
-        Args:
-            options: options, should include query_text
-            **kwargs: if options are not set, this is used to create them.
-
-        Raises:
-            VectorSearchOptionsException: raised when the options given are not correct.
-            SearchResultEmptyError: raised when there are no results returned.
-
-        """
-        if not options:
-            options = self._create_options(**kwargs)
-        if not isinstance(options, VectorSearchOptions) or options.vector is None:
-            raise VectorSearchOptionsException(
-                "Invalid options received, options should be of type "
-                "VectorSearchOptions and 'vector' should not be None."
-            )
-        options.query_type = VectorSearchQueryTypes.VECTORIZED_SEARCH_QUERY
-        raw_results = await self._inner_search(options=options)
-        if raw_results is None or len(raw_results) == 0:
-            raise SearchResultEmptyError("No results returned.")
-        return KernelSearchResults(
-            results=self._get_vector_search_results_from_results(raw_results),
-            total_count=len(raw_results),
-            metadata=self._get_metadata_from_results(raw_results),
-        )
-
-    def _get_strings_from_records(self, records: Sequence[TModel]) -> Sequence[str]:
-        return [record.model_dump_json() if isinstance(record, BaseModel) else json.dumps(record) for record in records]
-
-    def _get_records_from_results(self, results: Sequence[Any]) -> Sequence[TModel]:
-        return [self.deserialize(self._get_record_from_result(res)) for res in results]  # type: ignore
-
-    def _get_vector_search_results_from_results(self, results: Sequence[Any]) -> Sequence[VectorSearchResult[TModel]]:
-        scores = [self._get_score_from_result(res) for res in results]
-        records = self.deserialize(self._get_records_from_results(results))
-        if records is None:
-            return []
-        if not isinstance(records, Sequence):
-            # this means this is a container of records
-            # scores are ignored
-            return [VectorSearchResult(record=records, score=None)]
-        return [
-            VectorSearchResult(
-                record=record,
-                score=score,
-            )
-            for record, score in zip(records, scores)
-        ]
-
-    def _get_metadata_from_results(self, results: Sequence[Any]) -> dict[str, Any]:
-        return {"scores": [self._get_score_from_result(res) for res in results]}
+    async def _get_vector_search_results_from_results(
+        self, results: AsyncIterable[Any]
+    ) -> AsyncIterable[VectorSearchResult[TModel]]:
+        async for result in results:
+            record = self.deserialize(self._get_record_from_result(result))
+            score = self._get_score_from_result(result)
+            if record:
+                # single records are always returned as single records by the deserializer
+                yield VectorSearchResult(record=record, score=score)  # type: ignore

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from collections.abc import AsyncIterable
 from html import escape
 from typing import Any
 
@@ -17,11 +18,17 @@ from semantic_kernel.connectors.search.bing.const import (
 from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
+from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.kernel_search_result import KernelSearchResults
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
+from semantic_kernel.data.text_search import TextSearch
 from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
 from semantic_kernel.data.text_search.text_search_result import TextSearchResult
+from semantic_kernel.data.text_search_options import TextSearchOptions
+from semantic_kernel.data.text_search_result import TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -67,61 +74,63 @@ class BingSearch(KernelBaseModel, TextSearch):
 
         super().__init__(settings=settings)
 
-    async def search(self, options: TextSearchOptions | None = None, **kwargs: Any) -> "KernelSearchResults[str]":
+    async def search(
+        self, query: str, options: TextSearchOptions | None = None, **kwargs: Any
+    ) -> "KernelSearchResults[str]":
         """Search for text, returning a KernelSearchResult with a list of strings."""
         options = self._get_options(options, **kwargs)
-        results = await self._inner_search(options=options)
+        results = await self._inner_search(query=query, options=options)
         return KernelSearchResults(
             results=self._get_result_strings(results),
             total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
         )
 
-    async def get_text_search_result(
-        self, options: TextSearchOptions | None = None, **kwargs
+    async def get_text_search_results(
+        self, query: str, options: TextSearchOptions | None = None, **kwargs
     ) -> "KernelSearchResults[TextSearchResult]":
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
         options = self._get_options(options, **kwargs)
-        results = await self._inner_search(options=options)
+        results = await self._inner_search(query=query, options=options)
         return KernelSearchResults(
             results=self._get_text_search_results(results),
             total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
         )
 
-    async def get_search_result(
-        self, options: TextSearchOptions | None = None, **kwargs
+    async def get_search_results(
+        self, query: str, options: TextSearchOptions | None = None, **kwargs
     ) -> "KernelSearchResults[BingWebPage]":
         """Search for text, returning a KernelSearchResult with the results directly from the service."""
         options = self._get_options(options, **kwargs)
-        results = await self._inner_search(options=options)
+        results = await self._inner_search(query=query, options=options)
         return KernelSearchResults(
             results=self._get_bing_web_pages(results),
             total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
         )
 
-    def _get_result_strings(self, response: BingSearchResponse) -> list[str]:
+    async def _get_result_strings(self, response: BingSearchResponse) -> AsyncIterable[str]:
         if response.web_pages is None:
-            return []
-        return [web_page.snippet for web_page in response.web_pages.value if web_page.snippet]
+            return
+        for web_page in response.web_pages.value:
+            yield web_page.snippet or ""
 
-    def _get_text_search_results(self, response: BingSearchResponse) -> list[TextSearchResult]:
+    async def _get_text_search_results(self, response: BingSearchResponse) -> AsyncIterable[TextSearchResult]:
         if response.web_pages is None:
-            return []
-        return [
-            TextSearchResult(
+            return
+        for web_page in response.web_pages.value:
+            yield TextSearchResult(
                 name=web_page.name,
                 value=web_page.snippet,
                 link=web_page.url,
             )
-            for web_page in response.web_pages.value
-        ]
 
-    def _get_bing_web_pages(self, response: BingSearchResponse) -> list[BingWebPage]:
+    async def _get_bing_web_pages(self, response: BingSearchResponse) -> AsyncIterable[BingWebPage]:
         if response.web_pages is None:
-            return []
-        return response.web_pages.value
+            return
+        for val in response.web_pages.value:
+            yield val
 
     def _get_metadata(self, response: BingSearchResponse) -> dict[str, Any]:
         return {
@@ -145,16 +154,16 @@ class BingSearch(KernelBaseModel, TextSearch):
         except ValidationError:
             return TextSearchOptions()
 
-    async def _inner_search(self, options: TextSearchOptions) -> BingSearchResponse:
+    async def _inner_search(self, query: str, options: TextSearchOptions) -> BingSearchResponse:
         self._validate_options(options)
 
         logger.info(
             f"Received request for bing web search with \
-                params:\nquery: {options.query}\nnum_results: {options.count}\noffset: {options.offset}"
+                params:\nquery: {query}\nnum_results: {options.top}\noffset: {options.skip}"
         )
 
         url = self._get_url()
-        params = self._build_request_parameters(options)
+        params = self._build_request_parameters(query, options)
 
         logger.info(f"Sending GET request to {url}")
 
@@ -178,20 +187,18 @@ class BingSearch(KernelBaseModel, TextSearch):
             raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex
 
     def _validate_options(self, options: TextSearchOptions) -> None:
-        if options.count >= 50:
+        if options.top >= 50:
             raise ServiceInvalidRequestError("count value must be less than 50.")
-        if not options.query:
-            raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
 
     def _get_url(self) -> str:
         if not self.settings.custom_config:
             return DEFAULT_URL
         return f"{DEFAULT_CUSTOM_URL}&customConfig={self.settings.custom_config}"
 
-    def _build_request_parameters(self, options: TextSearchOptions) -> dict[str, str | int]:
-        params: dict[str, str | int] = {"count": options.count, "offset": options.offset}
+    def _build_request_parameters(self, query: str, options: TextSearchOptions) -> dict[str, str | int]:
+        params: dict[str, str | int] = {"count": options.top, "offset": options.skip}
         if not options.filter:
-            params["q"] = options.query or ""
+            params["q"] = query or ""
             return params
         extra_query_params = []
         for filter in options.filter.filters:
@@ -205,5 +212,5 @@ class BingSearch(KernelBaseModel, TextSearch):
                     extra_query_params.append(f"{filter.field_name}:{filter.value}")
             elif isinstance(filter, AnyTagsEqualTo):
                 logger.debug("Any tag equals to filter is not supported by Bing Search API.")
-        params["q"] = f"{options.query}+{f' {options.filter.group_type} '.join(extra_query_params)}".strip()
+        params["q"] = f"{query}+{f' {options.filter.group_type} '.join(extra_query_params)}".strip()
         return params
