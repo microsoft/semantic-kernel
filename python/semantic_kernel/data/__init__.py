@@ -16,7 +16,15 @@ from semantic_kernel.data.record_definition import (
     vectorstoremodel,
 )
 from semantic_kernel.data.search_options import SearchOptions
-from semantic_kernel.data.text_search import TextSearch, TextSearchFilter, TextSearchOptions, TextSearchResult
+from semantic_kernel.data.text_search import (
+    OptionsUpdateFunctionType,
+    TextSearch,
+    TextSearchFilter,
+    TextSearchOptions,
+    TextSearchResult,
+    create_options,
+    default_options_update_function,
+)
 from semantic_kernel.data.vector_search import (
     VectorizableTextSearchMixin,
     VectorizedSearchMixin,
@@ -34,6 +42,7 @@ __all__ = [
     "EqualTo",
     "IndexKind",
     "KernelSearchResults",
+    "OptionsUpdateFunctionType",
     "SearchOptions",
     "TextSearch",
     "TextSearchFilter",
@@ -58,5 +67,7 @@ __all__ = [
     "VectorStoreRecordVectorField",
     "VectorizableTextSearchMixin",
     "VectorizedSearchMixin",
+    "create_options",
+    "default_options_update_function",
     "vectorstoremodel",
 ]
