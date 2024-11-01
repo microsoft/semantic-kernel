@@ -207,6 +207,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                 CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
+                CreateRestApiOperationSecurity(operationItem.Security),
                 CreateRestApiOperationSecuritySchemes(securitySchemes)
             )
             {
@@ -246,6 +247,33 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         }
 
         return new ReadOnlyDictionary<string, RestApiSecurityScheme>(result);
+    }
+
+    /// <summary>
+    /// Build a list of <see cref="RestApiSecurityRequirement"/> objects from the given <see cref="OpenApiSecurityRequirement"/> objects.
+    /// </summary>
+    /// <param name="security">The REST API operation security</param>
+    private static List<RestApiSecurityRequirement> CreateRestApiOperationSecurity(IList<OpenApiSecurityRequirement>? security)
+    {
+        var result = new List<RestApiSecurityRequirement>();
+
+        if (security is not null)
+        {
+            foreach (var item in security)
+            {
+                foreach (var keyValuePair in item)
+                {
+                    if (keyValuePair.Key is not OpenApiSecurityScheme openApiSecurityScheme)
+                    {
+                        throw new KernelException("The security scheme is not supported.");
+                    }
+
+                    result.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { new RestApiSecurityScheme(openApiSecurityScheme), keyValuePair.Value } }));
+                }
+            }
+        }
+
+        return result;
     }
 
     /// <summary>
