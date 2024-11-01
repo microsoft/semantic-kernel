@@ -39,6 +39,14 @@ async def test_get(mock_get):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("method", ["get", "post", "put", "delete"])
+async def test_fail_no_url(method):
+    plugin = HttpPlugin()
+    with pytest.raises(FunctionExecutionException):
+        await getattr(plugin, method)(url='')
+
+
+@pytest.mark.asyncio
 async def test_get_none_url():
     plugin = HttpPlugin()
     with pytest.raises(FunctionExecutionException):

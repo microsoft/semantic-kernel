@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-
+using System.Threading;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class with data related to prompt rendering.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class PromptRenderContext
 {
     private string? _renderedPrompt;
@@ -28,6 +27,18 @@ public sealed class PromptRenderContext
         this.Function = function;
         this.Arguments = arguments;
     }
+
+    /// <summary>
+    /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
+    /// The default is <see cref="CancellationToken.None"/>.
+    /// </summary>
+    public CancellationToken CancellationToken { get; init; }
+
+    /// <summary>
+    /// Boolean flag which indicates whether a filter is invoked within streaming or non-streaming mode.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public bool IsStreaming { get; init; }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.

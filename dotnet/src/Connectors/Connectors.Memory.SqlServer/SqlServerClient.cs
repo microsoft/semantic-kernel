@@ -21,34 +21,54 @@ internal sealed class SqlServerClient : ISqlServerClient
 {
     private readonly SqlConnection _connection;
     private readonly string _schema;
+    private readonly int _embeddingsDimensionsCount;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerClient"/> class.
     /// </summary>
     /// <param name="connection">Connection to use when working with database.</param>
     /// <param name="schema">Schema of collection tables.</param>
-    public SqlServerClient(SqlConnection connection, string schema)
+    /// <param name="embeddingsDimensionsCount">Number of dimensions that stored embeedings will use</param>
+    public SqlServerClient(SqlConnection connection, string schema, int embeddingsDimensionsCount)
     {
         this._connection = connection;
         this._schema = schema;
+        this._embeddingsDimensionsCount = embeddingsDimensionsCount;
+    }
+
+    private async Task CheckForRequiredNativeTypesAsync(CancellationToken cancellationToken = default)
+    {
+        using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
+        {
+            using var cmd = this._connection.CreateCommand();
+            cmd.CommandText = "select count(*) from sys.types where (system_type_id = 244 and user_type_id = 244) or (system_type_id = 165 and schema_id = 4 and [name] = 'vector')";
+            var typesCount = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            if (typesCount == null || typesCount.Equals(DBNull.Value) || Convert.ToInt32(typesCount) != 2)
+            {
+                throw new InvalidOperationException("The database does not have the required native types.");
+            }
+        }
     }
 
     /// <inheritdoc/>
     public async Task CreateTableAsync(string tableName, CancellationToken cancellationToken = default)
     {
+        await this.CheckForRequiredNativeTypesAsync(cancellationToken).ConfigureAwait(false);
+
         var fullTableName = this.GetSanitizedFullTableName(tableName);
+
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
             using var cmd = this._connection.CreateCommand();
             cmd.CommandText = $"""
                 IF OBJECT_ID(N'{fullTableName}', N'U') IS NULL
                 CREATE TABLE {fullTableName} (
-                    [key] nvarchar(255) collate latin1_general_bin2 not null,
-                    [metadata] nvarchar(max) not null,
-                    [embedding] varbinary(8000),
-                    [timestamp] datetimeoffset,
+                    [key] NVARCHAR(255) COLLATE Latin1_General_100_BIN2 NOT NULL,
+                    [metadata] JSON NOT NULL,
+                    [embedding] VECTOR({this._embeddingsDimensionsCount}),
+                    [timestamp] DATETIMEOFFSET,
                     PRIMARY KEY NONCLUSTERED ([key]),
-                    INDEX IXC CLUSTERED ([timestamp])
+                    INDEX IXC CLUSTERED ([timestamp] DESC)
                 )
                 """;
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
@@ -62,10 +82,10 @@ internal sealed class SqlServerClient : ISqlServerClient
         {
             using var cmd = this._connection.CreateCommand();
             cmd.CommandText = """
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_type = 'BASE TABLE'
-                    AND table_schema = @schema
+                SELECT TABLE_NAME
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE = 'BASE TABLE'
+                    AND TABLE_SCHEMA = @schema
                 """;
             cmd.Parameters.AddWithValue("@schema", this._schema);
             using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -83,11 +103,11 @@ internal sealed class SqlServerClient : ISqlServerClient
         {
             using var cmd = this._connection.CreateCommand();
             cmd.CommandText = """
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_type = 'BASE TABLE'
-                    AND table_schema = @schema
-                    AND table_name = @tableName
+                SELECT TABLE_NAME
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE = 'BASE TABLE'
+                    AND TABLE_SCHEMA = @schema
+                    AND TABLE_NAME = @tableName
                 """;
             cmd.Parameters.AddWithValue("@schema", this._schema);
             cmd.Parameters.AddWithValue("@tableName", tableName);
@@ -119,7 +139,7 @@ internal sealed class SqlServerClient : ISqlServerClient
             var fullTableName = this.GetSanitizedFullTableName(tableName);
             cmd.CommandText = $"""
                 MERGE INTO {fullTableName} AS t
-                USING (VALUES (@key, @metadata, JSON_ARRAY_TO_VECTOR(@embedding), @timestamp)) AS s ([key], [metadata], [embedding], [timestamp])
+                USING (VALUES (@key, @metadata, @embedding, @timestamp)) AS s ([key], [metadata], [embedding], [timestamp])
                 ON (t.[key] = s.[key])
                 WHEN MATCHED THEN
                     UPDATE SET t.[metadata] = s.[metadata], t.[embedding] = s.[embedding], t.[timestamp] = s.[timestamp]
@@ -138,9 +158,8 @@ internal sealed class SqlServerClient : ISqlServerClient
     /// <inheritdoc/>
     public async IAsyncEnumerable<SqlServerMemoryEntry> ReadBatchAsync(string tableName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var queryColumns = withEmbeddings
-            ? "[key], [metadata], [timestamp], VECTOR_TO_JSON_ARRAY([embedding]) AS [embedding]"
-            : "[key], [metadata], [timestamp]";
+        var queryColumns = "[key], [metadata], [timestamp]" + (withEmbeddings ? ", [embedding]" : string.Empty);
+
         var fullTableName = this.GetSanitizedFullTableName(tableName);
         var keysList = keys.ToList();
         var keysParams = string.Join(", ", keysList.Select((_, i) => $"@k{i}"));
@@ -189,9 +208,7 @@ internal sealed class SqlServerClient : ISqlServerClient
     /// <inheritdoc/>
     public async IAsyncEnumerable<(SqlServerMemoryEntry, double)> GetNearestMatchesAsync(string tableName, ReadOnlyMemory<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var queryColumns = withEmbeddings
-            ? "[key], [metadata], [timestamp], 1 - VECTOR_DISTANCE('cosine', [embedding], JSON_ARRAY_TO_VECTOR(@e)) AS [cosine_similarity], VECTOR_TO_JSON_ARRAY([embedding]) AS [embedding]"
-            : "[key], [metadata], [timestamp], 1 - VECTOR_DISTANCE('cosine', [embedding], JSON_ARRAY_TO_VECTOR(@e)) AS [cosine_similarity]";
+        var queryColumns = $"[key], [metadata], [timestamp], 1 - VECTOR_DISTANCE('cosine', [embedding], CAST(@e AS VECTOR({embedding.Length}))) AS [cosine_similarity]" + (withEmbeddings ? ", [embedding]" : string.Empty);
         var fullTableName = this.GetSanitizedFullTableName(tableName);
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -221,6 +238,7 @@ internal sealed class SqlServerClient : ISqlServerClient
     private string GetSanitizedFullTableName(string tableName) => $"{DelimitIdentifier(this._schema)}.{DelimitIdentifier(tableName)}";
 
     private string SerializeEmbedding(ReadOnlyMemory<float> embedding) => JsonSerializer.Serialize(embedding);
+
     private ReadOnlyMemory<float> DeserializeEmbedding(string embedding) => JsonSerializer.Deserialize<ReadOnlyMemory<float>>(embedding);
 
     private SqlServerMemoryEntry ReadEntry(SqlDataReader reader, bool hasEmbedding)
@@ -247,6 +265,7 @@ internal sealed class SqlServerClient : ISqlServerClient
     }
 
     private static string DelimitIdentifier(string identifier) => $"[{EscapeIdentifier(identifier)}]";
+
     private static string EscapeIdentifier(string identifier) => identifier.Replace("]", "]]");
 
     private readonly struct Closer(SqlServerClient client, bool shouldClose) : IDisposable

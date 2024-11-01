@@ -1,0 +1,13 @@
+{
+  "messages": [
+    {
+      "content": "The current time is Sun, 04 Jun 1989 12:11:13 GMT",
+      "role": "system"
+    },
+    {
+      "content": "Can you help me tell the time in Seattle right now?",
+      "role": "user"
+    }
+  ],
+  "model": "Dummy"
+}

@@ -4,17 +4,26 @@ from enum import Enum
 from typing import Any, Union, overload
 from xml.etree.ElementTree import Element  # nosec
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
-from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import ContentAdditionException
 
-ITEM_TYPES = Union[StreamingTextContent, FunctionCallContent, FunctionResultContent]
+ITEM_TYPES = Union[
+    ImageContent,
+    StreamingTextContent,
+    FunctionCallContent,
+    FunctionResultContent,
+    StreamingFileReferenceContent,
+    StreamingAnnotationContent,
+]
 
 
 class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
@@ -88,7 +97,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         Args:
             role: ChatRole - The role of the chat message.
             choice_index: int - The index of the choice that generated this response.
-            items: list[TextContent, FunctionCallContent, FunctionResultContent] - The content.
+            items: list[TextContent, FunctionCallContent, FunctionResultContent, ImageContent] - The content.
             content: str - The text of the response.
             inner_content: Optional[Any] - The inner content of the response,
                 this should hold all the information from the response so even
@@ -141,8 +150,13 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
     def __add__(self, other: "StreamingChatMessageContent") -> "StreamingChatMessageContent":
         """When combining two StreamingChatMessageContent instances, the content fields are combined.
 
-        The inner_content of the first one is used, ai_model_id and encoding should be the same,
-        if role is set, they should be the same.
+        The addition should follow these rules:
+            1. The inner_content of the two will be combined. If they are not lists, they will be converted to lists.
+            2. ai_model_id should be the same.
+            3. encoding should be the same.
+            4. role should be the same.
+            5. choice_index should be the same.
+            6. Metadata will be combined
         """
         if not isinstance(other, StreamingChatMessageContent):
             raise ContentAdditionException(
@@ -156,33 +170,14 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different encoding")
         if self.role and other.role and self.role != other.role:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
-        if self.items or other.items:
-            for other_item in other.items:
-                added = False
-                for id, item in enumerate(list(self.items)):
-                    if type(item) is type(other_item) and hasattr(item, "__add__"):
-                        try:
-                            new_item = item + other_item  # type: ignore
-                            self.items[id] = new_item
-                            added = True
-                        except ValueError:
-                            continue
-                if not added:
-                    self.items.append(other_item)
-        if not isinstance(self.inner_content, list):
-            self.inner_content = [self.inner_content]
-            if other.inner_content:
-                self.inner_content.append(other.inner_content)
-        else:
-            if other.inner_content:
-                self.inner_content.append(other.inner_content)
+
         return StreamingChatMessageContent(
             role=self.role,
-            items=self.items,  # type: ignore
+            items=self._merge_items_lists(other.items),
             choice_index=self.choice_index,
-            inner_content=self.inner_content,
+            inner_content=self._merge_inner_contents(other.inner_content),
             ai_model_id=self.ai_model_id,
-            metadata=self.metadata,
+            metadata=self.metadata | other.metadata,
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
         )
@@ -196,7 +191,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         Returns:
             Element - The XML Element representing the StreamingChatMessageContent.
         """
-        root = Element(CHAT_MESSAGE_CONTENT_TAG)
+        root = Element(self.tag)
         for field in self.model_fields_set:
             if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id", "choice_index"]:
                 continue
@@ -209,3 +204,15 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         for index, item in enumerate(self.items):
             root.insert(index, item.to_element())
         return root
+
+    def __hash__(self) -> int:
+        """Return the hash of the streaming chat message content."""
+        return hash((
+            self.tag,
+            self.role,
+            self.content,
+            self.encoding,
+            self.finish_reason,
+            self.choice_index,
+            *self.items,
+        ))

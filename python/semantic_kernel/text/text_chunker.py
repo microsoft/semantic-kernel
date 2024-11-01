@@ -12,7 +12,7 @@ from collections.abc import Callable
 
 NEWLINE = os.linesep
 
-TEXT_SPLIT_OPTIONS = [
+TEXT_SPLIT_OPTIONS: list[list[str] | None] = [
     ["\n", "\r"],
     ["."],
     ["?", "!"],
@@ -25,7 +25,7 @@ TEXT_SPLIT_OPTIONS = [
     None,
 ]
 
-MD_SPLIT_OPTIONS = [
+MD_SPLIT_OPTIONS: list[list[str] | None] = [
     ["."],
     ["?", "!"],
     [";"],
@@ -112,8 +112,8 @@ def _split_text_paragraph(text: list[str], max_tokens: int, token_counter: Calla
     if not text:
         return []
 
-    paragraphs = []
-    current_paragraph = []
+    paragraphs: list[str] = []
+    current_paragraph: list[str] = []
 
     for line in text:
         num_tokens_line = token_counter(line)
@@ -187,7 +187,7 @@ def _split_text_lines(
 def _split_str_lines(
     text: str,
     max_tokens: int,
-    separators: list[list[str]],
+    separators: list[list[str] | None],
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> list[str]:
@@ -196,7 +196,7 @@ def _split_str_lines(
         return []
 
     text = text.replace("\r\n", "\n")
-    lines = []
+    lines: list[str] = []
     was_split = False
     for split_option in separators:
         if not lines:
@@ -224,7 +224,7 @@ def _split_str_lines(
 def _split_str(
     text: str,
     max_tokens: int,
-    separators: list[str],
+    separators: list[str] | None,
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> tuple[list[str], bool]:
@@ -283,7 +283,7 @@ def _split_str(
 def _split_list(
     text: list[str],
     max_tokens: int,
-    separators: list[str],
+    separators: list[str] | None,
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> tuple[list[str], bool]:

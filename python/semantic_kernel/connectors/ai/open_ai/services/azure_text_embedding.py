@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from typing import Any
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -12,7 +13,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -72,12 +72,22 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         if not azure_openai_settings.embedding_deployment_name:
             raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
 
-        if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
-            raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
+        # If the api_key is none, and the ad_token is none, and the ad_token_provider is none,
+        # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI settings.
+        if (
+            azure_openai_settings.api_key is None
+            and ad_token_provider is None
+            and azure_openai_settings.token_endpoint
+            and ad_token is None
+            and async_client is None
+        ):
+            ad_token = azure_openai_settings.get_azure_openai_auth_token(
+                token_endpoint=azure_openai_settings.token_endpoint
+            )
 
-        if azure_openai_settings.endpoint and azure_openai_settings.embedding_deployment_name:
-            azure_openai_settings.base_url = HttpsUrl(
-                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.embedding_deployment_name}"
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider and not async_client:
+            raise ServiceInitializationError(
+                "Please provide either api_key, ad_token, ad_token_provider, or a custom client"
             )
 
         super().__init__(
@@ -91,11 +101,11 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.EMBEDDING,
-            async_client=async_client,
+            client=async_client,
         )
 
     @classmethod
-    def from_dict(cls, settings: dict[str, str]) -> "AzureTextEmbedding":
+    def from_dict(cls, settings: dict[str, Any]) -> "AzureTextEmbedding":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
         Args:

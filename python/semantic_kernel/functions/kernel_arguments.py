@@ -2,11 +2,15 @@
 
 from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
+
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 class KernelArguments(dict):
+    """The arguments sent to the KernelFunction."""
+
     def __init__(
         self,
         settings: (
@@ -35,7 +39,13 @@ class KernelArguments(dict):
             if isinstance(settings, dict):
                 settings_dict = settings
             elif isinstance(settings, list):
-                settings_dict = {s.service_id or "default": s for s in settings}
+                settings_dict = {s.service_id or DEFAULT_SERVICE_NAME: s for s in settings}
             else:
-                settings_dict = {settings.service_id or "default": settings}
+                settings_dict = {settings.service_id or DEFAULT_SERVICE_NAME: settings}
         self.execution_settings: dict[str, "PromptExecutionSettings"] | None = settings_dict
+
+    def __bool__(self) -> bool:
+        """Returns True if the arguments have any values."""
+        has_arguments = self.__len__() > 0
+        has_execution_settings = self.execution_settings is not None and len(self.execution_settings) > 0
+        return has_arguments or has_execution_settings

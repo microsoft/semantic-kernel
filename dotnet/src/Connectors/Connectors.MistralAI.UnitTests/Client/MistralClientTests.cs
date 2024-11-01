@@ -357,6 +357,49 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasValidStreamingFlagAsync(bool isStreaming)
+    {
+        // Arrange
+        bool? actualStreamingFlag = null;
+
+        var client = isStreaming ?
+            this.CreateMistralClientStreaming("mistral-tiny", "https://api.mistral.ai/v1/chat/completions", "chat_completions_streaming_function_call_response.txt") :
+            this.CreateMistralClient("mistral-large-latest", "https://api.mistral.ai/v1/chat/completions", "chat_completions_function_call_response.json", "chat_completions_function_called_response.json");
+
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+
+        var filter = new FakeAutoFunctionFilter(async (context, next) =>
+        {
+            actualStreamingFlag = context.IsStreaming;
+            await next(context);
+        });
+
+        kernel.AutoFunctionInvocationFilters.Add(filter);
+
+        // Act
+        var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+
+        if (isStreaming)
+        {
+            await client.GetStreamingChatMessageContentsAsync(chatHistory, default, executionSettings, kernel).ToListAsync();
+        }
+        else
+        {
+            await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+        }
+
+        // Assert
+        Assert.Equal(isStreaming, actualStreamingFlag);
+    }
+
     [Fact]
     public async Task ValidateGetChatMessageContentsWithAutoFunctionInvocationFilterTerminateAsync()
     {
@@ -566,7 +609,7 @@ public sealed class MistralClientTests : MistralTestBase
     private MistralClient CreateMistralClientStreaming(string modelId, string requestUri, params string[] responseData)
     {
         var responses = responseData.Select(this.GetTestResponseAsBytes).ToArray();
-        this.DelegatingHandler = new AssertingDelegatingHandler(requestUri, responses);
+        this.DelegatingHandler = new AssertingDelegatingHandler(requestUri, true, responses);
         this.HttpClient = new HttpClient(this.DelegatingHandler, false);
         var client = new MistralClient(modelId, this.HttpClient, "key");
         return client;

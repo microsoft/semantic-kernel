@@ -2,7 +2,7 @@
 
 import asyncio
 
-from samples.learn_resources.sk_service_configurator import add_service
+from samples.sk_service_configurator import add_service
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import ConversationSummaryPlugin

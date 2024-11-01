@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -1021,5 +1022,65 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("FunctionFilter2-Invoked", executionOrder[3]);
         Assert.Equal("FunctionFilter3-Invoked", executionOrder[4]);
         Assert.Equal("FunctionFilter1-Invoked", executionOrder[5]);
+    }
+
+    [Fact]
+    public async Task FilterContextHasCancellationTokenAsync()
+    {
+        // Arrange
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var function = KernelFunctionFactory.CreateFromMethod(() =>
+        {
+            cancellationTokenSource.Cancel();
+            return "Result";
+        });
+
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
+        {
+            Assert.Equal(cancellationTokenSource.Token, context.CancellationToken);
+            Assert.False(context.CancellationToken.IsCancellationRequested);
+
+            await next(context);
+
+            Assert.True(context.CancellationToken.IsCancellationRequested);
+            context.CancellationToken.ThrowIfCancellationRequested();
+        });
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(()
+            => kernel.InvokeAsync(function, cancellationToken: cancellationTokenSource.Token));
+
+        Assert.NotNull(exception.FunctionResult);
+        Assert.Equal("Result", exception.FunctionResult.ToString());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasValidStreamingFlagAsync(bool isStreaming)
+    {
+        // Arrange
+        bool? actualStreamingFlag = null;
+
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
+
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
+        {
+            actualStreamingFlag = context.IsStreaming;
+            await next(context);
+        });
+
+        // Act
+        if (isStreaming)
+        {
+            await kernel.InvokeStreamingAsync(function).ToListAsync();
+        }
+        else
+        {
+            await kernel.InvokeAsync(function);
+        }
+
+        // Assert
+        Assert.Equal(isStreaming, actualStreamingFlag);
     }
 }

@@ -14,6 +14,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class SemanticTextMemory(SemanticTextMemoryBase):
+    """Class for semantic text memory."""
+
     _storage: MemoryStoreBase = PrivateAttr()
     _embeddings_generator: EmbeddingGeneratorBase = PrivateAttr()
 

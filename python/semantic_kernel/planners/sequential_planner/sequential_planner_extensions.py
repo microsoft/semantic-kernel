@@ -12,6 +12,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class SequentialPlannerFunctionExtension:
+    """Function extension for the sequential planner."""
+
     @staticmethod
     def to_manual_string(function: KernelFunctionMetadata):
         """Convert the function to a manual string."""
@@ -31,6 +33,8 @@ class SequentialPlannerFunctionExtension:
 
 
 class SequentialPlannerKernelExtension:
+    """Kernel extension for the sequential planner."""
+
     PLANNER_MEMORY_COLLECTION_NAME = " Planning.KernelFunctionManual"
     PLAN_KERNEL_FUNCTIONS_ARE_REMEMBERED = "Planning.KernelFunctionsAreRemembered"
 

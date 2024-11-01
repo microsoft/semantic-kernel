@@ -1,6 +1,6 @@
 ﻿# Semantic Kernel Telemetry with AppInsights
 
-This example project shows how an application can be configured to send Semantic Kernel telemetry to Application Insights.
+This sample project shows how a .Net application can be configured to send Semantic Kernel telemetry to Application Insights.
 
 > Note that it is also possible to use other Application Performance Management (APM) vendors. An example is [Prometheus](https://prometheus.io/docs/introduction/overview/). Please refer to this [link](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/metrics-collection#configure-the-example-app-to-use-opentelemetrys-prometheus-exporter) on how to do it.
 
@@ -16,7 +16,7 @@ For more information, please refer to the following articles:
 
 ## What to expect
 
-The Semantic Kernel SDK is designed to efficiently generate comprehensive logs, traces, and metrics throughout the flow of function execution and model invocation. This allows you to effectively monitor your AI application's performance and accurately track token consumption.
+The Semantic Kernel .Net SDK is designed to efficiently generate comprehensive logs, traces, and metrics throughout the flow of function execution and model invocation. This allows you to effectively monitor your AI application's performance and accurately track token consumption.
 
 > `ActivitySource.StartActivity` internally determines if there are any listeners recording the Activity. If there are no registered listeners or there are listeners that are not interested, StartActivity() will return null and avoid creating the Activity object. Read more [here](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing-instrumentation-walkthroughs).
 
@@ -74,7 +74,7 @@ dotnet user-secrets set "MistralAI:ApiKey" "..."
 dotnet user-secrets set "ApplicationInsights:ConnectionString" "..."
 ```
 
-## Running the example
+## Running the sample
 
 Simply run `dotnet run` under this directory if the command line interface is preferred. Otherwise, this example can also be run in Visual Studio.
 

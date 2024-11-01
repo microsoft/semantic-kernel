@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -263,5 +264,61 @@ public class PromptRenderFilterTests : FilterBaseTest
         mockTextGeneration.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
 
         Assert.Equal("Result from prompt filter", result.ToString());
+    }
+
+    [Fact]
+    public async Task FilterContextHasCancellationTokenAsync()
+    {
+        // Arrange
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var mockTextGeneration = this.GetMockTextGeneration();
+        var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
+
+        var kernel = this.GetKernelWithFilters(onPromptRender: async (context, next) =>
+        {
+            Assert.Equal(cancellationTokenSource.Token, context.CancellationToken);
+            Assert.True(context.CancellationToken.IsCancellationRequested);
+
+            context.CancellationToken.ThrowIfCancellationRequested();
+
+            await next(context);
+        });
+
+        // Act & Assert
+        cancellationTokenSource.Cancel();
+
+        await Assert.ThrowsAsync<KernelFunctionCanceledException>(()
+            => kernel.InvokeAsync(function, cancellationToken: cancellationTokenSource.Token));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasValidStreamingFlagAsync(bool isStreaming)
+    {
+        // Arrange
+        bool? actualStreamingFlag = null;
+
+        var mockTextGeneration = this.GetMockTextGeneration();
+
+        var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
+            onPromptRender: async (context, next) =>
+            {
+                actualStreamingFlag = context.IsStreaming;
+                await next(context);
+            });
+
+        // Act
+        if (isStreaming)
+        {
+            await kernel.InvokePromptStreamingAsync("Prompt").ToListAsync();
+        }
+        else
+        {
+            await kernel.InvokePromptAsync("Prompt");
+        }
+
+        // Assert
+        Assert.Equal(isStreaming, actualStreamingFlag);
     }
 }

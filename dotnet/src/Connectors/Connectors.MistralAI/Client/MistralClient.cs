@@ -52,12 +52,13 @@ internal sealed class MistralClient
 
         string modelId = executionSettings?.ModelId ?? this._modelId;
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        var chatRequest = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings, kernel);
         var endpoint = this.GetEndpoint(mistralExecutionSettings, path: "chat/completions");
         var autoInvoke = kernel is not null && mistralExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
 
         for (int requestIndex = 1; ; requestIndex++)
         {
+            var chatRequest = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings, kernel);
+
             ChatCompletionResponse? responseData = null;
             List<ChatMessageContent> responseContent;
             using (var activity = ModelDiagnostics.StartCompletionActivity(this._endpoint, this._modelId, ModelProvider, chatHistory, mistralExecutionSettings))
@@ -133,12 +134,10 @@ internal sealed class MistralClient
 
             Debug.Assert(kernel is not null);
 
-            // Add the original assistant message to the chatRequest; this is required for the service
-            // to understand the tool call responses. Also add the result message to the caller's chat
-            // history: if they don't want it, they can remove it, but this makes the data available,
-            // including metadata like usage.
-            chatRequest.AddMessage(chatChoice.Message!);
-            chatHistory.Add(this.ToChatMessageContent(modelId, responseData, chatChoice));
+            // Add the result message to the caller's chat history;
+            // this is required for the service to understand the tool call responses.
+            var chatMessageContent = this.ToChatMessageContent(modelId, responseData, chatChoice);
+            chatHistory.Add(chatMessageContent);
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
             // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
@@ -149,7 +148,7 @@ internal sealed class MistralClient
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (toolCall.Function is null)
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null, "Error: Tool call was not a function call.");
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Tool call was not a function call.");
                     continue;
                 }
 
@@ -159,25 +158,28 @@ internal sealed class MistralClient
                 if (mistralExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatRequest, toolCall.Function!))
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null, "Error: Function call chatRequest for a function that wasn't defined.");
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Function call chatRequest for a function that wasn't defined.");
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(toolCall.Function, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null, "Error: Requested function could not be found.");
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Requested function could not be found.");
                     continue;
                 }
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory, chatMessageContent)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = chatChoice.ToolCalls.Count
+                    FunctionCount = chatChoice.ToolCalls.Count,
+                    CancellationToken = cancellationToken,
+                    IsStreaming = false
                 };
                 s_inflightAutoInvokes.Value++;
                 try
@@ -200,7 +202,7 @@ internal sealed class MistralClient
                 catch (Exception e)
 #pragma warning restore CA1031
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null, $"Error: Exception while invoking function. {e.Message}");
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, $"Error: Exception while invoking function. {e.Message}");
                     continue;
                 }
                 finally
@@ -214,7 +216,7 @@ internal sealed class MistralClient
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, mistralExecutionSettings.ToolCallBehavior);
 
-                this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: stringResult, errorMessage: null);
+                this.AddResponseMessage(chatHistory, toolCall, result: stringResult, errorMessage: null);
 
                 // If filter requested termination, returning latest function result.
                 if (invocationContext.Terminate)
@@ -268,12 +270,13 @@ internal sealed class MistralClient
 
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         string modelId = mistralExecutionSettings.ModelId ?? this._modelId;
-        var chatRequest = this.CreateChatCompletionRequest(modelId, stream: true, chatHistory, mistralExecutionSettings, kernel);
         var autoInvoke = kernel is not null && mistralExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
 
         List<MistralToolCall>? toolCalls = null;
         for (int requestIndex = 1; ; requestIndex++)
         {
+            var chatRequest = this.CreateChatCompletionRequest(modelId, stream: true, chatHistory, mistralExecutionSettings, kernel);
+
             // Reset state
             toolCalls?.Clear();
 
@@ -329,11 +332,7 @@ internal sealed class MistralClient
                                 // Create a copy of the tool calls to avoid modifying the original list
                                 toolCalls = new List<MistralToolCall>(chatChoice.ToolCalls!);
 
-                                // Add the original assistant message to the chatRequest; this is required for the service
-                                // to understand the tool call responses. Also add the result message to the caller's chat
-                                // history: if they don't want it, they can remove it, but this makes the data available,
-                                // including metadata like usage.
-                                chatRequest.AddMessage(new MistralChatMessage(streamedRole, completionChunk.GetContent(0)) { ToolCalls = chatChoice.ToolCalls });
+                                // Add the result message to the caller's chat history; this is required for the service to understand the tool call responses.
                                 chatHistory.Add(this.ToChatMessageContent(modelId, streamedRole!, completionChunk, chatChoice));
                             }
                         }
@@ -380,7 +379,7 @@ internal sealed class MistralClient
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (toolCall.Function is null)
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null, "Error: Tool call was not a function call.");
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Tool call was not a function call.");
                     continue;
                 }
 
@@ -390,25 +389,28 @@ internal sealed class MistralClient
                 if (mistralExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatRequest, toolCall.Function!))
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null, "Error: Function call chatRequest for a function that wasn't defined.");
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Function call chatRequest for a function that wasn't defined.");
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(toolCall.Function, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null, "Error: Requested function could not be found.");
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Requested function could not be found.");
                     continue;
                 }
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory, chatHistory.Last())
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
                     FunctionCount = toolCalls.Count,
+                    CancellationToken = cancellationToken,
+                    IsStreaming = true
                 };
                 s_inflightAutoInvokes.Value++;
                 try
@@ -431,7 +433,7 @@ internal sealed class MistralClient
                 catch (Exception e)
 #pragma warning restore CA1031
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null, $"Error: Exception while invoking function. {e.Message}");
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, $"Error: Exception while invoking function. {e.Message}");
                     continue;
                 }
                 finally
@@ -445,7 +447,7 @@ internal sealed class MistralClient
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, mistralExecutionSettings.ToolCallBehavior);
 
-                this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: stringResult, errorMessage: null);
+                this.AddResponseMessage(chatHistory, toolCall, result: stringResult, errorMessage: null);
 
                 // If filter requested termination, returning latest function result and breaking request iteration loop.
                 if (invocationContext.Terminate)
@@ -918,7 +920,7 @@ internal sealed class MistralClient
         message.Items.Add(functionCallContent);
     }
 
-    private void AddResponseMessage(ChatCompletionRequest chatRequest, ChatHistory chat, MistralToolCall toolCall, string? result, string? errorMessage)
+    private void AddResponseMessage(ChatHistory chat, MistralToolCall toolCall, string? result, string? errorMessage)
     {
         // Log any error
         if (errorMessage is not null && this._logger.IsEnabled(LogLevel.Debug))
@@ -927,9 +929,7 @@ internal sealed class MistralClient
             this._logger.LogDebug("Failed to handle tool request ({ToolId}). {Error}", toolCall.Function?.Name, errorMessage);
         }
 
-        // Add the tool response message to both the chat options
         result ??= errorMessage ?? string.Empty;
-        chatRequest.AddMessage(new MistralChatMessage(AuthorRole.Tool.ToString(), result));
 
         // Add the tool response message to the chat history
         var message = new ChatMessageContent(AuthorRole.Tool, result, metadata: new Dictionary<string, object?> { { nameof(MistralToolCall.Function), toolCall.Function } });

@@ -56,7 +56,7 @@ public class Planner(ITestOutputHelper output) : LearnBaseTest(output)
             // Enable auto function calling
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
             {
-                ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
             };
 
             // Get the response from the AI

@@ -7,12 +7,6 @@ namespace Plugins;
 
 public sealed class LegacyMenuPlugin
 {
-    public const string CorrelationIdArgument = "correlationId";
-
-    private readonly List<string> _correlationIds = [];
-
-    public IReadOnlyList<string> CorrelationIds => this._correlationIds;
-
     /// <summary>
     /// Returns a mock item menu.
     /// </summary>
@@ -20,8 +14,6 @@ public sealed class LegacyMenuPlugin
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
     public string[] GetSpecials(KernelArguments? arguments)
     {
-        CaptureCorrelationId(arguments, nameof(GetSpecials));
-
         return
             [
                 "Special Soup: Clam Chowder",
@@ -39,8 +31,6 @@ public sealed class LegacyMenuPlugin
         string menuItem,
             KernelArguments? arguments)
     {
-        CaptureCorrelationId(arguments, nameof(GetItemPrice));
-
         return "$9.99";
     }
 
@@ -55,21 +45,6 @@ public sealed class LegacyMenuPlugin
         int count,
             KernelArguments? arguments)
     {
-        CaptureCorrelationId(arguments, nameof(IsItem86d));
-
         return count < 3;
-    }
-
-    private void CaptureCorrelationId(KernelArguments? arguments, string scope)
-    {
-        if (arguments?.TryGetValue(CorrelationIdArgument, out object? correlationId) ?? false)
-        {
-            string? correlationText = correlationId?.ToString();
-
-            if (!string.IsNullOrWhiteSpace(correlationText))
-            {
-                this._correlationIds.Add($"{scope}:{correlationText}");
-            }
-        }
     }
 }

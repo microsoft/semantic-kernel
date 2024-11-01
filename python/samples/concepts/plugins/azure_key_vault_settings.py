@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import ClassVar
+
 from pydantic import SecretStr
 
-from semantic_kernel.connectors.memory.memory_settings_base import BaseModelSettings
-from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
 
 
-class AzureKeyVaultSettings(BaseModelSettings):
+class AzureKeyVaultSettings(KernelBaseSettings):
     """Azure Key Vault model settings
 
     Optional:
@@ -18,9 +19,8 @@ class AzureKeyVaultSettings(BaseModelSettings):
         (Env var AZURE_KEY_VAULT_CLIENT_SECRET)
     """
 
+    env_prefix: ClassVar[str] = "AZURE_KEY_VAULT_"
+
     endpoint: HttpsUrl
     client_id: str
     client_secret: SecretStr
-
-    class Config(BaseModelSettings.Config):
-        env_prefix = "AZURE_KEY_VAULT_"

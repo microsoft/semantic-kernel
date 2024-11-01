@@ -10,7 +10,7 @@ namespace Agents;
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
-public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -33,7 +33,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgentAsync()
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
@@ -46,18 +46,18 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
 
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                definition: new()
+                clientProvider: this.GetClientProvider(),
+                definition: new OpenAIAssistantDefinition(this.Model)
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
-                    ModelId = this.Model,
-                });
+                    Metadata = AssistantSampleMetadata,
+                },
+                kernel: new Kernel());
 
-        // Create a nexus for agent interaction.
-        var chat =
-            new AgentGroupChat(agentWriter, agentReviewer)
+        // Create a chat for agent interaction.
+        AgentGroupChat chat =
+            new(agentWriter, agentReviewer)
             {
                 ExecutionSettings =
                     new()
@@ -76,16 +76,16 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
             };
 
         // Invoke chat and display messages.
-        string input = "concept: maps made out of egg cartons.";
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
-        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+        ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
+        chat.AddChatMessage(input);
+        this.WriteAgentChatMessage(input);
 
-        await foreach (var content in chat.InvokeAsync())
+        await foreach (ChatMessageContent response in chat.InvokeAsync())
         {
-            Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteAgentChatMessage(response);
         }
 
-        Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
+        Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy

@@ -60,6 +60,17 @@ public class OpenApiFunctionExecutionParameters
     public IList<string> OperationsToExclude { get; set; }
 
     /// <summary>
+    /// A custom HTTP response content reader. It can be useful when the internal reader
+    /// for a specific content type is either missing, insufficient, or when custom behavior is desired.
+    /// For instance, the internal reader for "application/json" HTTP content reads the content as a string.
+    /// This may not be sufficient in cases where the JSON content is large, streamed chunk by chunk, and needs to be accessed
+    /// as soon as the first chunk is available. To handle such cases, a custom reader can be provided to read the content
+    /// as a stream rather than as a string.
+    /// If the custom reader is not provided, or the reader returns null, the internal reader is used.
+    /// </summary>
+    public HttpResponseContentReader? HttpResponseContentReader { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiFunctionExecutionParameters"/> class.
     /// </summary>
     /// <param name="httpClient">The HttpClient to use for sending HTTP requests.</param>

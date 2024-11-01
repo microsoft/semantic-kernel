@@ -7,6 +7,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class NullMemory(SemanticTextMemoryBase):
+    """Class for null memory."""
+
     async def save_information(
         self,
         collection: str,

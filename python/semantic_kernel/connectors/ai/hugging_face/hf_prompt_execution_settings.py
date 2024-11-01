@@ -8,6 +8,8 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 
 
 class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
+    """Hugging Face prompt execution settings."""
+
     do_sample: bool = True
     max_new_tokens: int = 256
     num_return_sequences: int = 1

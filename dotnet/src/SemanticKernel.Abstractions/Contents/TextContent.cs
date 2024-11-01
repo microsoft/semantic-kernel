@@ -57,4 +57,13 @@ public sealed class TextContent : KernelContent
     {
         return this.Text ?? string.Empty;
     }
+
+    /// <summary>
+    /// When converting a string to a <see cref="TextContent"/>, the content is automatically set to the string value.
+    /// </summary>
+    /// <param name="text">Text content</param>
+    public static implicit operator TextContent(string text)
+    {
+        return new TextContent(text);
+    }
 }

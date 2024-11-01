@@ -1,0 +1,40 @@
+classDiagram
+
+    OpenAIClientFactory ..> OpenAIServiceConfiguration
+    class OpenAIClientFactory {
+        <<internal>>
+    }
+
+    OpenAIServiceConfiguration --> OpenAIServiceType
+    class OpenAIServiceConfiguration {
+        OpenAIServiceConfiguration ForAzureOpenAI(string? apiKey, Uri? endpoint, HttpClient httpClient)$
+        OpenAIServiceConfiguration ForAzureOpenAI(TokenCredential credential, Uri? endpoint, HttpClient httpClient)$
+        OpenAIServiceConfiguration OpenAI(string? apiKey, Uri? endpoint, HttpClient httpClient)$
+        -string? ApiKey
+        -TokenCredential? TokenCredential
+        -Uri? Endpoint
+        -HttpClient? HttpClient
+        -OpenAIServiceType ServiceType
+    }
+
+    OpenAIServiceConfigurationExtensions ..> OpenAIServiceConfiguration
+    OpenAIServiceConfigurationExtensions ..> FileClient
+    OpenAIServiceConfigurationExtensions ..> VectorStoreClient
+    class OpenAIServiceConfigurationExtensions {
+        +FileClient CreateFileClient(this OpenAIServiceConfiguration config)$
+        +VectorStoreClient CreateVectorStoreClient(this OpenAIServiceConfiguration config)$
+    }
+
+    class OpenAIServiceType {
+        <<enumeration>>
+        AzureOpenAI
+        OpenAI
+    }
+
+    class FileClient {
+        <<OpenAI>>
+    }
+
+    class VectorStoreClient {
+        <<OpenAI>>
+    }	

@@ -19,6 +19,8 @@ DEFAULT_LIMIT: Final[int] = 1
 
 
 class TextMemoryPlugin(KernelBaseModel):
+    """A plugin to interact with a Semantic Text Memory."""
+
     memory: SemanticTextMemoryBase
     embeddings_kwargs: dict[str, Any] = Field(default_factory=dict)
 
@@ -68,7 +70,7 @@ class TextMemoryPlugin(KernelBaseModel):
             logger.warning(f"Memory not found in collection: {collection}")
             return ""
 
-        return results[0].text if limit == 1 else json.dumps([r.text for r in results])
+        return results[0].text if limit == 1 else json.dumps([r.text for r in results])  # type: ignore
 
     @kernel_function(
         description="Save information to semantic memory",

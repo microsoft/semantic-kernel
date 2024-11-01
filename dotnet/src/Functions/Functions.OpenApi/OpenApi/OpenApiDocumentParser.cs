@@ -28,7 +28,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null) : IOpenApiDocumentParser
 {
     /// <inheritdoc/>
-    public async Task<IList<RestApiOperation>> ParseAsync(
+    public async Task<RestApiSpecification> ParseAsync(
         Stream stream,
         bool ignoreNonCompliantErrors = false,
         IList<string>? operationsToExclude = null,
@@ -42,7 +42,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger);
+        return new(ExtractRestApiInfo(result.OpenApiDocument), ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
     }
 
     #region private
@@ -133,6 +133,21 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     }
 
     /// <summary>
+    /// Parses an OpenAPI document and extracts REST API information.
+    /// </summary>
+    /// <param name="document">The OpenAPI document.</param>
+    /// <returns>Rest API information.</returns>
+    private static RestApiInfo ExtractRestApiInfo(OpenApiDocument document)
+    {
+        return new()
+        {
+            Title = document.Info.Title,
+            Description = document.Info.Description,
+            Version = document.Info.Version,
+        };
+    }
+
+    /// <summary>
     /// Parses an OpenAPI document and extracts REST API operations.
     /// </summary>
     /// <param name="document">The OpenAPI document.</param>
@@ -143,11 +158,11 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     {
         var result = new List<RestApiOperation>();
 
-        var serverUrl = document.Servers.FirstOrDefault()?.Url;
+        var server = document.Servers.FirstOrDefault();
 
         foreach (var pathPair in document.Paths)
         {
-            var operations = CreateRestApiOperations(serverUrl, pathPair.Key, pathPair.Value, operationsToExclude, logger);
+            var operations = CreateRestApiOperations(server, pathPair.Key, pathPair.Value, operationsToExclude, logger);
 
             result.AddRange(operations);
         }
@@ -158,15 +173,16 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <summary>
     /// Creates REST API operation.
     /// </summary>
-    /// <param name="serverUrl">The server url.</param>
+    /// <param name="server">Rest server.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <param name="logger">Used to perform logging.</param>
     /// <returns>Rest operation.</returns>
-    internal static List<RestApiOperation> CreateRestApiOperations(string? serverUrl, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
+    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiServer? server, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
     {
         var operations = new List<RestApiOperation>();
+        var operationServer = CreateRestApiOperationServer(server);
 
         foreach (var operationPair in pathItem.Operations)
         {
@@ -181,7 +197,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
             var operation = new RestApiOperation(
                 operationItem.OperationId,
-                string.IsNullOrEmpty(serverUrl) ? null : new Uri(serverUrl),
+                operationServer,
                 path,
                 new HttpMethod(method),
                 string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
@@ -197,6 +213,16 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         }
 
         return operations;
+    }
+
+    /// <summary>
+    /// Build a <see cref="RestApiOperationServer"/> object from the given <see cref="OpenApiServer"/> object.
+    /// </summary>
+    /// <param name="server">Represents the server which hosts the REST API.</param>
+    private static RestApiOperationServer CreateRestApiOperationServer(OpenApiServer? server)
+    {
+        var variables = server?.Variables.ToDictionary(item => item.Key, item => new RestApiOperationServerVariable(item.Value.Default, item.Value.Description, item.Value.Enum));
+        return new(server?.Url, variables);
     }
 
     /// <summary>
@@ -276,6 +302,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Schema.Default, "parameter", parameter.Name),
                 parameter.Description,
+                parameter.Schema.Format,
                 parameter.Schema.ToJsonSchema()
             );
 
@@ -301,7 +328,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         var mediaType = s_supportedMediaTypes.FirstOrDefault(requestBody.Content.ContainsKey) ?? throw new KernelException($"Neither of the media types of {operationId} is supported.");
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
-        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
+        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema);
 
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonSchema());
     }
@@ -326,11 +353,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="schema">An OpenAPI document schema representing request body properties.</param>
-    /// <param name="requiredProperties">List of required properties.</param>
     /// <param name="level">Current level in OpenAPI schema.</param>
     /// <returns>The REST API operation payload properties.</returns>
-    private static List<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
-        int level = 0)
+    private static List<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, int level = 0)
     {
         if (schema is null)
         {
@@ -353,9 +378,10 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
             var property = new RestApiOperationPayloadProperty(
                 propertyName,
                 propertySchema.Type,
-                requiredProperties.Contains(propertyName),
-                GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
+                schema.Required.Contains(propertyName),
+                GetPayloadProperties(operationId, propertySchema, level + 1),
                 propertySchema.Description,
+                propertySchema.Format,
                 propertySchema.ToJsonSchema(),
                 GetParameterValue(propertySchema.Default, "payload property", propertyName));
 
