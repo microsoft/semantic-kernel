@@ -21,8 +21,14 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         experimental: [false]
         include:
-          - python-version: "3.13.0-beta.4"
+          - python-version: "3.13"
             os: "ubuntu-latest"
+            experimental: true
+          - python-version: "3.13"
+            os: "windows-latest"
+            experimental: true
+          - python-version: "3.13"
+            os: "macos-latest"
             experimental: true
     permissions:
       contents: write
