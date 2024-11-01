@@ -36,5 +36,5 @@ public record ProcessMessage(
     /// The data associated with the target event. This may be null if the message is not targeting a sub-process.
     /// </summary>
     [DataMember]
-    public object? TargetEventData { get; init; }
+    public object? TargetEventData { get; init; } // %%% DATA CONTRACT DESERIALIZATION WILL FAIL
 }

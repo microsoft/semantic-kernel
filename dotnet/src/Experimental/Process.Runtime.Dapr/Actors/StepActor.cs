@@ -192,16 +192,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="processEvent">The event to emit.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(processEvent, isError: false);
-
-    /// <summary>
-    /// Emits an event from the step.
-    /// </summary>
-    /// <param name="processEvent">The event to emit.</param>
-    /// <param name="isError">Flag indicating if the event being emitted is in response to a step failure</param>
-    /// <returns>A <see cref="ValueTask"/></returns>
-    internal ValueTask EmitEventAsync(KernelProcessEvent processEvent, bool isError) =>
-        this.EmitEventAsync(new ProcessEvent(this._eventNamespace, processEvent, isError));
+    public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(processEvent.ToProcessEvent(this._eventNamespace!, this._logger));
 
     /// <summary>
     /// Handles a <see cref="ProcessMessage"/> that has been sent to the step.
@@ -279,23 +270,19 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
-            await this.EmitEventAsync(
-                new KernelProcessEvent
-                {
-                    Id = $"{targetFunction}.OnResult",
-                    Data = invokeResult.GetValue<object>(),
-                }).ConfigureAwait(false);
+            ProcessEvent processEvent = EventFactory.CreateProcessEvent(this._eventNamespace!, $"{targetFunction}.OnResult", invokeResult.GetValue<object>(), logger: this._logger);
+            await this.EmitEventAsync(processEvent).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            this._logger?.LogInformation("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            await this.EmitEventAsync(
-                new KernelProcessEvent
+            this._logger?.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
+            KernelProcessEvent<KernelProcessError> errorEvent =
+                new()
                 {
                     Id = $"{targetFunction}.OnError",
                     Data = KernelProcessError.FromException(ex),
-                },
-                isError: true).ConfigureAwait(false);
+                };
+            await this.EmitEventAsync(errorEvent.ToProcessEvent(this._eventNamespace!, isError: true)).ConfigureAwait(false);
         }
         finally
         {
@@ -400,9 +387,9 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         // Get the edges for the event and queue up the messages to be sent to the next steps.
         bool foundEdge = false;
-        foreach (var edge in this.GetEdgeForEvent(daprEvent.Id))
+        foreach (var edge in this.GetEdgeForEvent(daprEvent.QualifiedId))
         {
-            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
+            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.GetData());
             var scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
             var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message).ConfigureAwait(false);
@@ -415,17 +402,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             var parentProcess1 = this.ProxyFactory.CreateActorProxy<IEventBuffer>(ProcessActor.GetScopedGlobalErrorEventBufferId(this.ParentProcessId), nameof(EventBufferActor));
             await parentProcess1.EnqueueAsync(daprEvent).ConfigureAwait(false);
         }
-    }
-
-    /// <summary>
-    /// Generates a scoped event for the step.
-    /// </summary>
-    /// <param name="daprEvent">The event.</param>
-    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
-    private ProcessEvent ScopedEvent(ProcessEvent daprEvent)
-    {
-        Verify.NotNull(daprEvent, nameof(daprEvent));
-        return daprEvent with { Namespace = $"{this.Name}_{this.Id}" };
     }
 
     /// <summary>

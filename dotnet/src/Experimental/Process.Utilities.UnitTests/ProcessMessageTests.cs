@@ -46,7 +46,7 @@ public class ProcessMessageTests
         // Act
         using MemoryStream stream = new();
         source.Serialize(stream);
-        ProcessMessage? copy1 = stream.Deserialize<ProcessMessage>();
+        ProcessMessage? copy1 = stream.Deserialize<ProcessMessage>(source.GetType());
 
         // Assert
         Assert.NotNull(copy1);

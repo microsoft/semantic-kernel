@@ -198,7 +198,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             {
                 // Create the external event that will be used to start the nested process. Since this event came
                 // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
-                var nestedEvent = new KernelProcessEvent() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
+                KernelProcessEvent nestedEvent = EventFactory.CreateKernelProcessEvent(eventId, message.TargetEventData, this._logger);
 
                 // Run the nested process completely within a single superstep.
                 await this.RunOnceAsync(nestedEvent).ConfigureAwait(false);
@@ -340,13 +340,13 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         var externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
         var externalEvents = await externalEventQueue.DequeueAllAsync().ConfigureAwait(false);
 
-        foreach (var externalEvent in externalEvents)
+        foreach (KernelProcessEvent externalEvent in externalEvents)
         {
             if (this._outputEdges!.TryGetValue(externalEvent.Id!, out List<KernelProcessEdge>? edges) && edges is not null)
             {
-                foreach (var edge in edges)
+                foreach (KernelProcessEdge edge in edges)
                 {
-                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.GetData());
                     var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
                     var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
                     await messageQueue.EnqueueAsync(message).ConfigureAwait(false);
@@ -381,7 +381,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         {
             foreach (ProcessEvent errorEvent in errorEvents)
             {
-                var errorMessage = ProcessMessageFactory.CreateFromEdge(errorEdge, errorEvent.Data);
+                var errorMessage = ProcessMessageFactory.CreateFromEdge(errorEdge, errorEvent.GetData());
                 var scopedErrorMessageBufferId = this.ScopedActorId(new ActorId(errorEdge.OutputTarget.StepId));
                 var errorStepQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedErrorMessageBufferId, nameof(MessageBufferActor));
                 await errorStepQueue.EnqueueAsync(errorMessage).ConfigureAwait(false);
@@ -402,14 +402,14 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             var eventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.Id.GetId()), nameof(EventBufferActor));
             var allEvents = await eventQueue.DequeueAllAsync().ConfigureAwait(false);
 
-            foreach (var e in allEvents)
+            foreach (ProcessEvent processEvent in allEvents)
             {
-                var scopedEvent = this.ScopedEvent(e);
-                if (this._outputEdges!.TryGetValue(scopedEvent.Id, out List<KernelProcessEdge>? edges) && edges is not null)
+                ProcessEvent scopedEvent = this.ScopedEvent(processEvent); // %%% NEEDED ???
+                if (this._outputEdges!.TryGetValue(scopedEvent.QualifiedId, out List<KernelProcessEdge>? edges) && edges is not null)
                 {
                     foreach (var edge in edges)
                     {
-                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, e.Data);
+                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, scopedEvent.GetData());
                         var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId), scopeToParent: true);
                         var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
                         await messageQueue.EnqueueAsync(message).ConfigureAwait(false);

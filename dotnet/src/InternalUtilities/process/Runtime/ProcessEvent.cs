@@ -7,27 +7,55 @@ namespace Microsoft.SemanticKernel.Process.Runtime;
 /// A wrapper around <see cref="KernelProcessEvent"/> that helps to manage the namespace of the event.
 /// </summary>
 /// <param name="Namespace">The namespace of the event.</param>
-/// <param name="InnerEvent">The instance of <see cref="KernelProcessEvent"/> that this <see cref="ProcessEvent"/> came from.</param>
-/// <param name="IsError">This event represents a runtime error / exception raised internally by the framework.</param>
+/// <param name="SourceId">The source Id of the event.</param>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ProcessEvent"/> class.
+/// </remarks>
 [DataContract]
 [KnownType(typeof(KernelProcessError))]
 public record ProcessEvent(
-    [property: DataMember] string? Namespace,
-    [property: DataMember] KernelProcessEvent InnerEvent,
-    [property: DataMember] bool IsError = false)
+    [property: DataMember] string Namespace,
+    [property: DataMember] string SourceId)
 {
-    /// <summary>
-    /// The Id of the event.
-    /// </summary>
-    internal string Id => $"{this.Namespace}.{this.InnerEvent.Id}";
-
-    /// <summary>
-    /// The data of the event.
-    /// </summary>
-    internal object? Data => this.InnerEvent.Data;
-
     /// <summary>
     /// The visibility of the event.
     /// </summary>
-    internal KernelProcessEventVisibility Visibility => this.InnerEvent.Visibility;
+    [DataMember]
+    public KernelProcessEventVisibility Visibility { get; init; }
+
+    /// <summary>
+    /// This event represents a runtime error / exception raised internally by the framework.
+    /// </summary>
+    [DataMember]
+    public bool IsError { get; init; }
+
+    /// <summary>
+    /// The Qualified Id of the event.
+    /// </summary>
+    internal string QualifiedId => $"{this.Namespace}.{this.SourceId}";
+}
+
+/// <summary>
+/// A wrapper around <see cref="KernelProcessEvent"/> that helps to manage the namespace of the event.
+/// </summary>
+[DataContract]
+[KnownType(typeof(KernelProcessError))]
+public record ProcessEvent<TData> : ProcessEvent
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessEvent"/> class.
+    /// </summary>
+    /// <param name="eventNamespace">The namespace of the event.</param>
+    /// <param name="sourceId">The source Id of the event.</param>
+    public ProcessEvent(string eventNamespace, string sourceId)
+        : base(eventNamespace, sourceId) { }
+
+    /// <summary>
+    /// An optional data payload associated with the event.
+    /// </summary>
+    /// <remarks>
+    /// Possible to be defined and yet null.
+    /// </remarks>
+    [DataMember]
+    public TData? Data { get; init; }
 }
