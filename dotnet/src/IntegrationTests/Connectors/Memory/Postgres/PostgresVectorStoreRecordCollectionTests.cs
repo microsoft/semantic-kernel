@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using Npgsql;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
@@ -218,6 +219,41 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         Assert.NotNull(getResult.DescriptionEmbedding);
         Assert.Equal(record.DescriptionEmbedding!.Value.ToArray(), getResult.DescriptionEmbedding.Value.ToArray());
+    }
+
+    [Fact]
+    public async Task ItCanReadManuallyInsertedRecordAsync()
+    {
+        const string CollectionName = "ItCanReadManuallyInsertedRecordAsync";
+        // Arrange
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>(CollectionName);
+        await sut.CreateCollectionAsync().ConfigureAwait(true);
+        Assert.True(await sut.CollectionExistsAsync().ConfigureAwait(true));
+        await using (var connection = fixture.GetConnection())
+        {
+            using NpgsqlCommand cmd = connection.CreateCommand();
+            cmd.CommandText = @$"
+                INSERT INTO public.""{CollectionName}"" (
+                    ""HotelId"", ""HotelName"", ""HotelCode"", ""HotelRating"", ""parking_is_included"", ""Tags"", ""Description"", ""DescriptionEmbedding""
+                ) VALUES (
+                    215, 'Devine Lorraine', 215, 5, false, ARRAY['historic', 'philly'], 'An iconic building on broad street', '[10,20,30,40]'
+                );";
+            await cmd.ExecuteNonQueryAsync().ConfigureAwait(true);
+        }
+
+        // Act
+        var getResult = await sut.GetAsync(215, new GetRecordOptions { IncludeVectors = true });
+
+        // Assert
+        Assert.NotNull(getResult);
+        Assert.Equal(215, getResult!.HotelId);
+        Assert.Equal("Devine Lorraine", getResult.HotelName);
+        Assert.Equal(215, getResult.HotelCode);
+        Assert.Equal(5, getResult.HotelRating);
+        Assert.False(getResult.ParkingIncluded);
+        Assert.Equal(new List<string> { "historic", "philly" }, getResult.Tags);
+        Assert.Equal("An iconic building on broad street", getResult.Description);
+        Assert.Equal([10f, 20f, 30f, 40f], getResult.DescriptionEmbedding!.Value.ToArray());
     }
 
     [Fact]

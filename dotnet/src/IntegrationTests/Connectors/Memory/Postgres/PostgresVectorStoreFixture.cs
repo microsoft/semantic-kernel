@@ -44,6 +44,14 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// </summary>
     public IVectorStore VectorStore => new PostgresVectorStore(this._dataSource!);
 
+    /// <summary>
+    /// Get a database connection
+    /// </summary>
+    public NpgsqlConnection GetConnection()
+    {
+        return this._dataSource!.OpenConnection();
+    }
+
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
         VectorStoreRecordDefinition? recordDefinition = default)
