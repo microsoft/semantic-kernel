@@ -1181,8 +1181,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     [Theory]
     [InlineData(typeof(TestStruct), "TestStruct")]
     [InlineData(typeof(TestStruct?), "TestStruct")]
-    [InlineData(typeof(TestStruct<string>), "TestStruct1")]
-    [InlineData(typeof(TestStruct<string>?), "TestStruct1")]
+    [InlineData(typeof(TestStruct<string>), "TestStructString")]
+    [InlineData(typeof(TestStruct<string>?), "TestStructString")]
+    [InlineData(typeof(TestStruct<List<float>>), "TestStructListSingle")]
+    [InlineData(typeof(TestStruct<List<float>>?), "TestStructListSingle")]
     public async Task GetChatMessageContentsSendsValidJsonSchemaWithStruct(Type responseFormatType, string expectedSchemaName)
     {
         // Arrange

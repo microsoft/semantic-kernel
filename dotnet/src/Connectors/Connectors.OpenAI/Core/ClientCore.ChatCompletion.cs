@@ -565,18 +565,6 @@ internal partial class ClientCore
     }
 
     /// <summary>
-    /// Pattern for JSON schema name for structured outputs.
-    /// More information here: <see href="https://platform.openai.com/docs/api-reference/chat/create#chat-create-response_format"/>.
-    /// </summary>
-#if NET
-    [GeneratedRegex("[^a-zA-Z0-9_-]")]
-    private static partial Regex StructuredOutputsJsonSchemaNameRegex();
-#else
-    private static Regex StructuredOutputsJsonSchemaNameRegex() => s_structuredOutputsJsonSchemaNameRegex;
-    private static readonly Regex s_structuredOutputsJsonSchemaNameRegex = new("[^a-zA-Z0-9_-]", RegexOptions.Compiled);
-#endif
-
-    /// <summary>
     /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs.
     /// </summary>
     private static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
@@ -586,9 +574,28 @@ internal partial class ClientCore
         var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
-        var typeName = StructuredOutputsJsonSchemaNameRegex().Replace(type.Name, string.Empty);
+        var typeName = GetTypeName(type);
 
         return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
+    }
+
+    /// <summary>
+    /// Returns a type name concatenated with generic argument type names if they exist.
+    /// </summary>
+    private static string GetTypeName(Type type)
+    {
+        if (!type.IsGenericType)
+        {
+            return type.Name;
+        }
+
+        // If type is generic, base name is followed by ` character.
+        string baseName = type.Name.Substring(0, type.Name.IndexOf('`'));
+
+        Type[] typeArguments = type.GetGenericArguments();
+        string argumentNames = string.Concat(Array.ConvertAll(typeArguments, GetTypeName));
+
+        return $"{baseName}{argumentNames}";
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
