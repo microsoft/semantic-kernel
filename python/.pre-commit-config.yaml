@@ -48,7 +48,7 @@ repos:
     - id: mypy
       files: ^python/semantic_kernel/
       name: mypy
-      entry: cd python && uv run mypy -p semantic_kernel --config-file mypy.ini
+      entry: bash -c 'cd python && uv run mypy -p semantic_kernel --config-file mypy.ini'
       language: system
       types: [python]
       pass_filenames: false
