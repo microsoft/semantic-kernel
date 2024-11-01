@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process;
 using Step03.Models;
 using Step03.Steps;
 namespace Step03.Processes;
@@ -16,7 +17,7 @@ public static class FriedFishProcess
         // When multiple processes use the same final step, the should event marked as public
         // so that the step event can be used as the output event of the process too.
         // In these samples both fried fish and potato fries end with FryStep success
-        public const string FriedFishReady = nameof(FryFoodStep.OutputEvents.FriedFoodReady);
+        public const string FriedFishReady = FryFoodStep.OutputEvents.FriedFoodReady;
     }
 
     /// <summary>
@@ -30,7 +31,7 @@ public static class FriedFishProcess
         var processBuilder = new ProcessBuilder(processName);
 
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsStep>();
-        var chopStep = processBuilder.AddStepFromType<CutFoodStep>("chopStep");
+        var chopStep = processBuilder.AddStepFromType<CutFoodStep>();
         var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
 
         processBuilder
@@ -52,18 +53,45 @@ public static class FriedFishProcess
         return processBuilder;
     }
 
+    public static ProcessBuilder CreateProcessWithStatefulStepsV1(string processName = "FriedFishWithStatefulStepsProcess")
+    {
+        var processBuilder = new ProcessBuilder(processName) { Version = "FriedFishProcess.v1" }; ;
+
+        var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsWithStockStep>();
+        var chopStep = processBuilder.AddStepFromType<CutFoodStep>();
+        var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
+
+        processBuilder
+            .OnInputEvent(ProcessEvents.PrepareFriedFish)
+            .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
+
+        gatherIngredientsStep
+            .OnEvent(GatherFriedFishIngredientsWithStockStep.OutputEvents.IngredientsGathered)
+            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.Functions.ChopFood));
+
+        chopStep
+            .OnEvent(CutFoodWithSharpeningStep.OutputEvents.ChoppingReady)
+            .SendEventTo(new ProcessFunctionTargetBuilder(fryStep));
+
+        fryStep
+            .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
+            .SendEventTo(new ProcessFunctionTargetBuilder(gatherIngredientsStep));
+
+        return processBuilder;
+    }
+
     /// <summary>
     /// For a visual reference of the FriedFishProcess with stateful steps check this
     /// <see href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithProcesses/README.md#fried-fish-preparation-with-knife-sharpening-and-ingredient-stock-process" >diagram</see>
     /// </summary>
     /// <param name="processName">name of the process</param>
     /// <returns><see cref="ProcessBuilder"/></returns>
-    public static ProcessBuilder CreateProcessWithStatefulSteps(string processName = "FriedFishWithStatefulStepsProcess")
+    public static ProcessBuilder CreateProcessWithStatefulStepsV2(string processName = "FriedFishWithStatefulStepsProcess")
     {
-        var processBuilder = new ProcessBuilder(processName);
+        var processBuilder = new ProcessBuilder(processName) { Version = "FriedFishProcess.v2" };
 
-        var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsWithStockStep>();
-        var chopStep = processBuilder.AddStepFromType<CutFoodWithSharpeningStep>("chopStep");
+        var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsWithStockStep>("gatherFishIngredientStep", aliases: ["GatherFriedFishIngredientsStep"]);
+        var chopStep = processBuilder.AddStepFromType<CutFoodWithSharpeningStep>("chopFishStep", aliases: ["chopStep"]);
         var fryStep = processBuilder.AddStepFromType<FryFoodStep>();
 
         processBuilder
@@ -97,11 +125,13 @@ public static class FriedFishProcess
         return processBuilder;
     }
 
+    [KernelProcessStepMetadata("GatherFishIngredient.V1")]
     private sealed class GatherFriedFishIngredientsStep : GatherIngredientsStep
     {
         public GatherFriedFishIngredientsStep() : base(FoodIngredients.Fish) { }
     }
 
+    [KernelProcessStepMetadata("GatherFishIngredient.V2")]
     private sealed class GatherFriedFishIngredientsWithStockStep : GatherIngredientsWithStockStep
     {
         public GatherFriedFishIngredientsWithStockStep() : base(FoodIngredients.Fish) { }

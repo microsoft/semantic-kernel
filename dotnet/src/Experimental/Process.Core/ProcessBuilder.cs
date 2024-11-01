@@ -28,6 +28,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     internal bool HasParentProcess { get; set; }
 
     /// <summary>
+    /// Version of the process, used when saving the state of the process
+    /// </summary>
+    public string Version { get; init; } = "v1";
+
+    /// <summary>
     /// Used to resolve the target function and parameter for a given optional function name and parameter name.
     /// This is used to simplify the process of creating a <see cref="KernelProcessFunctionTarget"/> by making it possible
     /// to infer the function and/or parameter names from the function metadata if only one option exists.
@@ -140,13 +145,19 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <typeparam name="TStep">The step Type.</typeparam>
     /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType<TStep>(string? name = null) where TStep : KernelProcessStep
+    public ProcessStepBuilder AddStepFromType<TStep>(string? name = null, List<string>? aliases = null) where TStep : KernelProcessStep
     {
         var stepBuilder = new ProcessStepBuilder<TStep>(name);
         if (this.StepNameAlreadyExists(stepBuilder.Name))
         {
             throw new InvalidOperationException($"Step name {stepBuilder.Name} is already used, assign a different name for step");
+        }
+
+        if (aliases != null && aliases.Count > 0)
+        {
+            stepBuilder.Aliases = aliases;
         }
 
         this._steps.Add(stepBuilder);
@@ -161,13 +172,19 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <typeparam name="TState">The state Type.</typeparam>
     /// <param name="initialState">The initial state of the step.</param>
     /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? name = null) where TStep : KernelProcessStep<TState> where TState : class, new()
+    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? name = null, List<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
         var stepBuilder = new ProcessStepBuilder<TStep>(name, initialState: initialState);
         if (this.StepNameAlreadyExists(stepBuilder.Name))
         {
             throw new InvalidOperationException($"Step name {stepBuilder.Name} is already used, assign a different name for step");
+        }
+
+        if (aliases != null && aliases.Count > 0)
+        {
+            stepBuilder.Aliases = aliases;
         }
 
         this._steps.Add(stepBuilder);
@@ -179,13 +196,19 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Adds a sub process to the process.
     /// </summary>
     /// <param name="kernelProcess">The process to add as a step.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessBuilder AddStepFromProcess(ProcessBuilder kernelProcess)
+    public ProcessBuilder AddStepFromProcess(ProcessBuilder kernelProcess, List<string>? aliases = null)
     {
         kernelProcess.HasParentProcess = true;
         if (this.StepNameAlreadyExists(kernelProcess.Name))
         {
             throw new InvalidOperationException($"Step name {kernelProcess.Name} is already used, assign a different name for step");
+        }
+
+        if (aliases != null && aliases.Count > 0)
+        {
+            kernelProcess.Aliases = aliases;
         }
 
         this._steps.Add(kernelProcess);
@@ -237,7 +260,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         var builtSteps = this._steps.BuildWithStateMetadata(stateMetadata);
 
         // Create the process
-        var state = new KernelProcessState(this.Name, id: this.HasParentProcess ? this.Id : null);
+        var state = new KernelProcessState(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
         var process = new KernelProcess(state, builtSteps, builtEdges);
         return process;
     }

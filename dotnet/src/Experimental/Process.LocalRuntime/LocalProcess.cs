@@ -345,7 +345,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <exception cref="InvalidOperationException"></exception>
     private async Task<KernelProcess> ToKernelProcessAsync()
     {
-        var processState = new KernelProcessState(this.Name, this.Id);
+        var processState = new KernelProcessState(this.Name, this._stepState.Version, this.Id);
         var stepTasks = this._steps.Select(step => step.ToKernelProcessStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
         return new KernelProcess(processState, steps, this._outputEdges);
