@@ -63,22 +63,32 @@ internal static class KernelProcessStateMetadataExtension
                         {
                             // key mismatch only, but same version
                             sanitizedStateMetadata.StepsState[step.Name] = savedStateMetadata;
-                            sanitizedStateMetadata.StepsState.Remove(stepKey);
+                            // TODO: Should there be state formatting check too?
                         }
                         else
                         {
                             // version mismatch - check if migration logic in place
-                            // TODO: hook up properly custom state override
-
-                            // no compatible state found only migrating name and id
-                            sanitizedStateMetadata.StepsState[step.Name] = new KernelProcessStateMetadata()
+                            if (step is ProcessBuilder subprocessBuilder)
                             {
-                                Name = step.Name,
-                                Id = step.Id,
-                            };
-
-                            sanitizedStateMetadata.StepsState.Remove(stepKey);
+                                var sanitizedStepState = SanitizeProcessStateMetadata(savedStateMetadata, subprocessBuilder.Steps.ToList());
+                                sanitizedStateMetadata.StepsState[step.Name] = sanitizedStepState;
+                            }
+                            else if (false)
+                            {
+                                // TODO: Hook up logic for custom step override
+                            }
+                            else
+                            {
+                                // no compatible state found, migrating id only
+                                sanitizedStateMetadata.StepsState[step.Name] = new KernelProcessStateMetadata()
+                                {
+                                    Name = step.Name,
+                                    Id = step.Id,
+                                };
+                            }
                         }
+                        sanitizedStateMetadata.StepsState[step.Name].Name = step.Name;
+                        sanitizedStateMetadata.StepsState.Remove(stepKey);
                     }
                 }
             }

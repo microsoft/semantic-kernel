@@ -55,6 +55,7 @@ public static class FriedFishProcess
 
     public static ProcessBuilder CreateProcessWithStatefulStepsV1(string processName = "FriedFishWithStatefulStepsProcess")
     {
+        // It is recommended to specify process version in case this process is used as a step by another process
         var processBuilder = new ProcessBuilder(processName) { Version = "FriedFishProcess.v1" }; ;
 
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsWithStockStep>();
@@ -88,6 +89,7 @@ public static class FriedFishProcess
     /// <returns><see cref="ProcessBuilder"/></returns>
     public static ProcessBuilder CreateProcessWithStatefulStepsV2(string processName = "FriedFishWithStatefulStepsProcess")
     {
+        // It is recommended to specify process version in case this process is used as a step by another process
         var processBuilder = new ProcessBuilder(processName) { Version = "FriedFishProcess.v2" };
 
         var gatherIngredientsStep = processBuilder.AddStepFromType<GatherFriedFishIngredientsWithStockStep>(name: "gatherFishIngredientStep", aliases: ["GatherFriedFishIngredientsWithStockStep"]);
