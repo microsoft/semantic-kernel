@@ -106,29 +106,30 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         }
     }
 
-    [Theory]
-    [InlineData(typeof(short), (short)3)]
-    [InlineData(typeof(int), 5)]
-    [InlineData(typeof(long), 7L)]
-    [InlineData(typeof(string), "key1")]
-    [InlineData(typeof(Guid), null)]
-    public async Task ItCanGetAndDeleteRecordAsync(Type idType, object? key)
-    {
-        if (idType == typeof(Guid))
+    public static IEnumerable<object[]> ItCanGetAndDeleteRecordParameters =>
+        new List<object[]>
         {
-            key = Guid.NewGuid();
-        }
+            new object[] { typeof(short), (short)3 },
+            new object[] { typeof(int), 5 },
+            new object[] { typeof(long), 7L },
+            new object[] { typeof(string), "key1" },
+            new object[] { typeof(Guid), Guid.NewGuid() }
+        };
 
+    [Theory]
+    [MemberData(nameof(ItCanGetAndDeleteRecordParameters))]
+    public async Task ItCanGetAndDeleteRecordAsync<TKey>(Type idType, TKey? key)
+    {
         // Arrange
         var collectionName = "DeleteRecord";
-        dynamic sut = this.GetCollection(idType, collectionName);
+        var sut = this.GetCollection(idType, collectionName);
 
         await sut.CreateCollectionAsync();
 
         try
         {
-            dynamic record = this.CreateRecord(idType, key!);
-            dynamic recordKey = record.HotelId;
+            var record = this.CreateRecord<TKey>(idType, key!);
+            var recordKey = record.HotelId;
             var upsertResult = await sut.UpsertAsync(record);
             var getResult = await sut.GetAsync(recordKey);
 
@@ -473,10 +474,10 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         return genericMethod.Invoke(fixture, [collectionName, null])!;
     }
 
-    private dynamic CreateRecord(Type idType, object key)
+    private PostgresHotel<TKey> CreateRecord<TKey>(Type idType, TKey key)
     {
         var recordType = typeof(PostgresHotel<>).MakeGenericType(idType);
-        dynamic record = Activator.CreateInstance(recordType, key)!;
+        var record = (PostgresHotel<TKey>)Activator.CreateInstance(recordType, key)!;
         record.HotelName = "Hotel 1";
         record.HotelCode = 1;
         record.ParkingIncluded = true;
