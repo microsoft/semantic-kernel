@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel.Process.Internal;
 
 internal static class KernelProcessStepExtensions
 {
