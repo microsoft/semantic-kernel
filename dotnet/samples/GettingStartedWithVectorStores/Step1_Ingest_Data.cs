@@ -25,8 +25,8 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
         await IngestDataIntoVectorStoreAsync(collection, fixture.TextEmbeddingGenerationService);
 
         // Retrieve an item from the collection and write it to the console.
-        var skDefinition = await collection.GetAsync("4");
-        Console.WriteLine(skDefinition!.Definition);
+        var record = await collection.GetAsync("4");
+        Console.WriteLine(record!.Definition);
     }
 
     /// <summary>
@@ -34,7 +34,8 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
     /// </summary>
     /// <param name="collection">The collection to ingest data into.</param>
     /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings.</param>
-    internal static async Task IngestDataIntoVectorStoreAsync(
+    /// <returns>The keys of the upserted records.</returns>
+    internal static async Task<IEnumerable<string>> IngestDataIntoVectorStoreAsync(
         IVectorStoreRecordCollection<string, Glossary> collection,
         ITextEmbeddingGenerationService textEmbeddingGenerationService)
     {
@@ -51,7 +52,7 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
 
         // Upsert the glossary entries into the collection and return their keys.
         var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        return await Task.WhenAll(upsertedKeysTasks);
     }
 
     /// <summary>
