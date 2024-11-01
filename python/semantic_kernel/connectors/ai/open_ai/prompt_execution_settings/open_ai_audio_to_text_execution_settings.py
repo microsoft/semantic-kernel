@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, ClassVar
+from typing import Any
 
 from pydantic import Field
 
@@ -13,10 +13,8 @@ logger = logging.getLogger(__name__)
 class OpenAIAudioToTextExecutionSettings(PromptExecutionSettings):
     """Request settings for OpenAI audio to text services."""
 
-    DEFAULT_FILENAME: ClassVar[str] = "file.mp3"
-
     ai_model_id: str | None = Field(None, serialization_alias="model")
-    filename: str = DEFAULT_FILENAME
+    filename: str | None = None
     language: str | None = None
     prompt: str | None = None
     response_format: str | None = None

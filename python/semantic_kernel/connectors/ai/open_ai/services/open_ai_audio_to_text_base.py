@@ -5,6 +5,8 @@ from typing import Any
 
 from openai.types.audio import Transcription
 
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -40,6 +42,11 @@ class OpenAIAudioToTextBase(OpenAIHandler, AudioToTextClientBase):
 
         if settings.ai_model_id is None:
             settings.ai_model_id = self.ai_model_id
+
+        if not isinstance(audio_content.uri, str):
+            raise ServiceInvalidRequestError("Audio content uri must be a string to a local file.")
+
+        settings.filename = audio_content.uri
 
         response = await self._send_request(settings)
         assert isinstance(response, Transcription)  # nosec

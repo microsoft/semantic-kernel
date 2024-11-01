@@ -28,6 +28,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import O
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.exceptions import ServiceResponseException
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 
@@ -119,6 +120,9 @@ class OpenAIHandler(KernelBaseModel, ABC):
 
     async def _send_audio_to_text_request(self, settings: OpenAIAudioToTextExecutionSettings) -> Transcription:
         """Send a request to the OpenAI audio to text endpoint."""
+        if not settings.filename:
+            raise ServiceInvalidRequestError("Audio file is required for audio to text service")
+
         try:
             with open(settings.filename, "rb") as audio_file:
                 return await self.client.audio.transcriptions.create(
