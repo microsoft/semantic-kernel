@@ -13,7 +13,7 @@ namespace Memory;
 /// using the decorator pattern.
 ///
 /// In the sample we create an <see cref="InMemoryVectorStore"/> and then using
-/// an extention method <see cref="TextEmbeddingVectorStoreExtensions.WithTextEmbeddingGeneration(IVectorStore, Microsoft.SemanticKernel.Embeddings.ITextEmbeddingGenerationService)"/>
+/// an extension method <see cref="TextEmbeddingVectorStoreExtensions.WithTextEmbeddingGeneration(IVectorStore, Microsoft.SemanticKernel.Embeddings.ITextEmbeddingGenerationService)"/>
 /// we wrap the <see cref="InMemoryVectorStore"/> with a <see cref="TextEmbeddingVectorStore"/> that will automatically generate embeddings for properties
 /// that have the <see cref="GenerateTextEmbeddingAttribute"/> attribute.
 ///

@@ -155,7 +155,7 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     /// <summary>
     /// Get the list of properties with <see cref="GenerateTextEmbeddingAttribute"/> from the data model.
     /// </summary>
-    /// <param name="dataModelType">The tyep of the data model to find </param>
+    /// <param name="dataModelType">The type of the data model to find </param>
     /// <returns>The list of properties with <see cref="GenerateTextEmbeddingAttribute"/> with the properties from which the embedding can be generated.</returns>
     private static IEnumerable<(PropertyInfo EmbeddingPropertyInfo, IList<PropertyInfo> SourcePropertiesInfo)> FindDataPropertiesWithEmbeddingProperties(Type dataModelType)
     {
