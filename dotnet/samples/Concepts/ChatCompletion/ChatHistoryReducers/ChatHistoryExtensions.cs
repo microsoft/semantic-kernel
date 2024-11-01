@@ -14,8 +14,11 @@ internal static class ChatHistoryExtensions
     private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
 
     /// <summary>
-    /// Returns the first system prompt from the chat history.
+    /// Returns the system prompt from the chat history.
     /// </summary>
+    /// <remarks>
+    /// For simplicity only a single system message is supported in these examples.
+    /// </remarks>
     internal static ChatMessageContent? GetSystemMessage(this ChatHistory chatHistory)
     {
         return chatHistory.FirstOrDefault(m => m.Role == AuthorRole.System);
