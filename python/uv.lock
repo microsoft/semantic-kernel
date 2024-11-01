@@ -4250,7 +4250,7 @@ dev = [
 requires-dist = [
     { name = "aiohttp", specifier = "~=3.8" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "~=0.32" },
-    { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b3" },
+    { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b4" },
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
     { name = "azure-identity", specifier = "~=1.13" },
     { name = "azure-identity", marker = "extra == 'azure'", specifier = "~=1.13" },

@@ -6,4 +6,4 @@ from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings im
 from semantic_kernel.connectors.ai.onnx.services.onnx_gen_ai_chat_completion import OnnxGenAIChatCompletion
 from semantic_kernel.connectors.ai.onnx.services.onnx_gen_ai_text_completion import OnnxGenAITextCompletion
 
-__all__ = ['OnnxGenAIChatCompletion', 'OnnxGenAIPromptExecutionSettings', 'OnnxGenAITextCompletion']
+__all__ = ["OnnxGenAIChatCompletion", "OnnxGenAIPromptExecutionSettings", "OnnxGenAITextCompletion"]
