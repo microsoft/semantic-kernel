@@ -48,8 +48,8 @@ public class LocalProcessTests
         var processState = new KernelProcessState(name: "TestProcess", version: "v1");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1",  version: "v1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2",  version: "v1", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
         ], []);
 
         // Act
