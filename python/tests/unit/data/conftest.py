@@ -10,18 +10,18 @@ from pydantic import BaseModel, Field
 from pytest import fixture
 
 from semantic_kernel.data import (
+    KernelSearchResults,
+    VectorizableTextSearchMixin,
+    VectorizedSearchMixin,
+    VectorSearchBase,
+    VectorSearchResult,
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
+    VectorTextSearchMixin,
     vectorstoremodel,
 )
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
-from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 
 
 @fixture

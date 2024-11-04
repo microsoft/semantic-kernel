@@ -41,8 +41,8 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
         """Inner search method.
 
         This is the main search method that should be implemented, and will be called by the public search methods.
-        Currently, one of the three search contents will be provided, in the future,
-        this may be expanded to allow multiple of them.
+        Currently, at least one of the three search contents will be provided
+        (through the public interface mixin functions), in the future, this may be expanded to allow multiple of them.
 
         This method should return a KernelSearchResults object with the results of the search.
         The inner "results" object of the KernelSearchResults should be a async iterator that yields the search results,
@@ -53,8 +53,11 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
 
         Options might be a object of type VectorSearchOptions, or a subclass of it.
 
+        The implementation of this method must deal with the possibility that multiple search contents are provided,
+        and should handle them in a way that makes sense for that particular store.
+
         Args:
-            options: The search options.
+            options: The search options, can be None.
             search_text: The text to search for, optional.
             vectorizable_text: The text to search for, will be vectorized downstream, optional.
             vector: The vector to search for, optional.
@@ -105,3 +108,5 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
             if record:
                 # single records are always returned as single records by the deserializer
                 yield VectorSearchResult(record=record, score=score)  # type: ignore
+
+    # endregion

@@ -7,8 +7,8 @@ import numpy as np
 from pandas import DataFrame
 from pytest import fixture, mark, raises
 
-from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import (
+from semantic_kernel.data import VectorStoreRecordCollection
+from semantic_kernel.exceptions import (
     MemoryConnectorException,
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,

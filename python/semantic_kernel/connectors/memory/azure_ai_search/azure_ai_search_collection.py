@@ -282,6 +282,10 @@ class AzureAISearchCollection(
         )
 
     def _build_filter_string(self, search_filter: VectorSearchFilter) -> str:
+        """Create the filter string based on the filters.
+
+        Since the group_type is always added (and currently always "AND"), the last " and " is removed.
+        """
         filter_string = ""
         for filter in search_filter.filters:
             if isinstance(filter, EqualTo):
@@ -290,7 +294,9 @@ class AzureAISearchCollection(
                 filter_string += (
                     f"{filter.field_name}/any(t: t eq '{filter.value}') {search_filter.group_type.lower()} "
                 )
-        return filter_string[:-5]
+        if filter_string.endswith(" and "):
+            filter_string = filter_string[:-5]
+        return filter_string
 
     @staticmethod
     def _default_parameter_metadata() -> list[KernelParameterMetadata]:

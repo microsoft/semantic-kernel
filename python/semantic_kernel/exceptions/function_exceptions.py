@@ -76,12 +76,6 @@ class PromptRenderingException(FunctionException):
     pass
 
 
-class TextSearchException(FunctionException):
-    """An error occurred while executing a text search function."""
-
-    pass
-
-
 __all__ = [
     "FunctionException",
     "FunctionExecutionException",
@@ -94,5 +88,4 @@ __all__ = [
     "PluginInitializationError",
     "PluginInvalidNameError",
     "PromptRenderingException",
-    "TextSearchException",
 ]

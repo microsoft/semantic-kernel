@@ -3,16 +3,26 @@
 
 import asyncio
 from collections.abc import Coroutine
-from typing import Annotated, Any
+from typing import Any
 
-from pydantic import BaseModel
+###
+# The data model used for this sample is based on the hotel data model from the Azure AI Search samples.
+# When deploying a new index in Azure AI Search using the import wizard you can choose to deploy the 'hotel-sampels'
+# dataset, see here: https://learn.microsoft.com/en-us/azure/search/search-get-started-portal.
+# This is the dataset used in this sample with some modifications.
+# This model adds vectors for the 2 descriptions in English and French.
+# Both are based on the 1536 dimensions of the OpenAI models.
+# You can adjust this at creation time and then make the change below as well.
+# This sample assumes the index is deployed, and the vectors have been filled.
+# Use the step_1_interact_with_the_collection.py sample, with `first_run = True` to fill the vectors.
+###
+from step_0_data_model import HotelSampleClass
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatCompletion,
     OpenAIChatPromptExecutionSettings,
-    OpenAIEmbeddingPromptExecutionSettings,
     OpenAITextEmbedding,
 )
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
@@ -20,11 +30,7 @@ from semantic_kernel.contents import ChatHistory
 from semantic_kernel.data import (
     VectorSearchFilter,
     VectorSearchOptions,
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
     VectorStoreRecordUtils,
-    VectorStoreRecordVectorField,
-    vectorstoremodel,
 )
 from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.text_search.vector_store_text_search import VectorStoreTextSearch
@@ -35,46 +41,7 @@ from semantic_kernel.functions import (
     KernelParameterMetadata,
 )
 
-
-@vectorstoremodel
-class HotelSampleClass(BaseModel):
-    hotel_id: Annotated[str, VectorStoreRecordKeyField]
-    hotel_name: Annotated[str | None, VectorStoreRecordDataField()] = None
-    description: Annotated[
-        str,
-        VectorStoreRecordDataField(
-            has_embedding=True, embedding_property_name="description_vector", is_full_text_searchable=True
-        ),
-    ]
-    description_vector: Annotated[
-        list[float] | None,
-        VectorStoreRecordVectorField(
-            dimensions=1536,
-            local_embedding=True,
-            embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-        ),
-    ] = None
-    description_fr: Annotated[
-        str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="description_fr_vector")
-    ]
-    description_fr_vector: Annotated[
-        list[float] | None,
-        VectorStoreRecordVectorField(
-            dimensions=1536,
-            local_embedding=True,
-            embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-        ),
-    ] = None
-    category: Annotated[str, VectorStoreRecordDataField()]
-    tags: Annotated[list[str], VectorStoreRecordDataField()]
-    parking_included: Annotated[bool | None, VectorStoreRecordDataField()] = None
-    last_renovation_date: Annotated[str | None, VectorStoreRecordDataField()] = None
-    rating: Annotated[float, VectorStoreRecordDataField()]
-    location: Annotated[dict[str, Any], VectorStoreRecordDataField()]
-    address: Annotated[dict[str, str | None], VectorStoreRecordDataField()]
-    rooms: Annotated[list[dict[str, Any]], VectorStoreRecordDataField()]
-
-
+# Create Kernel and add both chat completion and text embeddings services.
 kernel = Kernel()
 service_id = "chat"
 kernel.add_service(OpenAIChatCompletion(service_id=service_id))
@@ -82,14 +49,28 @@ embeddings = OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embed
 kernel.add_service(embeddings)
 vectorizer = VectorStoreRecordUtils(kernel)
 
+# Create a Text Search object, with a Azure AI Search collection.
+# using the `from_vector_text_search` method means that this plugin will only use text search.
+# You can also choose to use the `from_vectorized_search` method to use vector search.
+# Or the `from_vectorizable_text_search` method if the collection is setup to vectorize incoming texts.
 text_search = VectorStoreTextSearch.from_vector_text_search(
-    AzureAISearchCollection[HotelSampleClass](
-        collection_name="hotels-sample-index",
-        data_model_type=HotelSampleClass,
-    )
+    AzureAISearchCollection[HotelSampleClass](collection_name="hotels-sample-index", data_model_type=HotelSampleClass)
 )
 
 
+# Before we create the plugin, we want to create a function that will help the plugin work the way we want it to.
+# This function allows us to create the plugin with a parameter called `city` that
+# then get's put into a filter for address/city.
+# This function has to adhere to the `OptionsUpdateFunctionType` signature.
+# which consists of 3 named arguments, `query`, `options`, and `parameters`.
+# and kwargs.
+# It returns a tuple of the query and options.
+# The default version that is used when not supplying this, reads the parameters and if there is
+# a parameter that is not `query`, `top`, or 'skip`, and it can find a value for it, either in the kwargs
+# or the default value specified in the parameter, it will add a filter to the options.
+# In this case, we are adding a filter to the options to filter by the city, but since the technical name
+# of that field in the index is `address/city`, want to do this manually.
+# this can also be used to replace a complex technical name in your index with a friendly name towards the LLM.
 def update_options_search(
     query: str, options: SearchOptions, parameters: list[Any] | None = None, **kwargs: Any
 ) -> tuple[Any, SearchOptions]:
@@ -98,20 +79,27 @@ def update_options_search(
     return query, options
 
 
-def update_options_details(
-    query: str, options: SearchOptions, parameters: list[Any] | None = None, **kwargs: Any
-) -> tuple[Any, SearchOptions]:
-    if "hotel_id" in kwargs:
-        options.filter.equal_to("hotel_id", kwargs["hotel_id"])
-    return query, options
-
-
+# Next we create the plugin, with two functions.
+# When you only need one function, you can use the `KernelPlugin.from_text_search_with_search` (and similar) methods.
+# Those create a plugin you can then add to the kernel.
 plugin = kernel.add_functions(
     plugin_name="azure_ai_search",
     functions=[
         text_search.create_search(
+            # this create search method uses the `search` method of the text search object.
+            # remember that the text_search object for this sample is based on
+            # the text_search method of the Azure AI Search.
+            # but it can also be used with the other vector search methods.
+            # This method's description, name and parameters are what will be serialized as part of the tool
+            # call functionality of the LLM.
+            # And crafting these should be part of the prompt design process.
+            # The default parameters are `query`, `top`, and `skip`, but you specify your own.
+            # The default parameters match the parameters of the VectorSearchOptions class.
             description="A hotel search engine, allows searching for hotels in specific cities, "
             "you do not have to specify that you are searching for hotels, for all, use `*`.",
+            # Next to the dynamic filters based on parameters, I can specify options that are always used.
+            # this can include the `top` and `skip` parameters, but also filters that are always applied.
+            # In this case, I am filtering by country, so only hotels in the USA are returned.
             options=VectorSearchOptions(
                 filter=VectorSearchFilter.equal_to("address/country", "USA"),
             ),
@@ -133,9 +121,12 @@ plugin = kernel.add_functions(
                     type_object=int,
                 ),
             ],
+            # and here the above created function is passed in.
             options_update_function=update_options_search,
         ),
         text_search.create_search(
+            # This second function is a more detailed one, that uses a `hotel_id` to get details about a hotel.
+            # we set the top to 1, so that only 1 record is returned.
             function_name="get_details",
             description="Get details about a hotel, by ID, use the overview function to get the ID.",
             options=VectorSearchOptions(
@@ -150,23 +141,26 @@ plugin = kernel.add_functions(
                     type_object=str,
                 )
             ],
-            options_update_function=update_options_details,
+            # it uses the default update options that will turn the hotel_id into a filter.
         ),
     ],
 )
 
-
+# Now we create the chat function, that will use the OpenAI chat service.
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
     plugin_name="ChatBot",
     function_name="Chat",
 )
+# we set the function choice to Auto, so that the LLM can choose the correct function to call.
+# and we exclude the ChatBot plugin, so that it does not call itself.
+# this means that it has access to 2 functions, that were defined above.
 execution_settings = OpenAIChatPromptExecutionSettings(
+    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]}),
     service_id="chat",
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]}),
 )
 
 history = ChatHistory()
@@ -176,7 +170,9 @@ you have one goal: help people find a hotel.
 Your full name, should you need to know it, is
 Splendid Speckled Mosscap. You communicate
 effectively, but you tend to answer with long
-flowery prose.
+flowery prose. You always make sure to include the
+hotel_id in your answers so that the user can
+use it to get more information.
 """
 history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
@@ -185,6 +181,9 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 arguments = KernelArguments(settings=execution_settings)
 
 
+# This filter will log all calls to the Azure AI Search plugin.
+# This allows us to see what parameters are being passed to the plugin.
+# And this gives us a way to debug the search experience and if necessary tweak the parameters and descriptions.
 @kernel.filter(filter_type=FilterTypes.FUNCTION_INVOCATION)
 async def log_search_filter(context: FunctionInvocationContext, next: Coroutine[FunctionInvocationContext, Any, None]):
     if context.function.plugin_name == "azure_ai_search":
@@ -213,7 +212,6 @@ async def chat() -> bool:
         return False
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
-    arguments["country"] = "USA"
     result = await kernel.invoke(chat_function, arguments=arguments)
     print(f"Mosscap:> {result}")
     history.add_user_message(user_input)

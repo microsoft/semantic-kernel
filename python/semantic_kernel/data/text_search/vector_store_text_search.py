@@ -14,6 +14,7 @@ from semantic_kernel.data.vector_search.vector_search_result import VectorSearch
 from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
 from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
+from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreTextSearchValidationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
@@ -58,11 +59,11 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
             and not data.get("vectorized_search")
             and not data.get("vector_text_search")
         ):
-            raise ValueError(
+            raise VectorStoreTextSearchValidationError(
                 "At least one of vectorizable_text_search, vectorized_search or vector_text_search is required."
             )
         if data.get("vectorized_search") and not data.get("embedding_service"):
-            raise ValueError("embedding_service is required when using vectorized_search.")
+            raise VectorStoreTextSearchValidationError("embedding_service is required when using vectorized_search.")
         return data
 
     @classmethod
@@ -159,7 +160,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
                 options=options,
                 **kwargs,
             )
-        raise ValueError("No search method available.")  # pragma: no cover
+        raise VectorSearchExecutionException("No search method available.")  # pragma: no cover
 
     async def _get_results_as_strings(self, results: AsyncIterable[VectorSearchResult[TModel]]) -> AsyncIterable[str]:
         """Get the results as strings."""

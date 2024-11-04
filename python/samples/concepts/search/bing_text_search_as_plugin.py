@@ -17,17 +17,12 @@ from semantic_kernel.filters.functions.function_invocation_context import Functi
 from semantic_kernel.functions import KernelArguments, KernelParameterMetadata, KernelPlugin
 
 kernel = Kernel()
-service_id = "chat"
-kernel.add_service(OpenAIChatCompletion(service_id=service_id))
-
+kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 kernel.add_plugin(
     KernelPlugin.from_text_search_with_search(
         BingSearch(),
         plugin_name="bing",
         description="Get details about Semantic Kernel concepts.",
-        # options=TextSearchOptions(
-        #     filter=TextSearchFilter.equal_to("site", "https://github.com/microsoft/semantic-kernel/tree/main/python"),
-        # ),
         parameters=[
             KernelParameterMetadata(
                 name="query",
@@ -100,8 +95,6 @@ async def log_bing_filter(context: FunctionInvocationContext, next: Coroutine[Fu
             print(f'  Skip: "{context.arguments["skip"]}"')
         await next(context)
         print("Bing search completed.")
-        # print("  raw results:")
-        # print(f"    {context.result}")
     else:
         await next(context)
 
