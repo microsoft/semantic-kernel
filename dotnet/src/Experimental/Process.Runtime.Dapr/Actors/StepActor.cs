@@ -192,7 +192,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="processEvent">The event to emit.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(processEvent.ToProcessEvent(this._eventNamespace!));
+    public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(ProcessEvent.Create(processEvent, this._eventNamespace!));
 
     /// <summary>
     /// Handles a <see cref="ProcessMessage"/> that has been sent to the step.

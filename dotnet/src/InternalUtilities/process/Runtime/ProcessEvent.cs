@@ -47,4 +47,20 @@ public record ProcessEvent // %%% INTERNAL
     /// The Qualified Id of the event.
     /// </summary>
     internal string QualifiedId => $"{this.Namespace}.{this.SourceId}";
+
+    /// <summary>
+    /// Creates a new <see cref="ProcessEvent"/> from a <see cref="KernelProcessEvent"/>.
+    /// </summary>
+    /// <param name="kernelProcessEvent">The <see cref="KernelProcessEvent"/></param>
+    /// <param name="eventNamespace">The namespace of the event.</param>
+    /// <param name="isError">// %%% COMMENT</param>
+    public static ProcessEvent Create(KernelProcessEvent kernelProcessEvent, string eventNamespace, bool isError = false) =>
+        new()
+        {
+            Namespace = eventNamespace,
+            SourceId = kernelProcessEvent.Id,
+            Data = kernelProcessEvent.Data,
+            Visibility = kernelProcessEvent.Visibility,
+            IsError = isError,
+        };
 }

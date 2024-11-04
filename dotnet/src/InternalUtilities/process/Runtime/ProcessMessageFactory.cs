@@ -27,7 +27,7 @@ internal static class ProcessMessageFactory
         ProcessMessage newMessage = new(edge.SourceStepId, target.StepId, target.FunctionName, parameterValue)
         {
             TargetEventId = target.TargetEventId,
-            TargetEventData = data // %%% WILL FAIL DATA CONTRACT DESERIALIZATION
+            TargetEventData = data
         };
 
         return newMessage;
