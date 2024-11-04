@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Xunit;
