@@ -63,11 +63,6 @@ public static class FishAndChipsProcess
             .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish))
             .SendEventTo(makePotatoFriesStep.WhereInputEventIs(PotatoFriesProcess.ProcessEvents.PreparePotatoFries));
 
-        // TODO: Figure out a way to "forward" external events
-        // Echo EmitExternally(edge, string aliasEventName?) -> how to centralize when multiple steps have "same" output process event
-        //processBuilder.EmitExternally(makeFriedFishStep.OnEvent(FriedFishProcess.ProcessEvents.FishOutOfStock), ProcessEvents.FishAndChipsIngredientOutOfStock);
-        //processBuilder.EmitExternally(makePotatoFriesStep.OnEvent(PotatoFriesProcess.ProcessEvents.PotatoOutOfStock), ProcessEvents.FishAndChipsIngredientOutOfStock);
-
         makeFriedFishStep
             .OnEvent(FriedFishProcess.ProcessEvents.FriedFishReady)
             .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "fishActions"));
@@ -79,8 +74,6 @@ public static class FishAndChipsProcess
         addCondimentsStep
             .OnEvent(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded)
             .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
-
-        processBuilder.EmitExternally(externalStep.OnEvent(ProcessEvents.FishAndChipsReady));
 
         return processBuilder;
     }
