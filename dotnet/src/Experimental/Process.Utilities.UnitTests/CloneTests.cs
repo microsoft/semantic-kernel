@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.SemanticKernel.Process.Internal;
 using Xunit;
 
 namespace SemanticKernel.Process.Utilities.UnitTests;

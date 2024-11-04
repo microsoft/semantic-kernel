@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
@@ -100,6 +101,26 @@ public class ProcessBuilderTests
     }
 
     /// <summary>
+    /// Verify that the <see cref="ProcessStepBuilder.OnFunctionResult(string)"/> method returns a <see cref="ProcessStepEdgeBuilder"/>.
+    /// </summary>
+    [Fact]
+    public void OnFunctionErrorCreatesEdgeBuilder()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder(ProcessName);
+        var errorStep = processBuilder.AddStepFromType<ErrorStep>();
+        var edgeBuilder = processBuilder.OnError().SendEventTo(new ProcessFunctionTargetBuilder(errorStep));
+        processBuilder.AddStepFromType<TestStep>();
+
+        // Act
+        var kernelProcess = processBuilder.Build();
+
+        // Assert
+        Assert.NotNull(edgeBuilder);
+        Assert.EndsWith("Global.OnError", edgeBuilder.EventId);
+    }
+
+    /// <summary>
     /// A class that represents a step for testing.
     /// </summary>
     private sealed class TestStep : KernelProcessStep<TestState>
@@ -114,6 +135,20 @@ public class ProcessBuilderTests
         /// </summary>
         [KernelFunction]
         public void TestFunction()
+        {
+        }
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    private sealed class ErrorStep : KernelProcessStep
+    {
+        /// <summary>
+        /// A method for unhandling failures at the process level.
+        /// </summary>
+        [KernelFunction]
+        public void GlobalErrorHandler(Exception exception)
         {
         }
     }
