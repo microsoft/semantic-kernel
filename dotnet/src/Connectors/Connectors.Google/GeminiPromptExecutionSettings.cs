@@ -23,7 +23,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private int? _maxTokens;
     private int? _candidateCount;
     private IList<string>? _stopSequences;
-    private string? _responseFormat;
+    private bool?_audioTimestamp;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
 
@@ -173,18 +173,17 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// The format of the transcript output, in one of these options: json, srt, verbose_json, or vtt. Default is 'json'.
+    /// Indicates if the audio response should include timestamps.
+    /// if enabled, audio timestamp will be included in the request to the model.
     /// </summary>
-    [JsonPropertyName("response_format")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ResponseFormat
+    [JsonPropertyName("audio_timestamp")]
+    public bool? AudioTimestamp
     {
-        get => this._responseFormat;
-
+        get => this._audioTimestamp;
         set
         {
             this.ThrowIfFrozen();
-            this._responseFormat = value;
+            this._audioTimestamp = value;
         }
     }
 
@@ -224,7 +223,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
             SafetySettings = this.SafetySettings?.Select(setting => new GeminiSafetySetting(setting)).ToList(),
             ToolCallBehavior = this.ToolCallBehavior?.Clone(),
-            ResponseFormat = this.ResponseFormat
+            AudioTimestamp = this.AudioTimestamp
         };
     }
 
