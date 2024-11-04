@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -29,6 +31,33 @@ public record KernelProcessStepInfo
             Verify.NotNull(value);
             this._state = value;
         }
+    }
+
+    /// <summary>
+    /// Captures Kernel Process Step State into <see cref="KernelProcessStateMetadata"/>
+    /// </summary>
+    /// <returns><see cref="KernelProcessStateMetadata"/></returns>
+    public virtual KernelProcessStateMetadata ToProcessStateMetadata()
+    {
+        KernelProcessStateMetadata metadata = new()
+        {
+            Name = this.State.Name,
+            Id = this.State.Id,
+        };
+
+        if (this.InnerStepType.TryGetSubtypeOfStatefulStep(out var genericStateType) && genericStateType != null)
+        {
+            var userStateType = genericStateType.GetGenericArguments()[0];
+            var stateOriginalType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
+
+            var innerState = stateOriginalType.GetProperty(nameof(KernelProcessStepState<object>.State))?.GetValue(this._state);
+            if (innerState != null)
+            {
+                metadata.State = innerState;
+            }
+        }
+
+        return metadata;
     }
 
     /// <summary>

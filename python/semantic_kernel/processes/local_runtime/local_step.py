@@ -163,7 +163,7 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
             event_name = f"{target_function}.OnError"
             event_value = str(ex)
         finally:
-            self.emit_event(KernelProcessEvent(id=event_name, data=event_value))
+            await self.emit_event(KernelProcessEvent(id=event_name, data=event_value))
 
             # Reset the inputs for the function that was just executed
             self.inputs[target_function] = self.initial_inputs.get(target_function, {}).copy()
@@ -172,11 +172,11 @@ class LocalStep(KernelProcessMessageChannel, KernelBaseModel):
         """Invokes the function."""
         return await kernel.invoke(function, **arguments)
 
-    def emit_event(self, process_event: KernelProcessEvent):
+    async def emit_event(self, process_event: KernelProcessEvent):
         """Emits an event from the step."""
-        self.emit_local_event(LocalEvent.from_kernel_process_event(process_event, self.event_namespace))
+        await self.emit_local_event(LocalEvent.from_kernel_process_event(process_event, self.event_namespace))
 
-    def emit_local_event(self, local_event: "LocalEvent"):
+    async def emit_local_event(self, local_event: "LocalEvent"):
         """Emits an event from the step."""
         scoped_event = self.scoped_event(local_event)
         self.outgoing_event_queue.put(scoped_event)

@@ -22,11 +22,11 @@ public class KernelFunctionLogMessagesTests
         // Arrange
         (object FunctionResult, string LogMessage) testData = resultType switch
         {
-            Type t when t == typeof(string) => ("test-string", "Function result: test-string"),
-            Type t when t == typeof(int) => (6, "Function result: 6"),
-            Type t when t == typeof(bool) => (true, "Function result: true"),
-            Type t when t == typeof(ChatMessageContent) => (new ChatMessageContent(AuthorRole.Assistant, "test-content"), "Function result: test-content"),
-            Type t when t == typeof(User) => (new User { Name = "test-user-name" }, "Function result: {\"name\":\"test-user-name\"}"),
+            Type t when t == typeof(string) => ("test-string", "Function p1-f1 result: test-string"),
+            Type t when t == typeof(int) => (6, "Function p1-f1 result: 6"),
+            Type t when t == typeof(bool) => (true, "Function p1-f1 result: true"),
+            Type t when t == typeof(ChatMessageContent) => (new ChatMessageContent(AuthorRole.Assistant, "test-content"), "Function p1-f1 result: test-content"),
+            Type t when t == typeof(User) => (new User { Name = "test-user-name" }, "Function p1-f1 result: {\"name\":\"test-user-name\"}"),
             _ => throw new ArgumentException("Invalid type")
         };
 
@@ -36,7 +36,7 @@ public class KernelFunctionLogMessagesTests
         var functionResult = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), testData.FunctionResult);
 
         // Act
-        logger.Object.LogFunctionResultValue(functionResult);
+        logger.Object.LogFunctionResultValue("p1", "f1", functionResult);
 
         // Assert
         logger.Verify(l => l.Log(
