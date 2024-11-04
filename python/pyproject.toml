@@ -69,7 +69,7 @@ hugging_face = [
 ]
 mongo = [
     "pymongo >= 4.8.0, < 4.9",
-    "motor >= 3.3.2,< 3.6.0"
+    "motor >= 3.3.2,< 3.7.0"
 ]
 notebooks = [
     "ipykernel ~= 6.29"
