@@ -34,7 +34,7 @@ internal class EventBufferActor : Actor, IEventBuffer
         this._queue.Clear();
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, ProcessEventSerializer.Prepare(this._queue)).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, ProcessEventSerializer.Write(this._queue)).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return items;
@@ -45,7 +45,7 @@ internal class EventBufferActor : Actor, IEventBuffer
         this._queue.Add(stepEvent);
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, ProcessEventSerializer.Prepare(this._queue)).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, ProcessEventSerializer.Write(this._queue)).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -55,10 +55,10 @@ internal class EventBufferActor : Actor, IEventBuffer
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var eventQueueState = await this.StateManager.TryGetStateAsync<EventContainer<ProcessEvent>[]>(ActorStateKeys.EventQueueState).ConfigureAwait(false);
+        var eventQueueState = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.EventQueueState).ConfigureAwait(false);
         if (eventQueueState.HasValue)
         {
-            this._queue = [.. ProcessEventSerializer.Process(eventQueueState.Value)];
+            this._queue = [.. ProcessEventSerializer.Read(eventQueueState.Value)];
         }
         else
         {

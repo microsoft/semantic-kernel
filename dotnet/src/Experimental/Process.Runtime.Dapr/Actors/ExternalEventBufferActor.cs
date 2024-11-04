@@ -35,7 +35,7 @@ internal class ExternalEventBufferActor : Actor, IExternalEventBuffer
         this._queue!.Clear();
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.ExternalEventQueueState, KernelProcessEventSerializer.Prepare(this._queue).ToArray()).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.ExternalEventQueueState, KernelProcessEventSerializer.Write(this._queue).ToArray()).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return items;
@@ -46,7 +46,7 @@ internal class ExternalEventBufferActor : Actor, IExternalEventBuffer
         this._queue.Add(externalEvent);
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.ExternalEventQueueState, KernelProcessEventSerializer.Prepare(this._queue).ToArray()).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.ExternalEventQueueState, KernelProcessEventSerializer.Write(this._queue).ToArray()).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -56,10 +56,10 @@ internal class ExternalEventBufferActor : Actor, IExternalEventBuffer
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var eventQueueState = await this.StateManager.TryGetStateAsync<EventContainer<KernelProcessEvent>[]>(ActorStateKeys.ExternalEventQueueState).ConfigureAwait(false);
+        var eventQueueState = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.ExternalEventQueueState).ConfigureAwait(false);
         if (eventQueueState.HasValue)
         {
-            this._queue = [.. KernelProcessEventSerializer.Process(eventQueueState.Value)];
+            this._queue = [.. KernelProcessEventSerializer.Read(eventQueueState.Value)];
         }
         else
         {

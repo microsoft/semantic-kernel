@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Process.Runtime;
 
@@ -11,12 +12,27 @@ namespace Microsoft.SemanticKernel.Process.Serialization;
 /// </summary>
 internal static class ProcessEventSerializer
 {
+    public static string Write(IEnumerable<ProcessEvent> processEvents)
+    {
+        EventContainer<ProcessEvent>[] containedEvents = Prepare(processEvents).ToArray();
+        return JsonSerializer.Serialize(containedEvents);
+    }
+
+    public static IEnumerable<ProcessEvent> Read(string json)
+    {
+        EventContainer<ProcessEvent>[] containedEvents =
+            JsonSerializer.Deserialize<EventContainer<ProcessEvent>[]>(json) ??
+            throw new KernelException($"Unable to deserialize {nameof(ProcessEvent)} queue.");
+
+        return Process(containedEvents);
+    }
+
     /// <summary>
     /// %%% COMMENT
     /// </summary>
     /// <param name="processEvents"></param>
     /// <returns></returns>
-    public static IEnumerable<EventContainer<ProcessEvent>> Prepare(IEnumerable<ProcessEvent> processEvents)
+    private static IEnumerable<EventContainer<ProcessEvent>> Prepare(IEnumerable<ProcessEvent> processEvents)
     {
         foreach (ProcessEvent processEvent in processEvents)
         {
@@ -30,7 +46,7 @@ internal static class ProcessEventSerializer
     /// <param name="eventContainers"></param>
     /// <returns></returns>
     /// <exception cref="KernelException"></exception>
-    public static IEnumerable<ProcessEvent> Process(IEnumerable<EventContainer<ProcessEvent>> eventContainers)
+    private static IEnumerable<ProcessEvent> Process(IEnumerable<EventContainer<ProcessEvent>> eventContainers)
     {
         foreach (EventContainer<ProcessEvent> eventContainer in eventContainers)
         {

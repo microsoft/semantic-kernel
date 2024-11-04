@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>SemanticKernel.Process.UnitTests</RootNamespace>
-    <AssemblyName>SemanticKernel.Process.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Process.Runtime.Dapr.UnitTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Process.Runtime.Dapr.UnitTests</AssemblyName>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <!-- ;net48 -->
     <RollForward>LatestMajor</RollForward>
@@ -31,9 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
-    <ProjectReference Include="..\Process.Core\Process.Core.csproj" />
-    <ProjectReference Include="..\Process.LocalRuntime\Process.LocalRuntime.csproj" />
+    <ProjectReference Include="..\Process.Runtime.Dapr\Process.Runtime.Dapr.csproj" />
   </ItemGroup>
 
 </Project>
