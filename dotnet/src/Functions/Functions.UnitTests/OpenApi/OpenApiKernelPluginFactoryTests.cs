@@ -402,7 +402,7 @@ public sealed class OpenApiKernelPluginFactoryTests
 
     [Theory]
     [InlineData("securityV3_0.json")]
-    public async Task ItAddSecurtyMetadataToOperationAsync(string documentFileName)
+    public async Task ItAddSecurityMetadataToOperationAsync(string documentFileName)
     {
         // Arrange
         var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
