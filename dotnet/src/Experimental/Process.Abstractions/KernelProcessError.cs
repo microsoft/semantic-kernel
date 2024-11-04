@@ -16,11 +16,11 @@ namespace Microsoft.SemanticKernel;
 [DataContract]
 public sealed record KernelProcessError(
     [property:DataMember]
-    string Type,
+    in string Type,
     [property:DataMember]
-    string Message,
+    in string Message,
     [property:DataMember]
-    string? StackTrace)
+    in string? StackTrace)
 {
     /// <summary>
     /// The inner failure, when exists, as <see cref="KernelProcessError"/>.

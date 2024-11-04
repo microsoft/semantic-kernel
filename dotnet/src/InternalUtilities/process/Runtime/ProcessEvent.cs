@@ -14,8 +14,8 @@ namespace Microsoft.SemanticKernel.Process.Runtime;
 [DataContract]
 [KnownType(typeof(KernelProcessError))]
 public record ProcessEvent(
-    [property: DataMember] string Namespace,
-    [property: DataMember] string SourceId)
+    [property: DataMember] in string Namespace,
+    [property: DataMember] in string SourceId)
 {
     /// <summary>
     /// An optional data payload associated with the event.
