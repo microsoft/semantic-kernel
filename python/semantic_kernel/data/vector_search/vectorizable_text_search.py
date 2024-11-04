@@ -4,6 +4,7 @@ import logging
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from semantic_kernel.data.text_search.utils import create_options
+from semantic_kernel.exceptions import VectorStoreMixinException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -18,7 +19,10 @@ logger = logging.getLogger(__name__)
 
 @experimental_class
 class VectorizableTextSearchMixin(Generic[TModel]):
-    """Method for searching vectors."""
+    """The mixin for searching with text that get's vectorized downstream.
+
+    To be used in combination with VectorSearchBase.
+    """
 
     async def vectorizable_text_search(
         self,
@@ -43,6 +47,6 @@ class VectorizableTextSearchMixin(Generic[TModel]):
         from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
 
         if not isinstance(self, VectorSearchBase):
-            raise NotImplementedError("This method can only be used in combination with the VectorSearchBase.")
+            raise VectorStoreMixinException("This method can only be used in combination with the VectorSearchBase.")
         options = create_options(self.options_class, options, **kwargs)
         return await self._inner_search(vectorizable_text=vectorizable_text, options=options)

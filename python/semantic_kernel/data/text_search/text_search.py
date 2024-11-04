@@ -19,7 +19,7 @@ from semantic_kernel.data.text_search.utils import (
     default_options_update_function,
 )
 from semantic_kernel.data.vector_search.const import TextSearchFunctions
-from semantic_kernel.exceptions.function_exceptions import TextSearchException
+from semantic_kernel.exceptions import TextSearchException
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
@@ -309,7 +309,7 @@ class TextSearch:
                 return self.get_text_search_results
             case TextSearchFunctions.GET_SEARCH_RESULT:
                 return self.get_search_results
-        raise ValueError(f"Unknown search function: {search_function}")  # pragma: no cover
+        raise TextSearchException(f"Unknown search function: {search_function}")  # pragma: no cover
 
     # region: Abstract methods
 

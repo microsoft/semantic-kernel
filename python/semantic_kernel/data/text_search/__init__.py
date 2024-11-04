@@ -9,6 +9,7 @@ from semantic_kernel.data.text_search.utils import (
     create_options,
     default_options_update_function,
 )
+from semantic_kernel.data.text_search.vector_store_text_search import VectorStoreTextSearch
 
 __all__ = [
     "OptionsUpdateFunctionType",
@@ -16,6 +17,7 @@ __all__ = [
     "TextSearchFilter",
     "TextSearchOptions",
     "TextSearchResult",
+    "VectorStoreTextSearch",
     "create_options",
     "default_options_update_function",
 ]

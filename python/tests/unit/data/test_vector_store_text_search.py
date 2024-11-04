@@ -4,8 +4,9 @@ from unittest.mock import patch
 
 from pytest import fixture, mark, raises
 
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
-from semantic_kernel.data.text_search.vector_store_text_search import VectorStoreTextSearch
+from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding
+from semantic_kernel.data import VectorStoreTextSearch
+from semantic_kernel.exceptions import VectorStoreTextSearchValidationError
 
 
 @fixture
@@ -62,10 +63,10 @@ async def test_from_vectorized_search(vector_collection, azure_openai_unit_test_
 
 
 def test_validation_no_embedder_for_vectorized_search(vector_collection):
-    with raises(ValueError):
+    with raises(VectorStoreTextSearchValidationError):
         VectorStoreTextSearch(vectorized_search=vector_collection)
 
 
 def test_validation_no_collections():
-    with raises(ValueError):
+    with raises(VectorStoreTextSearchValidationError):
         VectorStoreTextSearch()

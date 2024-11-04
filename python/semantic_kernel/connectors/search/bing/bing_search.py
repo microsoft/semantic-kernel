@@ -18,17 +18,11 @@ from semantic_kernel.connectors.search.bing.const import (
 from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
 from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.filters.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filters.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.kernel_search_result import KernelSearchResults
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.text_search import TextSearch
-from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
 from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
 from semantic_kernel.data.text_search.text_search_result import TextSearchResult
-from semantic_kernel.data.text_search_options import TextSearchOptions
-from semantic_kernel.data.text_search_result import TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -57,7 +51,6 @@ class BingSearch(KernelBaseModel, TextSearch):
                 the value in the env vars or .env file.
             custom_config: The Bing Custom Search instance's unique identifier.
                 If provided, will override the value in the env vars or .env file.
-            client: Provide a client to use for the Bing Search API.
             env_file_path: The optional path to the .env file. If provided,
                 the settings are read from this file path location.
             env_file_encoding: The optional encoding of the .env file.

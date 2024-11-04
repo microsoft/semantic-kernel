@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.data import TextSearchFilter, VectorSearchFilter
 from semantic_kernel.data.search_filter import SearchFilter
-from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 
 
 def test_filter():
