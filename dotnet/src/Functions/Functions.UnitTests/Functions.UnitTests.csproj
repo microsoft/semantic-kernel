@@ -27,6 +27,7 @@
     <EmbeddedResource Include="OpenApi\TestPlugins\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_1.yaml" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_0.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\securityV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\repair-service.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\openapi_feature_testsV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestResponses\ObjectResponseSchema.json" />

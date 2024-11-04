@@ -267,8 +267,15 @@ public static partial class OpenApiKernelPluginFactory
         {
             { OpenApiKernelPluginFactory.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() },
             { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, string.IsNullOrEmpty(operation.Server?.Url) ? Array.Empty<string>() : [ operation.Server!.Url! ] },
-            { OpenApiKernelPluginFactory.OperationExtensionsSecuritySchemesKey, operation.SecuritySchemes },
         };
+        if (operation.SecurityRequirements is not null)
+        {
+            additionalMetadata.Add(OpenApiKernelPluginFactory.OperationExtensionsSecurityRequirementsKey, operation.SecurityRequirements);
+        }
+        if (operation.SecuritySchemes is not null)
+        {
+            additionalMetadata.Add(OpenApiKernelPluginFactory.OperationExtensionsSecuritySchemesKey, operation.SecuritySchemes);
+        }
         if (operation.Extensions is { Count: > 0 })
         {
             additionalMetadata.Add(OpenApiKernelPluginFactory.OperationExtensionsMetadataKey, operation.Extensions);
@@ -294,6 +301,9 @@ public static partial class OpenApiKernelPluginFactory
 
     /// <summary>The metadata property bag key to use when storing the server of an operation.</summary>
     private const string OperationExtensionsServerUrlsKey = "server-urls";
+
+    /// <summary>The metadata property bag key to use when storing the security requirement of an operation.</summary>
+    private const string OperationExtensionsSecurityRequirementsKey = "security-requirements";
 
     /// <summary>The metadata property bag key to use when storing the security schemes of an operation.</summary>
     private const string OperationExtensionsSecuritySchemesKey = "security-schemes";

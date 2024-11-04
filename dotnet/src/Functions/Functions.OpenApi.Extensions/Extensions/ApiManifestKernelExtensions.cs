@@ -144,12 +144,11 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();
-            var securitySchemes = filteredOpenApiDocument.Components.SecuritySchemes;
             if (server?.Url is not null)
             {
                 foreach (var path in filteredOpenApiDocument.Paths)
                 {
-                    var operations = OpenApiDocumentParser.CreateRestApiOperations(server, securitySchemes, path.Key, path.Value, null, logger);
+                    var operations = OpenApiDocumentParser.CreateRestApiOperations(filteredOpenApiDocument, path.Key, path.Value, null, logger);
                     foreach (RestApiOperation operation in operations)
                     {
                         try

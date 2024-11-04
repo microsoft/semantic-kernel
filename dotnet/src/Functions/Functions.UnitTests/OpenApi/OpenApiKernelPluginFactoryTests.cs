@@ -267,10 +267,11 @@ public sealed class OpenApiKernelPluginFactoryTests
         // Assert Metadata Keys and Values
         Assert.True(plugin.TryGetFunction("OpenApiExtensions", out var function));
         var additionalProperties = function.Metadata.AdditionalProperties;
-        Assert.Equal(4, additionalProperties.Count);
+        Assert.Equal(5, additionalProperties.Count);
 
         Assert.Contains("method", additionalProperties.Keys);
         Assert.Contains("server-urls", additionalProperties.Keys);
+        Assert.Contains("security-requirements", additionalProperties.Keys);
         Assert.Contains("security-schemes", additionalProperties.Keys);
         Assert.Contains("operation-extensions", additionalProperties.Keys);
 
@@ -397,6 +398,38 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.NotNull(response);
 
         Assert.IsAssignableFrom<Stream>(response.Content);
+    }
+
+    [Theory]
+    [InlineData("securityV3_0.json")]
+    public async Task ItAddSecurtyMetadataToOperationAsync(string documentFileName)
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
+
+        // Act
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
+
+        // Assert Security Metadata Keys and Values
+        foreach (var function in plugin)
+        {
+            var additionalProperties = function.Metadata.AdditionalProperties;
+
+            Assert.Contains("security-requirements", additionalProperties.Keys);
+            Assert.Contains("security-schemes", additionalProperties.Keys);
+
+            var securityRequirements = additionalProperties["security-requirements"] as IReadOnlyList<RestApiSecurityRequirement>;
+            Assert.NotNull(securityRequirements);
+            Assert.Equal(2, securityRequirements.Count);
+            Assert.Contains(securityRequirements, sr => sr.Keys.Any(k => k.SecuritySchemeType == "OAuth2"));
+            Assert.Contains(securityRequirements, sr => sr.Keys.Any(k => k.SecuritySchemeType == "ApiKey"));
+
+            var securitySchemes = additionalProperties["security-schemes"] as IReadOnlyDictionary<string, RestApiSecurityScheme>;
+            Assert.NotNull(securitySchemes);
+            Assert.Equal(2, securitySchemes.Count);
+            Assert.True(securitySchemes.ContainsKey("OAuth2"));
+            Assert.True(securitySchemes.ContainsKey("ApiKeyAuth"));
+        }
     }
 
     [Fact]

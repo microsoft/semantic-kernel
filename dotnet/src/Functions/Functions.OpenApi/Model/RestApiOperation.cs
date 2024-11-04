@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -58,12 +57,12 @@ public sealed class RestApiOperation
     /// <summary>
     /// The security requirement.
     /// </summary>
-    public IReadOnlyList<RestApiSecurityRequirement>? SecurityRequirement { get; }
+    public IReadOnlyList<RestApiSecurityRequirement>? SecurityRequirements { get; }
 
     /// <summary>
     /// The security schemes.
     /// </summary>
-    public IReadOnlyDictionary<string, RestApiSecurityScheme> SecuritySchemes { get; }
+    public IReadOnlyDictionary<string, RestApiSecurityScheme>? SecuritySchemes { get; }
 
     /// <summary>
     /// The operation parameters.
@@ -96,7 +95,7 @@ public sealed class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="payload">The operation payload.</param>
     /// <param name="responses">The operation responses.</param>
-    /// <param name="securityRequirement">The operation security requirement.</param>
+    /// <param name="securityRequirements">The operation security requirements.</param>
     /// <param name="securitySchemes">The security schemes.</param>
     public RestApiOperation(
         string id,
@@ -107,7 +106,7 @@ public sealed class RestApiOperation
         IList<RestApiOperationParameter> parameters,
         RestApiOperationPayload? payload = null,
         IDictionary<string, RestApiOperationExpectedResponse>? responses = null,
-        IReadOnlyList<RestApiSecurityRequirement>? securityRequirement = null,
+        IReadOnlyList<RestApiSecurityRequirement>? securityRequirements = null,
         IReadOnlyDictionary<string, RestApiSecurityScheme>? securitySchemes = null)
     {
         this.Id = id;
@@ -118,7 +117,8 @@ public sealed class RestApiOperation
         this.Parameters = parameters;
         this.Payload = payload;
         this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
-        this.SecuritySchemes = securitySchemes ?? new ReadOnlyDictionary<string, RestApiSecurityScheme>(new Dictionary<string, RestApiSecurityScheme>());
+        this.SecurityRequirements = securityRequirements;
+        this.SecuritySchemes = securitySchemes;
     }
 
     /// <summary>

@@ -159,12 +159,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     {
         var result = new List<RestApiOperation>();
 
-        var server = document.Servers.FirstOrDefault();
-        var securitySchemes = document.Components?.SecuritySchemes;
-
         foreach (var pathPair in document.Paths)
         {
-            var operations = CreateRestApiOperations(server, securitySchemes, pathPair.Key, pathPair.Value, operationsToExclude, logger);
+            var operations = CreateRestApiOperations(document, pathPair.Key, pathPair.Value, operationsToExclude, logger);
 
             result.AddRange(operations);
         }
@@ -175,15 +172,18 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <summary>
     /// Creates REST API operation.
     /// </summary>
-    /// <param name="server">Rest server.</param>
-    /// <param name="securitySchemes">Security schemes.</param>
+    /// <param name="document">The OpenAPI document.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <param name="logger">Used to perform logging.</param>
     /// <returns>Rest operation.</returns>
-    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiServer? server, IDictionary<string, OpenApiSecurityScheme>? securitySchemes, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
+    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiDocument document, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
     {
+        var server = document.Servers.FirstOrDefault();
+        var securitySchemes = CreateRestApiOperationSecuritySchemes(document.Components?.SecuritySchemes);
+        var securityRequirements = CreateRestApiOperationSecurityRequirements(document.SecurityRequirements);
+
         var operations = new List<RestApiOperation>();
         var operationServer = CreateRestApiOperationServer(server);
 
@@ -207,8 +207,8 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                 CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
-                CreateRestApiOperationSecurity(operationItem.Security),
-                CreateRestApiOperationSecuritySchemes(securitySchemes)
+                CreateRestApiOperationSecurityRequirements(operationItem.Security, securityRequirements),
+                securitySchemes
             )
             {
                 Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
@@ -253,9 +253,16 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// Build a list of <see cref="RestApiSecurityRequirement"/> objects from the given <see cref="OpenApiSecurityRequirement"/> objects.
     /// </summary>
     /// <param name="security">The REST API operation security</param>
-    private static List<RestApiSecurityRequirement> CreateRestApiOperationSecurity(IList<OpenApiSecurityRequirement>? security)
+    /// <param name="securityRequirements">Existing global security requirements</param>
+    private static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security, List<RestApiSecurityRequirement>? securityRequirements = null)
     {
         var result = new List<RestApiSecurityRequirement>();
+
+        // add existing security requirements that were set at the root level
+        if (securityRequirements is not null)
+        {
+            result.AddRange(securityRequirements);
+        }
 
         if (security is not null)
         {
