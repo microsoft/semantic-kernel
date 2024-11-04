@@ -37,8 +37,8 @@ def test_init_to_from_dict(openai_unit_test_env):
         "api_key": openai_unit_test_env["OPENAI_API_KEY"],
         "default_headers": default_headers,
     }
-    text_embedding = OpenAITextToImage.from_dict(settings)
-    dumped_settings = text_embedding.to_dict()
+    text_to_image = OpenAITextToImage.from_dict(settings)
+    dumped_settings = text_to_image.to_dict()
     assert dumped_settings["ai_model_id"] == settings["ai_model_id"]
     assert dumped_settings["api_key"] == settings["api_key"]
 
