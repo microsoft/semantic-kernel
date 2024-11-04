@@ -19,7 +19,7 @@ public static class TextEmbeddingVectorStoreExtensions
     /// <param name="vectorStore">The <see cref="IVectorStore"/> to add text embedding generation to.</param>
     /// <param name="textEmbeddingGenerationService">The service to use for generating text embeddings.</param>
     /// <returns>The <see cref="IVectorStore"/> with text embedding added.</returns>
-    public static IVectorStore WithTextEmbeddingGeneration(this IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService)
+    public static IVectorStore UseTextEmbeddingGeneration(this IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService)
     {
         return new TextEmbeddingVectorStore(vectorStore, textEmbeddingGenerationService);
     }
@@ -32,7 +32,7 @@ public static class TextEmbeddingVectorStoreExtensions
     /// <typeparam name="TKey">The data type of the record key.</typeparam>
     /// <typeparam name="TRecord">The record data model to use for adding, updating and retrieving data from the store.</typeparam>
     /// <returns>The <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with text embedding added.</returns>
-    public static IVectorStoreRecordCollection<TKey, TRecord> WithTextEmbeddingGeneration<TKey, TRecord>(this IVectorStoreRecordCollection<TKey, TRecord> vectorStoreRecordCollection, ITextEmbeddingGenerationService textEmbeddingGenerationService)
+    public static IVectorStoreRecordCollection<TKey, TRecord> UseTextEmbeddingGeneration<TKey, TRecord>(this IVectorStoreRecordCollection<TKey, TRecord> vectorStoreRecordCollection, ITextEmbeddingGenerationService textEmbeddingGenerationService)
         where TKey : notnull
     {
         return new TextEmbeddingVectorStoreRecordCollection<TKey, TRecord>(vectorStoreRecordCollection, textEmbeddingGenerationService);
