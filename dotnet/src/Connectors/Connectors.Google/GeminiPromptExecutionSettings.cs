@@ -23,6 +23,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private int? _maxTokens;
     private int? _candidateCount;
     private IList<string>? _stopSequences;
+    private string? _responseFormat;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
 
@@ -171,6 +172,22 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// The format of the transcript output, in one of these options: json, srt, verbose_json, or vtt. Default is 'json'.
+    /// </summary>
+    [JsonPropertyName("response_format")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ResponseFormat
+    {
+        get => this._responseFormat;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseFormat = value;
+        }
+    }
+
     /// <inheritdoc />
     public override void Freeze()
     {
@@ -207,6 +224,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
             StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
             SafetySettings = this.SafetySettings?.Select(setting => new GeminiSafetySetting(setting)).ToList(),
             ToolCallBehavior = this.ToolCallBehavior?.Clone(),
+            ResponseFormat = this.ResponseFormat
         };
     }
 
