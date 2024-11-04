@@ -121,7 +121,7 @@ public sealed class ChatClientCoreTests
         var clientCore = new ChatClientCore(
             modelId: "model",
             chatClient: new ChatCompletionsClient(this._endpoint, new AzureKeyCredential("api-key"),
-                new ChatCompletionsClientOptions()
+                new AzureAIInferenceClientOptions()
                 {
                     Transport = new HttpClientTransport(httpClient),
                     RetryPolicy = new RetryPolicy(maxRetries: 0), // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.

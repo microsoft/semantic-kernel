@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -12,11 +14,6 @@ namespace Microsoft.SemanticKernel;
 public record KernelProcessStepInfo
 {
     private KernelProcessStepState _state;
-
-    /// <summary>
-    /// A mapping of output edges from the Step using the .
-    /// </summary>
-    private readonly Dictionary<string, List<KernelProcessEdge>> _outputEdges;
 
     /// <summary>
     /// The type of the inner step.
@@ -37,10 +34,36 @@ public record KernelProcessStepInfo
     }
 
     /// <summary>
+    /// Captures Kernel Process Step State into <see cref="KernelProcessStateMetadata"/>
+    /// </summary>
+    /// <returns><see cref="KernelProcessStateMetadata"/></returns>
+    public virtual KernelProcessStateMetadata ToProcessStateMetadata()
+    {
+        KernelProcessStateMetadata metadata = new()
+        {
+            Name = this.State.Name,
+            Id = this.State.Id,
+        };
+
+        if (this.InnerStepType.TryGetSubtypeOfStatefulStep(out var genericStateType) && genericStateType != null)
+        {
+            var userStateType = genericStateType.GetGenericArguments()[0];
+            var stateOriginalType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
+
+            var innerState = stateOriginalType.GetProperty(nameof(KernelProcessStepState<object>.State))?.GetValue(this._state);
+            if (innerState != null)
+            {
+                metadata.State = innerState;
+            }
+        }
+
+        return metadata;
+    }
+
+    /// <summary>
     /// A read-only dictionary of output edges from the Step.
     /// </summary>
-    public IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> Edges =>
-        this._outputEdges.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyCollection<KernelProcessEdge>)kvp.Value.AsReadOnly());
+    public IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> Edges { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepInfo"/> class.
@@ -52,7 +75,7 @@ public record KernelProcessStepInfo
         Verify.NotNull(state);
 
         this.InnerStepType = innerStepType;
-        this._outputEdges = edges;
+        this.Edges = edges.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyCollection<KernelProcessEdge>)kvp.Value.AsReadOnly());
         this._state = state;
 
         // Register the state as a know type for the DataContractSerialization used by Dapr.

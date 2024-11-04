@@ -8,14 +8,14 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
 
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
-    private const string EndProcessId = "Microsoft.SemanticKernel.Process.EndStep";
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
@@ -24,7 +24,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
     internal readonly List<LocalStep> _steps = [];
     internal readonly KernelProcess _process;
-    internal readonly Kernel _kernel;
 
     private readonly ILogger _logger;
     private JoinableTask? _processTask;
@@ -36,22 +35,18 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="process">The <see cref="KernelProcess"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
     /// <param name="parentProcessId">Optional. The Id of the parent process if one exists, otherwise null.</param>
-    /// <param name="loggerFactory">Optional. A <see cref="ILoggerFactory"/>.</param>
-    internal LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null, ILoggerFactory? loggerFactory = null)
-        : base(process, kernel, parentProcessId, loggerFactory)
+    internal LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null)
+        : base(process, kernel, parentProcessId)
     {
-        Verify.NotNull(process);
         Verify.NotNull(process.Steps);
-        Verify.NotNull(kernel);
 
         this._stepsInfos = new List<KernelProcessStepInfo>(process.Steps);
-        this._kernel = kernel;
         this._process = process;
         this._initializeTask = new Lazy<ValueTask>(this.InitializeProcessAsync);
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
-        this._logger = this.LoggerFactory?.CreateLogger(this.Name) ?? new NullLogger<LocalStep>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this.Name) ?? new NullLogger<LocalStep>();
     }
 
     /// <summary>
@@ -79,7 +74,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <returns>A <see cref="Task"/></returns>
     internal async Task RunOnceAsync(KernelProcessEvent? processEvent, Kernel? kernel = null)
     {
-        Verify.NotNull(processEvent);
+        Verify.NotNull(processEvent, nameof(processEvent));
+
+        await Task.Yield(); // Ensure that the process has an opportunity to run in a different synchronization context.
         await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
         await this.StartAsync(kernel, keepAlive: false).ConfigureAwait(false);
         await this._processTask!.JoinAsync().ConfigureAwait(false);
@@ -120,40 +117,35 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
     /// <returns>A <see cref="Task"/></returns>
-    internal async Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
+    internal Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
     {
-        Verify.NotNull(processEvent);
-        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
+        Verify.NotNull(processEvent, nameof(processEvent));
+        return this._externalEventChannel.Writer.WriteAsync(processEvent).AsTask();
     }
 
     /// <summary>
     /// Gets the process information.
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
-    internal async Task<KernelProcess> GetProcessInfoAsync()
-    {
-        return await this.ToKernelProcessAsync().ConfigureAwait(false);
-    }
+    internal Task<KernelProcess> GetProcessInfoAsync() => this.ToKernelProcessAsync();
 
     /// <summary>
-    /// Handles a <see cref="LocalMessage"/> that has been sent to the process. This happens only in the case
+    /// Handles a <see cref="ProcessMessage"/> that has been sent to the process. This happens only in the case
     /// of a process (this one) running as a step within another process (this one's parent). In this case the
     /// entire sub-process should be executed within a single superstep.
     /// </summary>
     /// <param name="message">The message to process.</param>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    internal override async Task HandleMessageAsync(LocalMessage message)
+    internal override async Task HandleMessageAsync(ProcessMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.TargetEventId))
         {
-            string errorMessage = "Internal Process Error: The target event id must be specified when sending a message to a step.";
-            this._logger.LogError("{ErrorMessage}", errorMessage);
-            throw new KernelException(errorMessage);
+            throw new KernelException("Internal Process Error: The target event id must be specified when sending a message to a step.").Log(this._logger);
         }
 
         string eventId = message.TargetEventId!;
-        if (this._outputEdges!.TryGetValue(eventId, out List<KernelProcessEdge>? edges) && edges is not null)
+        if (this._outputEdges.TryGetValue(eventId, out List<KernelProcessEdge>? edges) && edges is not null)
         {
             // Create the external event that will be used to start the nested process. Since this event came
             // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
@@ -194,10 +186,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 var process = new LocalProcess(
                     process: kernelStep,
                     kernel: this._kernel,
-                    parentProcessId: this.Id,
-                    loggerFactory: this.LoggerFactory);
+                    parentProcessId: this.Id);
 
-                //await process.StartAsync(kernel: this._kernel, keepAlive: true).ConfigureAwait(false);
                 localStep = process;
             }
             else
@@ -208,8 +198,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 localStep = new LocalStep(
                     stepInfo: step,
                     kernel: this._kernel,
-                    parentProcessId: this.Id,
-                    loggerFactory: this.LoggerFactory);
+                    parentProcessId: this.Id);
             }
 
             this._steps.Add(localStep);
@@ -233,7 +222,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
     {
         Kernel localKernel = kernel ?? this._kernel;
-        Queue<LocalMessage> messageChannel = new();
+        Queue<ProcessMessage> messageChannel = new();
 
         try
         {
@@ -251,11 +240,11 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 }
 
                 // Complete the writing side, indicating no more messages in this superstep.
-                var messagesToProcess = messageChannel.ToList();
+                var messagesToProcess = messageChannel.ToArray();
                 messageChannel.Clear();
 
                 // If there are no messages to process, wait for an external event.
-                if (messagesToProcess.Count == 0)
+                if (messagesToProcess.Length == 0)
                 {
                     if (!keepAlive || !await this._externalEventChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
                     {
@@ -268,7 +257,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 foreach (var message in messagesToProcess)
                 {
                     // Check for end condition
-                    if (message.DestinationId.Equals(EndProcessId, StringComparison.OrdinalIgnoreCase))
+                    if (message.DestinationId.Equals(ProcessConstants.EndStepName, StringComparison.OrdinalIgnoreCase))
                     {
                         this._processCancelSource?.Cancel();
                         break;
@@ -286,7 +275,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         }
         catch (Exception ex)
         {
-            this._logger?.LogError("An error occurred while running the process: {ErrorMessage}.", ex.Message);
+            this._logger?.LogError(ex, "An error occurred while running the process.");
             throw;
         }
         finally
@@ -303,11 +292,11 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     }
 
     /// <summary>
-    /// Processes external events that have been sent to the process, translates them to <see cref="LocalMessage"/>s, and enqueues
+    /// Processes external events that have been sent to the process, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
-    private void EnqueueExternalMessages(Queue<LocalMessage> messageChannel)
+    private void EnqueueExternalMessages(Queue<ProcessMessage> messageChannel)
     {
         while (this._externalEventChannel.Reader.TryRead(out var externalEvent))
         {
@@ -315,7 +304,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             {
                 foreach (var edge in edges)
                 {
-                    LocalMessage message = LocalMessageFactory.CreateFromEdge(edge, externalEvent.Data);
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
                     messageChannel.Enqueue(message);
                 }
             }
@@ -323,15 +312,15 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     }
 
     /// <summary>
-    /// Processes events emitted by the given step in the last superstep, translates them to <see cref="LocalMessage"/>s, and enqueues
+    /// Processes events emitted by the given step in the last superstep, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
     /// </summary>
     /// <param name="step">The step containing outgoing events to process.</param>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
-    private void EnqueueStepMessages(LocalStep step, Queue<LocalMessage> messageChannel)
+    private void EnqueueStepMessages(LocalStep step, Queue<ProcessMessage> messageChannel)
     {
         var allStepEvents = step.GetAllEvents();
-        foreach (var stepEvent in allStepEvents)
+        foreach (ProcessEvent stepEvent in allStepEvents)
         {
             // Emit the event out of the process (this one) if it's visibility is public.
             if (stepEvent.Visibility == KernelProcessEventVisibility.Public)
@@ -340,10 +329,25 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             }
 
             // Get the edges for the event and queue up the messages to be sent to the next steps.
-            foreach (var edge in step.GetEdgeForEvent(stepEvent.Id!))
+            bool foundEdge = false;
+            foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.Id))
             {
-                LocalMessage message = LocalMessageFactory.CreateFromEdge(edge, stepEvent.Data);
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
                 messageChannel.Enqueue(message);
+                foundEdge = true;
+            }
+
+            // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
+            if (!foundEdge && stepEvent.IsError)
+            {
+                if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
+                {
+                    foreach (KernelProcessEdge edge in edges)
+                    {
+                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
+                        messageChannel.Enqueue(message);
+                    }
+                }
             }
         }
     }

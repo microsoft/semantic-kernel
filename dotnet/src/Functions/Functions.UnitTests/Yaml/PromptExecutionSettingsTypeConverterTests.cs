@@ -294,6 +294,50 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
     }
 
+    [Fact]
+    public void ItShouldDeserializeAutoFunctionChoiceBehaviorFromJsonWithOptions()
+    {
+        // Arrange
+        var yaml = """
+            function_choice_behavior:
+              type: auto
+              options:
+                allow_parallel_calls: true
+                allow_concurrent_invocation: true
+        """;
+
+        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+
+        // Act
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.True(config.Options.AllowParallelCalls);
+        Assert.True(config.Options.AllowConcurrentInvocation);
+    }
+
+    [Fact]
+    public void ItShouldDeserializeRequiredFunctionChoiceBehaviorFromJsonWithOptions()
+    {
+        // Arrange
+        var yaml = """
+            function_choice_behavior:
+              type: required
+              options:
+                allow_parallel_calls: true
+                allow_concurrent_invocation: true
+        """;
+
+        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+
+        // Act
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+
+        // Assert
+        Assert.True(config.Options.AllowParallelCalls);
+        Assert.True(config.Options.AllowConcurrentInvocation);
+    }
+
     private readonly string _yaml = """
         template_format: semantic-kernel
         template:        Say hello world to {{$name}} in {{$language}}

@@ -37,7 +37,8 @@ jobs:
             dotnet:
               - 'dotnet/**'
               - '**/dotnet/**'
-              - 'samples/skills/**'
+              - '.github/workflows/check-coverage.ps1'
+              - '.github/workflows/dotnet-build-and-test.yml'
       # run only if 'dotnet' files were changed
       - name: dotnet tests
         if: steps.filter.outputs.dotnet == 'true'
@@ -86,6 +87,10 @@ jobs:
           for project in $UT_PROJECTS; do
             dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute
           done
+
+      - name: Run AOT Unit Tests
+        shell: pwsh
+        run: .github/workflows/test-aot-compatibility.ps1 ${{ matrix.dotnet }}
 
       - name: Azure CLI Login
         if: github.event_name != 'pull_request' && matrix.integration-tests
@@ -147,7 +152,6 @@ jobs:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
           reporttypes: "JsonSummary"
-          assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Connectors.AzureOpenAI;+Microsoft.SemanticKernel.Yaml;+Microsoft.SemanticKernel.Agents.Abstractions;+Microsoft.SemanticKernel.Agents.Core;+Microsoft.SemanticKernel.Agents.OpenAI"
 
       - name: Check coverage
         shell: pwsh
