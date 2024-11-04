@@ -28,7 +28,7 @@ public class Step4_NonStringKey_VectorStore(ITestOutputHelper output, VectorStor
     [Fact]
     public async Task UseAQdrantVectorStoreAsync()
     {
-        // Construct a Redis vector store collection.
+        // Construct a Qdrant vector store collection.
         var collection = new QdrantVectorStoreRecordCollection<UlongGlossary>(new QdrantClient("localhost"), "skglossary");
 
         // Wrap the collection using a decorator that allows us to expose a version that uses string keys, but internally
