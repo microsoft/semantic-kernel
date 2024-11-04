@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapr.Actors.Runtime;
 using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -12,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class EventBufferActor : Actor, IEventBuffer
 {
-    private Queue<ProcessEvent>? _queue = new();
+    private List<ProcessEvent> _queue = [];
 
     /// <summary>
     /// Required constructor for Dapr Actor.
@@ -29,11 +30,11 @@ internal class EventBufferActor : Actor, IEventBuffer
     public async Task<IList<ProcessEvent>> DequeueAllAsync()
     {
         // Dequeue and clear the queue.
-        var items = this._queue!.ToArray();
-        this._queue!.Clear();
+        List<ProcessEvent> items = [.. this._queue];
+        this._queue.Clear();
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, this._queue).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, ProcessEventSerializer.Prepare(this._queue)).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return items;
@@ -41,10 +42,10 @@ internal class EventBufferActor : Actor, IEventBuffer
 
     public async Task EnqueueAsync(ProcessEvent stepEvent)
     {
-        this._queue!.Enqueue(stepEvent);
+        this._queue.Add(stepEvent);
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, this._queue).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, ProcessEventSerializer.Prepare(this._queue)).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -54,14 +55,14 @@ internal class EventBufferActor : Actor, IEventBuffer
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var eventQueueState = await this.StateManager.TryGetStateAsync<Queue<ProcessEvent>>(ActorStateKeys.EventQueueState).ConfigureAwait(false);
+        var eventQueueState = await this.StateManager.TryGetStateAsync<EventContainer<ProcessEvent>[]>(ActorStateKeys.EventQueueState).ConfigureAwait(false);
         if (eventQueueState.HasValue)
         {
-            this._queue = eventQueueState.Value;
+            this._queue = [.. ProcessEventSerializer.Process(eventQueueState.Value)];
         }
         else
         {
-            this._queue = new Queue<ProcessEvent>();
+            this._queue = [];
         }
     }
 }

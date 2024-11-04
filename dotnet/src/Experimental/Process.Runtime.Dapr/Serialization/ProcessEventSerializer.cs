@@ -2,24 +2,25 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel.Process.Serialization;
 
 /// <summary>
 /// %%% COMMENT
 /// </summary>
-internal static class KernelProcessEventSerializer
+internal static class ProcessEventSerializer
 {
     /// <summary>
     /// %%% COMMENT
     /// </summary>
     /// <param name="processEvents"></param>
     /// <returns></returns>
-    public static IEnumerable<EventContainer<KernelProcessEvent>> Prepare(IEnumerable<KernelProcessEvent> processEvents)
+    public static IEnumerable<EventContainer<ProcessEvent>> Prepare(IEnumerable<ProcessEvent> processEvents)
     {
-        foreach (KernelProcessEvent processEvent in processEvents)
+        foreach (ProcessEvent processEvent in processEvents)
         {
-            yield return new EventContainer<KernelProcessEvent>(TypeInfo.FromObject(processEvent.Data), processEvent);
+            yield return new EventContainer<ProcessEvent>(TypeInfo.FromObject(processEvent.Data), processEvent);
         }
     }
 
@@ -29,11 +30,11 @@ internal static class KernelProcessEventSerializer
     /// <param name="eventContainers"></param>
     /// <returns></returns>
     /// <exception cref="KernelException"></exception>
-    public static IEnumerable<KernelProcessEvent> Process(IEnumerable<EventContainer<KernelProcessEvent>> eventContainers)
+    public static IEnumerable<ProcessEvent> Process(IEnumerable<EventContainer<ProcessEvent>> eventContainers)
     {
-        foreach (EventContainer<KernelProcessEvent> eventContainer in eventContainers)
+        foreach (EventContainer<ProcessEvent> eventContainer in eventContainers)
         {
-            KernelProcessEvent processEvent = eventContainer.Payload;
+            ProcessEvent processEvent = eventContainer.Payload;
 
             if (processEvent.Data == null)
             {
@@ -42,7 +43,7 @@ internal static class KernelProcessEventSerializer
 
             if (eventContainer.DataType == null)
             {
-                throw new KernelException($"{nameof(KernelProcessEvent)} persisted without type information for {nameof(KernelProcessEvent.Data)} property.");
+                throw new KernelException($"{nameof(ProcessEvent)} persisted without type information for {nameof(ProcessEvent.Data)} property.");
             }
 
             TypeInfo processEventTypeInfo = eventContainer.DataType;
