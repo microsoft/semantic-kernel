@@ -64,7 +64,11 @@ public sealed class QdrantVectorStore : IVectorStore
             throw new NotSupportedException("Only ulong and Guid keys are supported.");
         }
 
-        var recordCollection = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition });
+        var recordCollection = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>()
+        {
+            HasNamedVectors = this._options.HasNamedVectors,
+            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+        });
         var castRecordCollection = recordCollection as IVectorStoreRecordCollection<TKey, TRecord>;
         return castRecordCollection!;
     }
