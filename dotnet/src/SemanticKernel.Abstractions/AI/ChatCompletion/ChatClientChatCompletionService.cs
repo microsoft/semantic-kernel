@@ -54,8 +54,10 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
+        List<ChatMessage> chatMessage = ChatCompletionServiceExtensions.ToChatMessageList(chatHistory);
+
         var completion = await this._chatClient.CompleteAsync(
-            chatHistory.Select(ChatCompletionServiceExtensions.ToChatMessage).ToList(),
+            ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false);
 
@@ -69,7 +71,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         Verify.NotNull(chatHistory);
 
         await foreach (var update in this._chatClient.CompleteStreamingAsync(
-            chatHistory.Select(ChatCompletionServiceExtensions.ToChatMessage).ToList(),
+            ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false))
         {

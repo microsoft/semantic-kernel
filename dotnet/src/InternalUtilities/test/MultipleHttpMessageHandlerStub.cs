@@ -52,4 +52,14 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 
         return await Task.FromResult(this.ResponsesToReturn[this._callIteration - 1]);
     }
+
+    internal string? GetRequestContentAsString(int index, Encoding? encoding = null)
+    {
+        if (encoding is null)
+        {
+            encoding = Encoding.UTF8;
+        }
+
+        return this.RequestContents[index] is null ? null : encoding.GetString(this.RequestContents[index]!);
+    }
 }

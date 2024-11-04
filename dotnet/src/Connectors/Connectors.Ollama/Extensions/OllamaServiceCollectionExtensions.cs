@@ -116,7 +116,8 @@ public static class OllamaServiceCollectionExtensions
             var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
 
             var chatClientBuilder = new ChatClientBuilder()
-                .UseFunctionInvocation();
+                .UseFunctionInvocation(config =>
+                    config.MaximumIterationsPerRequest = 128);
 
             if (logger is not null)
             {
@@ -154,7 +155,8 @@ public static class OllamaServiceCollectionExtensions
             var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
 
             var chatClientBuilder = new ChatClientBuilder()
-                .UseFunctionInvocation();
+                .UseFunctionInvocation(config =>
+                    config.MaximumIterationsPerRequest = 128);
 
             if (logger is not null)
             {

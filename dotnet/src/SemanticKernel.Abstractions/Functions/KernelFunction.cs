@@ -563,7 +563,7 @@ public abstract class KernelFunction
 
             string name = string.IsNullOrWhiteSpace(kernelFunction.PluginName) ?
                 kernelFunction.Name :
-                $"{kernelFunction.PluginName}_{kernelFunction.Name}";
+                $"{kernelFunction.PluginName}-{kernelFunction.Name}";
 
             this.Metadata = new AIFunctionMetadata(name)
             {
