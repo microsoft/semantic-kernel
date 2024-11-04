@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Contains helpers for reading vector store model properties and their attributes.
@@ -19,6 +19,7 @@ internal sealed class VectorStoreRecordPropertyReader
 #pragma warning restore CA1812
 {
     /// <summary>The <see cref="Type"/> of the data model.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)]
     private readonly Type _dataModelType;
 
     /// <summary>A definition of the current storage model.</summary>
@@ -73,7 +74,7 @@ internal sealed class VectorStoreRecordPropertyReader
     private readonly Lazy<List<string>> _vectorPropertyJsonNames;
 
     public VectorStoreRecordPropertyReader(
-        Type dataModelType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] Type dataModelType,
         VectorStoreRecordDefinition? vectorStoreRecordDefinition,
         VectorStoreRecordPropertyReaderOptions? options)
     {
@@ -149,7 +150,7 @@ internal sealed class VectorStoreRecordPropertyReader
             return BuildPropertyNameToJsonPropertyNameMap(
                 (this._keyProperties, this._dataProperties, this._vectorProperties),
                 dataModelType,
-                this._options.JsonSerializerOptions);
+                this._options?.JsonSerializerOptions);
         });
 
         this._keyPropertyJsonNames = new Lazy<List<string>>(() =>
@@ -256,6 +257,9 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <summary>Gets the storage names of the data properties in the definition.</summary>
     public IReadOnlyList<string> DataPropertyStoragePropertyNames => this._dataPropertyStoragePropertyNames.Value;
 
+    /// <summary>Gets the storage name of the first vector property in the definition or null if there are no vectors.</summary>
+    public string? FirstVectorPropertyStoragePropertyName => this.FirstVectorPropertyName == null ? null : this.StoragePropertyNamesMap[this.FirstVectorPropertyName];
+
     /// <summary>Gets the storage names of the vector properties in the definition.</summary>
     public IReadOnlyList<string> VectorPropertyStoragePropertyNames => this._vectorPropertyStoragePropertyNames.Value;
 
@@ -267,6 +271,9 @@ internal sealed class VectorStoreRecordPropertyReader
 
     /// <summary>Gets the json names of the data properties in the definition.</summary>
     public IReadOnlyList<string> DataPropertyJsonNames => this._dataPropertyJsonNames.Value;
+
+    /// <summary>Gets the json name of the first vector property in the definition or null if there are no vectors.</summary>
+    public string? FirstVectorPropertyJsonName => this.FirstVectorPropertyName == null ? null : this.JsonPropertyNamesMap[this.FirstVectorPropertyName];
 
     /// <summary>Gets the json names of the vector properties in the definition.</summary>
     public IReadOnlyList<string> VectorPropertyJsonNames => this._vectorPropertyJsonNames.Value;
@@ -402,7 +409,7 @@ internal sealed class VectorStoreRecordPropertyReader
     /// </summary>
     /// <param name="type">The data model to find the properties on.</param>
     /// <returns>The categorized properties.</returns>
-    private static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo(Type type)
+    private static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
     {
         List<PropertyInfo> keyProperties = new();
         List<PropertyInfo> dataProperties = new();
@@ -440,7 +447,7 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <param name="type">The data model to find the properties on.</param>
     /// <param name="vectorStoreRecordDefinition">The property configuration.</param>
     /// <returns>The categorized properties.</returns>
-    public static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo(Type type, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public static (List<PropertyInfo> KeyProperties, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindPropertiesInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, VectorStoreRecordDefinition vectorStoreRecordDefinition)
     {
         List<PropertyInfo> keyProperties = new();
         List<PropertyInfo> dataProperties = new();
@@ -582,8 +589,8 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <returns>The map from property names to the names that they would have if serialized to JSON.</returns>
     private static Dictionary<string, string> BuildPropertyNameToJsonPropertyNameMap(
         (List<VectorStoreRecordKeyProperty> keyProperties, List<VectorStoreRecordDataProperty> dataProperties, List<VectorStoreRecordVectorProperty> vectorProperties) properties,
-        Type dataModel,
-        JsonSerializerOptions options)
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type dataModel,
+        JsonSerializerOptions? options)
     {
         var jsonPropertyNameMap = new Dictionary<string, string>();
 
@@ -615,7 +622,7 @@ internal sealed class VectorStoreRecordPropertyReader
     /// <param name="dataModel">The data model type that the property belongs to.</param>
     /// <param name="options">The options used for JSON serialization.</param>
     /// <returns>The JSON property name.</returns>
-    private static string GetJsonPropertyName(VectorStoreRecordProperty property, Type dataModel, JsonSerializerOptions options)
+    private static string GetJsonPropertyName(VectorStoreRecordProperty property, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type dataModel, JsonSerializerOptions? options)
     {
         var propertyInfo = dataModel.GetProperty(property.DataModelPropertyName);
 
@@ -628,7 +635,7 @@ internal sealed class VectorStoreRecordPropertyReader
             }
         }
 
-        if (options.PropertyNamingPolicy is not null)
+        if (options?.PropertyNamingPolicy is not null)
         {
             return options.PropertyNamingPolicy.ConvertName(property.DataModelPropertyName);
         }

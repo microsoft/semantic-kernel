@@ -41,7 +41,24 @@ namespace FunctionCalling;
 ///      To enable manual invocation, the caller needs to set the `autoInvoke` parameter to `false` when specifying either <see cref="FunctionChoiceBehavior.Auto"/>
 ///      or <see cref="FunctionChoiceBehavior.Required"/> in the <see cref="PromptExecutionSettings"/>.
 ///
-///    SK supports only sequential invocation of functions in the automatic invocation mode at the moment. To invoke functions concurrently, a caller will need to do this manually.
+/// ** Options **
+///    The following aspects of the function choice behaviors can be changed via the `options` constructor's parameter of type <see cref="FunctionChoiceBehaviorOptions"/> each behavior accepts:
+///    * The <see cref="FunctionChoiceBehaviorOptions.AllowConcurrentInvocation"/> option enables concurrent invocation of functions by SK.
+///      By default, this option is set to false, meaning that functions are invoked sequentially. Concurrent invocation is only possible if the AI model can
+///      call or select multiple functions for invocation in a single request; otherwise, there is no distinction between sequential and concurrent invocation.
+///    * The <see cref="FunctionChoiceBehaviorOptions.AllowParallelCalls"/> option instructs the AI model to call multiple functions in one request if the model supports parallel function calls.
+///      By default, this option is set to null, meaning that the AI model default value will be used.
+///
+///    The following table summarizes the effects of different combinations of these options:
+///
+///    | AllowParallelCalls  | AllowConcurrentInvocation | AI function call requests      | Concurrent Invocation |
+///    |---------------------|---------------------------|--------------------------------|-----------------------|
+///    | false               | false                     | one request per call           | false                 |
+///    | false               | true                      | one request per call           | false*                |
+///    | true                | false                     | one request per multiple calls | false                 |
+///    | true                | true                      | one request per multiple calls | true                  |
+///
+///    `*` There's only one function to call
 /// </summary>
 public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
@@ -426,6 +443,88 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // Expected output: "As an AI, I don't have real-time data or live feed to provide current weather conditions or the color of the sky."
     }
 
+    [Fact]
+    /// <summary>
+    /// This example demonstrates usage of the non-streaming chat completion API with <see cref="FunctionChoiceBehavior.Auto"/> that advertises all kernel functions to the AI model and invokes them automatically in concurrent manner.
+    /// </summary>
+    public async Task RunNonStreamingChatCompletionApiWithConcurrentFunctionInvocationOptionAsync()
+    {
+        Kernel kernel = CreateKernel();
+
+        // The `AllowConcurrentInvocation` option enables concurrent invocation of functions.
+        FunctionChoiceBehaviorOptions options = new() { AllowConcurrentInvocation = true };
+
+        // To enable automatic function invocation, set the `autoInvoke` parameter to `true` in the line below or omit it as it is `true` by default.
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: options) };
+
+        IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+
+        ChatMessageContent result = await chatCompletionService.GetChatMessageContentAsync(
+            "Good morning! What’s the current time and latest news headlines?",
+            settings,
+            kernel);
+
+        // Assert
+        Console.WriteLine(result);
+
+        // Expected output: Good morning! The current UTC time is 07:47 on October 22, 2024. Here are the latest news headlines: 1. Squirrel Steals Show - Discover the unexpected star of a recent event. 2. Dog Wins Lottery - Unbelievably, a lucky canine has hit the jackpot.
+    }
+
+    [Fact]
+    /// <summary>
+    /// This example demonstrates usage of the non-streaming chat completion API with <see cref="FunctionChoiceBehavior.Auto"/> that
+    /// advertises all kernel functions to the AI model and instructs the model to call multiple functions in parallel.
+    /// </summary>
+    public async Task RunNonStreamingChatCompletionApiWithParallelFunctionCallOptionAsync()
+    {
+        Kernel kernel = CreateKernel();
+
+        // The `AllowParallelCalls` option instructs the AI model to call multiple functions in parallel if the model supports parallel function calls.
+        FunctionChoiceBehaviorOptions options = new() { AllowParallelCalls = true };
+
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: options) };
+
+        IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+
+        ChatMessageContent result = await chatCompletionService.GetChatMessageContentAsync(
+            "Good morning! What’s the current time and latest news headlines?",
+            settings,
+            kernel);
+
+        // Assert
+        Console.WriteLine(result);
+
+        // Expected output: Good morning! The current UTC time is 07:47 on October 22, 2024. Here are the latest news headlines: 1. Squirrel Steals Show - Discover the unexpected star of a recent event. 2. Dog Wins Lottery - Unbelievably, a lucky canine has hit the jackpot.
+    }
+
+    [Fact]
+    /// <summary>
+    /// This example demonstrates usage of the non-streaming chat completion API with <see cref="FunctionChoiceBehavior.Auto"/> that
+    /// advertises all kernel functions to the AI model, instructs the model to call multiple functions in parallel, and invokes them concurrently.
+    /// </summary>
+    public async Task RunNonStreamingChatCompletionApiWithParallelFunctionCallAndConcurrentFunctionInvocationOptionsAsync()
+    {
+        Kernel kernel = CreateKernel();
+
+        // The `AllowParallelCalls` option instructs the AI model to call multiple functions in parallel if the model supports parallel function calls.
+        // The `AllowConcurrentInvocation` option enables concurrent invocation of the functions.
+        FunctionChoiceBehaviorOptions options = new() { AllowParallelCalls = true, AllowConcurrentInvocation = true };
+
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: options) };
+
+        IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+
+        ChatMessageContent result = await chatCompletionService.GetChatMessageContentAsync(
+            "Good morning! What’s the current time and latest news headlines?",
+            settings,
+            kernel);
+
+        // Assert
+        Console.WriteLine(result);
+
+        // Expected output: Good morning! The current UTC time is 07:47 on October 22, 2024. Here are the latest news headlines: 1. Squirrel Steals Show - Discover the unexpected star of a recent event. 2. Dog Wins Lottery - Unbelievably, a lucky canine has hit the jackpot.
+    }
+
     private static Kernel CreateKernel()
     {
         // Create kernel
@@ -438,6 +537,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // Add a plugin with some helper functions we want to allow the model to call.
         kernel.ImportPluginFromFunctions("HelperFunctions",
         [
+            kernel.CreateFunctionFromMethod(() => new List<string> { "Squirrel Steals Show", "Dog Wins Lottery" }, "GetLatestNewsTitles", "Retrieves latest news titles."),
             kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcDateTime", "Retrieves the current date time in UTC."),
             kernel.CreateFunctionFromMethod((string cityName, string currentDateTime) =>
                 cityName switch

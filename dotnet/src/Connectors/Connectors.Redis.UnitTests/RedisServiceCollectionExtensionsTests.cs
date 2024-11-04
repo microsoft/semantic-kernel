@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Data;
 using Moq;
 using StackExchange.Redis;
 using Xunit;
@@ -35,11 +35,61 @@ public class RedisServiceCollectionExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
+    [Fact]
+    public void AddRedisHashSetVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange.
+        this._serviceCollection.AddSingleton<IDatabase>(Mock.Of<IDatabase>());
+
+        // Act.
+        this._serviceCollection.AddRedisHashSetVectorStoreRecordCollection<TestRecord>("testCollection");
+
+        // Assert.
+        this.AssertHashSetVectorStoreRecordCollectionCreated<TestRecord>();
+    }
+
+    [Fact]
+    public void AddRedisJsonVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange.
+        this._serviceCollection.AddSingleton<IDatabase>(Mock.Of<IDatabase>());
+
+        // Act.
+        this._serviceCollection.AddRedisJsonVectorStoreRecordCollection<TestRecord>("testCollection");
+
+        // Assert.
+        this.AssertJsonVectorStoreRecordCollectionCreated<TestRecord>();
+    }
+
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
         var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
         Assert.NotNull(vectorStore);
         Assert.IsType<RedisVectorStore>(vectorStore);
+    }
+
+    private void AssertHashSetVectorStoreRecordCollectionCreated<TRecord>()
+    {
+        var serviceProvider = this._serviceCollection.BuildServiceProvider();
+        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<RedisHashSetVectorStoreRecordCollection<TRecord>>(collection);
+    }
+
+    private void AssertJsonVectorStoreRecordCollectionCreated<TRecord>()
+    {
+        var serviceProvider = this._serviceCollection.BuildServiceProvider();
+        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<RedisJsonVectorStoreRecordCollection<TRecord>>(collection);
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestRecord
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = string.Empty;
     }
 }

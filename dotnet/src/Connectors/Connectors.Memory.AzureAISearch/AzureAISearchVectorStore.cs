@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Search.Documents.Indexes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -44,16 +44,15 @@ public sealed class AzureAISearchVectorStore : IVectorStore
     /// <inheritdoc />
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
-        where TRecord : class
     {
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._searchIndexClient, name, vectorStoreRecordDefinition);
+        }
+
+        if (typeof(TKey) != typeof(string))
+        {
+            throw new NotSupportedException("Only string keys are supported.");
         }
 
         var recordCollection = new AzureAISearchVectorStoreRecordCollection<TRecord>(

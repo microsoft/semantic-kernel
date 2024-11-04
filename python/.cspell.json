@@ -27,6 +27,7 @@
         "aiplatform",
         "azuredocindex",
         "azuredocs",
+        "boto",
         "contentvector",
         "contoso",
         "datamodel",
@@ -34,6 +35,7 @@
         "endregion",
         "genai",
         "generativeai",
+        "hnsw",
         "httpx",
         "huggingface",
         "kernelfunction",
@@ -58,7 +60,9 @@
         "skprompt",
         "templating",
         "vectordb",
+        "vectorizer",
         "vectorstoremodel",
-        "vertexai"
+        "vertexai",
+        "Weaviate"
     ]
 }

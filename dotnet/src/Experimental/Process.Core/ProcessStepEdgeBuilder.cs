@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 
@@ -50,7 +51,8 @@ public sealed class ProcessStepEdgeBuilder
     /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
     /// </summary>
     /// <param name="target">The output target.</param>
-    public void SendEventTo(ProcessFunctionTargetBuilder target)
+    /// <returns>A fresh builder instance for fluid definition</returns>
+    public ProcessStepEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target)
     {
         if (this.Target is not null)
         {
@@ -59,6 +61,8 @@ public sealed class ProcessStepEdgeBuilder
 
         this.Target = target;
         this.Source.LinkTo(this.EventId, this);
+
+        return new ProcessStepEdgeBuilder(this.Source, this.EventId);
     }
 
     /// <summary>
@@ -73,6 +77,6 @@ public sealed class ProcessStepEdgeBuilder
 
         var outputTarget = new ProcessFunctionTargetBuilder(EndStep.Instance);
         this.Target = outputTarget;
-        this.Source.LinkTo(EndStep.EndStepName, this);
+        this.Source.LinkTo(ProcessConstants.EndStepName, this);
     }
 }

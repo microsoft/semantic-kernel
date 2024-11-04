@@ -2,6 +2,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -44,7 +45,7 @@ internal static class TypeConverterFactory
         if (type == typeof(DateTimeOffset)) { return new DateTimeOffsetConverter(); }
         if (type == typeof(Uri)) { return new UriTypeConverter(); }
         if (type == typeof(Guid)) { return new GuidConverter(); }
-        if (type.IsEnum) { return new EnumConverter(type); }
+        if (type.IsEnum) { return CreateEnumConverter(type); }
 
         if (type.GetCustomAttribute<TypeConverterAttribute>() is TypeConverterAttribute tca &&
             Type.GetType(tca.ConverterTypeName, throwOnError: false) is Type converterType &&
@@ -54,5 +55,12 @@ internal static class TypeConverterFactory
         }
 
         return null;
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2067:UnrecognizedReflectionPattern", Justification = "Trimmer does not trim enums. See the PR - https://github.com/dotnet/runtime/pull/100347 for more details.")]
+    private static EnumConverter CreateEnumConverter(Type type)
+    {
+        Debug.Assert(type.IsEnum || type == typeof(Enum));
+        return new EnumConverter(type);
     }
 }

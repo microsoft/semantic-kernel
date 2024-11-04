@@ -43,8 +43,8 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         try
         {
             await InvokeAgentAsync("Hello");
-            await InvokeAgentAsync("What is the special soup?");
-            await InvokeAgentAsync("What is the special drink?");
+            await InvokeAgentAsync("What is the special soup and its price?");
+            await InvokeAgentAsync("What is the special drink and its price?");
             await InvokeAgentAsync("Thank you");
         }
         finally

@@ -6,7 +6,10 @@ using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 using OpenAI.Files;
+
+using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 
 /// <summary>
 /// Base class for samples that demonstrate the usage of agents.
@@ -77,6 +80,23 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             {
                 Console.WriteLine($"  [{item.GetType().Name}] {functionResult.CallId}");
             }
+        }
+
+        if (message.Metadata?.TryGetValue("Usage", out object? usage) ?? false)
+        {
+            if (usage is RunStepTokenUsage assistantUsage)
+            {
+                WriteUsage(assistantUsage.TotalTokenCount, assistantUsage.InputTokenCount, assistantUsage.OutputTokenCount);
+            }
+            else if (usage is ChatTokenUsage chatUsage)
+            {
+                WriteUsage(chatUsage.TotalTokenCount, chatUsage.InputTokenCount, chatUsage.OutputTokenCount);
+            }
+        }
+
+        void WriteUsage(int totalTokens, int inputTokens, int outputTokens)
+        {
+            Console.WriteLine($"  [Usage] Tokens: {totalTokens}, Input: {inputTokens}, Output: {outputTokens}");
         }
     }
 
