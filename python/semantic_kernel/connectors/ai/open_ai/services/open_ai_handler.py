@@ -44,6 +44,8 @@ class OpenAIHandler(KernelBaseModel, ABC):
             if self.ai_model_type == OpenAIModelTypes.CHAT:
                 assert isinstance(request_settings, OpenAIChatPromptExecutionSettings)  # nosec
                 self._handle_structured_output(request_settings, settings)
+                if request_settings.tools is None:
+                    settings.pop("parallel_tool_calls", None)
                 response = await self.client.chat.completions.create(**settings)
             else:
                 response = await self.client.completions.create(**settings)

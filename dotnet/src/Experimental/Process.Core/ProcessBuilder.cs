@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
@@ -175,6 +176,19 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return new ProcessEdgeBuilder(this, eventId);
+    }
+
+    /// <summary>
+    /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
+    /// step that responds to an unhandled process error.
+    /// </summary>
+    /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/></returns>
+    /// <remarks>
+    /// To target a specific error source, use the <see cref="ProcessStepBuilder.OnFunctionError"/> on the step.
+    /// </remarks>
+    public ProcessEdgeBuilder OnError()
+    {
+        return new ProcessEdgeBuilder(this, ProcessConstants.GlobalErrorEventId);
     }
 
     /// <summary>

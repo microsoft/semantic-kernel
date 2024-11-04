@@ -80,7 +80,6 @@ public class ProcessStepBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
-        Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
         Assert.EndsWith("TestFunction.OnError", edgeBuilder.EventId);
     }
 

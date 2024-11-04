@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -25,7 +26,7 @@ public class LocalProcessTests
         ], []);
 
         var mockKernel = new Kernel();
-        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
 
         // Act
         await localProcess.StartAsync();
@@ -52,7 +53,7 @@ public class LocalProcessTests
         ], []);
 
         // Act
-        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
 
         // Assert
         Assert.NotEmpty(localProcess.Id);
@@ -74,11 +75,91 @@ public class LocalProcessTests
         ], []);
 
         // Act
-        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, loggerFactory: null);
+        using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
 
         // Assert
         Assert.NotEmpty(localProcess.Id);
         Assert.Equal("AlreadySet", localProcess.Id);
+    }
+
+    /// <summary>
+    /// Verify that the function  level error handler is called when a function fails.
+    /// </summary>
+    [Fact]
+    public async Task ProcessFunctionErrorHandledAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessFunctionErrorHandledAsync));
+
+        ProcessStepBuilder testStep = process.AddStepFromType<FailedStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(testStep));
+
+        ProcessStepBuilder errorStep = process.AddStepFromType<ErrorStep>();
+        testStep.OnFunctionError(nameof(FailedStep.TestFailure)).SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.FunctionErrorHandler)));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+
+        // Assert
+        Assert.True(kernel.Data.ContainsKey("error-function"));
+        Assert.IsType<KernelProcessError>(kernel.Data["error-function"]);
+    }
+
+    /// <summary>
+    /// Verify that the process level error handler is called when a function fails.
+    /// </summary>
+    [Fact]
+    public async Task ProcessGlobalErrorHandledAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessFunctionErrorHandledAsync));
+
+        ProcessStepBuilder testStep = process.AddStepFromType<FailedStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(testStep));
+
+        ProcessStepBuilder errorStep = process.AddStepFromType<ErrorStep>();
+        process.OnError().SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.GlobalErrorHandler)));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+
+        // Assert
+        Assert.True(kernel.Data.ContainsKey("error-global"));
+        Assert.IsType<KernelProcessError>(kernel.Data["error-global"]);
+    }
+
+    /// <summary>
+    /// Verify that the function level error handler has precedence over the process level error handler.
+    /// </summary>
+    [Fact]
+    public async Task FunctionErrorHandlerTakesPrecedenceAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessFunctionErrorHandledAsync));
+
+        ProcessStepBuilder testStep = process.AddStepFromType<FailedStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(testStep));
+
+        ProcessStepBuilder errorStep = process.AddStepFromType<ErrorStep>();
+        testStep.OnFunctionError(nameof(FailedStep.TestFailure)).SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.FunctionErrorHandler)));
+        process.OnError().SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.GlobalErrorHandler)));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+
+        // Assert
+        Assert.False(kernel.Data.ContainsKey("error-global"));
+        Assert.True(kernel.Data.ContainsKey("error-function"));
+        Assert.IsType<KernelProcessError>(kernel.Data["error-function"]);
     }
 
     /// <summary>
@@ -97,6 +178,45 @@ public class LocalProcessTests
         [KernelFunction]
         public void TestFunction()
         {
+        }
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    private sealed class FailedStep : KernelProcessStep
+    {
+        /// <summary>
+        /// A method that represents a function for testing.
+        /// </summary>
+        [KernelFunction]
+        public void TestFailure()
+        {
+            throw new InvalidOperationException("I failed!");
+        }
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    private sealed class ErrorStep : KernelProcessStep
+    {
+        /// <summary>
+        /// A method for unhandling failures at the process level.
+        /// </summary>
+        [KernelFunction]
+        public void GlobalErrorHandler(KernelProcessError exception, Kernel kernel)
+        {
+            kernel.Data.Add("error-global", exception);
+        }
+
+        /// <summary>
+        /// A method for unhandling failures at the function level.
+        /// </summary>
+        [KernelFunction]
+        public void FunctionErrorHandler(KernelProcessError exception, Kernel kernel)
+        {
+            kernel.Data.Add("error-function", exception);
         }
     }
 
