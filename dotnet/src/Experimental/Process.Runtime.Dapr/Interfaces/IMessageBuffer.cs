@@ -23,5 +23,5 @@ public interface IMessageBuffer : IActor
     /// Dequeues all external events.
     /// </summary>
     /// <returns>A <see cref="List{T}"/> where T is <see cref="ProcessMessage"/></returns>
-    Task<List<ProcessMessage>> DequeueAllAsync();
+    Task<IList<ProcessMessage>> DequeueAllAsync();
 }

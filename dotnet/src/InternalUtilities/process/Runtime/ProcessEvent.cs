@@ -8,10 +8,13 @@ namespace Microsoft.SemanticKernel.Process.Runtime;
 /// </summary>
 /// <param name="Namespace">The namespace of the event.</param>
 /// <param name="InnerEvent">The instance of <see cref="KernelProcessEvent"/> that this <see cref="ProcessEvent"/> came from.</param>
+/// <param name="IsError">This event represents a runtime error / exception raised internally by the framework.</param>
 [DataContract]
+[KnownType(typeof(KernelProcessError))]
 public record ProcessEvent(
     [property: DataMember] string? Namespace,
-    [property: DataMember] KernelProcessEvent InnerEvent)
+    [property: DataMember] KernelProcessEvent InnerEvent,
+    [property: DataMember] bool IsError = false)
 {
     /// <summary>
     /// The Id of the event.
@@ -27,12 +30,4 @@ public record ProcessEvent(
     /// The visibility of the event.
     /// </summary>
     internal KernelProcessEventVisibility Visibility => this.InnerEvent.Visibility;
-
-    /// <summary>
-    /// Creates a new <see cref="ProcessEvent"/> from a <see cref="KernelProcessEvent"/>.
-    /// </summary>
-    /// <param name="kernelProcessEvent">The <see cref="KernelProcessEvent"/></param>
-    /// <param name="Namespace">The namespace of the event.</param>
-    /// <returns>An instance of <see cref="ProcessEvent"/></returns>
-    internal static ProcessEvent FromKernelProcessEvent(KernelProcessEvent kernelProcessEvent, string Namespace) => new(Namespace, kernelProcessEvent);
 }
