@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.IO;
 using System;
+using System.IO;
+using System.Linq;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.SemanticKernel.Process.Serialization;
 using Xunit;
-using System.Linq;
-using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.Process.Dapr.Runtime.UnitTests;
 
@@ -40,11 +40,11 @@ public class ProcessEventSerializationTests
         // Arrange, Act & Assert
         VerifyContainerSerialization(
             [
-                new() { Namespace = "testname", SourceId = "testid",Data = 3 },
-                new() { Namespace = "testname", SourceId = "testid",Data = "test" },
-                new() { Namespace = "testname", SourceId = "testid",Data = Guid.NewGuid() },
-                new() { Namespace = "testname", SourceId = "testid",Data = new int[] { 1, 2, 3, 4 } },
-                new() { Namespace = "testname", SourceId = "testid",Data = new ComplexData { Value = 3 } },
+                new() { Namespace = "testname", SourceId = "testid", Data = 3 },
+                new() { Namespace = "testname", SourceId = "testid", Data = "test" },
+                new() { Namespace = "testname", SourceId = "testid", Data = Guid.NewGuid() },
+                new() { Namespace = "testname", SourceId = "testid", Data = new int[] { 1, 2, 3, 4 } },
+                new() { Namespace = "testname", SourceId = "testid", Data = new ComplexData { Value = 3 } },
                 new() { Namespace = "testname", SourceId = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) },
             ]);
     }
@@ -59,11 +59,11 @@ public class ProcessEventSerializationTests
         // Arrange
         ProcessEvent[] processEvents =
             [
-                new() { Namespace = "testname", SourceId = "testid",Data = 3 },
-                new() { Namespace = "testname", SourceId = "testid",Data = "test" },
-                new() { Namespace = "testname", SourceId = "testid",Data = Guid.NewGuid() },
-                new() { Namespace = "testname", SourceId = "testid",Data = new int[] { 1, 2, 3, 4 } },
-                new() { Namespace = "testname", SourceId = "testid",Data = new ComplexData { Value = 3 } },
+                new() { Namespace = "testname", SourceId = "testid", Data = 3 },
+                new() { Namespace = "testname", SourceId = "testid", Data = "test" },
+                new() { Namespace = "testname", SourceId = "testid", Data = Guid.NewGuid() },
+                new() { Namespace = "testname", SourceId = "testid", Data = new int[] { 1, 2, 3, 4 } },
+                new() { Namespace = "testname", SourceId = "testid", Data = new ComplexData { Value = 3 } },
                 new() { Namespace = "testname", SourceId = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) },
             ];
         string json = ProcessEventSerializer.Write(processEvents);
