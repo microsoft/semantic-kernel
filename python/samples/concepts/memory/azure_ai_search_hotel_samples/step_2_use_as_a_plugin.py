@@ -7,7 +7,7 @@ from typing import Any
 
 ###
 # The data model used for this sample is based on the hotel data model from the Azure AI Search samples.
-# When deploying a new index in Azure AI Search using the import wizard you can choose to deploy the 'hotel-sampels'
+# When deploying a new index in Azure AI Search using the import wizard you can choose to deploy the 'hotel-samples'
 # dataset, see here: https://learn.microsoft.com/en-us/azure/search/search-get-started-portal.
 # This is the dataset used in this sample with some modifications.
 # This model adds vectors for the 2 descriptions in English and French.
