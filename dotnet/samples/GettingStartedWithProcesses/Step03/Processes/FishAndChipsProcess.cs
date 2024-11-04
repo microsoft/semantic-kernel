@@ -46,8 +46,6 @@ public static class FishAndChipsProcess
             .OnEvent(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded)
             .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
 
-        processBuilder.EmitExternally(externalStep.OnEvent(ProcessEvents.FishAndChipsReady));
-
         return processBuilder;
     }
 
