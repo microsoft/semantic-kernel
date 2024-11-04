@@ -72,7 +72,7 @@ public sealed class ProcessCycleTests
             .StopProcess();
 
         KernelProcess kernelProcess = process.Build();
-        var processContext = await kernelProcess.StartAsync(kernel, new() { Id = CommonEvents.StartProcess, Data = "foo" });
+        var processContext = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
 
         var processState = await processContext.GetStateAsync();
         var cStepState = processState.Steps.Where(s => s.State.Name == "CStep").FirstOrDefault()?.State as KernelProcessStepState<CStepState>;
