@@ -17,5 +17,6 @@ internal static class EventExtensions
         {
             Data = kernelProcessEvent.Data,
             Visibility = kernelProcessEvent.Visibility,
+            IsError = isError,
         };
 }
