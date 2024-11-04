@@ -270,14 +270,25 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
-            ProcessEvent processEvent = new(this._eventNamespace!, $"{targetFunction}.OnResult") { Data = invokeResult.GetValue<object>() };
-            await this.EmitEventAsync(processEvent).ConfigureAwait(false);
+            await this.EmitEventAsync(
+                new ProcessEvent()
+                {
+                    Namespace = this._eventNamespace!,
+                    SourceId = $"{targetFunction}.OnResult",
+                    Data = invokeResult.GetValue<object>()
+                }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             this._logger?.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            ProcessEvent processEvent = new(this._eventNamespace!, $"{targetFunction}.OnError") { Data = KernelProcessError.FromException(ex), IsError = true };
-            await this.EmitEventAsync(processEvent).ConfigureAwait(false);
+            await this.EmitEventAsync(
+                new ProcessEvent()
+                {
+                    Namespace = this._eventNamespace!,
+                    SourceId = $"{targetFunction}.OnError",
+                    Data = KernelProcessError.FromException(ex),
+                    IsError = true
+                }).ConfigureAwait(false);
         }
         finally
         {

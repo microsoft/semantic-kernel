@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
@@ -17,9 +16,9 @@ internal static class TestSerializer
         writer.Flush();
     }
 
-    public static T? Deserialize<T>(this Stream stream, Type type)
+    public static T? Deserialize<T>(this Stream stream)
     {
-        DataContractSerializer serializer = new(type);
+        DataContractSerializer serializer = new(typeof(T));
         stream.Position = 0;
         return (T?)serializer.ReadObject(stream);
     }

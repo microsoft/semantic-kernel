@@ -185,14 +185,25 @@ internal class LocalStep : IKernelProcessMessageChannel
         try
         {
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
-            ProcessEvent processEvent = new(this._eventNamespace, $"{targetFunction}.OnResult") { Data = invokeResult.GetValue<object>() };
-            this.EmitEvent(processEvent);
+            this.EmitEvent(
+                new ProcessEvent()
+                {
+                    Namespace = this._eventNamespace,
+                    SourceId = $"{targetFunction}.OnResult",
+                    Data = invokeResult.GetValue<object>()
+                });
         }
         catch (Exception ex)
         {
             this._logger.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            ProcessEvent processEvent = new(this._eventNamespace, $"{targetFunction}.OnError") { Data = KernelProcessError.FromException(ex), IsError = true };
-            this.EmitEvent(processEvent);
+            this.EmitEvent(
+                new ProcessEvent()
+                {
+                    Namespace = this._eventNamespace,
+                    SourceId = $"{targetFunction}.OnError",
+                    Data = KernelProcessError.FromException(ex),
+                    IsError = true
+                });
         }
         finally
         {

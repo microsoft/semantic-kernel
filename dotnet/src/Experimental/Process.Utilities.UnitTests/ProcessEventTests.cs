@@ -43,7 +43,7 @@ public class ProcessEventTests
         // Act
         using MemoryStream stream = new();
         source.Serialize(stream);
-        ProcessEvent? copy1 = stream.Deserialize<ProcessEvent>(source.GetType());
+        ProcessEvent? copy1 = stream.Deserialize<ProcessEvent>();
 
         // Assert
         Assert.NotNull(copy1);

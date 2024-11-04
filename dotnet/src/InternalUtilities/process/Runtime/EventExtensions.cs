@@ -13,8 +13,10 @@ internal static class EventExtensions
     /// <param name="eventNamespace">The namespace of the event.</param>
     /// <param name="isError">// %%% COMMENT</param>
     public static ProcessEvent ToProcessEvent(this KernelProcessEvent kernelProcessEvent, string eventNamespace, bool isError = false) =>
-        new(eventNamespace, kernelProcessEvent.Id)
+        new()
         {
+            Namespace = eventNamespace,
+            SourceId = kernelProcessEvent.Id,
             Data = kernelProcessEvent.Data,
             Visibility = kernelProcessEvent.Visibility,
             IsError = isError,
