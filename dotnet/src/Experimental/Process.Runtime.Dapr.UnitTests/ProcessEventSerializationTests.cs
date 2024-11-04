@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.SemanticKernel.Process.Serialization;
 using Xunit;
 using System.Linq;
+using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.Process.Dapr.Runtime.UnitTests;
 
@@ -26,6 +27,7 @@ public class ProcessEventSerializationTests
         VerifyContainerSerialization([new() { Namespace = "testname", SourceId = "testid", Data = Guid.NewGuid() }]);
         VerifyContainerSerialization([new() { Namespace = "testname", SourceId = "testid", Data = new int[] { 1, 2, 3, 4 } }]);
         VerifyContainerSerialization([new() { Namespace = "testname", SourceId = "testid", Data = new ComplexData { Value = 3 } }]);
+        VerifyContainerSerialization([new() { Namespace = "testname", SourceId = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) }]);
     }
 
     /// <summary>
@@ -43,6 +45,7 @@ public class ProcessEventSerializationTests
                 new() { Namespace = "testname", SourceId = "testid",Data = Guid.NewGuid() },
                 new() { Namespace = "testname", SourceId = "testid",Data = new int[] { 1, 2, 3, 4 } },
                 new() { Namespace = "testname", SourceId = "testid",Data = new ComplexData { Value = 3 } },
+                new() { Namespace = "testname", SourceId = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) },
             ]);
     }
 
@@ -61,6 +64,7 @@ public class ProcessEventSerializationTests
                 new() { Namespace = "testname", SourceId = "testid",Data = Guid.NewGuid() },
                 new() { Namespace = "testname", SourceId = "testid",Data = new int[] { 1, 2, 3, 4 } },
                 new() { Namespace = "testname", SourceId = "testid",Data = new ComplexData { Value = 3 } },
+                new() { Namespace = "testname", SourceId = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) },
             ];
         string json = ProcessEventSerializer.Write(processEvents);
 

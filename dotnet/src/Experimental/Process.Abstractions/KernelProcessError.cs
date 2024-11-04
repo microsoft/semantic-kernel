@@ -10,18 +10,27 @@ namespace Microsoft.SemanticKernel;
 /// <remarks>
 /// Initializes a new instance of the <see cref="KernelProcessError"/> class.
 /// </remarks>
-/// <param name="Type">The exception type name</param>
-/// <param name="Message">The exception message (<see cref="Exception.Message"/></param>
-/// <param name="StackTrace">The exception stack-trace (<see cref="Exception.StackTrace"/></param>
 [DataContract]
-public sealed record KernelProcessError(
-    [property:DataMember]
-    in string Type,
-    [property:DataMember]
-    in string Message,
-    [property:DataMember]
-    in string? StackTrace)
+public sealed record KernelProcessError
 {
+    /// <summary>
+    ///The exception type name.
+    /// </summary>
+    [DataMember]
+    public string Type { get; init; } = string.Empty;
+
+    /// <summary>
+    /// The exception message (<see cref="Exception.Message"/>.
+    /// </summary>
+    [DataMember]
+    public string Message { get; init; } = string.Empty;
+
+    /// <summary>
+    /// The exception stack-trace (<see cref="Exception.StackTrace"/>.
+    /// </summary>
+    [DataMember]
+    public string? StackTrace { get; init; }
+
     /// <summary>
     /// The inner failure, when exists, as <see cref="KernelProcessError"/>.
     /// </summary>
@@ -32,8 +41,11 @@ public sealed record KernelProcessError(
     /// Factory method to create a <see cref="KernelProcessError"/> from a source <see cref="Exception"/> object.
     /// </summary>
     public static KernelProcessError FromException(Exception ex) =>
-        new(ex.GetType().Name, ex.Message, ex.StackTrace)
+        new()
         {
+            Type = ex.GetType().Name,
+            Message = ex.Message,
+            StackTrace = ex.StackTrace,
             InnerError = ex.InnerException is not null ? FromException(ex.InnerException) : null
         };
 }

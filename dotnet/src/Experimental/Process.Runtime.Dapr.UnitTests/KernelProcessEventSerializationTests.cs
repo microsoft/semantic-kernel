@@ -27,6 +27,7 @@ public class KernelProcessEventSerializationTests
         VerifyContainerSerialization([new() { Id = "Test", Data = Guid.NewGuid() }]);
         VerifyContainerSerialization([new() { Id = "Test", Data = new int[] { 1, 2, 3, 4 } }]);
         VerifyContainerSerialization([new() { Id = "Test", Data = new ComplexData { Id = "test", Value = 3 } }]);
+        VerifyContainerSerialization([new() { Id = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) }]);
     }
 
     /// <summary>
@@ -44,6 +45,7 @@ public class KernelProcessEventSerializationTests
                 new() { Id = "Test", Data = Guid.NewGuid() },
                 new() { Id = "Test", Data = new int[] { 1, 2, 3, 4 } },
                 new() { Id = "Test", Data = new ComplexData { Id = "test", Value = 3 } },
+                new() { Id = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) },
             ]);
     }
 
@@ -62,6 +64,7 @@ public class KernelProcessEventSerializationTests
                 new() { Id = "Test", Data = Guid.NewGuid() },
                 new() { Id = "Test", Data = new int[] { 1, 2, 3, 4 } },
                 new() { Id = "Test", Data = new ComplexData { Id = "test", Value = 3 } },
+                new() { Id = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) },
             ];
         string json = KernelProcessEventSerializer.Write(processEvents);
 

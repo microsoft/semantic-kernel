@@ -19,7 +19,7 @@ public class ProcessEventTests
     public void VerifySerializeEventMinimumTest()
     {
         // Arrange
-        ProcessEvent source = new KernelProcessEvent { Id = "1" }.ToProcessEvent("test");
+        ProcessEvent source = new() { Namespace = "test", SourceId = "1" };
 
         // Act & Assert
         this.VerifySerializeEvent(source);
@@ -32,7 +32,7 @@ public class ProcessEventTests
     public void VerifySerializeEventAllTest()
     {
         // Arrange
-        ProcessEvent source = new KernelProcessEvent { Id = "1", Data = 1, Visibility = KernelProcessEventVisibility.Public }.ToProcessEvent("test");
+        ProcessEvent source = new() { Namespace = "test", SourceId = "1", Data = 1, Visibility = KernelProcessEventVisibility.Public };
 
         // Act & Assert
         this.VerifySerializeEvent(source);

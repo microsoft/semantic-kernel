@@ -114,7 +114,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
-        this.EmitEvent(processEvent.ToProcessEvent(this._eventNamespace));
+        this.EmitEvent(ProcessEvent.Create(processEvent, this._eventNamespace));
         return default;
     }
 
