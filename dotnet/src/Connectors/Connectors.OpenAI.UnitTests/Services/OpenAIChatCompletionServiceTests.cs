@@ -1179,9 +1179,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(typeof(TestStruct))]
-    [InlineData(typeof(TestStruct?))]
-    public async Task GetChatMessageContentsSendsValidJsonSchemaWithStruct(Type responseFormatType)
+    [InlineData(typeof(TestStruct), "TestStruct")]
+    [InlineData(typeof(TestStruct?), "TestStruct")]
+    [InlineData(typeof(TestStruct<string>), "TestStructString")]
+    [InlineData(typeof(TestStruct<string>?), "TestStructString")]
+    [InlineData(typeof(TestStruct<List<float>>), "TestStructListSingle")]
+    [InlineData(typeof(TestStruct<List<float>>?), "TestStructListSingle")]
+    public async Task GetChatMessageContentsSendsValidJsonSchemaWithStruct(Type responseFormatType, string expectedSchemaName)
     {
         // Arrange
         var executionSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormatType };
@@ -1204,7 +1208,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var requestResponseFormat = requestJsonElement.GetProperty("response_format");
 
         Assert.Equal("json_schema", requestResponseFormat.GetProperty("type").GetString());
-        Assert.Equal("TestStruct", requestResponseFormat.GetProperty("json_schema").GetProperty("name").GetString());
+        Assert.Equal(expectedSchemaName, requestResponseFormat.GetProperty("json_schema").GetProperty("name").GetString());
         Assert.True(requestResponseFormat.GetProperty("json_schema").GetProperty("strict").GetBoolean());
 
         var schema = requestResponseFormat.GetProperty("json_schema").GetProperty("schema");
@@ -1219,8 +1223,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
             schema.GetProperty("required")[1].GetString(),
         };
 
-        Assert.Contains("TextProperty", requiredParentProperties);
-        Assert.Contains("NumericProperty", requiredParentProperties);
+        Assert.Contains("Property1", requiredParentProperties);
+        Assert.Contains("Property2", requiredParentProperties);
     }
 
     [Fact]
@@ -1571,9 +1575,16 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
     private struct TestStruct
     {
-        public string TextProperty { get; set; }
+        public string Property1 { get; set; }
 
-        public int? NumericProperty { get; set; }
+        public int? Property2 { get; set; }
+    }
+
+    private struct TestStruct<TProperty>
+    {
+        public TProperty Property1 { get; set; }
+
+        public int? Property2 { get; set; }
     }
 #pragma warning restore CS8618, CA1812
 }
