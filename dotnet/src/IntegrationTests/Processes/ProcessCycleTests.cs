@@ -72,7 +72,7 @@ public sealed class ProcessCycleTests
             .StopProcess();
 
         KernelProcess kernelProcess = process.Build();
-        var processContext = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess, Data = "foo" });
+        var processContext = await kernelProcess.StartAsync(kernel, new() { Id = CommonEvents.StartProcess, Data = "foo" });
 
         var processState = await processContext.GetStateAsync();
         var cStepState = processState.Steps.Where(s => s.State.Name == "CStep").FirstOrDefault()?.State as KernelProcessStepState<CStepState>;
@@ -97,8 +97,8 @@ public sealed class ProcessCycleTests
         [KernelFunction(Functions.KickOff)]
         public async ValueTask PrintWelcomeMessageAsync(KernelProcessStepContext context)
         {
-            await context.EmitEventAsync(new KernelProcessEvent() { Id = CommonEvents.StartARequested, Data = "Get Going A" });
-            await context.EmitEventAsync(new KernelProcessEvent() { Id = CommonEvents.StartBRequested, Data = "Get Going B" });
+            await context.EmitEventAsync(new() { Id = CommonEvents.StartARequested, Data = "Get Going A" });
+            await context.EmitEventAsync(new() { Id = CommonEvents.StartBRequested, Data = "Get Going B" });
         }
     }
 
@@ -111,7 +111,7 @@ public sealed class ProcessCycleTests
         public async ValueTask DoItAsync(KernelProcessStepContext context)
         {
             await Task.Delay(TimeSpan.FromSeconds(1));
-            await context.EmitEventAsync(new KernelProcessEvent() { Id = CommonEvents.AStepDone, Data = "I did A" });
+            await context.EmitEventAsync(new() { Id = CommonEvents.AStepDone, Data = "I did A" });
         }
     }
 
@@ -124,7 +124,7 @@ public sealed class ProcessCycleTests
         public async ValueTask DoItAsync(KernelProcessStepContext context)
         {
             await Task.Delay(TimeSpan.FromSeconds(2));
-            await context.EmitEventAsync(new KernelProcessEvent() { Id = CommonEvents.BStepDone, Data = "I did B" });
+            await context.EmitEventAsync(new() { Id = CommonEvents.BStepDone, Data = "I did B" });
         }
     }
 
