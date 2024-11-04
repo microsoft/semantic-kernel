@@ -61,12 +61,4 @@ public abstract class ServiceBase
         this._client = ollamaClient;
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
-
-    /// <summary>
-    /// Disposes the client.
-    /// </summary>
-    ~ServiceBase()
-    {
-        this._client.Dispose();
-    }
 }

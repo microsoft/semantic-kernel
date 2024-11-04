@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
@@ -140,6 +138,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Null(requestPayload.Options.TopK);
         Assert.Null(requestPayload.Options.TopP);
 
+        Assert.NotNull(lastMessage);
         // Assert.NotNull(lastMessage!.ModelId);
         // Assert.Equal(expectedModel, lastMessage.ModelId);
         // Add back once this bugfix is merged
