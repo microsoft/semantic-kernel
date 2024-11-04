@@ -191,13 +191,8 @@ internal class LocalStep : IKernelProcessMessageChannel
         catch (Exception ex)
         {
             this._logger.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            KernelProcessEvent errorEvent =
-                new()
-                {
-                    Id = $"{targetFunction}.OnError",
-                    Data = KernelProcessError.FromException(ex),
-                };
-            this.EmitEvent(errorEvent.ToProcessEvent(this._eventNamespace, isError: true));
+            ProcessEvent processEvent = new(this._eventNamespace, $"{targetFunction}.OnError") { Data = KernelProcessError.FromException(ex), IsError = true };
+            this.EmitEvent(processEvent);
         }
         finally
         {

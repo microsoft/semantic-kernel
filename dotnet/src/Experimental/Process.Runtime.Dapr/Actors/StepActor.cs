@@ -276,13 +276,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         catch (Exception ex)
         {
             this._logger?.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            KernelProcessEvent errorEvent =
-                new()
-                {
-                    Id = $"{targetFunction}.OnError",
-                    Data = KernelProcessError.FromException(ex),
-                };
-            await this.EmitEventAsync(errorEvent.ToProcessEvent(this._eventNamespace!, isError: true)).ConfigureAwait(false);
+            ProcessEvent processEvent = new(this._eventNamespace!, $"{targetFunction}.OnError") { Data = KernelProcessError.FromException(ex), IsError = true };
+            await this.EmitEventAsync(processEvent).ConfigureAwait(false);
         }
         finally
         {
