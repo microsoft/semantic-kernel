@@ -114,7 +114,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
-        this.EmitEvent(processEvent.ToProcessEvent(this._eventNamespace, this._logger));
+        this.EmitEvent(processEvent.ToProcessEvent(this._eventNamespace));
         return default;
     }
 
@@ -185,13 +185,13 @@ internal class LocalStep : IKernelProcessMessageChannel
         try
         {
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
-            ProcessEvent processEvent = EventFactory.CreateProcessEvent(this._eventNamespace, $"{targetFunction}.OnResult", invokeResult.GetValue<object>(), logger: this._logger);
+            ProcessEvent processEvent = new(this._eventNamespace, $"{targetFunction}.OnResult") { Data = invokeResult.GetValue<object>() };
             this.EmitEvent(processEvent);
         }
         catch (Exception ex)
         {
             this._logger.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            KernelProcessEvent<KernelProcessError> errorEvent =
+            KernelProcessEvent errorEvent =
                 new()
                 {
                     Id = $"{targetFunction}.OnError",

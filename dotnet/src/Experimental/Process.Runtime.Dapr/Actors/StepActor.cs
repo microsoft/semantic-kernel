@@ -192,7 +192,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="processEvent">The event to emit.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(processEvent.ToProcessEvent(this._eventNamespace!, this._logger));
+    public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(processEvent.ToProcessEvent(this._eventNamespace!));
 
     /// <summary>
     /// Handles a <see cref="ProcessMessage"/> that has been sent to the step.
@@ -270,13 +270,13 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.StateManager.SetStateAsync(ActorStateKeys.StepStateJson, stateJson).ConfigureAwait(false);
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
-            ProcessEvent processEvent = EventFactory.CreateProcessEvent(this._eventNamespace!, $"{targetFunction}.OnResult", invokeResult.GetValue<object>(), logger: this._logger);
+            ProcessEvent processEvent = new(this._eventNamespace!, $"{targetFunction}.OnResult") { Data = invokeResult.GetValue<object>() };
             await this.EmitEventAsync(processEvent).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             this._logger?.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            KernelProcessEvent<KernelProcessError> errorEvent =
+            KernelProcessEvent errorEvent =
                 new()
                 {
                     Id = $"{targetFunction}.OnError",
@@ -389,7 +389,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         bool foundEdge = false;
         foreach (var edge in this.GetEdgeForEvent(daprEvent.QualifiedId))
         {
-            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.GetData());
+            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
             var scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
             var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message).ConfigureAwait(false);

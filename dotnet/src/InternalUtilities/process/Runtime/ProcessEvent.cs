@@ -18,6 +18,15 @@ public record ProcessEvent(
     [property: DataMember] string SourceId)
 {
     /// <summary>
+    /// An optional data payload associated with the event.
+    /// </summary>
+    /// <remarks>
+    /// Possible to be defined and yet null.
+    /// </remarks>
+    [DataMember]
+    public object? Data { get; init; }
+
+    /// <summary>
     /// The visibility of the event.
     /// </summary>
     [DataMember]
@@ -33,29 +42,4 @@ public record ProcessEvent(
     /// The Qualified Id of the event.
     /// </summary>
     internal string QualifiedId => $"{this.Namespace}.{this.SourceId}";
-}
-
-/// <summary>
-/// A wrapper around <see cref="KernelProcessEvent"/> that helps to manage the namespace of the event.
-/// </summary>
-[DataContract]
-[KnownType(typeof(KernelProcessError))]
-public record ProcessEvent<TData> : ProcessEvent
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ProcessEvent"/> class.
-    /// </summary>
-    /// <param name="eventNamespace">The namespace of the event.</param>
-    /// <param name="sourceId">The source Id of the event.</param>
-    public ProcessEvent(string eventNamespace, string sourceId)
-        : base(eventNamespace, sourceId) { }
-
-    /// <summary>
-    /// An optional data payload associated with the event.
-    /// </summary>
-    /// <remarks>
-    /// Possible to be defined and yet null.
-    /// </remarks>
-    [DataMember]
-    public TData? Data { get; init; }
 }

@@ -38,7 +38,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent<string>() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -78,7 +78,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent<string>() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -124,7 +124,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent<string>() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
+        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -168,7 +168,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent<string>() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
+        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -191,7 +191,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent<string>() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -220,7 +220,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent<string>() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await process.StartAsync(kernel, new KernelProcessEvent() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -301,8 +301,8 @@ public sealed class ProcessTests
             this._state!.LastMessage = output;
 
             // Emit the OnReady event with a public visibility and an internal visibility to aid in testing
-            await context.EmitEventAsync(new KernelProcessEvent<string>() { Id = ProcessTestsEvents.OutputReadyPublic, Data = output, Visibility = KernelProcessEventVisibility.Public });
-            await context.EmitEventAsync(new KernelProcessEvent<string>() { Id = ProcessTestsEvents.OutputReadyInternal, Data = output, Visibility = KernelProcessEventVisibility.Internal });
+            await context.EmitEventAsync(new KernelProcessEvent() { Id = ProcessTestsEvents.OutputReadyPublic, Data = output, Visibility = KernelProcessEventVisibility.Public });
+            await context.EmitEventAsync(new KernelProcessEvent() { Id = ProcessTestsEvents.OutputReadyInternal, Data = output, Visibility = KernelProcessEventVisibility.Internal });
         }
     }
 
@@ -315,7 +315,7 @@ public sealed class ProcessTests
         public async Task SendStartMessageAsync(KernelProcessStepContext context, string text)
         {
             Console.WriteLine($"[START] {text}");
-            await context.EmitEventAsync(new KernelProcessEvent<string>()
+            await context.EmitEventAsync(new KernelProcessEvent()
             {
                 Id = ProcessTestsEvents.StartProcess,
                 Data = text,
@@ -344,13 +344,13 @@ public sealed class ProcessTests
             Console.WriteLine($"[EMIT_COMBINED] {output}");
             this._state!.LastMessage = output;
 
-            await context.EmitEventAsync(new KernelProcessEvent<string>()
+            await context.EmitEventAsync(new KernelProcessEvent()
             {
                 Id = ProcessTestsEvents.OutputReadyInternal,
                 Data = output,
                 Visibility = KernelProcessEventVisibility.Internal
             });
-            await context.EmitEventAsync(new KernelProcessEvent<string>()
+            await context.EmitEventAsync(new KernelProcessEvent()
             {
                 Id = ProcessTestsEvents.OutputReadyPublic,
                 Data = output,

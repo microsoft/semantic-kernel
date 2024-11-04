@@ -149,7 +149,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         {
             // Create the external event that will be used to start the nested process. Since this event came
             // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
-            KernelProcessEvent nestedEvent = EventFactory.CreateKernelProcessEvent(eventId, message.TargetEventData, this._logger);
+            KernelProcessEvent nestedEvent = new() { Id = eventId, Data = message.TargetEventData };
 
             // Run the nested process completely within a single superstep.
             await this.RunOnceAsync(nestedEvent, this._kernel).ConfigureAwait(false);
@@ -304,7 +304,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             {
                 foreach (var edge in edges)
                 {
-                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.GetData());
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
                     messageChannel.Enqueue(message);
                 }
             }
@@ -332,7 +332,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             bool foundEdge = false;
             foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
             {
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.GetData());
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
                 messageChannel.Enqueue(message);
                 foundEdge = true;
             }
@@ -344,7 +344,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 {
                     foreach (KernelProcessEdge edge in edges)
                     {
-                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.GetData());
+                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
                         messageChannel.Enqueue(message);
                     }
                 }

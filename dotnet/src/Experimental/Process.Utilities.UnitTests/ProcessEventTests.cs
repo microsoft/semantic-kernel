@@ -34,7 +34,7 @@ public class ProcessEventTests
     public void VerifySerializeEventAllTest()
     {
         // Arrange
-        ProcessEvent<int> source = new KernelProcessEvent<int> { Id = "1", Data = 1, Visibility = KernelProcessEventVisibility.Public }.ToProcessEvent("test");
+        ProcessEvent source = new KernelProcessEvent { Id = "1", Data = 1, Visibility = KernelProcessEventVisibility.Public }.ToProcessEvent("test");
 
         // Act & Assert
         this.VerifySerializeEvent(source);
@@ -48,7 +48,7 @@ public class ProcessEventTests
     {
         // Arrange
         ComplexData data = new() { Id = "test", Value = 33 };
-        ProcessEvent<ComplexData> source = new KernelProcessEvent<ComplexData> { Id = "1", Data = data, Visibility = KernelProcessEventVisibility.Public }.ToProcessEvent("test");
+        ProcessEvent source = new KernelProcessEvent { Id = "1", Data = data, Visibility = KernelProcessEventVisibility.Public }.ToProcessEvent("test");
 
         // Act & Assert
         this.VerifySerializeEvent(source);
@@ -62,7 +62,7 @@ public class ProcessEventTests
     {
         // Arrange
         int[] data = [1, 2, 3, 4, 5];
-        ProcessEvent<int[]> source = new KernelProcessEvent<int[]> { Id = "1", Data = data, Visibility = KernelProcessEventVisibility.Public }.ToProcessEvent("test");
+        ProcessEvent source = new KernelProcessEvent { Id = "1", Data = data, Visibility = KernelProcessEventVisibility.Public }.ToProcessEvent("test");
 
         // Act & Assert
         this.VerifySerializeEvent(source);
@@ -79,9 +79,9 @@ public class ProcessEventTests
         // Arrange
         ComplexData data = new() { Id = "test", Value = 33 };
         ProcessEvent[] processEvents = [
-            new KernelProcessEvent<int> { Id = "1", Data = 1 }.ToProcessEvent("test"),
-            new KernelProcessEvent<string> { Id = "1", Data = "test"}.ToProcessEvent("test"),
-            new KernelProcessEvent<ComplexData> { Id = "1", Data = data}.ToProcessEvent("test"),
+            new KernelProcessEvent { Id = "1", Data = 1 }.ToProcessEvent("test"),
+            new KernelProcessEvent { Id = "1", Data = "test"}.ToProcessEvent("test"),
+            new KernelProcessEvent { Id = "1", Data = data}.ToProcessEvent("test"),
         ];
 
         // Act
@@ -98,9 +98,9 @@ public class ProcessEventTests
         // Arrange
         ComplexData data = new() { Id = "test", Value = 33 };
         KernelProcessEvent[] processEvents = [
-            new KernelProcessEvent<int> { Id = "1", Data = 1 },
-            new KernelProcessEvent<string> { Id = "1", Data = "test"},
-            new KernelProcessEvent<ComplexData> { Id = "1", Data = data},
+            new KernelProcessEvent { Id = "1", Data = 1 },
+            new KernelProcessEvent { Id = "1", Data = "test"},
+            new KernelProcessEvent { Id = "1", Data = data},
         ];
 
         // Act
