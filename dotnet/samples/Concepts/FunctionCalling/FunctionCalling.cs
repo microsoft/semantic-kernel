@@ -49,16 +49,16 @@ namespace FunctionCalling;
 ///    * The <see cref="FunctionChoiceBehaviorOptions.AllowParallelCalls"/> option instructs the AI model to call multiple functions in one request if the model supports parallel function calls.
 ///      By default, this option is set to null, meaning that the AI model default value will be used.
 ///
-///    The following table summarizes the effects of different combinations of these options:
+///    The following table summarizes the effects of various combinations of the AllowParallelCalls and AllowConcurrentInvocation options:
 ///
-///    | AllowParallelCalls  | AllowConcurrentInvocation | AI function call requests      | Concurrent Invocation |
-///    |---------------------|---------------------------|--------------------------------|-----------------------|
-///    | false               | false                     | one request per call           | false                 |
-///    | false               | true                      | one request per call           | false*                |
-///    | true                | false                     | one request per multiple calls | false                 |
-///    | true                | true                      | one request per multiple calls | true                  |
+///    | AllowParallelCalls  | AllowConcurrentInvocation | # of functions chosen per AI roundtrip  | Concurrent Invocation by SK |
+///    |---------------------|---------------------------|-----------------------------------------|-----------------------------|
+///    | false               | false                     | one                                     | false                       |
+///    | false               | true                      | one                                     | false*                      |
+///    | true                | false                     | multiple                                | false                       |
+///    | true                | true                      | multiple                                | true                        |
 ///
-///    `*` There's only one function to call
+///    `*` There's only one function to invoke.
 /// </summary>
 public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {

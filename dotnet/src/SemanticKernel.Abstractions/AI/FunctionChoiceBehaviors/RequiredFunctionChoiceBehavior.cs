@@ -81,12 +81,10 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 
         var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
 
-        IReadOnlyList<KernelFunction>? selectedFunctions = null;
-
         return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.Required,
-            Functions = selectedFunctions ?? functions,
+            Functions = functions,
             AutoInvoke = this._autoInvoke,
         };
     }
