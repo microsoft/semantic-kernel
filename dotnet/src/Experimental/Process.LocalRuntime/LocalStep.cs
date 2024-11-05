@@ -290,6 +290,18 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <param name="localEvent">The event to emit.</param>
     protected void EmitEvent(ProcessEvent localEvent)
     {
-        this._outgoingEventQueue.Enqueue(localEvent);
+        var scopedEvent = this.ScopedEvent(localEvent);
+        this._outgoingEventQueue.Enqueue(scopedEvent);
+    }
+
+    /// <summary>
+    /// Generates a scoped event for the step.
+    /// </summary>
+    /// <param name="localEvent">The event.</param>
+    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
+    protected ProcessEvent ScopedEvent(ProcessEvent localEvent)
+    {
+        Verify.NotNull(localEvent, nameof(localEvent));
+        return localEvent with { Namespace = $"{this.Name}_{this.Id}" };
     }
 }
