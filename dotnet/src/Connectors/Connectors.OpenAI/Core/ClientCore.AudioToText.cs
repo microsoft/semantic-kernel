@@ -74,14 +74,18 @@ internal partial class ClientCore
             return result;
         }
 
-        if (timestampGranularities.Any(granularity => string.Equals(nameof(AudioTimestampGranularities.Word), granularity, StringComparison.OrdinalIgnoreCase)))
+        foreach (var granularity in timestampGranularities)
         {
-            result |= AudioTimestampGranularities.Word;
-        }
+            if (string.Equals(nameof(AudioTimestampGranularities.Word), granularity, StringComparison.OrdinalIgnoreCase))
+            {
+                result |= AudioTimestampGranularities.Word;
+                continue;
+            }
 
-        if (timestampGranularities.Any(granularity => string.Equals(nameof(AudioTimestampGranularities.Segment), granularity, StringComparison.OrdinalIgnoreCase)))
-        {
-            result |= AudioTimestampGranularities.Segment;
+            if (string.Equals(nameof(AudioTimestampGranularities.Segment), granularity, StringComparison.OrdinalIgnoreCase))
+            {
+                result |= AudioTimestampGranularities.Segment;
+            }
         }
 
         return result;
