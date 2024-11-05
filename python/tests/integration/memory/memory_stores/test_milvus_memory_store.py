@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import platform
 
 import numpy as np
 import pytest
@@ -15,12 +14,12 @@ try:
 except ImportError:
     milvus_installed = False
 
-pytestmark = pytest.mark.skipif(not milvus_installed, reason="local milvus is not installed")
+# pytestmark = pytest.mark.skipif(not milvus_installed, reason="local milvus is not installed")
 
-pytestmark = pytest.mark.skipif(
-    platform.system() == "Windows",
-    reason="local milvus is not officially supported on Windows",
-)
+# pytestmark = pytest.mark.skipif(
+#     platform.system() == "Windows",
+#     reason="local milvus is not officially supported on Windows",
+# )
 pytestmark = pytest.mark.skip(
     reason="milvus SDK and local server seem to be out of step, will fix with new integration.",
 )

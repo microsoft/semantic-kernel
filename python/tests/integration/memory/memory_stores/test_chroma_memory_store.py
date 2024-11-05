@@ -8,12 +8,12 @@ import pytest
 from semantic_kernel.connectors.memory.chroma import ChromaMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-# try:
-#     import chromadb  # noqa: F401
+try:
+    import chromadb  # noqa: F401
 
-#     chromadb_installed = True
-# except ImportError:
-#     chromadb_installed = False
+    chromadb_installed = True
+except ImportError:
+    chromadb_installed = False
 
 # pytestmark = pytest.mark.skipif(not chromadb_installed, reason="chromadb is not installed")
 
