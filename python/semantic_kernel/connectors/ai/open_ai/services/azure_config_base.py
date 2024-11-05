@@ -33,7 +33,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         api_key: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: Callable[[], str | Awaitable[str]] | None = None,
-        ad_token_endpoint: str | None = None,
+        token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         client: AsyncAzureOpenAI | None = None,
     ) -> None:
@@ -53,7 +53,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             ad_token (str): Azure AD token for authentication. (Optional)
             ad_token_provider (Callable[[], Union[str, Awaitable[str]]]): A callable
                 or coroutine function providing Azure AD tokens. (Optional)
-            ad_token_endpoint (str): Azure AD token endpoint use to get the token. (Optional)
+            token_endpoint (str): Azure AD token endpoint use to get the token. (Optional)
             default_headers (Union[Mapping[str, str], None]): Default headers for HTTP requests. (Optional)
             client (AsyncAzureOpenAI): An existing client to use. (Optional)
 
@@ -68,8 +68,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             # If the client is None, the api_key is none, the ad_token is none, and the ad_token_provider is none,
             # then we will attempt to get the ad_token using the default endpoint specified in the Azure OpenAI
             # settings.
-            if not api_key and not ad_token_provider and not ad_token and ad_token_endpoint:
-                ad_token = get_entra_auth_token(ad_token_endpoint)
+            if not api_key and not ad_token_provider and not ad_token and token_endpoint:
+                ad_token = get_entra_auth_token(token_endpoint)
 
             if not api_key and not ad_token and not ad_token_provider:
                 raise ServiceInitializationError(

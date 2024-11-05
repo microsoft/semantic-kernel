@@ -32,7 +32,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
-        ad_token_endpoint: str | None = None,
+        token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -53,7 +53,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         ad_token: The Azure AD token for authentication. (Optional)
         ad_token_provider: Whether to use Azure Active Directory authentication.
             (Optional) The default value is False.
-        ad_token_endpoint: The Azure AD token endpoint. (Optional)
+        token_endpoint: The Azure AD token endpoint. (Optional)
         default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
         async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
@@ -68,7 +68,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
                 endpoint=endpoint,
                 base_url=base_url,
                 api_version=api_version,
-                token_endpoint=ad_token_endpoint,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as exc:
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
@@ -84,7 +84,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
-            ad_token_endpoint=azure_openai_settings.token_endpoint,
+            token_endpoint=azure_openai_settings.token_endpoint,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.EMBEDDING,
             client=async_client,

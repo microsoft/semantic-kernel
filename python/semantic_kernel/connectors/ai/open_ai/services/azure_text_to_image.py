@@ -29,7 +29,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
         api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
-        ad_token_endpoint: str | None = None,
+        token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -51,7 +51,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
                 in the env vars or .env file.
             ad_token: The Azure AD token for authentication. (Optional)
             ad_token_provider: Azure AD Token provider. (Optional)
-            ad_token_endpoint: The Azure AD token endpoint. (Optional)
+            token_endpoint: The Azure AD token endpoint. (Optional)
             default_headers: The default headers mapping of string keys to
                     string values for HTTP requests. (Optional)
             async_client: An existing client to use. (Optional)
@@ -68,7 +68,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
                 endpoint=endpoint,
                 base_url=base_url,
                 api_version=api_version,
-                token_endpoint=ad_token_endpoint,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as exc:
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
@@ -84,7 +84,7 @@ class AzureTextToImage(AzureOpenAIConfigBase, OpenAITextToImageBase):
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
-            ad_token_endpoint=azure_openai_settings.token_endpoint,
+            token_endpoint=azure_openai_settings.token_endpoint,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.TEXT_TO_IMAGE,
             client=async_client,

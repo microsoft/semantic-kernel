@@ -6,7 +6,7 @@ from typing import Any, Union
 
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.lib._parsing._completions import type_to_response_format_param
-from openai.types import Completion
+from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.audio import Transcription
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types.images_response import ImagesResponse
@@ -50,6 +50,9 @@ class OpenAIHandler(KernelBaseModel, ABC):
 
     client: AsyncOpenAI
     ai_model_type: OpenAIModelTypes = OpenAIModelTypes.CHAT
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
 
     async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
         """Send a request to the OpenAI API."""
@@ -83,6 +86,8 @@ class OpenAIHandler(KernelBaseModel, ABC):
                 response = await self.client.chat.completions.create(**settings_dict)
             else:
                 response = await self.client.completions.create(**settings_dict)
+
+            self.store_usage(response)
             return response
         except BadRequestError as ex:
             if ex.code == "content_filter":
@@ -104,6 +109,8 @@ class OpenAIHandler(KernelBaseModel, ABC):
         """Send a request to the OpenAI embeddings endpoint."""
         try:
             response = await self.client.embeddings.create(**settings.prepare_settings_dict())
+
+            self.store_usage(response)
             return [x.embedding for x in response.data]
         except Exception as ex:
             raise ServiceResponseException(
@@ -155,3 +162,19 @@ class OpenAIHandler(KernelBaseModel, ABC):
             # Case 3: response_format is a dictionary, pass it without modification
             elif isinstance(response_format, dict):
                 settings["response_format"] = response_format
+
+    def store_usage(
+        self,
+        response: ChatCompletion
+        | Completion
+        | AsyncStream[ChatCompletionChunk]
+        | AsyncStream[Completion]
+        | CreateEmbeddingResponse,
+    ):
+        """Store the usage information from the response."""
+        if not isinstance(response, AsyncStream) and response.usage:
+            logger.info(f"OpenAI usage: {response.usage}")
+            self.prompt_tokens += response.usage.prompt_tokens
+            self.total_tokens += response.usage.total_tokens
+            if hasattr(response.usage, "completion_tokens"):
+                self.completion_tokens += response.usage.completion_tokens

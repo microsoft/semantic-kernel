@@ -30,7 +30,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
-        ad_token_endpoint: str | None = None,
+        token_endpoint: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -51,7 +51,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 in the env vars or .env file.
             ad_token: The Azure Active Directory token. (Optional)
             ad_token_provider: The Azure Active Directory token provider. (Optional)
-            ad_token_endpoint: The Azure Active Directory token endpoint. (Optional)
+            token_endpoint: The Azure Active Directory token endpoint. (Optional)
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
@@ -66,7 +66,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 base_url=base_url,
                 api_key=api_key,
                 api_version=api_version,
-                token_endpoint=ad_token_endpoint,
+                token_endpoint=token_endpoint,
             )
         except ValidationError as ex:
             raise ServiceInitializationError(f"Invalid settings: {ex}") from ex
@@ -82,7 +82,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
-            ad_token_endpoint=azure_openai_settings.token_endpoint,
+            token_endpoint=azure_openai_settings.token_endpoint,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.TEXT,
             client=async_client,
