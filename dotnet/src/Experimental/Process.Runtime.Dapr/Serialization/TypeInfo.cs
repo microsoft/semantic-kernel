@@ -1,55 +1,54 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.Reflection;
+using System.Text.Json;
 
 namespace Microsoft.SemanticKernel.Process.Serialization;
 
 /// <summary>
-///  %%% COMMENT
+/// %%% COMMENT
 /// </summary>
-/// <param name="TypeName"></param>
-/// <param name="AssemblyName"></param>
-/// <param name="AssemblyVersion"></param>
-internal sealed record TypeInfo(string TypeName, string AssemblyName, string? AssemblyVersion)
+internal static class TypeInfo
 {
     /// <summary>
     /// %%% COMMENT
     /// </summary>
-    /// <param name="obj"></param>
+    /// <param name="value"></param>
     /// <returns></returns>
-    public static TypeInfo? FromObject(object? obj)
+    public static string? GetAssemblyQualifiedType(object? value)
     {
-        if (obj == null)
+        if (value == null)
         {
             return null;
         }
 
-        Type type = obj.GetType();
-        AssemblyName assemblyName = type.Assembly.GetName();
-        return new(type.FullName!, assemblyName.Name!, assemblyName.Version?.ToString());
+        return value.GetType().AssemblyQualifiedName;
     }
 
     /// <summary>
     /// %%% COMMENT
     /// </summary>
-    /// <param name="typeInfo"></param>
+    /// <param name="assemblyQuailfiedTypeName"></param>
+    /// <param name="value"></param>
     /// <returns></returns>
-    /// <exception cref="TypeLoadException"></exception>
-    public static Type Resolve(TypeInfo typeInfo)
+    /// <exception cref="KernelException"></exception>
+    public static object? ConvertValue(string? assemblyQuailfiedTypeName, object? value)
     {
-        Type? dataType = Type.GetType(typeInfo.TypeName);
-
-        if (dataType == null)
+        if (value == null)
         {
-            Assembly assembly = Assembly.Load(typeInfo.AssemblyName);
-            dataType = assembly.GetType(typeInfo.TypeName);
+            return null;
         }
 
-        if (dataType == null)
+        if (value.GetType() != typeof(JsonElement))
         {
-            throw new TypeLoadException($"Could not resolve type {typeInfo.TypeName} from assembly {typeInfo.AssemblyName}");
+            return value;
         }
 
-        return dataType;
+        if (assemblyQuailfiedTypeName == null)
+        {
+            throw new KernelException("Data persisted without type information.");
+        }
+
+        Type? valueType = Type.GetType(assemblyQuailfiedTypeName);
+        return ((JsonElement)value).Deserialize(valueType!);
     }
 }

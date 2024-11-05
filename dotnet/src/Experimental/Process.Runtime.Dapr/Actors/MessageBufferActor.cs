@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapr.Actors.Runtime;
 using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -12,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class MessageBufferActor : Actor, IMessageBuffer
 {
-    private Queue<ProcessMessage>? _queue = new();
+    private List<ProcessMessage> _queue = [];
 
     /// <summary>
     /// Required constructor for Dapr Actor.
@@ -29,11 +31,11 @@ internal class MessageBufferActor : Actor, IMessageBuffer
     public async Task<IList<ProcessMessage>> DequeueAllAsync()
     {
         // Dequeue and clear the queue.
-        var items = this._queue!.ToArray();
-        this._queue!.Clear();
+        ProcessMessage[] items = [.. this._queue];
+        this._queue.Clear();
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.MessageQueueState, this._queue).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.MessageQueueState, ProcessMessageSerializer.Write(this._queue)).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return items;
@@ -41,10 +43,10 @@ internal class MessageBufferActor : Actor, IMessageBuffer
 
     public async Task EnqueueAsync(ProcessMessage message)
     {
-        this._queue!.Enqueue(message);
+        this._queue.Add(message);
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.MessageQueueState, this._queue).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.MessageQueueState, ProcessMessageSerializer.Write(this._queue)).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -54,14 +56,14 @@ internal class MessageBufferActor : Actor, IMessageBuffer
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var eventQueueState = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(ActorStateKeys.MessageQueueState).ConfigureAwait(false);
+        var eventQueueState = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.MessageQueueState).ConfigureAwait(false);
         if (eventQueueState.HasValue)
         {
-            this._queue = eventQueueState.Value;
+            this._queue = ProcessMessageSerializer.Read(eventQueueState.Value).ToList();
         }
         else
         {
-            this._queue = new Queue<ProcessMessage>();
+            this._queue = [];
         }
     }
 }

@@ -186,7 +186,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         {
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
             this.EmitEvent(
-                new ProcessEvent()
+                new ProcessEvent
                 {
                     Namespace = this._eventNamespace,
                     SourceId = $"{targetFunction}.OnResult",
@@ -197,7 +197,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         {
             this._logger.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             this.EmitEvent(
-                new ProcessEvent()
+                new ProcessEvent
                 {
                     Namespace = this._eventNamespace,
                     SourceId = $"{targetFunction}.OnError",

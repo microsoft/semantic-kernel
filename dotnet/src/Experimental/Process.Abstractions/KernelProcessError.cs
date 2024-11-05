@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.Runtime.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -10,31 +9,26 @@ namespace Microsoft.SemanticKernel;
 /// <remarks>
 /// Initializes a new instance of the <see cref="KernelProcessError"/> class.
 /// </remarks>
-[DataContract]
 public sealed record KernelProcessError
 {
     /// <summary>
     ///The exception type name.
     /// </summary>
-    [DataMember]
     public string Type { get; init; } = string.Empty;
 
     /// <summary>
     /// The exception message (<see cref="Exception.Message"/>.
     /// </summary>
-    [DataMember]
     public string Message { get; init; } = string.Empty;
 
     /// <summary>
     /// The exception stack-trace (<see cref="Exception.StackTrace"/>.
     /// </summary>
-    [DataMember]
     public string? StackTrace { get; init; }
 
     /// <summary>
     /// The inner failure, when exists, as <see cref="KernelProcessError"/>.
     /// </summary>
-    [DataMember]
     public KernelProcessError? InnerError { get; init; }
 
     /// <summary>

@@ -271,7 +271,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
             await this.EmitEventAsync(
-                new ProcessEvent()
+                new ProcessEvent
                 {
                     Namespace = this._eventNamespace!,
                     SourceId = $"{targetFunction}.OnResult",
@@ -282,7 +282,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         {
             this._logger?.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             await this.EmitEventAsync(
-                new ProcessEvent()
+                new ProcessEvent
                 {
                     Namespace = this._eventNamespace!,
                     SourceId = $"{targetFunction}.OnError",

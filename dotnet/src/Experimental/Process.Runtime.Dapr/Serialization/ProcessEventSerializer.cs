@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -36,7 +35,7 @@ internal static class ProcessEventSerializer
     {
         foreach (ProcessEvent processEvent in processEvents)
         {
-            yield return new EventContainer<ProcessEvent>(TypeInfo.FromObject(processEvent.Data), processEvent);
+            yield return new EventContainer<ProcessEvent>(TypeInfo.GetAssemblyQualifiedType(processEvent.Data), processEvent);
         }
     }
 
@@ -50,30 +49,7 @@ internal static class ProcessEventSerializer
     {
         foreach (EventContainer<ProcessEvent> eventContainer in eventContainers)
         {
-            ProcessEvent processEvent = eventContainer.Payload;
-
-            if (processEvent.Data == null)
-            {
-                yield return processEvent;
-            }
-
-            if (eventContainer.DataType == null)
-            {
-                throw new KernelException($"{nameof(ProcessEvent)} persisted without type information for {nameof(ProcessEvent.Data)} property.");
-            }
-
-            TypeInfo processEventTypeInfo = eventContainer.DataType;
-
-            Type dataType = TypeInfo.Resolve(processEventTypeInfo);
-            if (processEvent.Data!.GetType() == dataType)
-            {
-                yield return processEvent;
-            }
-
-            var eventData = ((JsonElement)processEvent.Data!).Deserialize(dataType!);
-            processEvent = processEvent with { Data = eventData };
-
-            yield return processEvent;
+            yield return eventContainer.Payload with { Data = TypeInfo.ConvertValue(eventContainer.DataTypeName, eventContainer.Payload.Data) };
         }
     }
 }
