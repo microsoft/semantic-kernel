@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>SemanticKernel.Process.Utilities.UnitTests</RootNamespace>
-    <AssemblyName>SemanticKernel.Process.Utilities.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Process.Runtime.Dapr.UnitTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Process.Runtime.Dapr.UnitTests</AssemblyName>
     <TargetFrameworks>net8.0</TargetFrameworks>
+    <!-- ;net48 -->
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
@@ -11,9 +12,6 @@
     <NoWarn>
       $(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0080,SKEXP0110;OPENAI001</NoWarn>
   </PropertyGroup>
-
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/process/InternalUtilities.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/process/RuntimeUtilities.props" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -33,8 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
-    <ProjectReference Include="..\Process.Core\Process.Core.csproj" />
+    <ProjectReference Include="..\Process.Runtime.Dapr\Process.Runtime.Dapr.csproj" />
   </ItemGroup>
 
 </Project>
