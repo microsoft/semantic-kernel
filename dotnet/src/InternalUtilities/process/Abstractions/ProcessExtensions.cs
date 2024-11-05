@@ -11,7 +11,7 @@ internal static class ProcessExtensions
     {
         KernelProcess copy =
             new(
-                new KernelProcessState(process.State.Name, process.State.Id),
+                new KernelProcessState(process.State.Name, process.State.Version, process.State.Id),
                 process.Steps.Select(s => s.Clone(logger)).ToArray(),
                 process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList()));
 

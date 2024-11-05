@@ -266,6 +266,7 @@ public static partial class OpenApiKernelPluginFactory
         var additionalMetadata = new Dictionary<string, object?>
         {
             { OpenApiKernelPluginFactory.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() },
+            { OpenApiKernelPluginFactory.OperationExtensionsPathKey, operation.Path },
             { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, string.IsNullOrEmpty(operation.Server?.Url) ? Array.Empty<string>() : [ operation.Server!.Url! ] }
         };
         if (operation.Extensions is { Count: > 0 })
@@ -290,6 +291,9 @@ public static partial class OpenApiKernelPluginFactory
 
     /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
     private const string OperationExtensionsMethodKey = "method";
+
+    /// <summary>The metadata property bag key to use when storing the path of an operation.</summary>
+    private const string OperationExtensionsPathKey = "path";
 
     /// <summary>The metadata property bag key to use when storing the server of an operation.</summary>
     private const string OperationExtensionsServerUrlsKey = "server-urls";

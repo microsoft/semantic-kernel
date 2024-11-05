@@ -20,7 +20,7 @@ public sealed class RestApiOperationExpectedResponse
     /// <summary>
     /// The schema of the response.
     /// </summary>
-    public KernelJsonSchema? Schema { get; set; }
+    public KernelJsonSchema? Schema { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
@@ -28,7 +28,7 @@ public sealed class RestApiOperationExpectedResponse
     /// <param name="description">The description of the response.</param>
     /// <param name="mediaType">The media type of the response.</param>
     /// <param name="schema">The schema against which the response body should be validated.</param>
-    public RestApiOperationExpectedResponse(string description, string mediaType, KernelJsonSchema? schema = null)
+    internal RestApiOperationExpectedResponse(string description, string mediaType, KernelJsonSchema? schema = null)
     {
         this.Description = description;
         this.MediaType = mediaType;
