@@ -16,6 +16,8 @@ public sealed class ChatHistoryInFunctions(ITestOutputHelper output) : BaseTest(
 {
     /// <summary>
     /// This method passes an instance of <see cref="ChatHistory"/> to SK function using <see cref="Kernel.Data"/> property.
+    /// This approach should be used with caution for cases when Kernel is registered in application as singleton.
+    /// For singleton Kernel, check examples <see cref="UsingKernelArgumentsAndFilterOption1Async"/> and <see cref="UsingKernelArgumentsAndFilterOption2Async"/>.
     /// </summary>
     [Fact]
     public async Task UsingKernelDataAsync()
@@ -59,9 +61,10 @@ public sealed class ChatHistoryInFunctions(ITestOutputHelper output) : BaseTest(
     /// <summary>
     /// This method passes an instance of <see cref="ChatHistory"/> to SK function using
     /// <see cref="KernelArguments"/> and <see cref="IAutoFunctionInvocationFilter"/> filter.
+    /// The plugin has access to <see cref="KernelArguments"/>, so it's possible to find a chat history in arguments by property name.
     /// </summary>
     [Fact]
-    public async Task UsingKernelArgumentsAndFilterAsync()
+    public async Task UsingKernelArgumentsAndFilterOption1Async()
     {
         // Initialize kernel.
         var kernel = GetKernel();
@@ -92,6 +95,40 @@ public sealed class ChatHistoryInFunctions(ITestOutputHelper output) : BaseTest(
         // Result: Here's the information you requested...
     }
 
+    /// <summary>
+    /// This method passes an instance of <see cref="ChatHistory"/> to SK function using
+    /// <see cref="KernelArguments"/> and <see cref="IAutoFunctionInvocationFilter"/> filter.
+    /// The plugin has access to <see cref="ChatHistory"/> directly, since it's automatically injected from <see cref="KernelArguments"/>
+    /// into the function by argument name.
+    /// </summary>
+    [Fact]
+    public async Task UsingKernelArgumentsAndFilterOption2Async()
+    {
+        // Initialize kernel.
+        var kernel = GetKernel();
+
+        // Import plugin.
+        kernel.ImportPluginFromObject(new EmailPlugin(this.Output));
+
+        // Add filter.
+        kernel.AutoFunctionInvocationFilters.Add(new AutoFunctionInvocationFilter());
+
+        // Initialize execution settings with enabled auto function calling.
+        var executionSettings = new OpenAIPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        // Send a request.
+        var result = await kernel.InvokePromptAsync("Send email to test@test.com", new(executionSettings));
+
+        Console.WriteLine($"Result: {result}");
+
+        // Output:
+        // SendEmail - Chat History Message Count: 2
+        // Result: Email has been sent to test@test.com.
+    }
+
     #region private
 
     /// <summary>
@@ -114,7 +151,8 @@ public sealed class ChatHistoryInFunctions(ITestOutputHelper output) : BaseTest(
     }
 
     /// <summary>
-    /// Data plugin for demonstration purposes.
+    /// Data plugin for demonstration purposes, where methods accept <see cref="Kernel"/> and <see cref="KernelArguments"/>
+    /// as parameters.
     /// </summary>
     private sealed class DataPlugin(ITestOutputHelper output)
     {
@@ -174,6 +212,24 @@ public sealed class ChatHistoryInFunctions(ITestOutputHelper output) : BaseTest(
             }
 
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Email plugin for demonstration purposes, where method accepts <see cref="ChatHistory"/> as parameter.
+    /// </summary>
+    private sealed class EmailPlugin(ITestOutputHelper output)
+    {
+        [KernelFunction]
+        public string SendEmail(string to, ChatHistory? chatHistory = null)
+        {
+            if (chatHistory is not null)
+            {
+                output.WriteLine($"{nameof(SendEmail)} - Chat History Message Count: {chatHistory.Count}");
+            }
+
+            // Simulate the email-sending process by notifying the AI model that the email was sent.
+            return $"Email has been sent to {to}";
         }
     }
 
