@@ -48,7 +48,7 @@ public class ProcessTestController : Controller
         }
 
         var kernelProcess = request.Process.ToKernelProcess();
-        var context = await kernelProcess.StartAsync(this._kernel, request.InitialEvent!);
+        var context = await kernelProcess.StartAsync(request.InitialEvent!);
         s_processes.Add(processId, context);
 
         return this.Ok();
