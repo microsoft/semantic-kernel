@@ -13,7 +13,7 @@ namespace TextToImage;
 public class OpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task OpenAIDallE2Async()
+    public async Task DallE2Async()
     {
         Console.WriteLine("======== OpenAI DALL-E 2 Text To Image ========");
 
@@ -85,29 +85,52 @@ public class OpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
     public async Task SimpleTextToImageExampleAsync()
     {
         var builder = Kernel.CreateBuilder()
-           .AddAzureOpenAITextToImage( // Add your text to image service
-               deploymentName: TestConfiguration.AzureOpenAI.ImageDeploymentName,
-               endpoint: TestConfiguration.AzureOpenAI.ImageEndpoint,
-               apiKey: TestConfiguration.AzureOpenAI.ImageApiKey,
-               modelId: TestConfiguration.AzureOpenAI.ImageModelId);
+            .AddOpenAITextToImage( // Add your text to image service
+                modelId: "dall-e-3",
+                apiKey: TestConfiguration.OpenAI.ApiKey);
 
         var kernel = builder.Build();
         var service = kernel.GetRequiredService<ITextToImageService>();
 
-        var generatedImages = await service.GetImageContentsAsync(new TextContent("A cute baby sea otter"), new OpenAITextToImageExecutionSettings { Size = (Width: 1792, Height: 1024) });
+        var generatedImages = await service.GetImageContentsAsync(
+            new TextContent("A cute baby sea otter"),
+            new OpenAITextToImageExecutionSettings { Size = (Width: 1792, Height: 1024) });
 
         this.Output.WriteLine(generatedImages[0].Uri!.ToString());
     }
 
     [Fact]
-    public async Task OpenAIDallE3Async()
+    public async Task SimpleDalle3ImageBinaryAsync()
+    {
+        var builder = Kernel.CreateBuilder()
+            .AddOpenAITextToImage( // Add your text to image service
+                modelId: "dall-e-3",
+                apiKey: TestConfiguration.OpenAI.ApiKey);
+
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<ITextToImageService>();
+
+        var generatedImages = await service.GetImageContentsAsync(new TextContent("A cute baby sea otter"),
+            new OpenAITextToImageExecutionSettings
+            {
+                Size = (Width: 1024, Height: 1024),
+                ResponseFormat = "bytes",
+                // ResponseFormat = OpenAI.Images.GeneratedImageFormat.Bytes 
+            });
+
+        this.Output.WriteLine($"Generated Image Bytes: {generatedImages[0].Data!.Value.Length}");
+        this.Output.WriteLine($"Generated Image DataUri: {generatedImages[0].DataUri}");
+    }
+
+    [Fact]
+    public async Task DallE3Async()
     {
         Console.WriteLine("======== OpenAI DALL-E 3 Text To Image ========");
 
         var builder = Kernel.CreateBuilder()
             .AddOpenAITextToImage( // Add your text to image service
                 modelId: "dall-e-3",
-                apiKey: TestConfiguration.OpenAI.ApiKey) //DALL-E 3 is only supported in this version
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .AddOpenAIChatCompletion( // Add your chat completion service
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
