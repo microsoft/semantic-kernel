@@ -39,7 +39,7 @@ public record DaprStepInfo
     /// <exception cref="KernelException"></exception>
     public KernelProcessStepInfo ToKernelProcessStepInfo()
     {
-        var innerStepType = Type.GetType(this.InnerStepDotnetType);
+        Type? innerStepType = Type.GetType(this.InnerStepDotnetType);
         if (innerStepType is null)
         {
             throw new KernelException($"Unable to create inner step type from assembly qualified name `{this.InnerStepDotnetType}`");
