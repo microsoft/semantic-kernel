@@ -109,6 +109,9 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         }
         base = self.model_dump(
             exclude={
+                "prompt_tokens",
+                "completion_tokens",
+                "total_tokens",
                 "api_type",
                 "org_id",
                 "ai_model_type",
