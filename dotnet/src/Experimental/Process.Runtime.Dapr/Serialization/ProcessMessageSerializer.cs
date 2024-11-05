@@ -7,15 +7,16 @@ using Microsoft.SemanticKernel.Process.Runtime;
 namespace Microsoft.SemanticKernel.Process.Serialization;
 
 /// <summary>
-/// %%% COMMENT
+/// Serializer for <see cref="ProcessMessage"/> objects.
 /// </summary>
+/// <remarks>
+/// Includes type info for <see cref="ProcessMessage.TargetEventData"/> and <see cref="ProcessMessage.Values"/>.
+/// </remarks>
 internal static class ProcessMessageSerializer
 {
     /// <summary>
-    /// %%% COMMENT
+    /// Serialize <see cref="ProcessMessage"/> to JSON with type information.
     /// </summary>
-    /// <param name="processMessage"></param>
-    /// <returns></returns>
     public static string ToJson(this ProcessMessage processMessage)
     {
         Dictionary<string, string?> typeMap = processMessage.Values.ToDictionary(kvp => kvp.Key, kvp => TypeInfo.GetAssemblyQualifiedType(kvp.Value));
@@ -24,10 +25,8 @@ internal static class ProcessMessageSerializer
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Deserialize a list of JSON messages into a list of <see cref="ProcessMessage"/> objects.
     /// </summary>
-    /// <param name="jsonMessages"></param>
-    /// <returns></returns>
     /// <exception cref="KernelException"></exception>
     public static IEnumerable<ProcessMessage> ToProcessMessages(this IEnumerable<string> jsonMessages)
     {
@@ -41,12 +40,6 @@ internal static class ProcessMessageSerializer
         }
     }
 
-    /// <summary>
-    /// %%% COMMENT
-    /// </summary>
-    /// <param name="messageContainer"></param>
-    /// <returns></returns>
-    /// <exception cref="KernelException"></exception>
     private static ProcessMessage Process(MessageContainer messageContainer)
     {
         ProcessMessage processMessage = messageContainer.Message;

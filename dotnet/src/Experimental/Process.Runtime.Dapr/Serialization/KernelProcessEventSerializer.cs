@@ -5,15 +5,16 @@ using System.Text.Json;
 namespace Microsoft.SemanticKernel.Process.Serialization;
 
 /// <summary>
-/// %%% COMMENT
+/// Serializer for <see cref="KernelProcessEvent"/> objects.
 /// </summary>
+/// <remarks>
+/// Includes type info for <see cref="KernelProcessEvent.Data"/>.
+/// </remarks>
 internal static class KernelProcessEventSerializer
 {
     /// <summary>
-    /// %%% COMMENT
+    /// Serialize <see cref="KernelProcessEvent"/> to JSON with type information.
     /// </summary>
-    /// <param name="processEvent"></param>
-    /// <returns></returns>
     public static string ToJson(this KernelProcessEvent processEvent)
     {
         EventContainer<KernelProcessEvent> containedEvents = new(TypeInfo.GetAssemblyQualifiedType(processEvent.Data), processEvent);
@@ -21,10 +22,8 @@ internal static class KernelProcessEventSerializer
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Deserialize a list of JSON events into a list of <see cref="KernelProcessEvent"/> objects.
     /// </summary>
-    /// <param name="jsonEvents"></param>
-    /// <returns></returns>
     /// <exception cref="KernelException"></exception>
     public static IEnumerable<KernelProcessEvent> ToKernelProcessEvents(this IEnumerable<string> jsonEvents)
     {

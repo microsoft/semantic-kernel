@@ -5,15 +5,13 @@ using System.Text.Json;
 namespace Microsoft.SemanticKernel.Process.Serialization;
 
 /// <summary>
-/// %%% COMMENT
+/// Extension methods for capturing and restoring an object's type.
 /// </summary>
 internal static class TypeInfo
 {
     /// <summary>
-    /// %%% COMMENT
+    /// Retrieves the assembly qualified type-name of the provided value (null when null).
     /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
     public static string? GetAssemblyQualifiedType(object? value)
     {
         if (value == null)
@@ -25,30 +23,22 @@ internal static class TypeInfo
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Restore the object's type from the provided assembly qualified type-name, but
+    /// only if it is a <see cref="JsonElement"/>. Otherwise, return the original value.
     /// </summary>
-    /// <param name="assemblyQuailfiedTypeName"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    /// <exception cref="KernelException"></exception>
-    public static object? ConvertValue(string? assemblyQuailfiedTypeName, object? value)
+    public static object? ConvertValue(string? assemblyQualifiedTypeName, object? value)
     {
-        if (value == null)
-        {
-            return null;
-        }
-
-        if (value.GetType() != typeof(JsonElement))
+        if (value == null || value.GetType() != typeof(JsonElement))
         {
             return value;
         }
 
-        if (assemblyQuailfiedTypeName == null)
+        if (assemblyQualifiedTypeName == null)
         {
             throw new KernelException("Data persisted without type information.");
         }
 
-        Type? valueType = Type.GetType(assemblyQuailfiedTypeName);
+        Type? valueType = Type.GetType(assemblyQualifiedTypeName);
         return ((JsonElement)value).Deserialize(valueType!);
     }
 }

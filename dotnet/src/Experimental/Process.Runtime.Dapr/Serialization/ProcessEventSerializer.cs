@@ -6,15 +6,16 @@ using Microsoft.SemanticKernel.Process.Runtime;
 namespace Microsoft.SemanticKernel.Process.Serialization;
 
 /// <summary>
-/// %%% COMMENT
+/// Serializer for <see cref="ProcessEvent"/> objects.
 /// </summary>
+/// <remarks>
+/// Includes type info for <see cref="ProcessEvent.Data"/>.
+/// </remarks>
 internal static class ProcessEventSerializer
 {
     /// <summary>
-    /// %%% COMMENT
+    /// Serialize <see cref="ProcessEvent"/> to JSON with type information.
     /// </summary>
-    /// <param name="processEvent"></param>
-    /// <returns></returns>
     public static string ToJson(this ProcessEvent processEvent)
     {
         EventContainer<ProcessEvent> containedEvent = new(TypeInfo.GetAssemblyQualifiedType(processEvent.Data), processEvent);
@@ -22,10 +23,8 @@ internal static class ProcessEventSerializer
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Deserialize a list of JSON events into a list of <see cref="ProcessEvent"/> objects.
     /// </summary>
-    /// <param name="jsonEvents"></param>
-    /// <returns></returns>
     /// <exception cref="KernelException"></exception>
     public static IEnumerable<ProcessEvent> ToProcessEvents(this IEnumerable<string> jsonEvents)
     {
