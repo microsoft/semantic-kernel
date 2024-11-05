@@ -23,7 +23,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     private int? _maxTokens;
     private int? _candidateCount;
     private IList<string>? _stopSequences;
-    private bool?_audioTimestamp;
+    private bool? _audioTimestamp;
     private IList<GeminiSafetySetting>? _safetySettings;
     private GeminiToolCallBehavior? _toolCallBehavior;
 
