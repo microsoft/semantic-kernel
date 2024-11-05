@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 namespace SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
-/// Contains information required to start a process.
+/// Represents the body of a POST request to start a process in the test host.
 /// </summary>
 public record ProcessStartRequest
 {

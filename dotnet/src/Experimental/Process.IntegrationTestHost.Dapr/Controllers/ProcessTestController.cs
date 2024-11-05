@@ -33,7 +33,7 @@ public class ProcessTestController : Controller
     /// <param name="processId">The Id of the process</param>
     /// <param name="request">The request</param>
     /// <returns></returns>
-    [HttpPost("processes/{processId}/start")]
+    [HttpPost("processes/{processId}")]
     public async Task<IActionResult> StartProcessAsync(string processId, [FromBody] ProcessStartRequest request)
     {
         if (s_processes.ContainsKey(processId))
@@ -76,7 +76,7 @@ public class ProcessTestController : Controller
     }
 
     /// <summary>
-    /// Checks the health of the Dapr runtime.
+    /// Checks the health of the Dapr runtime by attempting to send a message to a health actor.
     /// </summary>
     /// <returns></returns>
     [HttpGet("daprHealth")]
