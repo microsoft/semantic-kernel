@@ -474,7 +474,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.All(restApi.Operations, (operation) => Assert.Equal(2, operation.Servers.Count));
 
         Assert.Equal("https://my-key-vault.vault.azure.net", restApi.Operations[0].Servers[0].Url);
-        Assert.Equal("https://test-env.vault.azure.net", restApi.Operations[0].Servers[1].Url);
+        Assert.Equal("https://ppe.my-key-vault.vault.azure.net", restApi.Operations[0].Servers[1].Url);
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)
