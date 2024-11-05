@@ -142,6 +142,10 @@ public sealed class ChatHistoryInFunctions(ITestOutputHelper output) : BaseTest(
             // Set chat history in kernel arguments.
             if (context.Arguments is not null)
             {
+                // nameof(ChatHistory) is used for demonstration purposes.
+                // Any name can be used here, as long as it is effective for the intended purpose.
+                // However, the same name must be used when retrieving chat history from the KernelArguments instance
+                // or when the ChatHistory parameter is directly injected into a function.
                 context.Arguments[nameof(ChatHistory)] = context.ChatHistory;
             }
 
