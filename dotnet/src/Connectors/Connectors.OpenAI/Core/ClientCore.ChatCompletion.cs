@@ -802,17 +802,49 @@ internal partial class ClientCore
 
     private static ChatMessageContentPart GetImageContentItem(ImageContent imageContent)
     {
+        ChatImageDetailLevel? detailLevel = GetChatImageDetailLevel(imageContent);
+
         if (imageContent.Data is { IsEmpty: false } data)
         {
-            return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType);
+            return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType, detailLevel);
         }
 
         if (imageContent.Uri is not null)
         {
-            return ChatMessageContentPart.CreateImagePart(imageContent.Uri);
+            return ChatMessageContentPart.CreateImagePart(imageContent.Uri, detailLevel);
         }
 
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
+    }
+
+    private static ChatImageDetailLevel? GetChatImageDetailLevel(ImageContent imageContent)
+    {
+        if (imageContent is OpenAIImageContent openAIImageContent)
+        {
+            return openAIImageContent.DetailLevel;
+        }
+
+        if (imageContent.Metadata is not null &&
+            imageContent.Metadata.TryGetValue(OpenAIImageContent.DetailLevelProperty, out object? detailLevel) &&
+            detailLevel is not null)
+        {
+            if (detailLevel is ChatImageDetailLevel chatImageDetailLevel)
+            {
+                return chatImageDetailLevel;
+            }
+            else if (detailLevel is string detailLevelString && !string.IsNullOrWhiteSpace(detailLevelString))
+            {
+                return detailLevelString.ToUpperInvariant() switch
+                {
+                    "AUTO" => ChatImageDetailLevel.Auto,
+                    "LOW" => ChatImageDetailLevel.Low,
+                    "HIGH" => ChatImageDetailLevel.High,
+                    _ => throw new ArgumentException($"Unknown image detail level '{detailLevelString}'. Supported values are 'Auto', 'Low' and 'High'.")
+                };
+            }
+        }
+
+        return null;
     }
 
     private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel)
