@@ -34,7 +34,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
         try
         {
             string workingDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\..\Process.IntegrationTestHost.Dapr"));
-            var procesStartInfo = new ProcessStartInfo
+            var processStartInfo = new ProcessStartInfo
             {
                 FileName = "dapr",
                 Arguments = "run --app-id daprprocesstests --app-port 5200 --dapr-http-port 3500 -- dotnet run --urls http://localhost:5200",
@@ -47,7 +47,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
 
             this._process = new System.Diagnostics.Process
             {
-                StartInfo = procesStartInfo
+                StartInfo = processStartInfo
             };
 
             this._process.Start();
@@ -61,7 +61,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
 
     private async Task ShutdownTestHostAsync()
     {
-        var procesStartInfo = new ProcessStartInfo
+        var processStartInfo = new ProcessStartInfo
         {
             FileName = "dapr",
             Arguments = "stop --app-id daprprocesstests",
@@ -73,7 +73,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
 
         using var shutdownProcess = new System.Diagnostics.Process
         {
-            StartInfo = procesStartInfo
+            StartInfo = processStartInfo
         };
 
         shutdownProcess.Start();
