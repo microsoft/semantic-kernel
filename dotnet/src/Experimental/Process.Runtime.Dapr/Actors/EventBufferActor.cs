@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapr.Actors.Runtime;
 using Microsoft.SemanticKernel.Process.Runtime;
-using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -13,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class EventBufferActor : Actor, IEventBuffer
 {
-    private List<ProcessEvent> _queue = [];
+    private List<string> _queue = [];
 
     /// <summary>
     /// Required constructor for Dapr Actor.
@@ -27,25 +26,25 @@ internal class EventBufferActor : Actor, IEventBuffer
     /// Dequeues an event.
     /// </summary>
     /// <returns>A <see cref="List{T}"/> where T is <see cref="ProcessEvent"/></returns>
-    public async Task<IList<ProcessEvent>> DequeueAllAsync()
+    public async Task<IList<string>> DequeueAllAsync()
     {
         // Dequeue and clear the queue.
-        List<ProcessEvent> items = [.. this._queue];
+        string[] items = [.. this._queue];
         this._queue.Clear();
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, ProcessEventSerializer.Write(this._queue)).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, this._queue).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return items;
     }
 
-    public async Task EnqueueAsync(ProcessEvent stepEvent)
+    public async Task EnqueueAsync(string stepEvent)
     {
         this._queue.Add(stepEvent);
 
         // Save the state.
-        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, ProcessEventSerializer.Write(this._queue)).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.EventQueueState, this._queue).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -55,10 +54,10 @@ internal class EventBufferActor : Actor, IEventBuffer
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var eventQueueState = await this.StateManager.TryGetStateAsync<string>(ActorStateKeys.EventQueueState).ConfigureAwait(false);
+        var eventQueueState = await this.StateManager.TryGetStateAsync<List<string>>(ActorStateKeys.EventQueueState).ConfigureAwait(false);
         if (eventQueueState.HasValue)
         {
-            this._queue = [.. ProcessEventSerializer.Read(eventQueueState.Value)];
+            this._queue = eventQueueState.Value;
         }
         else
         {

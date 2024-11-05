@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.SemanticKernel;
@@ -66,20 +67,24 @@ public class ProcessEventSerializationTests
                 new() { Namespace = "testname", SourceId = "testid", Data = new ComplexData { Value = 3 } },
                 new() { Namespace = "testname", SourceId = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) },
             ];
-        string json = ProcessEventSerializer.Write(processEvents);
+        List<string> jsonEvents = [];
+        foreach (ProcessEvent processEvent in processEvents)
+        {
+            jsonEvents.Add(ProcessEventSerializer.ToJson(processEvent));
+        }
 
         // Act
         using MemoryStream stream = new();
-        json.Serialize(stream);
+        jsonEvents.Serialize(stream);
         stream.Position = 0;
 
-        string? copy = stream.Deserialize<string>();
+        List<string>? copy = stream.Deserialize<List<string>>();
 
         // Assert
         Assert.NotNull(copy);
 
         // Act
-        ProcessEvent[] copiedEvents = ProcessEventSerializer.Read(copy).ToArray();
+        ProcessEvent[] copiedEvents = ProcessEventSerializer.ToProcessEvents(jsonEvents).ToArray();
 
         // Assert
         Assert.Equivalent(processEvents, copiedEvents);
@@ -88,10 +93,14 @@ public class ProcessEventSerializationTests
     private static void VerifyContainerSerialization(ProcessEvent[] processEvents)
     {
         // Arrange
-        string json = ProcessEventSerializer.Write(processEvents);
+        List<string> jsonEvents = [];
+        foreach (ProcessEvent processEvent in processEvents)
+        {
+            jsonEvents.Add(ProcessEventSerializer.ToJson(processEvent));
+        }
 
         // Act
-        ProcessEvent[] copiedEvents = ProcessEventSerializer.Read(json).ToArray();
+        ProcessEvent[] copiedEvents = ProcessEventSerializer.ToProcessEvents(jsonEvents).ToArray();
 
         // Assert
         Assert.Equivalent(processEvents, copiedEvents);

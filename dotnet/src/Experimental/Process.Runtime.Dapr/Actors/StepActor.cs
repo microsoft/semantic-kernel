@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -111,10 +112,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="Task{Task}"/> where T is an <see cref="int"/> indicating the number of messages that are prepared for processing.</returns>
     public async Task<int> PrepareIncomingMessagesAsync()
     {
-        var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(this.Id.GetId()), nameof(MessageBufferActor));
-        var incoming = await messageQueue.DequeueAllAsync().ConfigureAwait(false);
+        IMessageBuffer messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(this.Id.GetId()), nameof(MessageBufferActor));
+        IList<string> incoming = await messageQueue.DequeueAllAsync().ConfigureAwait(false);
+        ProcessMessage[] messages = incoming.ToProcessMessages().ToArray();
 
-        foreach (ProcessMessage message in incoming)
+        foreach (ProcessMessage message in messages)
         {
             this._incomingMessages.Enqueue(message);
         }
@@ -386,8 +388,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             if (this.ParentProcessId is not null)
             {
                 // Emit the event to the parent process
-                var parentProcess = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.ParentProcessId), nameof(EventBufferActor));
-                await parentProcess.EnqueueAsync(daprEvent).ConfigureAwait(false);
+                IEventBuffer parentProcess = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.ParentProcessId), nameof(EventBufferActor));
+                await parentProcess.EnqueueAsync(daprEvent.ToJson()).ConfigureAwait(false);
             }
         }
 
@@ -396,17 +398,17 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         foreach (var edge in this.GetEdgeForEvent(daprEvent.QualifiedId))
         {
             ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
-            var scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
-            var targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
-            await targetStep.EnqueueAsync(message).ConfigureAwait(false);
+            ActorId scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
+            IMessageBuffer targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
+            await targetStep.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
             foundEdge = true;
         }
 
         // Error event was raised with no edge to handle it, send it to the global error event buffer.
         if (!foundEdge && daprEvent.IsError && this.ParentProcessId != null)
         {
-            var parentProcess1 = this.ProxyFactory.CreateActorProxy<IEventBuffer>(ProcessActor.GetScopedGlobalErrorEventBufferId(this.ParentProcessId), nameof(EventBufferActor));
-            await parentProcess1.EnqueueAsync(daprEvent).ConfigureAwait(false);
+            IEventBuffer parentProcess1 = this.ProxyFactory.CreateActorProxy<IEventBuffer>(ProcessActor.GetScopedGlobalErrorEventBufferId(this.ParentProcessId), nameof(EventBufferActor));
+            await parentProcess1.EnqueueAsync(daprEvent.ToJson()).ConfigureAwait(false);
         }
     }
 

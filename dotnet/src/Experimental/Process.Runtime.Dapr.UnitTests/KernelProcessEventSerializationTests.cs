@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.SemanticKernel;
@@ -66,20 +67,24 @@ public class KernelProcessEventSerializationTests
                 new() { Id = "Test", Data = new ComplexData { Id = "test", Value = 3 } },
                 new() { Id = "testid", Data = KernelProcessError.FromException(new InvalidOperationException()) },
             ];
-        string json = KernelProcessEventSerializer.Write(processEvents);
+        List<string> jsonEvents = [];
+        foreach (KernelProcessEvent processEvent in processEvents)
+        {
+            jsonEvents.Add(KernelProcessEventSerializer.ToJson(processEvent));
+        }
 
         // Act
         using MemoryStream stream = new();
-        json.Serialize(stream);
+        jsonEvents.Serialize(stream);
         stream.Position = 0;
 
-        string? copy = stream.Deserialize<string>();
+        List<string>? copy = stream.Deserialize<List<string>>();
 
         // Assert
         Assert.NotNull(copy);
 
         // Act
-        KernelProcessEvent[] copiedEvents = KernelProcessEventSerializer.Read(copy).ToArray();
+        KernelProcessEvent[] copiedEvents = KernelProcessEventSerializer.ToKernelProcessEvents(jsonEvents).ToArray();
 
         // Assert
         Assert.Equivalent(processEvents, copiedEvents);
@@ -88,10 +93,14 @@ public class KernelProcessEventSerializationTests
     private static void VerifyContainerSerialization(KernelProcessEvent[] processEvents)
     {
         // Arrange
-        string json = KernelProcessEventSerializer.Write(processEvents);
+        List<string> jsonEvents = [];
+        foreach (KernelProcessEvent processEvent in processEvents)
+        {
+            jsonEvents.Add(KernelProcessEventSerializer.ToJson(processEvent));
+        }
 
         // Act
-        KernelProcessEvent[] copiedEvents = KernelProcessEventSerializer.Read(json).ToArray();
+        KernelProcessEvent[] copiedEvents = KernelProcessEventSerializer.ToKernelProcessEvents(jsonEvents).ToArray();
 
         // Assert
         Assert.Equivalent(processEvents, copiedEvents);

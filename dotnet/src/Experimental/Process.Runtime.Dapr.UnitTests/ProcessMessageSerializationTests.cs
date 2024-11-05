@@ -87,20 +87,24 @@ public class ProcessMessageSerializationTests
                 CreateMessage(new() { { "Data", new ComplexData { Value = 3 } } }),
                 CreateMessage(new() { { "Data", KernelProcessError.FromException(new InvalidOperationException()) } }),
             ];
-        string json = ProcessMessageSerializer.Write(processMessages);
+        List<string> jsonEvents = [];
+        foreach (ProcessMessage processMessage in processMessages)
+        {
+            jsonEvents.Add(ProcessMessageSerializer.ToJson(processMessage));
+        }
 
         // Act
         using MemoryStream stream = new();
-        json.Serialize(stream);
+        jsonEvents.Serialize(stream);
         stream.Position = 0;
 
-        string? copy = stream.Deserialize<string>();
+        List<string>? copy = stream.Deserialize<List<string>>();
 
         // Assert
         Assert.NotNull(copy);
 
         // Act
-        ProcessMessage[] copiedEvents = ProcessMessageSerializer.Read(copy).ToArray();
+        ProcessMessage[] copiedEvents = ProcessMessageSerializer.ToProcessMessages(jsonEvents).ToArray();
 
         // Assert
         Assert.Equivalent(processMessages, copiedEvents);
@@ -109,10 +113,14 @@ public class ProcessMessageSerializationTests
     private static void VerifyContainerSerialization(ProcessMessage[] processMessages)
     {
         // Arrange
-        string json = ProcessMessageSerializer.Write(processMessages);
+        List<string> jsonEvents = [];
+        foreach (ProcessMessage processMessage in processMessages)
+        {
+            jsonEvents.Add(ProcessMessageSerializer.ToJson(processMessage));
+        }
 
         // Act
-        ProcessMessage[] copiedEvents = ProcessMessageSerializer.Read(json).ToArray();
+        ProcessMessage[] copiedEvents = ProcessMessageSerializer.ToProcessMessages(jsonEvents).ToArray();
 
         // Assert
         Assert.Equivalent(processMessages, copiedEvents);
