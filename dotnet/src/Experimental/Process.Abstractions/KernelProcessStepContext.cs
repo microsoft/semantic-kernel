@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
