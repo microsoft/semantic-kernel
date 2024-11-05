@@ -60,11 +60,6 @@ public sealed class RestApiOperation
     public IReadOnlyList<RestApiSecurityRequirement>? SecurityRequirements { get; }
 
     /// <summary>
-    /// The security schemes.
-    /// </summary>
-    public IReadOnlyDictionary<string, RestApiSecurityScheme>? SecuritySchemes { get; }
-
-    /// <summary>
     /// The operation parameters.
     /// </summary>
     public IList<RestApiOperationParameter> Parameters { get; }
@@ -96,7 +91,6 @@ public sealed class RestApiOperation
     /// <param name="payload">The operation payload.</param>
     /// <param name="responses">The operation responses.</param>
     /// <param name="securityRequirements">The operation security requirements.</param>
-    /// <param name="securitySchemes">The security schemes.</param>
     public RestApiOperation(
         string id,
         RestApiOperationServer server,
@@ -106,8 +100,7 @@ public sealed class RestApiOperation
         IList<RestApiOperationParameter> parameters,
         RestApiOperationPayload? payload = null,
         IDictionary<string, RestApiOperationExpectedResponse>? responses = null,
-        IReadOnlyList<RestApiSecurityRequirement>? securityRequirements = null,
-        IReadOnlyDictionary<string, RestApiSecurityScheme>? securitySchemes = null)
+        IReadOnlyList<RestApiSecurityRequirement>? securityRequirements = null)
     {
         this.Id = id;
         this.Server = server;
@@ -118,7 +111,6 @@ public sealed class RestApiOperation
         this.Payload = payload;
         this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
         this.SecurityRequirements = securityRequirements;
-        this.SecuritySchemes = securitySchemes;
     }
 
     /// <summary>

@@ -1,8 +1,8 @@
 ﻿{
   "openapi": "3.0.1",
   "info": {
-    "title": "Azure Key Vault [Sample]",
-    "description": "A sample connector for the Azure Key Vault service.  This connector is built for the Azure Key Vault REST API.  You can see the details of the API here: https://docs.microsoft.com/rest/api/keyvault/.",
+    "title": "Semantic Kernel Open API Sample",
+    "description": "A sample Open API schema with endpoints which have security requirements defined.",
     "version": "1.0"
   },
   "servers": [
@@ -479,6 +479,7 @@
   },
   "security": [
     {
+      "OAuth2": [],
       "ApiKeyAuth": []
     }
   ]

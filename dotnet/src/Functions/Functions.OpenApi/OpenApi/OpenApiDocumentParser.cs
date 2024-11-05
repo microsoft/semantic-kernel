@@ -207,8 +207,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                 CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
-                CreateRestApiOperationSecurityRequirements(operationItem.Security, securityRequirements),
-                securitySchemes
+                CreateRestApiOperationSecurityRequirements(operationItem.Security, securityRequirements)
             )
             {
                 Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
@@ -253,16 +252,10 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// Build a list of <see cref="RestApiSecurityRequirement"/> objects from the given <see cref="OpenApiSecurityRequirement"/> objects.
     /// </summary>
     /// <param name="security">The REST API operation security</param>
-    /// <param name="securityRequirements">Existing global security requirements</param>
-    private static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security, List<RestApiSecurityRequirement>? securityRequirements = null)
+    /// <param name="globalRequirements">Existing global security requirements</param>
+    private static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security, List<RestApiSecurityRequirement>? globalRequirements = null)
     {
-        var result = new List<RestApiSecurityRequirement>();
-
-        // add existing security requirements that were set at the root level
-        if (securityRequirements is not null)
-        {
-            result.AddRange(securityRequirements);
-        }
+        var operationRequirements = new List<RestApiSecurityRequirement>();
 
         if (security is not null)
         {
@@ -275,12 +268,37 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                         throw new KernelException("The security scheme is not supported.");
                     }
 
-                    result.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { new RestApiSecurityScheme(openApiSecurityScheme), keyValuePair.Value } }));
+                    operationRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { new RestApiSecurityScheme(openApiSecurityScheme), keyValuePair.Value } }));
                 }
             }
         }
 
-        return result;
+        // add globally defined security requirements that are not overridden at the operation level
+        if (globalRequirements is not null)
+        {
+            // create a HashSet to track the types of security schemes already in the local requirements  
+            var existingSchemeTypes = new HashSet<string>(operationRequirements.SelectMany(req => req.Keys).Select(scheme => scheme.SecuritySchemeType));
+
+            foreach (var globalRequirement in globalRequirements)
+            {
+                foreach (var scheme in globalRequirement.Keys)
+                {
+                    // if the scheme type is not already in the local requirements, add it  
+                    if (!existingSchemeTypes.Contains(scheme.SecuritySchemeType))
+                    {
+                        var newRequirement = new Dictionary<RestApiSecurityScheme, IList<string>>
+                        {
+                            [scheme] = globalRequirement[scheme]
+                        };
+
+                        operationRequirements.Add(new RestApiSecurityRequirement(newRequirement));
+                        existingSchemeTypes.Add(scheme.SecuritySchemeType);
+                    }
+                }
+            }
+        }
+
+        return operationRequirements;
     }
 
     /// <summary>
@@ -486,7 +504,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <param name="readResult">The reading results to be checked.</param>
     /// <param name="ignoreNonCompliantErrors">Flag indicating whether to ignore non-compliant errors.
     /// If set to true, the parser will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate parsing results.
+    /// Please note that enabling this option may operationRequirements in incomplete or inaccurate parsing results.
     /// </param>
     private void AssertReadingSuccessful(ReadResult readResult, bool ignoreNonCompliantErrors)
     {
