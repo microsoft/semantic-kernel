@@ -267,6 +267,7 @@ public static partial class OpenApiKernelPluginFactory
         {
             { OpenApiKernelPluginFactory.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() },
             { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, operation.Servers is { Count: > 0 } servers && !string.IsNullOrEmpty(servers[0].Url) ? [servers[0].Url! ] : Array.Empty<string>() }
+            { OpenApiKernelPluginFactory.OperationExtensionsOperationKey, operation }
         };
 
         if (operation.Extensions is { Count: > 0 })
@@ -292,8 +293,8 @@ public static partial class OpenApiKernelPluginFactory
     /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
     private const string OperationExtensionsMethodKey = "method";
 
-    /// <summary>The metadata property bag key to use when storing the path of an operation.</summary>
-    private const string OperationExtensionsPathKey = "path";
+    /// <summary>The metadata property bag key to use when storing the operation.</summary>
+    private const string OperationExtensionsOperationKey = "operation";
 
     /// <summary>The metadata property bag key to use when storing the server of an operation.</summary>
     private const string OperationExtensionsServerUrlsKey = "server-urls";
