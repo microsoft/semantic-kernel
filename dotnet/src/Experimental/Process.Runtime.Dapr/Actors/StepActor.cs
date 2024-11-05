@@ -128,7 +128,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// Triggers the step to process all prepared messages.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
-    public virtual async Task ProcessIncomingMessagesAsync()
+    public async Task ProcessIncomingMessagesAsync()
     {
         // Handle all the incoming messages one at a time
         while (this._incomingMessages.Count > 0)
@@ -388,8 +388,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
                 await parentProcess.EnqueueAsync(daprEvent).ConfigureAwait(false);
             }
         }
-
-        var scopedEvent = this.ScopedEvent(daprEvent);
 
         // Get the edges for the event and queue up the messages to be sent to the next steps.
         foreach (var edge in this.GetEdgeForEvent(daprEvent.Id!))

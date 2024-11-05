@@ -6,6 +6,7 @@ namespace SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
 /// An interface for a health actor that is only used for testing the health of the Dapr runtime.
+/// </summary>
 public interface IHealthActor : IActor
 {
     /// <summary>
