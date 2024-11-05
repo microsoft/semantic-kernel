@@ -13,7 +13,7 @@ namespace TextToImage;
 public class OpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task DallE2Async()
+    public async Task ChatDallE2Async()
     {
         Console.WriteLine("======== OpenAI DALL-E 2 Text To Image ========");
 
@@ -82,7 +82,7 @@ public class OpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
     }
 
     [Fact]
-    public async Task SimpleTextToImageExampleAsync()
+    public async Task SimpleDallE3ImageUriAsync()
     {
         var builder = Kernel.CreateBuilder()
             .AddOpenAITextToImage( // Add your text to image service
@@ -100,7 +100,7 @@ public class OpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
     }
 
     [Fact]
-    public async Task SimpleDalle3ImageBinaryAsync()
+    public async Task SimpleDallE3ImageBinaryAsync()
     {
         var builder = Kernel.CreateBuilder()
             .AddOpenAITextToImage( // Add your text to image service
@@ -123,7 +123,7 @@ public class OpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
     }
 
     [Fact]
-    public async Task DallE3Async()
+    public async Task ChatDallE3Async()
     {
         Console.WriteLine("======== OpenAI DALL-E 3 Text To Image ========");
 

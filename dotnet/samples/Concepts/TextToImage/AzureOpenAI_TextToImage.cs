@@ -10,7 +10,7 @@ namespace TextToImage;
 public class AzureOpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task SimpleTextToImageExampleAsync()
+    public async Task SimpleDallE3ImageUriAsync()
     {
         var builder = Kernel.CreateBuilder()
            .AddAzureOpenAITextToImage( // Add your text to image service
@@ -27,5 +27,31 @@ public class AzureOpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output
             new OpenAITextToImageExecutionSettings { Size = (Width: 1792, Height: 1024) });
 
         this.Output.WriteLine(generatedImages[0].Uri!.ToString());
+    }
+
+
+    [Fact]
+    public async Task SimpleDallE3ImageBinaryAsync()
+    {
+        var builder = Kernel.CreateBuilder()
+           .AddAzureOpenAITextToImage( // Add your text to image service
+               deploymentName: TestConfiguration.AzureOpenAI.ImageDeploymentName,
+               endpoint: TestConfiguration.AzureOpenAI.ImageEndpoint,
+               apiKey: TestConfiguration.AzureOpenAI.ImageApiKey,
+               modelId: TestConfiguration.AzureOpenAI.ImageModelId);
+
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<ITextToImageService>();
+
+        var generatedImages = await service.GetImageContentsAsync(new TextContent("A cute baby sea otter"),
+            new OpenAITextToImageExecutionSettings
+            {
+                Size = (Width: 1024, Height: 1024),
+                ResponseFormat = "bytes",
+                // ResponseFormat = OpenAI.Images.GeneratedImageFormat.Bytes 
+            });
+
+        this.Output.WriteLine($"Generated Image Bytes: {generatedImages[0].Data!.Value.Length}");
+        this.Output.WriteLine($"Generated Image DataUri: {generatedImages[0].DataUri}");
     }
 }
