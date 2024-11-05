@@ -69,7 +69,7 @@ internal static partial class RestApiOperationExtensions
     /// <param name="responses">The REST API operation responses to parse.</param>
     /// <param name="preferredResponses">The preferred response codes to use when selecting the default response.</param>
     /// <returns>The default response, if any.</returns>
-    private static RestApiOperationExpectedResponse? GetDefaultResponse(IDictionary<string, RestApiOperationExpectedResponse> responses, string[] preferredResponses)
+    private static RestApiOperationExpectedResponse? GetDefaultResponse(IReadOnlyDictionary<string, RestApiOperationExpectedResponse> responses, string[] preferredResponses)
     {
         foreach (var code in preferredResponses)
         {
@@ -161,7 +161,7 @@ internal static partial class RestApiOperationExtensions
     /// </param>
     /// <param name="rootPropertyName">The root property name.</param>
     /// <returns>The list of payload parameters.</returns>
-    private static List<RestApiOperationParameter> GetParametersFromPayloadMetadata(IList<RestApiOperationPayloadProperty> properties, bool enableNamespacing = false, string? rootPropertyName = null)
+    private static List<RestApiOperationParameter> GetParametersFromPayloadMetadata(IReadOnlyList<RestApiOperationPayloadProperty> properties, bool enableNamespacing = false, string? rootPropertyName = null)
     {
         var parameters = new List<RestApiOperationParameter>();
 
