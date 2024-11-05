@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
@@ -29,4 +30,17 @@ public sealed class KernelProcessStepContext
     {
         return this._stepMessageChannel.EmitEventAsync(processEvent);
     }
+
+    /// <summary>
+    /// Emit an event from the current step with an simplified method signature.
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public ValueTask EmitEventAsync(string eventId, object data = null)
+    {
+        return this._stepMessageChannel.EmitEventAsync(
+            new KernelProcessEvent { Id = eventId, Data = data });
+    }
+
 }
