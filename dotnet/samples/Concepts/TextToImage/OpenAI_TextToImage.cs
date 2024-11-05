@@ -114,8 +114,8 @@ public class OpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output)
             new OpenAITextToImageExecutionSettings
             {
                 Size = (Width: 1024, Height: 1024),
+                // Response Format also accepts the OpenAI.Images.GeneratedImageFormat type. 
                 ResponseFormat = "bytes",
-                // ResponseFormat = OpenAI.Images.GeneratedImageFormat.Bytes 
             });
 
         this.Output.WriteLine($"Generated Image Bytes: {generatedImages[0].Data!.Value.Length}");
