@@ -52,7 +52,19 @@ public class ProcessStateTypeResolver<T> : DefaultJsonTypeInfoResolver where T :
                 UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization
             };
 
-            jsonTypeInfo.PolymorphismOptions.DerivedTypes.AddRange(jsonDerivedTypes);
+            // Add the known derived types to the collection
+            var derivedTypesCollection = jsonTypeInfo.PolymorphismOptions.DerivedTypes;
+            if (derivedTypesCollection is List<JsonDerivedType> list)
+            {
+                list.AddRange(jsonDerivedTypes);
+            }
+            else
+            {
+                foreach (var item in jsonDerivedTypes!)
+                {
+                    derivedTypesCollection!.Add(item);
+                }
+            }
         }
         else if (jsonTypeInfo.Type == typeof(DaprStepInfo))
         {
