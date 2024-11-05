@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Xunit;
 
 namespace SemanticKernel.Process.IntegrationTests;
 

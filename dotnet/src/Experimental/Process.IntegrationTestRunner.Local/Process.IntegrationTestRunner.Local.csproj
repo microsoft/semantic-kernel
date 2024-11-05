@@ -12,6 +12,8 @@
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/Experimental/Process.IntegrationTests.Shared/Process.IntegrationTests.Shared.props" />
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
   <ItemGroup>
     <Content Include="..\..\IntegrationTests\testsettings.json" Link="testsettings.json">

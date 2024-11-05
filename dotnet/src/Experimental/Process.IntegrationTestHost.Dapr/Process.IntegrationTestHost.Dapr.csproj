@@ -12,8 +12,8 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
-  <!--<Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />-->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
   <ItemGroup>
     <PackageReference Include="Dapr.Actors" />
