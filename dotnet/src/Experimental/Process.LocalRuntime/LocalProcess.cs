@@ -149,7 +149,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         {
             // Create the external event that will be used to start the nested process. Since this event came
             // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
-            var nestedEvent = new KernelProcessEvent() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
+            KernelProcessEvent nestedEvent = new() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
 
             // Run the nested process completely within a single superstep.
             await this.RunOnceAsync(nestedEvent, this._kernel).ConfigureAwait(false);
@@ -300,7 +300,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     {
         while (this._externalEventChannel.Reader.TryRead(out var externalEvent))
         {
-            if (this._outputEdges!.TryGetValue(externalEvent.Id!, out List<KernelProcessEdge>? edges) && edges is not null)
+            if (this._outputEdges.TryGetValue(externalEvent.Id, out List<KernelProcessEdge>? edges) && edges is not null)
             {
                 foreach (var edge in edges)
                 {
@@ -330,7 +330,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
             // Get the edges for the event and queue up the messages to be sent to the next steps.
             bool foundEdge = false;
-            foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.Id))
+            foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
             {
                 ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
                 messageChannel.Enqueue(message);
