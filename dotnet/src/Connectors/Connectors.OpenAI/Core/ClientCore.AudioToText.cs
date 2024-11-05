@@ -43,10 +43,12 @@ internal partial class ClientCore
 
         AudioTranscription responseData = (await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
 
-        return [new(responseData.Text) {
+        return [new(responseData.Text)
+        {
             ModelId = targetModel,
             InnerContent = responseData,
-            Metadata = GetResponseMetadata(responseData)}];
+            Metadata = GetResponseMetadata(responseData)
+        }];
     }
 
     /// <summary>
