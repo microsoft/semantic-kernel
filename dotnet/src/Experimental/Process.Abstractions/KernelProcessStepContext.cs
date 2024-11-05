@@ -36,11 +36,19 @@ public sealed class KernelProcessStepContext
     /// </summary>
     /// <param name="eventId"></param>
     /// <param name="data"></param>
+    /// <param name="visibility"></param>
     /// <returns></returns>
-    public ValueTask EmitEventAsync(string eventId, object data = null)
+    public ValueTask EmitEventAsync(
+        string eventId,
+        object? data = null,
+        KernelProcessEventVisibility visibility = KernelProcessEventVisibility.Internal)
     {
         return this._stepMessageChannel.EmitEventAsync(
-            new KernelProcessEvent { Id = eventId, Data = data });
+            new KernelProcessEvent
+            {
+                Id = eventId,
+                Data = data,
+                Visibility = visibility
+            });
     }
-
 }

@@ -98,7 +98,7 @@ public sealed class ProcessCycleTests
         public async ValueTask PrintWelcomeMessageAsync(KernelProcessStepContext context)
         {
             await context.EmitEventAsync(new() { Id = CommonEvents.StartARequested, Data = "Get Going A" });
-            await context.EmitEventAsync(CommonEvents.StartBRequested, "Get Going B");
+            await context.EmitEventAsync(CommonEvents.StartBRequested, "Get Going B", KernelProcessEventVisibility.Internal);
         }
     }
 
