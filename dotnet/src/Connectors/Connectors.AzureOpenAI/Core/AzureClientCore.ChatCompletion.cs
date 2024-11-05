@@ -90,6 +90,11 @@ internal partial class AzureClientCore
             }
         }
 
+        if (toolCallingConfig.Options?.AllowParallelCalls is not null)
+        {
+            options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
+        }
+
         return options;
     }
 }

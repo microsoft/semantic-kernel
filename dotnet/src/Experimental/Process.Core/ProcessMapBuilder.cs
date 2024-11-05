@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -24,6 +25,11 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     {
         this._mapTarget = mapTarget;
         this._mapProcess = this.CreateMapProcess(mapTarget);
+    }
+
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    {
+        throw new NotImplementedException(); // %%% DOH!
     }
 
     /// <inheritdoc/>

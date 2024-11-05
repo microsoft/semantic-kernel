@@ -14,8 +14,8 @@ public sealed class LocalKernelProcessContext : IDisposable
 
     internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventFilter? filter = null)
     {
-        Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNull(process, nameof(process));
+        Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNullOrWhiteSpace(process.State?.Name);
 
         this._kernel = kernel;
@@ -23,15 +23,12 @@ public sealed class LocalKernelProcessContext : IDisposable
             process,
             kernel)
         {
-            EventFilter = filter,
-            LoggerFactory = kernel.LoggerFactory,
+            EventFilter = filter
         };
     }
 
-    internal Task StartWithEventAsync(KernelProcessEvent? initialEvent, Kernel? kernel = null)
-    {
-        return this._localProcess.RunOnceAsync(initialEvent);
-    }
+    internal Task StartWithEventAsync(KernelProcessEvent? initialEvent, Kernel? kernel = null) =>
+        this._localProcess.RunOnceAsync(initialEvent, kernel);
 
     /// <summary>
     /// Sends a message to the process.
@@ -56,5 +53,5 @@ public sealed class LocalKernelProcessContext : IDisposable
     /// <summary>
     /// Disposes of the resources used by the process.
     /// </summary>
-    public void Dispose() => this._localProcess?.Dispose();
+    public void Dispose() => this._localProcess.Dispose();
 }

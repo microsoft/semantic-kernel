@@ -16,7 +16,7 @@ public class KernelProcessMapTests
     public void KernelProcessMapStateInitialization()
     {
         // Arrange
-        KernelProcessState processState = new("Operation");
+        KernelProcessState processState = new("Operation", "v1");
         KernelProcess process = new(processState, [], []);
         KernelProcessMapState state = new(nameof(KernelProcessMapStateInitialization), Guid.NewGuid().ToString());
 

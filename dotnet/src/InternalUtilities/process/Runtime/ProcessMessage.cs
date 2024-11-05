@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel.Process.Runtime;
 /// <param name="FunctionName">The name of the function associated with the message.</param>
 /// <param name="Values">The dictionary of values associated with the message.</param>
 [DataContract]
+[KnownType(typeof(KernelProcessError))]
 public record ProcessMessage(
     [property:DataMember]
     string SourceId,

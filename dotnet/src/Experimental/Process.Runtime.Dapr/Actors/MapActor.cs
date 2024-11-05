@@ -23,9 +23,8 @@ internal sealed class MapActor : StepActor, IMap
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    /// <param name="loggerFactory">Optional. A <see cref="ILoggerFactory"/>.</param>
-    public MapActor(ActorHost host, Kernel kernel, ILoggerFactory? loggerFactory)
-        : base(host, kernel, loggerFactory)
+    public MapActor(ActorHost host, Kernel kernel)
+        : base(host, kernel)
     {
     }
 
@@ -104,7 +103,7 @@ internal sealed class MapActor : StepActor, IMap
 
         this.ParentProcessId = parentProcessId;
         this._map = mapInfo;
-        this._logger = this.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<MapActor>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<MapActor>();
 
         // Initialize the step as a process.
         DaprProcessInfo mapOperation = this._map.MapStep;

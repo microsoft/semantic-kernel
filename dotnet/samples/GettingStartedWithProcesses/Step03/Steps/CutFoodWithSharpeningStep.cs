@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process;
 
 namespace Step03.Steps;
 
@@ -8,6 +9,7 @@ namespace Step03.Steps;
 /// Step used in the Processes Samples:
 /// - Step_03_FoodPreparation.cs
 /// </summary>
+[KernelProcessStepMetadata("CutFoodStep.V2")]
 public class CutFoodWithSharpeningStep : KernelProcessStep<CutFoodWithSharpeningState>
 {
     public static class Functions
@@ -92,7 +94,7 @@ public class CutFoodWithSharpeningStep : KernelProcessStep<CutFoodWithSharpening
 /// </summary>
 public sealed class CutFoodWithSharpeningState
 {
-    internal int KnifeSharpness { get; set; } = 5;
+    public int KnifeSharpness { get; set; } = 5;
 
     internal int _needsSharpeningLimit = 3;
     internal int _sharpeningBoost = 5;

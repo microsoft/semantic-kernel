@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Process.Models;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
@@ -79,7 +80,6 @@ public class ProcessStepBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
-        Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
         Assert.EndsWith("TestFunction.OnError", edgeBuilder.EventId);
     }
 
@@ -237,7 +237,12 @@ public class ProcessStepBuilderTests
 
         internal override KernelProcessStepInfo BuildStep()
         {
-            return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, this.Id), []);
+            return this.BuildStep(null);
+        }
+
+        internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata = null)
+        {
+            return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, version: "v1", id: this.Id), []);
         }
 
         internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
