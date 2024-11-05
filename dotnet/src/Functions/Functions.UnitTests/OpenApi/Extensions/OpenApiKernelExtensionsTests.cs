@@ -279,11 +279,13 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.Equal(4, additionalProperties.Count);
 
         Assert.Contains("method", additionalProperties.Keys);
+        Assert.Contains("path", additionalProperties.Keys);
         Assert.Contains("server-urls", additionalProperties.Keys);
         Assert.Contains("security-requirements", additionalProperties.Keys);
         Assert.Contains("operation-extensions", additionalProperties.Keys);
 
         Assert.Equal("GET", additionalProperties["method"]);
+        Assert.Equal("/api-with-open-api-extensions", additionalProperties["path"]);
         var serverUrls = additionalProperties["server-urls"] as string[];
         Assert.NotNull(serverUrls);
         Assert.Equal(["https://my-key-vault.vault.azure.net"], serverUrls);
