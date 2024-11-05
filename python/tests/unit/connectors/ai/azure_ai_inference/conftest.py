@@ -9,7 +9,7 @@ from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
 from azure.ai.inference.models import (
     ChatChoice,
     ChatCompletions,
-    ChatCompletionsFunctionToolCall,
+    ChatCompletionsToolCall,
     ChatResponseMessage,
     CompletionsUsage,
     FunctionCall,
@@ -135,7 +135,7 @@ def mock_azure_ai_inference_chat_completion_response_with_tool_call(model_id) ->
                 message=ChatResponseMessage(
                     role="assistant",
                     tool_calls=[
-                        ChatCompletionsFunctionToolCall(
+                        ChatCompletionsToolCall(
                             id="test_id",
                             function=FunctionCall(
                                 name="test_function",
@@ -224,7 +224,7 @@ def mock_azure_ai_inference_streaming_chat_completion_response_with_tool_call(mo
                     delta=ChatResponseMessage(
                         role="assistant",
                         tool_calls=[
-                            ChatCompletionsFunctionToolCall(
+                            ChatCompletionsToolCall(
                                 id="test_id",
                                 function=FunctionCall(
                                     name="test_function",
