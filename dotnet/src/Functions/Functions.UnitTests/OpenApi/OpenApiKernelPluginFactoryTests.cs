@@ -400,8 +400,8 @@ public sealed class OpenApiKernelPluginFactoryTests
     }
 
     [Theory]
-    [InlineData("securityV3_0.json")]
-    public async Task ItAddSecurityMetadataToOperationAsync(string documentFileName)
+    [MemberData(nameof(GenerateSecurityMemberData))]
+    public async Task ItAddSecurityMetadataToOperationAsync(string documentFileName, IDictionary<string, string[]> securityTypeMap)
     {
         // Arrange
         var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
@@ -413,16 +413,45 @@ public sealed class OpenApiKernelPluginFactoryTests
         foreach (var function in plugin)
         {
             var additionalProperties = function.Metadata.AdditionalProperties;
-
             Assert.Contains("security-requirements", additionalProperties.Keys);
+
+            var securityTypes = securityTypeMap[function.Name];
 
             var securityRequirements = additionalProperties["security-requirements"] as IReadOnlyList<RestApiSecurityRequirement>;
             Assert.NotNull(securityRequirements);
-            Assert.Equal(2, securityRequirements.Count);
-            Assert.Contains(securityRequirements, sr => sr.Keys.Any(k => k.SecuritySchemeType == "OAuth2"));
-            Assert.Contains(securityRequirements, sr => sr.Keys.Any(k => k.SecuritySchemeType == "ApiKey"));
+            Assert.Equal(securityTypes.Length, securityRequirements.Count);
+            foreach (var securityType in securityTypes)
+            {
+                Assert.Contains(securityRequirements, sr => sr.Keys.Any(k => k.SecuritySchemeType == securityType));
+            }
         }
     }
+
+    /// <summary>
+    /// Generate theory data for ItAddSecurityMetadataToOperationAsync
+    /// </summary>
+    public static TheoryData<string, IDictionary<string, string[]>> GenerateSecurityMemberData() =>
+        new()
+        {
+            { "no-securityV3_0.json", new Dictionary<string, string[]>
+                {
+                    { "NoSecurity", Array.Empty<string>() },
+                    { "Security", new[] { "ApiKey" } },
+                    { "SecurityAndScope", new[] { "ApiKey" } }
+                }},
+            { "apikey-securityV3_0.json", new Dictionary<string, string[]>
+                {
+                    { "NoSecurity", new[] { "ApiKey" } },
+                    { "Security", new[] { "ApiKey" } },
+                    { "SecurityAndScope", new[] { "ApiKey" } }
+                }},
+            { "oauth-securityV3_0.json", new Dictionary<string, string[]>
+                {
+                    { "NoSecurity", new[] { "OAuth2" } },
+                    { "Security", new[] { "ApiKey", "OAuth2" } },
+                    { "SecurityAndScope", new[] { "ApiKey", "OAuth2" } }
+                }}
+        };
 
     [Fact]
     public void Dispose()
