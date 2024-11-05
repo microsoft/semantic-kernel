@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Process.Runtime;
 
@@ -25,15 +26,20 @@ internal static class ProcessEventSerializer
     /// <summary>
     /// Deserialize a list of JSON events into a list of <see cref="ProcessEvent"/> objects.
     /// </summary>
-    /// <exception cref="KernelException"></exception>
-    public static IEnumerable<ProcessEvent> ToProcessEvents(this IEnumerable<string> jsonEvents)
+    /// <exception cref="KernelException">If any event fails deserialization</exception>
+    public static IList<ProcessEvent> ToProcessEvents(this IEnumerable<string> jsonEvents)
     {
-        foreach (string json in jsonEvents)
+        return Deserialize().ToArray();
+
+        IEnumerable<ProcessEvent> Deserialize()
         {
-            EventContainer<ProcessEvent> eventContainer =
-                JsonSerializer.Deserialize<EventContainer<ProcessEvent>>(json) ??
-                throw new KernelException($"Unable to deserialize {nameof(ProcessEvent)} queue.");
-            yield return eventContainer.Payload with { Data = TypeInfo.ConvertValue(eventContainer.DataTypeName, eventContainer.Payload.Data) };
+            foreach (string json in jsonEvents)
+            {
+                EventContainer<ProcessEvent> eventContainer =
+                    JsonSerializer.Deserialize<EventContainer<ProcessEvent>>(json) ??
+                    throw new KernelException($"Unable to deserialize {nameof(ProcessEvent)} queue.");
+                yield return eventContainer.Payload with { Data = TypeInfo.ConvertValue(eventContainer.DataTypeName, eventContainer.Payload.Data) };
+            }
         }
     }
 }

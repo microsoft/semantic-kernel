@@ -114,7 +114,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     {
         IMessageBuffer messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(new ActorId(this.Id.GetId()), nameof(MessageBufferActor));
         IList<string> incoming = await messageQueue.DequeueAllAsync().ConfigureAwait(false);
-        ProcessMessage[] messages = incoming.ToProcessMessages().ToArray();
+        IList<ProcessMessage> messages = incoming.ToProcessMessages();
 
         foreach (ProcessMessage message in messages)
         {

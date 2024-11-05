@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.SemanticKernel.Process.Serialization;
@@ -84,7 +83,7 @@ public class ProcessEventSerializationTests
         Assert.NotNull(copy);
 
         // Act
-        ProcessEvent[] copiedEvents = ProcessEventSerializer.ToProcessEvents(jsonEvents).ToArray();
+        IList<ProcessEvent> copiedEvents = ProcessEventSerializer.ToProcessEvents(jsonEvents);
 
         // Assert
         Assert.Equivalent(processEvents, copiedEvents);
@@ -100,7 +99,7 @@ public class ProcessEventSerializationTests
         }
 
         // Act
-        ProcessEvent[] copiedEvents = ProcessEventSerializer.ToProcessEvents(jsonEvents).ToArray();
+        IList<ProcessEvent> copiedEvents = ProcessEventSerializer.ToProcessEvents(jsonEvents);
 
         // Assert
         Assert.Equivalent(processEvents, copiedEvents);

@@ -340,7 +340,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     {
         IExternalEventBuffer externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
         IList<string> dequeuedEvents = await externalEventQueue.DequeueAllAsync().ConfigureAwait(false);
-        KernelProcessEvent[] externalEvents = dequeuedEvents.ToKernelProcessEvents().ToArray();
+        IList<KernelProcessEvent> externalEvents = dequeuedEvents.ToKernelProcessEvents();
 
         foreach (KernelProcessEvent externalEvent in externalEvents)
         {
@@ -379,7 +379,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             return;
         }
 
-        ProcessEvent[] processErrorEvents = errorEvents.ToProcessEvents().ToArray();
+        IList<ProcessEvent> processErrorEvents = errorEvents.ToProcessEvents();
         foreach (var errorEdge in errorEdges)
         {
             foreach (ProcessEvent errorEvent in processErrorEvents)
@@ -404,7 +404,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             // Handle public events that need to be bubbled out of the process.
             IEventBuffer eventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.Id.GetId()), nameof(EventBufferActor));
             IList<string> allEvents = await eventQueue.DequeueAllAsync().ConfigureAwait(false);
-            ProcessEvent[] processEvents = allEvents.ToProcessEvents().ToArray();
+            IList<ProcessEvent> processEvents = allEvents.ToProcessEvents();
 
             foreach (ProcessEvent processEvent in processEvents)
             {

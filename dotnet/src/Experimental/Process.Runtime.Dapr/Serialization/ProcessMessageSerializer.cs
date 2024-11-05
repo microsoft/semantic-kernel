@@ -27,16 +27,21 @@ internal static class ProcessMessageSerializer
     /// <summary>
     /// Deserialize a list of JSON messages into a list of <see cref="ProcessMessage"/> objects.
     /// </summary>
-    /// <exception cref="KernelException"></exception>
-    public static IEnumerable<ProcessMessage> ToProcessMessages(this IEnumerable<string> jsonMessages)
+    /// <exception cref="KernelException">If any message fails deserialization</exception>
+    public static IList<ProcessMessage> ToProcessMessages(this IEnumerable<string> jsonMessages)
     {
-        foreach (string json in jsonMessages)
-        {
-            MessageContainer containedMessage =
-                JsonSerializer.Deserialize<MessageContainer>(json) ??
-                throw new KernelException($"Unable to deserialize {nameof(ProcessMessage)} queue.");
+        return Deserialize().ToArray();
 
-            yield return Process(containedMessage);
+        IEnumerable<ProcessMessage> Deserialize()
+        {
+            foreach (string json in jsonMessages)
+            {
+                MessageContainer containedMessage =
+                    JsonSerializer.Deserialize<MessageContainer>(json) ??
+                    throw new KernelException($"Unable to deserialize {nameof(ProcessMessage)} queue.");
+
+                yield return Process(containedMessage);
+            }
         }
     }
 
