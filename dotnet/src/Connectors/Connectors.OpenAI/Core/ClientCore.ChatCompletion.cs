@@ -209,7 +209,9 @@ internal partial class ClientCore
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: false,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 return [lastMessage];
@@ -388,7 +390,9 @@ internal partial class ClientCore
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: true,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content);
@@ -464,7 +468,7 @@ internal partial class ClientCore
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
-            IncludeLogProbabilities = executionSettings.Logprobs,
+            IncludeLogProbabilities = executionSettings.Logprobs
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -497,6 +501,11 @@ internal partial class ClientCore
             {
                 options.StopSequences.Add(s);
             }
+        }
+
+        if (toolCallingConfig.Options?.AllowParallelCalls is not null)
+        {
+            options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
         }
 
         return options;
@@ -564,7 +573,28 @@ internal partial class ClientCore
         var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
-        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);
+        var typeName = GetTypeName(type);
+
+        return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
+    }
+
+    /// <summary>
+    /// Returns a type name concatenated with generic argument type names if they exist.
+    /// </summary>
+    private static string GetTypeName(Type type)
+    {
+        if (!type.IsGenericType)
+        {
+            return type.Name;
+        }
+
+        // If type is generic, base name is followed by ` character.
+        string baseName = type.Name.Substring(0, type.Name.IndexOf('`'));
+
+        Type[] typeArguments = type.GetGenericArguments();
+        string argumentNames = string.Concat(Array.ConvertAll(typeArguments, GetTypeName));
+
+        return $"{baseName}{argumentNames}";
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
