@@ -57,12 +57,12 @@ public sealed class RestApiOperation
     /// <summary>
     /// The operation parameters.
     /// </summary>
-    public IList<RestApiOperationParameter> Parameters { get; }
+    public IReadOnlyList<RestApiOperationParameter> Parameters { get; }
 
     /// <summary>
     /// The list of possible operation responses.
     /// </summary>
-    public IDictionary<string, RestApiOperationExpectedResponse> Responses { get; }
+    public IReadOnlyDictionary<string, RestApiOperationExpectedResponse> Responses { get; }
 
     /// <summary>
     /// The operation payload.
@@ -85,15 +85,15 @@ public sealed class RestApiOperation
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="payload">The operation payload.</param>
     /// <param name="responses">The operation responses.</param>
-    public RestApiOperation(
+    internal RestApiOperation(
         string id,
         RestApiOperationServer server,
         string path,
         HttpMethod method,
         string description,
-        IList<RestApiOperationParameter> parameters,
+        IReadOnlyList<RestApiOperationParameter> parameters,
         RestApiOperationPayload? payload = null,
-        IDictionary<string, RestApiOperationExpectedResponse>? responses = null)
+        IReadOnlyDictionary<string, RestApiOperationExpectedResponse>? responses = null)
     {
         this.Id = id;
         this.Server = server;
@@ -112,7 +112,7 @@ public sealed class RestApiOperation
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    public Uri BuildOperationUrl(IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    internal Uri BuildOperationUrl(IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl, arguments);
 
@@ -126,7 +126,7 @@ public sealed class RestApiOperation
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The request headers.</returns>
-    public IDictionary<string, string> BuildHeaders(IDictionary<string, object?> arguments)
+    internal IDictionary<string, string> BuildHeaders(IDictionary<string, object?> arguments)
     {
         var headers = new Dictionary<string, string>();
 
@@ -167,7 +167,7 @@ public sealed class RestApiOperation
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
     /// <returns>The query string.</returns>
-    public string BuildQueryString(IDictionary<string, object?> arguments)
+    internal string BuildQueryString(IDictionary<string, object?> arguments)
     {
         var segments = new List<string>();
 
