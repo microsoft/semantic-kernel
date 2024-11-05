@@ -105,7 +105,7 @@ while (true)
     Console.WriteLine();
 }
 
-internal class InformationItem
+internal sealed class InformationItem
 {
     [VectorStoreRecordKey]
     [TextSearchResultName]
