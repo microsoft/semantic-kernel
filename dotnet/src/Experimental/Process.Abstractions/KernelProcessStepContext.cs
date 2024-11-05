@@ -32,7 +32,7 @@ public sealed class KernelProcessStepContext
     }
 
     /// <summary>
-    /// Emit an event from the current step with an simplified method signature.
+    /// Emit an event from the current step with a simplified method signature.
     /// </summary>
     /// <param name="eventId"></param>
     /// <param name="data"></param>
