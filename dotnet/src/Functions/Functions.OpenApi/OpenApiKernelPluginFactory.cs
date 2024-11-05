@@ -266,7 +266,6 @@ public static partial class OpenApiKernelPluginFactory
         var additionalMetadata = new Dictionary<string, object?>
         {
             { OpenApiKernelPluginFactory.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() },
-            { OpenApiKernelPluginFactory.OperationExtensionsPathKey, operation.Path },
             { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, operation.Servers is { Count: > 0 } servers && !string.IsNullOrEmpty(servers[0].Url) ? [servers[0].Url! ] : Array.Empty<string>() }
         };
 
