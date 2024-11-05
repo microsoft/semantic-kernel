@@ -267,7 +267,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         // Assert Metadata Keys and Values
         Assert.True(plugin.TryGetFunction("OpenApiExtensions", out var function));
         var additionalProperties = function.Metadata.AdditionalProperties;
-        Assert.Equal(4, additionalProperties.Count);
+        Assert.Equal(5, additionalProperties.Count);
 
         Assert.Contains("method", additionalProperties.Keys);
         Assert.Contains("path", additionalProperties.Keys);
