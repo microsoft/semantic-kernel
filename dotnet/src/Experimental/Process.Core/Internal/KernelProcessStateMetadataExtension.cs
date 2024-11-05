@@ -75,7 +75,7 @@ internal static class KernelProcessStateMetadataExtension
                             }
                             else if (false)
                             {
-                                // TODO: Hook up logic for custom step override
+                                // TODO: Improvements for support on advance versioning scenarios process M:N steps differences https://github.com/microsoft/semantic-kernel/issues/9555
                             }
                             else
                             {
