@@ -3,15 +3,18 @@
 #pragma warning disable SKEXP0070
 #pragma warning disable SKEXP0050
 #pragma warning disable SKEXP0001
+#pragma warning disable SKEXP0020
 
 using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.InMemory;
+using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 // Ensure you follow the preparation steps provided in the README.md
 var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
@@ -38,23 +41,27 @@ var kernel = builder.Build();
 var chatService = kernel.GetRequiredService<IChatCompletionService>();
 var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
-// Create a memory store and a semantic text memory
-var memoryStore = new VolatileMemoryStore();
-var semanticTextMemory = new SemanticTextMemory(memoryStore, embeddingService);
-
-// Loading it for Save, Recall and other methods
-kernel.ImportPluginFromObject(new TextMemoryPlugin(semanticTextMemory));
+// Create a vector store and a collection to store information
+var vectorStore = new InMemoryVectorStore();
+var collection = vectorStore.GetCollection<string, InformationItem>("ExampleCollection");
+await collection.CreateCollectionIfNotExistsAsync();
 
 // Save some information to the memory
 var collectionName = "ExampleCollection";
 foreach (var factTextFile in Directory.GetFiles("Facts", "*.txt"))
 {
     var factContent = File.ReadAllText(factTextFile);
-    await semanticTextMemory.SaveInformationAsync(
-        collection: collectionName,
-        text: factContent,
-        id: Guid.NewGuid().ToString());
+    await collection.UpsertAsync(new()
+    {
+        Id = Guid.NewGuid().ToString(),
+        Text = factContent,
+        Embedding = await embeddingService.GenerateEmbeddingAsync(factContent)
+    });
 }
+
+// Add a plugin to search the database with.
+var vectorStoreTextSearch = new VectorStoreTextSearch<InformationItem>(collection, embeddingService);
+kernel.Plugins.Add(vectorStoreTextSearch.CreateWithSearch("SearchPlugin"));
 
 // Start the conversation
 while (true)
@@ -72,8 +79,16 @@ while (true)
 
     // Invoke the kernel with the user input
     var response = kernel.InvokePromptStreamingAsync(
-        promptTemplate: @"Question: {{$input}}
-        Answer the question using the memory content: {{Recall}}",
+        promptTemplate: @"Question: {{input}}
+        Answer the question using the memory content:
+        {{#with (SearchPlugin-Search input)}}
+          {{#each this}}
+            {{this}}
+            -----------------
+          {{/each}}
+        {{/with}}",
+        templateFormat: "handlebars",
+        promptTemplateFactory: new HandlebarsPromptTemplateFactory(),
         arguments: new KernelArguments()
         {
             { "input", question },
@@ -88,4 +103,18 @@ while (true)
     }
 
     Console.WriteLine();
+}
+
+internal sealed class InformationItem
+{
+    [VectorStoreRecordKey]
+    [TextSearchResultName]
+    public string Id { get; set; } = string.Empty;
+
+    [VectorStoreRecordData]
+    [TextSearchResultValue]
+    public string Text { get; set; } = string.Empty;
+
+    [VectorStoreRecordVector(Dimensions: 384)]
+    public ReadOnlyMemory<float> Embedding { get; set; }
 }
