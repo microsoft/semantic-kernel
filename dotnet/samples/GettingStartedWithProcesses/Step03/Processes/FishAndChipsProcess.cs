@@ -17,6 +17,7 @@ public static class FishAndChipsProcess
     {
         public const string PrepareFishAndChips = nameof(PrepareFishAndChips);
         public const string FishAndChipsReady = nameof(FishAndChipsReady);
+        public const string FishAndChipsIngredientOutOfStock = nameof(FishAndChipsIngredientOutOfStock);
     }
 
     public static ProcessBuilder CreateProcess(string processName = "FishAndChipsProcess")
@@ -24,6 +25,35 @@ public static class FishAndChipsProcess
         var processBuilder = new ProcessBuilder(processName);
         var makeFriedFishStep = processBuilder.AddStepFromProcess(FriedFishProcess.CreateProcess());
         var makePotatoFriesStep = processBuilder.AddStepFromProcess(PotatoFriesProcess.CreateProcess());
+        var addCondimentsStep = processBuilder.AddStepFromType<AddFishAndChipsCondimentsStep>();
+        // An additional step that is the only one that emits an public event in a process can be added to maintain event names unique
+        var externalStep = processBuilder.AddStepFromType<ExternalFishAndChipsStep>();
+
+        processBuilder
+            .OnInputEvent(ProcessEvents.PrepareFishAndChips)
+            .SendEventTo(makeFriedFishStep.WhereInputEventIs(FriedFishProcess.ProcessEvents.PrepareFriedFish))
+            .SendEventTo(makePotatoFriesStep.WhereInputEventIs(PotatoFriesProcess.ProcessEvents.PreparePotatoFries));
+
+        makeFriedFishStep
+            .OnEvent(FriedFishProcess.ProcessEvents.FriedFishReady)
+            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "fishActions"));
+
+        makePotatoFriesStep
+            .OnEvent(PotatoFriesProcess.ProcessEvents.PotatoFriesReady)
+            .SendEventTo(new ProcessFunctionTargetBuilder(addCondimentsStep, parameterName: "potatoActions"));
+
+        addCondimentsStep
+            .OnEvent(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded)
+            .SendEventTo(new ProcessFunctionTargetBuilder(externalStep));
+
+        return processBuilder;
+    }
+
+    public static ProcessBuilder CreateProcessWithStatefulSteps(string processName = "FishAndChipsWithStatefulStepsProcess")
+    {
+        var processBuilder = new ProcessBuilder(processName);
+        var makeFriedFishStep = processBuilder.AddStepFromProcess(FriedFishProcess.CreateProcessWithStatefulStepsV1());
+        var makePotatoFriesStep = processBuilder.AddStepFromProcess(PotatoFriesProcess.CreateProcessWithStatefulSteps());
         var addCondimentsStep = processBuilder.AddStepFromType<AddFishAndChipsCondimentsStep>();
         // An additional step that is the only one that emits an public event in a process can be added to maintain event names unique
         var externalStep = processBuilder.AddStepFromType<ExternalFishAndChipsStep>();

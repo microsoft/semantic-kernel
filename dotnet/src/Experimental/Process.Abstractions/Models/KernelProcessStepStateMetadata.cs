@@ -24,7 +24,7 @@ public record class KernelProcessStepStateMetadata
     /// </summary>
     [DataMember]
     [JsonPropertyName("name")]
-    public string? Name { get; init; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Version of the state that is stored. Used for validation and versioning
