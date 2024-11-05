@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Xunit;
-
 namespace SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
