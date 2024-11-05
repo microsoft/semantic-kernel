@@ -18,7 +18,7 @@ This extension is also available for **Azure Database for PostgreSQL - Flexible 
 1. To install pgvector using Docker:
 
 ```bash
-docker run -d --name postgres-pgvector -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword ankane/pgvector
+docker run -d --name postgres-pgvector -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword pgvector/pgvector
 ```
 
 2. Create a database and enable pgvector extension on this database
@@ -33,8 +33,13 @@ sk_demo=# CREATE EXTENSION vector;
 
 > Note, "Azure Cosmos DB for PostgreSQL" uses `SELECT CREATE_EXTENSION('vector');` to enable the extension.
 
-3. To use Postgres as a semantic memory store:
-   > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
+### Using PostgresVectorStore
+
+See [this sample](../../../samples/Concepts/Memory/VectorStore_VectorSearch_MultiStore_Postgres.cs) for an example of using the vector store.
+
+### Using  PostgresMemoryStore
+
+> See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
 
 ```csharp
 NpgsqlDataSourceBuilder dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=localhost;Port=5432;Database=sk_demo;User Id=postgres;Password=mysecretpassword");
@@ -86,68 +91,4 @@ BEGIN
                        collection || '_ix', collection, c_count / 1000);
     END IF;
 END $$;
-```
-
-## Migration from older versions
-
-Since Postgres Memory connector has been re-implemented, the new implementation uses a separate table to store each Collection.
-
-We provide the following migration script to help you migrate to the new structure. However, please note that due to the use of collections as table names, you need to make sure that all Collections conform to the [Postgres naming convention](https://www.postgresql.org/docs/15/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS) before migrating.
-
-- Table names may only consist of ASCII letters, digits, and underscores.
-- Table names must start with a letter or an underscore.
-- Table names may not exceed 63 characters in length.
-- Table names are case-insensitive, but it is recommended to use lowercase letters.
-
-```sql
--- Create new tables, each with the name of the collection field value
-DO $$
-DECLARE
-    r record;
-    c_count integer;
-BEGIN
-    FOR r IN SELECT DISTINCT collection FROM sk_memory_table LOOP
-
-        -- Drop Table (This will delete the table that already exists. Please consider carefully if you think you need to cancel this comment!)
-        -- EXECUTE format('DROP TABLE IF EXISTS %I;', r.collection);
-
-        -- Create Table (Modify vector size on demand)
-        EXECUTE format('CREATE TABLE public.%I (
-            key TEXT NOT NULL,
-            metadata JSONB,
-            embedding vector(1536),
-            timestamp TIMESTAMP WITH TIME ZONE,
-            PRIMARY KEY (key)
-        );', r.collection);
-
-        -- Get count of records in collection
-        SELECT count(*) INTO c_count FROM sk_memory_table WHERE collection = r.collection AND key <> '';
-
-        -- Create Index (https://github.com/pgvector/pgvector#indexing)
-        IF c_count > 10000000 THEN
-            EXECUTE format('CREATE INDEX %I
-                ON public.%I USING ivfflat (embedding vector_cosine_ops) WITH (lists = %s);',
-                r.collection || '_ix', r.collection, ROUND(sqrt(c_count)));
-        ELSIF c_count > 10000 THEN
-            EXECUTE format('CREATE INDEX %I
-                ON public.%I USING ivfflat (embedding vector_cosine_ops) WITH (lists = %s);',
-                r.collection || '_ix', r.collection, c_count / 1000);
-        END IF;
-    END LOOP;
-END $$;
-
--- Copy data from the old table to the new table
-DO $$
-DECLARE
-    r record;
-BEGIN
-    FOR r IN SELECT DISTINCT collection FROM sk_memory_table LOOP
-        EXECUTE format('INSERT INTO public.%I (key, metadata, embedding, timestamp)
-            SELECT key, metadata::JSONB, embedding, to_timestamp(timestamp / 1000.0) AT TIME ZONE ''UTC''
-            FROM sk_memory_table WHERE collection = %L AND key <> '''';', r.collection, r.collection);
-    END LOOP;
-END $$;
-
--- Drop old table (After ensuring successful execution, you can remove the following comments to remove sk_memory_table.)
--- DROP TABLE IF EXISTS sk_memory_table;
 ```

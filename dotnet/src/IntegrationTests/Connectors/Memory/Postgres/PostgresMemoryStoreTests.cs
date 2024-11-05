@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Postgres;
+namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
 
 /// <summary>
 /// Integration tests of <see cref="PostgresMemoryStore"/>.
@@ -41,6 +41,8 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         this._connectionString = connectionString;
         this._databaseName = $"sk_it_{Guid.NewGuid():N}";
 
+        await this.CreateDatabaseAsync();
+
         NpgsqlConnectionStringBuilder connectionStringBuilder = new(this._connectionString)
         {
             Database = this._databaseName
@@ -50,8 +52,6 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         dataSourceBuilder.UseVector();
 
         this._dataSource = dataSourceBuilder.Build();
-
-        await this.CreateDatabaseAsync();
     }
 
     public async Task DisposeAsync()
