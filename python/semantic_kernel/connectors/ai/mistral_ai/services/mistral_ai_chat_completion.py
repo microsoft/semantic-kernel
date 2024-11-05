@@ -10,13 +10,14 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from mistralai import Mistral
 from mistralai.async_client import MistralAsyncClient
-from mistralai.models.chat_completion import (
+from mistralai.models import (
+    AssistantMessage,
+    ChatCompletionChoice,
     ChatCompletionResponse,
-    ChatCompletionResponseChoice,
-    ChatCompletionResponseStreamChoice,
-    ChatCompletionStreamResponse,
-    ChatMessage,
+    CompletionChunk,
+    CompletionResponseStreamChoice,
     DeltaMessage,
 )
 from pydantic import ValidationError
@@ -63,7 +64,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         ai_model_id: str | None = None,
         service_id: str | None = None,
         api_key: str | None = None,
-        async_client: MistralAsyncClient | None = None,
+        async_client: MistralAsyncClient | Mistral | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -93,8 +94,13 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         if not mistralai_settings.chat_model_id:
             raise ServiceInitializationError("The MistralAI chat model ID is required.")
 
-        if not async_client:
-            async_client = MistralAsyncClient(
+        # ensure backwards compatibility with MistralAsyncClient
+        if not async_client or isinstance(async_client, MistralAsyncClient):
+            if isinstance(async_client, MistralAsyncClient):
+                logger.warning(
+                    "MistralAIChatCompletion: The MistralAsyncClient is deprecated, please use Mistral instead."
+                )
+            async_client = Mistral(
                 api_key=mistralai_settings.api_key.get_secret_value(),
             )
 
@@ -135,7 +141,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
 
         try:
-            response = await self.async_client.chat(**settings.prepare_settings_dict())
+            response = await self.async_client.chat.complete_async(**settings.prepare_settings_dict())
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the prompt",
@@ -160,18 +166,19 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
 
         try:
-            response = self.async_client.chat_stream(**settings.prepare_settings_dict())
+            response = await self.async_client.chat.stream_async(**settings.prepare_settings_dict())
         except Exception as ex:
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the prompt",
                 ex,
             ) from ex
         async for chunk in response:
-            if len(chunk.choices) == 0:
+            if len(chunk.data.choices) == 0:
                 continue
-            chunk_metadata = self._get_metadata_from_response(chunk)
+            chunk_metadata = self._get_metadata_from_response(chunk.data)
             yield [
-                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
+                self._create_streaming_chat_message_content(chunk.data, choice, chunk_metadata)
+                for choice in chunk.data.choices
             ]
 
     # endregion
@@ -179,7 +186,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
     # region content conversion to SK
 
     def _create_chat_message_content(
-        self, response: ChatCompletionResponse, choice: ChatCompletionResponseChoice, response_metadata: dict[str, Any]
+        self, response: ChatCompletionResponse, choice: ChatCompletionChoice, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
@@ -201,8 +208,8 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
 
     def _create_streaming_chat_message_content(
         self,
-        chunk: ChatCompletionStreamResponse,
-        choice: ChatCompletionResponseStreamChoice,
+        chunk: CompletionChunk,
+        choice: CompletionResponseStreamChoice,
         chunk_metadata: dict[str, Any],
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a choice."""
@@ -224,9 +231,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
             items=items,
         )
 
-    def _get_metadata_from_response(
-        self, response: ChatCompletionResponse | ChatCompletionStreamResponse
-    ) -> dict[str, Any]:
+    def _get_metadata_from_response(self, response: ChatCompletionResponse | CompletionChunk) -> dict[str, Any]:
         """Get metadata from a chat response."""
         metadata: dict[str, Any] = {
             "id": response.id,
@@ -244,7 +249,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         return metadata
 
     def _get_metadata_from_chat_choice(
-        self, choice: ChatCompletionResponseChoice | ChatCompletionResponseStreamChoice
+        self, choice: ChatCompletionChoice | CompletionResponseStreamChoice
     ) -> dict[str, Any]:
         """Get metadata from a chat choice."""
         return {
@@ -252,11 +257,11 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
         }
 
     def _get_tool_calls_from_chat_choice(
-        self, choice: ChatCompletionResponseChoice | ChatCompletionResponseStreamChoice
+        self, choice: ChatCompletionChoice | CompletionResponseStreamChoice
     ) -> list[FunctionCallContent]:
         """Get tool calls from a chat choice."""
-        content: ChatMessage | DeltaMessage
-        content = choice.message if isinstance(choice, ChatCompletionResponseChoice) else choice.delta
+        content: AssistantMessage | DeltaMessage
+        content = choice.message if isinstance(choice, ChatCompletionChoice) else choice.delta
         if content.tool_calls is None:
             return []
 

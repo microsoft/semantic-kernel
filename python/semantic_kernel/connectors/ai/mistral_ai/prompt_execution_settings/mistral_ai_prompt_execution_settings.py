@@ -27,7 +27,6 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
 
     response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
     messages: list[dict[str, Any]] | None = None
-    safe_mode: bool = False
     safe_prompt: bool = False
     max_tokens: int | None = Field(None, gt=0)
     seed: int | None = None
@@ -43,5 +42,3 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
         None,
         description="Do not set this manually. It is set by the service based on the function choice configuration.",
     )
-    
-    
