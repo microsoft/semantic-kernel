@@ -29,7 +29,6 @@ public class AzureOpenAI_TextToImage(ITestOutputHelper output) : BaseTest(output
         this.Output.WriteLine(generatedImages[0].Uri!.ToString());
     }
 
-
     [Fact]
     public async Task SimpleDallE3ImageBinaryAsync()
     {
