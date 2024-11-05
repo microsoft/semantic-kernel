@@ -21,6 +21,9 @@ pytestmark = pytest.mark.skipif(
     platform.system() == "Windows",
     reason="local milvus is not officially supported on Windows",
 )
+pytestmark = pytest.mark.skip(
+    reason="milvus SDK and local server seem to be out of step, will fix with new integration.",
+)
 
 
 @pytest.fixture(scope="module")
