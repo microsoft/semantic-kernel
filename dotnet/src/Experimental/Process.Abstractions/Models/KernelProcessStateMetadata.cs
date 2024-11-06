@@ -16,5 +16,5 @@ public record class KernelProcessStateMetadata : KernelProcessStepStateMetadata<
     /// </summary>
     [DataMember]
     [JsonPropertyName("stepsState")]
-    public Dictionary<string, KernelProcessStateMetadata>? StepsState { get; init; }
+    public Dictionary<string, KernelProcessStateMetadata>? StepsState { get; set; }
 }

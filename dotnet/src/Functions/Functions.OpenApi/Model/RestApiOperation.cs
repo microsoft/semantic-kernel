@@ -52,7 +52,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// The server.
     /// </summary>
-    public RestApiOperationServer Server { get; }
+    internal RestApiOperationServer Server { get; }
 
     /// <summary>
     /// The security requirement.

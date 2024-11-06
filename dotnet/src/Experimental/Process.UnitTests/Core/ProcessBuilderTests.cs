@@ -47,6 +47,29 @@ public class ProcessBuilderTests
     }
 
     /// <summary>
+    /// Tests that ensures when adding steps to builder, step names are not duplicated.<br/>
+    /// For state persistence step names must be unique to ensure they can be mapped correctly when restoring from save state.
+    /// </summary>
+    [Fact]
+    public void InvalidOperationExceptionOnAddStepWithSameStepName()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder(ProcessName);
+        processBuilder.AddStepFromType<TestStep>(StepName);
+
+        // Act
+        try
+        {
+            processBuilder.AddStepFromType<TestStep>(StepName);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Assert
+            Assert.Equal($"Step name {StepName} is already used, assign a different name for step", ex.Message);
+        }
+    }
+
+    /// <summary>
     /// Tests the AddStepFromProcess method to ensure it adds a sub-process correctly.
     /// </summary>
     [Fact]
@@ -62,6 +85,30 @@ public class ProcessBuilderTests
         // Assert
         Assert.Single(processBuilder.Steps);
         Assert.Equal(SubProcessName, stepBuilder.Name);
+    }
+
+    /// <summary>
+    /// Tests that ensures when adding process steps to builder, step names are not duplicated.<br/>
+    /// For state persistence step names must be unique to ensure they can be mapped correctly when restoring from save state.
+    /// </summary>
+    [Fact]
+    public void InvalidOperationExceptionOnAddSubprocessWithSameStepName()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder(ProcessName);
+        var subProcessBuilder = new ProcessBuilder(StepName);
+
+        processBuilder.AddStepFromType<TestStep>(StepName);
+        // Act
+        try
+        {
+            processBuilder.AddStepFromProcess(subProcessBuilder);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Assert
+            Assert.Equal($"Step name {StepName} is already used, assign a different name for step", ex.Message);
+        }
     }
 
     /// <summary>
