@@ -210,6 +210,11 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
-        return JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+        var geminiPromptExecutionSettings = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+
+        // Restore the function choice behavior that lost internal state(list of function instances) during serialization/deserialization process.
+        geminiPromptExecutionSettings.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
+
+        return geminiPromptExecutionSettings;
     }
 }

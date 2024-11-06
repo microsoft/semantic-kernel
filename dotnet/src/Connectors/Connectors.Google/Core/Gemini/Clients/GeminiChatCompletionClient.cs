@@ -65,6 +65,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             unit: "{token}",
             description: "Number of tokens used");
 
+    private sealed record ToolCallingConfig(
+        IList<GeminiTool.FunctionDeclaration>? Tools,
+        GeminiFunctionCallingMode? Mode,
+        bool AutoInvoke,
+        bool AllowAnyRequestedKernelFunction,
+        FunctionChoiceBehaviorOptions? Options);
+
     /// <summary>
     /// Represents a client for interacting with the chat completion Gemini model via GoogleAI.
     /// </summary>
@@ -145,11 +152,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         var state = this.ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
 
-        for (state.Iteration = 1; ; state.Iteration++)
+        for (state.RequestIndex = 0;; state.RequestIndex++)
         {
             List<GeminiChatMessageContent> chatResponses;
             using (var activity = ModelDiagnostics.StartCompletionActivity(
-                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
+                       this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
                 GeminiResponse geminiResponse;
                 try
@@ -173,7 +180,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
-            if (!state.AutoInvoke || chatResponses.Count != 1)
+            if (!state.AutoInvoke || chatResponses.Count == 0)
             {
                 return chatResponses;
             }
@@ -184,11 +191,28 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 return chatResponses;
             }
 
-            // ToolCallBehavior is not null because we are in auto-invoke mode but we check it again to be sure it wasn't changed in the meantime
-            Verify.NotNull(state.ExecutionSettings.ToolCallBehavior);
+            // FunctionChoiceBehavior is not null because we are in auto-invoke mode but we check it again to be sure it wasn't changed in the meantime
+            Verify.NotNull(state.ExecutionSettings.FunctionChoiceBehavior);
 
             state.AddLastMessageToChatHistoryAndRequest();
-            await this.ProcessFunctionsAsync(state, cancellationToken).ConfigureAwait(false);
+
+            // Process function calls by invoking the functions and adding the results to the chat history.
+            // Each function call will trigger auto-function-invocation filters, which can terminate the process.
+            // In such cases, we'll return the last message in the chat history.
+            var lastMessage = await this._functionCallsProcessor.ProcessFunctionCallsAsync(
+                state.LastMessage,
+                chatHistory,
+                state.RequestIndex,
+                content => IsRequestableTool(state.LastMessage.ToolCalls, content),
+                functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
+                kernel,
+                isStreaming: false,
+                cancellationToken).ConfigureAwait(false);
+
+            if (lastMessage != null)
+            {
+                return [lastMessage];
+            }
         }
     }
 
@@ -208,10 +232,10 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         var state = this.ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
 
-        for (state.Iteration = 1; ; state.Iteration++)
+        for (state.RequestIndex = 1;; state.RequestIndex++)
         {
             using (var activity = ModelDiagnostics.StartCompletionActivity(
-                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
+                       this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
                 HttpResponseMessage? httpResponseMessage = null;
                 Stream? responseStream = null;
@@ -275,6 +299,89 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         }
     }
 
+    private ToolCallingConfig GetFunctionCallingConfiguration(ChatCompletionState state)
+    {
+        // If neither behavior is specified, we just return default configuration with no tool and no choice
+        if (state.ExecutionSettings.FunctionChoiceBehavior is null)
+        {
+            return new ToolCallingConfig(Tools: null, Mode: null, AutoInvoke: false, AllowAnyRequestedKernelFunction: false, Options: null);
+        }
+
+        IList<GeminiTool.FunctionDeclaration>? tools = null;
+        GeminiFunctionCallingMode? mode = null;
+        bool autoInvoke = false;
+        bool allowAnyRequestedKernelFunction = false;
+        FunctionChoiceBehaviorOptions? options = null;
+
+        (tools, mode, autoInvoke, options) = this.ConfigureFunctionCalling(state);
+
+        return new ToolCallingConfig(
+            Tools: tools,
+            Mode: mode ?? GeminiFunctionCallingMode.None,
+            AutoInvoke: autoInvoke,
+            AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction,
+            Options: options);
+    }
+
+    private (IList<GeminiTool.FunctionDeclaration>? Tools, GeminiFunctionCallingMode? Mode, bool AutoInvoke, FunctionChoiceBehaviorOptions? Options)
+        ConfigureFunctionCalling(ChatCompletionState state)
+    {
+        var config =
+            this._functionCallsProcessor.GetConfiguration(state.ExecutionSettings.FunctionChoiceBehavior, state.ChatHistory, state.RequestIndex, state.Kernel);
+
+        IList<GeminiTool.FunctionDeclaration>? tools = null;
+        GeminiFunctionCallingMode? toolMode = null;
+        bool autoInvoke = config?.AutoInvoke ?? false;
+
+        if (config?.Functions is { Count: > 0 } functions)
+        {
+            if (config.Choice == FunctionChoice.Auto)
+            {
+                toolMode = GeminiFunctionCallingMode.Default;
+            }
+            else if (config.Choice == FunctionChoice.Required)
+            {
+                toolMode = GeminiFunctionCallingMode.Any;
+            }
+            else if (config.Choice == FunctionChoice.None)
+            {
+                toolMode = GeminiFunctionCallingMode.None;
+            }
+            else
+            {
+                throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
+            }
+
+            tools = [];
+
+            foreach (var function in functions)
+            {
+                tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
+            }
+        }
+
+        return new(tools, toolMode, autoInvoke, config?.Options);
+    }
+
+    /// <summary>Checks if a tool call is for a function that was defined.</summary>
+    private static bool IsRequestableTool(IReadOnlyList<GeminiFunctionToolCall> tools, FunctionCallContent functionCallContent)
+    {
+        foreach (var tool in tools)
+        {
+            if (string.Equals(tool.FunctionName,
+                    FunctionName.ToFullyQualifiedName(
+                        functionCallContent.FunctionName,
+                        functionCallContent.PluginName,
+                        GeminiFunction.NameSeparator),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private ChatCompletionState ValidateInputAndCreateChatCompletionState(
         ChatHistory chatHistory,
         Kernel? kernel,
@@ -298,7 +405,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             ChatHistory = chatHistory,
             ExecutionSettings = geminiExecutionSettings,
             GeminiRequest = CreateRequest(chatHistory, geminiExecutionSettings, kernel),
-            Kernel = kernel! // not null if auto-invoke is true
+            Kernel = kernel!, // not null if auto-invoke is true
+            FunctionChoiceBehavior = n
         };
     }
 
@@ -374,7 +482,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         // Clear the tools. If we end up wanting to use tools, we'll reset it to the desired value.
         state.GeminiRequest.Tools = null;
 
-        if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
+        if (state.RequestIndex >= state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
         {
             // Don't add any tools as we've reached the maximum attempts limit.
             if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -391,7 +499,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         }
 
         // Disable auto invocation if we've exceeded the allowed limit.
-        if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
+        if (state.RequestIndex >= state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
         {
             state.AutoInvoke = false;
             if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -463,11 +571,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         ValidateGeminiResponse(geminiResponse);
         return geminiResponse;
     }
-
-    /// <summary>Checks if a tool call is for a function that was defined.</summary>
-    private static bool IsRequestableTool(IEnumerable<GeminiTool.FunctionDeclaration> functions, GeminiFunctionToolCall ftc)
-        => functions.Any(geminiFunction =>
-            string.Equals(geminiFunction.Name, ftc.FullyQualifiedName, StringComparison.OrdinalIgnoreCase));
 
     private void AddToolResponseMessage(
         ChatHistory chat,
@@ -574,8 +677,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     }
 
     private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
-        => geminiResponse.Candidates == null ?
-            [new GeminiChatMessageContent(role: AuthorRole.Assistant, content: string.Empty, modelId: this._modelId)]
+        => geminiResponse.Candidates == null
+            ? [new GeminiChatMessageContent(role: AuthorRole.Assistant, content: string.Empty, modelId: this._modelId)]
             : geminiResponse.Candidates.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
@@ -646,17 +749,17 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     private static GeminiMetadata GetResponseMetadata(
         GeminiResponse geminiResponse,
         GeminiResponseCandidate candidate) => new()
-        {
-            FinishReason = candidate.FinishReason,
-            Index = candidate.Index,
-            PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
-            CurrentCandidateTokenCount = candidate.TokenCount,
-            CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
-            TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
-            PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
-            PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
-            ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
-        };
+    {
+        FinishReason = candidate.FinishReason,
+        Index = candidate.Index,
+        PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
+        CurrentCandidateTokenCount = candidate.TokenCount,
+        CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
+        TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
+        PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
+        PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
+        ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
+    };
 
     private sealed class ChatCompletionState
     {
@@ -665,7 +768,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         internal Kernel Kernel { get; set; } = null!;
         internal GeminiPromptExecutionSettings ExecutionSettings { get; set; } = null!;
         internal GeminiChatMessageContent? LastMessage { get; set; }
-        internal int Iteration { get; set; }
+        internal int RequestIndex { get; set; }
         internal bool AutoInvoke { get; set; }
 
         internal void AddLastMessageToChatHistoryAndRequest()
