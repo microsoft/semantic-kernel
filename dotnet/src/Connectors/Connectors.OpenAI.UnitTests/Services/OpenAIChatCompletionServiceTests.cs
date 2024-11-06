@@ -643,45 +643,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
-    [MemberData(nameof(OpenAIImageContentDetailLevelData))]
-    public async Task GetChatMessageContentsWithOpenAIImageContentHandlesImageDetailLevelCorrectlyAsync(ChatImageDetailLevel detailLevel, string expectedDetailLevel)
-    {
-        // Arrange
-        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-4-vision-preview", apiKey: "NOKEY", httpClient: this._httpClient);
-
-        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) };
-        this._messageHandlerStub.ResponseToReturn = response;
-
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage(
-        [
-            new OpenAIImageContent(new Uri("https://image")) { DetailLevel = detailLevel }
-        ]);
-
-        // Act
-        await chatCompletion.GetChatMessageContentsAsync(chatHistory);
-
-        // Assert
-        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-
-        var messages = optionsJson.GetProperty("messages");
-
-        Assert.Equal(1, messages.GetArrayLength());
-
-        var contentItems = messages[0].GetProperty("content");
-        Assert.Equal(1, contentItems.GetArrayLength());
-
-        Assert.Equal("image_url", contentItems[0].GetProperty("type").GetString());
-
-        var imageProperty = contentItems[0].GetProperty("image_url");
-
-        Assert.Equal("https://image/", imageProperty.GetProperty("url").GetString());
-        Assert.Equal(expectedDetailLevel, imageProperty.GetProperty("detail").GetString());
-    }
-
-    [Theory]
     [MemberData(nameof(ImageContentMetadataDetailLevelData))]
     public async Task GetChatMessageContentsHandlesImageDetailLevelInMetadataCorrectlyAsync(object? detailLevel, string? expectedDetailLevel)
     {
@@ -694,7 +655,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(
         [
-            new ImageContent(new Uri("https://image")) { Metadata = new Dictionary<string, object?> { ["DetailLevel"] = detailLevel } }
+            new ImageContent(new Uri("https://image")) { Metadata = new Dictionary<string, object?> { ["ChatImageDetailLevel"] = detailLevel } }
         ]);
 
         // Act
@@ -737,7 +698,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(
         [
-            new ImageContent(new Uri("https://image")) { Metadata = new Dictionary<string, object?> { ["DetailLevel"] = "invalid_value" } }
+            new ImageContent(new Uri("https://image")) { Metadata = new Dictionary<string, object?> { ["ChatImageDetailLevel"] = "invalid_value" } }
         ]);
 
         // Act & Assert
@@ -1660,18 +1621,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         }
         """;
 
-    public static TheoryData<ChatImageDetailLevel, string> OpenAIImageContentDetailLevelData => new()
-    {
-        { ChatImageDetailLevel.Auto, "auto" },
-        { ChatImageDetailLevel.High, "high" },
-        { ChatImageDetailLevel.Low, "low" }
-    };
-
     public static TheoryData<object?, string?> ImageContentMetadataDetailLevelData => new()
     {
-        { ChatImageDetailLevel.Auto, "auto" },
-        { ChatImageDetailLevel.High, "high" },
-        { ChatImageDetailLevel.Low, "low" },
         { "auto", "auto" },
         { "high", "high" },
         { "low", "low" },

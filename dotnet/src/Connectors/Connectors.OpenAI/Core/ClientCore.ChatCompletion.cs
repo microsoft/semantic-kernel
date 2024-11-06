@@ -819,20 +819,13 @@ internal partial class ClientCore
 
     private static ChatImageDetailLevel? GetChatImageDetailLevel(ImageContent imageContent)
     {
-        if (imageContent is OpenAIImageContent openAIImageContent)
-        {
-            return openAIImageContent.DetailLevel;
-        }
+        const string DetailLevelProperty = "ChatImageDetailLevel";
 
         if (imageContent.Metadata is not null &&
-            imageContent.Metadata.TryGetValue(OpenAIImageContent.DetailLevelProperty, out object? detailLevel) &&
+            imageContent.Metadata.TryGetValue(DetailLevelProperty, out object? detailLevel) &&
             detailLevel is not null)
         {
-            if (detailLevel is ChatImageDetailLevel chatImageDetailLevel)
-            {
-                return chatImageDetailLevel;
-            }
-            else if (detailLevel is string detailLevelString && !string.IsNullOrWhiteSpace(detailLevelString))
+            if (detailLevel is string detailLevelString && !string.IsNullOrWhiteSpace(detailLevelString))
             {
                 return detailLevelString.ToUpperInvariant() switch
                 {
