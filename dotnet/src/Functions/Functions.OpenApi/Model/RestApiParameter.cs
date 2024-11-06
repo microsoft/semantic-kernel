@@ -23,7 +23,7 @@ public sealed class RestApiParameter
     /// <summary>
     /// The parameter type - string, integer, number, boolean, array and object.
     /// </summary>
-    public string Type { get; }
+    internal string Type { get; }
 
     /// <summary>
     /// The parameter type modifier that refines the generic parameter type to a more specific one.
