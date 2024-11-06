@@ -267,12 +267,11 @@ public sealed class OpenApiKernelPluginFactoryTests
         // Assert Metadata Keys and Values
         Assert.True(plugin.TryGetFunction("OpenApiExtensions", out var function));
         var additionalProperties = function.Metadata.AdditionalProperties;
-        Assert.Equal(5, additionalProperties.Count);
+        Assert.Equal(4, additionalProperties.Count);
 
         Assert.Contains("method", additionalProperties.Keys);
         Assert.Contains("operation", additionalProperties.Keys);
         Assert.Contains("server-urls", additionalProperties.Keys);
-        Assert.Contains("security-requirements", additionalProperties.Keys);
         Assert.Contains("operation-extensions", additionalProperties.Keys);
 
         var operation = additionalProperties["operation"] as RestApiOperation;
@@ -282,8 +281,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         var serverUrls = additionalProperties["server-urls"] as string[];
         Assert.NotNull(serverUrls);
         Assert.Equal(["https://my-key-vault.vault.azure.net"], serverUrls);
-        var securityRequirements = additionalProperties["security-requirements"] as IReadOnlyList<RestApiSecurityRequirement>;
-        Assert.NotNull(securityRequirements);
 
         // Assert Operation Extension keys
         var operationExtensions = additionalProperties["operation-extensions"] as Dictionary<string, object?>;
@@ -417,16 +414,17 @@ public sealed class OpenApiKernelPluginFactoryTests
         foreach (var function in plugin)
         {
             var additionalProperties = function.Metadata.AdditionalProperties;
-            Assert.Contains("security-requirements", additionalProperties.Keys);
+            Assert.Contains("operation", additionalProperties.Keys);
 
             var securityTypes = securityTypeMap[function.Name];
 
-            var securityRequirements = additionalProperties["security-requirements"] as IReadOnlyList<RestApiSecurityRequirement>;
-            Assert.NotNull(securityRequirements);
-            Assert.Equal(securityTypes.Length, securityRequirements.Count);
+            var operation = additionalProperties["operation"] as RestApiOperation;
+            Assert.NotNull(operation);
+            Assert.NotNull(operation.SecurityRequirements);
+            Assert.Equal(securityTypes.Length, operation.SecurityRequirements?.Count);
             foreach (var securityType in securityTypes)
             {
-                Assert.Contains(securityRequirements, sr => sr.Keys.Any(k => k.SecuritySchemeType == securityType));
+                Assert.Contains(operation.SecurityRequirements!, sr => sr.Keys.Any(k => k.SecuritySchemeType == securityType));
             }
         }
     }

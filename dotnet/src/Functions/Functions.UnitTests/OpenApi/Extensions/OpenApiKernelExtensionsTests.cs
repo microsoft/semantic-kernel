@@ -276,12 +276,11 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         // Assert Metadata Keys and Values
         Assert.True(plugin.TryGetFunction("OpenApiExtensions", out var function));
         var additionalProperties = function.Metadata.AdditionalProperties;
-        Assert.Equal(5, additionalProperties.Count);
+        Assert.Equal(4, additionalProperties.Count);
 
         Assert.Contains("method", additionalProperties.Keys);
         Assert.Contains("operation", additionalProperties.Keys);
         Assert.Contains("server-urls", additionalProperties.Keys);
-        Assert.Contains("security-requirements", additionalProperties.Keys);
         Assert.Contains("operation-extensions", additionalProperties.Keys);
 
         var operation = additionalProperties["operation"] as RestApiOperation;
@@ -291,8 +290,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         var serverUrls = additionalProperties["server-urls"] as string[];
         Assert.NotNull(serverUrls);
         Assert.Equal(["https://my-key-vault.vault.azure.net"], serverUrls);
-        var securityRequirements = additionalProperties["security-requirements"] as IReadOnlyList<RestApiSecurityRequirement>;
-        Assert.NotNull(securityRequirements);
 
         // Assert Operation Extension keys
         var operationExtensions = additionalProperties["operation-extensions"] as Dictionary<string, object?>;
