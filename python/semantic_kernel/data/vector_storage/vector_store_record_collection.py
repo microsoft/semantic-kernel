@@ -10,6 +10,11 @@ from typing import Any, ClassVar, Generic, TypeVar
 from pydantic import model_validator
 
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_model_protocols import (
+    VectorStoreModelFunctionSerdeProtocol,
+    VectorStoreModelPydanticProtocol,
+    VectorStoreModelToDictFromDictProtocol,
+)
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     VectorStoreModelDeserializationException,
@@ -455,13 +460,13 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             if isinstance(record, Sequence):
                 return self.data_model_definition.deserialize(record, **kwargs)
             return self.data_model_definition.deserialize([record], **kwargs)
-        if hasattr(self.data_model_type, "deserialize"):
-            try:
+        try:
+            if isinstance(self.data_model_type, VectorStoreModelFunctionSerdeProtocol):
                 if isinstance(record, Sequence):
                     return [self.data_model_type.deserialize(rec, **kwargs) for rec in record]
                 return self.data_model_type.deserialize(record, **kwargs)
-            except Exception as exc:
-                raise VectorStoreModelSerializationException(f"Error deserializing record: {exc}") from exc
+        except Exception as exc:
+            raise VectorStoreModelSerializationException(f"Error deserializing record: {exc}") from exc
         return None
 
     def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrMany[dict[str, Any]]:
@@ -473,7 +478,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """
         if self.data_model_definition.to_dict:
             return self.data_model_definition.to_dict(record, **kwargs)
-        if hasattr(record, "model_dump"):
+        if isinstance(record, VectorStoreModelPydanticProtocol):
             try:
                 ret = record.model_dump()
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
@@ -485,7 +490,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 return ret
             except Exception as exc:
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
-        if hasattr(record, "to_dict"):
+        if isinstance(record, VectorStoreModelToDictFromDictProtocol):
             try:
                 ret = record.to_dict()
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
@@ -530,7 +535,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                     "Cannot deserialize multiple records to a single record unless you are using a container."
                 )
             record = record[0]
-        if hasattr(self.data_model_type, "model_validate"):
+        if isinstance(self.data_model_type, VectorStoreModelPydanticProtocol):
             try:
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
                     return self.data_model_type.model_validate(record)
@@ -540,7 +545,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 return self.data_model_type.model_validate(record)
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
-        if hasattr(self.data_model_type, "from_dict"):
+        if isinstance(self.data_model_type, VectorStoreModelToDictFromDictProtocol):
             try:
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
                     return self.data_model_type.from_dict(record)
@@ -570,4 +575,4 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     def __del__(self):
         """Delete the instance."""
         with contextlib.suppress(Exception):
-            asyncio.get_running_loop().create_task(self.close())
+            asyncio.get_running_loop().create_task(self.__aexit__(None, None, None))

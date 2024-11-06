@@ -3,7 +3,7 @@
 import logging
 from collections.abc import AsyncIterable
 from html import escape
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import ValidationError
@@ -27,6 +27,9 @@ from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvali
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
+
+if TYPE_CHECKING:
+    from semantic_kernel.data.search_options import SearchOptions
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -68,7 +71,7 @@ class BingSearch(KernelBaseModel, TextSearch):
         super().__init__(settings=settings)
 
     async def search(
-        self, query: str, options: TextSearchOptions | None = None, **kwargs: Any
+        self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
     ) -> "KernelSearchResults[str]":
         """Search for text, returning a KernelSearchResult with a list of strings."""
         options = self._get_options(options, **kwargs)
@@ -80,7 +83,7 @@ class BingSearch(KernelBaseModel, TextSearch):
         )
 
     async def get_text_search_results(
-        self, query: str, options: TextSearchOptions | None = None, **kwargs
+        self, query: str, options: "SearchOptions | None" = None, **kwargs
     ) -> "KernelSearchResults[TextSearchResult]":
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
         options = self._get_options(options, **kwargs)
@@ -92,7 +95,7 @@ class BingSearch(KernelBaseModel, TextSearch):
         )
 
     async def get_search_results(
-        self, query: str, options: TextSearchOptions | None = None, **kwargs
+        self, query: str, options: "SearchOptions | None" = None, **kwargs
     ) -> "KernelSearchResults[BingWebPage]":
         """Search for text, returning a KernelSearchResult with the results directly from the service."""
         options = self._get_options(options, **kwargs)
@@ -139,8 +142,8 @@ class BingSearch(KernelBaseModel, TextSearch):
             else None
         )
 
-    def _get_options(self, options: TextSearchOptions | None, **kwargs: Any) -> TextSearchOptions:
-        if options is not None:
+    def _get_options(self, options: "SearchOptions | None", **kwargs: Any) -> TextSearchOptions:
+        if options is not None and isinstance(options, TextSearchOptions):
             return options
         try:
             return TextSearchOptions(**kwargs)
