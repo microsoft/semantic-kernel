@@ -47,9 +47,6 @@ jobs:
           version: "0.4.30"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
-      # - name: Set up Python
-      #   if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.13t' }}  
-      #   run: uv python install ${{ matrix.python-version }}
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest
@@ -91,7 +88,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest
-        run: uv run pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt      
+        run: uv run --frozen pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt      
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
