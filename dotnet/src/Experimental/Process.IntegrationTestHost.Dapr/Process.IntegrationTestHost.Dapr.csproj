@@ -12,8 +12,6 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
-  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-
   <ItemGroup>
     <PackageReference Include="Dapr.Actors" />
     <PackageReference Include="Dapr.Actors.AspNetCore" />
