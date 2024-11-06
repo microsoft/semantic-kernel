@@ -42,28 +42,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - name: Set up uv
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: irm https://astral.sh/uv/install.ps1 | iex
-        shell: powershell
-      - name: "Set up Python - ${{ matrix.python-version }}"
-        uses: actions/setup-python@v5
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Restore uv cache
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: ${{  env.UV_CACHE_DIR  }}
-          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
+          version: "0.4.4"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest
         env:
           PYTHON_GIL: ${{ matrix.gil }}
-        run: uv run pytest --junitxml=pytest.xml ./tests/unit
+        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
