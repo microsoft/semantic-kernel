@@ -40,7 +40,7 @@ public class CloneTests
     public void VerifyCloneTypedStepStateTest()
     {
         // Arrange
-        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneTypedStepStateTest), "test") { State = new TestState() };
+        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneTypedStepStateTest), "v1", "test") { State = new TestState() };
 
         // Act
         KernelProcessStepState copy = state.Clone(state.GetType(), typeof(TestState), NullLogger.Instance);
@@ -72,7 +72,7 @@ public class CloneTests
     public void VerifyCloneRealStepTest()
     {
         // Arrange
-        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneRealStepTest), "test") { State = new TestState() };
+        KernelProcessStepState<TestState> state = new(nameof(VerifyCloneRealStepTest), "v1", "test") { State = new TestState() };
         KernelProcessStepInfo source = new(typeof(KernelProcessStep<TestState>), state, CreateTestEdges());
 
         // Act
@@ -90,7 +90,7 @@ public class CloneTests
     {
         // Arrange
         KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSingleProcessTest), "teststep"), []);
-        KernelProcessState processState = new(nameof(VerifyCloneSingleProcessTest), "test");
+        KernelProcessState processState = new(nameof(VerifyCloneSingleProcessTest), "v1", "test");
         KernelProcess source = new(processState, [step], CreateTestEdges());
 
         // Act

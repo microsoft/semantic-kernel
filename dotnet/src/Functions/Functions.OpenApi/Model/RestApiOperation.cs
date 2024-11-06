@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// The REST API operation.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class RestApiOperation
 {
     /// <summary>
@@ -52,7 +54,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// The server.
     /// </summary>
-    public RestApiOperationServer Server { get; }
+    public IReadOnlyList<RestApiOperationServer> Servers { get; }
 
     /// <summary>
     /// The operation parameters.
@@ -78,7 +80,7 @@ public sealed class RestApiOperation
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
     /// <param name="id">The operation identifier.</param>
-    /// <param name="server">The server.</param>
+    /// <param name="servers">The servers.</param>
     /// <param name="path">The operation path.</param>
     /// <param name="method">The operation method.</param>
     /// <param name="description">The operation description.</param>
@@ -87,7 +89,7 @@ public sealed class RestApiOperation
     /// <param name="responses">The operation responses.</param>
     internal RestApiOperation(
         string id,
-        RestApiOperationServer server,
+        IReadOnlyList<RestApiOperationServer> servers,
         string path,
         HttpMethod method,
         string description,
@@ -96,7 +98,7 @@ public sealed class RestApiOperation
         IReadOnlyDictionary<string, RestApiOperationExpectedResponse>? responses = null)
     {
         this.Id = id;
-        this.Server = server;
+        this.Servers = servers;
         this.Path = path;
         this.Method = method;
         this.Description = description;
@@ -260,10 +262,10 @@ public sealed class RestApiOperation
         {
             serverUrlString = serverUrlOverride.AbsoluteUri;
         }
-        else if (this.Server.Url is not null)
+        else if (this.Servers is { Count: > 0 } servers && servers[0].Url is { } url)
         {
-            serverUrlString = this.Server.Url;
-            foreach (var variable in this.Server.Variables)
+            serverUrlString = url;
+            foreach (var variable in servers[0].Variables)
             {
                 arguments.TryGetValue(variable.Key, out object? value);
                 string? strValue = value as string;
