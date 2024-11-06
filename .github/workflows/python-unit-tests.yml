@@ -24,12 +24,6 @@ jobs:
           - python-version: "3.13"
             os: "ubuntu-latest"
             experimental: true
-          - python-version: "3.13"
-            os: "windows-latest"
-            experimental: true
-          - python-version: "3.13"
-            os: "macos-latest"
-            experimental: true
           - python-version: "3.13t"
             os: "ubuntu-latest"
             experimental: true
@@ -54,10 +48,10 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: irm https://astral.sh/uv/install.ps1 | iex
         shell: powershell
-      # - name: Set up Python ${{ matrix.python-version }}
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: ${{ matrix.python-version }}
+      - name: "Set up Python - ${{ matrix.python-version }}"
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Restore uv cache
         id: cache
         uses: actions/cache@v4
@@ -98,10 +92,10 @@ jobs:
         run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
       - name: Set up uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      # - name: Set up Python ${{ env.PYTHON_VERSION }}
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: ${{ env.PYTHON_VERSION }}
+      - name: Set up Python ${{ env.UV_PYTHON }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.UV_PYTHON }}
       - name: Restore uv cache
         uses: actions/cache@v4
         with:
