@@ -109,7 +109,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v3
         with:
-          version: "0.4.4"
+          version: "0.4.30"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
       - name: Install dependencies with hnswlib native disabled
@@ -265,7 +265,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v3
         with:
-          version: "0.4.4"
+          version: "0.4.30"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
       - name: Install dependencies with hnswlib native disabled
