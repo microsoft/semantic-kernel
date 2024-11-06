@@ -50,7 +50,7 @@ public sealed class MistralClientTests : MistralTestBase
 
         // Act
         var executionSettings = new MistralAIPromptExecutionSettings { MaxTokens = 1024, Temperature = 0.9 };
-        await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings);
+        await client.GetChatMessageContentsAsync(chatHistory, executionSettings);
 
         // Assert
         var request = this.DelegatingHandler!.RequestContent;
@@ -76,7 +76,7 @@ public sealed class MistralClientTests : MistralTestBase
         {
             new ChatMessageContent(AuthorRole.User, "What is the best French cheese?")
         };
-        var response = await client.GetChatMessageContentsAsync(chatHistory, default);
+        var response = await client.GetChatMessageContentsAsync(chatHistory);
 
         // Assert
         Assert.NotNull(response);
@@ -96,7 +96,7 @@ public sealed class MistralClientTests : MistralTestBase
 
         // Act
         List<string> data = ["Hello", "world"];
-        var response = await client.GenerateEmbeddingsAsync(data, default);
+        var response = await client.GenerateEmbeddingsAsync(data);
 
         // Assert
         Assert.NotNull(response);
@@ -117,7 +117,7 @@ public sealed class MistralClientTests : MistralTestBase
         };
 
         // Act
-        var response = client.GetStreamingChatMessageContentsAsync(chatHistory, default);
+        var response = client.GetStreamingChatMessageContentsAsync(chatHistory);
         var chunks = new List<StreamingChatMessageContent>();
         await foreach (var chunk in response)
         {
@@ -150,7 +150,7 @@ public sealed class MistralClientTests : MistralTestBase
         };
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(async () => await client.GetChatMessageContentsAsync(chatHistory, default));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await client.GetChatMessageContentsAsync(chatHistory));
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public sealed class MistralClientTests : MistralTestBase
         var chatHistory = new ChatHistory();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(async () => await client.GetChatMessageContentsAsync(chatHistory, default));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await client.GetChatMessageContentsAsync(chatHistory));
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public sealed class MistralClientTests : MistralTestBase
         kernel.Plugins.AddFromType<WeatherPlugin>();
 
         // Act
-        await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+        await client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
         // Assert
         var request = this.DelegatingHandler!.RequestContent;
@@ -212,7 +212,7 @@ public sealed class MistralClientTests : MistralTestBase
 
         // Act
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
-        var response = client.GetStreamingChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+        var response = client.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel);
         var chunks = new List<StreamingChatMessageContent>();
         await foreach (var chunk in response)
         {
@@ -253,7 +253,7 @@ public sealed class MistralClientTests : MistralTestBase
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+        var response = await client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
         // Assert
         Assert.NotNull(response);
@@ -279,7 +279,7 @@ public sealed class MistralClientTests : MistralTestBase
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+        var response = await client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
         // Assert
         Assert.NotNull(response);
@@ -307,7 +307,7 @@ public sealed class MistralClientTests : MistralTestBase
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+        var response = await client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
         // Assert
         Assert.NotNull(response);
@@ -345,7 +345,7 @@ public sealed class MistralClientTests : MistralTestBase
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+        var response = await client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
         // Assert
         Assert.NotNull(response);
@@ -389,11 +389,11 @@ public sealed class MistralClientTests : MistralTestBase
 
         if (isStreaming)
         {
-            await client.GetStreamingChatMessageContentsAsync(chatHistory, default, executionSettings, kernel).ToListAsync();
+            await client.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel).ToListAsync();
         }
         else
         {
-            await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+            await client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
         }
 
         // Assert
@@ -428,7 +428,7 @@ public sealed class MistralClientTests : MistralTestBase
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-        var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+        var response = await client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
         // Assert
         Assert.NotNull(response);
@@ -465,7 +465,7 @@ public sealed class MistralClientTests : MistralTestBase
         List<StreamingKernelContent> streamingContent = [];
 
         // Act
-        await foreach (var item in client.GetStreamingChatMessageContentsAsync(chatHistory, default, executionSettings, kernel))
+        await foreach (var item in client.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel))
         {
             streamingContent.Add(item);
         }
@@ -497,7 +497,7 @@ public sealed class MistralClientTests : MistralTestBase
         };
 
         // Act
-        var messages = client.ToMistralChatMessages(chatMessage, default);
+        var messages = client.ToMistralChatMessages(chatMessage);
 
         // Assert
         Assert.NotNull(messages);
@@ -517,7 +517,7 @@ public sealed class MistralClientTests : MistralTestBase
         };
 
         // Act
-        var messages = client.ToMistralChatMessages(content, default);
+        var messages = client.ToMistralChatMessages(content);
 
         // Assert
         Assert.NotNull(messages);
@@ -537,7 +537,7 @@ public sealed class MistralClientTests : MistralTestBase
         };
 
         // Act
-        var messages = client.ToMistralChatMessages(content, default);
+        var messages = client.ToMistralChatMessages(content);
 
         // Assert
         Assert.NotNull(messages);
