@@ -1,24 +1,41 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0005 // Using directive is unnecessary.
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using SemanticKernel.IntegrationTests.Agents;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
+#pragma warning restore IDE0005 // Using directive is unnecessary.
 
-namespace SemanticKernel.IntegrationTests.Processes;
-public sealed class ProcessTests
+namespace SemanticKernel.Process.IntegrationTests;
+
+/// <summary>
+/// Integration tests for processes.
+/// </summary>
+[Collection(nameof(ProcessTestGroup))]
+public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
 {
+    private readonly ProcessTestFixture _fixture;
     private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAIAssistantAgentTests>()
+            .AddUserSecrets<OpenAIConfiguration>()
             .Build();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessTests"/> class. This is called by the test framework.
+    /// </summary>
+    /// <param name="fixture"></param>
+    public ProcessTests(ProcessTestFixture fixture)
+    {
+        this._fixture = fixture;
+    }
 
     /// <summary>
     /// Tests a simple linear process with two steps and no sub processes.
@@ -38,7 +55,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -48,7 +65,7 @@ public sealed class ProcessTests
     }
 
     /// <summary>
-    /// Tests a process with three steps where the third step is a nested process. Events from the outer process
+    /// Tests a process with three steps where the third step is a nested process. Ev/ts from the outer process
     /// are routed to the inner process.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
@@ -78,7 +95,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -124,7 +141,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -168,7 +185,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartInnerProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -191,7 +208,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -220,7 +237,7 @@ public sealed class ProcessTests
 
         // Act
         string testInput = "Test";
-        var processHandle = await process.StartAsync(kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
         var processInfo = await processHandle.GetStateAsync();
 
         // Assert
@@ -263,121 +280,4 @@ public sealed class ProcessTests
 
         return processBuilder;
     }
-
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
-    // These classes are dynamically instantiated by the processes used in tests.
-
-    /// <summary>
-    /// A step that echos its input.
-    /// </summary>
-    private sealed class EchoStep : KernelProcessStep
-    {
-        [KernelFunction]
-        public string Echo(string message)
-        {
-            Console.WriteLine($"[ECHO] {message}");
-            return message;
-        }
-    }
-
-    /// <summary>
-    /// A step that repeats its input.
-    /// </summary>
-    private sealed class RepeatStep : KernelProcessStep<StepState>
-    {
-        private StepState? _state;
-
-        public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
-        {
-            this._state = state.State;
-            return default;
-        }
-
-        [KernelFunction]
-        public async Task RepeatAsync(string message, KernelProcessStepContext context, int count = 2)
-        {
-            var output = string.Join(" ", Enumerable.Repeat(message, count));
-            Console.WriteLine($"[REPEAT] {output}");
-            this._state!.LastMessage = output;
-
-            // Emit the OnReady event with a public visibility and an internal visibility to aid in testing
-            await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadyPublic, Data = output, Visibility = KernelProcessEventVisibility.Public });
-            await context.EmitEventAsync(new() { Id = ProcessTestsEvents.OutputReadyInternal, Data = output, Visibility = KernelProcessEventVisibility.Internal });
-        }
-    }
-
-    /// <summary>
-    /// A step that emits a startProcess event
-    /// </summary>
-    private sealed class StartStep : KernelProcessStep
-    {
-        [KernelFunction]
-        public async Task SendStartMessageAsync(KernelProcessStepContext context, string text)
-        {
-            Console.WriteLine($"[START] {text}");
-            await context.EmitEventAsync(new()
-            {
-                Id = ProcessTestsEvents.StartProcess,
-                Data = text,
-                Visibility = KernelProcessEventVisibility.Public
-            });
-        }
-    }
-
-    /// <summary>
-    /// A step that combines string inputs received.
-    /// </summary>
-    private sealed class FanInStep : KernelProcessStep<StepState>
-    {
-        private StepState? _state;
-
-        public override ValueTask ActivateAsync(KernelProcessStepState<StepState> state)
-        {
-            this._state = state.State;
-            return default;
-        }
-
-        [KernelFunction]
-        public async Task EmitCombinedMessageAsync(KernelProcessStepContext context, string firstInput, string secondInput)
-        {
-            var output = $"{firstInput}-{secondInput}";
-            Console.WriteLine($"[EMIT_COMBINED] {output}");
-            this._state!.LastMessage = output;
-
-            await context.EmitEventAsync(new()
-            {
-                Id = ProcessTestsEvents.OutputReadyInternal,
-                Data = output,
-                Visibility = KernelProcessEventVisibility.Internal
-            });
-            await context.EmitEventAsync(new()
-            {
-                Id = ProcessTestsEvents.OutputReadyPublic,
-                Data = output,
-                Visibility = KernelProcessEventVisibility.Public
-            });
-        }
-    }
-
-    /// <summary>
-    /// The state object for the repeat and fanIn step.
-    /// </summary>
-    private sealed record StepState
-    {
-        public string? LastMessage { get; set; }
-    }
-
-    /// <summary>
-    /// A class that defines the events that can be emitted by the chat bot process. This is
-    /// not required but used to ensure that the event names are consistent.
-    /// </summary>
-    private static class ProcessTestsEvents
-    {
-        public const string StartProcess = "StartProcess";
-        public const string StartInnerProcess = "StartInnerProcess";
-        public const string OutputReadyPublic = "OutputReadyPublic";
-        public const string OutputReadyInternal = "OutputReadyInternal";
-    }
-
-#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 }
