@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// The REST API operation parameter.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class RestApiOperationParameter
 {
     /// <summary>
@@ -15,7 +18,7 @@ public sealed class RestApiOperationParameter
     /// <summary>
     /// The property alternative name. It can be used as an alternative name in contexts where the original name can't be used.
     /// </summary>
-    public string? AlternativeName { get; set; }
+    public string? AlternativeName { get; internal set; }
 
     /// <summary>
     /// The parameter type - string, integer, number, boolean, array and object.
@@ -83,7 +86,7 @@ public sealed class RestApiOperationParameter
     /// <param name="format">The parameter type modifier that refines the generic parameter type to a more specific one.
     /// More details can be found at https://swagger.io/docs/specification/data-models/data-types</param>
     /// <param name="schema">The parameter schema.</param>
-    public RestApiOperationParameter(
+    internal RestApiOperationParameter(
         string name,
         string type,
         bool isRequired,

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
@@ -14,8 +15,7 @@ internal sealed class LocalMap : LocalStep
 {
     private readonly HashSet<string> _mapEvents;
     private readonly KernelProcessMap _map;
-    private ILogger? _logger;
-    private ILogger Logger => this._logger ??= this.LoggerFactory?.CreateLogger(this.Name) ?? NullLogger.Instance;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalMap"/> class.
@@ -26,14 +26,14 @@ internal sealed class LocalMap : LocalStep
         : base(map, kernel)
     {
         this._map = map;
-
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<LocalStep>();
         this._mapEvents = [.. map.Edges.Keys.Select(key => key.Split('.').Last())];
     }
 
     /// <inheritdoc/>
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
-        IEnumerable values = message.GetMapInput(this.Logger);
+        IEnumerable values = message.GetMapInput(this._logger);
 
         int index = 0;
         List<(Task Task, LocalKernelProcessContext ProcessContext, MapOperationContext Context)> mapOperations = [];
@@ -45,7 +45,7 @@ internal sealed class LocalMap : LocalStep
             {
                 ++index;
 
-                KernelProcess process = this._map.Operation.CloneProcess(this.Logger);
+                KernelProcess process = this._map.Operation.CloneProcess(this._logger);
                 MapOperationContext context = new(index, this._mapEvents, capturedEvents);
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 LocalKernelProcessContext processContext = new(process, this._kernel, context.Filter);

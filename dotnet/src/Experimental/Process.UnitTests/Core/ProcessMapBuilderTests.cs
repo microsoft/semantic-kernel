@@ -115,7 +115,7 @@ public class ProcessMapBuilderTests
     }
 
     /// <summary>
-    /// Verify <see cref="ProcessMapBuilder.BuildStep"/> produces the
+    /// Verify <see cref="ProcessMapBuilder.BuildStep()"/> produces the
     /// expected <see cref="KernelProcessMap"/>.
     /// </summary>
     [Fact]
@@ -136,7 +136,7 @@ public class ProcessMapBuilderTests
     }
 
     /// <summary>
-    /// Verify <see cref="ProcessMapBuilder.BuildStep"/> throws an exception
+    /// Verify <see cref="ProcessMapBuilder.BuildStep()"/> throws an exception
     /// if the target is a <see cref="ProcessBuilder"/>> without the having
     /// <see cref="ProcessFunctionTargetBuilder.TargetEventId"/> defined.
     /// While this state should not be achievable by external callers, the

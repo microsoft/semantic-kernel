@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -26,6 +27,11 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         this._mapProcess = this.CreateMapProcess(mapTarget);
     }
 
+    /// <summary>
+    /// Version of the map-step, used when saving the state of the step.
+    /// </summary>
+    public string Version { get; init; } = "v1";
+
     /// <inheritdoc/>
     /// <remarks>
     /// Never called as the map is a proxy for the map operation and does not have a function target.
@@ -47,8 +53,13 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
-        KernelProcessMapState state = new(this.Name, this.Id);
+        KernelProcessMapState state = new(this.Name, this.Version, this.Id);
         return new KernelProcessMap(state, this._mapProcess.Build(), builtEdges);
+    }
+
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    {
+        throw new NotImplementedException(); // %%% TODO: Implement
     }
 
     private ProcessBuilder CreateMapProcess(ProcessFunctionTargetBuilder mapTarget)

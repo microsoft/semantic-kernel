@@ -14,9 +14,10 @@ public sealed record KernelProcessState : KernelProcessStepState
     /// Initializes a new instance of the <see cref="KernelProcessState"/> class.
     /// </summary>
     /// <param name="name">The name of the associated <see cref="KernelProcessStep"/></param>
+    /// <param name="version">version id of the process step state</param>
     /// <param name="id">The Id of the associated <see cref="KernelProcessStep"/></param>
-    public KernelProcessState(string name, string? id = null)
-        : base(name, id)
+    public KernelProcessState(string name, string version, string? id = null)
+        : base(name, version, id)
     {
     }
 }

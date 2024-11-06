@@ -8,6 +8,7 @@ using Dapr.Actors;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
@@ -28,9 +29,8 @@ internal sealed class MapActor : StepActor, IMap
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    /// <param name="loggerFactory">Optional. A <see cref="ILoggerFactory"/>.</param>
-    public MapActor(ActorHost host, Kernel kernel, ILoggerFactory? loggerFactory)
-        : base(host, kernel, loggerFactory)
+    public MapActor(ActorHost host, Kernel kernel)
+        : base(host, kernel)
     {
     }
 
@@ -58,10 +58,10 @@ internal sealed class MapActor : StepActor, IMap
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
-    public DaprMapInfo ToDaprMapInfo() // %%% NEEDED ???
+    private async Task<DaprMapInfo> ToDaprMapInfoAsync() // %%% MOVE ???
     {
-        KernelProcessMapState mapState = new(this.Name, this.Id.GetId());
-        return new DaprMapInfo { InnerStepDotnetType = this._map!.InnerStepDotnetType, Edges = this._map!.Edges, State = mapState, MapStep = this._map!.MapStep };
+        DaprProcessInfo mapOperation = await this._mapOperation!.GetProcessInfoAsync().ConfigureAwait(false);
+        return new DaprMapInfo { InnerStepDotnetType = this._map!.InnerStepDotnetType, Edges = this._map!.Edges, State = this._map.State, MapStep = mapOperation };
     }
 
     /// <summary>
@@ -69,9 +69,9 @@ internal sealed class MapActor : StepActor, IMap
     /// rather than ToKernelProcessAsync when extracting the state.
     /// </summary>
     /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
-    public override Task<DaprStepInfo> ToDaprStepInfoAsync()
+    public override async Task<DaprStepInfo> ToDaprStepInfoAsync()
     {
-        return Task.FromResult<DaprStepInfo>(this.ToDaprMapInfo());
+        return await this.ToDaprMapInfoAsync().ConfigureAwait(false);
     }
 
     protected override async Task OnActivateAsync()
@@ -159,7 +159,7 @@ internal sealed class MapActor : StepActor, IMap
 
         this.ParentProcessId = parentProcessId;
         this._map = mapInfo;
-        this._logger = this.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<MapActor>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<MapActor>();
 
         // Initialize the map operation as a process.
         DaprProcessInfo mapOperation = this._map.MapStep;

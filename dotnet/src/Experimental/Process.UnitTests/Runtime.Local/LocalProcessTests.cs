@@ -18,11 +18,11 @@ public class LocalProcessTests
     public async Task ExecuteAsyncInitializesCorrectlyAsync()
     {
         // Arrange
-        var processState = new KernelProcessState(name: "TestProcess", id: "123");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1", id: "123");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
         ], []);
 
         var mockKernel = new Kernel();
@@ -45,11 +45,11 @@ public class LocalProcessTests
     {
         // Arrange
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState(name: "TestProcess");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
         ], []);
 
         // Act
@@ -67,11 +67,11 @@ public class LocalProcessTests
     {
         // Arrange
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState(name: "TestProcess", id: "AlreadySet");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1", id: "AlreadySet");
         var mockKernelProcess = new KernelProcess(processState,
         [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", id: "2"), [])
+            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
+            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
         ], []);
 
         // Act
@@ -83,13 +83,93 @@ public class LocalProcessTests
     }
 
     /// <summary>
-    /// Validates that the <see cref="LocalProcess"/> assigns and Id to the process if one is not already set.
+    /// Verify that the function  level error handler is called when a function fails.
     /// </summary>
     [Fact]
-    public async Task ProcessWithSubprocessAndInvalidTargetThrowsAsync()
+    public async Task ProcessFunctionErrorHandledAsync()
     {
         // Arrange
-        ProcessBuilder process = new(nameof(ProcessWithSubprocessAndInvalidTargetThrowsAsync));
+        ProcessBuilder process = new(nameof(ProcessFunctionErrorHandledAsync));
+
+        ProcessStepBuilder testStep = process.AddStepFromType<FailedStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(testStep));
+
+        ProcessStepBuilder errorStep = process.AddStepFromType<ErrorStep>();
+        testStep.OnFunctionError(nameof(FailedStep.TestFailure)).SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.FunctionErrorHandler)));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+
+        // Assert
+        Assert.True(kernel.Data.ContainsKey("error-function"));
+        Assert.IsType<KernelProcessError>(kernel.Data["error-function"]);
+    }
+
+    /// <summary>
+    /// Verify that the process level error handler is called when a function fails.
+    /// </summary>
+    [Fact]
+    public async Task ProcessGlobalErrorHandledAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessFunctionErrorHandledAsync));
+
+        ProcessStepBuilder testStep = process.AddStepFromType<FailedStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(testStep));
+
+        ProcessStepBuilder errorStep = process.AddStepFromType<ErrorStep>();
+        process.OnError().SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.GlobalErrorHandler)));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+
+        // Assert
+        Assert.True(kernel.Data.ContainsKey("error-global"));
+        Assert.IsType<KernelProcessError>(kernel.Data["error-global"]);
+    }
+
+    /// <summary>
+    /// Verify that the function level error handler has precedence over the process level error handler.
+    /// </summary>
+    [Fact]
+    public async Task FunctionErrorHandlerTakesPrecedenceAsync()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessFunctionErrorHandledAsync));
+
+        ProcessStepBuilder testStep = process.AddStepFromType<FailedStep>();
+        process.OnInputEvent("Start").SendEventTo(new ProcessFunctionTargetBuilder(testStep));
+
+        ProcessStepBuilder errorStep = process.AddStepFromType<ErrorStep>();
+        testStep.OnFunctionError(nameof(FailedStep.TestFailure)).SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.FunctionErrorHandler)));
+        process.OnError().SendEventTo(new ProcessFunctionTargetBuilder(errorStep, nameof(ErrorStep.GlobalErrorHandler)));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        using LocalKernelProcessContext runningProcess = await processInstance.StartAsync(kernel, new KernelProcessEvent() { Id = "Start" });
+
+        // Assert
+        Assert.False(kernel.Data.ContainsKey("error-global"));
+        Assert.True(kernel.Data.ContainsKey("error-function"));
+        Assert.IsType<KernelProcessError>(kernel.Data["error-function"]);
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    [Fact]
+    public void ProcessWithSubprocessAndInvalidTargetThrows()
+    {
+        // Arrange
+        ProcessBuilder process = new(nameof(ProcessWithSubprocessAndInvalidTargetThrows));
 
         ProcessBuilder subProcess = new("SubProcess");
         ProcessStepBuilder innerStep = subProcess.AddStepFromType<TestStep>("InnerStep");
@@ -107,16 +187,45 @@ public class LocalProcessTests
 
         KernelProcess processInstance = process.Build();
         Kernel kernel = new();
+    }
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () =>
-                processInstance.StartAsync(
-                    kernel,
-                    new KernelProcessEvent
-                    {
-                        Id = "Start"
-                    }));
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    private sealed class FailedStep : KernelProcessStep
+    {
+        /// <summary>
+        /// A method that represents a function for testing.
+        /// </summary>
+        [KernelFunction]
+        public void TestFailure()
+        {
+            throw new InvalidOperationException("I failed!");
+        }
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    private sealed class ErrorStep : KernelProcessStep
+    {
+        /// <summary>
+        /// A method for unhandling failures at the process level.
+        /// </summary>
+        [KernelFunction]
+        public void GlobalErrorHandler(KernelProcessError exception, Kernel kernel)
+        {
+            kernel.Data.Add("error-global", exception);
+        }
+
+        /// <summary>
+        /// A method for unhandling failures at the function level.
+        /// </summary>
+        [KernelFunction]
+        public void FunctionErrorHandler(KernelProcessError exception, Kernel kernel)
+        {
+            kernel.Data.Add("error-function", exception);
+        }
     }
 
     /// <summary>

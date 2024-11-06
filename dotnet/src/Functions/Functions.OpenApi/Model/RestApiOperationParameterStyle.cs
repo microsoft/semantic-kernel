@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// The REST API operation parameter style.
 /// </summary>
+[Experimental("SKEXP0040")]
 public enum RestApiOperationParameterStyle
 {
     /// <summary>

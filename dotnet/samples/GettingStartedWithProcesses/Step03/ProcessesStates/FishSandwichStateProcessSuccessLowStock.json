@@ -1,0 +1,47 @@
+{
+  "stepsState": {
+    "FriedFishWithStatefulStepsProcess": {
+      "stepsState": {
+        "GatherFriedFishIngredientsWithStockStep": {
+          "state": {
+            "IngredientsStock": 1
+          },
+          "id": "32301d167a604f7bb1b69663d8feafe6",
+          "name": "GatherFriedFishIngredientsWithStockStep",
+          "versionInfo": "GatherFishIngredient.V2"
+        },
+        "CutFoodStep": {
+          "id": "3be68c614bc44bedb7bce0f002110968",
+          "name": "CutFoodStep",
+          "versionInfo": "CutFoodStep.V1"
+        },
+        "FryFoodStep": {
+          "id": "5f80945fafec4a0bbeccf3ff23a8c1a1",
+          "name": "FryFoodStep",
+          "versionInfo": "FryFoodStep.V1"
+        }
+      },
+      "id": "c9d2e56dcc5a4b5ea73e05ae53635c90",
+      "name": "FriedFishWithStatefulStepsProcess",
+      "versionInfo": "FriedFishProcess.v1"
+    },
+    "AddBunsStep": {
+      "id": "ef113fc874b0473c9c275827effe8dd8",
+      "name": "AddBunsStep",
+      "versionInfo": "v1"
+    },
+    "AddSpecialSauceStep": {
+      "id": "65a35f6dec6e45cab9e1b4df7d43a6bd",
+      "name": "AddSpecialSauceStep",
+      "versionInfo": "v1"
+    },
+    "ExternalFriedFishStep": {
+      "id": "ab186a81480a45249cfff9e0c56319b8",
+      "name": "ExternalFriedFishStep",
+      "versionInfo": "v1"
+    }
+  },
+  "id": "0de6d539-c1bf-44ad-816d-650231cd2034",
+  "name": "FishSandwichWithStatefulStepsProcess",
+  "versionInfo": "FishSandwich.V1"
+}

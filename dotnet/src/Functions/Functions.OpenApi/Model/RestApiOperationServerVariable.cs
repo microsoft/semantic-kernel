@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// REST API Operation Server Variable.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class RestApiOperationServerVariable
 {
     /// <summary>
@@ -23,7 +26,7 @@ public sealed class RestApiOperationServerVariable
     /// <summary>
     /// An enumeration of string values to be used if the substitution options are from a limited set.
     /// </summary>
-    public List<string>? Enum { get; }
+    public IReadOnlyList<string>? Enum { get; }
 
     /// <summary>
     /// Construct a new <see cref="RestApiOperationServerVariable"/> object.
@@ -31,7 +34,7 @@ public sealed class RestApiOperationServerVariable
     /// <param name="defaultValue">The default value to use for substitution.</param>
     /// <param name="description">An optional description for the server variable.</param>
     /// <param name="enumValues">An enumeration of string values to be used if the substitution options are from a limited set.</param>
-    public RestApiOperationServerVariable(string defaultValue, string? description = null, List<string>? enumValues = null)
+    internal RestApiOperationServerVariable(string defaultValue, string? description = null, List<string>? enumValues = null)
     {
         this.Default = defaultValue;
         this.Description = description;
