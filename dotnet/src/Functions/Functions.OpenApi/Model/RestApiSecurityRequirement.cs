@@ -13,8 +13,8 @@ public sealed class RestApiSecurityRequirement : ReadOnlyDictionary<RestApiSecur
     /// <summary>
     /// Creates an instance of a <see cref="RestApiSecurityRequirement"/> class.
     /// </summary>
-    /// <param name="dictionary"></param>
-    public RestApiSecurityRequirement(IDictionary<RestApiSecurityScheme, IList<string>> dictionary) : base(dictionary)
+    /// <param name="dictionary">Dictionary containing the security schemes.</param>
+    internal RestApiSecurityRequirement(IDictionary<RestApiSecurityScheme, IList<string>> dictionary) : base(dictionary)
     {
     }
 }

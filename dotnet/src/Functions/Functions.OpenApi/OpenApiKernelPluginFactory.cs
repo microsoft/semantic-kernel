@@ -269,10 +269,6 @@ public static partial class OpenApiKernelPluginFactory
             { OpenApiKernelPluginFactory.OperationExtensionsPathKey, operation.Path },
             { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, string.IsNullOrEmpty(operation.Server?.Url) ? Array.Empty<string>() : [ operation.Server!.Url! ] }
         };
-        if (operation.SecurityRequirements is not null)
-        {
-            additionalMetadata.Add(OpenApiKernelPluginFactory.OperationExtensionsSecurityRequirementsKey, operation.SecurityRequirements);
-        }
         if (operation.Extensions is { Count: > 0 })
         {
             additionalMetadata.Add(OpenApiKernelPluginFactory.OperationExtensionsMetadataKey, operation.Extensions);
@@ -301,9 +297,6 @@ public static partial class OpenApiKernelPluginFactory
 
     /// <summary>The metadata property bag key to use when storing the server of an operation.</summary>
     private const string OperationExtensionsServerUrlsKey = "server-urls";
-
-    /// <summary>The metadata property bag key to use when storing the security requirement of an operation.</summary>
-    private const string OperationExtensionsSecurityRequirementsKey = "security-requirements";
 
     /// <summary>The metadata property bag key to use for the list of extension values provided in the swagger file at the operation level.</summary>
     private const string OperationExtensionsMetadataKey = "operation-extensions";

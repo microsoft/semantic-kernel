@@ -241,11 +241,60 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         {
             foreach (var item in securitySchemes)
             {
-                result.Add(item.Key, new RestApiSecurityScheme(item.Value));
+                result.Add(item.Key, CreateRestApiSecurityScheme(item.Value));
             }
         }
 
         return new ReadOnlyDictionary<string, RestApiSecurityScheme>(result);
+    }
+
+    /// <summary>
+    /// Build a <see cref="RestApiSecurityScheme"/> objects from the given <see cref="OpenApiSecurityScheme"/> object.
+    /// </summary>
+    /// <param name="securityScheme">The REST API security scheme.</param>
+    private static RestApiSecurityScheme CreateRestApiSecurityScheme(OpenApiSecurityScheme securityScheme)
+    {
+        return new RestApiSecurityScheme()
+        {
+            SecuritySchemeType = securityScheme.Type.ToString(),
+            Description = securityScheme.Description,
+            Name = securityScheme.Name,
+            ParameterLocation = securityScheme.In.ToString(),
+            Scheme = securityScheme.Scheme,
+            BearerFormat = securityScheme.BearerFormat,
+            Flows = CreateRestApiOAuthFlows(securityScheme.Flows),
+            OpenIdConnectUrl = securityScheme.OpenIdConnectUrl
+        };
+    }
+
+    /// <summary>
+    /// Build a <see cref="RestApiOAuthFlows"/> object from the given <see cref="OpenApiOAuthFlows"/> object.
+    /// </summary>
+    /// <param name="flows">The REST API OAuth flows.</param>
+    private static RestApiOAuthFlows? CreateRestApiOAuthFlows(OpenApiOAuthFlows? flows)
+    {
+        return flows is not null ? new RestApiOAuthFlows()
+        {
+            Implicit = CreateRestApiOAuthFlow(flows.Implicit),
+            Password = CreateRestApiOAuthFlow(flows.Password),
+            ClientCredentials = CreateRestApiOAuthFlow(flows.ClientCredentials),
+            AuthorizationCode = CreateRestApiOAuthFlow(flows.AuthorizationCode),
+        } : null;
+    }
+
+    /// <summary>
+    /// Build a <see cref="RestApiOAuthFlow"/> object from the given <see cref="OpenApiOAuthFlow"/> object.
+    /// </summary>
+    /// <param name="flow">The REST API OAuth flow.</param>
+    private static RestApiOAuthFlow? CreateRestApiOAuthFlow(OpenApiOAuthFlow? flow)
+    {
+        return flow is not null ? new RestApiOAuthFlow()
+        {
+            AuthorizationUrl = flow.AuthorizationUrl,
+            TokenUrl = flow.TokenUrl,
+            RefreshUrl = flow.RefreshUrl,
+            Scopes = new ReadOnlyDictionary<string, string>(flow.Scopes ?? new Dictionary<string, string>())
+        } : null;
     }
 
     /// <summary>
@@ -268,7 +317,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                         throw new KernelException("The security scheme is not supported.");
                     }
 
-                    operationRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { new RestApiSecurityScheme(openApiSecurityScheme), keyValuePair.Value } }));
+                    operationRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { CreateRestApiSecurityScheme(openApiSecurityScheme), keyValuePair.Value } }));
                 }
             }
         }
@@ -504,7 +553,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <param name="readResult">The reading results to be checked.</param>
     /// <param name="ignoreNonCompliantErrors">Flag indicating whether to ignore non-compliant errors.
     /// If set to true, the parser will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may operationRequirements in incomplete or inaccurate parsing results.
+    /// Please note that enabling this option may result in incomplete or inaccurate parsing results.
     /// </param>
     private void AssertReadingSuccessful(ReadResult readResult, bool ignoreNonCompliantErrors)
     {

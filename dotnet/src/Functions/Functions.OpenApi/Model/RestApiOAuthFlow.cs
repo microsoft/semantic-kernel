@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -37,12 +35,9 @@ public sealed class RestApiOAuthFlow
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOAuthFlow"/> class.
     /// </summary>
-    /// <param name="authFlow"></param>
-    internal RestApiOAuthFlow(OpenApiOAuthFlow authFlow)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    internal RestApiOAuthFlow()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        this.AuthorizationUrl = authFlow.AuthorizationUrl;
-        this.TokenUrl = authFlow.TokenUrl;
-        this.RefreshUrl = authFlow.RefreshUrl;
-        this.Scopes = new ReadOnlyDictionary<string, string>(authFlow.Scopes ?? new Dictionary<string, string>());
     }
 }

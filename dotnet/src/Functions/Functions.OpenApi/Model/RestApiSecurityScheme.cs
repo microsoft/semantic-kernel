@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -56,15 +55,9 @@ public sealed class RestApiSecurityScheme
     /// <summary>
     /// Creates an instance of a <see cref="RestApiSecurityScheme"/> class.
     /// </summary>
-    internal RestApiSecurityScheme(OpenApiSecurityScheme value)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    internal RestApiSecurityScheme()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        this.SecuritySchemeType = value.Type.ToString();
-        this.Description = value.Description;
-        this.Name = value.Name;
-        this.ParameterLocation = value.In.ToString();
-        this.Scheme = value.Scheme;
-        this.BearerFormat = value.BearerFormat;
-        this.Flows = value.Flows is not null ? new RestApiOAuthFlows(value.Flows) : null;
-        this.OpenIdConnectUrl = value.OpenIdConnectUrl;
     }
 }

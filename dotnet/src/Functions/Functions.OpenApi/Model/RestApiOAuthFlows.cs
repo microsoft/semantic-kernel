@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.OpenApi.Models;
-
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
@@ -32,12 +30,7 @@ public sealed class RestApiOAuthFlows
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOAuthFlows"/> class.
     /// </summary>
-    /// <param name="flows"></param>
-    internal RestApiOAuthFlows(OpenApiOAuthFlows flows)
+    internal RestApiOAuthFlows()
     {
-        this.Implicit = flows.Implicit is not null ? new RestApiOAuthFlow(flows.Implicit) : null;
-        this.Password = flows.Password is not null ? new RestApiOAuthFlow(flows.Password) : null;
-        this.ClientCredentials = flows.ClientCredentials is not null ? new RestApiOAuthFlow(flows.ClientCredentials) : null;
-        this.AuthorizationCode = flows.AuthorizationCode is not null ? new RestApiOAuthFlow(flows.AuthorizationCode) : null;
     }
 }
