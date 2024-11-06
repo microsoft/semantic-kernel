@@ -95,5 +95,4 @@ internal static class ProcessStateMetadataFactory
 
         return metadata;
     }
-
 }
