@@ -1,25 +1,29 @@
 {
+  "$type": "KernelProcessStateMetadata",
   "stepsState": {
     "GatherFriedFishIngredientsWithStockStep": {
+      "$type": "KernelProcessStepStateMetadata",
+      "id": "92a4cda38c7248648b0aa7ffaaa57f21",
+      "name": "GatherFriedFishIngredientsWithStockStep",
+      "versionInfo": "GatherFishIngredient.V2",
       "state": {
         "IngredientsStock": 1
-      },
-      "id": "7d492b6c1ea9404b8adb4c9b0c8f7589",
-      "name": "GatherFriedFishIngredientsWithStockStep",
-      "versionInfo": "GatherFishIngredient.V2"
+      }
     },
     "CutFoodStep": {
-      "id": "7c0d4dce18644abf92941ff2538806dc",
+      "$type": "KernelProcessStepStateMetadata",
+      "id": "7ace89e38e1c48b0b3a700b40d160c68",
       "name": "CutFoodStep",
       "versionInfo": "CutFoodStep.V1"
     },
     "FryFoodStep": {
-      "id": "de06bfb72a3d4f05ba3b4fd4ceb43e1f",
+      "$type": "KernelProcessStepStateMetadata",
+      "id": "09bc39ba6d9745439c7c792b8dac0af7",
       "name": "FryFoodStep",
       "versionInfo": "FryFoodStep.V1"
     }
   },
-  "id": "412f3ad1-d0fd-42f1-9c74-109cff87c75c",
+  "id": "669c5850-9efc-4585-b3f0-9291a4471887",
   "name": "FriedFishWithStatefulStepsProcess",
   "versionInfo": "FriedFishProcess.v1"
 }

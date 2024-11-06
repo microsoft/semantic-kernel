@@ -83,7 +83,7 @@ public abstract class ProcessStepBuilder
     /// Builds the step with step state
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStep"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata);
+    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata);
 
     /// <summary>
     /// Builds the step.
@@ -234,7 +234,7 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
     /// Builds the step with a state if provided
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessStepInfo"/></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata)
     {
         KernelProcessStepState? stateObject = null;
         KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(typeof(TStep));
@@ -249,18 +249,15 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
             var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             Verify.NotNull(stateType);
 
-            if (stateMetadata != null && stateMetadata.State != null)
+            if (stateMetadata != null && stateMetadata.State != null && stateMetadata.State is JsonElement jsonState)
             {
-                if (stateMetadata.State is JsonElement jsonState)
+                try
                 {
-                    try
-                    {
-                        this._initialState = jsonState.Deserialize(userStateType);
-                    }
-                    catch (JsonException)
-                    {
-                        throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
-                    }
+                    this._initialState = jsonState.Deserialize(userStateType);
+                }
+                catch (JsonException)
+                {
+                    throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
                 }
             }
 

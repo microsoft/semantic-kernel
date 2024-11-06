@@ -96,7 +96,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <param name="stateMetadata">State to apply to the step on the build process</param>
     /// <returns></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata)
     {
         // The step is a, process so we can return the step info directly.
         if (stateMetadata is KernelProcessStateMetadata processState)
