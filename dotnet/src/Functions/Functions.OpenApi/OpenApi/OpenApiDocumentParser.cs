@@ -141,7 +141,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// </summary>
     /// <param name="document">The OpenAPI document.</param>
     /// <returns>Rest API information.</returns>
-    private static RestApiInfo ExtractRestApiInfo(OpenApiDocument document)
+    internal static RestApiInfo ExtractRestApiInfo(OpenApiDocument document)
     {
         return new()
         {
@@ -309,7 +309,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// Build a list of <see cref="RestApiSecurityRequirement"/> objects from the given <see cref="OpenApiSecurityRequirement"/> objects.
     /// </summary>
     /// <param name="security">The REST API operation security</param>
-    private static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security)
+    internal static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security)
     {
         var operationRequirements = new List<RestApiSecurityRequirement>();
 
