@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// REST API OAuth Flows.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class RestApiOAuthFlows
 {
     /// <summary>
