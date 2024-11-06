@@ -8,6 +8,9 @@
   "servers": [
     {
       "url": "https://my-key-vault.vault.azure.net"
+    },
+    {
+      "url": "https://ppe.my-key-vault.vault.azure.net"
     }
   ],
   "paths": {

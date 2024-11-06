@@ -114,7 +114,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var putOperation = restApi.Operations.Single(o => o.Id == "SetSecret");
         Assert.NotNull(putOperation);
         Assert.Equal("Sets a secret in a specified key vault.", putOperation.Description);
-        Assert.Equal("https://my-key-vault.vault.azure.net", putOperation.Server.Url);
+        Assert.Equal("https://my-key-vault.vault.azure.net", putOperation.Servers[0].Url);
         Assert.Equal(HttpMethod.Put, putOperation.Method);
         Assert.Equal("/secrets/{secret-name}", putOperation.Path);
 
@@ -299,7 +299,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var restApi = await this._sut.ParseAsync(stream);
 
         //Assert
-        Assert.All(restApi.Operations, (op) => Assert.Null(op.Server.Url));
+        Assert.All(restApi.Operations, (op) => Assert.Empty(op.Servers));
     }
 
     [Fact]
@@ -315,7 +315,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var restApi = await this._sut.ParseAsync(stream);
 
         //Assert
-        Assert.All(restApi.Operations, (op) => Assert.Null(op.Server.Url));
+        Assert.All(restApi.Operations, (op) => Assert.Empty(op.Servers));
     }
 
     [Theory]
@@ -485,6 +485,19 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var property = properties.Single(p => p.Name == "attributes");
         Assert.Equal("object", property.Type);
         Assert.Null(property.Format);
+    }
+
+    [Fact]
+    public async Task ItCanParseDocumentWithMultipleServersAsync()
+    {
+        // Act
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        Assert.All(restApi.Operations, (operation) => Assert.Equal(2, operation.Servers.Count));
+
+        Assert.Equal("https://my-key-vault.vault.azure.net", restApi.Operations[0].Servers[0].Url);
+        Assert.Equal("https://ppe.my-key-vault.vault.azure.net", restApi.Operations[0].Servers[1].Url);
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)
