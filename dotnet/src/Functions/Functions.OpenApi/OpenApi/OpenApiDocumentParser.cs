@@ -184,7 +184,6 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     {
         var server = document.Servers.FirstOrDefault();
         var info = ExtractRestApiInfo(document);
-        var securitySchemes = CreateRestApiOperationSecuritySchemes(document.Components?.SecuritySchemes);
 
         var operations = new List<RestApiOperation>();
 
