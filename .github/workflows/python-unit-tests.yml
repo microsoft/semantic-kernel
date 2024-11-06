@@ -20,6 +20,56 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
         experimental: [false]
+        # include:
+        #   - python-version: "3.13"
+        #     os: "ubuntu-latest"
+        #     experimental: true
+        #   - python-version: "3.13t"
+        #     os: "ubuntu-latest"
+        #     experimental: true
+        #     gil: 0
+        #   - python-version: "3.13t"
+        #     os: "ubuntu-latest"
+        #     experimental: true
+        #     gil: 1
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.30"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+      - name: Install the project
+        run: uv sync --all-extras --dev
+      - name: Test with pytest
+        env:
+          PYTHON_GIL: ${{ matrix.gil }}
+        run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
+      - name: Surface failing tests
+        if: ${{ !matrix.experimental }}
+        uses: pmeier/pytest-results-action@main
+        with:
+          path: python/pytest.xml
+          summary: true
+          display-options: fEX
+          fail-on-empty: true
+          title: Test results
+      - name: Minimize uv cache
+        run: uv cache prune --ci
+  python-experimental-unit-tests:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: true
+      matrix:
         include:
           - python-version: "3.13"
             os: "ubuntu-latest"
@@ -53,15 +103,6 @@ jobs:
         env:
           PYTHON_GIL: ${{ matrix.gil }}
         run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
-      - name: Surface failing tests
-        if: ${{ !matrix.experimental }}
-        uses: pmeier/pytest-results-action@main
-        with:
-          path: python/pytest.xml
-          summary: true
-          display-options: fEX
-          fail-on-empty: true
-          title: Test results
       - name: Minimize uv cache
         run: uv cache prune --ci
   python-test-coverage:
