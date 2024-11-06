@@ -11,7 +11,7 @@ from semantic_kernel.connectors.memory.pinecone import PineconeMemoryStore
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
-from tests.integration.test_utils import retry
+from tests.integration.utils import retry
 
 pinecone_installed = importlib.util.find_spec("pinecone") is not None
 pytestmark = pytest.mark.skipif(not pinecone_installed, reason="pinecone is not installed")

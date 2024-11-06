@@ -5,6 +5,7 @@ info:
   version: '1.0'
 servers:
   - url: https://my-key-vault.vault.azure.net
+  - url: https://ppe.my-key-vault.vault.azure.net
 paths:
   '/secrets/{secret-name}':
     get:

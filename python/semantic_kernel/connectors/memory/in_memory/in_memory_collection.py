@@ -11,8 +11,8 @@ else:
 
 from pydantic import Field
 
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.kernel_types import OneOrMany
 
 KEY_TYPES = str | int | float
@@ -20,8 +20,8 @@ KEY_TYPES = str | int | float
 TModel = TypeVar("TModel")
 
 
-class VolatileCollection(VectorStoreRecordCollection[KEY_TYPES, TModel]):
-    """Volatile Collection."""
+class InMemoryVectorCollection(VectorStoreRecordCollection[KEY_TYPES, TModel]):
+    """In Memory Collection."""
 
     inner_storage: dict[KEY_TYPES, dict] = Field(default_factory=dict)
     supported_key_types: ClassVar[list[str] | None] = ["str", "int", "float"]
@@ -32,7 +32,7 @@ class VolatileCollection(VectorStoreRecordCollection[KEY_TYPES, TModel]):
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
     ):
-        """Create a Volatile Collection."""
+        """Create a In Memory Collection."""
         super().__init__(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
