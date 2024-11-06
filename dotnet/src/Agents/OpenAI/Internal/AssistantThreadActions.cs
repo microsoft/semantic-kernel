@@ -313,15 +313,21 @@ internal static class AssistantThreadActions
                     ++count;
                 }
 
-#pragma warning disable CA1031 // Do not catch general exception types
                 try
                 {
                     run = await client.GetRunAsync(threadId, run.Id, cancellationToken).ConfigureAwait(false);
                 }
-                catch (ClientResultException clientException) when (clientException.Status > 0)
+                // The presence of a `Status` code means the server responded with error...alway fail in that case
+                catch (ClientResultException clientException) when (clientException.Status <= 0)
                 {
-                    // The presence of a `Status` code means the server responded with error
-                    throw;
+                    // Check maximum retry count
+                    if (count >= agent.PollingOptions.MaximumRetryCount)
+                    {
+                        throw;
+                    }
+
+                    // Retry for potential transient failure
+                    continue;
                 }
                 catch (AggregateException aggregateException) when (aggregateException.InnerException is ClientResultException innerClientException)
                 {
@@ -340,18 +346,6 @@ internal static class AssistantThreadActions
                     // Retry for potential transient failure
                     continue;
                 }
-                catch
-                {
-                    // Check maximum retry count
-                    if (count >= agent.PollingOptions.MaximumRetryCount)
-                    {
-                        throw;
-                    }
-
-                    // Retry for potential transient failure
-                    continue;
-                }
-#pragma warning restore CA1031 // Do not catch general exception types
             }
             while (s_pollingStatuses.Contains(run.Status));
 
