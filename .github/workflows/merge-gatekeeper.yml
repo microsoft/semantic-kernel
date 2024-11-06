@@ -29,8 +29,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           timeout: 3600
           interval: 30
-          ignored: |
-            python-tests-coverage,
-            python-experimental-unit-tests-313,
-            python-experimental-unit-tests-313t-gil,
-            python-experimental-unit-tests-313t-nogil,
+          ignored: python-tests-coverage
