@@ -180,7 +180,6 @@ internal static class AssistantThreadActions
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
         Dictionary<string, FunctionResultContent> functionSteps = [];
-        bool didDelete = false;
         do
         {
             // Check for cancellation
@@ -288,12 +287,6 @@ internal static class AssistantThreadActions
                 }
 
                 processedStepIds.Add(completedStep.Id);
-            }
-
-            if (!didDelete)
-            {
-                await agent.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
-                didDelete = true;
             }
 
             logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), messageCount, run.Id, threadId);
