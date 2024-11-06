@@ -68,7 +68,7 @@ hugging_face = [
     "torch == 2.5.1"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.9",
+    "pymongo >= 4.8.0, < 4.11",
     "motor >= 3.3.2,< 3.7.0"
 ]
 notebooks = [
