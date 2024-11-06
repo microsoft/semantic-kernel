@@ -9,11 +9,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.OpenApi.Extensions;
-using Xunit;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Connectors.MistralAI.Client;
+using Xunit;
 
 namespace SemanticKernel.Connectors.MistralAI.UnitTests.Client;
 
