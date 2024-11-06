@@ -9,21 +9,18 @@ internal sealed record MapOperationContext(in int Index, in HashSet<string> Even
 {
     public Dictionary<string, object?> Results { get; } = [];
 
-    public bool Filter(KernelProcessEvent processEvent)
+    public bool Filter(ProcessEvent processEvent)
     {
-        if (!string.IsNullOrEmpty(processEvent.Id))
+        string eventName = processEvent.SourceId;
+        if (this.EventTargets.Contains(eventName))
         {
-            string eventName = processEvent.Id!;
-            if (this.EventTargets.Contains(eventName))
+            this.CapturedEvents.TryGetValue(eventName, out Type? resultType);
+            if (resultType is null || resultType == typeof(object))
             {
-                this.CapturedEvents.TryGetValue(eventName, out Type? resultType);
-                if (resultType is null || resultType == typeof(object))
-                {
-                    this.CapturedEvents[eventName] = processEvent.Data?.GetType() ?? typeof(object);
-                }
-
-                this.Results[eventName] = processEvent.Data;
+                this.CapturedEvents[eventName] = processEvent.Data?.GetType() ?? typeof(object);
             }
+
+            this.Results[eventName] = processEvent.Data;
         }
 
         return true;

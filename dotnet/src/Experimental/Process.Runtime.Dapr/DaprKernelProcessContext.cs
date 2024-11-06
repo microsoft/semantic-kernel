@@ -15,7 +15,7 @@ public class DaprKernelProcessContext
     private readonly IProcess _daprProcess;
     private readonly KernelProcess _process;
 
-    internal DaprKernelProcessContext(KernelProcess process, ActorId? eventProxyStepId = null)
+    internal DaprKernelProcessContext(KernelProcess process)
     {
         Verify.NotNull(process);
         Verify.NotNullOrWhiteSpace(process.State?.Name);
@@ -34,11 +34,11 @@ public class DaprKernelProcessContext
     /// Starts the process with an initial event.
     /// </summary>
     /// <param name="initialEvent">The initial event.</param>
-    /// <returns></returns>
-    internal async Task StartWithEventAsync(KernelProcessEvent initialEvent)
+    /// <param name="eventProxyStepId">The identifier of the actor to proxy events.</param>
+    internal async Task StartWithEventAsync(KernelProcessEvent initialEvent, ActorId? eventProxyStepId = null)
     {
         var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
-        await this._daprProcess.InitializeProcessAsync(daprProcess, null).ConfigureAwait(false);
+        await this._daprProcess.InitializeProcessAsync(daprProcess, null, eventProxyStepId?.GetId()).ConfigureAwait(false);
         await this._daprProcess.RunOnceAsync(initialEvent).ConfigureAwait(false);
     }
 

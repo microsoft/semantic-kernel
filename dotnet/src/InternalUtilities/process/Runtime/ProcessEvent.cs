@@ -14,7 +14,7 @@ public record ProcessEvent
     /// <summary>
     /// The source Id of the event.
     /// </summary>
-    internal string SourceId { get; init; } = string.Empty;
+    internal string SourceId { get; init; } = string.Empty; // %%% USEFUL FOR EVENT PROXY / FILTER ???
 
     /// <summary>
     /// An optional data payload associated with the event.

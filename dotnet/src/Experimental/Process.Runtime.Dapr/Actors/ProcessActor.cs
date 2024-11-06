@@ -31,7 +31,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private CancellationTokenSource? _processCancelSource;
     private bool _isInitialized;
     private ILogger? _logger;
-    private ActorId? _eventProxyStepId;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessActor"/> class.
@@ -238,7 +237,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<ProcessActor>();
         if (!string.IsNullOrWhiteSpace(eventProxyStepId))
         {
-            this._eventProxyStepId = new ActorId(eventProxyStepId);
+            this.EventProxyStepId = new ActorId(eventProxyStepId);
         }
 
         // Initialize the input and output edges for the process
@@ -263,7 +262,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 // Initialize the step as a process.
                 var scopedProcessId = this.ScopedActorId(new ActorId(processStep.State.Id!));
                 var processActor = this.ProxyFactory.CreateActorProxy<IProcess>(scopedProcessId, nameof(ProcessActor));
-                await processActor.InitializeProcessAsync(processStep, this.Id.GetId()).ConfigureAwait(false);
+                await processActor.InitializeProcessAsync(processStep, this.Id.GetId(), eventProxyStepId).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProcessId, nameof(ProcessActor));
             }
             else if (step is DaprMapInfo mapStep)
@@ -281,7 +280,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
                 var scopedStepId = this.ScopedActorId(new ActorId(step.State.Id!));
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedStepId, nameof(StepActor));
-                await stepActor.InitializeStepAsync(step, this.Id.GetId()).ConfigureAwait(false);
+                await stepActor.InitializeStepAsync(step, this.Id.GetId(), eventProxyStepId).ConfigureAwait(false);
             }
 
             this._steps.Add(stepActor);
@@ -454,13 +453,13 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     }
 
     /// <summary>
-    /// Builds a <see cref="KernelProcess"/> from the current <see cref="ProcessActor"/>.
+    /// Builds a <see cref="DaprProcessInfo"/> from the current <see cref="ProcessActor"/>.
     /// </summary>
-    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    /// <returns>An instance of <see cref="DaprProcessInfo"/></returns>
     /// <exception cref="InvalidOperationException"></exception>
     private async Task<DaprProcessInfo> ToDaprProcessInfoAsync()
     {
-        var processState = new KernelProcessState(this.Name, this._stepState!.Version, this.Id.GetId());
+        KernelProcessState processState = new(this.Name, this._stepState!.Version, this.Id.GetId());
         var stepTasks = this._steps.Select(step => step.ToDaprStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
         return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = [.. steps] };
