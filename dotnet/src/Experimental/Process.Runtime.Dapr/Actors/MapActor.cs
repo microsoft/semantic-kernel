@@ -1,4 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapr.Actors;
 using Dapr.Actors.Runtime;
@@ -13,8 +17,9 @@ internal sealed class MapActor : StepActor, IMap
     private const string DaprProcessMapStateName = nameof(DaprMapInfo);
 
     private bool _isInitialized;
+    private HashSet<string> _mapEvents = [];
     private ILogger? _logger;
-    private IProcess? _mapOperation;
+    private IProcess? _mapOperation; // %%% NEEDED ???
 
     internal DaprMapInfo? _map;
 
@@ -49,16 +54,14 @@ internal sealed class MapActor : StepActor, IMap
 
         // Save the state
         await this.StateManager.AddStateAsync(DaprProcessMapStateName, mapInfo).ConfigureAwait(false);
-        //await this.StateManager.AddStateAsync("parentProcessId", parentProcessId).ConfigureAwait(false);
-        //await this.StateManager.AddStateAsync("kernelStepActivated", true).ConfigureAwait(false);
+        await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
-    public async Task<DaprMapInfo> ToDaprMapInfoAsync()
+    public DaprMapInfo ToDaprMapInfo() // %%% NEEDED ???
     {
         KernelProcessMapState mapState = new(this.Name, this.Id.GetId());
-        DaprProcessInfo mapOperation = await this._mapOperation!.GetProcessInfoAsync().ConfigureAwait(false);
-        return new DaprMapInfo { InnerStepDotnetType = this._map!.InnerStepDotnetType, Edges = this._map!.Edges, State = mapState, MapStep = mapOperation };
+        return new DaprMapInfo { InnerStepDotnetType = this._map!.InnerStepDotnetType, Edges = this._map!.Edges, State = mapState, MapStep = this._map!.MapStep };
     }
 
     /// <summary>
@@ -66,9 +69,9 @@ internal sealed class MapActor : StepActor, IMap
     /// rather than ToKernelProcessAsync when extracting the state.
     /// </summary>
     /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
-    public override async Task<DaprStepInfo> ToDaprStepInfoAsync()
+    public override Task<DaprStepInfo> ToDaprStepInfoAsync()
     {
-        return await this.ToDaprMapInfoAsync().ConfigureAwait(false);
+        return Task.FromResult<DaprStepInfo>(this.ToDaprMapInfo());
     }
 
     protected override async Task OnActivateAsync()
@@ -76,7 +79,7 @@ internal sealed class MapActor : StepActor, IMap
         var existingMapInfo = await this.StateManager.TryGetStateAsync<DaprMapInfo>(DaprProcessMapStateName).ConfigureAwait(false);
         if (existingMapInfo.HasValue)
         {
-            this.ParentProcessId = await this.StateManager.GetStateAsync<string>("parentProcessId").ConfigureAwait(false);
+            this.ParentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
             await this.InitializeMapActorAsync(existingMapInfo.Value, this.ParentProcessId).ConfigureAwait(false);
         }
     }
@@ -94,7 +97,59 @@ internal sealed class MapActor : StepActor, IMap
     /// <param name="message">The message to map.</param>
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
-        await Task.Delay(0).ConfigureAwait(false); // %%% TODO
+        IEnumerable values = message.GetMapInput(this.Logger);
+
+        int index = 0;
+        List<(Task Task, DaprKernelProcessContext ProcessContext, MapOperationContext Context)> mapOperations = [];
+        Dictionary<string, Type> capturedEvents = [];
+
+        KernelProcess process = this._map!.MapStep.ToKernelProcess().CloneProcess(this.Logger); // %%% EXTRA ???
+        foreach (var value in values)
+        {
+            ++index;
+
+            KernelProcess mapProcess = process with { State = process.State with { Id = $"{this.Name}-{index}-{Guid.NewGuid():N}" } };
+            MapOperationContext context = new(index, this._mapEvents, capturedEvents);
+            DaprKernelProcessContext processContext = new(mapProcess, this.Id); // %%% EVENT FILTER, context.Filter);
+            Task processTask =
+                processContext.StartWithEventAsync(
+                    new KernelProcessEvent
+                    {
+                        Id = KernelProcessMap.MapEventId,
+                        Data = value
+                    });
+
+            mapOperations.Add((processTask, processContext, context));
+        }
+
+        await Task.WhenAll(mapOperations.Select(p => p.Task)).ConfigureAwait(false);
+
+        Dictionary<string, Array> resultMap = [];
+
+        for (index = 0; index < mapOperations.Count; ++index)
+        {
+            foreach (var capturedEvent in capturedEvents)
+            {
+                string eventName = capturedEvent.Key;
+                Type resultType = capturedEvent.Value;
+
+                mapOperations[index].Context.Results.TryGetValue(eventName, out object? result);
+                if (!resultMap.TryGetValue(eventName, out Array? results))
+                {
+                    results = Array.CreateInstance(resultType, mapOperations.Count);
+                    resultMap[eventName] = results;
+                }
+
+                results.SetValue(result, index);
+            }
+        }
+
+        foreach (var capturedEvent in capturedEvents)
+        {
+            string eventName = capturedEvent.Key;
+            Array eventResult = resultMap[eventName];
+            await this.EmitEventAsync(new KernelProcessEvent() { Id = eventName, Data = eventResult }).ConfigureAwait(false);
+        }
     }
 
     private async Task InitializeMapActorAsync(DaprMapInfo mapInfo, string? parentProcessId)
@@ -106,11 +161,12 @@ internal sealed class MapActor : StepActor, IMap
         this._map = mapInfo;
         this._logger = this.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<MapActor>();
 
-        // Initialize the step as a process.
+        // Initialize the map operation as a process.
         DaprProcessInfo mapOperation = this._map.MapStep;
-        ActorId processId = new(this._map.MapStep.State.Id!);
+        ActorId processId = new(mapOperation.State.Id!);
         this._mapOperation = this.ProxyFactory.CreateActorProxy<IProcess>(processId, nameof(ProcessActor));
-        await this._mapOperation.InitializeProcessAsync(mapOperation, this.Id.GetId()).ConfigureAwait(false);
+        await this._mapOperation.InitializeProcessAsync(mapOperation, this.ParentProcessId).ConfigureAwait(false);
+        this._mapEvents = [.. this._map.Edges.Keys.Select(key => key.Split('.').Last())];
 
         this._isInitialized = true;
     }

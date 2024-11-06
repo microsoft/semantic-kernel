@@ -10,10 +10,10 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Contains information about a Step in a Dapr Process including it's state and edges.
 /// </summary>
-[KnownType(typeof(DaprProcessInfo))] // HACK: Where should this be defined?
-[KnownType(typeof(DaprMapInfo))] // HACK: Where should this be defined?
 [KnownType(typeof(KernelProcessEdge))]
 [KnownType(typeof(KernelProcessStepState))]
+[KnownType(typeof(DaprProcessInfo))]
+[KnownType(typeof(DaprMapInfo))]
 public record DaprStepInfo
 {
     /// <summary>

@@ -21,6 +21,7 @@ internal static class ActorStateKeys
 
     // ProcessActor keys
     public const string ProcessInfoState = nameof(DaprProcessInfo);
+    public const string EventProxyStepId = "processEventProxyId";
     public const string StepActivatedState = "kernelStepActivated";
 
     // MessageBufferActor keys

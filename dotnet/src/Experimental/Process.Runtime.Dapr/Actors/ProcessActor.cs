@@ -24,12 +24,13 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     internal readonly List<IStep> _steps = [];
 
-    internal List<DaprStepInfo>? _stepsInfos;
+    internal IList<DaprStepInfo>? _stepsInfos;
     internal DaprProcessInfo? _process;
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
     private bool _isInitialized;
     private ILogger? _logger;
+    private ActorId? _eventProxyStepId;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessActor"/> class.
@@ -47,7 +48,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
     #region Public Actor Methods
 
-    public async Task InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId)
+    public async Task InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId, string? eventProxyStepId = null)
     {
         Verify.NotNull(processInfo);
         Verify.NotNull(processInfo.Steps);
@@ -60,12 +61,16 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         }
 
         // Initialize the process
-        await this.InitializeProcessActorAsync(processInfo, parentProcessId).ConfigureAwait(false);
+        await this.InitializeProcessActorAsync(processInfo, parentProcessId, eventProxyStepId).ConfigureAwait(false);
 
         // Save the state
         await this.StateManager.AddStateAsync(ActorStateKeys.ProcessInfoState, processInfo).ConfigureAwait(false);
         await this.StateManager.AddStateAsync(ActorStateKeys.StepParentProcessId, parentProcessId).ConfigureAwait(false);
         await this.StateManager.AddStateAsync(ActorStateKeys.StepActivatedState, true).ConfigureAwait(false);
+        if (!string.IsNullOrWhiteSpace(eventProxyStepId))
+        {
+            await this.StateManager.AddStateAsync(ActorStateKeys.EventProxyStepId, eventProxyStepId).ConfigureAwait(false);
+        }
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -168,7 +173,8 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         if (existingProcessInfo.HasValue)
         {
             this.ParentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
-            await this.InitializeProcessActorAsync(existingProcessInfo.Value, this.ParentProcessId).ConfigureAwait(false);
+            string? eventProxyStepId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.EventProxyStepId).ConfigureAwait(false);
+            await this.InitializeProcessActorAsync(existingProcessInfo.Value, this.ParentProcessId, eventProxyStepId).ConfigureAwait(false);
         }
     }
 
@@ -221,15 +227,19 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         return default;
     }
 
-    private async Task InitializeProcessActorAsync(DaprProcessInfo processInfo, string? parentProcessId)
+    private async Task InitializeProcessActorAsync(DaprProcessInfo processInfo, string? parentProcessId, string? eventProxyStepId)
     {
         Verify.NotNull(processInfo);
         Verify.NotNull(processInfo.Steps);
 
         this.ParentProcessId = parentProcessId;
         this._process = processInfo;
-        this._stepsInfos = new List<DaprStepInfo>(this._process.Steps);
+        this._stepsInfos = this._process.Steps;
         this._logger = this.LoggerFactory?.CreateLogger(this._process.State.Name) ?? new NullLogger<ProcessActor>();
+        if (!string.IsNullOrWhiteSpace(eventProxyStepId))
+        {
+            this._eventProxyStepId = new ActorId(eventProxyStepId);
+        }
 
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());

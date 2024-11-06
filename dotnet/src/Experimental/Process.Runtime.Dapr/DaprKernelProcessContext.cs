@@ -15,7 +15,7 @@ public class DaprKernelProcessContext
     private readonly IProcess _daprProcess;
     private readonly KernelProcess _process;
 
-    internal DaprKernelProcessContext(KernelProcess process)
+    internal DaprKernelProcessContext(KernelProcess process, ActorId? eventProxyStepId = null)
     {
         Verify.NotNull(process);
         Verify.NotNullOrWhiteSpace(process.State?.Name);
