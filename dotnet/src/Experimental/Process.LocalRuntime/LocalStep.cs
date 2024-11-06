@@ -78,7 +78,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <summary>
     /// An event filter that can be used to intercept events emitted by the step.
     /// </summary>
-    internal ProcessEventFilter? EventFilter { get; init; }
+    internal ProcessEventProxy? EventProxy { get; init; }
 
     /// <summary>
     /// Retrieves all events that have been emitted by this step in the previous superstep.
@@ -119,7 +119,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
         ProcessEvent emitEvent = ProcessEvent.Create(processEvent, this._eventNamespace);
-        if (this.EventFilter?.Invoke(processEvent) ?? true)
+        if (this.EventProxy?.Invoke(emitEvent) ?? true)
         {
             this.EmitEvent(emitEvent);
         }
@@ -194,7 +194,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         try
         {
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
-            this.EmitEvent(
+            this.EmitEvent( // %%% IS THIS BREAKING MAPSTEP (EmitEventAsync) ???
                 new ProcessEvent
                 {
                     Namespace = this._eventNamespace,

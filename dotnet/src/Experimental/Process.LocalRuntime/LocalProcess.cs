@@ -14,7 +14,7 @@ using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
 
-internal delegate bool ProcessEventFilter(KernelProcessEvent processEvent);
+internal delegate bool ProcessEventProxy(ProcessEvent processEvent);
 
 internal sealed class LocalProcess : LocalStep, IDisposable
 {
@@ -37,9 +37,8 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// </summary>
     /// <param name="process">The <see cref="KernelProcess"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    /// <param name="parentProcessId">Optional. The Id of the parent process if one exists, otherwise null.</param>
-    internal LocalProcess(KernelProcess process, Kernel kernel, string? parentProcessId = null)
-        : base(process, kernel, parentProcessId)
+    internal LocalProcess(KernelProcess process, Kernel kernel)
+        : base(process, kernel)
     {
         Verify.NotNull(process.Steps);
 
@@ -190,7 +189,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     new LocalProcess(processStep, this._kernel)
                     {
                         ParentProcessId = this.Id,
-                        EventFilter = this.EventFilter,
+                        EventProxy = this.EventProxy,
                     };
             }
             else if (step is KernelProcessMap mapStep)
@@ -210,7 +209,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     new LocalStep(step, this._kernel)
                     {
                         ParentProcessId = this.Id,
-                        EventFilter = this.EventFilter,
+                        EventProxy = this.EventProxy,
                     };
             }
 
