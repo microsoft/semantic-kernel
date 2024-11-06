@@ -37,9 +37,7 @@ jobs:
           - python-version: "3.13t"
             os: "ubuntu-latest"
             experimental: true
-            gil: 1 
-    env:
-      UV_PYTHON: ${{ matrix.python-version }}
+            gil: 1
     permissions:
       contents: write
     defaults:
