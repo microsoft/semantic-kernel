@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
@@ -28,29 +29,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     private readonly string _modelId;
     private readonly Uri _chatGenerationEndpoint;
     private readonly Uri _chatStreamingEndpoint;
+    private readonly FunctionCallsProcessor _functionCallsProcessor;
 
     private static readonly string s_namespace = typeof(GoogleAIGeminiChatCompletionService).Namespace!;
-
-    /// <summary>
-    /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
-    /// asynchronous chain of execution.
-    /// </summary>
-    /// <remarks>
-    /// This is a fail-safe mechanism. If someone accidentally manages to set up execution settings in such a way that
-    /// auto-invocation is invoked recursively, and in particular where a prompt function is able to auto-invoke itself,
-    /// we could end up in an infinite loop. This const is a backstop against that happening. We should never come close
-    /// to this limit, but if we do, auto-invoke will be disabled for the current flow in order to prevent runaway execution.
-    /// With the current setup, the way this could possibly happen is if a prompt function is configured with built-in
-    /// execution settings that opt-in to auto-invocation of everything in the kernel, in which case the invocation of that
-    /// prompt function could advertise itself as a candidate for auto-invocation. We don't want to outright block that,
-    /// if that's something a developer has asked to do (e.g. it might be invoked with different arguments than its parent
-    /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
-    /// configurable should need arise.
-    /// </remarks>
-    private const int MaxInflightAutoInvokes = 128;
-
-    /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
-    private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
@@ -108,6 +89,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         string versionSubLink = GetApiVersionSubLink(apiVersion);
 
         this._modelId = modelId;
+        this._functionCallsProcessor = new FunctionCallsProcessor(this.Logger);
         this._chatGenerationEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._modelId}:generateContent?key={apiKey}");
         this._chatStreamingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._modelId}:streamGenerateContent?key={apiKey}&alt=sse");
     }
@@ -142,6 +124,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         string versionSubLink = GetApiVersionSubLink(apiVersion);
 
         this._modelId = modelId;
+        this._functionCallsProcessor = new FunctionCallsProcessor(this.Logger);
         this._chatGenerationEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:generateContent");
         this._chatStreamingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:streamGenerateContent?alt=sse");
     }
