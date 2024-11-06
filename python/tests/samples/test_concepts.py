@@ -64,6 +64,7 @@ concepts = [
         azure_python_code_interpreter_function_calling,
         ["print('Hello, World!')", "exit"],
         id="azure_python_code_interpreter_function_calling",
+        marks=pytest.mark.skip(reason="Need to deploy an Azure Container App to test this."),
     ),
     param(chat_gpt_api_function_calling, ["What is 3+3?", "exit"], id="chat_gpt_api_function_calling"),
     param(azure_chat_gpt_api, ["Why is the sky blue?", "exit"], id="azure_chat_gpt_api"),
