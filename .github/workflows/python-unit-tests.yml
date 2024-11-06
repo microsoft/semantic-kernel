@@ -54,7 +54,7 @@ jobs:
           PYTHON_GIL: ${{ matrix.gil }}
         run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
       - name: Surface failing tests
-        if: always()
+        if: ${{ !matrix.experimental }}
         uses: pmeier/pytest-results-action@main
         with:
           path: python/pytest.xml
