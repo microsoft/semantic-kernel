@@ -43,7 +43,10 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return new(ExtractRestApiInfo(result.OpenApiDocument), ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
+        return new(
+            ExtractRestApiInfo(result.OpenApiDocument),
+            CreateRestApiOperationSecurityRequirements(result.OpenApiDocument.SecurityRequirements),
+            ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
     }
 
     #region private
@@ -180,8 +183,8 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     internal static List<RestApiOperation> CreateRestApiOperations(OpenApiDocument document, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
     {
         var server = document.Servers.FirstOrDefault();
+        var info = ExtractRestApiInfo(document);
         var securitySchemes = CreateRestApiOperationSecuritySchemes(document.Components?.SecuritySchemes);
-        var securityRequirements = CreateRestApiOperationSecurityRequirements(document.SecurityRequirements);
 
         var operations = new List<RestApiOperation>();
 
@@ -205,7 +208,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                 responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
-                securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security, securityRequirements)
+                securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
             )
             {
                 Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
@@ -306,8 +309,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// Build a list of <see cref="RestApiSecurityRequirement"/> objects from the given <see cref="OpenApiSecurityRequirement"/> objects.
     /// </summary>
     /// <param name="security">The REST API operation security</param>
-    /// <param name="globalRequirements">Existing global security requirements</param>
-    private static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security, List<RestApiSecurityRequirement>? globalRequirements = null)
+    private static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security)
     {
         var operationRequirements = new List<RestApiSecurityRequirement>();
 
@@ -323,31 +325,6 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                     }
 
                     operationRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { CreateRestApiSecurityScheme(openApiSecurityScheme), keyValuePair.Value } }));
-                }
-            }
-        }
-
-        // add globally defined security requirements that are not overridden at the operation level
-        if (globalRequirements is not null)
-        {
-            // create a HashSet to track the types of security schemes already in the local requirements  
-            var existingSchemeTypes = new HashSet<string>(operationRequirements.SelectMany(req => req.Keys).Select(scheme => scheme.SecuritySchemeType));
-
-            foreach (var globalRequirement in globalRequirements)
-            {
-                foreach (var scheme in globalRequirement.Keys)
-                {
-                    // if the scheme type is not already in the local requirements, add it  
-                    if (!existingSchemeTypes.Contains(scheme.SecuritySchemeType))
-                    {
-                        var newRequirement = new Dictionary<RestApiSecurityScheme, IList<string>>
-                        {
-                            [scheme] = globalRequirement[scheme]
-                        };
-
-                        operationRequirements.Add(new RestApiSecurityRequirement(newRequirement));
-                        existingSchemeTypes.Add(scheme.SecuritySchemeType);
-                    }
                 }
             }
         }

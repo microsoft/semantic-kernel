@@ -55,7 +55,7 @@ public sealed class RestApiOperation
     public IReadOnlyList<RestApiOperationServer> Servers { get; }
 
     /// <summary>
-    /// The security requirement.
+    /// The security requirements.
     /// </summary>
     public IReadOnlyList<RestApiSecurityRequirement>? SecurityRequirements { get; }
 

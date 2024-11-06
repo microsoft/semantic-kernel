@@ -161,7 +161,7 @@ public static partial class OpenApiKernelPluginFactory
             try
             {
                 logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, loggerFactory));
+                functions.Add(CreateRestApiFunction(pluginName, runner, restApi, operation, executionParameters, documentUri, loggerFactory));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -179,6 +179,7 @@ public static partial class OpenApiKernelPluginFactory
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
+    /// <param name="specification">The REST API specification.</param>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenAPI document.</param>
@@ -187,6 +188,7 @@ public static partial class OpenApiKernelPluginFactory
     internal static KernelFunction CreateRestApiFunction(
         string pluginName,
         RestApiOperationRunner runner,
+        RestApiSpecification specification,
         RestApiOperation operation,
         OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
@@ -267,6 +269,8 @@ public static partial class OpenApiKernelPluginFactory
         {
             { OpenApiKernelPluginFactory.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() },
             { OpenApiKernelPluginFactory.OperationExtensionsOperationKey, operation },
+            { OpenApiKernelPluginFactory.OperationExtensionsInfoKey, specification.Info },
+            { OpenApiKernelPluginFactory.OperationExtensionsSecurityKey, specification.SecurityRequirements },
             { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, operation.Servers is { Count: > 0 } servers && !string.IsNullOrEmpty(servers[0].Url) ? [servers[0].Url! ] : Array.Empty<string>() }
         };
 
@@ -295,6 +299,12 @@ public static partial class OpenApiKernelPluginFactory
 
     /// <summary>The metadata property bag key to use when storing the operation.</summary>
     private const string OperationExtensionsOperationKey = "operation";
+
+    /// <summary>The metadata property bag key to use when storing the API information.</summary>
+    private const string OperationExtensionsInfoKey = "info";
+
+    /// <summary>The metadata property bag key to use when storing the security requirements.</summary>
+    private const string OperationExtensionsSecurityKey = "security";
 
     /// <summary>The metadata property bag key to use when storing the server of an operation.</summary>
     private const string OperationExtensionsServerUrlsKey = "server-urls";

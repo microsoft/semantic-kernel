@@ -51,7 +51,7 @@
         },
         "security": [
           {
-            "ApiKeyAuthQuery": ["new_scope"]
+            "ApiKeyAuthQuery": []
           }
         ]
       }

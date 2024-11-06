@@ -267,10 +267,12 @@ public sealed class OpenApiKernelPluginFactoryTests
         // Assert Metadata Keys and Values
         Assert.True(plugin.TryGetFunction("OpenApiExtensions", out var function));
         var additionalProperties = function.Metadata.AdditionalProperties;
-        Assert.Equal(4, additionalProperties.Count);
+        Assert.Equal(6, additionalProperties.Count);
 
         Assert.Contains("method", additionalProperties.Keys);
         Assert.Contains("operation", additionalProperties.Keys);
+        Assert.Contains("info", additionalProperties.Keys);
+        Assert.Contains("security", additionalProperties.Keys);
         Assert.Contains("server-urls", additionalProperties.Keys);
         Assert.Contains("operation-extensions", additionalProperties.Keys);
 
@@ -281,6 +283,10 @@ public sealed class OpenApiKernelPluginFactoryTests
         var serverUrls = additionalProperties["server-urls"] as string[];
         Assert.NotNull(serverUrls);
         Assert.Equal(["https://my-key-vault.vault.azure.net"], serverUrls);
+        var info = additionalProperties["info"] as RestApiInfo;
+        Assert.NotNull(info);
+        var security = additionalProperties["info"] as List<RestApiSecurityRequirement>;
+        Assert.Null(security);
 
         // Assert Operation Extension keys
         var operationExtensions = additionalProperties["operation-extensions"] as Dictionary<string, object?>;
@@ -443,15 +449,15 @@ public sealed class OpenApiKernelPluginFactoryTests
                 }},
             { "apikey-securityV3_0.json", new Dictionary<string, string[]>
                 {
-                    { "NoSecurity", new[] { "ApiKey" } },
+                    { "NoSecurity", Array.Empty<string>() },
                     { "Security", new[] { "ApiKey" } },
                     { "SecurityAndScope", new[] { "ApiKey" } }
                 }},
             { "oauth-securityV3_0.json", new Dictionary<string, string[]>
                 {
-                    { "NoSecurity", new[] { "OAuth2" } },
-                    { "Security", new[] { "ApiKey", "OAuth2" } },
-                    { "SecurityAndScope", new[] { "ApiKey", "OAuth2" } }
+                    { "NoSecurity", Array.Empty<string>() },
+                    { "Security", new[] { "OAuth2" } },
+                    { "SecurityAndScope", new[] { "OAuth2" } }
                 }}
         };
 
