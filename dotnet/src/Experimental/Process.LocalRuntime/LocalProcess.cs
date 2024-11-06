@@ -27,7 +27,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     internal readonly List<LocalStep> _steps = [];
     internal readonly KernelProcess _process;
 
-    private ILogger? _logger; // Note: Use the Logger property to access this field.
+    private readonly ILogger _logger;
 
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
