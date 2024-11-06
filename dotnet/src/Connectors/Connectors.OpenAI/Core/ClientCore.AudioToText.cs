@@ -42,7 +42,12 @@ internal partial class ClientCore
 
         AudioTranscription responseData = (await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
 
-        return [new(responseData.Text, targetModel, metadata: GetResponseMetadata(responseData))];
+        return [new(responseData.Text)
+        {
+            ModelId = targetModel,
+            InnerContent = responseData,
+            Metadata = GetResponseMetadata(responseData)
+        }];
     }
 
     /// <summary>
@@ -53,12 +58,37 @@ internal partial class ClientCore
     private static AudioTranscriptionOptions AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
         => new()
         {
-            TimestampGranularities = AudioTimestampGranularities.Default,
+            TimestampGranularities = ConvertTimestampGranularities(executionSettings.TimestampGranularities),
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
             Temperature = executionSettings.Temperature,
             ResponseFormat = ConvertResponseFormat(executionSettings.ResponseFormat)
         };
+
+    private static AudioTimestampGranularities ConvertTimestampGranularities(ICollection<string>? timestampGranularities)
+    {
+        AudioTimestampGranularities result = AudioTimestampGranularities.Default;
+        if (timestampGranularities is null || timestampGranularities.Count == 0)
+        {
+            return result;
+        }
+
+        foreach (var granularity in timestampGranularities)
+        {
+            if (string.Equals(nameof(AudioTimestampGranularities.Word), granularity, StringComparison.OrdinalIgnoreCase))
+            {
+                result |= AudioTimestampGranularities.Word;
+                continue;
+            }
+
+            if (string.Equals(nameof(AudioTimestampGranularities.Segment), granularity, StringComparison.OrdinalIgnoreCase))
+            {
+                result |= AudioTimestampGranularities.Segment;
+            }
+        }
+
+        return result;
+    }
 
     private static AudioTranscriptionFormat? ConvertResponseFormat(string? responseFormat)
     {

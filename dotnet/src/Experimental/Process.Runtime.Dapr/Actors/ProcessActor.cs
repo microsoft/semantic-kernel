@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.SemanticKernel.Process.Serialization;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
@@ -96,8 +97,8 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     public async Task RunOnceAsync(KernelProcessEvent processEvent)
     {
         Verify.NotNull(processEvent, nameof(processEvent));
-        var externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
-        await externalEventQueue.EnqueueAsync(processEvent).ConfigureAwait(false);
+        IExternalEventBuffer externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
+        await externalEventQueue.EnqueueAsync(processEvent.ToJson()).ConfigureAwait(false);
         await this.StartAsync(keepAlive: false).ConfigureAwait(false);
         await this._processTask!.JoinAsync().ConfigureAwait(false);
     }
@@ -198,7 +199,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             {
                 // Create the external event that will be used to start the nested process. Since this event came
                 // from outside this processes, we set the visibility to internal so that it's not emitted back out again.
-                var nestedEvent = new KernelProcessEvent() { Id = eventId, Data = message.TargetEventData, Visibility = KernelProcessEventVisibility.Internal };
+                KernelProcessEvent nestedEvent = new() { Id = eventId, Data = message.TargetEventData };
 
                 // Run the nested process completely within a single superstep.
                 await this.RunOnceAsync(nestedEvent).ConfigureAwait(false);
@@ -337,19 +338,20 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// </summary>
     private async Task EnqueueExternalMessagesAsync()
     {
-        var externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
-        var externalEvents = await externalEventQueue.DequeueAllAsync().ConfigureAwait(false);
+        IExternalEventBuffer externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
+        IList<string> dequeuedEvents = await externalEventQueue.DequeueAllAsync().ConfigureAwait(false);
+        IList<KernelProcessEvent> externalEvents = dequeuedEvents.ToKernelProcessEvents();
 
-        foreach (var externalEvent in externalEvents)
+        foreach (KernelProcessEvent externalEvent in externalEvents)
         {
             if (this._outputEdges!.TryGetValue(externalEvent.Id!, out List<KernelProcessEdge>? edges) && edges is not null)
             {
-                foreach (var edge in edges)
+                foreach (KernelProcessEdge edge in edges)
                 {
                     ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
                     var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
                     var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
-                    await messageQueue.EnqueueAsync(message).ConfigureAwait(false);
+                    await messageQueue.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
                 }
             }
         }
@@ -363,7 +365,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     {
         var errorEventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(ProcessActor.GetScopedGlobalErrorEventBufferId(this.Id.GetId()), nameof(EventBufferActor));
 
-        var errorEvents = await errorEventQueue.DequeueAllAsync().ConfigureAwait(false);
+        IList<string> errorEvents = await errorEventQueue.DequeueAllAsync().ConfigureAwait(false);
         if (errorEvents.Count == 0)
         {
             // No error events in queue.
@@ -377,14 +379,15 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             return;
         }
 
+        IList<ProcessEvent> processErrorEvents = errorEvents.ToProcessEvents();
         foreach (var errorEdge in errorEdges)
         {
-            foreach (ProcessEvent errorEvent in errorEvents)
+            foreach (ProcessEvent errorEvent in processErrorEvents)
             {
                 var errorMessage = ProcessMessageFactory.CreateFromEdge(errorEdge, errorEvent.Data);
                 var scopedErrorMessageBufferId = this.ScopedActorId(new ActorId(errorEdge.OutputTarget.StepId));
                 var errorStepQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedErrorMessageBufferId, nameof(MessageBufferActor));
-                await errorStepQueue.EnqueueAsync(errorMessage).ConfigureAwait(false);
+                await errorStepQueue.EnqueueAsync(errorMessage.ToJson()).ConfigureAwait(false);
             }
         }
     }
@@ -399,20 +402,21 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         if (!string.IsNullOrWhiteSpace(this.ParentProcessId))
         {
             // Handle public events that need to be bubbled out of the process.
-            var eventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.Id.GetId()), nameof(EventBufferActor));
-            var allEvents = await eventQueue.DequeueAllAsync().ConfigureAwait(false);
+            IEventBuffer eventQueue = this.ProxyFactory.CreateActorProxy<IEventBuffer>(new ActorId(this.Id.GetId()), nameof(EventBufferActor));
+            IList<string> allEvents = await eventQueue.DequeueAllAsync().ConfigureAwait(false);
+            IList<ProcessEvent> processEvents = allEvents.ToProcessEvents();
 
-            foreach (var e in allEvents)
+            foreach (ProcessEvent processEvent in processEvents)
             {
-                var scopedEvent = this.ScopedEvent(e);
-                if (this._outputEdges!.TryGetValue(scopedEvent.Id, out List<KernelProcessEdge>? edges) && edges is not null)
+                ProcessEvent scopedEvent = this.ScopedEvent(processEvent);
+                if (this._outputEdges!.TryGetValue(scopedEvent.QualifiedId, out List<KernelProcessEdge>? edges) && edges is not null)
                 {
                     foreach (var edge in edges)
                     {
-                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, e.Data);
+                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, scopedEvent.Data);
                         var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId), scopeToParent: true);
                         var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
-                        await messageQueue.EnqueueAsync(message).ConfigureAwait(false);
+                        await messageQueue.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
                     }
                 }
             }

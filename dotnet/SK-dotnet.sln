@@ -349,7 +349,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionCalling", "Function
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallingUtilities.props = src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallingUtilities.props
 		src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessor.cs = src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessor.cs
-		src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessorLoggerExtensions.cs = src\InternalUtilities\connectors\AI\FunctionCalling\FunctionCallsProcessorLoggerExtensions.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Weaviate.UnitTests", "src\Connectors\Connectors.Weaviate.UnitTests\Connectors.Weaviate.UnitTests.csproj", "{E8FC97B0-B417-4A90-993C-B8AA9223B058}"
@@ -410,6 +409,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.Utilities.UnitTests", "src\Experimental\Process.Utilities.UnitTests\Process.Utilities.UnitTests.csproj", "{DAC54048-A39A-4739-8307-EA5A291F2EA0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStartedWithVectorStores", "samples\GettingStartedWithVectorStores\GettingStartedWithVectorStores.csproj", "{8C3DE41C-E2C8-42B9-8638-574F8946EB0E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.Runtime.Dapr.UnitTests", "src\Experimental\Process.Runtime.Dapr.UnitTests\Process.Runtime.Dapr.UnitTests.csproj", "{DB58FDD0-308E-472F-BFF5-508BC64C727E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.IntegrationTestRunner.Dapr", "src\Experimental\Process.IntegrationTestRunner.Dapr\Process.IntegrationTestRunner.Dapr.csproj", "{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}"
 EndProject
@@ -1088,6 +1089,12 @@ Global
 		{8C3DE41C-E2C8-42B9-8638-574F8946EB0E}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{8C3DE41C-E2C8-42B9-8638-574F8946EB0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C3DE41C-E2C8-42B9-8638-574F8946EB0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB58FDD0-308E-472F-BFF5-508BC64C727E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB58FDD0-308E-472F-BFF5-508BC64C727E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB58FDD0-308E-472F-BFF5-508BC64C727E}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB58FDD0-308E-472F-BFF5-508BC64C727E}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{DB58FDD0-308E-472F-BFF5-508BC64C727E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB58FDD0-308E-472F-BFF5-508BC64C727E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -1266,6 +1273,7 @@ Global
 		{39EAB599-742F-417D-AF80-95F90376BB18} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{DAC54048-A39A-4739-8307-EA5A291F2EA0} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{8C3DE41C-E2C8-42B9-8638-574F8946EB0E} = {FA3720F1-C99A-49B2-9577-A940257098BF}
+		{DB58FDD0-308E-472F-BFF5-508BC64C727E} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{F9C9CBD7-0DBF-47BC-B22E-2FB6D08FF858} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{24CFE182-3342-4EB6-B0A7-91B211454BE9} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}
 		{BB358B41-6F95-4513-BFA4-6F026005B5AB} = {0D8C6358-5DAA-4EA6-A924-C268A9A21BC9}

@@ -1,5 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+#####################################################
+# This sample should be considered obsolete, as we are moving things towards the new data model.
+# Please check out the azure_ai_search_hotel_samples folder for the latest implementation.
+#####################################################
+
 import asyncio
 
 from semantic_kernel import Kernel

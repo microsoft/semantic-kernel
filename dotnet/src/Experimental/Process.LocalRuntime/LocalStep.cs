@@ -112,17 +112,9 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// </summary>
     /// <param name="processEvent">The event to emit.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(processEvent, isError: false);
-
-    /// <summary>
-    /// Emits an event from the step.
-    /// </summary>
-    /// <param name="processEvent">The event to emit.</param>
-    /// <param name="isError">Flag indicating if the event being emitted is in response to a step failure</param>
-    /// <returns>A <see cref="ValueTask"/></returns>
-    internal ValueTask EmitEventAsync(KernelProcessEvent processEvent, bool isError)
+    public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
-        this.EmitEvent(new ProcessEvent(this._eventNamespace, processEvent, isError));
+        this.EmitEvent(ProcessEvent.Create(processEvent, this._eventNamespace));
         return default;
     }
 
@@ -193,23 +185,25 @@ internal class LocalStep : IKernelProcessMessageChannel
         try
         {
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
-            await this.EmitEventAsync(
-                new KernelProcessEvent
+            this.EmitEvent(
+                new ProcessEvent
                 {
-                    Id = $"{targetFunction}.OnResult",
-                    Data = invokeResult.GetValue<object>(),
-                }).ConfigureAwait(false);
+                    Namespace = this._eventNamespace,
+                    SourceId = $"{targetFunction}.OnResult",
+                    Data = invokeResult.GetValue<object>()
+                });
         }
         catch (Exception ex)
         {
-            this._logger.LogError("Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
-            await this.EmitEventAsync(
-                new KernelProcessEvent
+            this._logger.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
+            this.EmitEvent(
+                new ProcessEvent
                 {
-                    Id = $"{targetFunction}.OnError",
+                    Namespace = this._eventNamespace,
+                    SourceId = $"{targetFunction}.OnError",
                     Data = KernelProcessError.FromException(ex),
-                },
-                isError: true).ConfigureAwait(false);
+                    IsError = true
+                });
         }
         finally
         {
@@ -250,23 +244,18 @@ internal class LocalStep : IKernelProcessMessageChannel
             throw new KernelException("The state object for the KernelProcessStep could not be created.").Log(this._logger);
         }
 
-        MethodInfo? methodInfo = this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.ActivateAsync), [stateType]);
-
-        if (methodInfo is null)
-        {
+        MethodInfo methodInfo =
+            this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.ActivateAsync), [stateType]) ??
             throw new KernelException("The ActivateAsync method for the KernelProcessStep could not be found.").Log(this._logger);
-        }
 
         this._stepState = stateObject;
 
-        ValueTask? activateTask = (ValueTask?)methodInfo.Invoke(stepInstance, [stateObject]);
-        if (activateTask == null)
-        {
+        ValueTask activateTask =
+            (ValueTask?)methodInfo.Invoke(stepInstance, [stateObject]) ??
             throw new KernelException("The ActivateAsync method failed to complete.").Log(this._logger);
-        }
 
         await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
-        await activateTask.Value.ConfigureAwait(false);
+        await activateTask.ConfigureAwait(false);
     }
 
     /// <summary>
@@ -314,16 +303,5 @@ internal class LocalStep : IKernelProcessMessageChannel
     {
         Verify.NotNull(localEvent, nameof(localEvent));
         return localEvent with { Namespace = $"{this.Name}_{this.Id}" };
-    }
-
-    /// <summary>
-    /// Generates a scoped event for the step.
-    /// </summary>
-    /// <param name="processEvent">The event.</param>
-    /// <returns>A <see cref="ProcessEvent"/> with the correctly scoped namespace.</returns>
-    protected ProcessEvent ScopedEvent(KernelProcessEvent processEvent)
-    {
-        Verify.NotNull(processEvent, nameof(processEvent));
-        return new ProcessEvent($"{this.Name}_{this.Id}", processEvent);
     }
 }
