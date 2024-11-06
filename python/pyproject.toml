@@ -141,6 +141,9 @@ environments = [
 [tool.pytest.ini_options]
 addopts = "-ra -q -r fEX"
 asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    'ignore:.*FunctionChoiceBehavior.*:DeprecationWarning'
+]
 
 [tool.ruff]
 line-length = 120
