@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import json
 import logging
 from queue import Queue
 from typing import Any, Type
 
 from dapr.actor import Actor, ActorId, ActorProxy
-from dapr.actor.runtime.context import ActorRuntimeContext
-from pydantic import Field
 
 from semantic_kernel.exceptions.kernel_exceptions import KernelException
 from semantic_kernel.exceptions.process_exceptions import (
@@ -16,7 +15,6 @@ from semantic_kernel.exceptions.process_exceptions import (
 )
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorStateKeys
 from semantic_kernel.processes.dapr_runtime.actors.event_buffer_actor import EventBufferActor
 from semantic_kernel.processes.dapr_runtime.actors.message_buffer_actor import MessageBufferActor
@@ -42,47 +40,67 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class StepActor(Actor, Step, KernelProcessMessageChannel, KernelBaseModel):
+class StepActor(Actor, Step, KernelProcessMessageChannel):
     """Represents a step actor that follows the Step abstract class."""
 
-    kernel: Kernel
+    kernel: Kernel | None = None
     parent_process_id: str | None = None
     step_info: DaprStepInfo | None = None
     initialize_task: bool | None = False
     event_namespace: str | None = None
     inner_step_type: Type | None = None
-    incoming_messages: Queue = Field(default_factory=Queue)
+    incoming_messages: Queue = Queue()
     step_state: KernelProcessStepState | None = None
     step_state_type: Type | None = None
-    output_edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)
-    functions: dict[str, KernelFunction] = Field(default_factory=dict)
-    inputs: dict[str, dict[str, Any | None]] = Field(default_factory=dict)
-    initial_inputs: dict[str, dict[str, Any | None]] = Field(default_factory=dict)
-    init_lock: asyncio.Lock = Field(default_factory=asyncio.Lock, exclude=True)
+    output_edges: dict[str, list[KernelProcessEdge]] = {}
+    functions: dict[str, KernelFunction] = {}
+    inputs: dict[str, dict[str, Any | None]] = {}
+    initial_inputs: dict[str, dict[str, Any | None]] = {}
+    init_lock: asyncio.Lock = asyncio.Lock()
 
-    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel):
-        """Initializes a new instance of StepActor."""
-        super().__init__(ctx, actor_id)
-        self.kernel = kernel
-        self.activate_task = self.activate_step()
+    # def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId):  # kernel: Kernel):
+    #     """Initializes a new instance of StepActor."""
+    #     super(StepActor, self).__init__(ctx, actor_id)
+    #     # self.kernel = kernel
+    #     self.activate_task = self.activate_step()
 
     @property
     def name(self) -> str:
         """Gets the name of the step."""
         return self.step_info.state.name
 
-    async def initialize_step(self, step_info: DaprStepInfo, parent_process_id: str | None = None) -> None:
+    # async def initialize_step(self, step_info: dict[str, Any], parent_process_id: str | None = None) -> None:
+    async def initialize_step(self, input: dict) -> None:
         """Initializes the step with the provided step information."""
-        if step_info is None:
+        if input is None:
             raise ValueError("step_info must not be None")
+
+        try:
+            input = json.loads(input)
+        except (json.JSONDecodeError, TypeError):
+            raise ValueError("Input must be a valid JSON string representing a dictionary")
+
+        step_info = DaprStepInfo.model_validate(input.get("step_info"))
 
         if self.initialize_task:
             return
 
-        await self._int_initialize_step(step_info, parent_process_id)
+        await self._int_initialize_step(step_info, input.get("parent_process_id"))
 
-        await self._state_manager.add_or_update_state(ActorStateKeys.StepInfoState.value, step_info)
-        await self._state_manager.add_or_update_state(ActorStateKeys.StepParentProcessId.value, parent_process_id)
+        try:
+            await self._state_manager.try_add_state(ActorStateKeys.StepInfoState.value, step_info)
+            await self._state_manager.try_add_state(
+                ActorStateKeys.StepParentProcessId.value, input.get("parent_process_id")
+            )
+            await self._state_manager.save_state()
+        except Exception as ex:
+            try:
+                current_state = await self._state_manager.get_state(ActorStateKeys.StepInfoState.value)
+            except Exception as ex:
+                print(ex)
+            print(current_state)
+            print(f"Error in Step {self.name}: {ex!s}")
+            raise ex
 
     async def _int_initialize_step(self, step_info: DaprStepInfo, parent_process_id: str | None = None) -> None:
         """Internal method to initialize the step with the provided step information.
@@ -109,7 +127,9 @@ class StepActor(Actor, Step, KernelProcessMessageChannel, KernelBaseModel):
             An integer indicating the number of messages prepared for processing.
         """
         message_queue: MessageBuffer = ActorProxy.create(
-            actor_type=f"{MessageBufferActor.__name__}", actor_id=self.id.id, actor_interface=MessageBufferActor
+            actor_type=f"{MessageBufferActor.__name__}",
+            actor_id=ActorId(self.id.id),
+            actor_interface=MessageBufferActor,
         )
         incoming = await message_queue.dequeue_all()
         for message in incoming:
@@ -169,6 +189,12 @@ class StepActor(Actor, Step, KernelProcessMessageChannel, KernelBaseModel):
                 if not isinstance(state_object, KernelProcessStepState):
                     error_message = "State object is not of the expected type."
                     raise KernelException(error_message)
+
+                # handle the following:
+                # // Persist the state type and type object.
+                # await this.StateManager.AddStateAsync(ActorStateKeys.StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
+                # await this.StateManager.AddStateAsync(ActorStateKeys.StepStateJson, JsonSerializer.Serialize(stateObject)).ConfigureAwait(false);
+                # await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
             # Make sure that state_object.state is not None
             if state_object.state is None:
@@ -298,19 +324,17 @@ class StepActor(Actor, Step, KernelProcessMessageChannel, KernelBaseModel):
 
     async def emit_event(self, process_event: KernelProcessEvent):
         """Emits an event from the step."""
-        await self.emit_local_event(ProcessEvent.from_kernel_process_event(process_event, self.event_namespace))
+        await self.emit_process_event(ProcessEvent.from_kernel_process_event(process_event, self.event_namespace))
 
     async def emit_process_event(self, dapr_event: ProcessEvent):
         """Emits an event from the step."""
-        scoped_event = self.scoped_event(dapr_event)
-
         if dapr_event.visibility == KernelProcessEventVisibility.Public and self.parent_process_id is not None:
             parent_process: EventBufferActor = ActorProxy.create(
                 actor_type=f"{EventBufferActor.__name__}",
-                actor_id=self.parent_process_id,
+                actor_id=ActorId(self.parent_process_id),
                 actor_interface=EventBufferActor,
             )
-            await parent_process.enqueue(scoped_event)
+            await parent_process.enqueue(dapr_event)
 
         for edge in self.get_edge_for_event(dapr_event.id):
             message: ProcessMessage = ProcessMessageFactory.create_from_edge(edge, dapr_event.data)
@@ -339,16 +363,20 @@ class StepActor(Actor, Step, KernelProcessMessageChannel, KernelBaseModel):
 
     async def _on_activate(self) -> None:
         """Override the Actor's on_activate method."""
-        has_value, existing_step_info = await self._state_manager.try_get_state(ActorStateKeys.StepInfoState.value)
+        try:
+            has_value, existing_step_info = await self._state_manager.try_get_state(ActorStateKeys.StepInfoState.value)
+        except Exception as ex:
+            print(f"Error in Step {self.name}: {ex!s}")
+            raise ex
         if has_value:
             parent_process_id = await self._state_manager.get_state(ActorStateKeys.StepParentProcessId.value)
             await self._int_initialize_step(existing_step_info, parent_process_id=parent_process_id)
 
             # Load persisted incoming messages
-            exists, incoming_messages = await self._state_manager.try_get_state(
+            has_value, incoming_messages = await self._state_manager.try_get_state(
                 ActorStateKeys.StepIncomingMessagesState.value
             )
-            if exists:
+            if has_value:
                 self.incoming_messages = incoming_messages
 
     def scoped_event(self, dapr_event: "ProcessEvent") -> "ProcessEvent":

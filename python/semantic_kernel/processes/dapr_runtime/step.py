@@ -9,8 +9,9 @@ from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
 class Step(ActorInterface):
     """Abstract base class for a step in the process workflow."""
 
-    @actormethod
-    async def initialize_step(self, step_info: "DaprStepInfo", parent_process_id: str | None = None) -> None:
+    @actormethod(name="initialize_step")
+    # async def initialize_step(self, step_info: "DaprStepInfo", parent_process_id: str | None = None) -> None:
+    async def initialize_step(self, input: dict) -> None:
         """Initializes the step with the provided step information.
 
         :param step_info: The DaprStepInfo object to initialize the step with.
@@ -19,7 +20,7 @@ class Step(ActorInterface):
         """
         pass
 
-    @actormethod
+    @actormethod(name="start")
     async def prepare_incoming_messages(self) -> int:
         """Triggers the step to dequeue all pending messages and prepare for processing.
 
@@ -27,12 +28,12 @@ class Step(ActorInterface):
         """
         pass
 
-    @actormethod
+    @actormethod(name="run_once")
     async def process_incoming_messages(self) -> None:
         """Triggers the step to process all prepared messages."""
         pass
 
-    @actormethod
+    @actormethod(name="to_dapr_step_info")
     async def to_dapr_step_info(self) -> "DaprStepInfo":
         """Builds the current state of the step into a DaprStepInfo.
 

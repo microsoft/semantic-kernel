@@ -166,11 +166,8 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
             # Create state_object as KernelProcessStepState[TState]
             state_type = KernelProcessStepState[t_state]  # type: ignore
 
-            state_object = state_type(
-                name=self.name,
-                id=self.id,
-                state=self.initial_state,  # Can be None
-            )
+            initial_state = self.initial_state or t_state()
+            state_object = state_type(name=self.name, id=self.id, state=initial_state)
         else:
             # The step has no user-defined state; use the base KernelProcessStepState
             if self.initial_state is not None:

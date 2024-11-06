@@ -14,7 +14,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_step_state import K
 class DaprStepInfo(KernelBaseModel):
     """A Dapr step info."""
 
-    info: KernelProcessEdge | KernelProcessStepState = Field(discriminator="type")
+    # info: KernelProcessEdge | KernelProcessStepState = Field(discriminator="type")
     inner_step_python_type: str
     state: KernelProcessStepState
     edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)
@@ -33,9 +33,9 @@ class DaprStepInfo(KernelBaseModel):
         """Creates a Dapr step info from a kernel step info."""
         if kernel_step_info is None:
             raise KernelException("Kernel step info must be provided")
-        inner_step_type = DaprStepInfo._get_fully_qualified_name(kernel_step_info.__class__)
+        inner_step_type = kernel_step_info.inner_step_type.__name__
         return DaprStepInfo(
-            inner_step_type=inner_step_type,
+            inner_step_python_type=inner_step_type,
             state=kernel_step_info.state,
             edges={key: list(value) for key, value in kernel_step_info.edges.items()},
         )

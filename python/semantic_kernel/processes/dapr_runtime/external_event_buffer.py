@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import TYPE_CHECKING
 
-from dapr.actor import ActorInterface
+from dapr.actor import ActorInterface, actormethod
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 class ExternalEventBuffer(ActorInterface, ABC):
     """Abstract base class for an external event buffer that follows the ActorInterface."""
 
-    @abstractmethod
-    async def enqueue(self, external_event: "KernelProcessEvent") -> None:
+    @actormethod
+    async def enqueue(self, external_event: str) -> None:
         """Enqueues an external event into the buffer.
 
         Args:
@@ -21,7 +21,7 @@ class ExternalEventBuffer(ActorInterface, ABC):
         """
         pass
 
-    @abstractmethod
+    @actormethod
     async def dequeue_all(self) -> "list[KernelProcessEvent]":
         """Dequeues all external events from the buffer.
 

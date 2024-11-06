@@ -69,7 +69,7 @@ You are a chat bot who helps users find information about travel destinations.
 
 # This concept example shows how to handle both streaming and non-streaming responses
 # To toggle the behavior, set the following flag accordingly:
-stream = False
+stream = True
 
 kernel = Kernel()
 
@@ -184,6 +184,7 @@ async def handle_streaming(
 
     print("\n")
     if result_content:
+        streaming_chat_message = reduce(lambda first, second: first + second, result_content)
         return "".join([str(content) for content in result_content])
     return None
 

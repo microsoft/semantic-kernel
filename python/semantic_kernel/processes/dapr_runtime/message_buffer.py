@@ -12,7 +12,7 @@ class MessageBuffer(ActorInterface):
     """Abstract base class for a message event buffer that follows the ActorInterface."""
 
     @actormethod
-    async def enqueue(self, message: "ProcessEvent") -> None:
+    async def enqueue(self, message: str) -> None:
         """Enqueues a message event into the buffer.
 
         Args:

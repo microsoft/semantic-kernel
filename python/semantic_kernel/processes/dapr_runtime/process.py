@@ -10,8 +10,9 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import Kernel
 class Process(ActorInterface):
     """Abstract base class for a process that follows the ActorInterface."""
 
-    @actormethod
-    async def initialize_process(self, process_info: "DaprProcessInfo", parent_process_id: str | None = None) -> None:
+    @actormethod(name="initialize_process")
+    # async def initialize_process(self, process_info: "DaprProcessInfo", parent_process_id: str | None = None) -> None:
+    async def initialize_process(self, input: dict) -> None:
         """Initializes the process with the specified instance of DaprProcessInfo.
 
         :param process_info: Used to initialize the process.
@@ -19,7 +20,7 @@ class Process(ActorInterface):
         """
         pass
 
-    @actormethod
+    @actormethod(name="start")
     async def start(self, keep_alive: bool) -> None:
         """Starts an initialized process.
 
@@ -27,7 +28,7 @@ class Process(ActorInterface):
         """
         pass
 
-    @actormethod
+    @actormethod(name="run_once")
     async def run_once(self, process_event: "KernelProcessEvent") -> None:
         """Starts the process with an initial event and then waits for the process to finish.
 
@@ -35,12 +36,12 @@ class Process(ActorInterface):
         """
         pass
 
-    @actormethod
+    @actormethod(name="stop")
     async def stop(self) -> None:
         """Stops a running process, canceling and waiting for it to complete before returning."""
         pass
 
-    @actormethod
+    @actormethod(name="send_message")
     async def send_message(self, process_event: "KernelProcessEvent") -> None:
         """Sends a message to the process without starting it if it is not already running.
 
@@ -48,7 +49,7 @@ class Process(ActorInterface):
         """
         pass
 
-    @actormethod
+    @actormethod(name="get_process_info")
     async def get_process_info(self) -> "DaprProcessInfo":
         """Retrieves the process information.
 

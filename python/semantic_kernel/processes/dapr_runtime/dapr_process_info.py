@@ -5,19 +5,16 @@ from pydantic import Field
 
 from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
-from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
-from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
-from semantic_kernel.processes.process_types import TState
 
 
 class DaprProcessInfo(DaprStepInfo):
     """A Dapr process info."""
 
-    info: KernelProcessEdge | KernelProcessState | KernelProcessStepState | KernelProcessStepState[TState] = Field(
-        discriminator="type"
-    )
+    # info: KernelProcessEdge | KernelProcessState | KernelProcessStepState | KernelProcessStepState[TState] = Field(
+    #     discriminator="type"
+    # )
     steps: list[DaprStepInfo] = Field(default_factory=list)
 
     def to_kernel_process(self) -> KernelProcess:
