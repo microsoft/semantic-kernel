@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// The REST API operation payload.
 /// </summary>
-public class RestApiOperationPayload
+[Experimental("SKEXP0040")]
+public sealed class RestApiOperationPayload
 {
     /// <summary>
     /// The payload MediaType.
@@ -22,7 +24,7 @@ public class RestApiOperationPayload
     /// <summary>
     /// The payload properties.
     /// </summary>
-    public IList<RestApiOperationPayloadProperty> Properties { get; }
+    public IReadOnlyList<RestApiOperationPayloadProperty> Properties { get; }
 
     /// <summary>
     /// The schema of the parameter.
@@ -36,7 +38,7 @@ public class RestApiOperationPayload
     /// <param name="properties">The properties.</param>
     /// <param name="description">The description.</param>
     /// <param name="schema">The JSON Schema.</param>
-    public RestApiOperationPayload(string mediaType, IList<RestApiOperationPayloadProperty> properties, string? description = null, KernelJsonSchema? schema = null)
+    internal RestApiOperationPayload(string mediaType, IReadOnlyList<RestApiOperationPayloadProperty> properties, string? description = null, KernelJsonSchema? schema = null)
     {
         this.MediaType = mediaType;
         this.Properties = properties;

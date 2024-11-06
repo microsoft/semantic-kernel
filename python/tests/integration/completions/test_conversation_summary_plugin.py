@@ -7,7 +7,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.core_plugins.conversation_summary_plugin import ConversationSummaryPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from tests.integration.test_utils import retry
+from tests.integration.utils import retry
 
 
 @pytest.mark.asyncio

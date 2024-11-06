@@ -13,14 +13,14 @@
             "justMyCode": true
         },
         {
-         "type": "python",
-         "request": "launch",
-         "name": "Pythonapp with Dapr",
-         "program": "${workspaceFolder}/samples/demos/process_with_dapr/app.py",
-         "console": "integratedTerminal",
-         "preLaunchTask": "daprd-debug-python",
-         "postDebugTask": "daprd-down-python",
-         "justMyCode": false
+            "name": "Pythonapp with Dapr",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/samples/demos/process_with_dapr/app.py",
+            "console": "integratedTerminal",
+            "preLaunchTask": "daprd-debug-python",
+            "postDebugTask": "daprd-down-python",
+            "justMyCode": false
        }
     ]
 }
