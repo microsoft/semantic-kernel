@@ -60,7 +60,7 @@ jobs:
     environment: "integration"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
-      HNSWLIB_NO_NATIVE: 1
+      HNSWLIB_NO_NATIVE: 0
       Python_Integration_Tests: Python_Integration_Tests
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
       AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
@@ -102,9 +102,6 @@ jobs:
       REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up uv
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Set up uv
         uses: astral-sh/setup-uv@v3
         with:
@@ -218,7 +215,7 @@ jobs:
     environment: "integration"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
-      HNSWLIB_NO_NATIVE: 1
+      HNSWLIB_NO_NATIVE: 0
       Python_Integration_Tests: Python_Integration_Tests
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
       AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
