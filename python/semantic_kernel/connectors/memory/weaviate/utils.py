@@ -8,8 +8,11 @@ from weaviate.collections.classes.config_vector_index import _VectorIndexConfigC
 
 from semantic_kernel.connectors.memory.weaviate.const import TYPE_MAPPER_DATA
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordDataField, VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.record_definition.vector_store_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordVectorField,
+)
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelDeserializationException
 
 
@@ -96,11 +99,11 @@ def to_weaviate_vector_distance(distance_function: DistanceFunction | None) -> s
         str: The Weaviate vector distance metric name.
     """
     match distance_function:
-        case DistanceFunction.COSINE:
+        case DistanceFunction.COSINE_DISTANCE:
             return "cosine"
         case DistanceFunction.DOT_PROD:
             return "dot"
-        case DistanceFunction.EUCLIDEAN:
+        case DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE:
             return "l2-squared"
         case DistanceFunction.MANHATTAN:
             return "manhattan"
