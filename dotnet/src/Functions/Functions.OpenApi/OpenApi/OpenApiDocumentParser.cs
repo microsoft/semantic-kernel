@@ -182,9 +182,6 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <returns>Rest operation.</returns>
     internal static List<RestApiOperation> CreateRestApiOperations(OpenApiDocument document, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
     {
-        var server = document.Servers.FirstOrDefault();
-        var info = ExtractRestApiInfo(document);
-
         var operations = new List<RestApiOperation>();
 
         foreach (var operationPair in pathItem.Operations)
