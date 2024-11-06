@@ -57,10 +57,9 @@ jobs:
       run:
         working-directory: python
     runs-on: ${{ matrix.os }}
-    env:
-      UV_PYTHON: ${{ matrix.python-version }}
     environment: "integration"
     env:
+      UV_PYTHON: ${{ matrix.python-version }}
       HNSWLIB_NO_NATIVE: 1
       Python_Integration_Tests: Python_Integration_Tests
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
@@ -165,32 +164,32 @@ jobs:
         id: run_tests_completions
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions -v --junitxml=pytest-completions.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions -v --junitxml=pytest-completions.xml
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings -v --junitxml=pytest-embeddings.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings -v --junitxml=pytest-embeddings.xml
       - name: Run Integration Tests - Memory
         id: run_tests_memory
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory -v --junitxml=pytest-memory.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory -v --junitxml=pytest-memory.xml
       - name: Run Integration Tests - Cross Language
         id: run_tests_cross_language
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language -v --junitxml=pytest-cross.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language -v --junitxml=pytest-cross.xml
       - name: Run Integration Tests - Planning
         id: run_tests_planning
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/planning -v --junitxml=pytest-planning.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/planning -v --junitxml=pytest-planning.xml
       - name: Run Integration Tests - Samples
         id: run_tests_samples
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v --junitxml=pytest-samples.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v --junitxml=pytest-samples.xml
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
@@ -216,10 +215,9 @@ jobs:
       run:
         working-directory: python
     runs-on: ${{ matrix.os }}
-    env:
-      UV_PYTHON: ${{ matrix.python-version }}
     environment: "integration"
     env:
+      UV_PYTHON: ${{ matrix.python-version }}
       HNSWLIB_NO_NATIVE: 1
       Python_Integration_Tests: Python_Integration_Tests
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
@@ -321,32 +319,32 @@ jobs:
         id: run_tests_completions
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions -v --junitxml=pytest-completions.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/completions -v --junitxml=pytest-completions.xml
       - name: Run Integration Tests - Embeddings
         id: run_tests_embeddings
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings -v --junitxml=pytest-embeddings.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/embeddings -v --junitxml=pytest-embeddings.xml
       - name: Run Integration Tests - Memory
         id: run_tests_memory
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory -v --junitxml=pytest-memory.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/memory -v --junitxml=pytest-memory.xml
       - name: Run Integration Tests - Cross Language
         id: run_tests_cross_language
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language -v --junitxml=pytest-cross.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/cross_language -v --junitxml=pytest-cross.xml
       - name: Run Integration Tests - Planning
         id: run_tests_planning
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/integration/planning -v --junitxml=pytest-planning.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/integration/planning -v --junitxml=pytest-planning.xml
       - name: Run Integration Tests - Samples
         id: run_tests_samples
         shell: bash
         run: |
-          uv run pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v --junitxml=pytest-samples.xml
+          uv run --frozen pytest -n logical --dist loadfile --dist worksteal ./tests/samples -v --junitxml=pytest-samples.xml
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
