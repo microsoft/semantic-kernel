@@ -34,6 +34,6 @@ jobs:
         run: uv sync --all-extras --dev
       - uses: pre-commit/action@v3.0.1
         with:
-          extra_args: --config python/.pre-commit-config.yaml
+          extra_args: --config python/.pre-commit-config.yaml --all-files
       - name: Minimize uv cache
         run: uv cache prune --ci
