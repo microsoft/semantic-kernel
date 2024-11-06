@@ -80,16 +80,11 @@ jobs:
       - name: Setup filename variables
         run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
       - name: Set up uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - name: Set up Python ${{ env.UV_PYTHON }}
-        uses: actions/setup-python@v5
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: ${{ env.UV_PYTHON }}
-      - name: Restore uv cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.UV_CACHE_DIR }}
-          key: uv-${{ runner.os }}-${{ env.UV_PYTHON }}-${{ hashFiles('**/uv.lock') }}
+          version: "0.4.4"
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-${{ env.UV_PYTHON }}
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest
