@@ -29,4 +29,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           timeout: 3600
           interval: 30
-          ignored: "python-tests-coverage, Python Unit Tests (3.13t, ubuntu-latest, true, 1), Python Unit Tests (3.13t, ubuntu-latest, true, 0), Python Unit Tests (3.13, ubuntu-latest, true)"
+          ignored: "python-tests-coverage, 'Python Unit Tests (3.13t, ubuntu-latest, true, 1)', 'Python Unit Tests (3.13t, ubuntu-latest, true, 0)', 'Python Unit Tests (3.13, ubuntu-latest, true)'"
