@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -179,9 +180,11 @@ internal static class AssistantThreadActions
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
         Dictionary<string, FunctionResultContent> functionSteps = [];
-
         do
         {
+            // Check for cancellation
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Poll run and steps until actionable
             await PollRunStatusAsync().ConfigureAwait(false);
 
@@ -301,20 +304,49 @@ internal static class AssistantThreadActions
 
             do
             {
-                // Reduce polling frequency after a couple attempts
-                await Task.Delay(agent.PollingOptions.GetPollingInterval(count), cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (count > 0)
+                {
+                    // Reduce polling frequency after a couple attempts
+                    await Task.Delay(agent.PollingOptions.GetPollingInterval(count), cancellationToken).ConfigureAwait(false);
+                }
+
                 ++count;
 
-#pragma warning disable CA1031 // Do not catch general exception types
                 try
                 {
                     run = await client.GetRunAsync(threadId, run.Id, cancellationToken).ConfigureAwait(false);
                 }
-                catch
+                // The presence of a `Status` code means the server responded with error...always fail in that case
+                catch (ClientResultException clientException) when (clientException.Status <= 0)
                 {
-                    // Retry anyway..
+                    // Check maximum retry count
+                    if (count >= agent.PollingOptions.MaximumRetryCount)
+                    {
+                        throw;
+                    }
+
+                    // Retry for potential transient failure
+                    continue;
                 }
-#pragma warning restore CA1031 // Do not catch general exception types
+                catch (AggregateException aggregateException) when (aggregateException.InnerException is ClientResultException innerClientException)
+                {
+                    // The presence of a `Status` code means the server responded with error
+                    if (innerClientException.Status > 0)
+                    {
+                        throw;
+                    }
+
+                    // Check maximum retry count
+                    if (count >= agent.PollingOptions.MaximumRetryCount)
+                    {
+                        throw;
+                    }
+
+                    // Retry for potential transient failure
+                    continue;
+                }
             }
             while (s_pollingStatuses.Contains(run.Status));
 
@@ -373,6 +405,9 @@ internal static class AssistantThreadActions
         IAsyncEnumerable<StreamingUpdate> asyncUpdates = client.CreateRunStreamingAsync(threadId, agent.Id, options, cancellationToken);
         do
         {
+            // Check for cancellation
+            cancellationToken.ThrowIfCancellationRequested();
+
             stepsToProcess.Clear();
 
             await foreach (StreamingUpdate update in asyncUpdates.ConfigureAwait(false))
