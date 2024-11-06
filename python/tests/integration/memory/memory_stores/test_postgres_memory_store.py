@@ -40,9 +40,11 @@ def wait_between_tests():
 def connection_string():
     try:
         postgres_settings = PostgresSettings.create()
-        return postgres_settings.connection_string.get_secret_value()
+        if postgres_settings.connection_string is not None:
+            return postgres_settings.connection_string.get_secret_value()
     except ValidationError:
         pytest.skip("Postgres Connection string not found in env vars.")
+    pytest.skip("Postgres Connection string not found in env vars.")
 
 
 def test_constructor(connection_string):

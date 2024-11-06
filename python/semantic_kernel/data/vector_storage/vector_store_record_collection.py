@@ -9,12 +9,7 @@ from typing import Any, ClassVar, Generic, TypeVar
 
 from pydantic import model_validator
 
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_model_protocols import (
-    VectorStoreModelFunctionSerdeProtocol,
-    VectorStoreModelPydanticProtocol,
-    VectorStoreModelToDictFromDictProtocol,
-)
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     VectorStoreModelDeserializationException,
@@ -41,6 +36,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     data_model_definition: VectorStoreRecordDefinition
     supported_key_types: ClassVar[list[str] | None] = None
     supported_vector_types: ClassVar[list[str] | None] = None
+    managed_client: bool = True
 
     @property
     def _container_mode(self) -> bool:
@@ -64,10 +60,27 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """Post init function that sets the key field and container mode values, and validates the datamodel."""
         self._validate_data_model()
 
-    # region Overload Methods
-    async def close(self):
-        """Close the connection."""
-        return  # pragma: no cover
+    async def __aenter__(self) -> "VectorStoreRecordCollection":
+        """Enter the context manager."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager.
+
+        Should be overridden by subclasses, if necessary.
+
+        If the client is passed in the constructor, it should not be closed,
+        in that case the managed_client should be set to False.
+
+        If the store supplied the managed client, it is responsible for closing it,
+        and it should not be closed here and so managed_client should be False.
+
+        Some services use two clients, one for the store and one for the collection,
+        in that case, the collection client should be closed here,
+        but the store client should only be closed when it is created in the collection.
+        A additional flag might be needed for that.
+        """
+        pass
 
     @abstractmethod
     async def _inner_upsert(
@@ -423,7 +436,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             return result
         if self.data_model_definition.serialize:
             return self.data_model_definition.serialize(record, **kwargs)  # type: ignore
-        if isinstance(record, VectorStoreModelFunctionSerdeProtocol):
+        if hasattr(record, "serialize"):
             try:
                 return record.serialize(**kwargs)
             except Exception as exc:
@@ -442,7 +455,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             if isinstance(record, Sequence):
                 return self.data_model_definition.deserialize(record, **kwargs)
             return self.data_model_definition.deserialize([record], **kwargs)
-        if isinstance(self.data_model_type, VectorStoreModelFunctionSerdeProtocol):
+        if hasattr(self.data_model_type, "deserialize"):
             try:
                 if isinstance(record, Sequence):
                     return [self.data_model_type.deserialize(rec, **kwargs) for rec in record]
@@ -460,7 +473,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """
         if self.data_model_definition.to_dict:
             return self.data_model_definition.to_dict(record, **kwargs)
-        if isinstance(record, VectorStoreModelPydanticProtocol):
+        if hasattr(record, "model_dump"):
             try:
                 ret = record.model_dump()
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
@@ -472,7 +485,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 return ret
             except Exception as exc:
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
-        if isinstance(record, VectorStoreModelToDictFromDictProtocol):
+        if hasattr(record, "to_dict"):
             try:
                 ret = record.to_dict()
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
@@ -517,7 +530,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                     "Cannot deserialize multiple records to a single record unless you are using a container."
                 )
             record = record[0]
-        if isinstance(self.data_model_type, VectorStoreModelPydanticProtocol):
+        if hasattr(self.data_model_type, "model_validate"):
             try:
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
                     return self.data_model_type.model_validate(record)
@@ -527,7 +540,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 return self.data_model_type.model_validate(record)
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
-        if isinstance(self.data_model_type, VectorStoreModelToDictFromDictProtocol):
+        if hasattr(self.data_model_type, "from_dict"):
             try:
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
                     return self.data_model_type.from_dict(record)
@@ -553,14 +566,6 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         return self.data_model_type(**data_model_dict)
 
     # region Internal Functions
-
-    async def __aenter__(self):
-        """Enter the context manager."""
-        return self
-
-    async def __aexit__(self, *args):
-        """Exit the context manager."""
-        await self.close()
 
     def __del__(self):
         """Delete the instance."""
