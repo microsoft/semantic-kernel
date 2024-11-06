@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// REST API Operation Server Variable.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class RestApiOperationServerVariable
 {
     /// <summary>
