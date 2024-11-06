@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// The REST API specification.
+/// REST API specification.
 /// </summary>
 internal sealed class RestApiSpecification
 {

@@ -192,7 +192,7 @@ public static partial class OpenApiKernelPluginFactory
         Uri? documentUri = null,
         ILoggerFactory? loggerFactory = null)
     {
-        IReadOnlyList<RestApiOperationParameter> restOperationParameters = operation.GetParameters(
+        IReadOnlyList<RestApiParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? true,
             executionParameters?.EnablePayloadNamespacing ?? false
         );
@@ -375,7 +375,7 @@ public static partial class OpenApiKernelPluginFactory
     /// </summary>
     /// <param name="parameter">The REST API operation parameter.</param>
     /// <returns></returns>
-    private static Type? ConvertParameterDataType(RestApiOperationParameter parameter)
+    private static Type? ConvertParameterDataType(RestApiParameter parameter)
     {
         return parameter.Type switch
         {

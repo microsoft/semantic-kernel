@@ -16,15 +16,15 @@ internal static class SimpleStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
     /// <returns>The serialized parameter.</returns>
-    public static string Serialize(RestApiOperationParameter parameter, JsonNode argument)
+    public static string Serialize(RestApiParameter parameter, JsonNode argument)
     {
         const string ArrayType = "array";
 
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
-        var style = parameter.Style ?? RestApiOperationParameterStyle.Simple;
-        if (style != RestApiOperationParameterStyle.Simple)
+        var style = parameter.Style ?? RestApiParameterStyle.Simple;
+        if (style != RestApiParameterStyle.Simple)
         {
             throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
@@ -51,7 +51,7 @@ internal static class SimpleStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The argument value.</param>
     /// <returns>The serialized parameter string.</returns>
-    private static string SerializeArrayParameter(RestApiOperationParameter parameter, object argument)
+    private static string SerializeArrayParameter(RestApiParameter parameter, object argument)
     {
         if (argument is not JsonArray array)
         {

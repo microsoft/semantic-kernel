@@ -16,14 +16,14 @@ internal static class PipeDelimitedStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
     /// <returns>The serialized parameter.</returns>
-    public static string Serialize(RestApiOperationParameter parameter, JsonNode argument)
+    public static string Serialize(RestApiParameter parameter, JsonNode argument)
     {
         const string ArrayType = "array";
 
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
-        if (parameter.Style != RestApiOperationParameterStyle.PipeDelimited)
+        if (parameter.Style != RestApiParameterStyle.PipeDelimited)
         {
             throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
@@ -42,7 +42,7 @@ internal static class PipeDelimitedStyleParameterSerializer
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The argument value.</param>
     /// <returns>The serialized parameter string.</returns>
-    private static string SerializeArrayParameter(RestApiOperationParameter parameter, JsonNode argument)
+    private static string SerializeArrayParameter(RestApiParameter parameter, JsonNode argument)
     {
         if (argument is not JsonArray array)
         {
