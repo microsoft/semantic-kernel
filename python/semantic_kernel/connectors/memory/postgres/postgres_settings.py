@@ -71,8 +71,16 @@ class PostgresSettings(KernelBaseSettings):
     default_dimensionality: int = 100
     max_rows_per_transaction: int = 1000
 
-    def get_connection_args(self) -> dict[str, Any]:
-        """Get connection arguments."""
+    def get_connection_args(self, **kwargs) -> dict[str, Any]:
+        """Get connection arguments.
+
+        Args:
+            kwargs: dict[str, Any] - Additional arguments
+                Use this to override any connection arguments.
+
+        Returns:
+            dict[str, Any]: Connection arguments that can be passed to psycopg.connect
+        """
         result = conninfo_to_dict(self.connection_string.get_secret_value()) if self.connection_string else {}
 
         if self.host:
@@ -85,6 +93,8 @@ class PostgresSettings(KernelBaseSettings):
             result["user"] = self.user
         if self.password:
             result["password"] = self.password.get_secret_value()
+
+        result = {**result, **kwargs}
 
         # Ensure required values
         if "host" not in result:
