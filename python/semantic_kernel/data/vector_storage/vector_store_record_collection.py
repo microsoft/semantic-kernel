@@ -36,6 +36,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     data_model_definition: VectorStoreRecordDefinition
     supported_key_types: ClassVar[list[str] | None] = None
     supported_vector_types: ClassVar[list[str] | None] = None
+    managed_client: bool = True
 
     @property
     def _container_mode(self) -> bool:
@@ -59,10 +60,27 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """Post init function that sets the key field and container mode values, and validates the datamodel."""
         self._validate_data_model()
 
-    # region Overload Methods
-    async def close(self):
-        """Close the connection."""
-        return  # pragma: no cover
+    async def __aenter__(self) -> "VectorStoreRecordCollection":
+        """Enter the context manager."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager.
+
+        Should be overridden by subclasses, if necessary.
+
+        If the client is passed in the constructor, it should not be closed,
+        in that case the managed_client should be set to False.
+
+        If the store supplied the managed client, it is responsible for closing it,
+        and it should not be closed here and so managed_client should be False.
+
+        Some services use two clients, one for the store and one for the collection,
+        in that case, the collection client should be closed here,
+        but the store client should only be closed when it is created in the collection.
+        A additional flag might be needed for that.
+        """
+        pass
 
     @abstractmethod
     async def _inner_upsert(
@@ -548,14 +566,6 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         return self.data_model_type(**data_model_dict)
 
     # region Internal Functions
-
-    async def __aenter__(self):
-        """Enter the context manager."""
-        return self
-
-    async def __aexit__(self, *args):
-        """Exit the context manager."""
-        await self.close()
 
     def __del__(self):
         """Delete the instance."""

@@ -10,6 +10,12 @@ class MemoryConnectorException(KernelException):
     pass
 
 
+class MemoryConnectorConnectionException(MemoryConnectorException):
+    """An error occurred while connecting to the memory connector."""
+
+    pass
+
+
 class VectorStoreModelException(MemoryConnectorException):
     """Base class for all vector store model exceptions."""
 
@@ -53,6 +59,7 @@ class VectorStoreSearchError(MemoryConnectorException):
 
 
 __all__ = [
+    "MemoryConnectorConnectionException",
     "MemoryConnectorException",
     "MemoryConnectorInitializationError",
     "MemoryConnectorResourceNotFound",

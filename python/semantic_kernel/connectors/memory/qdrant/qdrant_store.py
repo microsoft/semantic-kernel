@@ -75,7 +75,7 @@ class QdrantStore(VectorStore):
 
         """
         if client:
-            super().__init__(qdrant_client=client, **kwargs)
+            super().__init__(qdrant_client=client, managed_client=False, **kwargs)
             return
 
         from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
@@ -133,3 +133,8 @@ class QdrantStore(VectorStore):
     async def list_collection_names(self, **kwargs: Any) -> Sequence[str]:
         collections = await self.qdrant_client.get_collections()
         return [collection.name for collection in collections.collections]
+
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        if self.managed_client:
+            await self.qdrant_client.close()

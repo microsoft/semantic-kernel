@@ -96,6 +96,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                 collection_name=collection_name,
                 qdrant_client=client,  # type: ignore
                 named_vectors=named_vectors,  # type: ignore
+                managed_client=False,
             )
             return
 
@@ -254,3 +255,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         super()._validate_data_model()
         if len(self.data_model_definition.vector_field_names) > 1 and not self.named_vectors:
             raise VectorStoreModelValidationError("Only one vector field is allowed when not using named vectors.")
+
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.qdrant_client.close()

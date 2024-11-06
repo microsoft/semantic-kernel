@@ -15,6 +15,7 @@ from weaviate.classes.init import Auth
 from weaviate.classes.query import Filter
 from weaviate.collections.classes.data import DataObject
 from weaviate.collections.collection import CollectionAsync
+from weaviate.exceptions import WeaviateConnectionError
 
 from semantic_kernel.connectors.memory.weaviate.utils import (
     data_model_definition_to_weaviate_named_vectors,
@@ -30,7 +31,8 @@ from semantic_kernel.connectors.memory.weaviate.weaviate_settings import Weaviat
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import (
+from semantic_kernel.exceptions import (
+    MemoryConnectorConnectionException,
     MemoryConnectorException,
     MemoryConnectorInitializationError,
 )
@@ -78,7 +80,9 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
             env_file_path: The path to the environment file.
             env_file_encoding: The encoding of the environment file.
         """
+        managed_client: bool = False
         if not async_client:
+            managed_client = True
             weaviate_settings = WeaviateSettings.create(
                 url=url,
                 api_key=api_key,
@@ -121,6 +125,7 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
             data_model_definition=data_model_definition,
             collection_name=collection_name,
             async_client=async_client,
+            managed_client=managed_client,
         )
 
     @field_validator("collection_name")
@@ -263,3 +268,19 @@ class WeaviateCollection(VectorStoreRecordCollection[TKey, TModel]):
                 await self.async_client.collections.delete(self.collection_name)
             except Exception as ex:
                 raise MemoryConnectorException(f"Failed to delete collection: {ex}")
+
+    @override
+    async def __aenter__(self) -> "WeaviateCollection":
+        """Enter the context manager."""
+        if not await self.async_client.is_live():
+            try:
+                await self.async_client.connect()
+            except WeaviateConnectionError as exc:
+                raise MemoryConnectorConnectionException("Weaviate client cannot connect.") from exc
+        return self
+
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.async_client.close()

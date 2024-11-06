@@ -56,6 +56,7 @@ class AzureAISearchCollection(
     search_index_client: SearchIndexClient
     supported_key_types: ClassVar[list[str] | None] = ["str"]
     supported_vector_types: ClassVar[list[str] | None] = ["float", "int"]
+    managed_search_index_client: bool = True
 
     def __init__(
         self,
@@ -99,6 +100,8 @@ class AzureAISearchCollection(
                 collection_name=collection_name,
                 search_client=search_client,
                 search_index_client=search_index_client,
+                managed_search_index_client=False,
+                managed_client=False,
             )
             return
 
@@ -113,6 +116,7 @@ class AzureAISearchCollection(
                     search_index_client=search_index_client, collection_name=collection_name
                 ),
                 search_index_client=search_index_client,
+                managed_search_index_client=False,
             )
             return
 
@@ -338,3 +342,11 @@ class AzureAISearchCollection(
     @override
     def _get_score_from_result(self, result: dict[str, Any]) -> float | None:
         return result.get("@search.score")
+
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.search_client.close()
+        if self.managed_search_index_client:
+            await self.search_index_client.close()

@@ -129,7 +129,7 @@ class RedisWrapper(Redis):
     def __del__(self) -> None:
         """Close connection, done when the object is deleted, used when SK creates a client."""
         with contextlib.suppress(Exception):
-            asyncio.get_running_loop().create_task(self.close())
+            asyncio.get_running_loop().create_task(self.aclose())
 
 
 def data_model_definition_to_redis_fields(

@@ -12,13 +12,14 @@ try:
     import chromadb  # noqa: F401
 
     chromadb_installed = True
-except ImportError:
+except Exception:
     chromadb_installed = False
 
 # pytestmark = pytest.mark.skipif(not chromadb_installed, reason="chromadb is not installed")
 
-pytestmark = pytest.mark.skip(
-    reason="chromadb has a bug with a newer version of protobuf: https://github.com/chroma-core/chroma/issues/2571"
+pytestmark = pytest.skip(
+    reason="chromadb has a bug with a newer version of protobuf: https://github.com/chroma-core/chroma/issues/2571",
+    allow_module_level=True,
 )
 
 

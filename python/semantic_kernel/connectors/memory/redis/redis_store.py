@@ -47,7 +47,7 @@ class RedisStore(VectorStore):
 
         """
         if redis_database:
-            super().__init__(redis_database=redis_database)
+            super().__init__(redis_database=redis_database, managed_client=False)
             return
         try:
             from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
@@ -102,3 +102,8 @@ class RedisStore(VectorStore):
                     **kwargs,
                 )
         return self.vector_record_collections[collection_name]
+
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.redis_database.aclose()

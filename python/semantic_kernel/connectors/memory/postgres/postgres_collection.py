@@ -52,9 +52,6 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
     supported_key_types: ClassVar[list[str] | None] = ["str", "int"]
     supported_vector_types: ClassVar[list[str] | None] = ["float"]
 
-    _handle_pool_close: bool = PrivateAttr(False)
-    """Whether the collection should handle closing the pool. True if the pool was created by the collection."""
-
     _settings: PostgresSettings = PrivateAttr()
     """Postgres settings"""
 
@@ -99,12 +96,12 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
         # If the connection pool was not provided, create a new one.
         if not self.connection_pool:
             self.connection_pool = await self._settings.create_connection_pool()
-            self._handle_pool_close = True
+            self.managed_client = True
         return self
 
     @override
     async def __aexit__(self, *args):
-        if self._handle_pool_close and self.connection_pool:
+        if self.managed_client and self.connection_pool:
             await self.connection_pool.close()
             # If the pool was created by the collection, set it to None to enable reusing the collection.
             if self._settings:
@@ -113,18 +110,15 @@ class PostgresCollection(VectorStoreRecordCollection[TKey, TModel]):
     @override
     def _validate_data_model(self) -> None:
         """Validate the data model."""
-
-        def _check_dimensionality(dimension_num):
-            if dimension_num > MAX_DIMENSIONALITY:
-                raise VectorStoreModelValidationError(
-                    f"Dimensionality of {dimension_num} exceeds the maximum allowed value of {MAX_DIMENSIONALITY}."
-                )
-            if dimension_num <= 0:
-                raise VectorStoreModelValidationError("Dimensionality must be a positive integer. ")
-
         for field in self.data_model_definition.vector_fields:
-            if field.dimensions:
-                _check_dimensionality(field.dimensions)
+            if field.dimensions is not None:
+                if field.dimensions > MAX_DIMENSIONALITY:
+                    raise VectorStoreModelValidationError(
+                        f"Dimensionality of {field.dimensions} exceeds the maximum allowed "
+                        f"value of {MAX_DIMENSIONALITY}."
+                    )
+                if field.dimensions <= 0:
+                    raise VectorStoreModelValidationError("Dimensionality must be a positive integer. ")
 
         super()._validate_data_model()
 

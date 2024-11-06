@@ -68,6 +68,7 @@ class AzureAISearchStore(VectorStore):
             AzureAISearchSettings,
         )
 
+        managed_client: bool = False
         if not search_index_client:
             try:
                 azure_ai_search_settings = AzureAISearchSettings.create(
@@ -83,8 +84,9 @@ class AzureAISearchStore(VectorStore):
                 azure_credential=azure_credentials,
                 token_credential=token_credentials,
             )
+            managed_client = True
 
-        super().__init__(search_index_client=search_index_client)
+        super().__init__(search_index_client=search_index_client, managed_client=managed_client)
 
     @override
     def get_collection(
@@ -112,6 +114,7 @@ class AzureAISearchStore(VectorStore):
                 search_index_client=self.search_index_client,
                 search_client=search_client or get_search_client(self.search_index_client, collection_name),
                 collection_name=collection_name,
+                managed_client=search_client is None,
                 **kwargs,
             )
         return self.vector_record_collections[collection_name]
@@ -121,3 +124,8 @@ class AzureAISearchStore(VectorStore):
         if "params" not in kwargs:
             kwargs["params"] = {"select": ["name"]}
         return [index async for index in self.search_index_client.list_index_names(**kwargs)]
+
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.search_index_client.close()

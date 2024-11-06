@@ -18,6 +18,7 @@ class VectorStore(KernelBaseModel):
     """Base class for vector stores."""
 
     vector_record_collections: dict[str, VectorStoreRecordCollection] = Field(default_factory=dict)
+    managed_client: bool = True
 
     @abstractmethod
     def get_collection(
@@ -34,3 +35,17 @@ class VectorStore(KernelBaseModel):
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
         """Get the names of all collections."""
         ...  # pragma: no cover
+
+    async def __aenter__(self) -> "VectorStore":
+        """Enter the context manager."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager.
+
+        Should be overridden by subclasses, if necessary.
+
+        If the client is passed in the constructor, it should not be closed,
+        in that case the managed_client should be set to False.
+        """
+        pass
