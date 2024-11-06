@@ -120,7 +120,7 @@ public class ProcessController : ControllerBase
         {
             Console.WriteLine("##### AStep ran.");
             await Task.Delay(TimeSpan.FromSeconds(1));
-            await context.EmitEventAsync(new() { Id = CommonEvents.AStepDone, Data = "I did A" });
+            await context.EmitEventAsync(CommonEvents.AStepDone, "I did A");
         }
     }
 

@@ -4,21 +4,22 @@
       "state": {
         "IngredientsStock": 1
       },
-      "id": "51b39c78e71148c9af0a3c44c83bc6f5",
-      "name": "GatherFriedFishIngredientsWithStockStep"
+      "id": "7d492b6c1ea9404b8adb4c9b0c8f7589",
+      "name": "GatherFriedFishIngredientsWithStockStep",
+      "versionInfo": "GatherFishIngredient.V2"
     },
-    "chopStep": {
-      "state": {
-        "KnifeSharpness": 4
-      },
-      "id": "6be5207cb71e42c28d7061e45e1127c1",
-      "name": "chopStep"
+    "CutFoodStep": {
+      "id": "7c0d4dce18644abf92941ff2538806dc",
+      "name": "CutFoodStep",
+      "versionInfo": "CutFoodStep.V1"
     },
     "FryFoodStep": {
-      "id": "9523d47a97a546908985a6ff028783cd",
-      "name": "FryFoodStep"
+      "id": "de06bfb72a3d4f05ba3b4fd4ceb43e1f",
+      "name": "FryFoodStep",
+      "versionInfo": "FryFoodStep.V1"
     }
   },
-  "id": "1c90a002-68ca-4c68-ac3b-a083054ed628",
-  "name": "FriedFishWithStatefulStepsProcess"
+  "id": "412f3ad1-d0fd-42f1-9c74-109cff87c75c",
+  "name": "FriedFishWithStatefulStepsProcess",
+  "versionInfo": "FriedFishProcess.v1"
 }
