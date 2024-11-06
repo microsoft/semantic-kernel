@@ -2,8 +2,6 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI.Chat;
 using Resources;
 
 namespace ChatCompletion;
