@@ -263,7 +263,7 @@ internal class LocalStep : IKernelProcessMessageChannel
             (ValueTask?)methodInfo.Invoke(stepInstance, [stateObject]) ??
             throw new KernelException("The ActivateAsync method failed to complete.").Log(this._logger);
 
-        await activateTask.Value.ConfigureAwait(false);
+        await activateTask.ConfigureAwait(false);
     }
 
     /// <summary>

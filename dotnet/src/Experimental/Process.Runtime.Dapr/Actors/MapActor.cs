@@ -55,9 +55,8 @@ internal sealed class MapActor : StepActor, IMap
 
     public async Task<DaprMapInfo> ToDaprMapInfoAsync()
     {
-        KernelProcessMapState mapState = new(this.Name, this.Id.GetId());
         DaprProcessInfo mapOperation = await this._mapOperation!.GetProcessInfoAsync().ConfigureAwait(false);
-        return new DaprMapInfo { InnerStepDotnetType = this._map!.InnerStepDotnetType, Edges = this._map!.Edges, State = mapState, MapStep = mapOperation };
+        return new DaprMapInfo { InnerStepDotnetType = this._map!.InnerStepDotnetType, Edges = this._map!.Edges, State = this._map.State, MapStep = mapOperation };
     }
 
     /// <summary>

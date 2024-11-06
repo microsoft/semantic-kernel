@@ -450,7 +450,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <exception cref="InvalidOperationException"></exception>
     private async Task<DaprProcessInfo> ToDaprProcessInfoAsync()
     {
-        var processState = new KernelProcessState(this.Name, this.Id.GetId());
+        var processState = new KernelProcessState(this.Name, this._stepState!.Version, this.Id.GetId());
         var stepTasks = this._steps.Select(step => step.ToDaprStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
         return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = [.. steps] };

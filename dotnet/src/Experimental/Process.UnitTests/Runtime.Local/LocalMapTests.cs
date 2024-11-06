@@ -191,12 +191,12 @@ public class LocalMapTests
             .OnInputEvent("Start")
             .SendEventTo(mapStep);
 
-        ProcessStepBuilder unionSquaredStep = process.AddStepFromType<UnionStep, UnionState>(new() { Key = "Key1" });
+        ProcessStepBuilder unionSquaredStep = process.AddStepFromType<UnionStep, UnionState>(new() { Key = "Key1" }, "U1");
         mapStep
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(unionSquaredStep, UnionStep.SumFunction));
 
-        ProcessStepBuilder unionCubicStep = process.AddStepFromType<UnionStep, UnionState>(new() { Key = "Key2" });
+        ProcessStepBuilder unionCubicStep = process.AddStepFromType<UnionStep, UnionState>(new() { Key = "Key2" }, "U2");
         mapStep
             .OnEvent(ComputeStep.CubicEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(unionCubicStep, UnionStep.SumFunction));

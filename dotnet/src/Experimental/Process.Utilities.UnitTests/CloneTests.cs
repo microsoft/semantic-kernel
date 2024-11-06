@@ -118,6 +118,8 @@ public class CloneTests
         VerifyProcess(source, copy);
     }
 
+    // %%% TODO: Verify Clone Map
+
     private static void VerifyProcess(KernelProcess expected, KernelProcess actual)
     {
         Assert.Equal(expected.State.Id, actual.State.Id);

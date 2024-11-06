@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Process.Models;
 /// <summary>
 /// Step state used for State Persistence serialization
 /// </summary>
-public record class KernelProcessStepStateMetadata
+public record KernelProcessStepStateMetadata
 {
     /// <summary>
     /// The identifier of the Step which is required to be unique within an instance of a Process.
@@ -38,7 +38,7 @@ public record class KernelProcessStepStateMetadata
 /// <summary>
 /// Step state used for State Persistence serialization for stateful steps
 /// </summary>
-public record class KernelProcessStepStateMetadata<TState> : KernelProcessStepStateMetadata where TState : class, new()
+public record KernelProcessStepStateMetadata<TState> : KernelProcessStepStateMetadata where TState : class, new()
 {
     /// <summary>
     /// The user-defined state object associated with the Step.

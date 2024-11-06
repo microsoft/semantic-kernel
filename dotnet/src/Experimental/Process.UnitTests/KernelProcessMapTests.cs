@@ -16,9 +16,9 @@ public class KernelProcessMapTests
     public void KernelProcessMapStateInitialization()
     {
         // Arrange
-        KernelProcessState processState = new("Operation", "v1");
+        KernelProcessState processState = new("Operation", "vTest");
         KernelProcess process = new(processState, [], []);
-        KernelProcessMapState state = new(nameof(KernelProcessMapStateInitialization), Guid.NewGuid().ToString());
+        KernelProcessMapState state = new(nameof(KernelProcessMapStateInitialization), "vTest", Guid.NewGuid().ToString());
 
         // Act
         KernelProcessMap map = new(state, process, []);
@@ -37,7 +37,8 @@ public class KernelProcessMapTests
     public void KernelProcessMapStateRequiresNameAndId()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new KernelProcessMapState(name: null!, "testid"));
-        Assert.Throws<ArgumentNullException>(() => new KernelProcessMapState("testname", null!));
+        Assert.Throws<ArgumentNullException>(() => new KernelProcessMapState(name: null!, "vTest", "testid"));
+        Assert.Throws<ArgumentNullException>(() => new KernelProcessMapState(name: "testname", null!, "testid"));
+        Assert.Throws<ArgumentNullException>(() => new KernelProcessMapState("testname", "vTest", null!));
     }
 }

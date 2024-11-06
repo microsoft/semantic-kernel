@@ -27,10 +27,10 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         this._mapProcess = this.CreateMapProcess(mapTarget);
     }
 
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
-    {
-        throw new NotImplementedException(); // %%% DOH!
-    }
+    /// <summary>
+    /// Version of the map-step, used when saving the state of the step.
+    /// </summary>
+    public string Version { get; init; } = "v1";
 
     /// <inheritdoc/>
     /// <remarks>
@@ -53,8 +53,13 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
-        KernelProcessMapState state = new(this.Name, this.Id);
+        KernelProcessMapState state = new(this.Name, this.Version, this.Id);
         return new KernelProcessMap(state, this._mapProcess.Build(), builtEdges);
+    }
+
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    {
+        throw new NotImplementedException(); // %%% TODO: Implement
     }
 
     private ProcessBuilder CreateMapProcess(ProcessFunctionTargetBuilder mapTarget)
