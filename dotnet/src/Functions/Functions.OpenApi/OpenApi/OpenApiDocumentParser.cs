@@ -198,7 +198,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
             var operation = new RestApiOperation(
                 id: operationItem.OperationId,
-                servers: CreateRestApiOperationServers(servers),
+                servers: CreateRestApiOperationServers(document.Servers),
                 path: path,
                 method: new HttpMethod(method),
                 description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
