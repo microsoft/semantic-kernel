@@ -54,10 +54,10 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: irm https://astral.sh/uv/install.ps1 | iex
         shell: powershell
-      # - name: Set up Python ${{ matrix.python-version }}
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Restore uv cache
         id: cache
         uses: actions/cache@v4
