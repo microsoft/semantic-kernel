@@ -49,7 +49,7 @@ jobs:
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
       - name: Set up Python
         if: ${{ matrix.python-version == '3.13' || matrix.python-version == '3.13t' }}  
-        run: uv python install
+        run: uv python install ${{ matrix.python-version }}
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest
