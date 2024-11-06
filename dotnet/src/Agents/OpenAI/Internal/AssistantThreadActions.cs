@@ -310,14 +310,15 @@ internal static class AssistantThreadActions
                 {
                     // Reduce polling frequency after a couple attempts
                     await Task.Delay(agent.PollingOptions.GetPollingInterval(count), cancellationToken).ConfigureAwait(false);
-                    ++count;
                 }
+
+                ++count;
 
                 try
                 {
                     run = await client.GetRunAsync(threadId, run.Id, cancellationToken).ConfigureAwait(false);
                 }
-                // The presence of a `Status` code means the server responded with error...alway fail in that case
+                // The presence of a `Status` code means the server responded with error...always fail in that case
                 catch (ClientResultException clientException) when (clientException.Status <= 0)
                 {
                     // Check maximum retry count
