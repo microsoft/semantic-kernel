@@ -69,7 +69,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         IList<GeminiTool.FunctionDeclaration>? Tools,
         GeminiFunctionCallingMode? Mode,
         bool AutoInvoke,
-        bool AllowAnyRequestedKernelFunction,
         FunctionChoiceBehaviorOptions? Options);
 
     /// <summary>
@@ -154,6 +153,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.RequestIndex = 0;; state.RequestIndex++)
         {
+            // TODO: do something with this variable
+            var functionCallingConfig = this.GetFunctionCallingConfiguration(state);
+
+            // TODO: Here should be request created not above loop
+
             List<GeminiChatMessageContent> chatResponses;
             using (var activity = ModelDiagnostics.StartCompletionActivity(
                        this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
@@ -186,15 +190,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             }
 
             state.LastMessage = chatResponses[0];
+            // TODO: will ToolCalls property shoul be removed from GeminiChatMessageContent?
             if (state.LastMessage.ToolCalls is null)
             {
                 return chatResponses;
             }
 
-            // FunctionChoiceBehavior is not null because we are in auto-invoke mode but we check it again to be sure it wasn't changed in the meantime
-            Verify.NotNull(state.ExecutionSettings.FunctionChoiceBehavior);
-
-            state.AddLastMessageToChatHistoryAndRequest();
+            // TODO: to remove?
+            // state.AddLastMessageToChatHistoryAndRequest();
 
             // Process function calls by invoking the functions and adding the results to the chat history.
             // Each function call will trigger auto-function-invocation filters, which can terminate the process.
@@ -304,27 +307,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         // If neither behavior is specified, we just return default configuration with no tool and no choice
         if (state.ExecutionSettings.FunctionChoiceBehavior is null)
         {
-            return new ToolCallingConfig(Tools: null, Mode: null, AutoInvoke: false, AllowAnyRequestedKernelFunction: false, Options: null);
+            return new ToolCallingConfig(Tools: null, Mode: null, AutoInvoke: false, Options: null);
         }
 
-        IList<GeminiTool.FunctionDeclaration>? tools = null;
-        GeminiFunctionCallingMode? mode = null;
-        bool autoInvoke = false;
-        bool allowAnyRequestedKernelFunction = false;
-        FunctionChoiceBehaviorOptions? options = null;
-
-        (tools, mode, autoInvoke, options) = this.ConfigureFunctionCalling(state);
-
-        return new ToolCallingConfig(
-            Tools: tools,
-            Mode: mode ?? GeminiFunctionCallingMode.None,
-            AutoInvoke: autoInvoke,
-            AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction,
-            Options: options);
+        return this.ConfigureFunctionCalling(state);
     }
 
-    private (IList<GeminiTool.FunctionDeclaration>? Tools, GeminiFunctionCallingMode? Mode, bool AutoInvoke, FunctionChoiceBehaviorOptions? Options)
-        ConfigureFunctionCalling(ChatCompletionState state)
+    private ToolCallingConfig ConfigureFunctionCalling(ChatCompletionState state)
     {
         var config =
             this._functionCallsProcessor.GetConfiguration(state.ExecutionSettings.FunctionChoiceBehavior, state.ChatHistory, state.RequestIndex, state.Kernel);
@@ -360,7 +349,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             }
         }
 
-        return new(tools, toolMode, autoInvoke, config?.Options);
+        return new ToolCallingConfig(
+            Tools: tools,
+            Mode: toolMode ?? GeminiFunctionCallingMode.None,
+            AutoInvoke: autoInvoke,
+            Options: config?.Options);
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
@@ -405,8 +398,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             ChatHistory = chatHistory,
             ExecutionSettings = geminiExecutionSettings,
             GeminiRequest = CreateRequest(chatHistory, geminiExecutionSettings, kernel),
-            Kernel = kernel!, // not null if auto-invoke is true
-            FunctionChoiceBehavior = n
+            Kernel = kernel! // not null if auto-invoke is true
         };
     }
 

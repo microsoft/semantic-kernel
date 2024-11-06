@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 /// Represents a Gemini Function Calling Mode.
 /// </summary>
 [JsonConverter(typeof(GeminiFunctionCallingModeConverter))]
-public readonly struct GeminiFunctionCallingMode : IEquatable<GeminiFunctionCallingMode>
+internal readonly struct GeminiFunctionCallingMode : IEquatable<GeminiFunctionCallingMode>
 {
     /// <summary>
     /// The default model behavior. The model decides to predict either a function call or a natural language response.
