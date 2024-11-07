@@ -385,7 +385,7 @@ public static partial class OpenApiKernelPluginFactory
     /// <summary>
     /// Converts the parameter type to a C# <see cref="Type"/> object.
     /// </summary>
-    /// <param name="parameter">The REST API operation parameter.</param>
+    /// <param name="parameter">The REST API parameter.</param>
     /// <returns></returns>
     private static Type? ConvertParameterDataType(RestApiParameter parameter)
     {

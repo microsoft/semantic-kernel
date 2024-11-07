@@ -304,7 +304,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <summary>
     /// Build a list of <see cref="RestApiSecurityRequirement"/> objects from the given <see cref="OpenApiSecurityRequirement"/> objects.
     /// </summary>
-    /// <param name="security">The REST API operation security</param>
+    /// <param name="security">The REST API security.</param>
     internal static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security)
     {
         var operationRequirements = new List<RestApiSecurityRequirement>();
@@ -374,7 +374,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     }
 
     /// <summary>
-    /// Creates REST API operation parameters.
+    /// Creates REST API parameters.
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="parameters">The OpenAPI parameters.</param>
@@ -416,11 +416,11 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     }
 
     /// <summary>
-    /// Creates REST API operation payload.
+    /// Creates REST API payload.
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="requestBody">The OpenAPI request body.</param>
-    /// <returns>The REST API operation payload.</returns>
+    /// <returns>The REST API payload.</returns>
     private static RestApiPayload? CreateRestApiOperationPayload(string operationId, OpenApiRequestBody requestBody)
     {
         if (requestBody?.Content is null)
@@ -452,12 +452,12 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     }
 
     /// <summary>
-    /// Returns REST API operation payload properties.
+    /// Returns REST API payload properties.
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="schema">An OpenAPI document schema representing request body properties.</param>
     /// <param name="level">Current level in OpenAPI schema.</param>
-    /// <returns>The REST API operation payload properties.</returns>
+    /// <returns>The REST API payload properties.</returns>
     private static List<RestApiPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, int level = 0)
     {
         if (schema is null)

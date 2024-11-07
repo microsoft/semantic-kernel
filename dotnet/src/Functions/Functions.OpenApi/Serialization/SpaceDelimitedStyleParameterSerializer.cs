@@ -6,14 +6,14 @@ using System.Text.Json.Nodes;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// Serializes REST API operation parameter of the 'SpaceDelimited' style.
+/// Serializes REST API parameter of the 'SpaceDelimited' style.
 /// </summary>
 internal static class SpaceDelimitedStyleParameterSerializer
 {
     /// <summary>
-    /// Serializes a REST API operation `SpaceDelimited` style parameter.
+    /// Serializes a REST API `SpaceDelimited` style parameter.
     /// </summary>
-    /// <param name="parameter">The REST API operation parameter to serialize.</param>
+    /// <param name="parameter">The REST API parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
     /// <returns>The serialized parameter.</returns>
     public static string Serialize(RestApiParameter parameter, JsonNode argument)
@@ -24,12 +24,12 @@ internal static class SpaceDelimitedStyleParameterSerializer
 
         if (parameter.Style != RestApiParameterStyle.SpaceDelimited)
         {
-            throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
+            throw new NotSupportedException($"Unsupported Rest API parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
 
         if (parameter.Type != ArrayType)
         {
-            throw new NotSupportedException($"Unsupported Rest API operation parameter type '{parameter.Type}' for parameter '{parameter.Name}'");
+            throw new NotSupportedException($"Unsupported Rest API parameter type '{parameter.Type}' for parameter '{parameter.Name}'");
         }
 
         return SerializeArrayParameter(parameter, argument);
@@ -38,7 +38,7 @@ internal static class SpaceDelimitedStyleParameterSerializer
     /// <summary>
     /// Serializes an array-type parameter.
     /// </summary>
-    /// <param name="parameter">The REST API operation parameter to serialize.</param>
+    /// <param name="parameter">The REST API parameter to serialize.</param>
     /// <param name="argument">The argument value.</param>
     /// <returns>The serialized parameter string.</returns>
     private static string SerializeArrayParameter(RestApiParameter parameter, JsonNode argument)

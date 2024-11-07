@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// REST API operation parameter style.
+/// REST API parameter style.
 /// </summary>
 [Experimental("SKEXP0040")]
 public enum RestApiParameterStyle

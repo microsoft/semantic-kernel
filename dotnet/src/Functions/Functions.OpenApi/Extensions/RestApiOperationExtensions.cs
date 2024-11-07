@@ -64,9 +64,9 @@ internal static partial class RestApiOperationExtensions
     }
 
     /// <summary>
-    /// Retrieves the default response for a given REST API operation.
+    /// Retrieves the default response.
     /// </summary>
-    /// <param name="responses">The REST API operation responses to parse.</param>
+    /// <param name="responses">Possible REST API responses.</param>
     /// <param name="preferredResponses">The preferred response codes to use when selecting the default response.</param>
     /// <returns>The default response, if any.</returns>
     private static RestApiExpectedResponse? GetDefaultResponse(IReadOnlyDictionary<string, RestApiExpectedResponse> responses, string[] preferredResponses)
@@ -153,9 +153,9 @@ internal static partial class RestApiOperationExtensions
     }
 
     /// <summary>
-    /// Retrieves parameters from REST API operation payload metadata.
+    /// Retrieves parameters from REST API payload metadata.
     /// </summary>
-    /// <param name="properties">The REST API operation payload properties.</param>
+    /// <param name="properties">The REST API payload properties.</param>
     /// <param name="enableNamespacing">Determines whether property names are augmented with namespaces.
     /// Namespaces are created by prefixing property names with their root property names.
     /// </param>
