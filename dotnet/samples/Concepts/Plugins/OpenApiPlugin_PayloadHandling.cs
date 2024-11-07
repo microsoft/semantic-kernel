@@ -3,6 +3,7 @@
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Amazon.Runtime.Internal;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -29,7 +30,7 @@ public sealed class OpenApiPlugin_PayloadHandling : BaseTest
         builder.AddAzureOpenAIChatCompletion(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
-            credentials: new AzureCliCredential());
+            TestConfiguration.AzureOpenAI.ApiKey);
 
         this._kernel = builder.Build();
 
