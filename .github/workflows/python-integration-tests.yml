@@ -87,7 +87,6 @@ jobs:
       MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
       ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
       ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
-      OLLAMA_HOST: ollama 
       OLLAMA_CHAT_MODEL_ID: ${{ vars.OLLAMA_CHAT_MODEL_ID }} # llava-phi3
       OLLAMA_CHAT_MODEL_ID_IMAGE: ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }} # llava-phi3
       OLLAMA_CHAT_MODEL_ID_TOOL_CALL: ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }} # llama3.2
@@ -112,24 +111,10 @@ jobs:
           - 8080:8080
           - 50051:50051
         options: --name weaviate --hostname weaviate
-      ollama:
-        image: ollama/ollama:latest
-        ports:
-          - 11434:11434
-        options: --name ollama --hostname ollama
     environment: "integration"
     
     steps:
       - uses: actions/checkout@v4
-      - name: Pull model in Ollama
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          docker exec ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
-          docker exec ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
-          docker exec ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
-          docker exec ollama ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
-          docker exec ollama ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
-          docker exec ollama ollama list
       - name: Set up uv
         uses: astral-sh/setup-uv@v3
         with:
@@ -145,10 +130,21 @@ jobs:
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           uv sync --all-extras --dev
-      # - name: Install Ollama
-      #   if: matrix.os == 'ubuntu-latest'
-      #   run: |
-      #     curl -fsSL https://ollama.com/install.sh | sh
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          ollama list
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
