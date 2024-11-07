@@ -244,7 +244,7 @@ public sealed class OllamaChatCompletionFunctionCallingTests : BaseIntegrationTe
 
         FunctionCallContent getWeatherForCityFunctionCallRequest;
         ChatMessageContent getWeatherForCityFunctionCallResultMessage;
-        FunctionResultContent getWeatherForCityFunctionCallResultContent;
+
         // Assert
         // LLM requested the current time.
         getWeatherForCityFunctionCallRequest = functionCalls[0];

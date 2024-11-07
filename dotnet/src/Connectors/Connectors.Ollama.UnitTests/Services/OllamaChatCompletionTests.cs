@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using OllamaSharp;
 using OllamaSharp.Models.Chat;
 using Xunit;
