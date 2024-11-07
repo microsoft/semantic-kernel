@@ -19,7 +19,7 @@ internal static class KernelProcessStateMetadataExtension
         }
 
         // 2- Build steps info with validated stateMetadata
-        foreach(ProcessStepBuilder step in processBuilder.Steps)
+        foreach (ProcessStepBuilder step in processBuilder.Steps)
         {
             if (sanitizedMetadata != null && sanitizedMetadata.StepsState != null && sanitizedMetadata.StepsState.TryGetValue(step.Name, out var stepStateObject) && stepStateObject != null)
             {
