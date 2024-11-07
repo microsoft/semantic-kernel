@@ -132,19 +132,19 @@ jobs:
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           uv sync --all-extras --dev
-      - name: Install Ollama
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          curl -fsSL https://ollama.com/install.sh | sh
+      # - name: Install Ollama
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: |
+      #     curl -fsSL https://ollama.com/install.sh | sh
       - name: Pull model in Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
-          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
-          ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
-          ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
-          ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
-          ollama list
+          docker exec -it ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          docker exec -it ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          docker exec -it ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          docker exec -it ollama ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          docker exec -it ollama ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          docker exec -it ollama ollama list
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
