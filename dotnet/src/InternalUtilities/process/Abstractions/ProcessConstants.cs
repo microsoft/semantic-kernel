@@ -19,7 +19,7 @@ internal static class ProcessConstants
     public const string InternalStepsVersion = "v0";
 
     /// <summary>
-    /// Enum containing the name of internal componenents.
+    /// Enum containing the name of internal components.
     /// Used for serialization purposes.
     /// </summary>
     public enum SupportedComponents
