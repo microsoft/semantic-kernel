@@ -36,7 +36,6 @@ from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
 from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -303,39 +302,6 @@ class AzureAISearchCollection(
         if filter_string.endswith(" and "):
             filter_string = filter_string[:-5]
         return filter_string
-
-    @staticmethod
-    def _default_parameter_metadata() -> list[KernelParameterMetadata]:
-        """Default parameter metadata for text search functions.
-
-        This function should be overridden when necessary.
-        """
-        return [
-            KernelParameterMetadata(
-                name="query",
-                description="What to search for.",
-                type="str",
-                is_required=False,
-                default_value="*",
-                type_object=str,
-            ),
-            KernelParameterMetadata(
-                name="count",
-                description="Number of results to return.",
-                type="int",
-                is_required=False,
-                default_value=2,
-                type_object=int,
-            ),
-            KernelParameterMetadata(
-                name="skip",
-                description="Number of results to skip.",
-                type="int",
-                is_required=False,
-                default_value=0,
-                type_object=int,
-            ),
-        ]
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
