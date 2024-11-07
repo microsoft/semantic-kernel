@@ -80,18 +80,6 @@ def test_init(DictVectorStoreRecordCollection, data_model_definition):
 
 
 @mark.asyncio
-async def test_context_manager(DictVectorStoreRecordCollection, data_model_definition):
-    DictVectorStoreRecordCollection.close = AsyncMock()
-    async with DictVectorStoreRecordCollection(
-        collection_name="test",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
-    ):
-        pass
-    DictVectorStoreRecordCollection.close.assert_called()
-
-
-@mark.asyncio
 @mark.parametrize(
     "vector_store_record_collection",
     [

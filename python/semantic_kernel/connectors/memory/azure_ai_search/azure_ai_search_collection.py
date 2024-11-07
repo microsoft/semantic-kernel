@@ -6,6 +6,8 @@ import sys
 from collections.abc import Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
+from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -240,7 +242,7 @@ class AzureAISearchCollection(
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,
         **kwargs: Any,
-    ) -> KernelSearchResults[Any]:
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         search_args: dict[str, Any] = {
             "top": options.top,
             "skip": options.skip,

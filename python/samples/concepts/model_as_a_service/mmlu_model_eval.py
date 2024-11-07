@@ -25,7 +25,7 @@ from semantic_kernel.kernel import Kernel
 def setup_kernel():
     """Set up the kernel with AI services."""
     kernel = Kernel()
-    
+
     # Add multiple AI services to the kernel
     kernel.add_service(
         AzureAIInferenceChatCompletion(
@@ -57,10 +57,10 @@ def setup_kernel():
 
 def load_mmlu_dataset(subjects: list[str]) -> dict[str, Dataset]:
     """Load the MMLU dataset for given subjects.
-    
+
     Args:
         subjects (list[str]): List of subjects to load the dataset for.
-    
+
     Returns:
         dict[str, Dataset]: A dictionary with subjects as keys and corresponding datasets as values.
     """
@@ -105,7 +105,7 @@ class MMLUPlugin:
         """
         # Initialize chat history with a system message
         chat_history = ChatHistory(system_message=formatted_system_message(subject))
-        
+
         # Add the user message to the chat history
         chat_history.add_user_message(
             formatted_question(
@@ -119,7 +119,7 @@ class MMLUPlugin:
 
         # Determine the correct answer
         correct_answer = expected_answer_to_letter(sample["answer"])
-        
+
         # Get the chat response from the AI service
         response = await kernel.get_service(service_id).get_chat_message_content(
             chat_history,
@@ -135,31 +135,29 @@ class MMLUPlugin:
 
 async def main():
     # Load the MMLU dataset for specified subjects
-    datasets = load_mmlu_dataset(
-        [
-            "college_computer_science",
-            "astronomy",
-            "college_biology",
-            "college_chemistry",
-            "elementary_mathematics",
-            # Add more subjects here.
-            # See here for a full list of subjects: https://huggingface.co/datasets/cais/mmlu/viewer
-        ]
-    )
-    
+    datasets = load_mmlu_dataset([
+        "college_computer_science",
+        "astronomy",
+        "college_biology",
+        "college_chemistry",
+        "elementary_mathematics",
+        # Add more subjects here.
+        # See here for a full list of subjects: https://huggingface.co/datasets/cais/mmlu/viewer
+    ])
+
     # Set up the kernel with AI services
     kernel = setup_kernel()
     ai_services = kernel.get_services_by_type(ChatCompletionClientBase).keys()
 
     # Calculate total number of samples
     totals = sum([datasets[subject].num_rows for subject in datasets])
-    
+
     # Initialize counters for correct answers by each AI service
     total_corrects = {ai_service: 0.0 for ai_service in ai_services}
     for subject in datasets:
         corrects = {ai_service: 0.0 for ai_service in ai_services}
         print(f"Evaluating {subject}...")
-        
+
         # Evaluate each sample in the dataset
         for sample in tqdm(datasets[subject]):
             for ai_service in ai_services:
@@ -177,7 +175,7 @@ async def main():
                     corrects[ai_service] += 1
 
         print(f"Finished evaluating {subject}.")
-        
+
         # Print accuracy for each AI service
         for ai_service in ai_services:
             total_corrects[ai_service] += corrects[ai_service]

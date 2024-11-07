@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// An interface that represents a process.
 /// </summary>
-public interface IProcess : IActor
+public interface IProcess : IActor, IStep
 {
     /// <summary>
     /// Initializes the process with the specified instance of <see cref="DaprProcessInfo"/>.
