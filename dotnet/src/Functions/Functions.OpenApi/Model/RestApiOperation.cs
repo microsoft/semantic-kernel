@@ -34,12 +34,12 @@ public sealed class RestApiOperation
     /// <summary>
     /// The operation identifier.
     /// </summary>
-    public string Id { get; }
+    public string? Id { get; }
 
     /// <summary>
     /// The operation description.
     /// </summary>
-    public string Description { get; }
+    public string? Description { get; }
 
     /// <summary>
     /// The operation path.
@@ -59,7 +59,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// The security requirements.
     /// </summary>
-    public IReadOnlyList<RestApiSecurityRequirement>? SecurityRequirements { get; }
+    public IReadOnlyList<RestApiSecurityRequirement> SecurityRequirements { get; }
 
     /// <summary>
     /// The operation parameters.
@@ -90,19 +90,19 @@ public sealed class RestApiOperation
     /// <param name="method">The operation method.</param>
     /// <param name="description">The operation description.</param>
     /// <param name="parameters">The operation parameters.</param>
-    /// <param name="payload">The operation payload.</param>
     /// <param name="responses">The operation responses.</param>
     /// <param name="securityRequirements">The operation security requirements.</param>
+    /// <param name="payload">The operation payload.</param>
     internal RestApiOperation(
-        string id,
+        string? id,
         IReadOnlyList<RestApiOperationServer> servers,
         string path,
         HttpMethod method,
-        string description,
+        string? description,
         IReadOnlyList<RestApiOperationParameter> parameters,
-        RestApiOperationPayload? payload = null,
-        IReadOnlyDictionary<string, RestApiOperationExpectedResponse>? responses = null,
-        IReadOnlyList<RestApiSecurityRequirement>? securityRequirements = null)
+        IReadOnlyDictionary<string, RestApiOperationExpectedResponse> responses,
+        IReadOnlyList<RestApiSecurityRequirement> securityRequirements,
+        RestApiOperationPayload? payload = null)
     {
         this.Id = id;
         this.Servers = servers;
@@ -110,9 +110,9 @@ public sealed class RestApiOperation
         this.Method = method;
         this.Description = description;
         this.Parameters = parameters;
-        this.Payload = payload;
-        this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
+        this.Responses = responses;
         this.SecurityRequirements = securityRequirements;
+        this.Payload = payload;
     }
 
     /// <summary>
