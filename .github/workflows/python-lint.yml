@@ -33,9 +33,10 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras --dev
       - uses: pre-commit/action@v3.0.1
+        name: Run Pre-Commit Hooks
         with:
           extra_args: --config python/.pre-commit-config.yaml --all-files
-      - name: Mypy
+      - name: Run Mypy
         run: uv run mypy -p semantic_kernel --config-file mypy.ini
       - name: Minimize uv cache
         run: uv cache prune --ci
