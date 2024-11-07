@@ -62,7 +62,7 @@ def test_init_with_no_model_id(openai_unit_test_env) -> None:
         )
 
 
-def test_prompt_execution_settings_class(azure_openai_unit_test_env) -> None:
+def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
     openai_text_to_image = OpenAITextToImage()
     assert openai_text_to_image.get_prompt_execution_settings_class() == OpenAITextToImageExecutionSettings
 

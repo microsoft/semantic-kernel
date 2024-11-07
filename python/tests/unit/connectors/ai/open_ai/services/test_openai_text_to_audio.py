@@ -58,14 +58,14 @@ def test_init_to_from_dict(openai_unit_test_env):
     assert dumped_settings["api_key"] == settings["api_key"]
 
 
-def test_prompt_execution_settings_class(azure_openai_unit_test_env) -> None:
+def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
     openai_text_to_audio = OpenAITextToAudio()
     assert openai_text_to_audio.get_prompt_execution_settings_class() == OpenAITextToAudioExecutionSettings
 
 
 @pytest.mark.asyncio
 @patch.object(AsyncSpeech, "create", return_value=_legacy_response.HttpxBinaryResponseContent(httpx.Response(200)))
-async def test_get_text_contents(mock_transcription_create, openai_unit_test_env):
+async def test_get_text_contents(mock_speech_create, openai_unit_test_env):
     openai_text_to_audio = OpenAITextToAudio()
 
     audio_contents = await openai_text_to_audio.get_audio_contents("Hello World!")
