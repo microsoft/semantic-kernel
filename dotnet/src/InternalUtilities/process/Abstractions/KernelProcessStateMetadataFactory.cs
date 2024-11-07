@@ -7,6 +7,34 @@ namespace Microsoft.SemanticKernel.Process.Internal;
 internal static class ProcessStateMetadataFactory
 {
     /// <summary>
+    /// Captures Kernel Process Step State into <see cref="KernelProcessStateMetadata"/>
+    /// </summary>
+    /// <returns><see cref="KernelProcessStateMetadata"/></returns>
+    private static KernelProcessStepStateMetadata StepInfoToProcessStateMetadata(KernelProcessStepInfo stepInfo)
+    {
+        KernelProcessStepStateMetadata metadata = new()
+        {
+            Name = stepInfo.State.Name,
+            Id = stepInfo.State.Id,
+            VersionInfo = stepInfo.State.Version
+        };
+
+        if (stepInfo.InnerStepType.TryGetSubtypeOfStatefulStep(out var genericStateType) && genericStateType != null)
+        {
+            var userStateType = genericStateType.GetGenericArguments()[0];
+            var stateOriginalType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
+
+            var innerState = stateOriginalType.GetProperty(nameof(KernelProcessStepState<object>.State))?.GetValue(stepInfo.State);
+            if (innerState != null)
+            {
+                metadata.State = innerState;
+            }
+        }
+
+        return metadata;
+    }
+
+    /// <summary>
     /// Captures Kernel Process State into <see cref="KernelProcessStateMetadata"/>
     /// </summary>
     /// <returns><see cref="KernelProcessStateMetadata"/></returns>
@@ -26,7 +54,7 @@ internal static class ProcessStateMetadataFactory
 
             if (step is KernelProcess stepSubprocess)
             {
-                stepEventMetadata = KernelProcessToProcessStateMetadata(stepSubprocess); // Recursive
+                metadata.StepsState.Add(step.State.Name, KernelProcessToProcessStateMetadata(stepSubprocess));
             }
             if (step is KernelProcessMap stepMap)
             {
@@ -34,16 +62,14 @@ internal static class ProcessStateMetadataFactory
             }
             else
             {
-                stepEventMetadata = StepInfoToProcessStateMetadata(step);
+                metadata.StepsState.Add(step.State.Name, StepInfoToProcessStateMetadata(step));
             }
-
-            metadata.StepsState.Add(step.State.Name, stepEventMetadata);
         }
 
         return metadata;
     }
 
-    public static KernelProcessStateMetadata ToProcessStateMetadata(this KernelProcessStepInfo stepInfo)
+    public static KernelProcessStepStateMetadata ToProcessStateMetadata(this KernelProcessStepInfo stepInfo)
     {
         if (stepInfo is KernelProcess subprocess)
         {
@@ -64,34 +90,6 @@ internal static class ProcessStateMetadataFactory
         };
 
         metadata.StepsState.Add("MapOperation", StepInfoToProcessStateMetadata(stepMap.Operation)); // %%% SERIALIZATION: Re-evaluate state key
-
-        return metadata;
-    }
-
-    /// <summary>
-    /// Captures Kernel Process Step State into <see cref="KernelProcessStateMetadata"/>
-    /// </summary>
-    /// <returns><see cref="KernelProcessStateMetadata"/></returns>
-    private static KernelProcessStateMetadata StepInfoToProcessStateMetadata(KernelProcessStepInfo stepInfo)
-    {
-        KernelProcessStateMetadata metadata = new()
-        {
-            Name = stepInfo.State.Name,
-            Id = stepInfo.State.Id,
-            VersionInfo = stepInfo.State.Version,
-        };
-
-        if (stepInfo.InnerStepType.TryGetSubtypeOfStatefulStep(out var genericStateType) && genericStateType != null)
-        {
-            var userStateType = genericStateType.GetGenericArguments()[0];
-            var stateOriginalType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
-
-            var innerState = stateOriginalType.GetProperty(nameof(KernelProcessStepState<object>.State))?.GetValue(stepInfo.State);
-            if (innerState != null)
-            {
-                metadata.State = innerState;
-            }
-        }
 
         return metadata;
     }

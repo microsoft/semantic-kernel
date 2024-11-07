@@ -96,7 +96,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <param name="stateMetadata">State to apply to the step on the build process</param>
     /// <returns></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         // The step is a, process so we can return the step info directly.
         if (stateMetadata is KernelProcessStateMetadata processState)
@@ -104,23 +104,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
             return this.Build(processState);
         }
 
-        return this.Build(null);
-    }
-
-    internal override KernelProcessStepInfo BuildStep()
-    {
-        return this.Build(null);
-    }
-
-    /// <summary>
-    /// Add the provided step builder to the process.
-    /// </summary>
-    /// <remarks>
-    /// Utilized by <see cref="ProcessMapBuilder"/> only.
-    /// </remarks>
-    internal void AddStepFromBuilder(ProcessStepBuilder stepBuilder)
-    {
-        this._steps.Add(stepBuilder);
+        return this.Build();
     }
 
     #region Public Interface

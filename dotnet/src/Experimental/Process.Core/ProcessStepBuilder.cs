@@ -84,14 +84,8 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Builds the step with step state
     /// </summary>
-    /// <returns>an instance of <see cref="KernelProcessStep"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata);
-
-    /// <summary>
-    /// Builds the step.
-    /// </summary>
-    /// <returns>an instance of <see cref="KernelProcessStep"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep();
+    /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
+    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
 
     /// <summary>
     /// Links the output of the current step to the an input of another step via the specified event type.
@@ -227,16 +221,11 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
         this._initialState = initialState;
     }
 
-    internal override KernelProcessStepInfo BuildStep()
-    {
-        return this.BuildStep(null);
-    }
-
     /// <summary>
     /// Builds the step with a state if provided
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessStepInfo"/></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessStepState? stateObject = null;
         KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(typeof(TStep));
@@ -251,18 +240,15 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
             var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             Verify.NotNull(stateType);
 
-            if (stateMetadata != null && stateMetadata.State != null)
+            if (stateMetadata != null && stateMetadata.State != null && stateMetadata.State is JsonElement jsonState)
             {
-                if (stateMetadata.State is JsonElement jsonState)
+                try
                 {
-                    try
-                    {
-                        this._initialState = jsonState.Deserialize(userStateType);
-                    }
-                    catch (JsonException)
-                    {
-                        throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
-                    }
+                    this._initialState = jsonState.Deserialize(userStateType);
+                }
+                catch (JsonException)
+                {
+                    throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
                 }
             }
 

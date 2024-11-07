@@ -31,7 +31,7 @@ public static class ProcessStateMetadataUtilities
 
         using StreamReader reader = new(filepath);
         var content = reader.ReadToEnd();
-        return JsonSerializer.Deserialize<KernelProcessStateMetadata>(content);
+        return JsonSerializer.Deserialize<KernelProcessStateMetadata>(content, s_jsonOptions);
     }
 
     private static string GetRepositoryProcessStateFilepath(string jsonRelativePath, bool checkFilepathExists = false)
@@ -62,7 +62,7 @@ public static class ProcessStateMetadataUtilities
             throw new KernelException($"Filepath for process {processStateInfo.Name} does not have .json extension");
         }
 
-        var content = JsonSerializer.Serialize(processStateInfo, s_jsonOptions);
+        var content = JsonSerializer.Serialize<KernelProcessStepStateMetadata>(processStateInfo, s_jsonOptions);
         Console.WriteLine($"Process State: \n{content}");
         Console.WriteLine($"Saving Process State Locally: \n{Path.GetFullPath(fullFilepath)}");
         File.WriteAllText(fullFilepath, content);
