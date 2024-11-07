@@ -6,7 +6,7 @@ from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_store imp
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
 from semantic_kernel.connectors.memory.redis.redis_store import RedisStore
 from semantic_kernel.connectors.memory.weaviate.weaviate_store import WeaviateStore
-from semantic_kernel.data.vector_store import VectorStore
+from semantic_kernel.data import VectorStore
 
 
 class VectorStoreTestBase:

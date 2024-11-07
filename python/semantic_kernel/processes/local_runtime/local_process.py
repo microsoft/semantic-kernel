@@ -186,7 +186,7 @@ class LocalProcess(LocalStep):
                 await asyncio.gather(*message_tasks)
 
         except Exception as ex:
-            print("An error occurred while running the process: %s.", ex)
+            print("An error occurred while running the process: %s." % ex)
             raise
 
     async def to_kernel_process(self) -> "KernelProcess":

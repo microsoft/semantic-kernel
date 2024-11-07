@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
@@ -18,13 +19,18 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <summary>The collection of entry steps within this process.</summary>
     private readonly List<ProcessStepBuilder> _entrySteps = [];
 
-    /// <summary>Maps external event Ids to the target entry step for the event.</summary>
+    /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
 
     /// <summary>
     /// A boolean indicating if the current process is a step within another process.
     /// </summary>
     internal bool HasParentProcess { get; set; }
+
+    /// <summary>
+    /// Version of the process, used when saving the state of the process
+    /// </summary>
+    public string Version { get; init; } = "v1";
 
     /// <summary>
     /// Used to resolve the target function and parameter for a given optional function name and parameter name.
@@ -125,14 +131,35 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public IReadOnlyList<ProcessStepBuilder> Steps => this._steps.AsReadOnly();
 
     /// <summary>
+    /// Check to ensure stepName is not used yet in another step
+    /// </summary>
+    /// <param name="stepName"></param>
+    /// <returns></returns>
+    private bool StepNameAlreadyExists(string stepName)
+    {
+        return this._steps.Select(step => step.Name).Contains(stepName);
+    }
+
+    /// <summary>
     /// Adds a step to the process.
     /// </summary>
     /// <typeparam name="TStep">The step Type.</typeparam>
     /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType<TStep>(string? name = null) where TStep : KernelProcessStep
+    public ProcessStepBuilder AddStepFromType<TStep>(string? name = null, List<string>? aliases = null) where TStep : KernelProcessStep
     {
         var stepBuilder = new ProcessStepBuilder<TStep>(name);
+        if (this.StepNameAlreadyExists(stepBuilder.Name))
+        {
+            throw new InvalidOperationException($"Step name {stepBuilder.Name} is already used, assign a different name for step");
+        }
+
+        if (aliases != null && aliases.Count > 0)
+        {
+            stepBuilder.Aliases = aliases;
+        }
+
         this._steps.Add(stepBuilder);
 
         return stepBuilder;
@@ -145,10 +172,21 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <typeparam name="TState">The state Type.</typeparam>
     /// <param name="initialState">The initial state of the step.</param>
     /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? name = null) where TStep : KernelProcessStep<TState> where TState : class, new()
+    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? name = null, List<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
         var stepBuilder = new ProcessStepBuilder<TStep>(name, initialState: initialState);
+        if (this.StepNameAlreadyExists(stepBuilder.Name))
+        {
+            throw new InvalidOperationException($"Step name {stepBuilder.Name} is already used, assign a different name for step");
+        }
+
+        if (aliases != null && aliases.Count > 0)
+        {
+            stepBuilder.Aliases = aliases;
+        }
+
         this._steps.Add(stepBuilder);
 
         return stepBuilder;
@@ -158,10 +196,21 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Adds a sub process to the process.
     /// </summary>
     /// <param name="kernelProcess">The process to add as a step.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessBuilder AddStepFromProcess(ProcessBuilder kernelProcess)
+    public ProcessBuilder AddStepFromProcess(ProcessBuilder kernelProcess, List<string>? aliases = null)
     {
         kernelProcess.HasParentProcess = true;
+        if (this.StepNameAlreadyExists(kernelProcess.Name))
+        {
+            throw new InvalidOperationException($"Step name {kernelProcess.Name} is already used, assign a different name for step");
+        }
+
+        if (aliases != null && aliases.Count > 0)
+        {
+            kernelProcess.Aliases = aliases;
+        }
+
         this._steps.Add(kernelProcess);
         return kernelProcess;
     }
@@ -175,6 +224,19 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return new ProcessEdgeBuilder(this, eventId);
+    }
+
+    /// <summary>
+    /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
+    /// step that responds to an unhandled process error.
+    /// </summary>
+    /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/></returns>
+    /// <remarks>
+    /// To target a specific error source, use the <see cref="ProcessStepBuilder.OnFunctionError"/> on the step.
+    /// </remarks>
+    public ProcessEdgeBuilder OnError()
+    {
+        return new ProcessEdgeBuilder(this, ProcessConstants.GlobalErrorEventId);
     }
 
     /// <summary>
@@ -208,20 +270,10 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         // Build the steps and injecting initial state if any is provided
-        List<KernelProcessStepInfo> builtSteps = [];
-        this._steps.ForEach(step =>
-        {
-            if (stateMetadata != null && stateMetadata.StepsState != null && stateMetadata.StepsState.TryGetValue(step.Name, out var stepStateObject) && stepStateObject != null)
-            {
-                builtSteps.Add(step.BuildStep(stepStateObject));
-                return;
-            }
-
-            builtSteps.Add(step.BuildStep());
-        });
+        var builtSteps = this._steps.BuildWithStateMetadata(stateMetadata);
 
         // Create the process
-        var state = new KernelProcessState(this.Name, id: this.HasParentProcess ? this.Id : null);
+        var state = new KernelProcessState(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
         var process = new KernelProcess(state, builtSteps, builtEdges);
         return process;
     }

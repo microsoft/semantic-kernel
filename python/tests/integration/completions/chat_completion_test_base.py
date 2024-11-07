@@ -56,7 +56,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.test_utils import is_service_setup_for_testing
+from tests.integration.utils import is_service_setup_for_testing
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -130,7 +130,7 @@ class ChatCompletionTestBase(CompletionTestBase):
         azure_ai_inference_client = AzureAIInferenceChatCompletion(
             ai_model_id=deployment_name,
             client=ChatCompletionsClient(
-                endpoint=f'{str(endpoint).strip("/")}/openai/deployments/{deployment_name}',
+                endpoint=f"{str(endpoint).strip('/')}/openai/deployments/{deployment_name}",
                 credential=DefaultAzureCredential(),
                 credential_scopes=["https://cognitiveservices.azure.com/.default"],
                 api_version=DEFAULT_AZURE_API_VERSION,

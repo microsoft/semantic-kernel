@@ -32,7 +32,7 @@ public class ProcessController : ControllerBase
     public async Task<IActionResult> PostAsync(string processId)
     {
         var process = this.GetProcess();
-        var processContext = await process.StartAsync(this._kernel, new KernelProcessEvent() { Id = CommonEvents.StartProcess }, processId: processId);
+        var processContext = await process.StartAsync(new KernelProcessEvent() { Id = CommonEvents.StartProcess }, processId: processId);
         var finalState = await processContext.GetStateAsync();
 
         return this.Ok(processId);
@@ -120,7 +120,7 @@ public class ProcessController : ControllerBase
         {
             Console.WriteLine("##### AStep ran.");
             await Task.Delay(TimeSpan.FromSeconds(1));
-            await context.EmitEventAsync(new() { Id = CommonEvents.AStepDone, Data = "I did A" });
+            await context.EmitEventAsync(CommonEvents.AStepDone, "I did A");
         }
     }
 

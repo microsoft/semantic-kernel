@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 import types
 from enum import Enum
 from typing import Any, Union, get_args, get_origin, get_type_hints
@@ -80,7 +81,9 @@ class KernelJsonSchemaBuilder:
         # https://github.com/microsoft/semantic-kernel/issues/6464
         properties = {}
         required = []
-        hints = get_type_hints(model, globals(), locals())
+
+        model_module_globals = vars(sys.modules[model.__module__])
+        hints = get_type_hints(model, globalns=model_module_globals, localns={})
 
         for field_name, field_type in hints.items():
             field_description = None

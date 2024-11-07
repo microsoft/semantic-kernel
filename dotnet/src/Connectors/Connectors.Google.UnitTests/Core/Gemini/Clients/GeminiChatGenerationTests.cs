@@ -236,7 +236,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
         {
             MaxTokens = 102,
             Temperature = 0.45,
-            TopP = 0.6
+            TopP = 0.6,
+            AudioTimestamp = true
         };
 
         // Act
@@ -247,6 +248,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
         Assert.NotNull(geminiRequest);
         Assert.Equal(executionSettings.MaxTokens, geminiRequest.Configuration!.MaxOutputTokens);
         Assert.Equal(executionSettings.Temperature, geminiRequest.Configuration!.Temperature);
+        Assert.Equal(executionSettings.AudioTimestamp, geminiRequest.Configuration!.AudioTimestamp);
         Assert.Equal(executionSettings.TopP, geminiRequest.Configuration!.TopP);
     }
 
