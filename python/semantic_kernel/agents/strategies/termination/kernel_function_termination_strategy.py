@@ -76,8 +76,7 @@ class KernelFunctionTerminationStrategy(TerminationStrategy):
 
         if result is None:
             logger.info(
-                f"should_agent_terminate, function `{self.function.fully_qualified_name}` "
-                f"invoked with result `None`",
+                f"should_agent_terminate, function `{self.function.fully_qualified_name}` invoked with result `None`",
             )
             return False
 

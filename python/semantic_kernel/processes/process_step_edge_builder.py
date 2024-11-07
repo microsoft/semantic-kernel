@@ -25,15 +25,27 @@ class ProcessStepEdgeBuilder:
         self.source = source
         self.event_id = event_id
 
-    def send_event_to(self, target: ProcessFunctionTargetBuilder, **kwargs) -> "ProcessStepEdgeBuilder":
-        """Sends the event to the target."""
+    def send_event_to(
+        self, target: "ProcessFunctionTargetBuilder | ProcessStepBuilder", **kwargs
+    ) -> "ProcessStepEdgeBuilder":
+        """Sends the event to the target.
+
+        Args:
+            target: The target to send the event to.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            ProcessStepEdgeBuilder: The ProcessStepEdgeBuilder instance.
+        """
+        from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
+
         if self.target is not None:
             raise ProcessInvalidConfigurationException(
                 "An output target has already been set part of the ProcessStepEdgeBuilder."
             )
 
-        if not isinstance(target, ProcessFunctionTargetBuilder):
-            target = ProcessFunctionTargetBuilder(step=target, parameter_name=kwargs.get("parameter_name", None))
+        if isinstance(target, ProcessStepBuilder):
+            target = ProcessFunctionTargetBuilder(step=target, parameter_name=kwargs.get("parameter_name"))
 
         self.target = target
         self.source.link_to(self.event_id, self)

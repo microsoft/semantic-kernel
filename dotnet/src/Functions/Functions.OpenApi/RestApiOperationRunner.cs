@@ -343,7 +343,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The JSON payload the corresponding HttpContent.</returns>
-    private (object? Payload, HttpContent Content) BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    private (object? Payload, HttpContent Content) BuildJsonPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
         // Build operation payload dynamically
         if (this._enableDynamicPayload)
@@ -374,7 +374,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="arguments">The arguments.</param>
     /// <param name="propertyNamespace">The namespace to add to the property name.</param>
     /// <returns>The JSON object.</returns>
-    private JsonObject BuildJsonObject(IReadOnlyList<RestApiOperationPayloadProperty> properties, IDictionary<string, object?> arguments, string? propertyNamespace = null)
+    private JsonObject BuildJsonObject(IReadOnlyList<RestApiPayloadProperty> properties, IDictionary<string, object?> arguments, string? propertyNamespace = null)
     {
         var result = new JsonObject();
 
@@ -436,7 +436,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The text payload and corresponding HttpContent.</returns>
-    private (object? Payload, HttpContent Content) BuildPlainTextPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    private (object? Payload, HttpContent Content) BuildPlainTextPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out object? argument) || argument is not string payload)
         {

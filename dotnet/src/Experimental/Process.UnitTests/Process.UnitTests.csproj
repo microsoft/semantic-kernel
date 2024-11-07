@@ -4,13 +4,11 @@
     <RootNamespace>SemanticKernel.Process.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.Process.UnitTests</AssemblyName>
     <TargetFrameworks>net8.0</TargetFrameworks>
-    <!-- ;net48 -->
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <LangVersion>12</LangVersion>
-    <NoWarn>
-      $(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0080,SKEXP0110;OPENAI001</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1812,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0080,SKEXP0110;OPENAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

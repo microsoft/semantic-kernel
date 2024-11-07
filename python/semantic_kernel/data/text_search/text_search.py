@@ -20,8 +20,8 @@ from semantic_kernel.data.text_search.utils import (
 )
 from semantic_kernel.data.vector_search.const import TextSearchFunctions
 from semantic_kernel.exceptions import TextSearchException
-from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.utils.experimental_decorator import experimental_class
