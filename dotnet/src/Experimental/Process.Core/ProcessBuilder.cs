@@ -96,31 +96,15 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <param name="stateMetadata">State to apply to the step on the build process</param>
     /// <returns></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata)
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         // The step is a, process so we can return the step info directly.
         if (stateMetadata is KernelProcessStateMetadata processState)
         {
-            return this.BuildStep(processState);
+            return this.Build(processState);
         }
 
-        return this.BuildStep();
-    }
-
-    /// <summary>
-    /// Build the subprocess step
-    /// </summary>
-    /// <param name="stateMetadata">State to apply to the step on the build process</param>
-    /// <returns></returns>
-    private KernelProcess BuildStep(KernelProcessStateMetadata? stateMetadata)
-    {
-        // The step is a process so we can return the step info directly.
-        return this.Build(stateMetadata);
-    }
-
-    internal override KernelProcessStepInfo BuildStep()
-    {
-        return this.Build(null);
+        return this.Build();
     }
 
     #region Public Interface

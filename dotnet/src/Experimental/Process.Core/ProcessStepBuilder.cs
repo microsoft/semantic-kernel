@@ -82,14 +82,8 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Builds the step with step state
     /// </summary>
-    /// <returns>an instance of <see cref="KernelProcessStep"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata);
-
-    /// <summary>
-    /// Builds the step.
-    /// </summary>
-    /// <returns>an instance of <see cref="KernelProcessStep"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep();
+    /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
+    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
 
     /// <summary>
     /// Links the output of the current step to the an input of another step via the specified event type.
@@ -225,16 +219,11 @@ public sealed class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep :
         this._initialState = initialState;
     }
 
-    internal override KernelProcessStepInfo BuildStep()
-    {
-        return this.BuildStep(null);
-    }
-
     /// <summary>
     /// Builds the step with a state if provided
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessStepInfo"/></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata)
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessStepState? stateObject = null;
         KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(typeof(TStep));
