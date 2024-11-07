@@ -40,7 +40,7 @@ async def input_output_filter(
     await next(context)
 
     if context.result:
-        logger.info(f'Usage: {context.result.metadata.get("usage")}')
+        logger.info(f"Usage: {context.result.metadata.get('usage')}")
         context.arguments["chat_history"].add_message(context.result.value[0])
         print(f"Mosscap:> {context.result!s}")
 
