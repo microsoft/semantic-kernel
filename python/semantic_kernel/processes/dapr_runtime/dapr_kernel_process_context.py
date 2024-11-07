@@ -4,8 +4,9 @@ import uuid
 
 from dapr.actor import ActorId, ActorProxy
 
+from semantic_kernel.processes.dapr_runtime.actors.process_actor import ProcessActor
 from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcessInfo
-from semantic_kernel.processes.dapr_runtime.process import Process
+from semantic_kernel.processes.dapr_runtime.process_interface import ProcessInterface
 from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 
@@ -13,7 +14,7 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import Kernel
 class DaprKernelProcessContext:
     """A Dapr kernel process context."""
 
-    dapr_process: Process
+    dapr_process: ProcessInterface
     process: KernelProcess
 
     def __init__(self, process: KernelProcess):
@@ -25,7 +26,11 @@ class DaprKernelProcessContext:
 
         self.process = process
         process_id = ActorId(process.state.id)
-        self.dapr_process = ActorProxy.create(actor_interface=Process, actor_id=process_id, actor_type="ProcessActor")
+        self.dapr_process = ActorProxy.create(
+            actor_type=f"{ProcessActor.__name__}",
+            actor_id=process_id,
+            actor_interface=ProcessInterface,
+        )
         print(self.dapr_process)
 
     async def start_with_event(self, initial_event: KernelProcessEvent) -> None:

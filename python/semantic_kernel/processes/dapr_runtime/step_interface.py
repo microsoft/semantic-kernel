@@ -6,7 +6,7 @@ from dapr.actor import ActorInterface, actormethod
 from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
 
 
-class Step(ActorInterface):
+class StepInterface(ActorInterface):
     """Abstract base class for a step in the process workflow."""
 
     @actormethod(name="initialize_step")
@@ -20,7 +20,7 @@ class Step(ActorInterface):
         """
         pass
 
-    @actormethod(name="start")
+    @actormethod(name="prepare_incoming_messages")
     async def prepare_incoming_messages(self) -> int:
         """Triggers the step to dequeue all pending messages and prepare for processing.
 
@@ -28,7 +28,7 @@ class Step(ActorInterface):
         """
         pass
 
-    @actormethod(name="run_once")
+    @actormethod(name="process_incoming_messages")
     async def process_incoming_messages(self) -> None:
         """Triggers the step to process all prepared messages."""
         pass

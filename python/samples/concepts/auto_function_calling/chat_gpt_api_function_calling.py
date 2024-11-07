@@ -69,7 +69,7 @@ You are a chat bot who helps users find information about travel destinations.
 
 # This concept example shows how to handle both streaming and non-streaming responses
 # To toggle the behavior, set the following flag accordingly:
-stream = True
+stream = False
 
 kernel = Kernel()
 

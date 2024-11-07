@@ -7,6 +7,7 @@ from queue import Queue
 from typing import Any, Type
 
 from dapr.actor import Actor, ActorId, ActorProxy
+from dapr.actor.runtime.context import ActorRuntimeContext
 
 from semantic_kernel.exceptions.kernel_exceptions import KernelException
 from semantic_kernel.exceptions.process_exceptions import (
@@ -19,8 +20,9 @@ from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorS
 from semantic_kernel.processes.dapr_runtime.actors.event_buffer_actor import EventBufferActor
 from semantic_kernel.processes.dapr_runtime.actors.message_buffer_actor import MessageBufferActor
 from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
-from semantic_kernel.processes.dapr_runtime.message_buffer import MessageBuffer
-from semantic_kernel.processes.dapr_runtime.step import Step
+from semantic_kernel.processes.dapr_runtime.event_buffer_interface import EventBufferInterface
+from semantic_kernel.processes.dapr_runtime.message_buffer_interface import MessageBufferInterface
+from semantic_kernel.processes.dapr_runtime.step_interface import StepInterface
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.kernel_process.kernel_process_event import (
     KernelProcessEvent,
@@ -40,29 +42,54 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class StepActor(Actor, Step, KernelProcessMessageChannel):
+# class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
+#     """Represents a step actor that follows the Step abstract class."""
+#     kernel: Kernel | None = None
+#     parent_process_id: str | None = None
+#     step_info: DaprStepInfo | None = None
+#     initialize_task: bool | None = False
+#     event_namespace: str | None = None
+#     inner_step_type: Type | None = None
+#     incoming_messages: Queue = Queue()
+#     step_state: KernelProcessStepState | None = None
+#     step_state_type: Type | None = None
+#     output_edges: dict[str, list[KernelProcessEdge]] = {}
+#     functions: dict[str, KernelFunction] = {}
+#     inputs: dict[str, dict[str, Any | None]] = {}
+#     initial_inputs: dict[str, dict[str, Any | None]] = {}
+#     init_lock: asyncio.Lock = asyncio.Lock()
+#     # def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId):  # kernel: Kernel):
+#     #     """Initializes a new instance of StepActor."""
+#     #     super(StepActor, self).__init__(ctx, actor_id)
+#     #     # self.kernel = kernel
+#     #     self.activate_task = self.activate_step()
+class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
     """Represents a step actor that follows the Step abstract class."""
 
-    kernel: Kernel | None = None
-    parent_process_id: str | None = None
-    step_info: DaprStepInfo | None = None
-    initialize_task: bool | None = False
-    event_namespace: str | None = None
-    inner_step_type: Type | None = None
-    incoming_messages: Queue = Queue()
-    step_state: KernelProcessStepState | None = None
-    step_state_type: Type | None = None
-    output_edges: dict[str, list[KernelProcessEdge]] = {}
-    functions: dict[str, KernelFunction] = {}
-    inputs: dict[str, dict[str, Any | None]] = {}
-    initial_inputs: dict[str, dict[str, Any | None]] = {}
-    init_lock: asyncio.Lock = asyncio.Lock()
+    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel):
+        """Initializes a new instance of StepActor.
 
-    # def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId):  # kernel: Kernel):
-    #     """Initializes a new instance of StepActor."""
-    #     super(StepActor, self).__init__(ctx, actor_id)
-    #     # self.kernel = kernel
-    #     self.activate_task = self.activate_step()
+        Args:
+            ctx: The actor runtime context.
+            actor_id: The unique ID for the actor.
+            kernel: The Kernel dependency to be injected.
+        """
+        super().__init__(ctx, actor_id)
+        self.kernel = kernel
+        self.parent_process_id: str | None = None
+        self.step_info: DaprStepInfo | None = None
+        self.initialize_task: bool | None = False
+        self.event_namespace: str | None = None
+        self.inner_step_type: Type | None = None
+        self.incoming_messages: Queue = Queue()
+        self.step_state: KernelProcessStepState | None = None
+        self.step_state_type: Type | None = None
+        self.output_edges: dict[str, list[KernelProcessEdge]] = {}
+        self.functions: dict[str, KernelFunction] = {}
+        self.inputs: dict[str, dict[str, Any | None]] = {}
+        self.initial_inputs: dict[str, dict[str, Any | None]] = {}
+        self.init_lock: asyncio.Lock = asyncio.Lock()
+        self.activate_task = self.activate_step()
 
     @property
     def name(self) -> str:
@@ -126,19 +153,34 @@ class StepActor(Actor, Step, KernelProcessMessageChannel):
         Returns:
             An integer indicating the number of messages prepared for processing.
         """
-        message_queue: MessageBuffer = ActorProxy.create(
-            actor_type=f"{MessageBufferActor.__name__}",
-            actor_id=ActorId(self.id.id),
-            actor_interface=MessageBufferActor,
-        )
-        incoming = await message_queue.dequeue_all()
-        for message in incoming:
-            self.incoming_messages.put(message)
+        try:
+            message_queue: MessageBufferInterface = ActorProxy.create(
+                actor_type=f"{MessageBufferActor.__name__}",
+                actor_id=ActorId(self.id.id),
+                actor_interface=MessageBufferInterface,
+            )
+            incoming = await message_queue.dequeue_all()
 
-        await self._state_manager.set_state(ActorStateKeys.StepIncomingMessagesState.value, self.incoming_messages)
-        await self._state_manager.save_state()
+            messages = []
+            json_msg = []
+            for message in incoming:
+                json_msg.append(message)
+                process_event = ProcessEvent.model_validate(message)
+                messages.append(process_event)
 
-        return len(self.incoming_messages)
+            for msg in messages:
+                self.incoming_messages.put(msg)
+
+            await self._state_manager.try_add_state(
+                ActorStateKeys.StepIncomingMessagesState.value, json.dumps(json_msg)
+            )
+            await self._state_manager.save_state()
+
+            return self.incoming_messages.qsize() if self.incoming_messages else 0
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Error in prepare_incoming_messages: {error_message}")
+            raise Exception(error_message)
 
     async def process_incoming_messages(self) -> None:
         """Triggers the step to process all prepared messages."""
@@ -146,7 +188,7 @@ class StepActor(Actor, Step, KernelProcessMessageChannel):
             message = self.incoming_messages.get()
             await self.handle_message(message)
 
-        await self._state_manager.set_state(ActorStateKeys.StepIncomingMessagesState.value, self.incoming_messages)
+        await self._state_manager.try_add_state(ActorStateKeys.StepIncomingMessagesState.value, self.incoming_messages)
         await self._state_manager.save_state()
 
     async def activate_step(self):
@@ -332,17 +374,17 @@ class StepActor(Actor, Step, KernelProcessMessageChannel):
             parent_process: EventBufferActor = ActorProxy.create(
                 actor_type=f"{EventBufferActor.__name__}",
                 actor_id=ActorId(self.parent_process_id),
-                actor_interface=EventBufferActor,
+                actor_interface=EventBufferInterface,
             )
             await parent_process.enqueue(dapr_event)
 
         for edge in self.get_edge_for_event(dapr_event.id):
             message: ProcessMessage = ProcessMessageFactory.create_from_edge(edge, dapr_event.data)
             scoped_step_id = self._scoped_actor_id(ActorId(edge.output_target.step_id))
-            target_step: MessageBuffer = ActorProxy.create(
+            target_step: MessageBufferInterface = ActorProxy.create(
+                actor_type=f"{MessageBufferActor.__name__}",
                 actor_id=scoped_step_id,
-                actor_interface=MessageBuffer,
-                actor_type=f"{MessageBuffer.__name__}",
+                actor_interface=MessageBufferInterface,
             )
             await target_step.enqueue(message)
 

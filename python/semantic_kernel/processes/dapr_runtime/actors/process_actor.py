@@ -8,7 +8,7 @@ import uuid
 from queue import Queue
 
 from dapr.actor import ActorId, ActorProxy
-from pydantic import Field
+from dapr.actor.runtime.context import ActorRuntimeContext
 
 from semantic_kernel.exceptions.kernel_exceptions import KernelException
 from semantic_kernel.exceptions.process_exceptions import ProcessEventUndefinedException
@@ -21,9 +21,11 @@ from semantic_kernel.processes.dapr_runtime.actors.message_buffer_actor import M
 from semantic_kernel.processes.dapr_runtime.actors.step_actor import StepActor
 from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcessInfo
 from semantic_kernel.processes.dapr_runtime.dapr_step_info import DaprStepInfo
-from semantic_kernel.processes.dapr_runtime.external_event_buffer import ExternalEventBuffer
-from semantic_kernel.processes.dapr_runtime.process import Process
-from semantic_kernel.processes.dapr_runtime.step import Step
+from semantic_kernel.processes.dapr_runtime.event_buffer_interface import EventBufferInterface
+from semantic_kernel.processes.dapr_runtime.external_event_buffer_interface import ExternalEventBufferInterface
+from semantic_kernel.processes.dapr_runtime.message_buffer_interface import MessageBufferInterface
+from semantic_kernel.processes.dapr_runtime.process_interface import ProcessInterface
+from semantic_kernel.processes.dapr_runtime.step_interface import StepInterface
 from semantic_kernel.processes.kernel_process.kernel_process_event import (
     KernelProcessEvent,
     KernelProcessEventVisibility,
@@ -32,33 +34,36 @@ from semantic_kernel.processes.process_event import ProcessEvent
 from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
 
+# class ProcessActor(StepActor, ProcessInterface):
+#     """A local process that contains a collection of steps."""
 
-class ProcessActor(StepActor, Process):
+#     kernel: Kernel | None = None
+#     steps: list[StepActor] = []
+#     step_infos: list[DaprStepInfo] = []
+#     initialize_task: bool | None = False
+#     external_event_queue: Queue = Queue()
+#     process_task: asyncio.Task | None = None
+#     process: DaprProcessInfo | None = None
+
+
+class ProcessActor(StepActor, ProcessInterface):
     """A local process that contains a collection of steps."""
 
-    kernel: Kernel | None = None
-    _steps: list[StepActor] = []
-    step_infos: list[DaprStepInfo] = Field(default_factory=list)
-    initialize_task: bool | None = False
-    external_event_queue: Queue = Field(default_factory=Queue)
-    process_task: asyncio.Task | None = None
-    process: DaprProcessInfo | None = None
+    def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel):
+        """Initializes a new instance of ProcessActor.
 
-    # def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId) -> None:
-    #     """Initializes the local process."""
-    #     args: dict[str, Any] = {
-    #         "ctx": ctx,
-    #         "actor_id": actor_id,
-    #         # "kernel": kernel,
-    #         "initialize_task": False,
-    #     }
-
-    #     super().__init__(**args)
-
-    # def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, **kwargs) -> None:
-    #     """Initializes the local process."""
-    #     # Initialize the Actor base class explicitly
-    #     super(ProcessActor, self).__init__(ctx, actor_id)
+        Args:
+            ctx: The actor runtime context.
+            actor_id: The unique ID for the actor.
+            kernel: The Kernel dependency to be injected.
+        """
+        super().__init__(ctx, actor_id, kernel)
+        self.steps: list[StepActor] = []
+        self.step_infos: list[DaprStepInfo] = []
+        self.initialize_task: bool | None = False
+        self.external_event_queue: Queue = Queue()
+        self.process_task: asyncio.Task | None = None
+        self.process: DaprProcessInfo | None = None
 
     @property
     def name(self) -> str:
@@ -99,7 +104,9 @@ class ProcessActor(StepActor, Process):
         if not self.initialize_task:
             raise ValueError("The process has not been initialized.")
 
-        self.process_task = asyncio.create_task(self.internal_execute(keep_alive=keep_alive))
+        # Only create the task if it doesn't already exist or is not running
+        if not self.process_task or self.process_task.done():
+            self.process_task = asyncio.create_task(self.internal_execute(keep_alive=keep_alive))
 
     async def run_once(self, process_event_payload: str):
         """Starts the process with an initial event and waits for it to finish."""
@@ -109,13 +116,17 @@ class ProcessActor(StepActor, Process):
         external_event_queue: ExternalEventBufferActor = ActorProxy.create(
             actor_type=f"{ExternalEventBufferActor.__name__}",
             actor_id=ActorId(self.id.id),
-            actor_interface=ExternalEventBuffer,
+            actor_interface=ExternalEventBufferInterface,
         )
         try:
             await external_event_queue.enqueue(process_event_payload)
             await self.start(keep_alive=False)
             if self.process_task:
-                await self.process_task
+                try:
+                    await self.process_task
+                except asyncio.CancelledError:
+                    print("Process task was cancelled")
+                    # Optionally handle the cancellation
         except Exception as ex:
             print(ex)
             raise ex
@@ -194,7 +205,7 @@ class ProcessActor(StepActor, Process):
         self.output_edges = {kvp[0]: list(kvp[1]) for kvp in self.process.edges.items()}
 
         for step in self.step_infos:
-            step_actor: Step = None
+            step_actor: StepInterface = None
 
             # The current step should already have a name.
             assert step.state and step.state.name is not None  # nosec
@@ -206,17 +217,17 @@ class ProcessActor(StepActor, Process):
 
                 # Initialize the step as a process
                 scoped_process_id = self._scoped_actor_id(ActorId(step.state.id))
-                process_actor: Process = ActorProxy.create(
-                    actor_id=scoped_process_id,
+                process_actor: ProcessInterface = ActorProxy.create(
                     actor_type=f"{ProcessActor.__name__}",
-                    actor_interface=Process,
+                    actor_id=scoped_process_id,
+                    actor_interface=ProcessInterface,
                 )
                 payload = {"process_info": step.model_dump(), "parent_process_id": self.id.id}
                 await process_actor.initialize_process(payload)
                 step_actor = ActorProxy.create(
-                    actor_id=scoped_process_id,
                     actor_type=f"{ProcessActor.__name__}",
-                    actor_interface=Step,
+                    actor_id=scoped_process_id,
+                    actor_interface=StepInterface,
                 )
             else:
                 # The current step should already have an Id.
@@ -224,9 +235,9 @@ class ProcessActor(StepActor, Process):
 
                 scoped_step_id = self._scoped_actor_id(ActorId(step.state.id))
                 step_actor = ActorProxy.create(
-                    actor_id=scoped_step_id,
                     actor_type=f"{StepActor.__name__}",
-                    actor_interface=Step,
+                    actor_id=scoped_step_id,
+                    actor_interface=StepInterface,
                 )
                 step_dict = step.model_dump()
                 payload = {"step_info": step_dict, "parent_process_id": self.id.id}
@@ -237,7 +248,7 @@ class ProcessActor(StepActor, Process):
                     raise ex
 
             # Add the local step to the list of steps
-            self._steps.append(step_actor)
+            self.steps.append(step_actor)
 
         self.initialize_task = True
 
@@ -254,31 +265,30 @@ class ProcessActor(StepActor, Process):
         try:
             for _ in range(max_supersteps):
                 if await self._is_end_message_sent():
-                    self.process_task.cancel()
+                    # Exit the loop without cancelling the task
                     break
 
                 # Check for external events
                 await self._enqueue_external_messages()
 
-                # Reach out to all of the steps in the process and instrcut them to retrieve their pending
-                # messages from their associated queues
+                # Prepare incoming messages for each step
                 step_preparation_tasks = [step.prepare_incoming_messages() for step in self.steps]
                 message_counts = await asyncio.gather(*step_preparation_tasks)
 
                 if sum(message_counts) == 0 and (not keep_alive or self.external_event_queue.empty()):
-                    self.process_task.cancel()
+                    # Exit the loop without cancelling the task
                     break
 
                 # Process the incoming messages for each step
                 step_processing_tasks = [step.process_incoming_messages() for step in self.steps]
                 await asyncio.gather(*step_processing_tasks)
 
-                # Handle public events that need to be bubbled out of the process
+                # Handle public events
                 await self.send_outgoing_public_events()
 
         except Exception as ex:
-            print("An error occurred while running the process: %s.", ex)
-            self.process_task.cancel()
+            print(f"An error occurred while running the process: {ex}")
+            # Optionally handle the exception
             raise
 
     def _scoped_event(self, dapr_event: ProcessEvent):
@@ -292,9 +302,9 @@ class ProcessActor(StepActor, Process):
         """Sends outgoing public events."""
         if self.parent_process_id is not None:
             event_queue: EventBufferActor = ActorProxy.create(
-                actor_id=ActorId(self.id.id),
                 actor_type=f"{EventBufferActor.__name__}",
-                actor_interface=EventBufferActor,
+                actor_id=ActorId(self.id.id),
+                actor_interface=EventBufferInterface,
             )
             all_events: list[ProcessEvent] = await event_queue.dequeue_all()
 
@@ -309,7 +319,7 @@ class ProcessActor(StepActor, Process):
                         message_queue: MessageBufferActor = ActorProxy.create(
                             actor_id=scoped_message_buffer_id,
                             actor_type=f"{MessageBufferActor.__name__}",
-                            actor_interface=MessageBufferActor,
+                            actor_interface=MessageBufferInterface,
                         )
                         await message_queue.enqueue(message)
 
@@ -317,9 +327,9 @@ class ProcessActor(StepActor, Process):
         """Checks if the end message has been sent."""
         scoped_message_buffer_id = self._scoped_actor_id(ActorId(END_PROCESS_ID))
         end_message_queue: MessageBufferActor = ActorProxy.create(
-            actor_id=scoped_message_buffer_id,
             actor_type=f"{MessageBufferActor.__name__}",
-            actor_interface=MessageBufferActor,
+            actor_id=scoped_message_buffer_id,
+            actor_interface=MessageBufferInterface,
         )
         messages: list[ProcessMessage] = await end_message_queue.dequeue_all()
         return len(messages) > 0
@@ -327,12 +337,14 @@ class ProcessActor(StepActor, Process):
     async def _enqueue_external_messages(self) -> None:
         """Enqueues external messages into the process."""
         external_event_queue: ExternalEventBufferActor = ActorProxy.create(
-            actor_id=ActorId(self.id.id),
             actor_type=f"{ExternalEventBufferActor.__name__}",
-            actor_interface=ExternalEventBufferActor,
+            actor_id=ActorId(self.id.id),
+            actor_interface=ExternalEventBufferInterface,
         )
 
-        external_events = await external_event_queue.dequeue_all()
+        external_events_json = await external_event_queue.dequeue_all()
+
+        external_events = [KernelProcessEvent.model_validate(e) for e in external_events_json]
 
         for external_event in external_events:
             if external_event.id in self.output_edges and self.output_edges[external_event.id] is not None:
@@ -340,8 +352,9 @@ class ProcessActor(StepActor, Process):
                     message: ProcessMessage = ProcessMessageFactory.create_from_edge(edge, external_event.data)
                     scoped_message_buffer_id = self._scoped_actor_id(ActorId(edge.output_target.step_id))
                     message_queue: MessageBufferActor = ActorProxy.create(
-                        actor_id=scoped_message_buffer_id,
                         actor_type=f"{MessageBufferActor.__name__}",
-                        actor_interface=MessageBufferActor,
+                        actor_id=scoped_message_buffer_id,
+                        actor_interface=MessageBufferInterface,
                     )
-                    await message_queue.enqueue(message)
+                    message_json = json.dumps(message.model_dump())
+                    await message_queue.enqueue(message_json)

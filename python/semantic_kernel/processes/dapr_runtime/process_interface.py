@@ -7,7 +7,7 @@ from semantic_kernel.processes.dapr_runtime.dapr_process_info import DaprProcess
 from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 
 
-class Process(ActorInterface):
+class ProcessInterface(ActorInterface):
     """Abstract base class for a process that follows the ActorInterface."""
 
     @actormethod(name="initialize_process")

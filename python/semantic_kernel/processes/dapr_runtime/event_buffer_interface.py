@@ -1,31 +1,30 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from dapr.actor import ActorInterface
+from dapr.actor import ActorInterface, actormethod
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.process_event import ProcessEvent
 
 
-class EventBuffer(ActorInterface, ABC):
+class EventBufferInterface(ActorInterface):
     """Abstract base class for an event buffer that follows the ActorInterface."""
 
-    @abstractmethod
-    async def enqueue(self, step_event: "ProcessEvent") -> None:
-        """Enqueues a step event into the buffer.
+    @actormethod(name="enqueue")
+    async def enqueue(self, step_event: str) -> None:
+        """Enqueues a `ProcessEvent` step event into the buffer.
 
         Args:
             step_event: The step event to enqueue.
         """
         pass
 
-    @abstractmethod
+    @actormethod(name="dequeue_all")
     async def dequeue_all(self) -> "list[ProcessEvent]":
         """Dequeues a step event from the buffer.
 
         Returns:
-            The dequeued step event.
+            The dequeued step event as a list of `ProcessEvent`.
         """
         pass

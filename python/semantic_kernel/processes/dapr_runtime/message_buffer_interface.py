@@ -8,10 +8,10 @@ if TYPE_CHECKING:
     from semantic_kernel.processes.process_event import ProcessEvent
 
 
-class MessageBuffer(ActorInterface):
+class MessageBufferInterface(ActorInterface):
     """Abstract base class for a message event buffer that follows the ActorInterface."""
 
-    @actormethod
+    @actormethod(name="enqueue")
     async def enqueue(self, message: str) -> None:
         """Enqueues a message event into the buffer.
 
@@ -20,7 +20,7 @@ class MessageBuffer(ActorInterface):
         """
         pass
 
-    @actormethod
+    @actormethod(name="dequeue_all")
     async def dequeue_all(self) -> "list[ProcessEvent]":
         """Dequeues all process events from the buffer.
 
