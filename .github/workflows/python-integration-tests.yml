@@ -48,7 +48,7 @@ env:
   MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
   ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
   ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
-  OLLAMA_HOST: ${{ 'ollama' }}
+  OLLAMA_HOST: ollama 
   OLLAMA_CHAT_MODEL_ID: ${{ vars.OLLAMA_CHAT_MODEL_ID }} # llava-phi3
   OLLAMA_CHAT_MODEL_ID_IMAGE: ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }} # llava-phi3
   OLLAMA_CHAT_MODEL_ID_TOOL_CALL: ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }} # llama3.2
@@ -61,7 +61,7 @@ env:
   VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
   VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
   REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
-  
+
 jobs:
   paths-filter:
     runs-on: ubuntu-latest
@@ -233,11 +233,11 @@ jobs:
     environment: "integration"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
-      OLLAMA_CHAT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && env.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
-      OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ matrix.os == 'ubuntu-latest' && env.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
-      OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ matrix.os == 'ubuntu-latest' && env.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
-      OLLAMA_TEXT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && env.OLLAMA_TEXT_MODEL_ID || '' }}" # llava-phi3
-      OLLAMA_EMBEDDING_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && env.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
+      OLLAMA_CHAT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
+      OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
+      OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
+      OLLAMA_TEXT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_TEXT_MODEL_ID || '' }}" # llava-phi3
+      OLLAMA_EMBEDDING_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_EMBEDDING_MODEL_ID || '' }}" # nomic-embed-text
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
