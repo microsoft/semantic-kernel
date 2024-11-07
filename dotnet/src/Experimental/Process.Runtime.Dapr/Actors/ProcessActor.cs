@@ -100,25 +100,11 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <returns>A <see cref="Task"/></returns>
     public async Task RunOnceAsync(string processEvent)
     {
-        try
-        {
-            //Console.WriteLine("#### PROCESS - RunOnceAsync 1");
-            Verify.NotNull(processEvent, nameof(processEvent));
-            //Console.WriteLine("#### PROCESS - RunOnceAsync 2");
-            IExternalEventBuffer externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
-            //Console.WriteLine("#### PROCESS - RunOnceAsync 3");
-            //await externalEventQueue.EnqueueAsync(processEvent.ToJson()).ConfigureAwait(false);
-            await externalEventQueue.EnqueueAsync(processEvent).ConfigureAwait(false);
-            //Console.WriteLine("#### PROCESS - RunOnceAsync 4");
-            await this.StartAsync(keepAlive: false).ConfigureAwait(false);
-            //Console.WriteLine("#### PROCESS - RunOnceAsync 5");
-            await this._processTask!.JoinAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"#### PROCESS RunOnceAsync - {Environment.NewLine}{ex}");
-            throw;
-        }
+        Verify.NotNull(processEvent, nameof(processEvent));
+        IExternalEventBuffer externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
+        await externalEventQueue.EnqueueAsync(processEvent).ConfigureAwait(false);
+        await this.StartAsync(keepAlive: false).ConfigureAwait(false);
+        await this._processTask!.JoinAsync().ConfigureAwait(false);
     }
 
     /// <summary>
