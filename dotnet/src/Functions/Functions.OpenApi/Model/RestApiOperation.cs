@@ -54,7 +54,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// The server.
     /// </summary>
-    public IReadOnlyList<RestApiOperationServer> Servers { get; }
+    public IReadOnlyList<RestApiServer> Servers { get; }
 
     /// <summary>
     /// The security requirements.
@@ -64,17 +64,17 @@ public sealed class RestApiOperation
     /// <summary>
     /// The operation parameters.
     /// </summary>
-    public IReadOnlyList<RestApiOperationParameter> Parameters { get; }
+    public IReadOnlyList<RestApiParameter> Parameters { get; }
 
     /// <summary>
     /// The list of possible operation responses.
     /// </summary>
-    public IReadOnlyDictionary<string, RestApiOperationExpectedResponse> Responses { get; }
+    public IReadOnlyDictionary<string, RestApiExpectedResponse> Responses { get; }
 
     /// <summary>
     /// The operation payload.
     /// </summary>
-    public RestApiOperationPayload? Payload { get; }
+    public RestApiPayload? Payload { get; }
 
     /// <summary>
     /// Additional unstructured metadata about the operation.
@@ -95,14 +95,14 @@ public sealed class RestApiOperation
     /// <param name="payload">The operation payload.</param>
     internal RestApiOperation(
         string? id,
-        IReadOnlyList<RestApiOperationServer> servers,
+        IReadOnlyList<RestApiServer> servers,
         string path,
         HttpMethod method,
         string? description,
-        IReadOnlyList<RestApiOperationParameter> parameters,
-        IReadOnlyDictionary<string, RestApiOperationExpectedResponse> responses,
+        IReadOnlyList<RestApiParameter> parameters,
+        IReadOnlyDictionary<string, RestApiExpectedResponse> responses,
         IReadOnlyList<RestApiSecurityRequirement> securityRequirements,
-        RestApiOperationPayload? payload = null)
+        RestApiPayload? payload = null)
     {
         this.Id = id;
         this.Servers = servers;
@@ -113,6 +113,8 @@ public sealed class RestApiOperation
         this.Responses = responses;
         this.SecurityRequirements = securityRequirements;
         this.Payload = payload;
+        this.Responses = responses ?? new Dictionary<string, RestApiExpectedResponse>();
+        this.SecurityRequirements = securityRequirements;
     }
 
     /// <summary>
@@ -140,7 +142,7 @@ public sealed class RestApiOperation
     {
         var headers = new Dictionary<string, string>();
 
-        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
+        var parameters = this.Parameters.Where(p => p.Location == RestApiParameterLocation.Header);
 
         foreach (var parameter in parameters)
         {
@@ -156,7 +158,7 @@ public sealed class RestApiOperation
                 continue;
             }
 
-            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Simple;
+            var parameterStyle = parameter.Style ?? RestApiParameterStyle.Simple;
 
             if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
@@ -181,7 +183,7 @@ public sealed class RestApiOperation
     {
         var segments = new List<string>();
 
-        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Query);
+        var parameters = this.Parameters.Where(p => p.Location == RestApiParameterLocation.Query);
 
         foreach (var parameter in parameters)
         {
@@ -197,7 +199,7 @@ public sealed class RestApiOperation
                 continue;
             }
 
-            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Form;
+            var parameterStyle = parameter.Style ?? RestApiParameterStyle.Form;
 
             if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
@@ -223,7 +225,7 @@ public sealed class RestApiOperation
     /// <returns>The path.</returns>
     private string BuildPath(string pathTemplate, IDictionary<string, object?> arguments)
     {
-        var parameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Path);
+        var parameters = this.Parameters.Where(p => p.Location == RestApiParameterLocation.Path);
 
         foreach (var parameter in parameters)
         {
@@ -239,7 +241,7 @@ public sealed class RestApiOperation
                 continue;
             }
 
-            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Simple;
+            var parameterStyle = parameter.Style ?? RestApiParameterStyle.Simple;
 
             if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
@@ -307,12 +309,12 @@ public sealed class RestApiOperation
         return new Uri(serverUrlString);
     }
 
-    private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, JsonNode, string>> s_parameterSerializers = new()
+    private static readonly Dictionary<RestApiParameterStyle, Func<RestApiParameter, JsonNode, string>> s_parameterSerializers = new()
     {
-        { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
-        { RestApiOperationParameterStyle.Form, FormStyleParameterSerializer.Serialize },
-        { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
-        { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
+        { RestApiParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
+        { RestApiParameterStyle.Form, FormStyleParameterSerializer.Serialize },
+        { RestApiParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
+        { RestApiParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
 
     # endregion

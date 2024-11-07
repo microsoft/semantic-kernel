@@ -29,7 +29,7 @@ public sealed class RestApiSecurityScheme
     /// <summary>
     /// REQUIRED. The location of the API key. Valid values are "query", "header" or "cookie".
     /// </summary>
-    public RestApiOperationParameterLocation In { get; init; }
+    public RestApiParameterLocation In { get; init; }
 
     /// <summary>
     /// REQUIRED. The name of the HTTP Authorization scheme to be used

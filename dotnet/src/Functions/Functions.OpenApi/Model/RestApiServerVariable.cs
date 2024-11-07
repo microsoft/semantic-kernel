@@ -7,10 +7,10 @@ using System.Linq;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// REST API Operation Server Variable.
+/// REST API server variable.
 /// </summary>
 [Experimental("SKEXP0040")]
-public sealed class RestApiOperationServerVariable
+public sealed class RestApiServerVariable
 {
     /// <summary>
     /// An optional description for the server variable. CommonMark syntax MAY be used for rich text representation.
@@ -29,12 +29,12 @@ public sealed class RestApiOperationServerVariable
     public IReadOnlyList<string>? Enum { get; }
 
     /// <summary>
-    /// Construct a new <see cref="RestApiOperationServerVariable"/> object.
+    /// Construct a new <see cref="RestApiServerVariable"/> object.
     /// </summary>
     /// <param name="defaultValue">The default value to use for substitution.</param>
     /// <param name="description">An optional description for the server variable.</param>
     /// <param name="enumValues">An enumeration of string values to be used if the substitution options are from a limited set.</param>
-    internal RestApiOperationServerVariable(string defaultValue, string? description = null, List<string>? enumValues = null)
+    internal RestApiServerVariable(string defaultValue, string? description = null, List<string>? enumValues = null)
     {
         this.Default = defaultValue;
         this.Description = description;
