@@ -48,10 +48,10 @@ repos:
     - id: mypy
       files: ^python/semantic_kernel/
       name: mypy
-      entry: bash -c 'cd python && uv run mypy -p semantic_kernel --config-file mypy.ini'
+      entry: zsh -i -c 'cd python && uv run mypy -p semantic_kernel --config-file mypy.ini'
       language: system
       types: [python]
-      pass_filenames: true
+      pass_filenames: false
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.8
     hooks:

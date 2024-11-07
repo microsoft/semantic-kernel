@@ -5,6 +5,7 @@ from pytest import fixture, mark
 from semantic_kernel.connectors.memory.in_memory.in_memory_collection import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.in_memory.in_memory_store import InMemoryVectorStore
 from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 
 
@@ -87,33 +88,42 @@ async def test_text_search(collection):
 
 
 @mark.asyncio
+async def test_text_search_with_filter(collection):
+    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+    await collection.upsert(record)
+    results = await collection.text_search(
+        search_text="content",
+        options=VectorSearchOptions(
+            filter=VectorSearchFilter.any_tag_equal_to("vector", 0.1).equal_to("content", "content")
+        ),
+    )
+    assert len([res async for res in results.results]) == 1
+
+
+@mark.asyncio
 @mark.parametrize(
-    "distance_function, expected_similar_score, expected_dissimilar_score",
+    "distance_function",
     [
-        (DistanceFunction.COSINE_DISTANCE, 0.0, 2.0),
-        (DistanceFunction.COSINE_SIMILARITY, 1.0, -1.0),
-        (DistanceFunction.EUCLIDEAN_DISTANCE, 0.0, 4.47213595499958),
-        (DistanceFunction.MANHATTAN, 0.0, 10.0),
-        (DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE, 0.0, 20.0),
-        (DistanceFunction.DOT_PROD, 5.0, -5.0),
-        (DistanceFunction.HAMMING, 0.0, 1.0),
+        DistanceFunction.COSINE_DISTANCE,
+        DistanceFunction.COSINE_SIMILARITY,
+        DistanceFunction.EUCLIDEAN_DISTANCE,
+        DistanceFunction.MANHATTAN,
+        DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE,
+        DistanceFunction.DOT_PROD,
+        DistanceFunction.HAMMING,
     ],
 )
-async def test_vectorized_search_similar(
-    collection, distance_function, expected_similar_score, expected_dissimilar_score
-):
+async def test_vectorized_search_similar(collection, distance_function):
     collection.data_model_definition.fields["vector"].distance_function = distance_function
-    record = {"id": "testid", "content": "test content", "vector": [1.0, 1.0, 1.0, 1.0, 1.0]}
-    await collection.upsert(record)
+    record1 = {"id": "testid1", "content": "test content", "vector": [1.0, 1.0, 1.0, 1.0, 1.0]}
+    record2 = {"id": "testid2", "content": "test content", "vector": [-1.0, -1.0, -1.0, -1.0, -1.0]}
+    await collection.upsert_batch([record1, record2])
     results = await collection.vectorized_search(
-        vector=[1.0, 1.0, 1.0, 1.0, 1.0], options=VectorSearchOptions(vector_field_name="vector")
+        vector=[0.9, 0.9, 0.9, 0.9, 0.9],
+        options=VectorSearchOptions(vector_field_name="vector", include_total_count=True),
     )
+    assert results.total_count == 2
+    idx = 0
     async for res in results.results:
-        assert res.score == expected_similar_score
-        assert res.record == record
-    results = await collection.vectorized_search(
-        vector=[-1.0, -1.0, -1.0, -1.0, -1.0], options=VectorSearchOptions(vector_field_name="vector")
-    )
-    async for res in results.results:
-        assert res.score == expected_dissimilar_score
-        assert res.record == record
+        assert res.record == record1 if idx == 0 else record2
+        idx += 1

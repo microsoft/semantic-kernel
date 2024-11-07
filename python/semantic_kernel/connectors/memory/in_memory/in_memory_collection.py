@@ -6,6 +6,9 @@ from typing import Any, ClassVar, TypeVar
 
 from pydantic import Field
 
+from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -26,7 +29,6 @@ from semantic_kernel.data.vector_search.vector_text_search import VectorTextSear
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.search.const import FilterClauseType
 
 KEY_TYPES = str | int | float
 
@@ -205,15 +207,28 @@ class InMemoryVectorCollection(
         distance_func: Callable,
         invert_score: bool = False,
     ) -> float:
+        calc = distance_func(record_vector, search_vector)
         if invert_score:
-            return 1.0 - float(distance_func(record_vector, search_vector))
-        return float(distance_func(record_vector, search_vector))
+            return 1.0 - float(calc)
+        return float(calc)
 
     @staticmethod
     def _apply_filter(record: dict[str, Any], filter: FilterClauseBase) -> bool:
-        if filter.filter_clause_type == FilterClauseType.EQUALS:
-            return record.get(filter.field_name) == filter.value
-        return record.get(filter.field_name) in filter.value
+        match filter:
+            case EqualTo():
+                value = record.get(filter.field_name)
+                if not value:
+                    return False
+                return value.lower() == filter.value.lower()
+            case AnyTagsEqualTo():
+                tag_list = record.get(filter.field_name)
+                if not tag_list:
+                    return False
+                if not isinstance(tag_list, list):
+                    tag_list = [tag_list]
+                return filter.value in tag_list
+            case _:
+                return True
 
     def _get_record_from_result(self, result: Any) -> Any:
         return result
