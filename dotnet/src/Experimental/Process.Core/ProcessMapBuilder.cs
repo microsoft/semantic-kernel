@@ -48,18 +48,13 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     }
 
     /// <inheritdoc/>
-    internal override KernelProcessStepInfo BuildStep()
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         KernelProcessMapState state = new(this.Name, this.Version, this.Id);
         return new KernelProcessMap(state, this._mapProcess.Build(), builtEdges);
-    }
-
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
-    {
-        throw new NotImplementedException(); // %%% SERIALIZATION: Implement
     }
 
     private ProcessBuilder CreateMapProcess(ProcessFunctionTargetBuilder mapTarget)

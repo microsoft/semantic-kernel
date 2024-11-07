@@ -107,6 +107,17 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         return this.Build();
     }
 
+    /// <summary>
+    /// Add the provided step builder to the process.
+    /// </summary>
+    /// <remarks>
+    /// Utilized by <see cref="ProcessMapBuilder"/> only.
+    /// </remarks>
+    internal void AddStepFromBuilder(ProcessStepBuilder stepBuilder)
+    {
+        this._steps.Add(stepBuilder);
+    }
+
     #region Public Interface
 
     /// <summary>
