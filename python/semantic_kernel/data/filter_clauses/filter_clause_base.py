@@ -2,6 +2,7 @@
 
 
 from abc import ABC
+from typing import Any
 
 from pydantic import Field
 
@@ -14,3 +15,5 @@ class FilterClauseBase(ABC, KernelBaseModel):
     """A base for all filter clauses."""
 
     filter_clause_type: str = Field("FilterClauseBase", init=False)  # type: ignore
+    field_name: str
+    value: Any

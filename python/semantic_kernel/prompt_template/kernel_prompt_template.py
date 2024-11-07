@@ -148,4 +148,4 @@ class KernelPromptTemplate(PromptTemplateBase):
         if any(isinstance(block, CodeRenderer) for block in blocks):
             raise ValueError("Quick render does not support code blocks.")
         kernel = Kernel()
-        return "".join([block.render(kernel, arguments) for block in blocks])
+        return "".join([block.render(kernel, arguments) for block in blocks])  # type: ignore

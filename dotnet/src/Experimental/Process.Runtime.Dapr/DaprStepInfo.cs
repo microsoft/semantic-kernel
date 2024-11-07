@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel;
 [KnownType(typeof(KernelProcessStepState))]
 [KnownType(typeof(DaprProcessInfo))]
 [KnownType(typeof(DaprMapInfo))]
+[JsonDerivedType(typeof(DaprProcessInfo))]
 public record DaprStepInfo
 {
     /// <summary>

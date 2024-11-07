@@ -455,13 +455,13 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             if isinstance(record, Sequence):
                 return self.data_model_definition.deserialize(record, **kwargs)
             return self.data_model_definition.deserialize([record], **kwargs)
-        if hasattr(self.data_model_type, "deserialize"):
-            try:
+        try:
+            if hasattr(self.data_model_type, "deserialize"):
                 if isinstance(record, Sequence):
-                    return [self.data_model_type.deserialize(rec, **kwargs) for rec in record]
-                return self.data_model_type.deserialize(record, **kwargs)
-            except Exception as exc:
-                raise VectorStoreModelSerializationException(f"Error deserializing record: {exc}") from exc
+                    return [self.data_model_type.deserialize(rec, **kwargs) for rec in record]  # type: ignore
+                return self.data_model_type.deserialize(record, **kwargs)  # type: ignore
+        except Exception as exc:
+            raise VectorStoreModelSerializationException(f"Error deserializing record: {exc}") from exc
         return None
 
     def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrMany[dict[str, Any]]:
@@ -475,7 +475,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             return self.data_model_definition.to_dict(record, **kwargs)
         if hasattr(record, "model_dump"):
             try:
-                ret = record.model_dump()
+                ret = record.model_dump()  # type: ignore
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
                     return ret
                 for field in self.data_model_definition.vector_fields:
@@ -487,7 +487,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
         if hasattr(record, "to_dict"):
             try:
-                ret = record.to_dict()
+                ret = record.to_dict()  # type: ignore
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
                     return ret
                 for field in self.data_model_definition.vector_fields:
@@ -533,21 +533,21 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         if hasattr(self.data_model_type, "model_validate"):
             try:
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return self.data_model_type.model_validate(record)
+                    return self.data_model_type.model_validate(record)  # type: ignore
                 for field in self.data_model_definition.vector_fields:
                     if field.serialize_function:
-                        record[field.name] = field.serialize_function(record[field.name])
-                return self.data_model_type.model_validate(record)
+                        record[field.name] = field.serialize_function(record[field.name])  # type: ignore
+                return self.data_model_type.model_validate(record)  # type: ignore
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
         if hasattr(self.data_model_type, "from_dict"):
             try:
                 if not any(field.serialize_function is not None for field in self.data_model_definition.vector_fields):
-                    return self.data_model_type.from_dict(record)
+                    return self.data_model_type.from_dict(record)  # type: ignore
                 for field in self.data_model_definition.vector_fields:
                     if field.serialize_function:
-                        record[field.name] = field.serialize_function(record[field.name])
-                return self.data_model_type.from_dict(record)
+                        record[field.name] = field.serialize_function(record[field.name])  # type: ignore
+                return self.data_model_type.from_dict(record)  # type: ignore
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
         data_model_dict: dict[str, Any] = {}
@@ -570,4 +570,4 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     def __del__(self):
         """Delete the instance."""
         with contextlib.suppress(Exception):
-            asyncio.get_running_loop().create_task(self.close())
+            asyncio.get_running_loop().create_task(self.__aexit__(None, None, None))
