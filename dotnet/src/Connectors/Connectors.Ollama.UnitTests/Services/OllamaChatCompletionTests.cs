@@ -471,10 +471,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
-        Assert.Equal(3, messages.GetArrayLength());
+        Assert.Equal(2, messages.GetArrayLength());
 
-        var toolMessage1 = messages[1];
-        var toolMessage2 = messages[2];
+        var toolMessage1 = messages[0];
+        var toolMessage2 = messages[1];
 
         Assert.Equal("tool", toolMessage1.GetProperty("role").GetString());
         Assert.Equal("tool", toolMessage2.GetProperty("role").GetString());
@@ -525,10 +525,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
-        Assert.Equal(4, messages.GetArrayLength());
+        Assert.Equal(2, messages.GetArrayLength());
 
-        var toolMessage1 = messages[1];
-        var toolMessage2 = messages[3];
+        var toolMessage1 = messages[0];
+        var toolMessage2 = messages[1];
 
         Assert.Equal("tool", toolMessage1.GetProperty("role").GetString());
         Assert.Equal("tool", toolMessage2.GetProperty("role").GetString());

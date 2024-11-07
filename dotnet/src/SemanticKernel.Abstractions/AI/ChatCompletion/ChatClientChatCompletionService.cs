@@ -54,10 +54,18 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
+        var messageList = ChatCompletionServiceExtensions.ToChatMessageList(chatHistory);
+        var currentSize = messageList.Count;
+
         var completion = await this._chatClient.CompleteAsync(
-            ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
+            messageList,
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false);
+
+        chatHistory.AddRange(
+            messageList
+                .Skip(currentSize)
+                .Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
 
         return completion.Choices.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m, completion)).ToList();
     }
