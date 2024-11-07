@@ -271,35 +271,5 @@ public static class ChatCompletionServiceExtensions
     }
 
     internal static List<ChatMessage> ToChatMessageList(ChatHistory chatHistory)
-    {
-        List<ChatMessage> messages = [];
-
-        foreach (var content in chatHistory)
-        {
-            var functionResultContents = content.Items.OfType<FunctionResultContent>().ToArray();
-
-            // Currently Extensions AI doesn't support multiple function Results in a single message,
-            // This prevents generating empty messages when the message only has function results
-            if (functionResultContents.Length == 0 || functionResultContents.Length != content.Items.Count)
-            {
-                messages.Add(ToChatMessage(content));
-            }
-
-            foreach (var frc in functionResultContents)
-            {
-                messages.Add(
-                    new()
-                    {
-                        AdditionalProperties = content.Metadata is not null ? new(content.Metadata) : null,
-                        AuthorName = content.AuthorName,
-                        RawRepresentation = content.InnerContent,
-                        Role = ChatRole.Tool,
-                        Contents = [new Microsoft.Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.FunctionName ?? string.Empty, frc.Result)]
-                    }
-                );
-            }
-        }
-
-        return messages;
-    }
+        => chatHistory.Select(ToChatMessage).ToList();
 }

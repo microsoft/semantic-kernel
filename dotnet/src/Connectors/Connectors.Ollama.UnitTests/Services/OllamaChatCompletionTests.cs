@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using OllamaSharp;
 using OllamaSharp.Models.Chat;
 using Xunit;
@@ -254,9 +255,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.Equal(ollamaExecutionSettings.Stop, requestPayload.Options.Stop);
         Assert.Equal(ollamaExecutionSettings.Temperature, requestPayload.Options.Temperature);
         Assert.Equal(ollamaExecutionSettings.TopP, requestPayload.Options.TopP);
-        // Assert.Equal(ollamaExecutionSettings.TopK, requestPayload.Options.TopK);
-        // Add back once this bugfix is merged
-        // https://github.com/awaescher/OllamaSharp/pull/128
+        Assert.Equal(ollamaExecutionSettings.TopK, requestPayload.Options.TopK);
     }
 
     // Function Calling start
@@ -472,10 +471,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
-        Assert.Equal(2, messages.GetArrayLength());
+        Assert.Equal(3, messages.GetArrayLength());
 
-        var toolMessage1 = messages[0];
-        var toolMessage2 = messages[1];
+        var toolMessage1 = messages[1];
+        var toolMessage2 = messages[2];
 
         Assert.Equal("tool", toolMessage1.GetProperty("role").GetString());
         Assert.Equal("tool", toolMessage2.GetProperty("role").GetString());
@@ -483,13 +482,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var toolMessage1Content = toolMessage1.GetProperty("content").GetString();
         var toolMessage2Content = toolMessage2.GetProperty("content").GetString();
 
-        // Currently Ollama Does Not Support sending the function content back to the model
-        // This implementation is proposed in this PR: https://github.com/awaescher/OllamaSharp/pull/129
-        // TODO: update after
-        // Assert.Contains("\"result\":\"rainy\"", toolMessage1Content);
-        // Assert.Contains("\"tool_call_id\":\"1\"", toolMessage1Content);
-        // Assert.Contains("\"result\":\"sunny\"", toolMessage2Content);
-        // Assert.Contains("\"tool_call_id\":\"2\"", toolMessage2Content);
+        Assert.Contains("\"Result\":\"rainy\"", toolMessage1Content);
+        Assert.Contains("\"CallId\":\"1\"", toolMessage1Content);
+        Assert.Contains("\"Result\":\"sunny\"", toolMessage2Content);
+        Assert.Contains("\"CallId\":\"2\"", toolMessage2Content);
     }
 
     [Fact]
@@ -529,10 +525,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
-        Assert.Equal(2, messages.GetArrayLength());
+        Assert.Equal(4, messages.GetArrayLength());
 
-        var toolMessage1 = messages[0];
-        var toolMessage2 = messages[1];
+        var toolMessage1 = messages[1];
+        var toolMessage2 = messages[3];
 
         Assert.Equal("tool", toolMessage1.GetProperty("role").GetString());
         Assert.Equal("tool", toolMessage2.GetProperty("role").GetString());
@@ -540,14 +536,10 @@ public sealed class OllamaChatCompletionTests : IDisposable
         var toolMessage1Content = toolMessage1.GetProperty("content").GetString();
         var toolMessage2Content = toolMessage2.GetProperty("content").GetString();
 
-        // Currently Ollama Does Not Support sending the function content back to the model
-        // This implementation is proposed in this PR: https://github.com/awaescher/OllamaSharp/pull/129
-        // TODO: update after
-        // Assert.Contains("\"result\":\"rainy\"", toolMessage1Content);
-        // Assert.Contains("\"tool_call_id\":\"1\"", toolMessage1Content);
-        // 
-        // Assert.Contains("\"result\":\"sunny\"", toolMessage2Content);
-        // Assert.Contains("\"tool_call_id\":\"2\"", toolMessage2Content);
+        Assert.Contains("\"Result\":\"rainy\"", toolMessage1Content);
+        Assert.Contains("\"CallId\":\"1\"", toolMessage1Content);
+        Assert.Contains("\"Result\":\"sunny\"", toolMessage2Content);
+        Assert.Contains("\"CallId\":\"2\"", toolMessage2Content);
     }
 
     [Fact]

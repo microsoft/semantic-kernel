@@ -54,8 +54,6 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
-        List<ChatMessage> chatMessage = ChatCompletionServiceExtensions.ToChatMessageList(chatHistory);
-
         var completion = await this._chatClient.CompleteAsync(
             ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
@@ -181,13 +179,13 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
                             switch (enumeratorType)
                             {
                                 case JsonValueKind.String:
-                                    value = enumerator.Select(e => e.GetString()).ToArray();
+                                    value = enumerator.Select(e => e.GetString());
                                     break;
                                 case JsonValueKind.Number:
-                                    value = enumerator.Select(e => e.GetDouble()).ToArray();
+                                    value = enumerator.Select(e => e.GetDouble());
                                     break;
                                 case JsonValueKind.True or JsonValueKind.False:
-                                    value = enumerator.Select(e => e.ValueKind == JsonValueKind.True).ToArray();
+                                    value = enumerator.Select(e => e.ValueKind == JsonValueKind.True);
                                     break;
                             }
                         }
