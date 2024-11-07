@@ -410,7 +410,7 @@ def test_enum_plugin(setup_kernel):
     assert complex_schema == expected_schema
 
 
-def test_datatime_parameter(setup_kernel):
+def test_datetime_parameter(setup_kernel):
     kernel = setup_kernel
 
     complex_func_metadata = kernel.get_list_of_function_metadata_filters(
