@@ -9,6 +9,11 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 public sealed class RunPollingOptions
 {
     /// <summary>
+    /// The default maximum number or retries when monitoring thread-run status.
+    /// </summary>
+    public static int DefaultMaximumRetryCount { get; } = 3;
+
+    /// <summary>
     /// The default polling interval when monitoring thread-run status.
     /// </summary>
     public static TimeSpan DefaultPollingInterval { get; } = TimeSpan.FromMilliseconds(500);
@@ -27,6 +32,15 @@ public sealed class RunPollingOptions
     /// The default polling delay when retrying message retrieval due to a 404/NotFound from synchronization lag.
     /// </summary>
     public static TimeSpan DefaultMessageSynchronizationDelay { get; } = TimeSpan.FromMilliseconds(500);
+
+    /// <summary>
+    /// The maximum retry count when polling thread-run status.
+    /// </summary>
+    /// <remarks>
+    /// Only affects failures that have the potential to be transient.  Explicit server error responses
+    /// will result in immediate failure.
+    /// </remarks>
+    public int MaximumRetryCount { get; set; } = DefaultMaximumRetryCount;
 
     /// <summary>
     /// The polling interval when monitoring thread-run status.

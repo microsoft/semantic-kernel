@@ -11,13 +11,15 @@ else:
 
 import weaviate
 from weaviate.classes.init import Auth
+from weaviate.exceptions import WeaviateConnectionError
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
-from semantic_kernel.data.vector_store import VectorStore
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.exceptions.memory_connector_exceptions import (
+from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_storage.vector_store import VectorStore
+from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.exceptions import (
+    MemoryConnectorConnectionException,
     MemoryConnectorException,
     MemoryConnectorInitializationError,
 )
@@ -55,7 +57,9 @@ class WeaviateStore(VectorStore):
             env_file_path: The path to the environment file.
             env_file_encoding: The encoding of the environment file.
         """
+        managed_client: bool = False
         if not async_client:
+            managed_client = True
             weaviate_settings = WeaviateSettings.create(
                 url=url,
                 api_key=api_key,
@@ -93,7 +97,7 @@ class WeaviateStore(VectorStore):
             except Exception as e:
                 raise MemoryConnectorInitializationError(f"Failed to initialize Weaviate client: {e}")
 
-        super().__init__(async_client=async_client)
+        super().__init__(async_client=async_client, managed_client=managed_client)
 
     @override
     def get_collection(
@@ -121,3 +125,19 @@ class WeaviateStore(VectorStore):
                 return [collection.name for collection in collections]
             except Exception as e:
                 raise MemoryConnectorException(f"Failed to list Weaviate collections: {e}")
+
+    @override
+    async def __aenter__(self) -> "VectorStore":
+        """Enter the context manager."""
+        if not await self.async_client.is_live():
+            try:
+                await self.async_client.connect()
+            except WeaviateConnectionError as exc:
+                raise MemoryConnectorConnectionException("Weaviate client cannot connect.") from exc
+        return self
+
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
+            await self.async_client.close()

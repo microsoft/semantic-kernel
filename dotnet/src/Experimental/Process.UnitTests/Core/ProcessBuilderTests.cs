@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Core.UnitTests;
@@ -46,6 +47,29 @@ public class ProcessBuilderTests
     }
 
     /// <summary>
+    /// Tests that ensures when adding steps to builder, step names are not duplicated.<br/>
+    /// For state persistence step names must be unique to ensure they can be mapped correctly when restoring from save state.
+    /// </summary>
+    [Fact]
+    public void InvalidOperationExceptionOnAddStepWithSameStepName()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder(ProcessName);
+        processBuilder.AddStepFromType<TestStep>(StepName);
+
+        // Act
+        try
+        {
+            processBuilder.AddStepFromType<TestStep>(StepName);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Assert
+            Assert.Equal($"Step name {StepName} is already used, assign a different name for step", ex.Message);
+        }
+    }
+
+    /// <summary>
     /// Tests the AddStepFromProcess method to ensure it adds a sub-process correctly.
     /// </summary>
     [Fact]
@@ -61,6 +85,30 @@ public class ProcessBuilderTests
         // Assert
         Assert.Single(processBuilder.Steps);
         Assert.Equal(SubProcessName, stepBuilder.Name);
+    }
+
+    /// <summary>
+    /// Tests that ensures when adding process steps to builder, step names are not duplicated.<br/>
+    /// For state persistence step names must be unique to ensure they can be mapped correctly when restoring from save state.
+    /// </summary>
+    [Fact]
+    public void InvalidOperationExceptionOnAddSubprocessWithSameStepName()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder(ProcessName);
+        var subProcessBuilder = new ProcessBuilder(StepName);
+
+        processBuilder.AddStepFromType<TestStep>(StepName);
+        // Act
+        try
+        {
+            processBuilder.AddStepFromProcess(subProcessBuilder);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Assert
+            Assert.Equal($"Step name {StepName} is already used, assign a different name for step", ex.Message);
+        }
     }
 
     /// <summary>
@@ -100,6 +148,26 @@ public class ProcessBuilderTests
     }
 
     /// <summary>
+    /// Verify that the <see cref="ProcessStepBuilder.OnFunctionResult(string)"/> method returns a <see cref="ProcessStepEdgeBuilder"/>.
+    /// </summary>
+    [Fact]
+    public void OnFunctionErrorCreatesEdgeBuilder()
+    {
+        // Arrange
+        var processBuilder = new ProcessBuilder(ProcessName);
+        var errorStep = processBuilder.AddStepFromType<ErrorStep>();
+        var edgeBuilder = processBuilder.OnError().SendEventTo(new ProcessFunctionTargetBuilder(errorStep));
+        processBuilder.AddStepFromType<TestStep>();
+
+        // Act
+        var kernelProcess = processBuilder.Build();
+
+        // Assert
+        Assert.NotNull(edgeBuilder);
+        Assert.EndsWith("Global.OnError", edgeBuilder.EventId);
+    }
+
+    /// <summary>
     /// A class that represents a step for testing.
     /// </summary>
     private sealed class TestStep : KernelProcessStep<TestState>
@@ -114,6 +182,20 @@ public class ProcessBuilderTests
         /// </summary>
         [KernelFunction]
         public void TestFunction()
+        {
+        }
+    }
+
+    /// <summary>
+    /// A class that represents a step for testing.
+    /// </summary>
+    private sealed class ErrorStep : KernelProcessStep
+    {
+        /// <summary>
+        /// A method for unhandling failures at the process level.
+        /// </summary>
+        [KernelFunction]
+        public void GlobalErrorHandler(Exception exception)
         {
         }
     }

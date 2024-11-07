@@ -37,8 +37,4 @@
     <ProjectReference Include="..\Process.Core\Process.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Runtime\" />
-  </ItemGroup>
-
 </Project>

@@ -15,13 +15,13 @@ public interface IEventBuffer : IActor
     /// <summary>
     /// Enqueues an external event.
     /// </summary>
-    /// <param name="stepEvent">The event to enqueue.</param>
+    /// <param name="stepEvent">The event to enqueue as JSON.</param>
     /// <returns>A <see cref="Task"/></returns>
-    Task EnqueueAsync(ProcessEvent stepEvent);
+    Task EnqueueAsync(string stepEvent);
 
     /// <summary>
     /// Dequeues all external events.
     /// </summary>
-    /// <returns>A <see cref="List{T}"/> where T is <see cref="ProcessEvent"/></returns>
-    Task<List<ProcessEvent>> DequeueAllAsync();
+    /// <returns>A <see cref="IList{T}"/> where T is the JSON representation of a <see cref="ProcessEvent"/></returns>
+    Task<IList<string>> DequeueAllAsync();
 }

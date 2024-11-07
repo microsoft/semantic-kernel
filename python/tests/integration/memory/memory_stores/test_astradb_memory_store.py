@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
 from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
-from tests.integration.test_utils import retry
+from tests.integration.utils import retry
 
 astradb_installed: bool
 try:
@@ -43,7 +43,7 @@ def get_astradb_config():
 @pytest.mark.asyncio
 async def test_constructor(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
     result = await retry(lambda: memory.get_collections())
 
     assert result is not None
@@ -52,7 +52,7 @@ async def test_constructor(get_astradb_config):
 @pytest.mark.asyncio
 async def test_create_and_get_collection(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     result = await retry(lambda: memory.does_collection_exist("test_collection"))
@@ -63,7 +63,7 @@ async def test_create_and_get_collection(get_astradb_config):
 @pytest.mark.asyncio
 async def test_get_collections(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     result = await retry(lambda: memory.get_collections())
@@ -73,7 +73,7 @@ async def test_get_collections(get_astradb_config):
 @pytest.mark.asyncio
 async def test_delete_collection(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     await retry(lambda: memory.delete_collection("test_collection"))
@@ -84,7 +84,7 @@ async def test_delete_collection(get_astradb_config):
 @pytest.mark.asyncio
 async def test_does_collection_exist(get_astradb_config):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     result = await retry(lambda: memory.does_collection_exist("test_collection"))
@@ -94,7 +94,7 @@ async def test_does_collection_exist(get_astradb_config):
 @pytest.mark.asyncio
 async def test_upsert_and_get(get_astradb_config, memory_record1):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     await retry(lambda: memory.upsert("test_collection", memory_record1))
@@ -117,7 +117,7 @@ async def test_upsert_and_get(get_astradb_config, memory_record1):
 @pytest.mark.asyncio
 async def test_upsert_batch_and_get_batch(get_astradb_config, memory_record1, memory_record2):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     await retry(lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2]))
@@ -138,7 +138,7 @@ async def test_upsert_batch_and_get_batch(get_astradb_config, memory_record1, me
 @pytest.mark.asyncio
 async def test_remove(get_astradb_config, memory_record1):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     await retry(lambda: memory.upsert("test_collection", memory_record1))
@@ -151,7 +151,7 @@ async def test_remove(get_astradb_config, memory_record1):
 @pytest.mark.asyncio
 async def test_remove_batch(get_astradb_config, memory_record1, memory_record2):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     await retry(lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2]))
@@ -167,7 +167,7 @@ async def test_remove_batch(get_astradb_config, memory_record1, memory_record2):
 @pytest.mark.asyncio
 async def test_get_nearest_match(get_astradb_config, memory_record1, memory_record2):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     await retry(lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2]))
@@ -191,7 +191,7 @@ async def test_get_nearest_match(get_astradb_config, memory_record1, memory_reco
 @pytest.mark.asyncio
 async def test_get_nearest_matches(get_astradb_config, memory_record1, memory_record2, memory_record3):
     app_token, db_id, region, keyspace = get_astradb_config
-    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine")
+    memory = AstraDBMemoryStore(app_token, db_id, region, keyspace, 2, "cosine_similarity")
 
     await retry(lambda: memory.create_collection("test_collection"))
     await retry(lambda: memory.upsert_batch("test_collection", [memory_record1, memory_record2, memory_record3]))

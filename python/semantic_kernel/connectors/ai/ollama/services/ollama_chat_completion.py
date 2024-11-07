@@ -165,8 +165,7 @@ class OllamaChatCompletion(OllamaBase, ChatCompletionClientBase):
 
         if not isinstance(response_object, Mapping):
             raise ServiceInvalidResponseError(
-                "Invalid response type from Ollama chat completion. "
-                f"Expected Mapping but got {type(response_object)}."
+                f"Invalid response type from Ollama chat completion. Expected Mapping but got {type(response_object)}."
             )
 
         return [
