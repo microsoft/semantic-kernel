@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Process.Models;
 /// <summary>
 /// Process state used for State Persistence serialization
 /// </summary>
-public record KernelProcessMapStateMetadata : KernelProcessStepStateMetadata<object>
+public sealed record class KernelProcessMapStateMetadata : KernelProcessStepStateMetadata
 {
     /// <summary>
     /// Process State of Steps if provided
