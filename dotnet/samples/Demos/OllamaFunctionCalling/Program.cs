@@ -1,10 +1,10 @@
 ﻿#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
+using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using OllamaFunctionCalling;
-using System;
 
 var builder = Kernel.CreateBuilder();
 var modelId = "llama3.2";
