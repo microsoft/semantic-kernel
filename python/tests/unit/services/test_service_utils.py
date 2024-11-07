@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import datetime
 from enum import Enum
 from typing import Annotated
 
@@ -14,6 +15,16 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 # region Test helpers
+
+
+class DateTimePlugin:
+    class Data(KernelBaseModel):
+        timestamp: datetime.datetime
+
+    @kernel_function(name="GetData", description="Get a Data class.")
+    def get_data(data: Annotated[Data, "The data."]) -> Annotated[Data, "The data."]:
+        """Get the data."""
+        return data
 
 
 class BooleanPlugin:
@@ -117,6 +128,7 @@ def setup_kernel():
         "UnionPlugin": UnionTypePlugin(),
         "UnionPluginLegacy": UnionTypePluginLegacySyntax(),
         "EnumPlugin": EnumPlugin(),
+        "DateTimePlugin": DateTimePlugin(),
     })
     return kernel
 
@@ -391,6 +403,38 @@ def test_enum_plugin(setup_kernel):
                     }
                 },
                 "required": ["value"],
+            },
+        },
+    }
+
+    assert complex_schema == expected_schema
+
+
+def test_datatime_parameter(setup_kernel):
+    kernel = setup_kernel
+
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(
+        filters={"included_plugins": ["DateTimePlugin"]}
+    )
+
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
+
+    expected_schema = {
+        "type": "function",
+        "function": {
+            "name": "DateTimePlugin-GetData",
+            "description": "Get a Data class.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "properties": {"timestamp": {"type": "object"}},
+                        "required": ["timestamp"],
+                        "description": "The data.",
+                    }
+                },
+                "required": ["data"],
             },
         },
     }
