@@ -5,37 +5,38 @@ using System.Linq;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel.Process.Internal;
+
 internal static class KernelProcessStateMetadataExtension
 {
-    public static List<KernelProcessStepInfo> BuildWithStateMetadata(this List<ProcessStepBuilder> stepBuilders, KernelProcessStateMetadata? stateMetadata)
+    public static List<KernelProcessStepInfo> BuildWithStateMetadata(this ProcessBuilder processBuilder, KernelProcessStateMetadata? stateMetadata)
     {
         List<KernelProcessStepInfo> builtSteps = [];
         // 1- Validate StateMetadata: Migrate previous state versions if needed + sanitize state
         KernelProcessStateMetadata? sanitizedMetadata = null;
         if (stateMetadata != null)
         {
-            sanitizedMetadata = SanitizeProcessStateMetadata(stateMetadata, stepBuilders);
+            sanitizedMetadata = SanitizeProcessStateMetadata(stateMetadata, processBuilder.Steps);
         }
 
         // 2- Build steps info with validated stateMetadata
-        stepBuilders.ForEach(step =>
+        foreach(ProcessStepBuilder step in processBuilder.Steps)
         {
             if (sanitizedMetadata != null && sanitizedMetadata.StepsState != null && sanitizedMetadata.StepsState.TryGetValue(step.Name, out var stepStateObject) && stepStateObject != null)
             {
                 builtSteps.Add(step.BuildStep(stepStateObject));
-                return;
+                continue;
             }
 
             builtSteps.Add(step.BuildStep());
-        });
+        }
 
         return builtSteps;
     }
 
-    private static KernelProcessStateMetadata SanitizeProcessStateMetadata(KernelProcessStateMetadata stateMetadata, List<ProcessStepBuilder> stepBuilders)
+    private static KernelProcessStateMetadata SanitizeProcessStateMetadata(KernelProcessStateMetadata stateMetadata, IReadOnlyList<ProcessStepBuilder> stepBuilders)
     {
         KernelProcessStateMetadata sanitizedStateMetadata = stateMetadata;
-        stepBuilders.ForEach(step =>
+        foreach (ProcessStepBuilder step in stepBuilders)
         {
             // 1- find matching key name with exact match or by alias match
             string? stepKey = null;
@@ -70,7 +71,12 @@ internal static class KernelProcessStateMetadataExtension
                             // version mismatch - check if migration logic in place
                             if (step is ProcessBuilder subprocessBuilder)
                             {
-                                var sanitizedStepState = SanitizeProcessStateMetadata((KernelProcessStateMetadata)savedStateMetadata, subprocessBuilder.Steps.ToList());
+                                KernelProcessStateMetadata sanitizedStepState = SanitizeProcessStateMetadata((KernelProcessStateMetadata)savedStateMetadata, subprocessBuilder.Steps);
+                                sanitizedStateMetadata.StepsState[step.Name] = sanitizedStepState;
+                            }
+                            if (step is ProcessMapBuilder mapBuilder)
+                            {
+                                KernelProcessStateMetadata sanitizedStepState = SanitizeProcessStateMetadata((KernelProcessStateMetadata)savedStateMetadata, mapBuilder.MapOperation.Steps);
                                 sanitizedStateMetadata.StepsState[step.Name] = sanitizedStepState;
                             }
                             else if (false)
@@ -92,7 +98,7 @@ internal static class KernelProcessStateMetadataExtension
                     }
                 }
             }
-        });
+        }
 
         return sanitizedStateMetadata;
     }

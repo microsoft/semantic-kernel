@@ -280,11 +280,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         // Build the steps and injecting initial state if any is provided
-        var builtSteps = this._steps.BuildWithStateMetadata(stateMetadata);
+        var builtSteps = this.BuildWithStateMetadata(stateMetadata);
 
         // Create the process
-        var state = new KernelProcessState(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
-        var process = new KernelProcess(state, builtSteps, builtEdges);
+        KernelProcessState state = new(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
+        KernelProcess process = new(state, builtSteps, builtEdges);
+
         return process;
     }
 

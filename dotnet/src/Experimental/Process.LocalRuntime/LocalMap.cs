@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,7 +38,7 @@ internal sealed class LocalMap : LocalStep
 
         int index = 0;
         List<(Task Task, LocalKernelProcessContext ProcessContext, MapOperationContext Context)> mapOperations = [];
-        Dictionary<string, Type> capturedEvents = [];
+        ConcurrentDictionary<string, Type> capturedEvents = [];
 
         try
         {
@@ -108,9 +109,9 @@ internal sealed class LocalMap : LocalStep
         return default;
     }
 
-    private sealed record MapOperationContext(in HashSet<string> EventTargets, in Dictionary<string, Type> CapturedEvents)
+    private sealed record MapOperationContext(in HashSet<string> EventTargets, in IDictionary<string, Type> CapturedEvents)
     {
-        public Dictionary<string, object?> Results { get; } = [];
+        public ConcurrentDictionary<string, object?> Results { get; } = [];
 
         public bool Filter(ProcessEvent processEvent)
         {

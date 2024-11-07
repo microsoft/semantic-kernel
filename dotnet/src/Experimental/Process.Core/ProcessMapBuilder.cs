@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class ProcessMapBuilder : ProcessStepBuilder
 {
-    private readonly ProcessBuilder _mapProcess;
     internal readonly ProcessFunctionTargetBuilder _mapTarget;
 
     /// <summary>
@@ -24,13 +23,18 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         : base($"Map{mapTarget.Step.Name}")
     {
         this._mapTarget = mapTarget;
-        this._mapProcess = this.CreateMapProcess(mapTarget);
+        this.MapOperation = this.CreateMapProcess(mapTarget);
     }
 
     /// <summary>
     /// Version of the map-step, used when saving the state of the step.
     /// </summary>
     public string Version { get; init; } = "v1";
+
+    /// <summary>
+    /// The map operation that will be executed for each element in the input.
+    /// </summary>
+    internal ProcessBuilder MapOperation { get; }
 
     /// <inheritdoc/>
     /// <remarks>
@@ -54,7 +58,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         KernelProcessMapState state = new(this.Name, this.Version, this.Id);
-        return new KernelProcessMap(state, this._mapProcess.Build(), builtEdges);
+        return new KernelProcessMap(state, this.MapOperation.Build(), builtEdges);
     }
 
     private ProcessBuilder CreateMapProcess(ProcessFunctionTargetBuilder mapTarget)
