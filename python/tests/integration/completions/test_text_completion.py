@@ -40,7 +40,7 @@ else:
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
-from tests.integration.test_utils import is_service_setup_for_testing, retry
+from tests.integration.utils import is_service_setup_for_testing, retry
 
 ollama_setup: bool = is_service_setup_for_testing(["OLLAMA_TEXT_MODEL_ID"])
 google_ai_setup: bool = is_service_setup_for_testing(["GOOGLE_AI_API_KEY"])

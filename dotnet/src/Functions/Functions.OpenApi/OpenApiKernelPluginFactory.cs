@@ -161,7 +161,7 @@ public static partial class OpenApiKernelPluginFactory
             try
             {
                 logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, loggerFactory));
+                functions.Add(CreateRestApiFunction(pluginName, runner, restApi.Info, restApi.SecurityRequirements, operation, executionParameters, documentUri, loggerFactory));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -179,6 +179,8 @@ public static partial class OpenApiKernelPluginFactory
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
+    /// <param name="info">The REST API info.</param>
+    /// <param name="security">The REST API security requirements.</param>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenAPI document.</param>
@@ -187,6 +189,8 @@ public static partial class OpenApiKernelPluginFactory
     internal static KernelFunction CreateRestApiFunction(
         string pluginName,
         RestApiOperationRunner runner,
+        RestApiInfo info,
+        List<RestApiSecurityRequirement>? security,
         RestApiOperation operation,
         OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
@@ -266,8 +270,12 @@ public static partial class OpenApiKernelPluginFactory
         var additionalMetadata = new Dictionary<string, object?>
         {
             { OpenApiKernelPluginFactory.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() },
-            { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, string.IsNullOrEmpty(operation.Server?.Url) ? Array.Empty<string>() : [ operation.Server!.Url! ] }
+            { OpenApiKernelPluginFactory.OperationExtensionsOperationKey, operation },
+            { OpenApiKernelPluginFactory.OperationExtensionsInfoKey, info },
+            { OpenApiKernelPluginFactory.OperationExtensionsSecurityKey, security },
+            { OpenApiKernelPluginFactory.OperationExtensionsServerUrlsKey, operation.Servers is { Count: > 0 } servers && !string.IsNullOrEmpty(servers[0].Url) ? [servers[0].Url! ] : Array.Empty<string>() }
         };
+
         if (operation.Extensions is { Count: > 0 })
         {
             additionalMetadata.Add(OpenApiKernelPluginFactory.OperationExtensionsMetadataKey, operation.Extensions);
@@ -291,6 +299,15 @@ public static partial class OpenApiKernelPluginFactory
     /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
     private const string OperationExtensionsMethodKey = "method";
 
+    /// <summary>The metadata property bag key to use when storing the operation.</summary>
+    private const string OperationExtensionsOperationKey = "operation";
+
+    /// <summary>The metadata property bag key to use when storing the API information.</summary>
+    private const string OperationExtensionsInfoKey = "info";
+
+    /// <summary>The metadata property bag key to use when storing the security requirements.</summary>
+    private const string OperationExtensionsSecurityKey = "security";
+
     /// <summary>The metadata property bag key to use when storing the server of an operation.</summary>
     private const string OperationExtensionsServerUrlsKey = "server-urls";
 
@@ -308,7 +325,7 @@ public static partial class OpenApiKernelPluginFactory
     {
         if (!string.IsNullOrWhiteSpace(operation.Id))
         {
-            return ConvertOperationIdToValidFunctionName(operationId: operation.Id, logger: logger);
+            return ConvertOperationIdToValidFunctionName(operationId: operation.Id!, logger: logger);
         }
 
         // Tokenize operation path on forward and back slashes

@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// The REST API operation payload property.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class RestApiOperationPayloadProperty
 {
     /// <summary>
@@ -38,7 +40,7 @@ public sealed class RestApiOperationPayloadProperty
     /// <summary>
     /// The properties.
     /// </summary>
-    public IList<RestApiOperationPayloadProperty> Properties { get; }
+    public IReadOnlyList<RestApiOperationPayloadProperty> Properties { get; }
 
     /// <summary>
     /// The schema of the parameter.
@@ -63,11 +65,11 @@ public sealed class RestApiOperationPayloadProperty
     /// <param name="schema">The schema of the payload property.</param>
     /// <param name="defaultValue">The default value of the property.</param>
     /// <returns>Returns a new instance of the <see cref="RestApiOperationPayloadProperty"/> class.</returns>
-    public RestApiOperationPayloadProperty(
+    internal RestApiOperationPayloadProperty(
         string name,
         string type,
         bool isRequired,
-        IList<RestApiOperationPayloadProperty> properties,
+        IReadOnlyList<RestApiOperationPayloadProperty> properties,
         string? description = null,
         string? format = null,
         KernelJsonSchema? schema = null,

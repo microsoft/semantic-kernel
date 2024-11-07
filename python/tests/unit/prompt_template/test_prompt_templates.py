@@ -120,12 +120,12 @@ def test_restore():
     assert restored_template.name == name, "The name attribute does not match the expected value."
     assert restored_template.description == description, "The description attribute does not match the expected value."
     assert restored_template.template == template, "The template attribute does not match the expected value."
-    assert (
-        restored_template.input_variables == input_variables
-    ), "The input_variables attribute does not match the expected value."
-    assert (
-        restored_template.execution_settings["default"] == execution_settings
-    ), "The execution_settings attribute does not match the expected value."
+    assert restored_template.input_variables == input_variables, (
+        "The input_variables attribute does not match the expected value."
+    )
+    assert restored_template.execution_settings["default"] == execution_settings, (
+        "The execution_settings attribute does not match the expected value."
+    )
 
 
 def test_prompt_template_config_initialization_full_handlebars():
@@ -170,15 +170,15 @@ def test_restore_handlebars():
     assert restored_template.name == name, "The name attribute does not match the expected value."
     assert restored_template.description == description, "The description attribute does not match the expected value."
     assert restored_template.template == template, "The template attribute does not match the expected value."
-    assert (
-        restored_template.input_variables == input_variables
-    ), "The input_variables attribute does not match the expected value."
-    assert (
-        restored_template.execution_settings["default"] == execution_settings
-    ), "The execution_settings attribute does not match the expected value."
-    assert (
-        restored_template.template_format == template_format
-    ), "The template_format attribute does not match the expected value."
+    assert restored_template.input_variables == input_variables, (
+        "The input_variables attribute does not match the expected value."
+    )
+    assert restored_template.execution_settings["default"] == execution_settings, (
+        "The execution_settings attribute does not match the expected value."
+    )
+    assert restored_template.template_format == template_format, (
+        "The template_format attribute does not match the expected value."
+    )
 
 
 def test_rewrite_execution_settings():
@@ -204,24 +204,22 @@ def test_rewrite_execution_settings():
 
 def test_from_json():
     config = PromptTemplateConfig.from_json(
-        json.dumps(
-            {
-                "name": "Test Config",
-                "description": "Test Description",
-                "template": "Example template",
-                "template_format": "semantic-kernel",
-                "input_variables": [
-                    {
-                        "name": "var1",
-                        "description": "A variable",
-                        "default": "default_val",
-                        "is_required": True,
-                        "json_schema": "string",
-                    }
-                ],
-                "execution_settings": {},
-            }
-        )
+        json.dumps({
+            "name": "Test Config",
+            "description": "Test Description",
+            "template": "Example template",
+            "template_format": "semantic-kernel",
+            "input_variables": [
+                {
+                    "name": "var1",
+                    "description": "A variable",
+                    "default": "default_val",
+                    "is_required": True,
+                    "json_schema": "string",
+                }
+            ],
+            "execution_settings": {},
+        })
     )
     assert config.name == "Test Config"
     assert config.description == "Test Description"
@@ -239,48 +237,44 @@ def test_from_json_fail():
 def test_from_json_validate_fail():
     with raises(ValueError):
         PromptTemplateConfig.from_json(
-            json.dumps(
-                {
-                    "name": "Test Config",
-                    "description": "Test Description",
-                    "template": "Example template",
-                    "template_format": "semantic-kernel",
-                    "input_variables": [
-                        {
-                            "name": "var1",
-                            "description": "A variable",
-                            "default": 1,
-                            "is_required": True,
-                            "json_schema": "string",
-                        }
-                    ],
-                    "execution_settings": {},
-                }
-            )
+            json.dumps({
+                "name": "Test Config",
+                "description": "Test Description",
+                "template": "Example template",
+                "template_format": "semantic-kernel",
+                "input_variables": [
+                    {
+                        "name": "var1",
+                        "description": "A variable",
+                        "default": 1,
+                        "is_required": True,
+                        "json_schema": "string",
+                    }
+                ],
+                "execution_settings": {},
+            })
         )
 
 
 def test_from_json_with_function_choice_behavior():
-    config_string = json.dumps(
-        {
-            "name": "Test Config",
-            "description": "Test Description",
-            "template": "Example template",
-            "template_format": "semantic-kernel",
-            "input_variables": [
-                {
-                    "name": "var1",
-                    "description": "A variable",
-                    "default": "default_val",
-                    "is_required": True,
-                    "json_schema": "string",
-                }
-            ],
-            "execution_settings": {
-                "settings1": {"function_choice_behavior": {"type": "auto", "functions": ["p1.f1"]}},
-            },
-        }
-    )
+    config_string = json.dumps({
+        "name": "Test Config",
+        "description": "Test Description",
+        "template": "Example template",
+        "template_format": "semantic-kernel",
+        "input_variables": [
+            {
+                "name": "var1",
+                "description": "A variable",
+                "default": "default_val",
+                "is_required": True,
+                "json_schema": "string",
+            }
+        ],
+        "execution_settings": {
+            "settings1": {"function_choice_behavior": {"type": "auto", "functions": ["p1.f1"]}},
+        },
+    })
     config = PromptTemplateConfig.from_json(config_string)
 
     expected_execution_settings = PromptExecutionSettings(

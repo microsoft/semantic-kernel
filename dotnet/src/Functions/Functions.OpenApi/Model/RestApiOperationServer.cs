@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// REST API Operation Server.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class RestApiOperationServer
 {
     /// <summary>
@@ -29,7 +31,7 @@ public sealed class RestApiOperationServer
     /// <param name="url">URL to the target host</param>
     /// <param name="variables">Substitution variables for the server's URL template</param>
 #pragma warning disable CA1054 // URI-like parameters should not be strings
-    public RestApiOperationServer(string? url = null, IDictionary<string, RestApiOperationServerVariable>? variables = null)
+    internal RestApiOperationServer(string? url = null, IDictionary<string, RestApiOperationServerVariable>? variables = null)
 #pragma warning restore CA1054 // URI-like parameters should not be strings
     {
         this.Url = string.IsNullOrEmpty(url) ? null : url;

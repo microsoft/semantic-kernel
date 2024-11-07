@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Dapr.Actors.Runtime;
 using Microsoft.SemanticKernel.Process.Runtime;
@@ -13,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class MessageBufferActor : Actor, IMessageBuffer
 {
-    private Queue<ProcessMessage>? _queue = new();
+    private List<string> _queue = [];
 
     /// <summary>
     /// Required constructor for Dapr Actor.
@@ -27,11 +26,11 @@ internal class MessageBufferActor : Actor, IMessageBuffer
     /// Dequeues an event.
     /// </summary>
     /// <returns>A <see cref="List{T}"/> where T is <see cref="ProcessEvent"/></returns>
-    public async Task<List<ProcessMessage>> DequeueAllAsync()
+    public async Task<IList<string>> DequeueAllAsync()
     {
         // Dequeue and clear the queue.
-        var items = this._queue!.ToList();
-        this._queue!.Clear();
+        string[] items = [.. this._queue];
+        this._queue.Clear();
 
         // Save the state.
         await this.StateManager.SetStateAsync(ActorStateKeys.MessageQueueState, this._queue).ConfigureAwait(false);
@@ -40,9 +39,9 @@ internal class MessageBufferActor : Actor, IMessageBuffer
         return items;
     }
 
-    public async Task EnqueueAsync(ProcessMessage message)
+    public async Task EnqueueAsync(string message)
     {
-        this._queue!.Enqueue(message);
+        this._queue.Add(message);
 
         // Save the state.
         await this.StateManager.SetStateAsync(ActorStateKeys.MessageQueueState, this._queue).ConfigureAwait(false);
@@ -55,14 +54,14 @@ internal class MessageBufferActor : Actor, IMessageBuffer
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var eventQueueState = await this.StateManager.TryGetStateAsync<Queue<ProcessMessage>>(ActorStateKeys.MessageQueueState).ConfigureAwait(false);
+        var eventQueueState = await this.StateManager.TryGetStateAsync<List<string>>(ActorStateKeys.MessageQueueState).ConfigureAwait(false);
         if (eventQueueState.HasValue)
         {
             this._queue = eventQueueState.Value;
         }
         else
         {
-            this._queue = new Queue<ProcessMessage>();
+            this._queue = [];
         }
     }
 }

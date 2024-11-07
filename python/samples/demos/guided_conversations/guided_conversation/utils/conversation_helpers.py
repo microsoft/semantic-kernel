@@ -116,6 +116,7 @@ class Conversation:
         for message in self.conversation_messages:
             message.metadata["turn_number"] = turn_number
 
+    @staticmethod
     def message_to_json(message: ChatMessageContent) -> dict:
         """
         Convert a ChatMessageContent object to a JSON serializable dictionary.
@@ -131,8 +132,8 @@ class Conversation:
             "content": message.content,
             "name": message.name,
             "metadata": {
-                "turn_number": message.metadata["turn_number"] if "turn_number" in message.metadata else None,
-                "type": message.metadata["type"] if "type" in message.metadata else ConversationMessageType.DEFAULT,
+                "turn_number": message.metadata.get("turn_number", None),
+                "type": message.metadata.get("type", ConversationMessageType.DEFAULT),
             },
         }
 

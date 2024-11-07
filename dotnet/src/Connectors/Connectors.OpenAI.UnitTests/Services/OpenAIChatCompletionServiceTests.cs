@@ -642,6 +642,69 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("image_url", contentItems[1].GetProperty("type").GetString());
     }
 
+    [Theory]
+    [MemberData(nameof(ImageContentMetadataDetailLevelData))]
+    public async Task GetChatMessageContentsHandlesImageDetailLevelInMetadataCorrectlyAsync(object? detailLevel, string? expectedDetailLevel)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-4-vision-preview", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        using var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(ChatCompletionResponse) };
+        this._messageHandlerStub.ResponseToReturn = response;
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(
+        [
+            new ImageContent(new Uri("https://image")) { Metadata = new Dictionary<string, object?> { ["ChatImageDetailLevel"] = detailLevel } }
+        ]);
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+
+        Assert.Equal(1, messages.GetArrayLength());
+
+        var contentItems = messages[0].GetProperty("content");
+        Assert.Equal(1, contentItems.GetArrayLength());
+
+        Assert.Equal("image_url", contentItems[0].GetProperty("type").GetString());
+
+        var imageProperty = contentItems[0].GetProperty("image_url");
+
+        Assert.Equal("https://image/", imageProperty.GetProperty("url").GetString());
+
+        if (detailLevel is null || (detailLevel is string detailLevelString && string.IsNullOrWhiteSpace(detailLevelString)))
+        {
+            Assert.False(imageProperty.TryGetProperty("detail", out _));
+        }
+        else
+        {
+            Assert.Equal(expectedDetailLevel, imageProperty.GetProperty("detail").GetString());
+        }
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsThrowsExceptionWithInvalidImageDetailLevelInMetadataAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-4-vision-preview", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(
+        [
+            new ImageContent(new Uri("https://image")) { Metadata = new Dictionary<string, object?> { ["ChatImageDetailLevel"] = "invalid_value" } }
+        ]);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => chatCompletion.GetChatMessageContentsAsync(chatHistory));
+    }
+
     [Fact]
     public async Task FunctionCallsShouldBePropagatedToCallersViaChatMessageItemsOfTypeFunctionCallContentAsync()
     {
@@ -1179,9 +1242,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(typeof(TestStruct))]
-    [InlineData(typeof(TestStruct?))]
-    public async Task GetChatMessageContentsSendsValidJsonSchemaWithStruct(Type responseFormatType)
+    [InlineData(typeof(TestStruct), "TestStruct")]
+    [InlineData(typeof(TestStruct?), "TestStruct")]
+    [InlineData(typeof(TestStruct<string>), "TestStructString")]
+    [InlineData(typeof(TestStruct<string>?), "TestStructString")]
+    [InlineData(typeof(TestStruct<List<float>>), "TestStructListSingle")]
+    [InlineData(typeof(TestStruct<List<float>>?), "TestStructListSingle")]
+    public async Task GetChatMessageContentsSendsValidJsonSchemaWithStruct(Type responseFormatType, string expectedSchemaName)
     {
         // Arrange
         var executionSettings = new OpenAIPromptExecutionSettings { ResponseFormat = responseFormatType };
@@ -1204,7 +1271,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var requestResponseFormat = requestJsonElement.GetProperty("response_format");
 
         Assert.Equal("json_schema", requestResponseFormat.GetProperty("type").GetString());
-        Assert.Equal("TestStruct", requestResponseFormat.GetProperty("json_schema").GetProperty("name").GetString());
+        Assert.Equal(expectedSchemaName, requestResponseFormat.GetProperty("json_schema").GetProperty("name").GetString());
         Assert.True(requestResponseFormat.GetProperty("json_schema").GetProperty("strict").GetBoolean());
 
         var schema = requestResponseFormat.GetProperty("json_schema").GetProperty("schema");
@@ -1219,8 +1286,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
             schema.GetProperty("required")[1].GetString(),
         };
 
-        Assert.Contains("TextProperty", requiredParentProperties);
-        Assert.Contains("NumericProperty", requiredParentProperties);
+        Assert.Contains("Property1", requiredParentProperties);
+        Assert.Contains("Property2", requiredParentProperties);
     }
 
     [Fact]
@@ -1371,6 +1438,58 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("required", optionsJson.GetProperty("tool_choice").ToString());
     }
 
+    [Theory]
+    [InlineData("auto", true)]
+    [InlineData("auto", false)]
+    [InlineData("auto", null)]
+    [InlineData("required", true)]
+    [InlineData("required", false)]
+    [InlineData("required", null)]
+    public async Task ItPassesAllowParallelCallsOptionToLLMAsync(string choice, bool? optionValue)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Now")
+        ]);
+
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        using var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json")) };
+        this._messageHandlerStub.ResponseQueue.Enqueue(response);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var functionChoiceBehaviorOptions = new FunctionChoiceBehaviorOptions() { AllowParallelCalls = optionValue };
+
+        var executionSettings = new OpenAIPromptExecutionSettings()
+        {
+            FunctionChoiceBehavior = choice switch
+            {
+                "auto" => FunctionChoiceBehavior.Auto(options: functionChoiceBehaviorOptions),
+                "required" => FunctionChoiceBehavior.Required(options: functionChoiceBehaviorOptions),
+                _ => throw new ArgumentException("Invalid choice", nameof(choice))
+            }
+        };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!));
+
+        if (optionValue is null)
+        {
+            Assert.False(optionsJson.TryGetProperty("parallel_tool_calls", out _));
+        }
+        else
+        {
+            Assert.Equal(optionValue, optionsJson.GetProperty("parallel_tool_calls").GetBoolean());
+        }
+    }
+
     [Fact]
     public async Task ItDoesNotChangeDefaultsForToolsAndChoiceIfNeitherOfFunctionCallingConfigurationsSetAsync()
     {
@@ -1502,6 +1621,15 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         }
         """;
 
+    public static TheoryData<object?, string?> ImageContentMetadataDetailLevelData => new()
+    {
+        { "auto", "auto" },
+        { "high", "high" },
+        { "low", "low" },
+        { "", null },
+        { null, null }
+    };
+
 #pragma warning disable CS8618, CA1812
     private sealed class MathReasoning
     {
@@ -1519,9 +1647,16 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
     private struct TestStruct
     {
-        public string TextProperty { get; set; }
+        public string Property1 { get; set; }
 
-        public int? NumericProperty { get; set; }
+        public int? Property2 { get; set; }
+    }
+
+    private struct TestStruct<TProperty>
+    {
+        public TProperty Property1 { get; set; }
+
+        public int? Property2 { get; set; }
     }
 #pragma warning restore CS8618, CA1812
 }

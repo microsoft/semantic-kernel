@@ -201,10 +201,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             ) from exc
 
     async def get_batch(
-        self, 
-        collection_name: str, 
-        keys: list[str], 
-        with_embeddings: bool = False
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
     ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
