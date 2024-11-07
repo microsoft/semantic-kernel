@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Dapr.Actors;
 using Dapr.Actors.Client;
 using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -40,7 +41,7 @@ public class DaprKernelProcessContext : KernelProcessContext
     {
         var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
         await this._daprProcess.InitializeProcessAsync(daprProcess, null).ConfigureAwait(false);
-        await this._daprProcess.RunOnceAsync(initialEvent).ConfigureAwait(false);
+        await this._daprProcess.RunOnceAsync(initialEvent.ToJson()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public class DaprKernelProcessContext : KernelProcessContext
     /// <param name="processEvent">The event to sent to the process.</param>
     /// <returns>A <see cref="Task"/></returns>
     public override async Task SendEventAsync(KernelProcessEvent processEvent) =>
-        await this._daprProcess.SendMessageAsync(processEvent).ConfigureAwait(false);
+        await this._daprProcess.SendMessageAsync(processEvent.ToJson()).ConfigureAwait(false);
 
     /// <summary>
     /// Stops the process.
