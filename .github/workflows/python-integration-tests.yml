@@ -62,15 +62,18 @@ jobs:
         image: redis/redis-stack-server:latest
         ports:
           - 6379:6379
+        options: --name redis --hostname redis
       weaviate:
         image: cr.weaviate.io/semitechnologies/weaviate:1.26.6
         ports:
           - 8080:8080
           - 50051:50051
+        options: --name weaviate --hostname weaviate
       ollama:
         image: ollama/ollama:latest
         ports:
           - 11434:11434
+        options: --name ollama --hostname ollama
     environment: "integration"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
@@ -139,6 +142,7 @@ jobs:
       - name: Pull model in Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
+          docker ps
           docker exec -it ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
           docker exec -it ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
           docker exec -it ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
