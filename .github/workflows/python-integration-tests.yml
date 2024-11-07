@@ -125,11 +125,11 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           docker ps
-          docker exec ollama ollama pull ${{ env.OLLAMA_CHAT_MODEL_ID }}
-          docker exec ollama ollama pull ${{ env.OLLAMA_CHAT_MODEL_ID_IMAGE }}
-          docker exec ollama ollama pull ${{ env.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
-          docker exec ollama ollama pull ${{ env.OLLAMA_TEXT_MODEL_ID }}
-          docker exec ollama ollama pull ${{ env.OLLAMA_EMBEDDING_MODEL_ID }}
+          docker exec ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          docker exec ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          docker exec ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          docker exec ollama ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          docker exec ollama ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
           docker exec ollama ollama list
       - name: Set up uv
         uses: astral-sh/setup-uv@v3
