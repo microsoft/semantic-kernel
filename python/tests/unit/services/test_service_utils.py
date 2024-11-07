@@ -108,18 +108,16 @@ class EnumPlugin:
 @pytest.fixture
 def setup_kernel():
     kernel = Kernel()
-    kernel.add_plugins(
-        {
-            "BooleanPlugin": BooleanPlugin(),
-            "StringPlugin": StringPlugin(),
-            "ComplexTypePlugin": ComplexTypePlugin(),
-            "ListPlugin": ListPlugin(),
-            "ItemsPlugin": ItemsPlugin(),
-            "UnionPlugin": UnionTypePlugin(),
-            "UnionPluginLegacy": UnionTypePluginLegacySyntax(),
-            "EnumPlugin": EnumPlugin(),
-        }
-    )
+    kernel.add_plugins({
+        "BooleanPlugin": BooleanPlugin(),
+        "StringPlugin": StringPlugin(),
+        "ComplexTypePlugin": ComplexTypePlugin(),
+        "ListPlugin": ListPlugin(),
+        "ItemsPlugin": ItemsPlugin(),
+        "UnionPlugin": UnionTypePlugin(),
+        "UnionPluginLegacy": UnionTypePluginLegacySyntax(),
+        "EnumPlugin": EnumPlugin(),
+    })
     return kernel
 
 

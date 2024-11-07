@@ -6,8 +6,8 @@ from pydantic import ValidationError
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.functions import KernelArguments
 from semantic_kernel.contents import ChatMessageContent
+from semantic_kernel.functions import KernelArguments
 
 from guided_conversation.utils.openai_tool_calling import parse_function_result, validate_tool_calling
 

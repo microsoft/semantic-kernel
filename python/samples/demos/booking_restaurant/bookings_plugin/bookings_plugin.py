@@ -115,12 +115,10 @@ class BookingsPlugin:
         appointments = await self.graph_client.solutions.booking_businesses.by_booking_business_id(
             self.booking_business_id
         ).appointments.get()
-        return "\n".join(
-            [
-                f"{appointment.service_location.display_name} on {appointment.start_date_time.date_time} with id: {appointment.id}"  # noqa: E501
-                for appointment in appointments.value
-            ]
-        )
+        return "\n".join([
+            f"{appointment.service_location.display_name} on {appointment.start_date_time.date_time} with id: {appointment.id}"  # noqa: E501
+            for appointment in appointments.value
+        ])
 
     @kernel_function(name="cancel_reservation", description="Cancel a reservation")
     async def cancel_reservation(

@@ -325,7 +325,7 @@ public static partial class OpenApiKernelPluginFactory
     {
         if (!string.IsNullOrWhiteSpace(operation.Id))
         {
-            return ConvertOperationIdToValidFunctionName(operationId: operation.Id, logger: logger);
+            return ConvertOperationIdToValidFunctionName(operationId: operation.Id!, logger: logger);
         }
 
         // Tokenize operation path on forward and back slashes

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -255,13 +256,15 @@ public class RestApiOperationExtensionsTests
     private static RestApiOperation CreateTestOperation(string method, RestApiPayload? payload = null, Uri? url = null)
     {
         return new RestApiOperation(
-                    id: "fake-id",
-                    servers: [new(url?.AbsoluteUri)],
-                    path: "fake-path",
-                    method: new HttpMethod(method),
-                    description: "fake-description",
-                    parameters: [],
-                    payload: payload);
+            id: "fake-id",
+            servers: [new(url?.AbsoluteUri)],
+            path: "fake-path",
+            method: new HttpMethod(method),
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: payload);
     }
 
     private static RestApiPayload CreateTestJsonPayload()

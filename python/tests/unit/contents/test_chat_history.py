@@ -557,9 +557,9 @@ async def test_template_empty_history(chat_history: ChatHistory):
 def test_to_from_file(chat_history: ChatHistory, tmp_path):
     chat_history.add_system_message("You are an AI assistant")
     chat_history.add_user_message("What is the weather in Seattle?")
-    chat_history.add_assistant_message(
-        [FunctionCallContent(id="test1", name="WeatherPlugin-GetWeather", arguments='{{ "location": "Seattle" }}')]
-    )
+    chat_history.add_assistant_message([
+        FunctionCallContent(id="test1", name="WeatherPlugin-GetWeather", arguments='{{ "location": "Seattle" }}')
+    ])
     chat_history.add_tool_message([FunctionResultContent(id="test1", result="It is raining")])
     chat_history.add_assistant_message("It is raining in Seattle, what else can I help you with?")
 
@@ -585,8 +585,8 @@ def test_chat_history_serialize(chat_history: ChatHistory):
     custom_result = CustomResultClass(result="CustomResultTestValue")
     chat_history.add_system_message("You are an AI assistant")
     chat_history.add_user_message("What is the weather in Seattle?")
-    chat_history.add_assistant_message(
-        [FunctionCallContent(id="test1", name="WeatherPlugin-GetWeather", arguments='{{ "location": "Seattle" }}')]
-    )
+    chat_history.add_assistant_message([
+        FunctionCallContent(id="test1", name="WeatherPlugin-GetWeather", arguments='{{ "location": "Seattle" }}')
+    ])
     chat_history.add_tool_message([FunctionResultContent(id="test1", result=custom_result)])
     assert "CustomResultTestValue" in chat_history.serialize()
