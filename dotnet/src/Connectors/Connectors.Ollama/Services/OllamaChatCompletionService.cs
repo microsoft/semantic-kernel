@@ -14,10 +14,8 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 /// <summary>
 /// Represents a chat completion service using Ollama Original API.
 /// </summary>
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable
 [Obsolete("Dedicated OllamaService is deprecated. Use OllamaApiClient.AsChatCompletionService() instead.")]
 public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionService
-#pragma warning restore CA1001 // Types that own disposable fields should be disposable
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaChatCompletionService"/> class.
