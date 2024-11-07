@@ -58,3 +58,7 @@ class OpenAIAudioToTextBase(OpenAIHandler, AudioToTextClientBase):
                 inner_content=response,
             )
         ]
+
+    def get_prompt_execution_settings_class(self) -> type[PromptExecutionSettings]:
+        """Get the request settings class."""
+        return OpenAIAudioToTextExecutionSettings
