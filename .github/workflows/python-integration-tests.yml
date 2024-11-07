@@ -46,7 +46,7 @@ jobs:
   python-merge-gate:
     name: Python Pre-Merge Integration Tests
     needs: paths-filter
-    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
+    if: github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -57,6 +57,20 @@ jobs:
       run:
         working-directory: python
     runs-on: ${{ matrix.os }}
+    services:
+      redis:
+        image: redis/redis-stack-server:latest
+        ports:
+          - 6379:6379
+      weaviate:
+        image: cr.weaviate.io/semitechnologies/weaviate:1.26.6
+        ports:
+          - 8080:8080
+          - 50051:50051
+      ollama:
+        image: ollama/ollama:latest
+        ports:
+          - 11434:11434
     environment: "integration"
     env:
       UV_PYTHON: ${{ matrix.python-version }}
@@ -88,6 +102,7 @@ jobs:
       MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
       ANTHROPIC_API_KEY: ${{secrets.ANTHROPIC_API_KEY}}
       ANTHROPIC_CHAT_MODEL_ID: ${{ vars.ANTHROPIC_CHAT_MODEL_ID }}
+      OLLAMA_HOST: ollama
       OLLAMA_CHAT_MODEL_ID: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID || '' }}" # llava-phi3
       OLLAMA_CHAT_MODEL_ID_IMAGE: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_IMAGE || '' }}" # llava-phi3
       OLLAMA_CHAT_MODEL_ID_TOOL_CALL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL || '' }}" # llama3.2
@@ -121,8 +136,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve &
-          sleep 5
       - name: Pull model in Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -145,11 +158,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-      - name: Setup Redis Stack Server
-        if: matrix.os == 'ubuntu-latest'
-        run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
-      - name: Setup Weaviate docker deployment
-        run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
+      # - name: Setup Redis Stack Server
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+      # - name: Setup Weaviate docker deployment
+      #   run: docker run -d -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.26.6
       - name: Azure CLI Login
         if: github.event_name != 'pull_request'
         uses: azure/login@v2
