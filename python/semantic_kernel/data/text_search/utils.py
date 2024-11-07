@@ -90,6 +90,7 @@ def default_options_update_function(
 
     """
     for param in parameters or []:
+        assert param.name  # nosec, when used param name is always set
         if param.name in {"query", "top", "skip"}:
             continue
         if param.name in kwargs:

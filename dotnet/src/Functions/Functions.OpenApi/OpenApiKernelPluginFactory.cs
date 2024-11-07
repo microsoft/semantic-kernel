@@ -196,7 +196,7 @@ public static partial class OpenApiKernelPluginFactory
         Uri? documentUri = null,
         ILoggerFactory? loggerFactory = null)
     {
-        IReadOnlyList<RestApiOperationParameter> restOperationParameters = operation.GetParameters(
+        IReadOnlyList<RestApiParameter> restOperationParameters = operation.GetParameters(
             executionParameters?.EnableDynamicPayload ?? true,
             executionParameters?.EnablePayloadNamespacing ?? false
         );
@@ -325,7 +325,7 @@ public static partial class OpenApiKernelPluginFactory
     {
         if (!string.IsNullOrWhiteSpace(operation.Id))
         {
-            return ConvertOperationIdToValidFunctionName(operationId: operation.Id, logger: logger);
+            return ConvertOperationIdToValidFunctionName(operationId: operation.Id!, logger: logger);
         }
 
         // Tokenize operation path on forward and back slashes
@@ -385,9 +385,9 @@ public static partial class OpenApiKernelPluginFactory
     /// <summary>
     /// Converts the parameter type to a C# <see cref="Type"/> object.
     /// </summary>
-    /// <param name="parameter">The REST API operation parameter.</param>
+    /// <param name="parameter">The REST API parameter.</param>
     /// <returns></returns>
-    private static Type? ConvertParameterDataType(RestApiOperationParameter parameter)
+    private static Type? ConvertParameterDataType(RestApiParameter parameter)
     {
         return parameter.Type switch
         {

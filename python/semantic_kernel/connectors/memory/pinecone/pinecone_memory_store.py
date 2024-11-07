@@ -60,8 +60,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise MemoryConnectorInitializationError(
-                f"Dimensionality of {default_dimensionality} exceeds "
-                f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {default_dimensionality} exceeds the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         try:
             pinecone_settings = PineconeSettings.create(

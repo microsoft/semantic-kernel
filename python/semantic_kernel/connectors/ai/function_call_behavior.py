@@ -201,9 +201,9 @@ class RequiredFunction(FunctionCallBehavior):
             self.max_auto_invoke_attempts = 1
         update_settings_callback(
             FunctionCallConfiguration(
-                required_functions=kernel.get_list_of_function_metadata(
-                    {"included_functions": [self.function_fully_qualified_name]}
-                )
+                required_functions=kernel.get_list_of_function_metadata({
+                    "included_functions": [self.function_fully_qualified_name]
+                })
             ),
             settings,
         )

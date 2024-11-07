@@ -5,10 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// The REST API operation parameter location.
+/// REST API parameter location.
 /// </summary>
 [Experimental("SKEXP0040")]
-public enum RestApiOperationParameterLocation
+public enum RestApiParameterLocation
 {
     /// <summary>
     /// Query parameter.

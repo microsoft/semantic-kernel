@@ -6,10 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// The REST API operation payload property.
+/// REST API payload property.
 /// </summary>
 [Experimental("SKEXP0040")]
-public sealed class RestApiOperationPayloadProperty
+public sealed class RestApiPayloadProperty
 {
     /// <summary>
     /// The property name.
@@ -19,7 +19,7 @@ public sealed class RestApiOperationPayloadProperty
     /// <summary>
     /// The property type.
     /// </summary>
-    public string Type { get; }
+    internal string Type { get; }
 
     /// <summary>
     /// The property type modifier that refines the generic parameter type to a more specific one.
@@ -40,7 +40,7 @@ public sealed class RestApiOperationPayloadProperty
     /// <summary>
     /// The properties.
     /// </summary>
-    public IReadOnlyList<RestApiOperationPayloadProperty> Properties { get; }
+    public IReadOnlyList<RestApiPayloadProperty> Properties { get; }
 
     /// <summary>
     /// The schema of the parameter.
@@ -53,7 +53,7 @@ public sealed class RestApiOperationPayloadProperty
     public object? DefaultValue { get; }
 
     /// <summary>
-    /// Creates an instance of a <see cref="RestApiOperationPayloadProperty"/> class.
+    /// Creates an instance of a <see cref="RestApiPayloadProperty"/> class.
     /// </summary>
     /// <param name="name">The name of the property.</param>
     /// <param name="type">The type of the property.</param>
@@ -64,12 +64,12 @@ public sealed class RestApiOperationPayloadProperty
     /// More details can be found at https://swagger.io/docs/specification/data-models/data-types</param>
     /// <param name="schema">The schema of the payload property.</param>
     /// <param name="defaultValue">The default value of the property.</param>
-    /// <returns>Returns a new instance of the <see cref="RestApiOperationPayloadProperty"/> class.</returns>
-    internal RestApiOperationPayloadProperty(
+    /// <returns>Returns a new instance of the <see cref="RestApiPayloadProperty"/> class.</returns>
+    internal RestApiPayloadProperty(
         string name,
         string type,
         bool isRequired,
-        IReadOnlyList<RestApiOperationPayloadProperty> properties,
+        IReadOnlyList<RestApiPayloadProperty> properties,
         string? description = null,
         string? format = null,
         KernelJsonSchema? schema = null,
