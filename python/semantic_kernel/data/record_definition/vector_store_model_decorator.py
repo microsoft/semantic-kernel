@@ -75,8 +75,7 @@ def _parse_signature_to_definition(parameters) -> VectorStoreRecordDefinition:
                     "Fields that do not have a VectorStoreRecord* annotation must have a default value."
                 )
             logger.info(
-                f'Field "{field.name}" does not have a VectorStoreRecord* '
-                "annotation, will not be part of the record."
+                f'Field "{field.name}" does not have a VectorStoreRecord* annotation, will not be part of the record.'
             )
             continue
         property_type = annotation.__origin__

@@ -44,4 +44,4 @@ class VectorizedSearchMixin(Generic[TModel]):
         if not isinstance(self, VectorSearchBase):
             raise VectorStoreMixinException("This method can only be used in combination with the VectorSearchBase.")
         options = create_options(self.options_class, options, **kwargs)
-        return await self._inner_search(vector=vector, options=options)
+        return await self._inner_search(vector=vector, options=options)  # type: ignore

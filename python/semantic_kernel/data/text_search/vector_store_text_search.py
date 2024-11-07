@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from semantic_kernel.data.search_options import SearchOptions
 
 TModel = TypeVar("TModel")
-_T = TypeVar("_T")
+_T = TypeVar("_T", bound="VectorStoreTextSearch")
 
 
 class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
@@ -71,14 +71,14 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
         cls: type[_T],
         vectorizable_text_search: VectorizableTextSearchMixin,
         string_mapper: Callable | None = None,
-        text_results_mapper: Callable | None = None,
+        text_search_results_mapper: Callable | None = None,
         **kwargs: Any,
     ) -> _T:
         """Create a new VectorStoreTextSearch from a VectorStoreRecordCollection."""
         return cls(
             vectorizable_text_search=vectorizable_text_search,
             string_mapper=string_mapper,
-            text_results_mapper=text_results_mapper,
+            text_search_results_mapper=text_search_results_mapper,
             **kwargs,
         )
 
@@ -88,7 +88,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
         vectorized_search: VectorizedSearchMixin,
         embedding_service: EmbeddingGeneratorBase,
         string_mapper: Callable | None = None,
-        text_results_mapper: Callable | None = None,
+        text_search_results_mapper: Callable | None = None,
         **kwargs: Any,
     ) -> _T:
         """Create a new VectorStoreTextSearch from a VectorStoreRecordCollection."""
@@ -96,7 +96,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
             vectorized_search=vectorized_search,
             embedding_service=embedding_service,
             string_mapper=string_mapper,
-            text_results_mapper=text_results_mapper,
+            text_search_results_mapper=text_search_results_mapper,
             **kwargs,
         )
 
@@ -105,14 +105,14 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
         cls: type[_T],
         vector_text_search: VectorTextSearchMixin,
         string_mapper: Callable | None = None,
-        text_results_mapper: Callable | None = None,
+        text_search_results_mapper: Callable | None = None,
         **kwargs: Any,
     ) -> _T:
         """Create a new VectorStoreTextSearch from a VectorStoreRecordCollection."""
         return cls(
             vector_text_search=vector_text_search,
             string_mapper=string_mapper,
-            text_results_mapper=text_results_mapper,
+            text_search_results_mapper=text_search_results_mapper,
             **kwargs,
         )
 

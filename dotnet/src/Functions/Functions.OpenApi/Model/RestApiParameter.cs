@@ -5,10 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// The REST API operation parameter.
+/// REST API parameter.
 /// </summary>
 [Experimental("SKEXP0040")]
-public sealed class RestApiOperationParameter
+public sealed class RestApiParameter
 {
     /// <summary>
     /// The parameter name.
@@ -23,7 +23,7 @@ public sealed class RestApiOperationParameter
     /// <summary>
     /// The parameter type - string, integer, number, boolean, array and object.
     /// </summary>
-    public string Type { get; }
+    internal string Type { get; }
 
     /// <summary>
     /// The parameter type modifier that refines the generic parameter type to a more specific one.
@@ -44,17 +44,17 @@ public sealed class RestApiOperationParameter
     /// <summary>
     /// The parameter location.
     /// </summary>
-    public RestApiOperationParameterLocation Location { get; }
+    public RestApiParameterLocation Location { get; }
 
     /// <summary>
     /// The parameter style - defines how multiple values are delimited.
     /// </summary>
-    public RestApiOperationParameterStyle? Style { get; }
+    public RestApiParameterStyle? Style { get; }
 
     /// <summary>
     /// Type of array item for parameters of "array" type.
     /// </summary>
-    public string? ArrayItemType { get; }
+    internal string? ArrayItemType { get; }
 
     /// <summary>
     /// The default value.
@@ -72,7 +72,7 @@ public sealed class RestApiOperationParameter
     public KernelJsonSchema? Schema { get; }
 
     /// <summary>
-    /// Creates an instance of a <see cref="RestApiOperationParameter"/> class.
+    /// Creates an instance of a <see cref="RestApiParameter"/> class.
     /// </summary>
     /// <param name="name">The parameter name.</param>
     /// <param name="type">The parameter type.</param>
@@ -86,13 +86,13 @@ public sealed class RestApiOperationParameter
     /// <param name="format">The parameter type modifier that refines the generic parameter type to a more specific one.
     /// More details can be found at https://swagger.io/docs/specification/data-models/data-types</param>
     /// <param name="schema">The parameter schema.</param>
-    internal RestApiOperationParameter(
+    internal RestApiParameter(
         string name,
         string type,
         bool isRequired,
         bool expand,
-        RestApiOperationParameterLocation location,
-        RestApiOperationParameterStyle? style = null,
+        RestApiParameterLocation location,
+        RestApiParameterStyle? style = null,
         string? arrayItemType = null,
         object? defaultValue = null,
         string? description = null,

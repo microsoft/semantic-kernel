@@ -231,15 +231,13 @@ async def main() -> None:
     client_secret = azure_keyvault_settings.client_secret.get_secret_value()
     endpoint = azure_keyvault_settings.endpoint
 
-    authentication_provider = OpenAIAuthenticationProvider(
-        {
-            "login.microsoftonline.com": {
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "grant_type": "client_credentials",
-            }
+    authentication_provider = OpenAIAuthenticationProvider({
+        "login.microsoftonline.com": {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "grant_type": "client_credentials",
         }
-    )
+    })
 
     openai_spec = load_and_update_openai_spec()
 
