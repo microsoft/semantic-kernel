@@ -3,6 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
+using OllamaFunctionCalling;
 using System;
 
 var builder = Kernel.CreateBuilder();

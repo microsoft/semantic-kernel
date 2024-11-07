@@ -4,6 +4,8 @@ using System;
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 
+namespace OllamaFunctionCalling;
+
 /// <summary>
 /// Simple plugin that just returns the time.
 /// </summary>

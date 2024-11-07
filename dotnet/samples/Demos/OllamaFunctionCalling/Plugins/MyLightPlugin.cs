@@ -3,6 +3,8 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 
+namespace OllamaFunctionCalling;
+
 /// <summary>
 /// Class that represents a controllable light bulb.
 /// </summary>
