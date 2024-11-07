@@ -194,7 +194,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         try
         {
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
-            this.EmitEvent( // %%% IS THIS BREAKING MAPSTEP (EmitEventAsync) ???
+            this.EmitEvent(
                 new ProcessEvent
                 {
                     Namespace = this._eventNamespace,

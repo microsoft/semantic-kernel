@@ -24,7 +24,7 @@ public class CloneTests
     public void VerifyCloneStepStateTest()
     {
         // Arrange
-        KernelProcessStepState state = new(nameof(VerifyCloneStepStateTest), "test");
+        KernelProcessStepState state = new(nameof(VerifyCloneStepStateTest), "v1", "test");
 
         // Act
         KernelProcessStepState copy = state.Clone(typeof(KernelProcessStepState), null, NullLogger.Instance);
@@ -56,7 +56,7 @@ public class CloneTests
     public void VerifyCloneSimpleStepTest()
     {
         // Arrange
-        KernelProcessStepInfo source = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSimpleStepTest), "test"), []);
+        KernelProcessStepInfo source = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSimpleStepTest), "v1", "test"), []);
 
         // Act
         KernelProcessStepInfo copy = source.Clone(NullLogger.Instance);
@@ -89,7 +89,7 @@ public class CloneTests
     public void VerifyCloneSingleProcessTest()
     {
         // Arrange
-        KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSingleProcessTest), "teststep"), []);
+        KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneSingleProcessTest), "v1", "teststep"), []);
         KernelProcessState processState = new(nameof(VerifyCloneSingleProcessTest), "v1", "test");
         KernelProcess source = new(processState, [step], CreateTestEdges());
 
@@ -118,7 +118,24 @@ public class CloneTests
         VerifyProcess(source, copy);
     }
 
-    // %%% TODO: Verify Clone Map
+    /// <summary>
+    /// Verify result of cloning a <see cref="KernelProcess"/> with a <see cref="KernelProcessMap"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyCloneMapStepTest()
+    {
+        // Arrange
+        KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneNestedProcessTest), "v1", "teststep"), []);
+        KernelProcess mapOperation = new(new(nameof(VerifyCloneNestedProcessTest), "v1", "operation"), [step], CreateTestEdges());
+        KernelProcessMap mapStep = new(new(nameof(VerifyCloneNestedProcessTest), "v1", "map"), mapOperation, CreateTestEdges());
+        KernelProcess source = new(new(nameof(VerifyCloneNestedProcessTest), "v1", "outer"), [mapStep], []);
+
+        // Act
+        KernelProcess copy = source.CloneProcess(NullLogger.Instance);
+
+        // Assert
+        VerifyProcess(source, copy);
+    }
 
     private static void VerifyProcess(KernelProcess expected, KernelProcess actual)
     {

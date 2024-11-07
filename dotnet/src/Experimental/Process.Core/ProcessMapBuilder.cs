@@ -59,7 +59,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
 
     internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata<object>? stateMetadata)
     {
-        throw new NotImplementedException(); // %%% TODO: Implement
+        throw new NotImplementedException(); // %%% SERIALIZATION: Implement
     }
 
     private ProcessBuilder CreateMapProcess(ProcessFunctionTargetBuilder mapTarget)

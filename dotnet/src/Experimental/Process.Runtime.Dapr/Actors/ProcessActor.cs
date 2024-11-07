@@ -98,13 +98,27 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// </summary>
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <returns>A <see cref="Task"/></returns>
-    public async Task RunOnceAsync(KernelProcessEvent processEvent)
+    public async Task RunOnceAsync(string processEvent)
     {
-        Verify.NotNull(processEvent, nameof(processEvent));
-        IExternalEventBuffer externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
-        await externalEventQueue.EnqueueAsync(processEvent.ToJson()).ConfigureAwait(false);
-        await this.StartAsync(keepAlive: false).ConfigureAwait(false);
-        await this._processTask!.JoinAsync().ConfigureAwait(false);
+        try
+        {
+            //Console.WriteLine("#### PROCESS - RunOnceAsync 1");
+            Verify.NotNull(processEvent, nameof(processEvent));
+            //Console.WriteLine("#### PROCESS - RunOnceAsync 2");
+            IExternalEventBuffer externalEventQueue = this.ProxyFactory.CreateActorProxy<IExternalEventBuffer>(new ActorId(this.Id.GetId()), nameof(ExternalEventBufferActor));
+            //Console.WriteLine("#### PROCESS - RunOnceAsync 3");
+            //await externalEventQueue.EnqueueAsync(processEvent.ToJson()).ConfigureAwait(false);
+            await externalEventQueue.EnqueueAsync(processEvent).ConfigureAwait(false);
+            //Console.WriteLine("#### PROCESS - RunOnceAsync 4");
+            await this.StartAsync(keepAlive: false).ConfigureAwait(false);
+            //Console.WriteLine("#### PROCESS - RunOnceAsync 5");
+            await this._processTask!.JoinAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"#### PROCESS RunOnceAsync - {Environment.NewLine}{ex}");
+            throw;
+        }
     }
 
     /// <summary>
@@ -141,10 +155,10 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// </summary>
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <returns>A <see cref="Task"/></returns>
-    public async Task SendMessageAsync(KernelProcessEvent processEvent)
+    public async Task SendMessageAsync(string processEvent)
     {
         Verify.NotNull(processEvent, nameof(processEvent));
-        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
+        await this._externalEventChannel.Writer.WriteAsync(processEvent.ToKernelProcessEvent()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -172,7 +186,11 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         if (existingProcessInfo.HasValue)
         {
             this.ParentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
-            string? eventProxyStepId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.EventProxyStepId).ConfigureAwait(false);
+            string? eventProxyStepId = null;
+            if (await this.StateManager.ContainsStateAsync(ActorStateKeys.EventProxyStepId).ConfigureAwait(false))
+            {
+                eventProxyStepId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.EventProxyStepId).ConfigureAwait(false);
+            }
             await this.InitializeProcessActorAsync(existingProcessInfo.Value, this.ParentProcessId, eventProxyStepId).ConfigureAwait(false);
         }
     }
@@ -207,7 +225,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 KernelProcessEvent nestedEvent = new() { Id = eventId, Data = message.TargetEventData };
 
                 // Run the nested process completely within a single superstep.
-                await this.RunOnceAsync(nestedEvent).ConfigureAwait(false);
+                await this.RunOnceAsync(nestedEvent.ToJson()).ConfigureAwait(false);
             }
         }
     }
@@ -459,7 +477,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <exception cref="InvalidOperationException"></exception>
     private async Task<DaprProcessInfo> ToDaprProcessInfoAsync()
     {
-        KernelProcessState processState = new(this.Name, this._stepState!.Version, this.Id.GetId());
+        KernelProcessState processState = new(this.Name, this._process!.State.Version, this.Id.GetId());
         var stepTasks = this._steps.Select(step => step.ToDaprStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
         return new DaprProcessInfo { InnerStepDotnetType = this._process!.InnerStepDotnetType, Edges = this._process!.Edges, State = processState, Steps = [.. steps] };

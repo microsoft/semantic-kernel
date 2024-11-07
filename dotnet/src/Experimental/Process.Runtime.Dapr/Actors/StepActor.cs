@@ -23,12 +23,12 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
     private DaprStepInfo? _stepInfo;
     private ILogger? _logger;
-    private string? _eventNamespace;
     private Type? _innerStepType;
 
     private bool _isInitialized;
 
     protected readonly Kernel _kernel;
+    protected string? _eventNamespace;
 
     internal Queue<ProcessMessage> _incomingMessages = new();
     internal KernelProcessStepState? _stepState;
@@ -60,7 +60,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="stepInfo">The <see cref="KernelProcessStepInfo"/> instance describing the step.</param>
     /// <param name="parentProcessId">The Id of the parent process if one exists.</param>
-    /// <param name="eventProxyStepId">The identifier of the actor to proxy events.</param>
+    /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
     /// <returns>A <see cref="ValueTask"/></returns>
     public async Task InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
     {
@@ -90,7 +90,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="stepInfo">The <see cref="KernelProcessStepInfo"/> instance describing the step.</param>
     /// <param name="parentProcessId">The Id of the parent process if one exists.</param>
-    /// <param name="eventProxyStepId">The identifier of the actor to proxy events.</param>
+    /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
     private void InitializeStep(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
     {
         Verify.NotNull(stepInfo, nameof(stepInfo));
@@ -182,7 +182,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         {
             // Initialize the step from persisted state
             string? parentProcessId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.StepParentProcessId).ConfigureAwait(false);
-            string? eventProxyStepId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.EventProxyStepId).ConfigureAwait(false);
+            string? eventProxyStepId = null;
+            if (await this.StateManager.ContainsStateAsync(ActorStateKeys.EventProxyStepId).ConfigureAwait(false))
+            {
+                eventProxyStepId = await this.StateManager.GetStateAsync<string>(ActorStateKeys.EventProxyStepId).ConfigureAwait(false);
+            }
             this.InitializeStep(existingStepInfo.Value, parentProcessId, eventProxyStepId);
 
             // Load the persisted incoming messages
@@ -407,14 +411,13 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         if (this.EventProxyStepId != null)
         {
-            //ActorId proxyStepId = this.ScopedActorId(this.EventProxyStepId); // %%% NEED TO BE SCOPED ???
-            IEventBuffer proxyStep = this.ProxyFactory.CreateActorProxy<IEventBuffer>(this.EventProxyStepId, nameof(EventBufferActor));
-            await proxyStep.EnqueueAsync(daprEvent.ToJson()).ConfigureAwait(false);
+            IEventBuffer proxyBuffer = this.ProxyFactory.CreateActorProxy<IEventBuffer>(this.EventProxyStepId, nameof(EventBufferActor));
+            await proxyBuffer.EnqueueAsync(daprEvent.ToJson()).ConfigureAwait(false);
         }
 
         // Get the edges for the event and queue up the messages to be sent to the next steps.
         bool foundEdge = false;
-        foreach (var edge in this.GetEdgeForEvent(daprEvent.QualifiedId))
+        foreach (KernelProcessEdge edge in this.GetEdgeForEvent(daprEvent.QualifiedId))
         {
             ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
             ActorId scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));

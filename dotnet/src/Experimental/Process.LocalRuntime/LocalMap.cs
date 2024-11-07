@@ -46,7 +46,7 @@ internal sealed class LocalMap : LocalStep
                 ++index;
 
                 KernelProcess process = this._map.Operation.CloneProcess(this._logger);
-                MapOperationContext context = new(index, this._mapEvents, capturedEvents);
+                MapOperationContext context = new(this._mapEvents, capturedEvents);
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 LocalKernelProcessContext processContext = new(process, this._kernel, context.Filter);
                 Task processTask =
@@ -61,13 +61,14 @@ internal sealed class LocalMap : LocalStep
                 mapOperations.Add((processTask, processContext, context));
             }
 
+            // Wait for all the map operations to complete
             await Task.WhenAll(mapOperations.Select(p => p.Task)).ConfigureAwait(false);
 
+            // Correlate the operation results to emit as the map result
             Dictionary<string, Array> resultMap = [];
-
             for (index = 0; index < mapOperations.Count; ++index)
             {
-                foreach (var capturedEvent in capturedEvents)
+                foreach (KeyValuePair<string, Type> capturedEvent in capturedEvents)
                 {
                     string eventName = capturedEvent.Key;
                     Type resultType = capturedEvent.Value;
@@ -83,9 +84,9 @@ internal sealed class LocalMap : LocalStep
                 }
             }
 
-            foreach (var capturedEvent in capturedEvents)
+            // Emit map results
+            foreach (string eventName in capturedEvents.Keys)
             {
-                string eventName = capturedEvent.Key;
                 Array eventResult = resultMap[eventName];
                 await this.EmitEventAsync(new() { Id = eventName, Data = eventResult }).ConfigureAwait(false);
             }
@@ -105,5 +106,27 @@ internal sealed class LocalMap : LocalStep
         // The map does not need any further initialization as it's already been initialized.
         // Override the base method to prevent it from being called.
         return default;
+    }
+
+    private sealed record MapOperationContext(in HashSet<string> EventTargets, in Dictionary<string, Type> CapturedEvents)
+    {
+        public Dictionary<string, object?> Results { get; } = [];
+
+        public bool Filter(ProcessEvent processEvent)
+        {
+            string eventName = processEvent.SourceId;
+            if (this.EventTargets.Contains(eventName))
+            {
+                this.CapturedEvents.TryGetValue(eventName, out Type? resultType);
+                if (resultType is null || resultType == typeof(object))
+                {
+                    this.CapturedEvents[eventName] = processEvent.Data?.GetType() ?? typeof(object);
+                }
+
+                this.Results[eventName] = processEvent.Data;
+            }
+
+            return true;
+        }
     }
 }

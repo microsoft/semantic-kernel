@@ -19,12 +19,11 @@ internal sealed class MapActor : StepActor, IMap
     private bool _isInitialized;
     private HashSet<string> _mapEvents = [];
     private ILogger? _logger;
-    //private IProcess? _mapOperation; // %%% NEEDED ???
 
-    internal DaprMapInfo? _map;
+    internal DaprMapInfo? _mapInfo;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProcessActor"/> class.
+    /// Initializes a new instance of the <see cref="MapActor"/> class.
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
@@ -63,8 +62,8 @@ internal sealed class MapActor : StepActor, IMap
     private async Task<DaprMapInfo> ToDaprMapInfoAsync() // %%% MOVE ???
     {
         //DaprProcessInfo mapOperation = await this._mapOperation!.GetProcessInfoAsync().ConfigureAwait(false);
-        DaprProcessInfo mapOperation = this._map!.MapStep;
-        return new DaprMapInfo { InnerStepDotnetType = this._map!.InnerStepDotnetType, Edges = this._map!.Edges, State = this._map.State, MapStep = mapOperation };
+        DaprProcessInfo mapOperation = this._mapInfo!.MapStep;
+        return new DaprMapInfo { InnerStepDotnetType = this._mapInfo!.InnerStepDotnetType, Edges = this._mapInfo!.Edges, State = this._mapInfo.State, MapStep = mapOperation }; // %%% JUST RETURN this._mapInfo ???
     }
 
     /// <summary>
@@ -90,7 +89,7 @@ internal sealed class MapActor : StepActor, IMap
     /// <summary>
     /// The name of the step.
     /// </summary>
-    protected override string Name => this._map?.State.Name ?? throw new KernelException("The Map must be initialized before accessing the Name property.");
+    protected override string Name => this._mapInfo?.State.Name ?? throw new KernelException("The Map must be initialized before accessing the Name property.");
 
     #endregion
 
@@ -100,19 +99,13 @@ internal sealed class MapActor : StepActor, IMap
     /// <param name="message">The message to map.</param>
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
-        IEnumerable values = message.GetMapInput(this.Logger);
+        IEnumerable values = message.GetMapInput(this._logger);
 
-        int index = 0;
-        List<(Task Task, DaprKernelProcessContext ProcessContext, MapOperationContext Context)> mapOperations = [];
-        Dictionary<string, Type> capturedEvents = [];
-
-        KernelProcess process = this._map!.MapStep.ToKernelProcess(); // %%% EXTRA ???
+        KernelProcess process = this._mapInfo!.MapStep.ToKernelProcess();
+        List<Task> mapOperations = [];
         foreach (var value in values)
         {
-            ++index;
-
-            KernelProcess mapProcess = process with { State = process.State with { Id = $"{this.Name}-{index}-{Guid.NewGuid():N}" } };
-            MapOperationContext context = new(index, this._mapEvents, capturedEvents);
+            KernelProcess mapProcess = process with { State = process.State with { Id = $"{this.Name}-{mapOperations.Count}-{Guid.NewGuid():N}" } };
             DaprKernelProcessContext processContext = new(mapProcess);
             Task processTask =
                 processContext.StartWithEventAsync(
@@ -123,42 +116,56 @@ internal sealed class MapActor : StepActor, IMap
                     },
                     eventProxyStepId: this.Id);
 
-            mapOperations.Add((processTask, processContext, context));
+            mapOperations.Add(processTask);
         }
 
-        await Task.WhenAll(mapOperations.Select(p => p.Task)).ConfigureAwait(false);
+        // Wait for all the map operations to complete
+        await Task.WhenAll(mapOperations).ConfigureAwait(false);
 
-        IEventBuffer proxyStep = this.ProxyFactory.CreateActorProxy<IEventBuffer>(this.Id, nameof(EventBufferActor));
-        IList<string> proxyEvents = await proxyStep.DequeueAllAsync().ConfigureAwait(false);
+        // Retrieve all proxied events from the map operations
+        IEventBuffer proxyBuffer = this.ProxyFactory.CreateActorProxy<IEventBuffer>(this.Id, nameof(EventBufferActor));
+        IList<string> proxyEvents = await proxyBuffer.DequeueAllAsync().ConfigureAwait(false);
         IList<ProcessEvent> processEvents = proxyEvents.ToProcessEvents();
+
+        // Survey the events to determine the type of the results associated with each event proxied by the map
+        Dictionary<string, Type> capturedEvents = [];
         foreach (ProcessEvent processEvent in processEvents)
         {
-            Console.WriteLine($"##### MAP PROXY - {processEvent.SourceId} {processEvent.Data} {processEvent.Namespace}"); // %%% REMOVE
+            string eventName = processEvent.SourceId;
+            if (this._mapEvents.Contains(eventName))
+            {
+                capturedEvents.TryGetValue(eventName, out Type? resultType);
+                if (resultType is null || resultType == typeof(object))
+                {
+                    capturedEvents[eventName] = processEvent.Data?.GetType() ?? typeof(object);
+                }
+            }
         }
 
+        // Correlate the operation results to emit as the map result
         Dictionary<string, Array> resultMap = [];
+        Dictionary<string, int> resultCounts = [];
 
-        for (index = 0; index < mapOperations.Count; ++index)
+        foreach (ProcessEvent processEvent in processEvents)
         {
-            foreach (var capturedEvent in capturedEvents)
+            string eventName = processEvent.SourceId;
+            if (capturedEvents.TryGetValue(eventName, out Type? resultType))
             {
-                string eventName = capturedEvent.Key;
-                Type resultType = capturedEvent.Value;
-
-                mapOperations[index].Context.Results.TryGetValue(eventName, out object? result);
                 if (!resultMap.TryGetValue(eventName, out Array? results))
                 {
                     results = Array.CreateInstance(resultType, mapOperations.Count);
                     resultMap[eventName] = results;
                 }
 
-                results.SetValue(result, index);
+                resultCounts.TryGetValue(eventName, out int resultIndex); // resultIndex defaults to 0 when not found
+                results.SetValue(processEvent.Data, resultIndex);
+                resultCounts[eventName] = resultIndex + 1;
             }
         }
 
-        foreach (var capturedEvent in capturedEvents)
+        // Emit map results
+        foreach (string eventName in capturedEvents.Keys)
         {
-            string eventName = capturedEvent.Key;
             Array eventResult = resultMap[eventName];
             await this.EmitEventAsync(new KernelProcessEvent() { Id = eventName, Data = eventResult }).ConfigureAwait(false);
         }
@@ -169,23 +176,17 @@ internal sealed class MapActor : StepActor, IMap
         Verify.NotNull(mapInfo);
         Verify.NotNull(mapInfo.MapStep);
 
+        this._mapInfo = mapInfo;
         this.ParentProcessId = parentProcessId;
-        this._map = mapInfo;
-        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<MapActor>();
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._mapInfo.State.Name) ?? new NullLogger<MapActor>();
+        this._outputEdges = this._mapInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
+        this._eventNamespace = $"{this._mapInfo.State.Name}_{this._mapInfo.State.Id}";
 
-        // Initialize the map operation as a process.
-        //DaprProcessInfo mapOperation = this._map.MapStep; // %%% NEEDED
-        //ActorId processId = new(mapOperation.State.Id!);
-        //this._mapOperation = this.ProxyFactory.CreateActorProxy<IProcess>(processId, nameof(ProcessActor)); // %%% REVIEW
-        //await this._mapOperation.InitializeProcessAsync(mapOperation, this.ParentProcessId).ConfigureAwait(false);
-        this._mapEvents = [.. this._map.Edges.Keys.Select(key => key.Split('.').Last())];
-
-        foreach (string mapEvent in this._mapEvents) // %%% REMOVE
-        {
-            Console.WriteLine($"##### MAP EDGES - {mapEvent}");
-        }
-
+        // Capture the events that the map is interested in as hashtable for performant lookup
+        this._mapEvents = [.. this._mapInfo.Edges.Keys.Select(key => key.Split('.').Last())];
 
         this._isInitialized = true;
     }
+
+    private sealed record TypedResult(Type ResultType, Array Results);
 }

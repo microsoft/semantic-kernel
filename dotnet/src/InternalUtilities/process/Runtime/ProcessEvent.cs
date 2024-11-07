@@ -9,27 +9,27 @@ public record ProcessEvent
     /// <summary>
     /// The namespace of the event.
     /// </summary>
-    internal string Namespace { get; init; } = string.Empty;
+    public string Namespace { get; init; } = string.Empty;
 
     /// <summary>
     /// The source Id of the event.
     /// </summary>
-    internal string SourceId { get; init; } = string.Empty; // %%% USEFUL FOR EVENT PROXY / FILTER ???
+    public string SourceId { get; init; } = string.Empty;
 
     /// <summary>
     /// An optional data payload associated with the event.
     /// </summary>
-    internal object? Data { get; init; }
+    public object? Data { get; init; }
 
     /// <summary>
     /// The visibility of the event.
     /// </summary>
-    internal KernelProcessEventVisibility Visibility { get; init; }
+    public KernelProcessEventVisibility Visibility { get; init; }
 
     /// <summary>
     /// This event represents a runtime error / exception raised internally by the framework.
     /// </summary>
-    internal bool IsError { get; init; }
+    public bool IsError { get; init; }
 
     /// <summary>
     /// The Qualified Id of the event.

@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Dapr.Actors;
 using Dapr.Actors.Client;
+using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -34,12 +35,12 @@ public class DaprKernelProcessContext
     /// Starts the process with an initial event.
     /// </summary>
     /// <param name="initialEvent">The initial event.</param>
-    /// <param name="eventProxyStepId">The identifier of the actor to proxy events.</param>
+    /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
     internal async Task StartWithEventAsync(KernelProcessEvent initialEvent, ActorId? eventProxyStepId = null)
     {
         var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
         await this._daprProcess.InitializeProcessAsync(daprProcess, null, eventProxyStepId?.GetId()).ConfigureAwait(false);
-        await this._daprProcess.RunOnceAsync(initialEvent).ConfigureAwait(false);
+        await this._daprProcess.RunOnceAsync(initialEvent.ToJson()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -48,7 +49,7 @@ public class DaprKernelProcessContext
     /// <param name="processEvent">The event to sent to the process.</param>
     /// <returns>A <see cref="Task"/></returns>
     public async Task SendEventAsync(KernelProcessEvent processEvent) =>
-        await this._daprProcess.SendMessageAsync(processEvent).ConfigureAwait(false);
+        await this._daprProcess.SendMessageAsync(processEvent.ToJson()).ConfigureAwait(false);
 
     /// <summary>
     /// Stops the process.

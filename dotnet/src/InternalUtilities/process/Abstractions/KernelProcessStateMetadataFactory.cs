@@ -63,7 +63,7 @@ internal static class ProcessStateMetadataFactory
             StepsState = []
         };
 
-        metadata.StepsState.Add("MapOperation", StepInfoToProcessStateMetadata(stepMap.Operation)); // %%% TODO: Re-evaluate state key
+        metadata.StepsState.Add("MapOperation", StepInfoToProcessStateMetadata(stepMap.Operation)); // %%% SERIALIZATION: Re-evaluate state key
 
         return metadata;
     }

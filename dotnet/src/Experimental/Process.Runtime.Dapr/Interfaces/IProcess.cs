@@ -15,9 +15,9 @@ public interface IProcess : IActor
     /// </summary>
     /// <param name="processInfo">Used to initialize the process.</param>
     /// <param name="parentProcessId">The parent Id of the process if one exists.</param>
-    /// <param name="eventProxyStepId">// %%% COMMENT</param>
+    /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
     /// <returns>A<see cref="Task"/></returns>
-    Task InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId, string? eventProxyStepId = null);
+    Task InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId, string? eventProxyStepId);
 
     /// <summary>
     /// Starts an initialized process.
@@ -32,7 +32,7 @@ public interface IProcess : IActor
     /// </summary>
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <returns>A <see cref="Task"/></returns>
-    Task RunOnceAsync(KernelProcessEvent processEvent);
+    Task RunOnceAsync(string processEvent);
 
     /// <summary>
     /// Stops a running process. This will cancel the process and wait for it to complete before returning.
@@ -46,7 +46,7 @@ public interface IProcess : IActor
     /// </summary>
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <returns>A <see cref="Task"/></returns>
-    Task SendMessageAsync(KernelProcessEvent processEvent);
+    Task SendMessageAsync(string processEvent);
 
     /// <summary>
     /// Gets the process information.
