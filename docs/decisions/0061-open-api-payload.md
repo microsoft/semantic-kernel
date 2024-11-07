@@ -109,7 +109,7 @@ Another specificity of this option is that it does not traverse array properties
 This means that the caller must provide arguments for the properties of the array type, but not for the array elements or the properties of the array elements. 
 In the example above, the array of objects should be provided as an argument for the "tags" array property.
 
-## 3. Dynamic Payload Construction From Leaf Properties Using Namespaces
+### 3. Dynamic Payload Construction From Leaf Properties Using Namespaces
 This option addresses the limitation of the dynamic payload construction option described above regarding handling properties with the same name at different levels.
 It does so by prepending child property names with their parent property names, effectively creating unique names. 
 The caller still needs to provide arguments for the properties and SK will do the rest.
@@ -120,6 +120,7 @@ KernelPlugin plugin = await kernel.ImportPluginFromOpenApiAsync("<plugin-name>",
     EnableDynamicPayload = true,
     EnablePayloadNamespacing = true
 });
+
 
 // Expected payload structure
 //{
@@ -163,18 +164,18 @@ This option is susceptible to circular references in the payload schema as well,
 
 ## New Options for Handling Payloads in SK
 
-## Context and Problem Statement
+### Context and Problem Statement
 SK goes above and beyond to handle the complexity of constructing payloads dynamically and offloading this responsibility from the caller.
 
 However, neither of the existing options is suitable for complex scenarios when the payload contains properties with the same name at different levels and using namespaces is not an option.
 
 To cover these scenarios, we propose a new option for handling payloads in SK.
 
-## Considered Options
+### Considered Options
 
 - Option #4: Construct payload out of root properties
 
-## Option #4: Dynamic Payload Construction From Root Properties
+### Option #4: Dynamic Payload Construction From Root Properties
 
 There could be cases when the payload contains properties with the same name, and using namespaces is not possible for a various reasons. In order not to offload 
 the responsibility of constructing the payload to the caller, SK can do an extra step and construct the payload out of the root properties. Of cause the complexity of building
@@ -221,9 +222,12 @@ This option naturally fits between existing option #1. The `payload` and the `co
 | Option | Caller | SK | Limitations |
 |--------|-------|----|--------|
 | 1. The `payload` and the `content-type` Arguments | Constructs payload | Use it as is | No limitations |
-| 4. Dynamic Payload Construction From Root Properties | Provides arguments for root properties | Constructs payload | No limitations |
-| 2. Dynamic Payload Construction From Leaf Properties | Provides arguments for leaf properties | Constructs payload | Leaf properties must be unique, Circular references |
-| 3. Dynamic Payload Construction From Leaf Properties + Namespaces | Provides arguments for namespaced properties | Constructs payload | Circular references |
+| 4. Dynamic Payload Construction From Root Properties | Provides arguments for root properties | Constructs payload | 1. No support for `anyOf`, `allOf`, `oneOf` |
+| 2. Dynamic Payload Construction From Leaf Properties | Provides arguments for leaf properties | Constructs payload | 1. No support for `anyOf`, `allOf`, `oneOf`, 2. Leaf properties must be unique, 3. Circular references  |
+| 3. Dynamic Payload Construction From Leaf Properties + Namespaces | Provides arguments for namespaced properties | Constructs payload | 1. No support for `anyOf`, `allOf`, `oneOf`, 2. Circular references |
 
-## Decision Outcome
-TBD
+### Decision Outcome
+Having discussed these options, it was decided not to proceed with implementation of Option #4 because of absence of strong evidence that it provides any benefits over the existing Option #1.
+
+## Samples
+Samples demonstrating the usage of the existing options described above can be found in the [Semantic Kernel Samples repository](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Plugins/OpenApiPlugin_PayloadHandling.cs)
