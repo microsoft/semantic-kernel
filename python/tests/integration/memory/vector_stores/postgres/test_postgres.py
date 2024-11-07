@@ -10,15 +10,19 @@ import pytest
 import pytest_asyncio
 from pydantic import BaseModel
 
-from semantic_kernel.connectors.memory.postgres import PostgresStore
-from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
-from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import (
+from semantic_kernel.connectors.memory.postgres import PostgresSettings, PostgresStore
+from semantic_kernel.data import (
+    DistanceFunction,
+    IndexKind,
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
+)
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorConnectionException,
+    MemoryConnectorInitializationError,
 )
 
 try:
@@ -30,7 +34,10 @@ except ImportError:
     psycopg_pool_installed = False
 
 pg_settings: PostgresSettings = PostgresSettings.create()
-connection_params_present = any(pg_settings.get_connection_args().values())
+try:
+    connection_params_present = any(pg_settings.get_connection_args().values())
+except MemoryConnectorInitializationError:
+    connection_params_present = False
 
 pytestmark = pytest.mark.skipif(
     not (psycopg_pool_installed or connection_params_present),
@@ -46,7 +53,7 @@ class SimpleDataModel(BaseModel):
         VectorStoreRecordVectorField(
             index_kind=IndexKind.HNSW,
             dimensions=3,
-            distance_function=DistanceFunction.COSINE,
+            distance_function=DistanceFunction.COSINE_SIMILARITY,
         ),
     ]
     data: Annotated[
@@ -62,7 +69,7 @@ def DataModelPandas(record) -> tuple:
                 name="embedding",
                 index_kind="hnsw",
                 dimensions=3,
-                distance_function="cosine",
+                distance_function="cosine_similarity",
                 property_type="float",
             ),
             "id": VectorStoreRecordKeyField(name="id", property_type="int"),
@@ -78,10 +85,15 @@ def DataModelPandas(record) -> tuple:
     return definition, df
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture()
 async def vector_store() -> AsyncGenerator[PostgresStore, None]:
-    async with await pg_settings.create_connection_pool() as pool:
-        yield PostgresStore(connection_pool=pool)
+    try:
+        async with await pg_settings.create_connection_pool() as pool:
+            yield PostgresStore(connection_pool=pool)
+    except MemoryConnectorConnectionException:
+        pytest.skip("Postgres connection not available")
+        yield None
+        return
 
 
 @asynccontextmanager
@@ -103,10 +115,11 @@ async def create_simple_collection(vector_store: PostgresStore):
 
 
 def test_create_store(vector_store):
+    assert vector_store is not None
     assert vector_store.connection_pool is not None
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio()
 async def test_create_does_collection_exist_and_delete(vector_store: PostgresStore):
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
 
@@ -124,7 +137,7 @@ async def test_create_does_collection_exist_and_delete(vector_store: PostgresSto
     assert does_exist_3 is False
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio()
 async def test_list_collection_names(vector_store):
     async with create_simple_collection(vector_store) as simple_collection:
         simple_collection_id = simple_collection.collection_name
@@ -132,7 +145,7 @@ async def test_list_collection_names(vector_store):
         assert simple_collection_id in result
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio()
 async def test_upsert_get_and_delete(vector_store: PostgresStore):
     record = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
     async with create_simple_collection(vector_store) as simple_collection:
@@ -161,7 +174,7 @@ async def test_upsert_get_and_delete(vector_store: PostgresStore):
         assert result_after_delete is None
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio()
 async def test_upsert_get_and_delete_pandas(vector_store):
     record = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})
     definition, df = DataModelPandas(record.model_dump())
@@ -191,7 +204,7 @@ async def test_upsert_get_and_delete_pandas(vector_store):
         await collection.delete_collection()
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio()
 async def test_upsert_get_and_delete_batch(vector_store: PostgresStore):
     async with create_simple_collection(vector_store) as simple_collection:
         record1 = SimpleDataModel(id=1, embedding=[1.1, 2.2, 3.3], data={"key": "value"})

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -42,7 +43,10 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return new(ExtractRestApiInfo(result.OpenApiDocument), ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
+        return new(
+            ExtractRestApiInfo(result.OpenApiDocument),
+            CreateRestApiOperationSecurityRequirements(result.OpenApiDocument.SecurityRequirements),
+            ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
     }
 
     #region private
@@ -137,7 +141,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// </summary>
     /// <param name="document">The OpenAPI document.</param>
     /// <returns>Rest API information.</returns>
-    private static RestApiInfo ExtractRestApiInfo(OpenApiDocument document)
+    internal static RestApiInfo ExtractRestApiInfo(OpenApiDocument document)
     {
         return new()
         {
@@ -158,12 +162,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     {
         var result = new List<RestApiOperation>();
 
-        var server = document.Servers.FirstOrDefault();
-
         foreach (var pathPair in document.Paths)
         {
-            var operations = CreateRestApiOperations(server, pathPair.Key, pathPair.Value, operationsToExclude, logger);
-
+            var operations = CreateRestApiOperations(document, pathPair.Key, pathPair.Value, operationsToExclude, logger);
             result.AddRange(operations);
         }
 
@@ -173,16 +174,15 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <summary>
     /// Creates REST API operation.
     /// </summary>
-    /// <param name="server">Rest server.</param>
+    /// <param name="document">The OpenAPI document.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <param name="logger">Used to perform logging.</param>
     /// <returns>Rest operation.</returns>
-    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiServer? server, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
+    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiDocument document, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
     {
         var operations = new List<RestApiOperation>();
-        var operationServer = CreateRestApiOperationServer(server);
 
         foreach (var operationPair in pathItem.Operations)
         {
@@ -196,14 +196,15 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
             }
 
             var operation = new RestApiOperation(
-                operationItem.OperationId,
-                operationServer,
-                path,
-                new HttpMethod(method),
-                string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
-                CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
+                id: operationItem.OperationId,
+                servers: CreateRestApiOperationServers(document.Servers),
+                path: path,
+                method: new HttpMethod(method),
+                description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
+                parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
+                payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
+                responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2),
+                securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
             )
             {
                 Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
@@ -216,13 +217,115 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     }
 
     /// <summary>
-    /// Build a <see cref="RestApiOperationServer"/> object from the given <see cref="OpenApiServer"/> object.
+    /// Build a list of <see cref="RestApiOperationServer"/> objects from the given list of <see cref="OpenApiServer"/> objects.
     /// </summary>
-    /// <param name="server">Represents the server which hosts the REST API.</param>
-    private static RestApiOperationServer CreateRestApiOperationServer(OpenApiServer? server)
+    /// <param name="servers">Represents servers which hosts the REST API.</param>
+    private static List<RestApiOperationServer> CreateRestApiOperationServers(IList<OpenApiServer> servers)
     {
-        var variables = server?.Variables.ToDictionary(item => item.Key, item => new RestApiOperationServerVariable(item.Value.Default, item.Value.Description, item.Value.Enum));
-        return new(server?.Url, variables);
+        var result = new List<RestApiOperationServer>(servers.Count);
+
+        foreach (var server in servers)
+        {
+            var variables = server.Variables.ToDictionary(item => item.Key, item => new RestApiOperationServerVariable(item.Value.Default, item.Value.Description, item.Value.Enum));
+            result.Add(new(server?.Url, variables));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Build a dictionary of <see cref="RestApiSecurityScheme"/> objects from the given <see cref="OpenApiSecurityScheme"/> objects.
+    /// </summary>
+    /// <param name="securitySchemes">Represents the security schemes used by the REST API.</param>
+    private static ReadOnlyDictionary<string, RestApiSecurityScheme> CreateRestApiOperationSecuritySchemes(IDictionary<string, OpenApiSecurityScheme>? securitySchemes)
+    {
+        var result = new Dictionary<string, RestApiSecurityScheme>();
+
+        if (securitySchemes is not null)
+        {
+            foreach (var item in securitySchemes)
+            {
+                result.Add(item.Key, CreateRestApiSecurityScheme(item.Value));
+            }
+        }
+
+        return new ReadOnlyDictionary<string, RestApiSecurityScheme>(result);
+    }
+
+    /// <summary>
+    /// Build a <see cref="RestApiSecurityScheme"/> objects from the given <see cref="OpenApiSecurityScheme"/> object.
+    /// </summary>
+    /// <param name="securityScheme">The REST API security scheme.</param>
+    private static RestApiSecurityScheme CreateRestApiSecurityScheme(OpenApiSecurityScheme securityScheme)
+    {
+        return new RestApiSecurityScheme()
+        {
+            SecuritySchemeType = securityScheme.Type.ToString(),
+            Description = securityScheme.Description,
+            Name = securityScheme.Name,
+            In = (RestApiOperationParameterLocation)Enum.Parse(typeof(RestApiOperationParameterLocation), securityScheme.In.ToString()!),
+            Scheme = securityScheme.Scheme,
+            BearerFormat = securityScheme.BearerFormat,
+            Flows = CreateRestApiOAuthFlows(securityScheme.Flows),
+            OpenIdConnectUrl = securityScheme.OpenIdConnectUrl
+        };
+    }
+
+    /// <summary>
+    /// Build a <see cref="RestApiOAuthFlows"/> object from the given <see cref="OpenApiOAuthFlows"/> object.
+    /// </summary>
+    /// <param name="flows">The REST API OAuth flows.</param>
+    private static RestApiOAuthFlows? CreateRestApiOAuthFlows(OpenApiOAuthFlows? flows)
+    {
+        return flows is not null ? new RestApiOAuthFlows()
+        {
+            Implicit = CreateRestApiOAuthFlow(flows.Implicit),
+            Password = CreateRestApiOAuthFlow(flows.Password),
+            ClientCredentials = CreateRestApiOAuthFlow(flows.ClientCredentials),
+            AuthorizationCode = CreateRestApiOAuthFlow(flows.AuthorizationCode),
+        } : null;
+    }
+
+    /// <summary>
+    /// Build a <see cref="RestApiOAuthFlow"/> object from the given <see cref="OpenApiOAuthFlow"/> object.
+    /// </summary>
+    /// <param name="flow">The REST API OAuth flow.</param>
+    private static RestApiOAuthFlow? CreateRestApiOAuthFlow(OpenApiOAuthFlow? flow)
+    {
+        return flow is not null ? new RestApiOAuthFlow()
+        {
+            AuthorizationUrl = flow.AuthorizationUrl,
+            TokenUrl = flow.TokenUrl,
+            RefreshUrl = flow.RefreshUrl,
+            Scopes = new ReadOnlyDictionary<string, string>(flow.Scopes ?? new Dictionary<string, string>())
+        } : null;
+    }
+
+    /// <summary>
+    /// Build a list of <see cref="RestApiSecurityRequirement"/> objects from the given <see cref="OpenApiSecurityRequirement"/> objects.
+    /// </summary>
+    /// <param name="security">The REST API operation security</param>
+    internal static List<RestApiSecurityRequirement> CreateRestApiOperationSecurityRequirements(IList<OpenApiSecurityRequirement>? security)
+    {
+        var operationRequirements = new List<RestApiSecurityRequirement>();
+
+        if (security is not null)
+        {
+            foreach (var item in security)
+            {
+                foreach (var keyValuePair in item)
+                {
+                    if (keyValuePair.Key is not OpenApiSecurityScheme openApiSecurityScheme)
+                    {
+                        throw new KernelException("The security scheme is not supported.");
+                    }
+
+                    operationRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { CreateRestApiSecurityScheme(openApiSecurityScheme), keyValuePair.Value } }));
+                }
+            }
+        }
+
+        return operationRequirements;
     }
 
     /// <summary>

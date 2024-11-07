@@ -14,7 +14,10 @@ from semantic_kernel.connectors.memory.postgres.constants import (
     PGSSL_MODE_ENV_VAR,
     PGUSER_ENV_VAR,
 )
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    MemoryConnectorConnectionException,
+    MemoryConnectorInitializationError,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -104,11 +107,14 @@ class PostgresSettings(KernelBaseSettings):
 
     async def create_connection_pool(self) -> AsyncConnectionPool:
         """Creates a connection pool based off of settings."""
-        pool = AsyncConnectionPool(
-            min_size=self.min_pool,
-            max_size=self.max_pool,
-            open=False,
-            kwargs=self.get_connection_args(),
-        )
-        await pool.open()
+        try:
+            pool = AsyncConnectionPool(
+                min_size=self.min_pool,
+                max_size=self.max_pool,
+                open=False,
+                kwargs=self.get_connection_args(),
+            )
+            await pool.open()
+        except Exception as e:
+            raise MemoryConnectorConnectionException("Error creating connection pool.") from e
         return pool

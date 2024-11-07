@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// The REST API operation.
 /// </summary>
+[Experimental("SKEXP0040")]
 public sealed class RestApiOperation
 {
     /// <summary>
@@ -52,7 +54,12 @@ public sealed class RestApiOperation
     /// <summary>
     /// The server.
     /// </summary>
-    internal RestApiOperationServer Server { get; }
+    public IReadOnlyList<RestApiOperationServer> Servers { get; }
+
+    /// <summary>
+    /// The security requirements.
+    /// </summary>
+    public IReadOnlyList<RestApiSecurityRequirement>? SecurityRequirements { get; }
 
     /// <summary>
     /// The operation parameters.
@@ -78,31 +85,34 @@ public sealed class RestApiOperation
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
     /// <param name="id">The operation identifier.</param>
-    /// <param name="server">The server.</param>
+    /// <param name="servers">The servers.</param>
     /// <param name="path">The operation path.</param>
     /// <param name="method">The operation method.</param>
     /// <param name="description">The operation description.</param>
     /// <param name="parameters">The operation parameters.</param>
     /// <param name="payload">The operation payload.</param>
     /// <param name="responses">The operation responses.</param>
+    /// <param name="securityRequirements">The operation security requirements.</param>
     internal RestApiOperation(
         string id,
-        RestApiOperationServer server,
+        IReadOnlyList<RestApiOperationServer> servers,
         string path,
         HttpMethod method,
         string description,
         IReadOnlyList<RestApiOperationParameter> parameters,
         RestApiOperationPayload? payload = null,
-        IReadOnlyDictionary<string, RestApiOperationExpectedResponse>? responses = null)
+        IReadOnlyDictionary<string, RestApiOperationExpectedResponse>? responses = null,
+        IReadOnlyList<RestApiSecurityRequirement>? securityRequirements = null)
     {
         this.Id = id;
-        this.Server = server;
+        this.Servers = servers;
         this.Path = path;
         this.Method = method;
         this.Description = description;
         this.Parameters = parameters;
         this.Payload = payload;
         this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
+        this.SecurityRequirements = securityRequirements;
     }
 
     /// <summary>
@@ -260,10 +270,10 @@ public sealed class RestApiOperation
         {
             serverUrlString = serverUrlOverride.AbsoluteUri;
         }
-        else if (this.Server.Url is not null)
+        else if (this.Servers is { Count: > 0 } servers && servers[0].Url is { } url)
         {
-            serverUrlString = this.Server.Url;
-            foreach (var variable in this.Server.Variables)
+            serverUrlString = url;
+            foreach (var variable in servers[0].Variables)
             {
                 arguments.TryGetValue(variable.Key, out object? value);
                 string? strValue = value as string;
