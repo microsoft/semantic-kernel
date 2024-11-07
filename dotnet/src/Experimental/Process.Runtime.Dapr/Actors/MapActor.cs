@@ -57,24 +57,11 @@ internal sealed class MapActor : StepActor, IMap
     }
 
     /// <summary>
-    /// Builds a <see cref="KernelProcess"/> from the current <see cref="MapActor"/>.
-    /// </summary>
-    private async Task<DaprMapInfo> ToDaprMapInfoAsync() // %%% MOVE ???
-    {
-        //DaprProcessInfo mapOperation = await this._mapOperation!.GetProcessInfoAsync().ConfigureAwait(false);
-        DaprProcessInfo mapOperation = this._mapInfo!.MapStep;
-        return new DaprMapInfo { InnerStepDotnetType = this._mapInfo!.InnerStepDotnetType, Edges = this._mapInfo!.Edges, State = this._mapInfo.State, MapStep = mapOperation }; // %%% JUST RETURN this._mapInfo ???
-    }
-
-    /// <summary>
     /// When the process is used as a step within another process, this method will be called
     /// rather than ToKernelProcessAsync when extracting the state.
     /// </summary>
     /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
-    public override async Task<DaprStepInfo> ToDaprStepInfoAsync()
-    {
-        return await this.ToDaprMapInfoAsync().ConfigureAwait(false);
-    }
+    public override Task<DaprStepInfo> ToDaprStepInfoAsync() => Task.FromResult<DaprStepInfo>(this._mapInfo!);
 
     protected override async Task OnActivateAsync()
     {
