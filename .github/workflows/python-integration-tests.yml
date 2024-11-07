@@ -120,6 +120,16 @@ jobs:
       REDIS_CONNECTION_STRING: ${{ vars.REDIS_CONNECTION_STRING }}
     steps:
       - uses: actions/checkout@v4
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          docker ps
+          docker exec ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
+          docker exec ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
+          docker exec ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
+          docker exec ollama ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
+          docker exec ollama ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
+          docker exec ollama ollama list
       - name: Set up uv
         uses: astral-sh/setup-uv@v3
         with:
@@ -139,16 +149,6 @@ jobs:
       #   if: matrix.os == 'ubuntu-latest'
       #   run: |
       #     curl -fsSL https://ollama.com/install.sh | sh
-      - name: Pull model in Ollama
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          docker ps
-          docker exec -it ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID }}
-          docker exec -it ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_IMAGE }}
-          docker exec -it ollama ollama pull ${{ vars.OLLAMA_CHAT_MODEL_ID_TOOL_CALL }}
-          docker exec -it ollama ollama pull ${{ vars.OLLAMA_TEXT_MODEL_ID }}
-          docker exec -it ollama ollama pull ${{ vars.OLLAMA_EMBEDDING_MODEL_ID }}
-          docker exec -it ollama ollama list
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
