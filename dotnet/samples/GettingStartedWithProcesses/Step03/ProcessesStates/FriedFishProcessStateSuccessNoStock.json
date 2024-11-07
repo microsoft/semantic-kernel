@@ -1,8 +1,8 @@
 {
-  "$type": "KernelProcessStateMetadata",
+  "$type": "Process",
   "stepsState": {
     "GatherFriedFishIngredientsWithStockStep": {
-      "$type": "KernelProcessStepStateMetadata",
+      "$type": "Step",
       "id": "92a4cda38c7248648b0aa7ffaaa57f21",
       "name": "GatherFriedFishIngredientsWithStockStep",
       "versionInfo": "GatherFishIngredient.V2",
@@ -11,13 +11,13 @@
       }
     },
     "CutFoodStep": {
-      "$type": "KernelProcessStepStateMetadata",
+      "$type": "Step",
       "id": "7ace89e38e1c48b0b3a700b40d160c68",
       "name": "CutFoodStep",
       "versionInfo": "CutFoodStep.V1"
     },
     "FryFoodStep": {
-      "$type": "KernelProcessStepStateMetadata",
+      "$type": "Step",
       "id": "09bc39ba6d9745439c7c792b8dac0af7",
       "name": "FryFoodStep",
       "versionInfo": "FryFoodStep.V1"

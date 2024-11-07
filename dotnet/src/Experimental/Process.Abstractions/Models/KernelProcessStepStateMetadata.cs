@@ -2,6 +2,7 @@
 
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel.Process.Models;
 
@@ -9,8 +10,8 @@ namespace Microsoft.SemanticKernel.Process.Models;
 /// Step state used for State Persistence serialization
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
-[JsonDerivedType(typeof(KernelProcessStepStateMetadata), typeDiscriminator: nameof(KernelProcessStepStateMetadata))]
-[JsonDerivedType(typeof(KernelProcessStateMetadata), typeDiscriminator: nameof(KernelProcessStateMetadata))]
+[JsonDerivedType(typeof(KernelProcessStepStateMetadata), typeDiscriminator: nameof(ProcessConstants.SupportedComponents.Step))]
+[JsonDerivedType(typeof(KernelProcessStateMetadata), typeDiscriminator: nameof(ProcessConstants.SupportedComponents.Process))]
 public record class KernelProcessStepStateMetadata
 {
     /// <summary>
