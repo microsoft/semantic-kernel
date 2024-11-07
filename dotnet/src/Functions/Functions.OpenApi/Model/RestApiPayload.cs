@@ -6,10 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// The REST API operation payload.
+/// REST API payload.
 /// </summary>
 [Experimental("SKEXP0040")]
-public sealed class RestApiOperationPayload
+public sealed class RestApiPayload
 {
     /// <summary>
     /// The payload MediaType.
@@ -24,7 +24,7 @@ public sealed class RestApiOperationPayload
     /// <summary>
     /// The payload properties.
     /// </summary>
-    public IReadOnlyList<RestApiOperationPayloadProperty> Properties { get; }
+    public IReadOnlyList<RestApiPayloadProperty> Properties { get; }
 
     /// <summary>
     /// The schema of the parameter.
@@ -32,13 +32,13 @@ public sealed class RestApiOperationPayload
     public KernelJsonSchema? Schema { get; }
 
     /// <summary>
-    /// Creates an instance of a <see cref="RestApiOperationPayload"/> class.
+    /// Creates an instance of a <see cref="RestApiPayload"/> class.
     /// </summary>
     /// <param name="mediaType">The media type.</param>
     /// <param name="properties">The properties.</param>
     /// <param name="description">The description.</param>
     /// <param name="schema">The JSON Schema.</param>
-    internal RestApiOperationPayload(string mediaType, IReadOnlyList<RestApiOperationPayloadProperty> properties, string? description = null, KernelJsonSchema? schema = null)
+    internal RestApiPayload(string mediaType, IReadOnlyList<RestApiPayloadProperty> properties, string? description = null, KernelJsonSchema? schema = null)
     {
         this.MediaType = mediaType;
         this.Properties = properties;
