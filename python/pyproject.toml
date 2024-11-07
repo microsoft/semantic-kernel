@@ -5,7 +5,7 @@ authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
 readme = "pip/README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 urls.homepage = "https://learn.microsoft.com/en-us/semantic-kernel/overview/"
 urls.source = "https://github.com/microsoft/semantic-kernel/tree/main/python"
@@ -50,7 +50,7 @@ dependencies = [
 ### Optional dependencies
 [project.optional-dependencies]
 azure = [
-    "azure-ai-inference >= 1.0.0b3",
+    "azure-ai-inference >= 1.0.0b4",
     "azure-search-documents >= 11.6.0b4",
     "azure-identity ~= 1.13",
     "azure-cosmos ~= 4.7"
@@ -144,6 +144,9 @@ environments = [
 [tool.pytest.ini_options]
 addopts = "-ra -q -r fEX"
 asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    'ignore:.*FunctionChoiceBehavior.*:DeprecationWarning'
+]
 
 [tool.ruff]
 line-length = 120

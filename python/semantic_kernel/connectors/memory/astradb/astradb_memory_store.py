@@ -73,8 +73,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         if self._embedding_dim > MAX_DIMENSIONALITY:
             raise MemoryConnectorInitializationError(
-                f"Dimensionality of {self._embedding_dim} exceeds "
-                f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"Dimensionality of {self._embedding_dim} exceeds the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
         self._client = AstraClient(

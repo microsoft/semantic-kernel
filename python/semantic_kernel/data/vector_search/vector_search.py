@@ -32,7 +32,7 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
     @abstractmethod
     async def _inner_search(
         self,
-        options: VectorSearchOptions | None = None,
+        options: VectorSearchOptions,
         search_text: str | None = None,
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,

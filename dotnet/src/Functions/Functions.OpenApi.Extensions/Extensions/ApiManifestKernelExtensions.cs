@@ -146,15 +146,17 @@ public static class ApiManifestKernelExtensions
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();
             if (server?.Url is not null)
             {
+                var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
+                var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
                 foreach (var path in filteredOpenApiDocument.Paths)
                 {
-                    var operations = OpenApiDocumentParser.CreateRestApiOperations([server], path.Key, path.Value, null, logger);
+                    var operations = OpenApiDocumentParser.CreateRestApiOperations(filteredOpenApiDocument, path.Key, path.Value, null, logger);
                     foreach (RestApiOperation operation in operations)
                     {
                         try
                         {
                             logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
+                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, info, security, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
                         }
                         catch (Exception ex) when (!ex.IsCriticalException())
                         {

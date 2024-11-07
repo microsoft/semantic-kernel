@@ -64,10 +64,11 @@
             "command": "uv",
             "args": [
                 "run",
-                "pre-commit",
-                "run",
-                "-a",
-                "mypy"
+                "mypy",
+                "-p",
+                "semantic_kernel",
+                "--config-file",
+                "mypy.ini"
             ],
             "problemMatcher": {
                 "owner": "python",
