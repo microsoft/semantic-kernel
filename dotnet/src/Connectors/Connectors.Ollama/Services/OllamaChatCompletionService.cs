@@ -63,7 +63,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
-    #region private
+    #region Private
 
     private readonly IChatCompletionService _chatCompletionService;
 

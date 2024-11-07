@@ -72,7 +72,7 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => await this._textEmbeddingService.GenerateEmbeddingsAsync(data, kernel, cancellationToken).ConfigureAwait(false);
 
-    #region private
+    #region Private
 
     private readonly ITextEmbeddingGenerationService _textEmbeddingService;
 
