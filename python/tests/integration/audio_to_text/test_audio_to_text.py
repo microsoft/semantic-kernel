@@ -52,6 +52,6 @@ class TestAudioToText(AudioToTextTestBase):
         result = await service.get_text_content(audio_content)
 
         for word in expected_text:
-            assert (
-                word in result.text.lower()
-            ), f"Expected word '{word}' not found in result text: {result.text.lower()}"
+            assert word in result.text.lower(), (
+                f"Expected word '{word}' not found in result text: {result.text.lower()}"
+            )
