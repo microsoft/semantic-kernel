@@ -2,20 +2,17 @@
 
 import asyncio
 import logging
-import os
 
-from samples.concepts.audio_to_text.audio_recorder import AudioRecorder
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_audio_to_text import AzureAudioToText
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_audio import AzureTextToAudio
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.audio_content import AudioContent
 
-# This simple sample demonstrates how to use the AzureChatCompletion and AzureAudioToText services
-# to create a chat bot that can communicate with the user using audio input.
-# The user can enage a long conversation with the chat bot by speaking to it.
+# This simple sample demonstrates how to use the AzureChatCompletion and AzureTextToAudio services
+# to create a chat bot that can communicate with the user using audio output.
+# The chatbot will engage in a conversation with the user and respond using audio output.
 
 # Additional dependencies required for this sample:
 # - pyaudio: `pip install pyaudio` or `uv pip install pyaudio` if you are using uv and have a virtual env activated.
@@ -23,7 +20,6 @@ from semantic_kernel.contents.audio_content import AudioContent
 
 
 logging.basicConfig(level=logging.WARNING)
-AUDIO_FILEPATH = os.path.join(os.path.dirname(__file__), "output.wav")
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -36,7 +32,7 @@ flowery prose.
 
 
 chat_service = AzureChatCompletion()
-audio_to_text_service = AzureAudioToText()
+text_to_audio_service = AzureTextToAudio()
 
 history = ChatHistory()
 history.add_user_message("Hi there, who are you?")
@@ -45,11 +41,7 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 
 async def chat() -> bool:
     try:
-        print("User:> ", end="", flush=True)
-        with AudioRecorder(output_filepath=AUDIO_FILEPATH) as recorder:
-            recorder.start_recording()
-            user_input = await audio_to_text_service.get_text_content(AudioContent.from_audio_file(AUDIO_FILEPATH))
-            print(user_input.text)
+        user_input = input("User:> ")
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
         return False
@@ -57,13 +49,15 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    if "exit" in user_input.text.lower():
+    if user_input == "exit":
         print("\n\nExiting chat...")
         return False
 
     history.add_user_message(user_input.text)
 
-    chunks = chat_service.get_streaming_chat_message_content(
+    # No need to stream the response since we can only pass the
+    # response to the text to audio service as a whole
+    response = await chat_service.get_chat_message_content(
         chat_history=history,
         settings=OpenAIChatPromptExecutionSettings(
             max_tokens=2000,
@@ -72,23 +66,14 @@ async def chat() -> bool:
         ),
     )
 
-    print("Mosscap:> ", end="")
-    answer = ""
-    async for message in chunks:
-        print(str(message), end="")
-        answer += str(message)
-    print("\n")
+    print(f"Mosscap:> {response.content}")
 
-    history.add_assistant_message(str(answer))
+    history.add_assistant_message(response.content)
 
     return True
 
 
 async def main() -> None:
-    print(
-        "Instruction: when it's your turn to speak, press the spacebar to start recording."
-        " Release the spacebar to stop recording."
-    )
     chatting = True
     while chatting:
         chatting = await chat()
