@@ -9,13 +9,13 @@ internal static class ProcessStateMetadataFactory
     /// Captures Kernel Process Step State into <see cref="KernelProcessStateMetadata"/>
     /// </summary>
     /// <returns><see cref="KernelProcessStateMetadata"/></returns>
-    private static KernelProcessStateMetadata StepInfoToProcessStateMetadata(KernelProcessStepInfo stepInfo)
+    private static KernelProcessStepStateMetadata StepInfoToProcessStateMetadata(KernelProcessStepInfo stepInfo)
     {
-        KernelProcessStateMetadata metadata = new()
+        KernelProcessStepStateMetadata metadata = new()
         {
             Name = stepInfo.State.Name,
             Id = stepInfo.State.Id,
-            VersionInfo = stepInfo.State.Version,
+            VersionInfo = stepInfo.State.Version
         };
 
         if (stepInfo.InnerStepType.TryGetSubtypeOfStatefulStep(out var genericStateType) && genericStateType != null)
@@ -52,20 +52,18 @@ internal static class ProcessStateMetadataFactory
             KernelProcessStateMetadata stepEventMetadata = new();
             if (step is KernelProcess stepSubprocess)
             {
-                stepEventMetadata = KernelProcessToProcessStateMetadata(stepSubprocess);
+                metadata.StepsState.Add(step.State.Name, KernelProcessToProcessStateMetadata(stepSubprocess));
             }
             else
             {
-                stepEventMetadata = StepInfoToProcessStateMetadata(step);
+                metadata.StepsState.Add(step.State.Name, StepInfoToProcessStateMetadata(step));
             }
-
-            metadata.StepsState.Add(step.State.Name, stepEventMetadata);
         }
 
         return metadata;
     }
 
-    public static KernelProcessStateMetadata ToProcessStateMetadata(this KernelProcessStepInfo stepInfo)
+    public static KernelProcessStepStateMetadata ToProcessStateMetadata(this KernelProcessStepInfo stepInfo)
     {
         if (stepInfo is KernelProcess subprocess)
         {
