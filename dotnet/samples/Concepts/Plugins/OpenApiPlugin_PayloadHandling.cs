@@ -3,8 +3,6 @@
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using Amazon.Runtime.Internal;
-using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
