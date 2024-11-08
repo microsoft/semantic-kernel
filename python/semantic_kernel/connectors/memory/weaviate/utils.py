@@ -100,7 +100,7 @@ def to_weaviate_vector_distance(distance_function: DistanceFunction | None) -> V
         str: The Weaviate vector distance metric name.
     """
     match distance_function:
-        case DistanceFunction.COSINE_SIMILARITY:
+        case DistanceFunction.COSINE_DISTANCE:
             return VectorDistances.COSINE
         case DistanceFunction.DOT_PROD:
             return VectorDistances.DOT
