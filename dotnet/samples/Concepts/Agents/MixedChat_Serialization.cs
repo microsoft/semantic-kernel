@@ -56,23 +56,17 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(
         chat.AddChatMessage(input);
         this.WriteAgentChatMessage(input);
 
-        Console.WriteLine("============= Source Chat ==============");
+        Console.WriteLine("============= Dynamic Agent Chat - Primary (prior to serialization) ==============");
         await InvokeAgents(chat);
 
-        Console.WriteLine("============= Counter Thread ==============");
-        await foreach (ChatMessageContent content in chat.GetChatMessagesAsync(agentCounter))
-        {
-            this.WriteAgentChatMessage(content);
-        }
-
         AgentGroupChat copy = CreateGroupChat();
-        Console.WriteLine("\n=========== Serialized Chat ============");
+        Console.WriteLine("\n=========== Serialize and restore the Agent Chat into a new instance ============");
         await CloneChatAsync(chat, copy);
 
-        Console.WriteLine("\n============ Cloned Chat ===============");
+        Console.WriteLine("\n============ Continue with the dynamic Agent Chat (after deserialization) ===============");
         await InvokeAgents(copy);
 
-        Console.WriteLine("\n============ Full History ==============");
+        Console.WriteLine("\n============ The entire Agent Chat (includes messages prior to serialization and those after deserialization) ==============");
         await foreach (ChatMessageContent content in copy.GetChatMessagesAsync())
         {
             this.WriteAgentChatMessage(content);

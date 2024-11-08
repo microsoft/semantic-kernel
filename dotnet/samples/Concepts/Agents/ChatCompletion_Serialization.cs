@@ -34,19 +34,19 @@ public class ChatCompletion_Serialization(ITestOutputHelper output) : BaseAgents
         AgentGroupChat chat = CreateGroupChat();
 
         // Invoke chat and display messages.
-        Console.WriteLine("============= Source Chat ==============");
+        Console.WriteLine("============= Dynamic Agent Chat - Primary (prior to serialization) ==============");
         await InvokeAgentAsync(chat, "Hello");
         await InvokeAgentAsync(chat, "What is the special soup?");
 
         AgentGroupChat copy = CreateGroupChat();
-        Console.WriteLine("\n=========== Serialized Chat ============");
+        Console.WriteLine("\n=========== Serialize and restore the Agent Chat into a new instance ============");
         await CloneChatAsync(chat, copy);
 
-        Console.WriteLine("\n============ Cloned Chat ===============");
+        Console.WriteLine("\n============ Continue with the dynamic Agent Chat (after deserialization) ===============");
         await InvokeAgentAsync(copy, "What is the special drink?");
         await InvokeAgentAsync(copy, "Thank you");
 
-        Console.WriteLine("\n============ Full History ==============");
+        Console.WriteLine("\n============ The entire Agent Chat (includes messages prior to serialization and those after deserialization) ==============");
         await foreach (ChatMessageContent content in copy.GetChatMessagesAsync())
         {
             this.WriteAgentChatMessage(content);
