@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Chat;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Extensions;
@@ -42,5 +45,34 @@ public class ChatHistoryExtensionsTests
         Assert.Equal(finalContent, chatHistory[0].Content);
         Assert.Equal(AuthorRole.User, chatHistory[0].Role);
         Assert.Equal(metadata["message"], chatHistory[0].Metadata!["message"]);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItKeepsOrNotToolCallsCorrectlyForStreamingChatContentsAsync(bool removeToolCalls)
+    {
+        var chatHistoryStreamingContents = new List<OpenAIStreamingChatMessageContent>
+        {
+            new(AuthorRole.User, "Hello ", [ModelReaderWriter.Read<StreamingChatToolCallUpdate>(BinaryData.FromString("{\"index\":0,\"id\":\"call_123\",\"type\":\"function\",\"function\":{\"name\":\"FakePlugin_CreateSpecialPoem\",\"arguments\":\"\"}}"))!]),
+            new(null, "! ", [ModelReaderWriter.Read<StreamingChatToolCallUpdate>(BinaryData.FromString("{\"index\":0,\"function\":{\"arguments\":\"{}\"}}"))!]),
+        }.ToAsyncEnumerable();
+        var chatHistory = new ChatHistory();
+        await foreach (var chatMessageChunk in chatHistory.AddStreamingMessageAsync(chatHistoryStreamingContents, removeToolCalls))
+        {
+        }
+
+        Assert.Single(chatHistory);
+        var lastMessage = chatHistory.Last();
+        Assert.IsType<OpenAIChatMessageContent>(lastMessage);
+        var openAIChatMessageContent = (OpenAIChatMessageContent)lastMessage;
+        if (removeToolCalls)
+        {
+            Assert.Empty(openAIChatMessageContent.ToolCalls);
+        }
+        else
+        {
+            Assert.NotEmpty(openAIChatMessageContent.ToolCalls);
+        }
     }
 }
