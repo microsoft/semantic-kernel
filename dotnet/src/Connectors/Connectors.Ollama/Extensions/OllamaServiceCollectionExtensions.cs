@@ -221,7 +221,7 @@ public static class OllamaServiceCollectionExtensions
                 builder.UseLogging(logger);
             }
 
-            return (ITextEmbeddingGenerationService)builder.Use(ollamaClient).AsEmbeddingGenerationService(serviceProvider);
+            return builder.Use(ollamaClient).AsTextEmbeddingGenerationService(serviceProvider);
         });
 
         return services;

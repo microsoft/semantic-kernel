@@ -75,14 +75,14 @@ public static class EmbeddingGenerationExtensions
             new EmbeddingGeneratorEmbeddingGenerationService<TValue, TEmbedding>(generator, serviceProvider);
     }
 
-    /// <summary>Creates an <see cref="ITextEmbeddingGenerationService"/> for a specific input string to and embedding with floats <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.</summary>
+    /// <summary>Creates a <see cref="ITextEmbeddingGenerationService"/> from a <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> where input of <see cref="string"/> and an embedding of <see cref="float"/>.</summary>
     /// <param name="generator">Input as string with embedding as floats generator</param>
     /// <param name="serviceProvider">An optional <see cref="IServiceProvider"/> that can be used to resolve services to use in the instance.</param>
     /// <returns>
     /// The <see cref="ITextEmbeddingGenerationService"/>. If the <paramref name="generator"/> is an <see cref="ITextEmbeddingGenerationService"/>,
     /// the <paramref name="generator"/> will be returned. Otherwise, a new <see cref="ITextEmbeddingGenerationService"/> will be created that wraps the <paramref name="generator"/>.
     /// </returns>
-    public static IEmbeddingGenerationService<string, float> AsEmbeddingGenerationService(this IEmbeddingGenerator<string, Embedding<float>> generator, IServiceProvider? serviceProvider = null)
+    public static ITextEmbeddingGenerationService AsTextEmbeddingGenerationService(this IEmbeddingGenerator<string, Embedding<float>> generator, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(generator);
         return generator is ITextEmbeddingGenerationService service ?
