@@ -83,7 +83,7 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
         var request = CreateRequest(settings, this._client.SelectedModel);
         request.Prompt = prompt;
 
-        await foreach (var responseStreamChunk in this._client.Generate(request, cancellationToken).ConfigureAwait(false))
+        await foreach (var responseStreamChunk in this._client.GenerateAsync(request, cancellationToken).ConfigureAwait(false))
         {
             if (responseStreamChunk is null)
             {
@@ -113,7 +113,7 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
         var request = CreateRequest(settings, this._client.SelectedModel);
         request.Prompt = prompt;
 
-        await foreach (var content in this._client.Generate(request, cancellationToken).ConfigureAwait(false))
+        await foreach (var content in this._client.GenerateAsync(request, cancellationToken).ConfigureAwait(false))
         {
             yield return new StreamingTextContent(
                 text: content?.Response,
