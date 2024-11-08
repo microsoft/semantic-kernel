@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -265,6 +266,7 @@ public class LocalMapTests
             .SendEventTo(mapStep);
 
         // CountStep is not part of the map operation, rather it has been defined on the "outer" process.
+        CountStep.Index = 0; // Reset static state (test hack)
         ProcessStepBuilder countStep = process.AddStepFromType<CountStep>();
         computeStep
             .OnEvent(ComputeStep.SquareEventId)
@@ -321,7 +323,7 @@ public class LocalMapTests
 
         // Assert
         VerifyMapResult(kernel, UnionStep.ResultKey, 55L);
-        VerifyMapResult(kernel, CountStep.CountKey, 5);
+        Assert.Equal(5, CountStep.Index);
     }
 
     /// <summary>
@@ -546,22 +548,13 @@ public class LocalMapTests
     private sealed class CountStep : KernelProcessStep
     {
         public const string CountFunction = nameof(Count);
-        public const string CountKey = "Count";
 
-        private readonly object countLock = new();
+        public static int Index = 0;
 
         [KernelFunction]
-        public void Count(Kernel kernel)
+        public void Count()
         {
-            lock (this.countLock)
-            {
-                int count = 0;
-                if (kernel.Data.TryGetValue(CountKey, out object? value))
-                {
-                    count = (int)(value ?? 0);
-                }
-                kernel.Data[CountKey] = ++count;
-            }
+            Interlocked.Increment(ref Index);
         }
     }
 }
