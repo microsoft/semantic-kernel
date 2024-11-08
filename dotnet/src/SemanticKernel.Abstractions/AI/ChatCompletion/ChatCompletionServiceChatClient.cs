@@ -40,7 +40,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         Verify.NotNull(chatMessages);
 
         var response = await this._chatCompletionService.GetChatMessageContentAsync(
-            new ChatHistory(chatMessages.Select(ChatCompletionServiceExtensions.ToChatMessageContent)),
+            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false);
@@ -58,7 +58,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         Verify.NotNull(chatMessages);
 
         await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
-            new ChatHistory(chatMessages.Select(ChatCompletionServiceExtensions.ToChatMessageContent)),
+            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false))
@@ -192,6 +192,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             AuthorName = content.AuthorName,
             ChoiceIndex = content.ChoiceIndex,
             ModelId = content.ModelId,
+            RawRepresentation = content,
             Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,
         };
 

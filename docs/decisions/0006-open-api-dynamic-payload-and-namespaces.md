@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by [ADR-0062](0062-open-api-payload.md)
 contact: SergeyMenshykh
 date: 2023-08-15
 deciders: shawncal
