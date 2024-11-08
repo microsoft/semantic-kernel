@@ -5,9 +5,6 @@ import copy
 import pytest
 from pytest import mark, param
 
-from samples.concepts.auto_function_calling.azure_python_code_interpreter_function_calling import (
-    main as azure_python_code_interpreter_function_calling,
-)
 from samples.concepts.auto_function_calling.chat_gpt_api_function_calling import main as chat_gpt_api_function_calling
 from samples.concepts.auto_function_calling.functions_defined_in_json_prompt import (
     main as function_defined_in_json_prompt,
@@ -60,11 +57,6 @@ from samples.getting_started_with_agents.step7_assistant import main as step7_as
 from tests.samples.samples_utils import retry
 
 concepts = [
-    param(
-        azure_python_code_interpreter_function_calling,
-        ["print('Hello, World!')", "exit"],
-        id="azure_python_code_interpreter_function_calling",
-    ),
     param(chat_gpt_api_function_calling, ["What is 3+3?", "exit"], id="chat_gpt_api_function_calling"),
     param(azure_chat_gpt_api, ["Why is the sky blue?", "exit"], id="azure_chat_gpt_api"),
     param(chat_gpt_api, ["What is life?", "exit"], id="chat_gpt_api"),
@@ -102,7 +94,12 @@ concepts = [
     param(load_yaml_prompt, [], id="load_yaml_prompt"),
     param(template_language, [], id="template_language"),
     param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
-    param(bing_search_plugin, [], id="bing_search_plugin"),
+    param(
+        bing_search_plugin,
+        [],
+        id="bing_search_plugin",
+        marks=pytest.mark.skip(reason="Flaky test due to Azure OpenAI content policy"),
+    ),
     param(azure_chat_image_input, [], id="azure_chat_image_input"),
     param(custom_service_selector, [], id="custom_service_selector"),
     param(function_defined_in_json_prompt, ["What is 3+3?", "exit"], id="function_defined_in_json_prompt"),

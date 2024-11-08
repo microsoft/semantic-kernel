@@ -39,7 +39,7 @@ class BinaryContent(KernelContent):
     """
 
     content_type: Literal[ContentTypes.BINARY_CONTENT] = Field(BINARY_CONTENT_TAG, init=False)  # type: ignore
-    uri: Url | FilePath | None = None
+    uri: Url | str | None = None
     default_mime_type: ClassVar[str] = "text/plain"
     tag: ClassVar[str] = BINARY_CONTENT_TAG
     _data_uri: DataUri | None = None
@@ -56,7 +56,7 @@ class BinaryContent(KernelContent):
         """Create a Binary Content object, either from a data_uri or data.
 
         Args:
-            uri (Url | None): The reference uri of the content.
+            uri (Url | str | None): The reference uri of the content.
             data_uri (DataUrl | None): The data uri of the content.
             data (str | bytes | None): The data of the content.
             data_format (str | None): The format of the data (e.g. base64).
@@ -84,6 +84,7 @@ class BinaryContent(KernelContent):
                 _data_uri = DataUri(
                     data_bytes=data, data_format=data_format, mime_type=mime_type or self.default_mime_type
                 )
+
         if uri is not None:
             if isinstance(uri, str) and os.path.exists(uri):
                 uri = str(FilePath(uri))

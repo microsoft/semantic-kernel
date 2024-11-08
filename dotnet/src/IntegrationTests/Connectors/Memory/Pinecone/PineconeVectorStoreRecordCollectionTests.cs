@@ -311,6 +311,123 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         await this.Fixture.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: -1);
     }
 
+    [PineconeTheory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task VectorizedSearchAsync(bool collectionFromVectorStore, bool includeVectors)
+    {
+        // Arrange.
+        var hotelRecordCollection = collectionFromVectorStore
+            ? this.Fixture.HotelRecordCollectionFromVectorStore
+            : this.Fixture.HotelRecordCollection;
+        var searchVector = new ReadOnlyMemory<float>([17.5f, 721.0f, 731.5f, 742.0f, 762.5f, 783.0f, 793.5f, 704.0f]);
+
+        // Act.
+        var actual = await hotelRecordCollection.VectorizedSearchAsync(searchVector, new() { IncludeVectors = includeVectors });
+        var searchResults = await actual.Results.ToListAsync();
+        var searchResultRecord = searchResults.First().Record;
+
+        Assert.Equal("Vacation Inn Hotel", searchResultRecord.HotelName);
+        Assert.Equal("On vacation? Stay with us.", searchResultRecord.Description);
+        Assert.Equal(11, searchResultRecord.HotelCode);
+        Assert.Equal(4.3f, searchResultRecord.HotelRating);
+        Assert.True(searchResultRecord.ParkingIncluded);
+        Assert.Contains("wi-fi", searchResultRecord.Tags);
+        Assert.Contains("breakfast", searchResultRecord.Tags);
+        Assert.Contains("gym", searchResultRecord.Tags);
+        Assert.Equal(includeVectors, searchResultRecord.DescriptionEmbedding.Length > 0);
+    }
+
+    [PineconeTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VectorizedSearchWithTopSkipAsync(bool collectionFromVectorStore)
+    {
+        // Arrange.
+        var hotelRecordCollection = collectionFromVectorStore
+            ? this.Fixture.HotelRecordCollectionFromVectorStore
+            : this.Fixture.HotelRecordCollection;
+        var searchVector = new ReadOnlyMemory<float>([17.5f, 721.0f, 731.5f, 742.0f, 762.5f, 783.0f, 793.5f, 704.0f]);
+
+        // Act.
+        var actual = await hotelRecordCollection.VectorizedSearchAsync(searchVector, new() { Skip = 1, Top = 1 });
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResultRecord = searchResults.First().Record;
+        Assert.Equal("Best Eastern Hotel", searchResultRecord.HotelName);
+    }
+
+    [PineconeTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VectorizedSearchWithFilterAsync(bool collectionFromVectorStore)
+    {
+        // Arrange.
+        var hotelRecordCollection = collectionFromVectorStore
+            ? this.Fixture.HotelRecordCollectionFromVectorStore
+            : this.Fixture.HotelRecordCollection;
+        var searchVector = new ReadOnlyMemory<float>([17.5f, 721.0f, 731.5f, 742.0f, 762.5f, 783.0f, 793.5f, 704.0f]);
+
+        // Act.
+        var filter = new VectorSearchFilter().EqualTo(nameof(PineconeHotel.HotelCode), 42);
+        var actual = await hotelRecordCollection.VectorizedSearchAsync(searchVector, new() { Top = 1, Filter = filter });
+        var searchResults = await actual.Results.ToListAsync();
+        Assert.Single(searchResults);
+        var searchResultRecord = searchResults.First().Record;
+        Assert.Equal("Best Eastern Hotel", searchResultRecord.HotelName);
+    }
+
+    [PineconeFact]
+    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    {
+        var merryYacht = new VectorStoreGenericDataModel<string>("merry-yacht")
+        {
+            Data =
+            {
+                ["HotelName"] = "Merry Yacht Hotel",
+                ["Description"] = "Stay afloat at the Merry Yacht Hotel",
+                ["HotelCode"] = 101,
+                ["HotelRating"] = 4.2f,
+                ["ParkingIncluded"] = true,
+                ["Tags"] = new[] { "wi-fi", "breakfast", "gym" }
+            },
+            Vectors =
+            {
+                ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f])
+            }
+        };
+
+        var stats = await this.Fixture.Index.DescribeStats();
+        var vectorCountBefore = stats.TotalVectorCount;
+
+        var hotelRecordCollection = this.Fixture.HotelRecordCollectionWithGenericDataModel;
+
+        // insert
+        await hotelRecordCollection.UpsertAsync(merryYacht);
+
+        vectorCountBefore = await this.Fixture.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: 1);
+
+        var inserted = await hotelRecordCollection.GetAsync("merry-yacht", new GetRecordOptions { IncludeVectors = true });
+
+        Assert.NotNull(inserted);
+        Assert.Equal(merryYacht.Data["HotelName"], inserted.Data["HotelName"]);
+        Assert.Equal(merryYacht.Data["Description"], inserted.Data["Description"]);
+        Assert.Equal(merryYacht.Data["HotelCode"], inserted.Data["HotelCode"]);
+        Assert.Equal(merryYacht.Data["HotelRating"], inserted.Data["HotelRating"]);
+        Assert.Equal(merryYacht.Data["ParkingIncluded"], inserted.Data["ParkingIncluded"]);
+        Assert.Equal(merryYacht.Data["Tags"], inserted.Data["Tags"]);
+        Assert.Equal(
+            ((ReadOnlyMemory<float>)merryYacht.Vectors["DescriptionEmbedding"]!).ToArray(),
+            ((ReadOnlyMemory<float>)inserted.Vectors["DescriptionEmbedding"]!).ToArray());
+
+        // delete
+        await hotelRecordCollection.DeleteAsync("merry-yacht");
+
+        await this.Fixture.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: -1);
+    }
+
     [PineconeFact]
     public async Task UseCollectionExistsOnNonExistingStoreReturnsFalseAsync()
     {

@@ -7,6 +7,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | Agents | Creating and using [agents](../../semantic_kernel/agents/) in Semantic Kernel |
 | AutoFunctionCalling | Using `Auto Function Calling` to allow function call capable models to invoke Kernel Functions automatically |
 | ChatCompletion | Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) messaging capable service with models  |
+| ChatHistory | Using and serializing the [`ChatHistory`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/contents/chat_history.py) |
 | Filtering | Creating and using Filters |
 | Functions | Invoking [`Method`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_method.py) or [`Prompt`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_prompt.py) functions with [`Kernel`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/kernel.py) |
 | Grounding | An example of how to perform LLM grounding |
@@ -17,6 +18,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | On Your Data | Examples of using AzureOpenAI [`On Your Data`](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/use-your-data?tabs=mongo-db) |
 | Planners | Showing the uses of [`Planners`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/planners) |
 | Plugins | Different ways of creating and using [`Plugins`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_plugin.py) |
+| Processes | Examples of using the [`Process Framework`](../../semantic_kernel/processes/) |
 | PromptTemplates | Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/prompt_template/prompt_template_base.py) with parametrization for `Prompt` rendering  |
 | RAG | Different ways of `RAG` (Retrieval-Augmented Generation) |
 | Search | Using search services information |

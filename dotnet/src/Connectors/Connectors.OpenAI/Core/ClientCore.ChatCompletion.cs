@@ -209,7 +209,9 @@ internal partial class ClientCore
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: false,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 return [lastMessage];
@@ -334,10 +336,14 @@ internal partial class ClientCore
                                     continue;
                                 }
 
+                                string streamingArguments = (functionCallUpdate.FunctionArgumentsUpdate?.ToMemory().IsEmpty ?? true)
+                                    ? string.Empty
+                                    : functionCallUpdate.FunctionArgumentsUpdate.ToString();
+
                                 openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
                                     callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
-                                    arguments: functionCallUpdate.FunctionArgumentsUpdate?.ToString(),
+                                    arguments: streamingArguments,
                                     functionCallIndex: functionCallUpdate.Index));
                             }
                         }
@@ -384,7 +390,9 @@ internal partial class ClientCore
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
                 functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: true,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content);
@@ -460,7 +468,7 @@ internal partial class ClientCore
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
-            IncludeLogProbabilities = executionSettings.Logprobs,
+            IncludeLogProbabilities = executionSettings.Logprobs
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -495,6 +503,11 @@ internal partial class ClientCore
             }
         }
 
+        if (toolCallingConfig.Options?.AllowParallelCalls is not null)
+        {
+            options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
+        }
+
         return options;
     }
 
@@ -525,21 +538,24 @@ internal partial class ClientCore
 
             case JsonElement formatElement:
                 // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
-                // Handling only string formatElement.
                 if (formatElement.ValueKind == JsonValueKind.String)
                 {
-                    string formatString = formatElement.GetString() ?? "";
-                    switch (formatString)
+                    switch (formatElement.GetString())
                     {
                         case "json_object":
                             return ChatResponseFormat.CreateJsonObjectFormat();
 
+                        case null:
+                        case "":
                         case "text":
                             return ChatResponseFormat.CreateTextFormat();
                     }
                 }
 
-                break;
+                return ChatResponseFormat.CreateJsonSchemaFormat(
+                    "JsonSchema",
+                    new BinaryData(Encoding.UTF8.GetBytes(formatElement.ToString())));
+
             case Type formatObjectType:
                 return GetJsonSchemaResponseFormat(formatObjectType);
         }
@@ -554,10 +570,31 @@ internal partial class ClientCore
     {
         var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
-        var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
+        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
-        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);
+        var typeName = GetTypeName(type);
+
+        return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
+    }
+
+    /// <summary>
+    /// Returns a type name concatenated with generic argument type names if they exist.
+    /// </summary>
+    private static string GetTypeName(Type type)
+    {
+        if (!type.IsGenericType)
+        {
+            return type.Name;
+        }
+
+        // If type is generic, base name is followed by ` character.
+        string baseName = type.Name.Substring(0, type.Name.IndexOf('`'));
+
+        Type[] typeArguments = type.GetGenericArguments();
+        string argumentNames = string.Concat(Array.ConvertAll(typeArguments, GetTypeName));
+
+        return $"{baseName}{argumentNames}";
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
@@ -765,17 +802,42 @@ internal partial class ClientCore
 
     private static ChatMessageContentPart GetImageContentItem(ImageContent imageContent)
     {
+        ChatImageDetailLevel? detailLevel = GetChatImageDetailLevel(imageContent);
+
         if (imageContent.Data is { IsEmpty: false } data)
         {
-            return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType);
+            return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType, detailLevel);
         }
 
         if (imageContent.Uri is not null)
         {
-            return ChatMessageContentPart.CreateImagePart(imageContent.Uri);
+            return ChatMessageContentPart.CreateImagePart(imageContent.Uri, detailLevel);
         }
 
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
+    }
+
+    private static ChatImageDetailLevel? GetChatImageDetailLevel(ImageContent imageContent)
+    {
+        const string DetailLevelProperty = "ChatImageDetailLevel";
+
+        if (imageContent.Metadata is not null &&
+            imageContent.Metadata.TryGetValue(DetailLevelProperty, out object? detailLevel) &&
+            detailLevel is not null)
+        {
+            if (detailLevel is string detailLevelString && !string.IsNullOrWhiteSpace(detailLevelString))
+            {
+                return detailLevelString.ToUpperInvariant() switch
+                {
+                    "AUTO" => ChatImageDetailLevel.Auto,
+                    "LOW" => ChatImageDetailLevel.Low,
+                    "HIGH" => ChatImageDetailLevel.High,
+                    _ => throw new ArgumentException($"Unknown image detail level '{detailLevelString}'. Supported values are 'Auto', 'Low' and 'High'.")
+                };
+            }
+        }
+
+        return null;
     }
 
     private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel)

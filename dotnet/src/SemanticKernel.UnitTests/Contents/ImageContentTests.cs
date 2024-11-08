@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -239,6 +240,25 @@ public sealed class ImageContentTests
         Assert.Null(deserialized.InnerContent);
         Assert.Null(deserialized.ModelId);
         Assert.Null(deserialized.Metadata);
+    }
+
+    [Fact]
+    public void MetadataSerializationAndDeserializationWorksCorrectly()
+    {
+        // Arrange
+        var content = new ImageContent()
+        {
+            Metadata = new Dictionary<string, object?> { ["ChatImageDetailLevel"] = "high" }
+        };
+
+        // Act
+        var serialized = JsonSerializer.Serialize(content);
+        var deserialized = JsonSerializer.Deserialize<ImageContent>(serialized);
+
+        // Assert
+        Assert.NotNull(deserialized?.Metadata);
+        Assert.True(deserialized.Metadata.ContainsKey("ChatImageDetailLevel"));
+        Assert.Equal("high", deserialized.Metadata["ChatImageDetailLevel"]?.ToString());
     }
 
     [Theory]

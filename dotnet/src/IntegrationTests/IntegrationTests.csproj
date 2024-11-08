@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>IntegrationTests</AssemblyName>
     <RootNamespace>SemanticKernel.IntegrationTests</RootNamespace>
@@ -63,10 +63,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" />
     <PackageReference Include="Testcontainers.Milvus" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />

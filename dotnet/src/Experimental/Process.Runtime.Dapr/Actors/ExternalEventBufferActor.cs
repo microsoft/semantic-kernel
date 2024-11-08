@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Dapr.Actors.Runtime;
+using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel;
 
@@ -12,8 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal class ExternalEventBufferActor : Actor, IExternalEventBuffer
 {
-    private const string EventQueueState = "DaprExternalEventBufferState";
-    private Queue<KernelProcessEvent>? _queue = new();
+    private List<string> _queue = [];
 
     /// <summary>
     /// Required constructor for Dapr Actor.
@@ -26,26 +25,26 @@ internal class ExternalEventBufferActor : Actor, IExternalEventBuffer
     /// <summary>
     /// Dequeues an event.
     /// </summary>
-    /// <returns>A <see cref="List{T}"/> where T is <see cref="DaprEvent"/></returns>
-    public async Task<List<KernelProcessEvent>> DequeueAllAsync()
+    /// <returns>A <see cref="List{T}"/> where T is <see cref="ProcessEvent"/></returns>
+    public async Task<IList<string>> DequeueAllAsync()
     {
         // Dequeue and clear the queue.
-        var items = this._queue!.ToList();
+        string[] items = [.. this._queue];
         this._queue!.Clear();
 
         // Save the state.
-        await this.StateManager.SetStateAsync(EventQueueState, this._queue).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.ExternalEventQueueState, this._queue).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
         return items;
     }
 
-    public async Task EnqueueAsync(KernelProcessEvent externalEvent)
+    public async Task EnqueueAsync(string externalEvent)
     {
-        this._queue!.Enqueue(externalEvent);
+        this._queue.Add(externalEvent);
 
         // Save the state.
-        await this.StateManager.SetStateAsync(EventQueueState, this._queue).ConfigureAwait(false);
+        await this.StateManager.SetStateAsync(ActorStateKeys.ExternalEventQueueState, this._queue).ConfigureAwait(false);
         await this.StateManager.SaveStateAsync().ConfigureAwait(false);
     }
 
@@ -55,14 +54,14 @@ internal class ExternalEventBufferActor : Actor, IExternalEventBuffer
     /// <returns>A <see cref="Task"/></returns>
     protected override async Task OnActivateAsync()
     {
-        var eventQueueState = await this.StateManager.TryGetStateAsync<Queue<KernelProcessEvent>>(EventQueueState).ConfigureAwait(false);
+        var eventQueueState = await this.StateManager.TryGetStateAsync<List<string>>(ActorStateKeys.ExternalEventQueueState).ConfigureAwait(false);
         if (eventQueueState.HasValue)
         {
-            this._queue = eventQueueState.Value;
+            this._queue = [.. eventQueueState.Value];
         }
         else
         {
-            this._queue = new Queue<KernelProcessEvent>();
+            this._queue = [];
         }
     }
 }
