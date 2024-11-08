@@ -113,12 +113,12 @@ public static class OllamaServiceCollectionExtensions
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
             var ollamaClient = new OllamaApiClient(endpoint, modelId);
-            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
 
             var chatClientBuilder = new ChatClientBuilder()
                 .UseFunctionInvocation(config =>
-                    config.MaximumIterationsPerRequest = 128);
+                    config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 
+            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
             if (logger is not null)
             {
                 chatClientBuilder.UseLogging(logger);
@@ -152,12 +152,11 @@ public static class OllamaServiceCollectionExtensions
                 client: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 modelId);
 
-            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
-
             var chatClientBuilder = new ChatClientBuilder()
                 .UseFunctionInvocation(config =>
-                    config.MaximumIterationsPerRequest = 128);
+                    config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 
+            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
             if (logger is not null)
             {
                 chatClientBuilder.UseLogging(logger);
@@ -212,10 +211,10 @@ public static class OllamaServiceCollectionExtensions
         services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var ollamaClient = new OllamaApiClient(endpoint, modelId);
-            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
 
             var builder = new EmbeddingGeneratorBuilder<string, Embedding<float>>();
 
+            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
             if (logger is not null)
             {
                 builder.UseLogging(logger);
@@ -249,16 +248,15 @@ public static class OllamaServiceCollectionExtensions
                 client: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 defaultModel: modelId);
 
-            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
-
             var builder = new EmbeddingGeneratorBuilder<string, Embedding<float>>();
 
+            var logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(ollamaClient.GetType());
             if (logger is not null)
             {
                 builder.UseLogging(logger);
             }
 
-            return (ITextEmbeddingGenerationService)builder.Use(ollamaClient).AsEmbeddingGenerationService(serviceProvider);
+            return builder.Use(ollamaClient).AsTextEmbeddingGenerationService(serviceProvider);
         });
 
         return services;
@@ -279,10 +277,32 @@ public static class OllamaServiceCollectionExtensions
         Verify.NotNull(services);
 
         services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _)
-            => (ITextEmbeddingGenerationService)ollamaClient.AsEmbeddingGenerationService(serviceProvider));
+            => ollamaClient.AsTextEmbeddingGenerationService(serviceProvider));
 
         return services;
     }
+
+    #endregion
+
+    #region Private
+
+    /// <summary>
+    /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
+    /// asynchronous chain of execution.
+    /// </summary>
+    /// <remarks>
+    /// This is a fail-safe mechanism. If someone accidentally manages to set up execution settings in such a way that
+    /// auto-invocation is invoked recursively, and in particular where a prompt function is able to auto-invoke itself,
+    /// we could end up in an infinite loop. This const is a backstop against that happening. We should never come close
+    /// to this limit, but if we do, auto-invoke will be disabled for the current flow in order to prevent runaway execution.
+    /// With the current setup, the way this could possibly happen is if a prompt function is configured with built-in
+    /// execution settings that opt-in to auto-invocation of everything in the kernel, in which case the invocation of that
+    /// prompt function could advertize itself as a candidate for auto-invocation. We don't want to outright block that,
+    /// if that's something a developer has asked to do (e.g. it might be invoked with different arguments than its parent
+    /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
+    /// configurable should need arise.
+    /// </remarks>
+    private const int MaxInflightAutoInvokes = 128;
 
     #endregion
 }
