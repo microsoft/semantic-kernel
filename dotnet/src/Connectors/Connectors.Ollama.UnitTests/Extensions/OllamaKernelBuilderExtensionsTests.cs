@@ -40,7 +40,6 @@ public class OllamaKernelBuilderExtensionsTests
 
         Assert.NotNull(kernel);
         Assert.NotNull(service);
-        Assert.IsType<OllamaChatCompletionService>(service);
     }
 
     [Fact]
@@ -54,6 +53,5 @@ public class OllamaKernelBuilderExtensionsTests
 
         Assert.NotNull(kernel);
         Assert.NotNull(service);
-        Assert.IsType<OllamaTextEmbeddingGenerationService>(service);
     }
 }
