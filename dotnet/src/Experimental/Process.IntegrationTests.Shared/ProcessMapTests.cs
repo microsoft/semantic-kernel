@@ -66,8 +66,8 @@ public class ProcessMapTests : IClassFixture<ProcessTestFixture>
                 });
 
         // Assert
-        var processState = await processContext.GetStateAsync();
-        var unionState = processState.Steps.Where(s => s.State.Name == "Union").FirstOrDefault()?.State as KernelProcessStepState<UnionState>;
+        KernelProcess processState = await processContext.GetStateAsync();
+        KernelProcessStepState<UnionState> unionState = (KernelProcessStepState<UnionState>)processState.Steps.Where(s => s.State.Name == "Union").Single().State;
 
         Assert.NotNull(unionState?.State);
         Assert.Equal(55L, unionState.State.SquareResult);
