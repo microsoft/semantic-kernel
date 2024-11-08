@@ -7,7 +7,6 @@ from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_audio_base import OpenAITextToAudioBase
@@ -27,7 +26,7 @@ class AzureTextToAudio(AzureOpenAIConfigBase, OpenAITextToAudioBase):
         deployment_name: str | None = None,
         endpoint: str | None = None,
         base_url: str | None = None,
-        api_version: str | None = None,
+        api_version: str | None = "2024-10-01-preview",
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
         token_endpoint: str | None = None,
@@ -75,10 +74,6 @@ class AzureTextToAudio(AzureOpenAIConfigBase, OpenAITextToAudioBase):
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
         if not azure_openai_settings.text_to_audio_deployment_name:
             raise ServiceInitializationError("The Azure OpenAI text to audio deployment name is required.")
-
-        # Text-to-audio is only available in preview
-        if azure_openai_settings.api_version == DEFAULT_AZURE_API_VERSION:
-            azure_openai_settings.api_version = f"{DEFAULT_AZURE_API_VERSION}-preview"
 
         super().__init__(
             deployment_name=azure_openai_settings.text_to_audio_deployment_name,
