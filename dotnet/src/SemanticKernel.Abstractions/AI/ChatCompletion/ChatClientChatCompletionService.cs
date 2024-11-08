@@ -54,12 +54,20 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
+        var messageList = ChatCompletionServiceExtensions.ToChatMessageList(chatHistory);
+        var currentSize = messageList.Count;
+
         var completion = await this._chatClient.CompleteAsync(
-            chatHistory.Select(ChatCompletionServiceExtensions.ToChatMessage).ToList(),
+            messageList,
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false);
 
-        return completion.Choices.Select(ChatCompletionServiceExtensions.ToChatMessageContent).ToList();
+        chatHistory.AddRange(
+            messageList
+                .Skip(currentSize)
+                .Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
+
+        return completion.Choices.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m, completion)).ToList();
     }
 
     /// <inheritdoc/>
@@ -69,7 +77,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         Verify.NotNull(chatHistory);
 
         await foreach (var update in this._chatClient.CompleteStreamingAsync(
-            chatHistory.Select(ChatCompletionServiceExtensions.ToChatMessage).ToList(),
+            ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false))
         {
@@ -169,6 +177,26 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
                             JsonValueKind.Null => null,
                             _ => value,
                         };
+
+                        if (jsonElement.ValueKind == JsonValueKind.Array)
+                        {
+                            var enumerator = jsonElement.EnumerateArray();
+
+                            var enumeratorType = enumerator.MoveNext() ? enumerator.Current.ValueKind : JsonValueKind.Null;
+
+                            switch (enumeratorType)
+                            {
+                                case JsonValueKind.String:
+                                    value = enumerator.Select(e => e.GetString());
+                                    break;
+                                case JsonValueKind.Number:
+                                    value = enumerator.Select(e => e.GetDouble());
+                                    break;
+                                case JsonValueKind.True or JsonValueKind.False:
+                                    value = enumerator.Select(e => e.ValueKind == JsonValueKind.True);
+                                    break;
+                            }
+                        }
                     }
 
                     (options.AdditionalProperties ??= [])[entry.Key] = value;
@@ -241,11 +269,11 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         StreamingChatMessageContent content = new(
             update.Role is not null ? new AuthorRole(update.Role.Value.Value) : null,
-            null,
-            update.RawRepresentation,
-            update.ChoiceIndex,
-            metadata: update.AdditionalProperties)
+            null)
         {
+            InnerContent = update.RawRepresentation,
+            ChoiceIndex = update.ChoiceIndex,
+            Metadata = update.AdditionalProperties,
             ModelId = update.ModelId
         };
 
@@ -261,6 +289,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
 
             if (resultContent is not null)
             {
+                resultContent.ModelId = update.ModelId;
                 content.Items.Add(resultContent);
             }
         }

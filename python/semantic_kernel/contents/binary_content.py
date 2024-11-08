@@ -39,7 +39,7 @@ class BinaryContent(KernelContent):
     """
 
     content_type: Literal[ContentTypes.BINARY_CONTENT] = Field(BINARY_CONTENT_TAG, init=False)  # type: ignore
-    uri: Url | FilePath | None = None
+    uri: Url | str | None = None
     default_mime_type: ClassVar[str] = "text/plain"
     tag: ClassVar[str] = BINARY_CONTENT_TAG
     _data_uri: DataUri | None = None
