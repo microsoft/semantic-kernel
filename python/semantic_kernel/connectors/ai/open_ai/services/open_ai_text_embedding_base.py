@@ -67,7 +67,8 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
         for i in range(0, len(texts), batch_size):
             batch = texts[i : i + batch_size]
             settings.input = batch
-            raw_embedding = await self._send_embedding_request(settings=settings)
+            raw_embedding = await self._send_request(settings=settings)
+            assert isinstance(raw_embedding, list)  # nosec
             raw_embeddings.extend(raw_embedding)
         return raw_embeddings
 

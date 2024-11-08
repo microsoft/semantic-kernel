@@ -1,26 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import logging
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, TypeVar
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_audio_to_text_base import OpenAIAudioToTextBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
 
-logger: logging.Logger = logging.getLogger(__name__)
+T_ = TypeVar("T_", bound="AzureAudioToText")
 
 
-@experimental_class
-class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
-    """Azure Text Embedding class."""
+class AzureAudioToText(AzureOpenAIConfigBase, OpenAIAudioToTextBase):
+    """Azure audio to text service."""
 
     def __init__(
         self,
@@ -36,35 +33,38 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
-        """Initialize an AzureTextEmbedding service.
+        """Initialize an AzureAudioToText service.
 
-        service_id: The service ID. (Optional)
-        api_key: The optional api key. If provided, will override the value in the
-                env vars or .env file.
-        deployment_name: The optional deployment. If provided, will override the value
-            (text_deployment_name) in the env vars or .env file.
-        endpoint: The optional deployment endpoint. If provided will override the value
-            in the env vars or .env file.
-        base_url: The optional deployment base_url. If provided will override the value
-            in the env vars or .env file.
-        api_version: The optional deployment api version. If provided will override the value
-            in the env vars or .env file.
-        ad_token: The Azure AD token for authentication. (Optional)
-        ad_token_provider: Whether to use Azure Active Directory authentication.
-            (Optional) The default value is False.
-        token_endpoint: The Azure AD token endpoint. (Optional)
-        default_headers: The default headers mapping of string keys to
-                string values for HTTP requests. (Optional)
-        async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
-        env_file_path (str | None): Use the environment settings file as a fallback to
-            environment variables. (Optional)
+        Args:
+            service_id: The service ID. (Optional)
+            api_key: The optional api key. If provided, will override the value in the
+                    env vars or .env file.
+            deployment_name: The optional deployment. If provided, will override the value
+                (text_to_image_deployment_name) in the env vars or .env file.
+            endpoint: The optional deployment endpoint. If provided will override the value
+                in the env vars or .env file.
+            base_url: The optional deployment base_url. If provided will override the value
+                in the env vars or .env file.
+            api_version: The optional deployment api version. If provided will override the value
+                in the env vars or .env file.
+            ad_token: The Azure AD token for authentication. (Optional)
+            ad_token_provider: Azure AD Token provider. (Optional)
+            token_endpoint: The Azure AD token endpoint. (Optional)
+            default_headers: The default headers mapping of string keys to
+                    string values for HTTP requests. (Optional)
+            async_client: An existing client to use. (Optional)
+            env_file_path: Use the environment settings file as a fallback to
+                environment variables. (Optional)
+            env_file_encoding: The encoding of the environment settings file. (Optional)
         """
         try:
             azure_openai_settings = AzureOpenAISettings.create(
                 env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
                 api_key=api_key,
-                embedding_deployment_name=deployment_name,
+                audio_to_text_deployment_name=deployment_name,
                 endpoint=endpoint,
                 base_url=base_url,
                 api_version=api_version,
@@ -72,11 +72,11 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             )
         except ValidationError as exc:
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
-        if not azure_openai_settings.embedding_deployment_name:
-            raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
+        if not azure_openai_settings.audio_to_text_deployment_name:
+            raise ServiceInitializationError("The Azure OpenAI audio to text deployment name is required.")
 
         super().__init__(
-            deployment_name=azure_openai_settings.embedding_deployment_name,
+            deployment_name=azure_openai_settings.audio_to_text_deployment_name,
             endpoint=azure_openai_settings.endpoint,
             base_url=azure_openai_settings.base_url,
             api_version=azure_openai_settings.api_version,
@@ -86,12 +86,12 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             ad_token_provider=ad_token_provider,
             token_endpoint=azure_openai_settings.token_endpoint,
             default_headers=default_headers,
-            ai_model_type=OpenAIModelTypes.EMBEDDING,
+            ai_model_type=OpenAIModelTypes.AUDIO_TO_TEXT,
             client=async_client,
         )
 
     @classmethod
-    def from_dict(cls, settings: dict[str, Any]) -> "AzureTextEmbedding":
+    def from_dict(cls: type[T_], settings: dict[str, Any]) -> T_:
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
         Args:
@@ -99,7 +99,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
                 should contain keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth
         """
-        return AzureTextEmbedding(
+        return cls(
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key"),
             deployment_name=settings.get("deployment_name"),
