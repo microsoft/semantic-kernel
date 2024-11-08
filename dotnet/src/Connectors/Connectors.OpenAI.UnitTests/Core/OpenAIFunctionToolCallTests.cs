@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
@@ -21,7 +23,7 @@ public sealed class OpenAIFunctionToolCallTests
     {
         // Arrange
         var args = JsonSerializer.Serialize(new Dictionary<string, object?>());
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, args);
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, BinaryData.FromString(args));
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -33,7 +35,7 @@ public sealed class OpenAIFunctionToolCallTests
     public void ToStringReturnsCorrectValue()
     {
         // Arrange
-        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}");
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", BinaryData.FromString("{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}"));
         var openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -79,6 +81,52 @@ public sealed class OpenAIFunctionToolCallTests
 
         Assert.Equal("test-id", toolCall.Id);
         Assert.Equal("test-function", toolCall.FunctionName);
-        Assert.Equal("test-argument", toolCall.FunctionArguments);
+        Assert.Equal("test-argument", toolCall.FunctionArguments.ToString());
     }
+
+    [Fact]
+    public void TrackStreamingToolingUpdateWithNullUpdatesDoesNotThrowException()
+    {
+        // Arrange
+        Dictionary<int, string>? toolCallIdsByIndex = null;
+        Dictionary<int, string>? functionNamesByIndex = null;
+        Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
+        IReadOnlyList<StreamingChatToolCallUpdate>? updates = [];
+
+        StreamingChatToolCallUpdate update = ModelReaderWriter.Read<StreamingChatToolCallUpdate>(BinaryData.FromString("""{"index":0,"id":"call_id","type":"function","function":{"name":"WeatherPlugin-GetWeather","arguments":""}}"""))!;
+
+        // Act
+        var exception = Record.Exception(() =>
+            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(
+                [
+                    GetUpdateChunkFromString("""{"index":0,"id":"call_id","type":"function","function":{"name":"WeatherPlugin-GetWeather","arguments":""}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":"{\n"}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":" "}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":" \""}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":"address"}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":"Code"}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":"\":"}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":" \""}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":"440"}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":"100"}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":"\"\n"}}"""),
+                    GetUpdateChunkFromString("""{"index":0,"function":{"arguments":"}"}}"""),
+                ],
+                ref toolCallIdsByIndex,
+                ref functionNamesByIndex,
+                ref functionArgumentBuildersByIndex
+            ));
+
+        // Assert
+        Assert.Equal(
+            """
+            {
+              "addressCode": "440100"
+            }
+            """, functionArgumentBuildersByIndex![0].ToString());
+        Assert.Null(exception);
+    }
+
+    private static StreamingChatToolCallUpdate GetUpdateChunkFromString(string jsonChunk)
+        => ModelReaderWriter.Read<StreamingChatToolCallUpdate>(BinaryData.FromString(jsonChunk))!;
 }

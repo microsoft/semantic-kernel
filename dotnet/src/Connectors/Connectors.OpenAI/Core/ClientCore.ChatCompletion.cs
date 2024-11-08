@@ -114,7 +114,7 @@ internal partial class ClientCore
     {
         return new Dictionary<string, object?>
         {
-            { nameof(completionUpdate.Id), completionUpdate.Id },
+            { nameof(completionUpdate.CompletionId), completionUpdate.CompletionId },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
             { nameof(completionUpdate.RefusalUpdate), completionUpdate.RefusalUpdate },
@@ -207,8 +207,11 @@ internal partial class ClientCore
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: false,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 return [lastMessage];
@@ -248,9 +251,9 @@ internal partial class ClientCore
         {
             var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chatHistory);
 
-            var toolCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
+            var functionCallingConfig = this.GetFunctionCallingConfiguration(kernel, chatExecutionSettings, chatHistory, requestIndex);
 
-            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, toolCallingConfig, kernel);
+            var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
 
             // Reset state
             contentBuilder?.Clear();
@@ -306,24 +309,16 @@ internal partial class ClientCore
                         finishReason = chatCompletionUpdate.FinishReason ?? default;
 
                         // If we're intending to invoke function calls, we need to consume that function call information.
-                        if (toolCallingConfig.AutoInvoke)
+                        if (functionCallingConfig.AutoInvoke)
                         {
-                            try
+                            foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
                             {
-                                foreach (var contentPart in chatCompletionUpdate.ContentUpdate)
+                                if (contentPart.Kind == ChatMessageContentPartKind.Text)
                                 {
-                                    if (contentPart.Kind == ChatMessageContentPartKind.Text)
-                                    {
-                                        (contentBuilder ??= new()).Append(contentPart.Text);
-                                    }
+                                    (contentBuilder ??= new()).Append(contentPart.Text);
                                 }
-                                OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                             }
-                            catch (NullReferenceException)
-                            {
-                                // Temporary workaround for OpenAI SDK Bug here: https://github.com/openai/openai-dotnet/issues/198
-                                // TODO: Remove this try-catch block once the bug is fixed.
-                            }
+                            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
                         var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
@@ -334,17 +329,21 @@ internal partial class ClientCore
                             {
                                 // Using the code below to distinguish and skip non - function call related updates.
                                 // The Kind property of updates can't be reliably used because it's only initialized for the first update.
-                                if (string.IsNullOrEmpty(functionCallUpdate.Id) &&
+                                if (string.IsNullOrEmpty(functionCallUpdate.ToolCallId) &&
                                     string.IsNullOrEmpty(functionCallUpdate.FunctionName) &&
-                                    string.IsNullOrEmpty(functionCallUpdate.FunctionArgumentsUpdate))
+                                    (functionCallUpdate.FunctionArgumentsUpdate is null || functionCallUpdate.FunctionArgumentsUpdate.ToMemory().IsEmpty))
                                 {
                                     continue;
                                 }
 
+                                string streamingArguments = (functionCallUpdate.FunctionArgumentsUpdate?.ToMemory().IsEmpty ?? true)
+                                    ? string.Empty
+                                    : functionCallUpdate.FunctionArgumentsUpdate.ToString();
+
                                 openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
-                                    callId: functionCallUpdate.Id,
+                                    callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
-                                    arguments: functionCallUpdate.FunctionArgumentsUpdate,
+                                    arguments: streamingArguments,
                                     functionCallIndex: functionCallUpdate.Index));
                             }
                         }
@@ -370,7 +369,7 @@ internal partial class ClientCore
             // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
-            if (!toolCallingConfig.AutoInvoke ||
+            if (!functionCallingConfig.AutoInvoke ||
                 toolCallIdsByIndex is not { Count: > 0 })
             {
                 yield break;
@@ -389,8 +388,11 @@ internal partial class ClientCore
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
+                functionCallingConfig.Options ?? new FunctionChoiceBehaviorOptions(),
                 kernel,
+                isStreaming: true,
                 cancellationToken).ConfigureAwait(false);
+
             if (lastMessage != null)
             {
                 yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content);
@@ -466,7 +468,7 @@ internal partial class ClientCore
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             EndUserId = executionSettings.User,
             TopLogProbabilityCount = executionSettings.TopLogprobs,
-            IncludeLogProbabilities = executionSettings.Logprobs,
+            IncludeLogProbabilities = executionSettings.Logprobs
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -501,6 +503,11 @@ internal partial class ClientCore
             }
         }
 
+        if (toolCallingConfig.Options?.AllowParallelCalls is not null)
+        {
+            options.AllowParallelToolCalls = toolCallingConfig.Options.AllowParallelCalls;
+        }
+
         return options;
     }
 
@@ -531,21 +538,24 @@ internal partial class ClientCore
 
             case JsonElement formatElement:
                 // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
-                // Handling only string formatElement.
                 if (formatElement.ValueKind == JsonValueKind.String)
                 {
-                    string formatString = formatElement.GetString() ?? "";
-                    switch (formatString)
+                    switch (formatElement.GetString())
                     {
                         case "json_object":
                             return ChatResponseFormat.CreateJsonObjectFormat();
 
+                        case null:
+                        case "":
                         case "text":
                             return ChatResponseFormat.CreateTextFormat();
                     }
                 }
 
-                break;
+                return ChatResponseFormat.CreateJsonSchemaFormat(
+                    "JsonSchema",
+                    new BinaryData(Encoding.UTF8.GetBytes(formatElement.ToString())));
+
             case Type formatObjectType:
                 return GetJsonSchemaResponseFormat(formatObjectType);
         }
@@ -560,10 +570,31 @@ internal partial class ClientCore
     {
         var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
 
-        var schema = KernelJsonSchemaBuilder.Build(options: null, type, configuration: s_jsonSchemaMapperConfiguration);
+        var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaMapperConfiguration);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
 
-        return ChatResponseFormat.CreateJsonSchemaFormat(type.Name, schemaBinaryData, jsonSchemaIsStrict: true);
+        var typeName = GetTypeName(type);
+
+        return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
+    }
+
+    /// <summary>
+    /// Returns a type name concatenated with generic argument type names if they exist.
+    /// </summary>
+    private static string GetTypeName(Type type)
+    {
+        if (!type.IsGenericType)
+        {
+            return type.Name;
+        }
+
+        // If type is generic, base name is followed by ` character.
+        string baseName = type.Name.Substring(0, type.Name.IndexOf('`'));
+
+        Type[] typeArguments = type.GetGenericArguments();
+        string argumentNames = string.Concat(Array.ConvertAll(typeArguments, GetTypeName));
+
+        return $"{baseName}{argumentNames}";
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
@@ -717,7 +748,7 @@ internal partial class ClientCore
                             name.ValueKind == JsonValueKind.String &&
                             arguments.ValueKind == JsonValueKind.String)
                         {
-                            ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
+                            ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, BinaryData.FromString(arguments.GetString()!)));
                         }
                     }
                     tools = ftcs;
@@ -747,7 +778,7 @@ internal partial class ClientCore
 
                 var argument = JsonSerializer.Serialize(callRequest.Arguments);
 
-                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
+                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), BinaryData.FromString(argument ?? string.Empty)));
             }
 
             // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.
@@ -758,10 +789,10 @@ internal partial class ClientCore
             }
 
             var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
-            if (message.Content is { } content)
-            {
-                assistantMessage.Content.Add(content);
-            }
+
+            // If message content is null, adding it as empty string,
+            // because chat message content must be string.
+            assistantMessage.Content.Add(message.Content ?? string.Empty);
 
             return [assistantMessage];
         }
@@ -771,17 +802,42 @@ internal partial class ClientCore
 
     private static ChatMessageContentPart GetImageContentItem(ImageContent imageContent)
     {
+        ChatImageDetailLevel? detailLevel = GetChatImageDetailLevel(imageContent);
+
         if (imageContent.Data is { IsEmpty: false } data)
         {
-            return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType);
+            return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MimeType, detailLevel);
         }
 
         if (imageContent.Uri is not null)
         {
-            return ChatMessageContentPart.CreateImagePart(imageContent.Uri);
+            return ChatMessageContentPart.CreateImagePart(imageContent.Uri, detailLevel);
         }
 
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
+    }
+
+    private static ChatImageDetailLevel? GetChatImageDetailLevel(ImageContent imageContent)
+    {
+        const string DetailLevelProperty = "ChatImageDetailLevel";
+
+        if (imageContent.Metadata is not null &&
+            imageContent.Metadata.TryGetValue(DetailLevelProperty, out object? detailLevel) &&
+            detailLevel is not null)
+        {
+            if (detailLevel is string detailLevelString && !string.IsNullOrWhiteSpace(detailLevelString))
+            {
+                return detailLevelString.ToUpperInvariant() switch
+                {
+                    "AUTO" => ChatImageDetailLevel.Auto,
+                    "LOW" => ChatImageDetailLevel.Low,
+                    "HIGH" => ChatImageDetailLevel.High,
+                    _ => throw new ArgumentException($"Unknown image detail level '{detailLevelString}'. Supported values are 'Auto', 'Low' and 'High'.")
+                };
+            }
+        }
+
+        return null;
     }
 
     private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel)

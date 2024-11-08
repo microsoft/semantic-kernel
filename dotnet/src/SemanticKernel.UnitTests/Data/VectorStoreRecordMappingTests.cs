@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Data;
@@ -115,6 +115,28 @@ public class VectorStoreRecordMappingTests
     {
         // Arrange.
         IEnumerable<string> input = new List<string> { "one", "two", "three", "four" };
+
+        // Act.
+        var actual = VectorStoreRecordMapping.CreateEnumerable(input, expectedType);
+
+        // Assert.
+        Assert.True(expectedType.IsAssignableFrom(actual!.GetType()));
+    }
+
+    [Theory]
+    [InlineData(typeof(List<string>))]
+    [InlineData(typeof(ICollection<string>))]
+    [InlineData(typeof(IEnumerable<string>))]
+    [InlineData(typeof(IList<string>))]
+    [InlineData(typeof(IReadOnlyCollection<string>))]
+    [InlineData(typeof(IReadOnlyList<string>))]
+    [InlineData(typeof(string[]))]
+    [InlineData(typeof(IEnumerable))]
+    [InlineData(typeof(ArrayList))]
+    public void CreateEnumerableCanCreateEnumerablesOfAllRequiredTypesUsingObjectEnumerable(Type expectedType)
+    {
+        // Arrange.
+        IEnumerable<object> input = new List<object> { "one", "two", "three", "four" };
 
         // Act.
         var actual = VectorStoreRecordMapping.CreateEnumerable(input, expectedType);

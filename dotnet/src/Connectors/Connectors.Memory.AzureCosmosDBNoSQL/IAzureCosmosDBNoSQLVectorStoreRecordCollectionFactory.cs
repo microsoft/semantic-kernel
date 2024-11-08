@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Azure.Cosmos;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -23,6 +23,5 @@ public interface IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory
         Database database,
         string name,
         VectorStoreRecordDefinition? vectorStoreRecordDefinition)
-        where TKey : notnull
-        where TRecord : class;
+        where TKey : notnull;
 }

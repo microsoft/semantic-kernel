@@ -88,6 +88,8 @@ internal partial class ClientCore
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
+        this.Logger = logger ?? NullLogger.Instance;
+
         this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
 
         // Empty constructor will be used when inherited by a specialized Client.
@@ -106,8 +108,6 @@ internal partial class ClientCore
             this.ModelId = modelId!;
             this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
-
-        this.Logger = logger ?? NullLogger.Instance;
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
         this.Endpoint = endpoint ?? httpClient?.BaseAddress;
@@ -195,7 +195,7 @@ internal partial class ClientCore
     {
         OpenAIClientOptions options = new()
         {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
             Endpoint = endpoint
         };
 

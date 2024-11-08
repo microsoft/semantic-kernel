@@ -21,7 +21,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
     {
         OpenAIClientProvider provider = this.GetClientProvider();
 
-        FileClient fileClient = provider.Client.GetFileClient();
+        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
 
         // Define the agent
         OpenAIAssistantAgent agent =

@@ -8,6 +8,8 @@ from openai.types.beta.threads.file_path_delta_annotation import FilePathDeltaAn
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.image_file_delta_block import ImageFileDeltaBlock
 from openai.types.beta.threads.message_delta_event import MessageDeltaEvent
+from openai.types.beta.threads.runs import CodeInterpreterLogs
+from openai.types.beta.threads.runs.code_interpreter_tool_call import CodeInterpreter
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
 
@@ -32,6 +34,7 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.annotation import Annotation
     from openai.types.beta.threads.runs import RunStep
     from openai.types.beta.threads.runs.tool_call import ToolCall
+    from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStepDetails
 
 
 ###################################################################
@@ -255,6 +258,99 @@ def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessag
         content=code,
         name=agent_name,
         metadata={"code": True},
+    )
+
+
+@experimental_function
+def generate_streaming_function_content(
+    agent_name: str, step_details: "ToolCallsStepDetails"
+) -> "StreamingChatMessageContent":
+    """Generate streaming function content.
+
+    Args:
+        agent_name: The agent name.
+        step_details: The function step.
+
+    Returns:
+        StreamingChatMessageContent: The chat message content.
+    """
+    items: list[FunctionCallContent] = []
+
+    for tool in step_details.tool_calls:
+        if tool.type == "function":
+            items.append(
+                FunctionCallContent(
+                    id=tool.id,
+                    index=getattr(tool, "index", None),
+                    name=tool.function.name,
+                    arguments=tool.function.arguments,
+                )
+            )
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            items=items,  # type: ignore
+            choice_index=0,
+        )
+        if len(items) > 0
+        else None
+    )
+
+
+@experimental_function
+def generate_streaming_code_interpreter_content(
+    agent_name: str, step_details: "ToolCallsStepDetails"
+) -> "StreamingChatMessageContent | None":
+    """Generate code interpreter content.
+
+    Args:
+        agent_name: The agent name.
+        step_details: The current step details.
+
+    Returns:
+        StreamingChatMessageContent: The chat message content.
+    """
+    items: list[StreamingTextContent | StreamingFileReferenceContent] = []
+
+    metadata: dict[str, bool] = {}
+    for index, tool in enumerate(step_details.tool_calls):
+        if tool.type == "code_interpreter":
+            if tool.code_interpreter.input:
+                items.append(
+                    StreamingTextContent(
+                        choice_index=index,
+                        text=tool.code_interpreter.input,
+                    )
+                )
+                metadata["code"] = True
+            if tool.code_interpreter.outputs:
+                for output in tool.code_interpreter.outputs:
+                    if isinstance(output, CodeInterpreter) and output.image.file_id:
+                        items.append(
+                            StreamingFileReferenceContent(
+                                file_id=output.image.file_id,
+                            )
+                        )
+                    if isinstance(output, CodeInterpreterLogs) and output.logs:
+                        items.append(
+                            StreamingTextContent(
+                                choice_index=index,
+                                text=output.logs,
+                            )
+                        )
+
+    return (
+        StreamingChatMessageContent(
+            role=AuthorRole.ASSISTANT,
+            name=agent_name,
+            items=items,  # type: ignore
+            choice_index=0,
+            metadata=metadata if metadata else None,
+        )
+        if len(items) > 0
+        else None
     )
 
 

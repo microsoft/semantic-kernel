@@ -38,6 +38,7 @@ internal sealed class HuggingFaceClient
     {
         Verify.NotNull(httpClient);
 
+        endpoint ??= httpClient.BaseAddress;
         if (string.IsNullOrWhiteSpace(modelId) && endpoint is null)
         {
             throw new InvalidOperationException("A valid model id or endpoint must be provided.");

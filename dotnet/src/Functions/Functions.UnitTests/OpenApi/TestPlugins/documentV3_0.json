@@ -8,6 +8,9 @@
   "servers": [
     {
       "url": "https://my-key-vault.vault.azure.net"
+    },
+    {
+      "url": "https://ppe.my-key-vault.vault.azure.net"
     }
   ],
   "paths": {
@@ -151,8 +154,15 @@
                       "enabled": {
                         "type": "boolean",
                         "description": "Determines whether the object is enabled."
+                      },
+                      "encrypted": {
+                        "type": "boolean",
+                        "description": "Determines whether the object is encrypted."
                       }
                     },
+                    "required": [
+                      "enabled"
+                    ],
                     "description": "attributes"
                   },
                   "value": {
@@ -432,6 +442,11 @@
             "scopes": {}
           }
         }
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
       }
     }
   },

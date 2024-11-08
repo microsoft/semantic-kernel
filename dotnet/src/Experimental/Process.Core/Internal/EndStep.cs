@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -9,18 +11,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal sealed class EndStep : ProcessStepBuilder
 {
-    private const string EndStepValue = "END";
-
-    /// <summary>
-    /// The name of the end step.
-    /// </summary>
-    public const string EndStepName = EndStepValue;
-
-    /// <summary>
-    /// The event ID for stopping a process.
-    /// </summary>
-    public const string EndStepId = EndStepValue;
-
     /// <summary>
     /// The static instance of the <see cref="EndStep"/> class.
     /// </summary>
@@ -30,14 +20,8 @@ internal sealed class EndStep : ProcessStepBuilder
     /// Represents the end of a process.
     /// </summary>
     internal EndStep()
-        : base(EndStepName)
+        : base(ProcessConstants.EndStepName)
     {
-    }
-
-    internal override string GetScopedEventId(string eventId)
-    {
-        // No event scoping for the end step.
-        return eventId;
     }
 
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
@@ -46,9 +30,9 @@ internal sealed class EndStep : ProcessStepBuilder
         return [];
     }
 
-    internal override KernelProcessStepInfo BuildStep()
+    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         // The end step has no state.
-        return new KernelProcessStepInfo(typeof(KernelProcessStepState), new KernelProcessStepState(EndStepName), []);
+        return new KernelProcessStepInfo(typeof(KernelProcessStepState), new KernelProcessStepState(ProcessConstants.EndStepName, version: ProcessConstants.InternalStepsVersion), []);
     }
 }

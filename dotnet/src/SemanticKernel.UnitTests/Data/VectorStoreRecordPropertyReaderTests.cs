@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Data;
@@ -552,7 +552,7 @@ public class VectorStoreRecordPropertyReaderTests
         [JsonPropertyName("json_data2")]
         public string Data2 { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4, IndexKind.Flat, DistanceFunction.DotProductSimilarity)]
+        [VectorStoreRecordVector(4, DistanceFunction.DotProductSimilarity, IndexKind.Flat)]
         public ReadOnlyMemory<float> Vector1 { get; set; }
 
         [VectorStoreRecordVector(StoragePropertyName = "storage_vector2")]

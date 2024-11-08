@@ -2,14 +2,14 @@
 
 using System;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
 /// Options when creating a <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
-public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord> where TRecord : class
+public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and Weaviate record.

@@ -9,13 +9,13 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class KernelProcessStepContext
 {
-    private readonly KernelProcessMessageChannel _stepMessageChannel;
+    private readonly IKernelProcessMessageChannel _stepMessageChannel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepContext"/> class.
     /// </summary>
-    /// <param name="channel">An instance of <see cref="KernelProcessMessageChannel"/>.</param>
-    public KernelProcessStepContext(KernelProcessMessageChannel channel)
+    /// <param name="channel">An instance of <see cref="IKernelProcessMessageChannel"/>.</param>
+    public KernelProcessStepContext(IKernelProcessMessageChannel channel)
     {
         this._stepMessageChannel = channel;
     }
@@ -28,5 +28,26 @@ public sealed class KernelProcessStepContext
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
         return this._stepMessageChannel.EmitEventAsync(processEvent);
+    }
+
+    /// <summary>
+    /// Emit an event from the current step with a simplified method signature.
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <param name="data"></param>
+    /// <param name="visibility"></param>
+    /// <returns></returns>
+    public ValueTask EmitEventAsync(
+        string eventId,
+        object? data = null,
+        KernelProcessEventVisibility visibility = KernelProcessEventVisibility.Internal)
+    {
+        return this._stepMessageChannel.EmitEventAsync(
+            new KernelProcessEvent
+            {
+                Id = eventId,
+                Data = data,
+                Visibility = visibility
+            });
     }
 }

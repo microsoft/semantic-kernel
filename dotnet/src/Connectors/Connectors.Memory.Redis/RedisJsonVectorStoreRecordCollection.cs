@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using NRedisStack.Json.DataTypes;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
@@ -24,7 +24,6 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TRecord : class
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Redis";
@@ -43,6 +42,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         typeof(ReadOnlyMemory<float>?),
         typeof(ReadOnlyMemory<double>?)
     ];
+
+    /// <summary>The default options for vector search.</summary>
+    private static readonly VectorSearchOptions s_defaultVectorSearchOptions = new();
 
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
@@ -203,7 +205,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Check if the key was found before trying to parse the result.
         if (redisResult.IsNull || redisResult is null)
         {
-            return null;
+            return default;
         }
 
         // Check if the value contained any JSON text before trying to parse the result.
@@ -371,6 +373,49 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         }
     }
 
+    /// <inheritdoc />
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(vector);
+
+        if (this._propertyReader.FirstVectorPropertyName is null)
+        {
+            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
+        }
+
+        var internalOptions = options ?? s_defaultVectorSearchOptions;
+
+        // Build query & search.
+        byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._propertyReader.JsonPropertyNamesMap, this._propertyReader.FirstVectorPropertyJsonName!, null);
+        var results = await this.RunOperationAsync(
+            "FT.SEARCH",
+            () => this._database
+                .FT()
+                .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
+
+        // Loop through result and convert to the caller's data model.
+        var mappedResults = results.Documents.Select(result =>
+        {
+            var redisResultString = result["json"].ToString();
+            var mappedRecord = VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this._collectionName,
+                "FT.SEARCH",
+                () =>
+                {
+                    var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
+                    return this._mapper.MapFromStorageToDataModel(
+                        (this.RemoveKeyPrefixIfNeeded(result.Id), node),
+                        new() { IncludeVectors = internalOptions.IncludeVectors });
+                });
+
+            return new VectorSearchResult<TRecord>(mappedRecord, result.Score);
+        });
+
+        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+    }
+
     /// <summary>
     /// Prefix the key with the collection name if the option is set.
     /// </summary>
@@ -381,6 +426,23 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         if (this._options.PrefixCollectionNameToKeyNames)
         {
             return $"{this._collectionName}:{key}";
+        }
+
+        return key;
+    }
+
+    /// <summary>
+    /// Remove the prefix of the given key if the option is set.
+    /// </summary>
+    /// <param name="key">The key to remove a prefix from.</param>
+    /// <returns>The updated key if updating is required, otherwise the input key.</returns>
+    private string RemoveKeyPrefixIfNeeded(string key)
+    {
+        var prefixLength = this._collectionName.Length + 1;
+
+        if (this._options.PrefixCollectionNameToKeyNames && key.Length > prefixLength)
+        {
+            return key.Substring(prefixLength);
         }
 
         return key;

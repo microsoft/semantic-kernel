@@ -26,18 +26,20 @@ internal static class AssistantToolResourcesFactory
 
         if (hasVectorStore || hasCodeInterpreterFiles)
         {
-            var fileSearch = hasVectorStore
-                ? new FileSearchToolResources
-                {
-                    VectorStoreIds = { vectorStoreId! }
-                }
-                : null;
+            FileSearchToolResources? fileSearch =
+                hasVectorStore ?
+                    new()
+                    {
+                        VectorStoreIds = { vectorStoreId! }
+                    } :
+                    null;
 
-            var codeInterpreter = hasCodeInterpreterFiles
-                ? new CodeInterpreterToolResources()
-                : null;
-
+            CodeInterpreterToolResources? codeInterpreter =
+                hasCodeInterpreterFiles ?
+                    new() :
+                    null;
             codeInterpreter?.FileIds.AddRange(codeInterpreterFileIds!);
+
             toolResources = new ToolResources
             {
                 FileSearch = fileSearch,

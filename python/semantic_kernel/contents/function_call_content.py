@@ -8,6 +8,7 @@ from xml.etree.ElementTree import Element  # nosec
 from pydantic import Field
 from typing_extensions import deprecated
 
+from semantic_kernel.const import DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR
 from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.exceptions import (
@@ -73,10 +74,10 @@ class FunctionCallContent(KernelContent):
             kwargs (Any): Additional arguments.
         """
         if function_name and plugin_name and not name:
-            name = f"{plugin_name}-{function_name}"
+            name = f"{plugin_name}{DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR}{function_name}"
         if name and not function_name and not plugin_name:
-            if "-" in name:
-                plugin_name, function_name = name.split("-", maxsplit=1)
+            if DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR in name:
+                plugin_name, function_name = name.split(DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR, maxsplit=1)
             else:
                 function_name = name
         args = {
@@ -171,6 +172,17 @@ class FunctionCallContent(KernelContent):
     def split_name_dict(self) -> dict:
         """Split the name into a plugin and function name."""
         return {"plugin_name": self.plugin_name, "function_name": self.function_name}
+
+    def custom_fully_qualified_name(self, separator: str) -> str:
+        """Get the fully qualified name of the function with a custom separator.
+
+        Args:
+            separator (str): The custom separator.
+
+        Returns:
+            The fully qualified name of the function with a custom separator.
+        """
+        return f"{self.plugin_name}{separator}{self.function_name}" if self.plugin_name else self.function_name
 
     def to_element(self) -> Element:
         """Convert the function call to an Element."""

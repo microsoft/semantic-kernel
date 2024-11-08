@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Process.Internal;
+using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -15,6 +17,15 @@ public sealed record KernelProcess : KernelProcessStepInfo
     public IList<KernelProcessStepInfo> Steps { get; }
 
     /// <summary>
+    /// Captures Kernel Process State into <see cref="KernelProcessStateMetadata"/> after process has run
+    /// </summary>
+    /// <returns><see cref="KernelProcessStateMetadata"/></returns>
+    public KernelProcessStateMetadata ToProcessStateMetadata()
+    {
+        return ProcessStateMetadataFactory.KernelProcessToProcessStateMetadata(this);
+    }
+
+    /// <summary>
     /// Creates a new instance of the <see cref="KernelProcess"/> class.
     /// </summary>
     /// <param name="state">The process state.</param>
@@ -23,11 +34,9 @@ public sealed record KernelProcess : KernelProcessStepInfo
     public KernelProcess(KernelProcessState state, IList<KernelProcessStepInfo> steps, Dictionary<string, List<KernelProcessEdge>>? edges = null)
         : base(typeof(KernelProcess), state, edges ?? [])
     {
-        Verify.NotNull(state);
         Verify.NotNull(steps);
         Verify.NotNullOrWhiteSpace(state.Name);
 
-        this.Steps = [];
-        this.Steps.AddRange(steps);
+        this.Steps = [.. steps];
     }
 }

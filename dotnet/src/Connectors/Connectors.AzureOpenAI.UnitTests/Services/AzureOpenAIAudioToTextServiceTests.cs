@@ -156,6 +156,88 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         Assert.Equal("Test audio-to-text response", result[0].Text);
     }
 
+    [Theory]
+    [MemberData(nameof(Versions))]
+    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? expectedVersion = null)
+    {
+        // Arrange
+        var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("Test audio-to-text response")
+        };
+
+        // Act
+        var settings = new OpenAIAudioToTextExecutionSettings("file.mp3");
+        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), settings);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(result);
+
+        Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUri!.ToString());
+    }
+
+    [Theory]
+    [InlineData(new[] { "word" }, new[] { "word" })]
+    [InlineData(new[] { "word", "Word", "wOrd", "Segment" }, new[] { "word", "segment" })]
+    [InlineData(new[] { "Word", "Segment" }, new[] { "word", "segment" })]
+    [InlineData(new[] { "Segment" }, new[] { "segment" })]
+    [InlineData(new[] { "Segment", "wOrd" }, new[] { "word", "segment" })]
+    [InlineData(new[] { "WORD" }, new[] { "word" })]
+    [InlineData(new string[] { }, null)]
+    [InlineData(null, null)]
+    public async Task GetTextContentGranularitiesWorksCorrectlyAsync(string[]? granularities, string[]? expectedGranularities)
+    {
+        // Arrange
+        var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("Test audio-to-text response")
+        };
+
+        // Act
+        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), new OpenAIAudioToTextExecutionSettings("file.mp3")
+        {
+            ResponseFormat = "verbose_json",
+            TimestampGranularities = granularities
+        });
+
+        // Assert
+        var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        if (granularities is null || granularities.Length == 0)
+        {
+            Assert.DoesNotContain("timestamp_granularities[]", requestBody);
+        }
+        else
+        {
+            foreach (var granularity in expectedGranularities!)
+            {
+                Assert.Contains($"Content-Disposition: form-data; name=\"timestamp_granularities[]\"\r\n\r\n{granularity}", requestBody);
+            }
+        }
+    }
+
+    public static TheoryData<string?, string?> Versions => new()
+    {
+        { null, "2024-08-01-preview" },
+        { "V2024_10_01_preview", "2024-10-01-preview" },
+        { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
+        { "2024_10_01_Preview", "2024-10-01-preview" },
+        { "2024-10-01-preview", "2024-10-01-preview" },
+        { "V2024_08_01_preview", "2024-08-01-preview" },
+        { "V2024_08_01_PREVIEW", "2024-08-01-preview" },
+        { "2024_08_01_Preview", "2024-08-01-preview" },
+        { "2024-08-01-preview", "2024-08-01-preview" },
+        { "V2024_06_01", "2024-06-01" },
+        { "2024_06_01", "2024-06-01" },
+        { "2024-06-01", "2024-06-01" },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
+        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
+    };
+
     public void Dispose()
     {
         this._httpClient.Dispose();

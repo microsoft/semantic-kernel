@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -15,42 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, Vector>
-    where TRecord : class
 {
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes = [typeof(string)];
-
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(bool),
-        typeof(bool?),
-        typeof(string),
-        typeof(int),
-        typeof(int?),
-        typeof(long),
-        typeof(long?),
-        typeof(float),
-        typeof(float?),
-        typeof(double),
-        typeof(double?),
-        typeof(decimal),
-        typeof(decimal?),
-    ];
-
-    /// <summary>A set of types that enumerable data properties on the provided model may use as their element types.</summary>
-    private static readonly HashSet<Type> s_supportedEnumerableDataElementTypes =
-    [
-        typeof(string)
-    ];
-
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-    ];
-
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 
     /// <summary>
@@ -61,9 +22,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         VectorStoreRecordPropertyReader propertyReader)
     {
         // Validate property types.
-        propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
-        propertyReader.VerifyDataProperties(s_supportedDataTypes, s_supportedEnumerableDataElementTypes);
-        propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
+        propertyReader.VerifyHasParameterlessConstructor();
+        propertyReader.VerifyKeyProperties(PineconeVectorStoreRecordFieldMapping.s_supportedKeyTypes);
+        propertyReader.VerifyDataProperties(PineconeVectorStoreRecordFieldMapping.s_supportedDataTypes, PineconeVectorStoreRecordFieldMapping.s_supportedEnumerableDataElementTypes);
+        propertyReader.VerifyVectorProperties(PineconeVectorStoreRecordFieldMapping.s_supportedVectorTypes);
 
         // Assign.
         this._propertyReader = propertyReader;
@@ -85,7 +47,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
             var propertyValue = dataPropertyInfo.GetValue(dataModel);
             if (propertyValue != null)
             {
-                metadata[propertyName] = ConvertToMetadataValue(propertyValue);
+                metadata[propertyName] = PineconeVectorStoreRecordFieldMapping.ConvertToMetadataValue(propertyValue);
             }
         }
 
@@ -110,66 +72,31 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     /// <inheritdoc />
     public TRecord MapFromStorageToDataModel(Vector storageModel, StorageToDataModelMapperOptions options)
     {
-        var keyJsonName = this._propertyReader.KeyPropertyJsonName;
-        var outputJsonObject = new JsonObject
-        {
-            { keyJsonName, JsonValue.Create(storageModel.Id) },
-        };
+        // Construct the output record.
+        var outputRecord = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
 
+        // Set Key.
+        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, storageModel.Id);
+
+        // Set Vector.
         if (options?.IncludeVectors is true)
         {
-            var propertyName = this._propertyReader.GetStoragePropertyName(this._propertyReader.FirstVectorPropertyName!);
-            var jsonName = this._propertyReader.GetJsonPropertyName(this._propertyReader.FirstVectorPropertyName!);
-            outputJsonObject.Add(jsonName, new JsonArray(storageModel.Values.Select(x => JsonValue.Create(x)).ToArray()));
+            this._propertyReader.FirstVectorPropertyInfo!.SetValue(
+                outputRecord,
+                new ReadOnlyMemory<float>(storageModel.Values));
         }
 
+        // Set Data.
         if (storageModel.Metadata != null)
         {
-            foreach (var dataProperty in this._propertyReader.DataPropertiesInfo)
-            {
-                var propertyName = this._propertyReader.GetStoragePropertyName(dataProperty.Name);
-                var jsonName = this._propertyReader.GetJsonPropertyName(dataProperty.Name);
-
-                if (storageModel.Metadata.TryGetValue(propertyName, out var value))
-                {
-                    outputJsonObject.Add(jsonName, ConvertFromMetadataValueToJsonNode(value));
-                }
-            }
+            VectorStoreRecordMapping.SetValuesOnProperties(
+                outputRecord,
+                this._propertyReader.DataPropertiesInfo,
+                this._propertyReader.StoragePropertyNamesMap,
+                storageModel.Metadata,
+                PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType);
         }
 
-        return outputJsonObject.Deserialize<TRecord>()!;
+        return outputRecord;
     }
-
-    private static JsonNode? ConvertFromMetadataValueToJsonNode(MetadataValue metadataValue)
-        => metadataValue.Inner switch
-        {
-            null => null,
-            bool boolValue => JsonValue.Create(boolValue),
-            string stringValue => JsonValue.Create(stringValue),
-            int intValue => JsonValue.Create(intValue),
-            long longValue => JsonValue.Create(longValue),
-            float floatValue => JsonValue.Create(floatValue),
-            double doubleValue => JsonValue.Create(doubleValue),
-            decimal decimalValue => JsonValue.Create(decimalValue),
-            MetadataValue[] array => new JsonArray(array.Select(ConvertFromMetadataValueToJsonNode).ToArray()),
-            List<MetadataValue> list => new JsonArray(list.Select(ConvertFromMetadataValueToJsonNode).ToArray()),
-            _ => throw new VectorStoreRecordMappingException($"Unsupported metadata type: '{metadataValue.Inner?.GetType().FullName}'."),
-        };
-
-    // TODO: take advantage of MetadataValue.TryCreate once we upgrade the version of Pinecone.NET
-    private static MetadataValue ConvertToMetadataValue(object? sourceValue)
-        => sourceValue switch
-        {
-            bool boolValue => boolValue,
-            string stringValue => stringValue,
-            int intValue => intValue,
-            long longValue => longValue,
-            float floatValue => floatValue,
-            double doubleValue => doubleValue,
-            decimal decimalValue => decimalValue,
-            string[] stringArray => stringArray,
-            List<string> stringList => stringList,
-            IEnumerable<string> stringEnumerable => stringEnumerable.ToArray(),
-            _ => throw new VectorStoreRecordMappingException($"Unsupported source value type '{sourceValue?.GetType().FullName}'.")
-        };
 }

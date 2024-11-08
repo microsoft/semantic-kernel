@@ -3,7 +3,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.UnitTests;
+namespace Microsoft.SemanticKernel.Process.UnitTests;
 
 /// <summary>
 /// Unit testing of <see cref="KernelProcessState"/>.
@@ -21,7 +21,7 @@ public class KernelProcessStateTests
         string id = "123";
 
         // Act
-        var state = new KernelProcessState(name, id);
+        var state = new KernelProcessState(name, "v1", id);
 
         // Assert
         Assert.Equal(name, state.Name);
@@ -38,7 +38,7 @@ public class KernelProcessStateTests
         string name = "TestProcess";
 
         // Act
-        var state = new KernelProcessState(name);
+        var state = new KernelProcessState(name, version: "v1");
 
         // Assert
         Assert.Equal(name, state.Name);
@@ -53,7 +53,19 @@ public class KernelProcessStateTests
     {
         // Act & Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        var ex = Assert.Throws<ArgumentNullException>(() => new KernelProcessState(name: null));
+        var ex = Assert.Throws<ArgumentNullException>(() => new KernelProcessState(name: null, version: "v1"));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+    }
+
+    /// <summary>
+    /// Verify initialization of <see cref="KernelProcessState"/> with null version throws.
+    /// </summary>
+    [Fact]
+    public void KernelProcessStateInitializationWithNullVersionThrows()
+    {
+        // Act & Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+        var ex = Assert.Throws<ArgumentNullException>(() => new KernelProcessState(name: "stateName", version: null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
     }
 }
