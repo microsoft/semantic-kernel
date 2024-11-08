@@ -48,7 +48,7 @@ class AzureTextToAudio(AzureOpenAIConfigBase, OpenAITextToAudioBase):
             base_url: The optional deployment base_url. If provided will override the value
                 in the env vars or .env file.
             api_version: The optional deployment api version. If provided will override the value
-                in the env vars or .env file.
+                in the env vars or .env file. Default is "2024-10-01-preview".
             ad_token: The Azure AD token for authentication. (Optional)
             ad_token_provider: Azure AD Token provider. (Optional)
             token_endpoint: The Azure AD token endpoint. (Optional)
