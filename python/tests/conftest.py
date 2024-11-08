@@ -230,6 +230,7 @@ def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dic
         "AZURE_OPENAI_TEXT_DEPLOYMENT_NAME": "test_text_deployment",
         "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME": "test_embedding_deployment",
         "AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME": "test_text_to_image_deployment",
+        "AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME": "test_audio_to_text_deployment",
         "AZURE_OPENAI_API_KEY": "test_api_key",
         "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
         "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
@@ -264,6 +265,7 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         "OPENAI_TEXT_MODEL_ID": "test_text_model_id",
         "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
         "OPENAI_TEXT_TO_IMAGE_MODEL_ID": "test_text_to_image_model_id",
+        "OPENAI_AUDIO_TO_TEXT_MODEL_ID": "test_audio_to_text_model_id",
     }
 
     env_vars.update(override_env_param_dict)

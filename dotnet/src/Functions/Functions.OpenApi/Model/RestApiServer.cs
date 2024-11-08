@@ -6,10 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// REST API Operation Server.
+/// REST API server.
 /// </summary>
 [Experimental("SKEXP0040")]
-public sealed class RestApiOperationServer
+public sealed class RestApiServer
 {
     /// <summary>
     /// A URL to the target host. This URL supports Server Variables and MAY be relative,
@@ -23,18 +23,18 @@ public sealed class RestApiOperationServer
     /// <summary>
     /// A map between a variable name and its value. The value is used for substitution in the server's URL template.
     /// </summary>
-    public IDictionary<string, RestApiOperationServerVariable> Variables { get; }
+    public IDictionary<string, RestApiServerVariable> Variables { get; }
 
     /// <summary>
-    /// Construct a new <see cref="RestApiOperationServer"/> object.
+    /// Construct a new <see cref="RestApiServer"/> object.
     /// </summary>
     /// <param name="url">URL to the target host</param>
     /// <param name="variables">Substitution variables for the server's URL template</param>
 #pragma warning disable CA1054 // URI-like parameters should not be strings
-    internal RestApiOperationServer(string? url = null, IDictionary<string, RestApiOperationServerVariable>? variables = null)
+    internal RestApiServer(string? url = null, IDictionary<string, RestApiServerVariable>? variables = null)
 #pragma warning restore CA1054 // URI-like parameters should not be strings
     {
         this.Url = string.IsNullOrEmpty(url) ? null : url;
-        this.Variables = variables ?? new Dictionary<string, RestApiOperationServerVariable>();
+        this.Variables = variables ?? new Dictionary<string, RestApiServerVariable>();
     }
 }

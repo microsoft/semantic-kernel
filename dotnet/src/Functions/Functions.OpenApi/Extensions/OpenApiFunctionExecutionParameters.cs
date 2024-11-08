@@ -23,13 +23,13 @@ public class OpenApiFunctionExecutionParameters
     public AuthenticateRequestAsyncCallback? AuthCallback { get; set; }
 
     /// <summary>
-    /// Override for REST API operation server url.
+    /// Override for REST API server url.
     /// </summary>
     public Uri? ServerUrlOverride { get; set; }
 
     /// <summary>
-    /// Flag indicating whether to ignore non-compliant errors or not.
-    /// If set to true, the operation execution will not throw exceptions for non-compliant documents.
+    /// Flag indicating whether to ignore non-compliant errors of the OpenAPI document or not.
+    /// If set to true, the execution will not throw exceptions for non-compliant documents.
     /// Please note that enabling this option may result in incomplete or inaccurate execution results.
     /// </summary>
     public bool IgnoreNonCompliantErrors { get; set; }
@@ -40,8 +40,8 @@ public class OpenApiFunctionExecutionParameters
     public string UserAgent { get; set; }
 
     /// <summary>
-    /// Determines whether the operation payload is constructed dynamically based on operation payload metadata.
-    /// If false, the operation payload must be provided via the 'payload' context variable.
+    /// Determines whether the REST API operation payload is constructed dynamically based on payload metadata.
+    /// If false, the payload must be provided via the 'payload' argument.
     /// </summary>
     public bool EnableDynamicPayload { get; set; }
 
@@ -75,13 +75,13 @@ public class OpenApiFunctionExecutionParameters
     /// </summary>
     /// <param name="httpClient">The HttpClient to use for sending HTTP requests.</param>
     /// <param name="authCallback">The callback for adding authentication data to HTTP requests.</param>
-    /// <param name="serverUrlOverride">The override for the REST API operation server URL.</param>
+    /// <param name="serverUrlOverride">The override for the REST API server URL.</param>
     /// <param name="userAgent">Optional user agent header value.</param>
-    /// <param name="ignoreNonCompliantErrors">A flag indicating whether to ignore non-compliant errors or not
-    /// If set to true, the operation execution will not throw exceptions for non-compliant documents.
+    /// <param name="ignoreNonCompliantErrors">A flag indicating whether to ignore non-compliant errors of the OpenAPI document or not
+    /// If set to true, the execution will not throw exceptions for non-compliant documents.
     /// Please note that enabling this option may result in incomplete or inaccurate execution results.</param>
-    /// <param name="enableDynamicOperationPayload">Determines whether the operation payload is constructed dynamically based on operation payload metadata.
-    /// If false, the operation payload must be provided via the 'payload' context variable.</param>
+    /// <param name="enableDynamicOperationPayload">Determines whether the REST API operation payload is constructed dynamically based on payload metadata.
+    /// If false, the REST API payload must be provided via the 'payload' argument.</param>
     /// <param name="enablePayloadNamespacing">Determines whether payload parameter names are augmented with namespaces.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>

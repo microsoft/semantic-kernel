@@ -108,8 +108,8 @@ public class CloneTests
     {
         // Arrange
         KernelProcessStepInfo step = new(typeof(KernelProcessStep), new(nameof(VerifyCloneNestedProcessTest), "teststep"), []);
-        KernelProcess subProcess = new(new(nameof(VerifyCloneNestedProcessTest), "inner"), [step], CreateTestEdges());
-        KernelProcess source = new(new(nameof(VerifyCloneNestedProcessTest), "outer"), [subProcess], []);
+        KernelProcess subProcess = new(new(nameof(VerifyCloneNestedProcessTest), "v2", "inner"), [step], CreateTestEdges());
+        KernelProcess source = new(new(nameof(VerifyCloneNestedProcessTest), "v1", "outer"), [subProcess], []);
 
         // Act
         KernelProcess copy = source.CloneProcess(NullLogger.Instance);
@@ -122,6 +122,7 @@ public class CloneTests
     {
         Assert.Equal(expected.State.Id, actual.State.Id);
         Assert.Equal(expected.State.Name, actual.State.Name);
+        Assert.Equal(expected.State.Version, actual.State.Version);
         Assert.Equal(expected.InnerStepType, actual.InnerStepType);
         Assert.Equivalent(expected.Edges, actual.Edges);
         foreach (var (expectedStep, actualStep) in expected.Steps.Zip(actual.Steps))
