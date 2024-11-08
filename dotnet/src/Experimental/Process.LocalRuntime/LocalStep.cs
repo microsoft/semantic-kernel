@@ -118,6 +118,8 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent)
     {
+        Verify.NotNullOrWhiteSpace(processEvent.Id, $"{nameof(processEvent)}.{nameof(KernelProcessEvent.Id)}");
+
         ProcessEvent emitEvent = ProcessEvent.Create(processEvent, this._eventNamespace);
         if (this.EventProxy?.Invoke(emitEvent) ?? true)
         {

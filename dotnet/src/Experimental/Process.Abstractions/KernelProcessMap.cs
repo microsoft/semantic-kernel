@@ -9,11 +9,6 @@ namespace Microsoft.SemanticKernel;
 public sealed record KernelProcessMap : KernelProcessStepInfo
 {
     /// <summary>
-    /// Event Id used internally to initiate the map operation.
-    /// </summary>
-    public const string MapEventId = "StartMap";
-
-    /// <summary>
     /// The map operation.
     /// </summary>
     public KernelProcess Operation { get; }

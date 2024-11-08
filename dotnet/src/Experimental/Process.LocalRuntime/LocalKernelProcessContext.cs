@@ -28,7 +28,7 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
         };
     }
 
-    internal Task StartWithEventAsync(KernelProcessEvent? initialEvent, Kernel? kernel = null) =>
+    internal Task StartWithEventAsync(KernelProcessEvent initialEvent, Kernel? kernel = null) =>
         this._localProcess.RunOnceAsync(initialEvent, kernel);
 
     /// <summary>

@@ -28,7 +28,7 @@ internal sealed class LocalMap : LocalStep
     {
         this._map = map;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._map.State.Name) ?? new NullLogger<LocalStep>();
-        this._mapEvents = [.. map.Edges.Keys.Select(key => key.Split('.').Last())];
+        this._mapEvents = [.. map.Edges.Keys.Select(key => key.Split(ProcessConstants.EventIdSeparator).Last())];
     }
 
     /// <inheritdoc/>
@@ -54,7 +54,7 @@ internal sealed class LocalMap : LocalStep
                     processContext.StartWithEventAsync(
                         new KernelProcessEvent
                         {
-                            Id = KernelProcessMap.MapEventId,
+                            Id = ProcessConstants.MapEventId,
                             Data = value
                         });
 #pragma warning restore CA2000 // Dispose objects before losing scope

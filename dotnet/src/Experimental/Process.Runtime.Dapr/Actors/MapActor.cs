@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.SemanticKernel.Process.Serialization;
 
@@ -98,7 +99,7 @@ internal sealed class MapActor : StepActor, IMap
                 processContext.StartWithEventAsync(
                     new KernelProcessEvent
                     {
-                        Id = KernelProcessMap.MapEventId,
+                        Id = ProcessConstants.MapEventId,
                         Data = value
                     },
                     eventProxyStepId: this.Id);
@@ -170,7 +171,7 @@ internal sealed class MapActor : StepActor, IMap
         this._eventNamespace = $"{this._mapInfo.State.Name}_{this._mapInfo.State.Id}";
 
         // Capture the events that the map is interested in as hashtable for performant lookup
-        this._mapEvents = [.. this._mapInfo.Edges.Keys.Select(key => key.Split('.').Last())];
+        this._mapEvents = [.. this._mapInfo.Edges.Keys.Select(key => key.Split(ProcessConstants.EventIdSeparator).Last())];
 
         this._isInitialized = true;
     }

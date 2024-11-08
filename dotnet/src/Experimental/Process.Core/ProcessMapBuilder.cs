@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
@@ -84,7 +85,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
 
         var transformProcess = transformBuilder.AddStepFromProcess(mapProcess);
         transformBuilder
-            .OnInputEvent(KernelProcessMap.MapEventId)
+            .OnInputEvent(ProcessConstants.MapEventId)
             .SendEventTo(transformProcess.WhereInputEventIs(eventId));
 
         return transformBuilder;
@@ -96,7 +97,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
 
         transformBuilder.AddStepFromBuilder(mapTarget.Step);
         transformBuilder
-            .OnInputEvent(KernelProcessMap.MapEventId)
+            .OnInputEvent(ProcessConstants.MapEventId)
             .SendEventTo(mapTarget);
 
         return transformBuilder;
