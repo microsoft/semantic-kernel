@@ -29,3 +29,9 @@ def find_input_channels(
                 inputs[name][param.name] = None
 
     return inputs
+
+
+@staticmethod
+def get_fully_qualified_name(cls):
+    """Gets the fully qualified name of a class."""
+    return f"{cls.__module__}.{cls.__name__}"

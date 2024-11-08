@@ -1,95 +1,90 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import logging
 from queue import Queue
-from typing import TYPE_CHECKING
 
 from dapr.actor import Actor
 
 from semantic_kernel.processes.dapr_runtime.actors.actor_state_key import ActorStateKeys
 from semantic_kernel.processes.dapr_runtime.message_buffer_interface import MessageBufferInterface
 
-if TYPE_CHECKING:
-    from semantic_kernel.processes.process_event import ProcessEvent
+logger = logging.getLogger(__name__)
 
 
 class EventBufferActor(Actor, MessageBufferInterface):
-    """Represents a message buffer actor that follows the MessageBuffer abstract class."""
+    """Represents a message buffer actor that manages a queue of JSON strings representing events."""
 
     queue: Queue = Queue()
 
-    # async def enqueue(self, message: "ProcessEvent") -> None:
-    #     """Enqueues a message event into the buffer.
+    async def enqueue(self, message: str) -> None:
+        """Enqueues a JSON string message event into the buffer and updates the state.
 
-    #     Args:
-    #         message: The message event to enqueue.
-    #     """
-    #     from semantic_kernel.processes.process_event import ProcessEvent
+        Args:
+            message: The message event to enqueue as a JSON string.
 
-    #     message = ProcessEvent.model_validate(json.loads(message))
+        Raises:
+            Exception: If an error occurs during the enqueue operation.
+        """
+        try:
+            self.queue.put(message)
 
-    #     self.queue.put(message)
+            queue_list = list(self.queue.queue)
+            queue_json = json.dumps(queue_list)
 
-    #     await self._state_manager.try_add_state(ActorStateKeys.EventQueueState.value, self.queue)
-    #     await self._state_manager.save_state()
+            await self._state_manager.try_add_state(ActorStateKeys.EventQueueState.value, queue_json)
+            await self._state_manager.save_state()
+            logger.info(f"Enqueued message and updated state for actor ID: {self.id.id}")
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Error in enqueue: {error_message}")
+            raise Exception(error_message)
 
-    # async def dequeue_all(self) -> "list[ProcessEvent]":
-    #     """Dequeues all process events from the buffer.
+    async def dequeue_all(self) -> list[str]:
+        """Dequeues all process events from the buffer and returns them as JSON strings.
 
-    #     Returns:
-    #         The dequeued message event.
-    #     """
-    #     items = []
-    #     while not self.queue.empty():
-    #         items.append(self.queue.get())
+        Returns:
+            A list of JSON strings representing the dequeued messages.
 
-    #     await self._state_manager.try_add_state(ActorStateKeys.EventQueueState.value, self.queue)
-    #     await self._state_manager.save_state()
+        Raises:
+            Exception: If an error occurs during the dequeue operation.
+        """
+        try:
+            items = []
 
-    #     return items
+            while not self.queue.empty():
+                items.append(self.queue.get())
 
-    # async def on_activate(self) -> None:
-    #     """Called when the actor is activated."""
-    #     has_value, event_queue_state = await self._state_manager.try_get_state(ActorStateKeys.EventQueueState.value)
-    #     if has_value:
-    #         self.queue = event_queue_state
-    #     else:
-    #         self.queue: Queue["ProcessEvent"] = Queue()
+            await self._state_manager.try_add_state(ActorStateKeys.EventQueueState.value, json.dumps([]))
+            await self._state_manager.save_state()
+            logger.info(f"Dequeued all messages and updated state for actor ID: {self.id.id}")
 
-    async def enqueue(self, message: "ProcessEvent") -> None:
-        # Validate and deserialize the message
-        message = ProcessEvent.model_validate(json.loads(message))
-        self.queue.put(message)
-
-        # Convert queue to a list of serializable dictionaries
-        queue_items = list(self.queue.queue)
-        queue_dicts = [item.model_dump() for item in queue_items]
-
-        # Save the serializable queue to Dapr state
-        await self._state_manager.try_add_state(ActorStateKeys.EventQueueState.value, queue_dicts)
-        await self._state_manager.save_state()
-
-    async def dequeue_all(self) -> "list[ProcessEvent]":
-        items = []
-        while not self.queue.empty():
-            items.append(self.queue.get())
-
-        # Save the updated queue state
-        queue_items = list(self.queue.queue)
-        queue_dicts = [item.model_dump() for item in queue_items]
-        await self._state_manager.try_add_state(ActorStateKeys.EventQueueState.value, queue_dicts)
-        await self._state_manager.save_state()
-
-        # Return a list of serializable dictionaries
-        return [item.model_dump() for item in items]
+            return items
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Error in dequeue_all: {error_message}")
+            raise Exception(error_message)
 
     async def _on_activate(self) -> None:
-        has_value, event_queue_state = await self._state_manager.try_get_state(ActorStateKeys.EventQueueState.value)
-        if has_value:
-            queue_dicts = event_queue_state
-            self.queue = Queue()
-            for item_dict in queue_dicts:
-                message = ProcessEvent(**item_dict)
-                self.queue.put(message)
-        else:
-            self.queue = Queue()
+        """Activates the actor and initializes the queue state from Dapr storage.
+
+        Raises:
+            Exception: If an error occurs during actor activation.
+        """
+        try:
+            logger.info(f"Activating actor with ID: {self.id.id}")
+
+            state_exists, queue_json = await self._state_manager.try_get_state(ActorStateKeys.EventQueueState.value)
+            if state_exists and queue_json:
+                queue_list = json.loads(queue_json)
+                self.queue = Queue()
+                for item in queue_list:
+                    self.queue.put(item)
+                logger.info(f"Reconstructed queue from state for actor ID: {self.id.id}")
+            else:
+                self.queue = Queue()
+                logger.info(f"No existing state found. Initialized empty queue for actor ID: {self.id.id}")
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Error in _on_activate: {error_message}")
+            raise Exception(error_message)

@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import asyncio
 import contextlib
 import json
+import logging
 import uuid
 from queue import Queue
 
@@ -34,16 +34,7 @@ from semantic_kernel.processes.process_event import ProcessEvent
 from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
 
-# class ProcessActor(StepActor, ProcessInterface):
-#     """A local process that contains a collection of steps."""
-
-#     kernel: Kernel | None = None
-#     steps: list[StepActor] = []
-#     step_infos: list[DaprStepInfo] = []
-#     initialize_task: bool | None = False
-#     external_event_queue: Queue = Queue()
-#     process_task: asyncio.Task | None = None
-#     process: DaprProcessInfo | None = None
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class ProcessActor(StepActor, ProcessInterface):
@@ -58,6 +49,7 @@ class ProcessActor(StepActor, ProcessInterface):
             kernel: The Kernel dependency to be injected.
         """
         super().__init__(ctx, actor_id, kernel)
+        self.kernel = kernel
         self.steps: list[StepActor] = []
         self.step_infos: list[DaprStepInfo] = []
         self.initialize_task: bool | None = False
@@ -75,29 +67,38 @@ class ProcessActor(StepActor, ProcessInterface):
     # async def initialize_process(self, process_info: dict[str, Any], parent_process_id: str | None = None) -> None:
     async def initialize_process(self, input: dict) -> None:
         """Initializes the process."""
-        if input is None:
+        process_info_dict = input.get("process_info")
+
+        if process_info_dict is None:
             raise ValueError("The process info is not defined.")
 
-        process_info = DaprProcessInfo.model_validate(input.get("process_info"))
+        parent_process_id = input.get("parent_process_id")
 
-        if process_info.steps is None:
+        # Reconstruct the DaprProcessInfo from the dictionary
+        dapr_process_info = DaprProcessInfo.model_validate(process_info_dict)
+
+        if dapr_process_info.steps is None:
             raise ValueError("The process info does not contain any steps.")
 
         if self.initialize_task:
             return
 
-        await self._initialize_process_actor(process_info, input.get("parent_process_id"))
+        await self._initialize_process_actor(dapr_process_info, parent_process_id)
 
         try:
-            await self._state_manager.try_add_state(ActorStateKeys.ProcessInfoState.value, process_info)
+            # Serialize dapr_process_info before saving
+            process_info_serialized = dapr_process_info.model_dump()
+
+            await self._state_manager.try_add_state(ActorStateKeys.ProcessInfoState.value, process_info_serialized)
             await self._state_manager.try_add_state(
-                ActorStateKeys.StepParentProcessId.value, input.get("parent_process_id")
+                ActorStateKeys.StepParentProcessId.value, parent_process_id if parent_process_id else ""
             )
             await self._state_manager.try_add_state(ActorStateKeys.StepActivatedState.value, True)
             await self._state_manager.save_state()
         except Exception as ex:
-            print(ex)
-            raise ex
+            error_message = str(ex)
+            logger.error(f"Error in initialize_process: {error_message}")
+            raise Exception(error_message)
 
     async def start(self, keep_alive: bool = True) -> None:
         """Starts the process."""
@@ -108,9 +109,13 @@ class ProcessActor(StepActor, ProcessInterface):
         if not self.process_task or self.process_task.done():
             self.process_task = asyncio.create_task(self.internal_execute(keep_alive=keep_alive))
 
-    async def run_once(self, process_event_payload: str):
-        """Starts the process with an initial event and waits for it to finish."""
-        if process_event_payload is None:
+    async def run_once(self, process_event: str) -> None:
+        """Starts the process with an initial event and waits for it to finish.
+
+        Args:
+            process_event: The initial event to start the process represented as a string of a KernelProcessEvent
+        """
+        if process_event is None:
             raise ProcessEventUndefinedException("The process event must be specified.")
 
         external_event_queue: ExternalEventBufferActor = ActorProxy.create(
@@ -119,16 +124,16 @@ class ProcessActor(StepActor, ProcessInterface):
             actor_interface=ExternalEventBufferInterface,
         )
         try:
-            await external_event_queue.enqueue(process_event_payload)
+            await external_event_queue.enqueue(process_event)
             await self.start(keep_alive=False)
             if self.process_task:
                 try:
                     await self.process_task
                 except asyncio.CancelledError:
                     print("Process task was cancelled")
-                    # Optionally handle the cancellation
         except Exception as ex:
             print(ex)
+            logger.error(f"Error in run_once: {ex}")
             raise ex
 
     async def stop(self):
@@ -147,13 +152,21 @@ class ProcessActor(StepActor, ProcessInterface):
         pass
 
     async def _on_activate(self) -> None:
-        """Activates the process."""
-        has_value, existing_process_info = await self._state_manager.try_get_state(
-            ActorStateKeys.ProcessInfoState.value
-        )
-        if has_value:
-            self.parent_process_id = await self._state_manager.get_state(ActorStateKeys.StepParentProcessId.value)
-            await self._initialize_process_actor(existing_process_info, self.parent_process_id)
+        """Called when the actor is activated."""
+        try:
+            has_value, existing_process_info = await self._state_manager.try_get_state(
+                ActorStateKeys.ProcessInfoState.value
+            )
+            if has_value and existing_process_info:
+                has_value, parent_process_id = await self._state_manager.try_get_state(
+                    ActorStateKeys.StepParentProcessId.value
+                )
+                combined_input = {**existing_process_info, **parent_process_id}
+                await self.initialize_process(combined_input)
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Error in _on_activate: {error_message}")
+            raise Exception(error_message)
 
     async def send_message(self, process_event: KernelProcessEvent):
         """Sends a message to the process."""
@@ -321,7 +334,7 @@ class ProcessActor(StepActor, ProcessInterface):
                             actor_type=f"{MessageBufferActor.__name__}",
                             actor_interface=MessageBufferInterface,
                         )
-                        await message_queue.enqueue(message)
+                        await message_queue.enqueue(message.model_dump_json())
 
     async def _is_end_message_sent(self) -> bool:
         """Checks if the end message has been sent."""
@@ -331,7 +344,7 @@ class ProcessActor(StepActor, ProcessInterface):
             actor_id=scoped_message_buffer_id,
             actor_interface=MessageBufferInterface,
         )
-        messages: list[ProcessMessage] = await end_message_queue.dequeue_all()
+        messages: list[str] = await end_message_queue.dequeue_all()
         return len(messages) > 0
 
     async def _enqueue_external_messages(self) -> None:
@@ -344,7 +357,7 @@ class ProcessActor(StepActor, ProcessInterface):
 
         external_events_json = await external_event_queue.dequeue_all()
 
-        external_events = [KernelProcessEvent.model_validate(e) for e in external_events_json]
+        external_events = [KernelProcessEvent.model_validate(json.loads(e)) for e in external_events_json]
 
         for external_event in external_events:
             if external_event.id in self.output_edges and self.output_edges[external_event.id] is not None:

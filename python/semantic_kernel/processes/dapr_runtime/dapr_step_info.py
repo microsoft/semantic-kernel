@@ -9,12 +9,12 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
+from semantic_kernel.processes.step_utils import get_fully_qualified_name
 
 
 class DaprStepInfo(KernelBaseModel):
     """A Dapr step info."""
 
-    # info: KernelProcessEdge | KernelProcessStepState = Field(discriminator="type")
     inner_step_python_type: str
     state: KernelProcessStepState
     edges: dict[str, list[KernelProcessEdge]] = Field(default_factory=dict)
@@ -33,7 +33,10 @@ class DaprStepInfo(KernelBaseModel):
         """Creates a Dapr step info from a kernel step info."""
         if kernel_step_info is None:
             raise KernelException("Kernel step info must be provided")
-        inner_step_type = kernel_step_info.inner_step_type.__name__
+
+        # Get the fully qualified name of the inner step type
+        inner_step_type = get_fully_qualified_name(kernel_step_info.inner_step_type)
+
         return DaprStepInfo(
             inner_step_python_type=inner_step_type,
             state=kernel_step_info.state,
@@ -45,6 +48,3 @@ class DaprStepInfo(KernelBaseModel):
         module_name, class_name = full_class_name.rsplit(".", 1)
         module = importlib.import_module(module_name)
         return getattr(module, class_name)
-
-    def _get_fully_qualified_name(cls):
-        return f"{cls.__module__}.{cls.__name__}"

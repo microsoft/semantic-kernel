@@ -1,11 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING
 
 from dapr.actor import ActorInterface, actormethod
-
-if TYPE_CHECKING:
-    from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
 
 
 class ExternalEventBufferInterface(ActorInterface):
@@ -21,8 +17,10 @@ class ExternalEventBufferInterface(ActorInterface):
         pass
 
     @actormethod(name="dequeue_all")
-    async def dequeue_all(self) -> "list[KernelProcessEvent]":
-        """Dequeues all external events from the buffer.
+    async def dequeue_all(self) -> list[str]:
+        """Dequeues all external events from the buffer as.
+
+        The list is of string representations of KernelProcessEvent.
 
         Returns:
             The dequeued external event.

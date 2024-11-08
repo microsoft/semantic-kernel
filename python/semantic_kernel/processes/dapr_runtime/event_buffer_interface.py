@@ -1,11 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING
-
 from dapr.actor import ActorInterface, actormethod
-
-if TYPE_CHECKING:
-    from semantic_kernel.processes.process_event import ProcessEvent
 
 
 class EventBufferInterface(ActorInterface):
@@ -21,7 +16,7 @@ class EventBufferInterface(ActorInterface):
         pass
 
     @actormethod(name="dequeue_all")
-    async def dequeue_all(self) -> "list[ProcessEvent]":
+    async def dequeue_all(self) -> list[str]:
         """Dequeues a step event from the buffer.
 
         Returns:

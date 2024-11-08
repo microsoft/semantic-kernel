@@ -29,7 +29,7 @@ class ProcessInterface(ActorInterface):
         pass
 
     @actormethod(name="run_once")
-    async def run_once(self, process_event: "KernelProcessEvent") -> None:
+    async def run_once(self, process_event: KernelProcessEvent) -> None:
         """Starts the process with an initial event and then waits for the process to finish.
 
         :param process_event: Required. The KernelProcessEvent to start the process with.

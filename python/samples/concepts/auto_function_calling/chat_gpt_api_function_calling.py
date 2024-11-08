@@ -13,6 +13,8 @@ from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
@@ -78,8 +80,8 @@ kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
-# kernel.add_plugin(MathPlugin(), plugin_name="math")
-# kernel.add_plugin(TimePlugin(), plugin_name="time")
+kernel.add_plugin(MathPlugin(), plugin_name="math")
+kernel.add_plugin(TimePlugin(), plugin_name="time")
 kernel.add_plugin(TravelPlugin(), plugin_name="travel")
 
 chat_function = kernel.add_function(
@@ -118,7 +120,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["travel"]}),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["travel", "math", "time"]}),
 )
 
 history = ChatHistory()
@@ -209,6 +211,17 @@ async def chat() -> bool:
         result = await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
         result = await kernel.invoke(chat_function, arguments=arguments)
+
+        chat_history: ChatHistory = result.metadata["messages"]
+
+        # for msg in chat_history:
+        #     if hasattr(msg, "inner_content"):
+        #         msg.inner_content = None
+        #     for item in msg.items:
+        #         if isinstance(item, (FunctionCallContent, FunctionResultContent)):
+        #             item.inner_content = None
+
+        print(chat_history.model_dump_json())
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent

@@ -1,9 +1,14 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from enum import Enum
 from typing import TYPE_CHECKING, ClassVar
 
 import uvicorn
+from dapr.actor import ActorId
+from dapr.actor.runtime.context import ActorRuntimeContext
 from dapr.ext.fastapi import DaprActor, DaprApp
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -26,12 +31,27 @@ from semantic_kernel.processes.process_builder import ProcessBuilder
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
+logging.basicConfig(level=logging.DEBUG)
+
+
+kernel = Kernel()
+
+
+def process_actor_factory(ctx: ActorRuntimeContext, actor_id: ActorId) -> ProcessActor:
+    """Factory function to create ProcessActor instances with dependencies."""
+    return ProcessActor(ctx, actor_id, kernel)
+
+
+def step_actor_factory(ctx: ActorRuntimeContext, actor_id: ActorId) -> StepActor:
+    """Factory function to create StepActor instances with dependencies."""
+    return StepActor(ctx, actor_id, kernel=kernel)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("~~ actor startup")
-    await actor.register_actor(ProcessActor)
-    await actor.register_actor(StepActor)
+    await actor.register_actor(ProcessActor, actor_factory=process_actor_factory)
+    await actor.register_actor(StepActor, actor_factory=step_actor_factory)
     await actor.register_actor(EventBufferActor)
     await actor.register_actor(MessageBufferActor)
     await actor.register_actor(ExternalEventBufferActor)
@@ -160,4 +180,4 @@ async def start_process(process_id: str):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5001)
+    uvicorn.run(app, host="0.0.0.0", port=5001)  # nosec

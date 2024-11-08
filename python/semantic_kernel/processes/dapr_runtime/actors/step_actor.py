@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import importlib
 import json
 import logging
 from queue import Queue
-from typing import Any, Type
+from typing import Any
 
 from dapr.actor import Actor, ActorId, ActorProxy
 from dapr.actor.runtime.context import ActorRuntimeContext
@@ -35,34 +36,13 @@ from semantic_kernel.processes.process_event import ProcessEvent
 from semantic_kernel.processes.process_message import ProcessMessage
 from semantic_kernel.processes.process_message_factory import ProcessMessageFactory
 from semantic_kernel.processes.process_types import get_generic_state_type
-from semantic_kernel.processes.step_utils import find_input_channels
+from semantic_kernel.processes.step_utils import find_input_channels, get_fully_qualified_name
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-# class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
-#     """Represents a step actor that follows the Step abstract class."""
-#     kernel: Kernel | None = None
-#     parent_process_id: str | None = None
-#     step_info: DaprStepInfo | None = None
-#     initialize_task: bool | None = False
-#     event_namespace: str | None = None
-#     inner_step_type: Type | None = None
-#     incoming_messages: Queue = Queue()
-#     step_state: KernelProcessStepState | None = None
-#     step_state_type: Type | None = None
-#     output_edges: dict[str, list[KernelProcessEdge]] = {}
-#     functions: dict[str, KernelFunction] = {}
-#     inputs: dict[str, dict[str, Any | None]] = {}
-#     initial_inputs: dict[str, dict[str, Any | None]] = {}
-#     init_lock: asyncio.Lock = asyncio.Lock()
-#     # def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId):  # kernel: Kernel):
-#     #     """Initializes a new instance of StepActor."""
-#     #     super(StepActor, self).__init__(ctx, actor_id)
-#     #     # self.kernel = kernel
-#     #     self.activate_task = self.activate_step()
 class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
     """Represents a step actor that follows the Step abstract class."""
 
@@ -80,23 +60,22 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         self.step_info: DaprStepInfo | None = None
         self.initialize_task: bool | None = False
         self.event_namespace: str | None = None
-        self.inner_step_type: Type | None = None
+        self.inner_step_type: type | None = None
         self.incoming_messages: Queue = Queue()
         self.step_state: KernelProcessStepState | None = None
-        self.step_state_type: Type | None = None
+        self.step_state_type: type | None = None
         self.output_edges: dict[str, list[KernelProcessEdge]] = {}
         self.functions: dict[str, KernelFunction] = {}
         self.inputs: dict[str, dict[str, Any | None]] = {}
         self.initial_inputs: dict[str, dict[str, Any | None]] = {}
         self.init_lock: asyncio.Lock = asyncio.Lock()
-        self.activate_task = self.activate_step()
+        self.step_activated: bool = False
 
     @property
     def name(self) -> str:
         """Gets the name of the step."""
         return self.step_info.state.name
 
-    # async def initialize_step(self, step_info: dict[str, Any], parent_process_id: str | None = None) -> None:
     async def initialize_step(self, input: dict) -> None:
         """Initializes the step with the provided step information."""
         if input is None:
@@ -136,7 +115,6 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             step_info: The DaprStepInfo object to initialize the step with.
             parent_process_id: Optional parent process ID if one exists.
         """
-        # TODO(evmattso): investigate this
         self.inner_step_type = step_info.inner_step_python_type
 
         self.parent_process_id = parent_process_id
@@ -148,11 +126,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         self.initialize_task = True
 
     async def prepare_incoming_messages(self) -> int:
-        """Triggers the step to dequeue all pending messages and prepare for processing.
-
-        Returns:
-            An integer indicating the number of messages prepared for processing.
-        """
+        """Prepares the incoming messages for processing."""
         try:
             message_queue: MessageBufferInterface = ActorProxy.create(
                 actor_type=f"{MessageBufferActor.__name__}",
@@ -162,17 +136,16 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             incoming = await message_queue.dequeue_all()
 
             messages = []
-            json_msg = []
             for message in incoming:
-                json_msg.append(message)
-                process_event = ProcessEvent.model_validate(message)
-                messages.append(process_event)
+                process_message = ProcessMessage.model_validate(json.loads(message))
+                messages.append(process_message)
 
             for msg in messages:
                 self.incoming_messages.put(msg)
 
             await self._state_manager.try_add_state(
-                ActorStateKeys.StepIncomingMessagesState.value, json.dumps(json_msg)
+                ActorStateKeys.StepIncomingMessagesState.value,
+                incoming,
             )
             await self._state_manager.save_state()
 
@@ -191,10 +164,16 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         await self._state_manager.try_add_state(ActorStateKeys.StepIncomingMessagesState.value, self.incoming_messages)
         await self._state_manager.save_state()
 
+    def _get_class_from_string(self, full_class_name: str):
+        """Gets a class from a string."""
+        module_name, class_name = full_class_name.rsplit(".", 1)
+        module = importlib.import_module(module_name)
+        return getattr(module, class_name)
+
     async def activate_step(self):
         """Initializes the step."""
         # Instantiate an instance of the inner step object
-        step_cls = self.inner_step_type
+        step_cls = self._get_class_from_string(self.inner_step_type)
 
         step_instance: KernelProcessStep = step_cls()  # type: ignore
 
@@ -232,11 +211,17 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                     error_message = "State object is not of the expected type."
                     raise KernelException(error_message)
 
-                # handle the following:
-                # // Persist the state type and type object.
-                # await this.StateManager.AddStateAsync(ActorStateKeys.StepStateType, stateType.AssemblyQualifiedName).ConfigureAwait(false);
-                # await this.StateManager.AddStateAsync(ActorStateKeys.StepStateJson, JsonSerializer.Serialize(stateObject)).ConfigureAwait(false);
-                # await this.StateManager.SaveStateAsync().ConfigureAwait(false);
+                await self._state_manager.try_add_state(
+                    ActorStateKeys.StepStateType.value,
+                    get_fully_qualified_name(t_state),
+                )
+
+                await self._state_manager.try_add_state(
+                    ActorStateKeys.StepStateJson.value,
+                    json.dumps(state_object.model_dump()),
+                )
+
+                await self._state_manager.save_state()
 
             # Make sure that state_object.state is not None
             if state_object.state is None:
@@ -269,14 +254,14 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         if message is None:
             raise ValueError("The message is None.")
 
-        if not self.initialize_task:
+        if not self.step_activated:
             async with self.init_lock:
                 # Second check to ensure that initialization happens only once
                 # This avoids a race condition where multiple coroutines might
                 # reach the first check at the same time before any of them acquire the lock.
-                if not self.initialize_task:
+                if not self.step_activated:
                     await self.activate_step()
-                    self.initialize_task = True
+                    self.step_activated = True
 
         if self.functions is None or self.inputs is None or self.initial_inputs is None:
             raise ValueError("The step has not been initialized.")
@@ -348,7 +333,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             event_value = invoke_result.value
 
             state_dict = self.step_state.model_dump()
-            await self._state_manager.set_state(ActorStateKeys.StepStateJson.value, state_dict)
+            await self._state_manager.set_state(ActorStateKeys.StepStateJson.value, json.dumps(state_dict))
             await self._state_manager.save_state()
         except Exception as ex:
             logger.error(f"Error in Step {self.name}: {ex!s}")
@@ -376,7 +361,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                 actor_id=ActorId(self.parent_process_id),
                 actor_interface=EventBufferInterface,
             )
-            await parent_process.enqueue(dapr_event)
+            await parent_process.enqueue(dapr_event.model_dump_json())
 
         for edge in self.get_edge_for_event(dapr_event.id):
             message: ProcessMessage = ProcessMessageFactory.create_from_edge(edge, dapr_event.data)
@@ -386,18 +371,18 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                 actor_id=scoped_step_id,
                 actor_interface=MessageBufferInterface,
             )
-            await target_step.enqueue(message)
+            await target_step.enqueue(message.model_dump_json())
 
     async def to_dapr_step_info(self) -> DaprStepInfo:
         """Converts the step to a DaprStepInfo object."""
-        if not self.initialize_task:
+        if not self.step_activated:
             async with self.init_lock:
                 # Second check to ensure that initialization happens only once
                 # This avoids a race condition where multiple coroutines might
                 # reach the first check at the same time before any of them acquire the lock.
-                if not self.initialize_task:
+                if not self.step_activated:
                     await self.activate_step()
-                    self.initialize_task = True
+                    self.step_activated = True
 
         return DaprStepInfo(
             inner_step_python_type=self.inner_step_type, state=self.step_info.state, edges=self.step_info.edges
