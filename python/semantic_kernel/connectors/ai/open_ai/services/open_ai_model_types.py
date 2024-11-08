@@ -9,4 +9,5 @@ class OpenAIModelTypes(Enum):
     TEXT = "text"
     CHAT = "chat"
     EMBEDDING = "embedding"
-    IMAGE = "image"
+    TEXT_TO_IMAGE = "text-to-image"
+    AUDIO_TO_TEXT = "audio-to-text"

@@ -70,7 +70,7 @@ internal static class KernelProcessStateMetadataExtension
                             // version mismatch - check if migration logic in place
                             if (step is ProcessBuilder subprocessBuilder)
                             {
-                                var sanitizedStepState = SanitizeProcessStateMetadata(savedStateMetadata, subprocessBuilder.Steps.ToList());
+                                var sanitizedStepState = SanitizeProcessStateMetadata((KernelProcessStateMetadata)savedStateMetadata, subprocessBuilder.Steps.ToList());
                                 sanitizedStateMetadata.StepsState[step.Name] = sanitizedStepState;
                             }
                             else if (false)
@@ -80,7 +80,7 @@ internal static class KernelProcessStateMetadataExtension
                             else
                             {
                                 // no compatible state found, migrating id only
-                                sanitizedStateMetadata.StepsState[step.Name] = new KernelProcessStateMetadata()
+                                sanitizedStateMetadata.StepsState[step.Name] = new KernelProcessStepStateMetadata()
                                 {
                                     Name = step.Name,
                                     Id = step.Id,

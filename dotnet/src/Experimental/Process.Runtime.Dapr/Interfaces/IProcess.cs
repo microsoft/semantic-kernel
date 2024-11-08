@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// An interface that represents a process.
 /// </summary>
-public interface IProcess : IActor
+public interface IProcess : IActor, IStep
 {
     /// <summary>
     /// Initializes the process with the specified instance of <see cref="DaprProcessInfo"/>.
@@ -31,7 +31,7 @@ public interface IProcess : IActor
     /// </summary>
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <returns>A <see cref="Task"/></returns>
-    Task RunOnceAsync(KernelProcessEvent processEvent);
+    Task RunOnceAsync(string processEvent);
 
     /// <summary>
     /// Stops a running process. This will cancel the process and wait for it to complete before returning.
@@ -45,7 +45,7 @@ public interface IProcess : IActor
     /// </summary>
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <returns>A <see cref="Task"/></returns>
-    Task SendMessageAsync(KernelProcessEvent processEvent);
+    Task SendMessageAsync(string processEvent);
 
     /// <summary>
     /// Gets the process information.

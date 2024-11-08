@@ -8,6 +8,9 @@
   "servers": [
     {
       "url": "https://my-key-vault.vault.azure.net"
+    },
+    {
+      "url": "https://ppe.my-key-vault.vault.azure.net"
     }
   ],
   "paths": {
@@ -439,6 +442,11 @@
             "scopes": {}
           }
         }
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
       }
     }
   },

@@ -48,6 +48,41 @@ public class FunctionCallContentBuilderTests
 
     [Theory]
     [ClassData(typeof(TestJsonSerializerOptionsForKernelArguments))]
+    public void ItShouldNotOverwriteFunctionNameOrId(JsonSerializerOptions? jsos)
+    {
+        // Arrange
+        var sut = jsos is not null ? new FunctionCallContentBuilder(jsos) : new FunctionCallContentBuilder();
+
+        // Act
+        var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: "f_101", name: null, arguments: null);
+        sut.Append(update1);
+
+        var update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: "WeatherUtils-GetTemperature", arguments: null);
+        sut.Append(update2);
+
+        var update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: "", name: "", arguments: "{\"city\":");
+        sut.Append(update3);
+
+        var update4 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "\"Seattle\"}");
+        sut.Append(update4);
+
+        var functionCalls = sut.Build();
+
+        // Assert
+        var functionCall = Assert.Single(functionCalls);
+
+        Assert.Equal("f_101", functionCall.Id);
+        Assert.Equal("WeatherUtils", functionCall.PluginName);
+        Assert.Equal("GetTemperature", functionCall.FunctionName);
+
+        Assert.NotNull(functionCall.Arguments);
+        Assert.Equal("Seattle", functionCall.Arguments["city"]);
+
+        Assert.Null(functionCall.Exception);
+    }
+
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForKernelArguments))]
     public void ItShouldBuildFunctionCallContentForManyFunctions(JsonSerializerOptions? jsos)
     {
         // Arrange

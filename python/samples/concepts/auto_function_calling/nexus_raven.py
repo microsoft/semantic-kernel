@@ -108,19 +108,17 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             try:
                 function_call, function_result = await self._execute_function_calls(part, chat_history, **kwargs)
                 if function_call:
-                    messages.extend(
-                        [
-                            ChatMessageContent(
-                                role="assistant", items=[function_call], metadata={"ai_model_id": self.ai_model_id}
-                            ),
-                            ChatMessageContent(
-                                role="tool",
-                                items=[function_result],
-                                name="nexus",
-                                metadata={"ai_model_id": self.ai_model_id},
-                            ),
-                        ]
-                    )
+                    messages.extend([
+                        ChatMessageContent(
+                            role="assistant", items=[function_call], metadata={"ai_model_id": self.ai_model_id}
+                        ),
+                        ChatMessageContent(
+                            role="tool",
+                            items=[function_result],
+                            name="nexus",
+                            metadata={"ai_model_id": self.ai_model_id},
+                        ),
+                    ])
                 else:
                     messages.append(ChatMessageContent(role="assistant", content=part, ai_model_id=self.ai_model_id))
             except Exception as e:
@@ -175,13 +173,11 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             }
             call_stack[current_idx] = call
         while any(call["result"] is None for call in call_stack.values()):
-            await asyncio.gather(
-                *[
-                    self._execute_function_call(call, chat_history, kwargs.get("kernel"))
-                    for call in call_stack.values()
-                    if not any(isinstance(arg, tuple) for arg in call["args"].values()) and call["result"] is None
-                ]
-            )
+            await asyncio.gather(*[
+                self._execute_function_call(call, chat_history, kwargs.get("kernel"))
+                for call in call_stack.values()
+                if not any(isinstance(arg, tuple) for arg in call["args"].values()) and call["result"] is None
+            ])
             for call in call_stack.values():
                 if call["result"] is None:
                     for name, arg in call["args"].items():
