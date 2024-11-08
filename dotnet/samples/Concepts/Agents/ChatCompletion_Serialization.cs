@@ -2,14 +2,12 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Agents;
 /// <summary>
-/// Demonstrate that two different agent types are able to participate in the same conversation.
-/// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
+/// Demonstrate that serialization of <see cref="AgentGroupChat"/> in with a <see cref="ChatCompletionAgent"/> participant.
 /// </summary>
 public class ChatCompletion_Serialization(ITestOutputHelper output) : BaseAgentsTest(output)
 {

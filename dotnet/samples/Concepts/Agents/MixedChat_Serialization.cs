@@ -7,8 +7,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Agents;
 /// <summary>
-/// Demonstrate that two different agent types are able to participate in the same conversation.
-/// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
+/// Demonstrate that serialization of <see cref="AgentGroupChat"/> in with a <see cref="ChatCompletionAgent"/>
+/// and <see cref="OpenAIAssistantAgent"/> participant.
 /// </summary>
 public class MixedChat_Serialization(ITestOutputHelper output) : BaseAgentsTest(output)
 {
