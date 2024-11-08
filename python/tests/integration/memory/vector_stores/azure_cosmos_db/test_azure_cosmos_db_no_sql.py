@@ -77,9 +77,7 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
         with pytest.raises(MemoryConnectorException):
             await collection.delete(data_record["id"])
 
-        with pytest.raises(
-            MemoryConnectorException, match="The collection does not exist yet. Create the collection first."
-        ):
+        with pytest.raises(MemoryConnectorException, match="Container could not be deleted."):
             await collection.delete_collection()
 
     @pytest.mark.asyncio
@@ -194,8 +192,9 @@ class TestCosmosDBNoSQL(VectorStoreTestBase):
 
         # Upsert
         await collection.create_collection()
-        results = await collection.upsert(data_model_type_with_key_as_key_field(**data_record_with_key_as_key_field))
-        assert data_record_with_key_as_key_field["key"] in results
+        result = await collection.upsert(data_model_type_with_key_as_key_field(**data_record_with_key_as_key_field))
+        assert isinstance(result, AzureCosmosDBNoSQLCompositeKey)
+        assert data_record_with_key_as_key_field["key"] == result.key
 
         # Verify
         record = await collection.get(data_record_with_key_as_key_field["key"])

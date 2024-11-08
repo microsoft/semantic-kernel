@@ -78,22 +78,22 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
         except Exception as e:
             raise MemoryConnectorResourceNotFound(f"Failed to check if database '{self.database_name}' exists.") from e
 
-    async def _get_database_proxy(self) -> DatabaseProxy:
+    async def _get_database_proxy(self, **kwargs) -> DatabaseProxy:
         """Gets the database proxy."""
         try:
             if await self._does_database_exist():
                 return self.cosmos_client.get_database_client(self.database_name)
 
             if self.create_database:
-                return await self.cosmos_client.create_database(self.database_name)
+                return await self.cosmos_client.create_database(self.database_name, **kwargs)
             raise MemoryConnectorResourceNotFound(f"Database '{self.database_name}' does not exist.")
         except Exception as e:
             raise MemoryConnectorResourceNotFound(f"Failed to get database proxy for '{id}'.") from e
 
-    async def _get_container_proxy(self, container_name: str) -> ContainerProxy:
+    async def _get_container_proxy(self, container_name: str, **kwargs) -> ContainerProxy:
         """Gets the container proxy."""
         try:
-            database_proxy = await self._get_database_proxy()
+            database_proxy = await self._get_database_proxy(**kwargs)
             return database_proxy.get_container_client(container_name)
         except Exception as e:
             raise MemoryConnectorResourceNotFound(f"Failed to get container proxy for '{container_name}'.") from e

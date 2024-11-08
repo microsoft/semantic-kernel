@@ -11,18 +11,18 @@ from azure.identity.aio import DefaultAzureCredential
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
     AzureCosmosDBNoSQLCompositeKey,
 )
+from semantic_kernel.connectors.memory.azure_cosmos_db.const import (
+    COSMOS_ITEM_ID_PROPERTY_NAME,
+    DISTANCE_FUNCTION_MAPPING,
+    INDEX_KIND_MAPPING,
+)
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordVectorField,
 )
-
-INDEX_KIND_MAPPING = {
-    IndexKind.FLAT: "flat",
-    IndexKind.QUANTIZED_FLAT: "quantizedFlat",
-    IndexKind.DISK_ANN: "diskANN",
-}
+from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
 
 
 def to_vector_index_policy_type(index_kind: IndexKind | None) -> str:
@@ -40,14 +40,7 @@ def to_vector_index_policy_type(index_kind: IndexKind | None) -> str:
     if index_kind in INDEX_KIND_MAPPING:
         return INDEX_KIND_MAPPING[index_kind]
 
-    raise ValueError(f"Index kind '{index_kind}' is not supported by Azure Cosmos DB NoSQL container.")
-
-
-DISTANCE_FUNCTION_MAPPING = {
-    DistanceFunction.COSINE_SIMILARITY: "cosine",
-    DistanceFunction.DOT_PROD: "dotproduct",
-    DistanceFunction.EUCLIDEAN_DISTANCE: "euclidean",
-}
+    raise VectorStoreModelException(f"Index kind '{index_kind}' is not supported by Azure Cosmos DB NoSQL container.")
 
 
 def to_distance_function(distance_function: DistanceFunction | None) -> str:
@@ -55,7 +48,9 @@ def to_distance_function(distance_function: DistanceFunction | None) -> str:
     if distance_function in DISTANCE_FUNCTION_MAPPING:
         return DISTANCE_FUNCTION_MAPPING[distance_function]
 
-    raise ValueError(f"Distance function '{distance_function}' is not supported by Azure Cosmos DB NoSQL container.")
+    raise VectorStoreModelException(
+        f"Distance function '{distance_function}' is not supported by Azure Cosmos DB NoSQL container."
+    )
 
 
 def create_default_indexing_policy(data_model_definition: VectorStoreRecordDefinition) -> dict[str, Any]:
@@ -154,10 +149,6 @@ def get_partition_key(key: str | AzureCosmosDBNoSQLCompositeKey) -> str:
         return key.partition_key
 
     return key
-
-
-# The name of the property that will be used as the item id in Azure Cosmos DB NoSQL
-COSMOS_ITEM_ID_PROPERTY_NAME = "id"
 
 
 def build_query_parameters(

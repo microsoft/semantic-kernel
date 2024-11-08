@@ -4,10 +4,13 @@ from collections.abc import AsyncGenerator
 from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 import pytest
-from azure.cosmos.exceptions import CosmosResourceNotFoundError
+from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
     AzureCosmosDBNoSQLCollection,
+)
+from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
+    AzureCosmosDBNoSQLCompositeKey,
 )
 from semantic_kernel.connectors.memory.azure_cosmos_db.utils import (
     COSMOS_ITEM_ID_PROPERTY_NAME,
@@ -201,7 +204,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection(
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock(return_value=mock_cosmos_client)
     vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
@@ -235,7 +237,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock(return_value=mock_cosmos_client)
     vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
@@ -269,7 +270,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock(return_value=mock_cosmos_client)
     vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
@@ -303,7 +303,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_i
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock(return_value=mock_cosmos_client)
     vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
@@ -331,7 +330,6 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_unsupported_d
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock(return_value=mock_cosmos_client)
     vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
 
     mock_database_proxy.create_container_if_not_exists = AsyncMock(return_value=None)
@@ -356,7 +354,6 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection(
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock()
     vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
 
     mock_database_proxy.delete_container = AsyncMock()
@@ -367,7 +364,9 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection(
 
 
 @pytest.mark.asyncio
+@patch("azure.cosmos.aio.DatabaseProxy")
 async def test_azure_cosmos_db_no_sql_collection_delete_collection_fail(
+    mock_database_proxy,
     azure_cosmos_db_no_sql_unit_test_env,
     data_model_type,
     database_name: str,
@@ -380,12 +379,10 @@ async def test_azure_cosmos_db_no_sql_collection_delete_collection_fail(
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock()
-    vector_collection._get_database_proxy = AsyncMock(side_effect=CosmosResourceNotFoundError)
+    vector_collection._get_database_proxy = AsyncMock(return_value=mock_database_proxy)
+    mock_database_proxy.delete_container = AsyncMock(side_effect=CosmosHttpResponseError)
 
-    with pytest.raises(
-        MemoryConnectorResourceNotFound, match="The collection does not exist yet. Create the collection first."
-    ):
+    with pytest.raises(MemoryConnectorException, match="Container could not be deleted."):
         await vector_collection.delete_collection()
 
 
@@ -399,22 +396,25 @@ async def test_azure_cosmos_db_no_sql_upsert(
     collection_name: str,
 ) -> None:
     """Test the upsert of a document in a cosmos DB NoSQL collection."""
+    item = {"content": "test_content", "vector": [1.0, 2.0, 3.0], "id": "test_id"}
+
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
         database_name=database_name,
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock()
     vector_collection._get_container_proxy = AsyncMock(return_value=mock_container_proxy)
 
-    mock_container_proxy.upsert_item = AsyncMock()
-
-    await vector_collection.upsert({"content": "test_content", "vector": [1.0, 2.0, 3.0], "id": "test_id"})
-
-    mock_container_proxy.upsert_item.assert_called_once_with(
-        body={"content": "test_content", "vector": [1.0, 2.0, 3.0], "id": "test_id"}
+    mock_container_proxy.execute_item_batch = AsyncMock(
+        return_value=[{"resourceBody": {COSMOS_ITEM_ID_PROPERTY_NAME: item["id"]}}]
     )
+
+    result = await vector_collection.upsert(item)
+
+    mock_container_proxy.execute_item_batch.assert_called_once_with([("upsert", (item,))], [item["id"]])
+    assert isinstance(result, AzureCosmosDBNoSQLCompositeKey)
+    assert result.key == item["id"]
 
 
 @pytest.mark.asyncio
@@ -427,22 +427,26 @@ async def test_azure_cosmos_db_no_sql_upsert_without_id(
     collection_name: str,
 ) -> None:
     """Test the upsert of a document in a cosmos DB NoSQL collection where the name of the key field is 'key'."""
+    item = {"content": "test_content", "vector": [1.0, 2.0, 3.0], "key": "test_key"}
+    item_with_id = {"content": "test_content", "vector": [1.0, 2.0, 3.0], COSMOS_ITEM_ID_PROPERTY_NAME: "test_key"}
+
     vector_collection = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type_with_key_as_key_field,
         database_name=database_name,
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock()
     vector_collection._get_container_proxy = AsyncMock(return_value=mock_container_proxy)
 
-    mock_container_proxy.upsert_item = AsyncMock()
-
-    await vector_collection.upsert({"content": "test_content", "vector": [1.0, 2.0, 3.0], "key": "test_key"})
-
-    mock_container_proxy.upsert_item.assert_called_once_with(
-        body={"content": "test_content", "vector": [1.0, 2.0, 3.0], COSMOS_ITEM_ID_PROPERTY_NAME: "test_key"}
+    mock_container_proxy.execute_item_batch = AsyncMock(
+        return_value=[{"resourceBody": {COSMOS_ITEM_ID_PROPERTY_NAME: item["key"]}}]
     )
+
+    result = await vector_collection.upsert(item)
+
+    mock_container_proxy.execute_item_batch.assert_called_once_with([("upsert", (item_with_id,))], [item["key"]])
+    assert isinstance(result, AzureCosmosDBNoSQLCompositeKey)
+    assert result.key == item["key"]
 
 
 @pytest.mark.asyncio
@@ -461,7 +465,6 @@ async def test_azure_cosmos_db_no_sql_get(
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock()
     vector_collection._get_container_proxy = AsyncMock(return_value=mock_container_proxy)
 
     get_results = MagicMock(spec=AsyncGenerator)
@@ -491,7 +494,6 @@ async def test_azure_cosmos_db_no_sql_get_without_id(
         collection_name=collection_name,
     )
 
-    vector_collection._get_cosmos_client = MagicMock()
     vector_collection._get_container_proxy = AsyncMock(return_value=mock_container_proxy)
 
     get_results = MagicMock(spec=AsyncGenerator)
