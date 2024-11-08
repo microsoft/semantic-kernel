@@ -25,19 +25,19 @@ public sealed class AgentChatSerializer
     /// <summary>
     /// Serialize the provided <see cref="AgentChat"/> to the target stream.
     /// </summary>
-    public static async Task SerializeAsync<TChat>(TChat chat, Stream stream) where TChat : AgentChat
+    public static async Task SerializeAsync<TChat>(TChat chat, Stream stream, JsonSerializerOptions? serializerOptions = null) where TChat : AgentChat
     {
         AgentChatState state = chat.Serialize();
-        await JsonSerializer.SerializeAsync(stream, state, s_defaultOptions).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream, state, serializerOptions ?? s_defaultOptions).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Provides a <see cref="AgentChatSerializer"/> that is able to restore an <see cref="AgentChat"/>.
     /// </summary>
-    public static async Task<AgentChatSerializer> DeserializeAsync(Stream stream)
+    public static async Task<AgentChatSerializer> DeserializeAsync(Stream stream, JsonSerializerOptions? serializerOptions = null)
     {
         AgentChatState state =
-            await JsonSerializer.DeserializeAsync<AgentChatState>(stream).ConfigureAwait(false) ??
+            await JsonSerializer.DeserializeAsync<AgentChatState>(stream, serializerOptions ?? s_defaultOptions).ConfigureAwait(false) ??
             throw new KernelException("Unable to restore chat: invalid format.");
 
         return new AgentChatSerializer(state);
