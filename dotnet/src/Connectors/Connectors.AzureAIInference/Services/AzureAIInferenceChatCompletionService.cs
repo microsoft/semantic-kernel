@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Azure.AI.Inference;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference.Core;
 
@@ -19,6 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAIInference;
 public sealed class AzureAIInferenceChatCompletionService : IChatCompletionService
 {
     private readonly ChatClientCore _core;
+    private readonly IChatCompletionService _chatService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAIInferenceChatCompletionService"/> class.
@@ -29,18 +31,32 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureAIInferenceChatCompletionService(
-            string? modelId = null,
+            string modelId,
             string? apiKey = null,
             Uri? endpoint = null,
             HttpClient? httpClient = null,
             ILoggerFactory? loggerFactory = null)
     {
+        var logger = loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService));
         this._core = new(
             modelId,
             apiKey,
             endpoint,
             httpClient,
-            loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService)));
+            logger);
+
+        var builder = new ChatClientBuilder()
+            .UseFunctionInvocation(config =>
+                config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+        if (logger is not null)
+        {
+            builder = builder.UseLogging(logger);
+        }
+
+        this._chatService = builder
+            .Use(this._core.Client.AsChatClient(modelId))
+            .AsChatCompletionService();
     }
 
     /// <summary>
@@ -58,12 +74,26 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
             HttpClient? httpClient = null,
             ILoggerFactory? loggerFactory = null)
     {
+        var logger = loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService));
         this._core = new(
             modelId,
             credential,
             endpoint,
             httpClient,
-            loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService)));
+            logger);
+
+        var builder = new ChatClientBuilder()
+           .UseFunctionInvocation(config =>
+               config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+        if (logger is not null)
+        {
+            builder = builder.UseLogging(logger);
+        }
+
+        this._chatService = builder
+            .Use(this._core.Client.AsChatClient(modelId))
+            .AsChatCompletionService();
     }
 
     /// <summary>
@@ -77,10 +107,24 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
         ChatCompletionsClient chatClient,
         ILoggerFactory? loggerFactory = null)
     {
+        var logger = loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService));
         this._core = new(
             modelId,
             chatClient,
-            loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService)));
+            logger);
+
+        var builder = new ChatClientBuilder()
+         .UseFunctionInvocation(config =>
+             config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
+
+        if (logger is not null)
+        {
+            builder = builder.UseLogging(logger);
+        }
+
+        this._chatService = builder
+            .Use(this._core.Client.AsChatClient(modelId))
+            .AsChatCompletionService();
     }
 
     /// <inheritdoc/>
@@ -88,9 +132,15 @@ public sealed class AzureAIInferenceChatCompletionService : IChatCompletionServi
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this._chatService.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this._chatService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+
+    #region Private
+
+    private const int MaxInflightAutoInvokes = 128;
+
+    #endregion
 }

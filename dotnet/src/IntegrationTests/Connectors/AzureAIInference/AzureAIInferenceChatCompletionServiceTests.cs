@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
 using Azure.AI.Inference;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
@@ -44,6 +45,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
 
         var sut = (config.ApiKey is not null)
                 ? new AzureAIInferenceChatCompletionService(
+                    modelId: "model",
                     endpoint: config.Endpoint,
                     apiKey: config.ApiKey,
                     loggerFactory: this._loggerFactory)
@@ -75,11 +77,12 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
 
         var sut = (config.ApiKey is not null)
                 ? new AzureAIInferenceChatCompletionService(
+                    modelId: "model",
                     endpoint: config.Endpoint,
                     apiKey: config.ApiKey,
                     loggerFactory: this._loggerFactory)
                 : new AzureAIInferenceChatCompletionService(
-                    modelId: null,
+                    modelId: "model",
                     endpoint: config.Endpoint,
                     credential: new AzureCliCredential(),
                     loggerFactory: this._loggerFactory);
@@ -153,7 +156,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
 
         var kernelBuilder = Kernel.CreateBuilder();
 
-        kernelBuilder.AddAzureAIInferenceChatCompletion(endpoint: config.Endpoint, apiKey: null);
+        kernelBuilder.AddAzureAIInferenceChatCompletion(modelId: "any", endpoint: config.Endpoint, apiKey: null);
 
         kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {
@@ -176,11 +179,11 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = prompt }));
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], new() { [InputParameterName] = prompt }));
 
         // Assert
         Assert.All(statusCodes, s => Assert.Equal(HttpStatusCode.Unauthorized, s));
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)exception).StatusCode);
+        Assert.Equal((int)HttpStatusCode.Unauthorized, ((RequestFailedException)exception).Status);
     }
 
     [Fact]
@@ -239,6 +242,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var kernelBuilder = base.CreateKernelBuilder();
 
         kernelBuilder.AddAzureAIInferenceChatCompletion(
+            "any",
             endpoint: config.Endpoint,
             apiKey: config.ApiKey,
             serviceId: config.ServiceId,

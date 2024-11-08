@@ -21,7 +21,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
     /// Adds the <see cref="AzureAIInferenceChatCompletionService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="modelId">Target Model Id for endpoints supporting more than one model</param>
+    /// <param name="modelId">Target Model Id</param>
     /// <param name="apiKey">API Key</param>
     /// <param name="endpoint">Endpoint / Target URI</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
@@ -29,7 +29,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureAIInferenceChatCompletion(
         this IServiceCollection services,
-        string? modelId = null,
+        string modelId,
         string? apiKey = null,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
@@ -53,7 +53,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
     /// Adds the <see cref="AzureAIInferenceChatCompletionService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="modelId">Target Model Id for endpoints supporting more than one model</param>
+    /// <param name="modelId">Target Model Id</param>
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="endpoint">Endpoint / Target URI</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
@@ -61,7 +61,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddAzureAIInferenceChatCompletion(
         this IServiceCollection services,
-        string? modelId,
+        string modelId,
         TokenCredential credential,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
