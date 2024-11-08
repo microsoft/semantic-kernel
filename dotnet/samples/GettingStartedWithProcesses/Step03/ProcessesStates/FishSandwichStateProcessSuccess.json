@@ -1,47 +1,55 @@
 {
+  "$type": "Process",
   "stepsState": {
     "FriedFishWithStatefulStepsProcess": {
+      "$type": "Process",
       "stepsState": {
         "GatherFriedFishIngredientsWithStockStep": {
-          "state": {
-            "IngredientsStock": 4
-          },
-          "id": "32301d167a604f7bb1b69663d8feafe6",
+          "$type": "Step",
+          "id": "2908f8c88cf0476a8e0075c3a8020d5d",
           "name": "GatherFriedFishIngredientsWithStockStep",
-          "versionInfo": "GatherFishIngredient.V2"
+          "versionInfo": "GatherFishIngredient.V2",
+          "state": {
+            "IngredientsStock": 3
+          }
         },
         "CutFoodStep": {
-          "id": "3be68c614bc44bedb7bce0f002110968",
+          "$type": "Step",
+          "id": "014388cf0bbd41119b8730dfc4b0b459",
           "name": "CutFoodStep",
           "versionInfo": "CutFoodStep.V1"
         },
         "FryFoodStep": {
-          "id": "5f80945fafec4a0bbeccf3ff23a8c1a1",
+          "$type": "Step",
+          "id": "c55af0425d864c4e97b6ae67bd715480",
           "name": "FryFoodStep",
           "versionInfo": "FryFoodStep.V1"
         }
       },
-      "id": "c9d2e56dcc5a4b5ea73e05ae53635c90",
+      "id": "cab89a17aeae4b9a97568967dbf1ea47",
       "name": "FriedFishWithStatefulStepsProcess",
       "versionInfo": "FriedFishProcess.v1"
     },
     "AddBunsStep": {
-      "id": "ef113fc874b0473c9c275827effe8dd8",
+      "$type": "Step",
+      "id": "35d09b83dea24ddf8e0c24fbe6a3746c",
       "name": "AddBunsStep",
       "versionInfo": "v1"
     },
     "AddSpecialSauceStep": {
-      "id": "65a35f6dec6e45cab9e1b4df7d43a6bd",
+      "$type": "Step",
+      "id": "aa0d408976574afea94387e3da7ca111",
       "name": "AddSpecialSauceStep",
       "versionInfo": "v1"
     },
     "ExternalFriedFishStep": {
-      "id": "ab186a81480a45249cfff9e0c56319b8",
+      "$type": "Step",
+      "id": "2eda38b8ee8745a4ab8b21f4fa01d173",
       "name": "ExternalFriedFishStep",
       "versionInfo": "v1"
     }
   },
-  "id": "0de6d539-c1bf-44ad-816d-650231cd2034",
+  "id": "973b06f1-a522-4d2d-9e1c-ec45a07e275c",
   "name": "FishSandwichWithStatefulStepsProcess",
   "versionInfo": "FishSandwich.V1"
 }

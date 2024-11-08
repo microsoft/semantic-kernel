@@ -5,10 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// The REST API operation response.
+/// REST API response.
 /// </summary>
 [Experimental("SKEXP0040")]
-public sealed class RestApiOperationExpectedResponse
+public sealed class RestApiExpectedResponse
 {
     /// <summary>
     /// Gets the description of the response.
@@ -26,12 +26,12 @@ public sealed class RestApiOperationExpectedResponse
     public KernelJsonSchema? Schema { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
+    /// Initializes a new instance of the <see cref="RestApiExpectedResponse"/> class.
     /// </summary>
     /// <param name="description">The description of the response.</param>
     /// <param name="mediaType">The media type of the response.</param>
     /// <param name="schema">The schema against which the response body should be validated.</param>
-    internal RestApiOperationExpectedResponse(string description, string mediaType, KernelJsonSchema? schema = null)
+    internal RestApiExpectedResponse(string description, string mediaType, KernelJsonSchema? schema = null)
     {
         this.Description = description;
         this.MediaType = mediaType;
