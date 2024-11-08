@@ -27,6 +27,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Process.Runtime.Dapr.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Process.IntegrationTestRunner.Dapr" />
+    <InternalsVisibleTo Include="SemanticKernel.Process.IntegrationTestHost.Dapr" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

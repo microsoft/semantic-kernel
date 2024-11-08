@@ -466,36 +466,6 @@ public class LocalMapTests
         }
     }
 
-    /// <summary>
-    /// A step that contains a map operation that emits output that
-    /// is not based on function input (perhaps simulating accessing a
-    /// remote store)
-    /// </summary>
-    private sealed class QueryStep(ConcurrentQueue<string> store) : KernelProcessStep
-    {
-        public const string EventId = "QueryResult";
-        public const string QueryFunction = "MapQuery";
-
-        [KernelFunction(QueryFunction)]
-        public async ValueTask QueryAsync(KernelProcessStepContext context)
-        {
-            string? value = null;
-            int attempts = 0;
-            do
-            {
-                ++attempts;
-                store.TryDequeue(out value);
-            } while (value == null && attempts < 3);
-
-            if (value == null)
-            {
-                throw new InvalidDataException("Unable to query store");
-            }
-
-            await context.EmitEventAsync(new() { Id = EventId, Data = value });
-        }
-    }
-
     private sealed record UnionState
     {
         public string Key { get; set; } = UnionStep.ResultKey;

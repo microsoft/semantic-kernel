@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel;
 [KnownType(typeof(DaprProcessInfo))]
 [KnownType(typeof(DaprMapInfo))]
 [JsonDerivedType(typeof(DaprProcessInfo))]
+[JsonDerivedType(typeof(DaprMapInfo))]
 public record DaprStepInfo
 {
     /// <summary>

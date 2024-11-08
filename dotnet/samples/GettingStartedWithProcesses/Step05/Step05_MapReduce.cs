@@ -13,8 +13,7 @@ public class Step05_MapReduce : BaseTest
     protected override bool ForceOpenAI => true;
 
     /// <summary>
-    /// Factor to increase the scale of the content processed to highlight the characteristics of
-    /// each approach: map vs linear.
+    /// Factor to increase the scale of the content processed.
     /// </summary>
     private const int ScaleFactor = 100;
 
@@ -51,34 +50,6 @@ public class Step05_MapReduce : BaseTest
 
         Dictionary<string, int> results = (Dictionary<string, int>?)kernel.Data[ResultStep.ResultKey] ?? [];
         foreach (var result in results)
-        {
-            Console.WriteLine($"{result.Key}: {result.Value}");
-        }
-    }
-
-    [Fact]
-    public async Task RunLinearAsync()
-    {
-        Dictionary<string, int> counts = [];
-
-        string[] words = this._sourceContent.Split([' ', '\n', '\r', '.', ',', '’'], StringSplitOptions.RemoveEmptyEntries);
-        foreach (string word in words)
-        {
-            if (s_notInteresting.Contains(word))
-            {
-                continue;
-            }
-
-            counts.TryGetValue(word.Trim(), out int count);
-            counts[word] = ++count;
-        }
-
-        var sorted =
-            from kvp in counts
-            orderby kvp.Value descending
-            select kvp;
-
-        foreach (var result in sorted.Take(10))
         {
             Console.WriteLine($"{result.Key}: {result.Value}");
         }
