@@ -548,15 +548,20 @@ public class LocalMapTests
         public const string CountFunction = nameof(Count);
         public const string CountKey = "Count";
 
+        private readonly object countLock = new();
+
         [KernelFunction]
         public void Count(Kernel kernel)
         {
-            int count = 0;
-            if (kernel.Data.TryGetValue(CountKey, out object? value))
+            lock (this.countLock)
             {
-                count = (int)(value ?? 0);
+                int count = 0;
+                if (kernel.Data.TryGetValue(CountKey, out object? value))
+                {
+                    count = (int)(value ?? 0);
+                }
+                kernel.Data[CountKey] = ++count;
             }
-            kernel.Data[CountKey] = ++count;
         }
     }
 }
