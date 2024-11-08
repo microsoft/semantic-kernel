@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import argparse
+import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Annotated
@@ -29,6 +30,8 @@ from semantic_kernel.data import (
     vectorstoremodel,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 
 
 def get_data_model_array(index_kind: IndexKind, distance_function: DistanceFunction) -> type:
@@ -144,38 +147,63 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
 
 
 async def main(collection: str, use_azure_openai: bool, embedding_model: str):
+    print("-" * 30)
     kernel = Kernel()
     service_id = "embedding"
     if use_azure_openai:
-        kernel.add_service(AzureTextEmbedding(service_id=service_id, deployment_name=embedding_model))
+        embedder = AzureTextEmbedding(service_id=service_id, deployment_name=embedding_model)
     else:
-        kernel.add_service(OpenAITextEmbedding(service_id=service_id, ai_model_id=embedding_model))
+        embedder = OpenAITextEmbedding(service_id=service_id, ai_model_id=embedding_model)
+    kernel.add_service(embedder)
     async with collections[collection]() as record_collection:
+        print(f"Creating {collection} collection!")
         await record_collection.create_collection_if_not_exists()
 
-        record1 = DataModel(content="My text", id="e6103c03-487f-4d7d-9c23-4723651c17f4")
-        record2 = DataModel(content="My other text", id="09caec77-f7e1-466a-bcec-f1d51c5b15be")
+        record1 = DataModel(content="Semantic Kernel is awesome", id="e6103c03-487f-4d7d-9c23-4723651c17f4")
+        record2 = DataModel(
+            content="Semantic Kernel is available in dotnet, python and Java.",
+            id="09caec77-f7e1-466a-bcec-f1d51c5b15be",
+        )
 
+        print("Adding records!")
         records = await VectorStoreRecordUtils(kernel).add_vector_to_records(
             [record1, record2], data_model_type=DataModel
         )
         keys = await record_collection.upsert_batch(records)
-        print(f"upserted {keys=}")
-
+        print(f"    Upserted {keys=}")
+        print("Getting records!")
         results = await record_collection.get_batch([record1.id, record2.id])
         if results:
             for result in results:
-                print(f"found {result.id=}")
-                print(f"{result.content=}")
+                print(f"  Found id: {result.id}")
+                print(f"    Content: {result.content}")
                 if result.vector is not None:
-                    print(f"{result.vector[:5]=}")
+                    print(f"    Vector (first five): {result.vector[:5]}")
         else:
-            print("not found")
+            print("Nothing found...")
+        if isinstance(record_collection, VectorizedSearchMixin):
+            print("-" * 30)
+            print("Using vectorized search, the distance function is set to cosine_similarity.")
+            print("This means that the higher the score the more similar.")
+            search_results = await record_collection.vectorized_search(
+                vector=(await embedder.generate_raw_embeddings(["python"]))[0],
+                options=VectorSearchOptions(vector_field_name="vector", include_vectors=True),
+            )
+            results = [record async for record in search_results.results]
+            for result in results:
+                print(f"  Found id: {result.record.id}")
+                print(f"    Content: {result.record.content}")
+                if result.record.vector is not None:
+                    print(f"    Vector (first five): {result.record.vector[:5]}")
+                print(f"  Score: {result.score:.4f}")
+                print("")
+        print("-" * 30)
+        print("Deleting collection!")
+        await record_collection.delete_collection()
+        print("Done!")
 
 
 if __name__ == "__main__":
-    import asyncio
-
     argparse.ArgumentParser()
 
     parser = argparse.ArgumentParser()

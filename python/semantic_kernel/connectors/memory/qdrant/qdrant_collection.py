@@ -3,7 +3,9 @@
 import logging
 import sys
 from collections.abc import Mapping, Sequence
-from typing import Any, ClassVar, TypeVar
+from typing import Any, ClassVar, Generic, TypeVar
+
+from semantic_kernel.exceptions.search_exceptions import VectorSearchExecutionException
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -12,12 +14,16 @@ else:
 
 from pydantic import ValidationError
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
-from qdrant_client.models import PointStruct, VectorParams
+from qdrant_client.models import FieldCondition, Filter, MatchAny, PointStruct, QueryResponse, ScoredPoint, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant.const import DISTANCE_FUNCTION_MAP, TYPE_MAPPER_VECTOR
 from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
+from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
-from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
+from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
+from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
 from semantic_kernel.exceptions import (
     MemoryConnectorInitializationError,
     VectorStoreModelValidationError,
@@ -34,7 +40,11 @@ TKey = TypeVar("TKey", str, int)
 
 
 @experimental_class
-class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
+class QdrantCollection(
+    VectorSearchBase[str | int, TModel],
+    VectorizedSearchMixin[TModel],
+    Generic[TModel],
+):
     """A QdrantCollection is a memory collection that uses Qdrant as the backend."""
 
     qdrant_client: AsyncQdrantClient
@@ -69,6 +79,8 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
             or set location to ":memory:" to use an in-memory qdrant instance.
         When nothing is supplied, it defaults to an in-memory qdrant instance.
         You can also supply a async qdrant client directly.
+
+        If you want to use the vectorizable_text_search you will need to install `qrant_client[fastembed]`.
 
         Args:
             data_model_type (type[TModel]): The type of the data model.
@@ -164,6 +176,53 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         )
 
     @override
+    async def _inner_search(
+        self,
+        options: VectorSearchOptions,
+        search_text: str | None = None,
+        vectorizable_text: str | None = None,
+        vector: list[float | int] | None = None,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        query_vector: tuple[str, list[float | int]] | list[float | int] | None = None
+        if vector is not None:
+            if self.named_vectors and options.vector_field_name:
+                query_vector = (options.vector_field_name, vector)
+            else:
+                query_vector = vector
+        if query_vector is None:
+            raise VectorSearchExecutionException("Search requires either a vector.")
+        results = await self.qdrant_client.search(
+            collection_name=self.collection_name,
+            query_vector=query_vector,
+            query_filter=self._create_filter(options),
+            with_vectors=options.include_vectors,
+            limit=options.top,
+            offset=options.skip,
+            **kwargs,
+        )
+        return KernelSearchResults(
+            results=self._get_vector_search_results_from_results(results),
+            total_count=len(results) if options.include_total_count else None,
+        )
+
+    @override
+    def _get_record_from_result(self, result: ScoredPoint | QueryResponse) -> Any:
+        return result
+
+    @override
+    def _get_score_from_result(self, result: ScoredPoint) -> float:
+        return result.score
+
+    def _create_filter(self, options: VectorSearchOptions) -> Filter:
+        return Filter(
+            must=[
+                FieldCondition(key=filter.field_name, match=MatchAny(any=filter.value))
+                for filter in options.filter.filters
+            ]
+        )
+
+    @override
     def _serialize_dicts_to_store_models(
         self,
         records: Sequence[dict[str, Any]],
@@ -183,7 +242,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
     @override
     def _deserialize_store_models_to_dicts(
         self,
-        records: Sequence[PointStruct],
+        records: Sequence[PointStruct] | Sequence[ScoredPoint],
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]]:
         return [
@@ -191,7 +250,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                 self._key_field_name: record.id,
                 **(record.payload if record.payload else {}),
                 **(
-                    record.vector
+                    {}
+                    if not record.vector
+                    else record.vector
                     if isinstance(record.vector, dict)
                     else {self.data_model_definition.vector_field_names[0]: record.vector}
                 ),

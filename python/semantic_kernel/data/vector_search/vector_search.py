@@ -2,7 +2,7 @@
 
 import logging
 from abc import abstractmethod
-from collections.abc import AsyncIterable
+from collections.abc import AsyncIterable, Sequence
 from typing import Any, Generic, TypeVar
 
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
@@ -11,6 +11,7 @@ from semantic_kernel.data.vector_search.vector_search_options import VectorSearc
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.list_handler import desync_list
 
 TModel = TypeVar("TModel")
 TKey = TypeVar("TKey")
@@ -100,8 +101,10 @@ class VectorSearchBase(VectorStoreRecordCollection[TKey, TModel], Generic[TKey, 
     # region: New methods
 
     async def _get_vector_search_results_from_results(
-        self, results: AsyncIterable[Any]
+        self, results: AsyncIterable[Any] | Sequence[Any]
     ) -> AsyncIterable[VectorSearchResult[TModel]]:
+        if isinstance(results, Sequence):
+            results = desync_list(results)
         async for result in results:
             record = self.deserialize(self._get_record_from_result(result))
             score = self._get_score_from_result(result)
